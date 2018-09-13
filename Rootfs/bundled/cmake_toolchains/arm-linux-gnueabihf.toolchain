@@ -1,0 +1,20 @@
+# Toolchain file for arm-linux-gnueabihf
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+set(CMAKE_SYSROOT /opt/arm-linux-gnueabihf/arm-linux-gnueabihf/sys-root/)
+set(CMAKE_INSTALL_PREFIX /workspace/destdir/)
+
+set(CMAKE_C_COMPILER /opt/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc)
+set(CMAKE_CXX_COMPILER /opt/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++)
+
+# These settings don't seem to function properly, they stop cmake from being
+# able to find anything within the workspace at all.
+#set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+#set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+#set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+#set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+if( $ENV{CC} MATCHES ccache )
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+endif()
+

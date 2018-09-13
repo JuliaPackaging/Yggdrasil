@@ -1,0 +1,31 @@
+--- SuiteSparse_config/SuiteSparse_config.h 2015-07-15 03:26:41.000000000 +0000
++++ SuiteSparse_config/SuiteSparse_config.h 2016-07-01 00:55:57.157465600 +0000
+@@ -54,7 +54,11 @@
+ #ifdef _WIN64
+
+ #define SuiteSparse_long __int64
++#ifdef _MSVC_VER
+ #define SuiteSparse_long_max _I64_MAX
++#else
++#define SuiteSparse_long_max LLONG_MAX
++#endif
+ #define SuiteSparse_long_idd "I64d"
+
+ #else
+--- SuiteSparse_config/SuiteSparse_config.mk.orig
++++ SuiteSparse_config/SuiteSparse_config.mk
+@@ -426,12 +426,13 @@
+
+ SO_OPTS = $(LDFLAGS)
+
+-ifeq ($(UNAME),Windows)
++ifeq ($(UNAME),MSYS_NT-6.3)
+     # Cygwin Make on Windows (untested)
+     AR_TARGET = $(LIBRARY).lib
+     SO_PLAIN  = $(LIBRARY).dll
+     SO_MAIN   = $(LIBRARY).$(SO_VERSION).dll
+     SO_TARGET = $(LIBRARY).$(VERSION).dll
++    SO_OPTS  += -shared -Wl,-soname -Wl,$(SO_MAIN) -Wl,--no-undefined
+     SO_INSTALL_NAME = echo
+ else
+     # Mac or Linux/Unix
