@@ -637,7 +637,8 @@ void setup_vm_networking()
 
   // Find the first non-loopback interface
   struct ifreq req;
-  for (int i = 1; i < 5; ++i)
+  int i;
+  for (i = 1; i < 5; ++i)
   {
     req.ifr_ifindex = i;
     check(0 == ioctl(inetfd, SIOCGIFNAME, &req));

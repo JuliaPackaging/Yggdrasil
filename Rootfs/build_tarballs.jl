@@ -5,18 +5,17 @@ using BinaryBuilder, SHA
 #end
 
 name = "Rootfs"
-version = v"2018.08.27"
+version = v"2018.09.18"
 
 # Sources we build from
 sources = [
-    "https://github.com/gliderlabs/docker-alpine/raw/2bfe6510ee31d86cfeb2f37587f4cf866f28ffbc/versions/library-3.8/x86_64/rootfs.tar.xz" =>
-    "01970f6f0c4e9e28cf646529e85d99995cb3f35199815829a3183f52e64238c5",
-    "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk" =>
-    "f0a00f56fdee9dc888bafec0bf8f54fb188e99b5346032251abb79ef9c99f079",
+    "https://github.com/gliderlabs/docker-alpine/raw/c14b86580b9f86f42296050ec7564faf6b6db9be/versions/library-3.8/x86_64/rootfs.tar.xz" =>
+    "f4e9f66d945a5db78f092fcdd0c692c5b042e14897cd16c7e16d67a691d1ec82",
     "./bundled",
     "../Patchelf/products",
     "../Objconv/products",
     "../Sandbox/products",
+    "../Glibc/products",
 ]
 
 # Bash recipe for building across all platforms
@@ -37,6 +36,14 @@ touch ./dev/null
 touch ./dev/ptmx
 touch ./dev/urandom
 
+## Install foundational packages within the chroot
+NET_TOOLS="curl wget git openssl ca-certificates"
+MISC_TOOLS="python sudo file libintl patchutils"
+FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
+INTERACTIVE_TOOLS="bash gdb vim nano tmux"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
+apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
+
 # Install utilities we'll use.  Many of these are compatibility shims, look
 # at the files themselves to discover why we use them.
 mkdir -p ./usr/local/bin ./usr/local/share/configure_scripts
@@ -44,34 +51,30 @@ cp $WORKSPACE/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp $WORKSPACE/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
 cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/local/bin/uname
 cp $WORKSPACE/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
-chmod +x ./usr/local/bin/*
+cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/local/bin/ldd
+cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp $WORKSPACE/srcdir/utils/config.* ./usr/local/share/configure_scripts/
-cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ./docker_entrypoint.sh
+chmod +x ./usr/local/bin/*
 
-## Install foundational packages within the chroot
-NET_TOOLS="curl wget git openssl ca-certificates"
-MISC_TOOLS="python sudo file libintl"
-FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar"
-INTERACTIVE_TOOLS="bash gdb vim nano tmux"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig libstdc++ libgcc cmake ninja ccache"
+# Include GlibcBuilder v2.25 output as our official native x86_64-linux-gnu and i686-linux-gnu loaders.
+# We use 2.25 because it is the latest version that can be built with GCC 4.8.5
+mkdir -p /tmp/glibc_extract ${prefix}/{lib,lib64}
+tar -C /tmp/glibc_extract -zxf $WORKSPACE/srcdir/Glibc*2.25*x86_64-linux-gnu.tar.gz
+tar -C /tmp/glibc_extract -zxf $WORKSPACE/srcdir/Glibc*2.25*i686-linux-gnu.tar.gz
+mv /tmp/glibc_extract/x86_64-linux-gnu/sys-root/lib64/* ${prefix}/lib64/
+ls -la ${prefix}/lib
+mv /tmp/glibc_extract/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
 
-apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
+# Put sandbox and our docker entrypoint script into the root, to be used as `init` replacements.
+tar -C ${prefix} --strip-components=2 -xvf $WORKSPACE/srcdir/Sandbox*.tar.gz ./bin/sandbox
+cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
-# Install glibc compatibility package
-cp $WORKSPACE/srcdir/utils/sgerrand.rsa.pub $prefix/etc/apk/keys/sgerrand.rsa.pub
-apk add --root $prefix $WORKSPACE/srcdir/*-glibc-*.apk
-
-# Put sandbox as /sandbox
-cd $prefix
-tar --strip-components=2 -xvf $WORKSPACE/srcdir/Sandbox*.tar.gz ./bin/sandbox
-
-# Extract a very recent libstdc++.so.6 to /usr/local/lib
-cp $WORKSPACE/srcdir/libs/libstdc++.so* $prefix/usr/local/lib
+# Extract a very recent libstdc++.so.6 to /lib64 as well
+cp -d $WORKSPACE/srcdir/libs/libstdc++.so* $prefix/lib64
 
 # Install patchelf, objconv, etc... to /usr/local/
-cd $prefix/usr/local
-tar -xvf $WORKSPACE/srcdir/Patchelf*${target}*.tar.gz
-tar -xvf $WORKSPACE/srcdir/Objconv*${target}*.tar.gz
+tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Patchelf*${target}*.tar.gz
+tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Objconv*${target}*.tar.gz
 
 # Useful tools
 mkdir -p ${prefix}/root
@@ -80,8 +83,13 @@ echo "alias ll='ls -la'" >> ${prefix}/root/.bashrc
 # Create /overlay_workdir so that we know we can always mount an overlay there.  Same with /meta
 mkdir -p ${prefix}/overlay_workdir ${prefix}/meta
 
-# For some reason, we can never extract these files.  :(
+
+## Cleanup
+# We can never extract these files, because they are too fancy  :(
 rm -rf ${prefix}/usr/share/terminfo
+
+# Cleanup .pyc/.pyo files as they're not redistributable
+find ${prefix}/usr -type f -name "*.py[co]" -delete -or -type d -name "__pycache__" -delete
 """
 
 # These are the platforms we will build for by default, unless further
@@ -100,25 +108,3 @@ dependencies = [
 
 # Build the tarball
 build_info = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
-
-# Convert all the tarballs to a .squashfs as well
-#for (p, v) in build_info
-#    @info("Making $(v[1]) into a squashfs archive...")
-#    tarball_path = joinpath("products", v[1])
-#    squash_path = joinpath("products", v[1][1:end-7] * ".squashfs")
-
-#    temp_prefix() do p
-#        # Extract the tarball into a temporary prefix, and mksquashfs it:
-#        unpack(tarball_path, p.path)
-
-#        run(`mksquashfs $(p.path) $(squash_path) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
-
-#        # Hash it to get the .sha256 file:
-#        squash_hash = open(squash_path, "r") do f
-#            bytes2hex(sha256(f))
-#        end
-#        open(squash_path * ".sha256", "w") do f
-#            write(f, squash_hash)
-#        end
-#    end
-#end

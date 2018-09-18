@@ -66,24 +66,12 @@ done
 cd llvm-*.src
 
 # Update config.guess/config.sub stuff
-update_configure_scripts
-
-# Patch has the almost unbelievable failure mode that it will partially apply
-# a patch.  This is really bad if you want to just ignore patch return codes,
-# so what we do is we build a new atomic_patch() function that will apply a
-# patch if (and only if) the whole thing applies cleanly.
-atomic_patch()
-{
-    if ! patch -p1 < "\$1"; then
-        echo "Patch \$(basename "\$1") could not be applied!  Skipping..." >&2;
-        patch -p1 -R < "\$1" || true;
-    fi
-}
+#update_configure_scripts
 
 # Apply all our patches
 for f in $WORKSPACE/srcdir/llvm_patches/*.patch; do
     echo "Applying patch ${f}"
-    atomic_patch "${f}"
+    atomic_patch -p1 "${f}"
 done
 """
 
@@ -104,9 +92,9 @@ mv bin/clang-tblgen $prefix/bin/
 mv bin/llvm-config $prefix/bin/
 """
 
-# We'll do this build for x86_64-linux-musl only, as that's the arch we're building on
+# We'll do this build for x86_64-linux-gnu only, as that's the arch we're building on
 platforms = [
-    Linux(:x86_64, :musl),
+    Linux(:x86_64),
 ]
 
 # We only care about llvm-tblgen and clang-tblgen
@@ -125,16 +113,19 @@ filter!(s->!startswith(s, "--llvm"), ARGS)
 
 # Build the tarball, overriding ARGS so that the user doesn't shoot themselves in the foot,
 # but only do this if we don't already have a Tblgen tarball available:
-tblgen_tarball = joinpath("products", "tblgen.x86_64-linux-musl.tar.gz")
+tblgen_tarball = joinpath("products", "tblgen.x86_64-linux-gnu.tar.gz")
 if !isfile(tblgen_tarball)
-    tblgen_ARGS = ["x86_64-linux-musl"]
+    tblgen_ARGS = ["x86_64-linux-gnu"]
     if "--verbose" in ARGS
         push!(tblgen_ARGS, "--verbose")
+    end
+    if "--debug" in ARGS
+        push!(tblgen_ARGS, "--debug")
     end
     product_hashes = build_tarballs(tblgen_ARGS, "tblgen", llvm_ver, sources, script, platforms, products, dependencies)
 
     # Extract path information to the built tblgen tarball and its hash
-    tblgen_tarball, tblgen_hash = product_hashes["x86_64-linux-musl"]
+    tblgen_tarball, tblgen_hash = product_hashes["x86_64-linux-gnu"]
     tblgen_tarball = joinpath("products", tblgen_tarball)
 else
     info("Using pre-built tblgen tarball at $(tblgen_tarball)")
@@ -283,6 +274,11 @@ mv ${prefix}/bin/lld* ${prefix}/tools/
 if [[ "${target}" == *mingw* ]]; then
     cp ${prefix}/bin/*.dll ${prefix}/tools/
 fi
+
+# Lots of tools don't respect `$DSYMUTIL` and so thus do not find 
+# our cleverly-named `llvm-dsymutil`.  We create a symlink to help
+# Those poor fools along:
+ln -s llvm-dsymutil ${prefix}/tools/dsymutil
 """
 
 # BB is using musl as a platform and we don't want to run glibc binaries on it.
@@ -297,7 +293,7 @@ products(prefix) = [
     LibraryProduct(prefix, "libLTO",   :libLTO)
     LibraryProduct(prefix, "libclang", :libclang)
     # tools
-    ExecutableProduct(joinpath(prefix, "tools"), "llvm-config", :llvm_config)
+    ExecutableProduct(joinpath(prefix, "tools", "llvm-config"), :llvm_config)
 ]
 
 # Dependencies that must be installed before this package can be built

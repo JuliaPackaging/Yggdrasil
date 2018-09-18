@@ -33,6 +33,10 @@ glibc_version_sources = Dict(
         "https://mirrors.kernel.org/gnu/glibc/glibc-2.25.tar.xz" =>
         "067bd9bb3390e79aa45911537d13c3721f1d9d3769931a30c2681bfee66f23a0",
     ],
+    v"2.27" => [
+        "https://mirrors.kernel.org/gnu/glibc/glibc-2.27.tar.xz" =>
+        "5172de54318ec0b7f2735e5a91d908afe1c9ca291fec16b5374d9faadfc1fc72",
+    ],
     # Newest version available
     v"2.28" => [
         "https://mirrors.kernel.org/gnu/glibc/glibc-2.28.tar.xz" =>
@@ -51,33 +55,34 @@ script = raw"""
 cd $WORKSPACE/srcdir/glibc-*/
 
 # We need newer configure scripts
-update_configure_scripts
+#update_configure_scripts
 
 # patch glibc to keep around libgcc_s_resume on arm
 # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
-patch -p1 < $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
+atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
 
 # patch glibc's stupid gcc version check (we don't require this one, as if
 # it doesn't apply cleanly, it's probably fine)
-patch -p0 < $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
+atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
+atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
 
 # patch older glibc's 32-bit assembly to withstand __i686 definition of
 # newer GCC's.  ref: http://comments.gmane.org/gmane.comp.lib.glibc.user/758
-patch -p1 < $WORKSPACE/srcdir/patches/glibc_i686_asm.patch || true
+atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_i686_asm.patch || true
 
 # Patch glibc's sunrpc cross generator to work with musl
 # See https://sourceware.org/bugzilla/show_bug.cgi?id=21604
-patch -p0 < $WORKSPACE/srcdir/patches/glibc-sunrpc.patch || true
+atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc-sunrpc.patch || true
 
 # patch for building old glibc on newer binutils
 # These patches don't apply on those versions of glibc where they
 # are not needed, but that's ok.
-patch -p0 < $WORKSPACE/srcdir/patches/glibc_nocommon.patch || true
-patch -p0 < $WORKSPACE/srcdir/patches/glibc_regexp_nocommon.patch || true
+atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_nocommon.patch || true
+atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_regexp_nocommon.patch || true
 
 # patch for avoiding linking in musl libs for a glibc-linked binary
-patch -p1 < $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
-patch -p1 < $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
+atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
+atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
 
 sysroot=${prefix}/${target}/sys-root
 
@@ -127,4 +132,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)

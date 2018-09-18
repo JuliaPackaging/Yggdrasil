@@ -17,14 +17,14 @@ cd $WORKSPACE/srcdir/mingw-*/
 export AS=${target}-as
 
 # We need newer configure scripts
-update_configure_scripts
+#update_configure_scripts
 
 # This is where we'll install everything
 sysroot=${prefix}/${target}/sys-root
 
 # Patch mingw to build 32-bit cross compiler with GCC 7.1+ (This no longer needed with mingw 5.0.3+,
 # so we let it fail, but leave it in incase we ever need to build an older mingw)
-patch -p1 < $WORKSPACE/srcdir/patches/mingw_gcc710_i686.patch || true
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/mingw_gcc710_i686.patch" || true
 
 # Build CRT
 mkdir -p $WORKSPACE/srcdir/mingw_crt_build

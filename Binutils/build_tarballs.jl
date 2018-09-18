@@ -8,16 +8,19 @@ deleteat!(ARGS, length(ARGS))
 
 # Encode the compiler target into the name
 name = "Binutils-$(compiler_target)"
-version = v"2.31.1"
+#version = v"2.31.1"
+version = v"2.29"
 
 # Collection of sources required to build Binutils
 sources = [
-    "https://ftp.gnu.org/gnu/binutils/binutils-$(version).tar.xz" =>
-    "5d20086ecf5752cc7d9134246e9588fa201740d540f7eb84d795b1f7a93bca86",
+    "https://ftp.gnu.org/gnu/binutils/binutils-2.29.tar.bz2" =>
+    #"5d20086ecf5752cc7d9134246e9588fa201740d540f7eb84d795b1f7a93bca86",
+    "29a29549869039aad75fdf507ac30366da5ad0b974fbff4a8e7148dbf4f40ebf",
     "https://github.com/tpoechtrager/apple-libtapi.git" =>
     "e56673694db395e25b31808b4fbb9a7005e6875f",
     "https://github.com/tpoechtrager/cctools-port.git" =>
     "ecb84d757b6f011543504967193375305ffa3b2f",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +30,16 @@ ln -sf \$(which uname) /usr/bin/uname
 
 # On MacOS, we don't actually install Binutils.  We install libtapi and cctools.  Le sigh.
 if [[ $(compiler_target) == *apple* ]]; then
-    cd \${WORKSPACE}/srcdir/apple-libtapi/
+    mkdir -p \${WORKSPACE}/srcdir/apple-libtapi/build
+    cd \${WORKSPACE}/srcdir/apple-libtapi/build
 
-    INSTALLPREFIX=\${prefix} ./build.sh
-    INSTALLPREFIX=\${prefix} ./install.sh
+    # Install libtapi
+    cmake ../src/apple-llvm/src \\
+        -DLLVM_INCLUDE_TESTS=OFF \\
+        -DCMAKE_BUILD_TYPE=RELEASE \\
+        -DCMAKE_INSTALL_PREFIX=\${prefix}
+    make -j\${nproc} VERBOSE=1
+    make install
 
     # Install cctools.  Someday, try this without disabling the clang assembler!
     cd \${WORKSPACE}/srcdir/cctools-port/cctools
@@ -43,6 +52,8 @@ if [[ $(compiler_target) == *apple* ]]; then
 else
     cd \${WORKSPACE}/srcdir/binutils-*/
 
+    atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/binutils_COFF_bfd.patch"
+
     ./configure --prefix=\${prefix} \\
         --target=$(compiler_target) \\
         --host=\${MACHTYPE} \\
@@ -54,6 +65,12 @@ else
     make install
 fi
 
+# Finally, create a bunch of symlinks stripping out the target so that
+# things like `nm` "just work", as long as we've got our path set properly.
+for f in \${prefix}/bin/$(compiler_target)-*; do
+    fbase=\$(basename \$f)
+    ln -s \$fbase \${prefix}/bin/\${fbase#$(compiler_target)-}
+done
 """
 
 # These are the platforms we will build for by default, unless further

@@ -1,8 +1,4 @@
-# We're not actually going to invoke any compilers here, so we don't actually use BinaryBuilder.
-using BinaryProvider
-
-name = "BaseCompilerShard"
-version = v"2018.08.27"
+include("../common.jl")
 
 compiler_target = nothing
 try
@@ -14,30 +10,18 @@ catch
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
 
-function find_tarball(project, pattern)
-    dir = joinpath("..", project, "products")
-    if !isdir(dir)
-        error("No $(project)/products directory?!")
-    end
-
-    pattern = Regex("$(pattern).*\\.tar\\.gz")
-    for f in readdir(dir)
-        if match(pattern, f) !== nothing
-            return joinpath(dir, f)
-        end
-    end
-    error("Could not find $(project) tarball matching $(pattern)!")
-end
+name = "BaseCompilerShard-$(compiler_target)"
+version = v"2018.09.18"
 
 # We're going to install things into this prefix, then package it up as a .tar.gz
 temp_prefix() do prefix
     # Install KernelHeaders
-    headers_path = find_tarball("KernelHeaders", "KernelHeaders.*$(compiler_target)")
+    headers_path = find_tarball("KernelHeaders", "KernelHeaders.*$(compiler_target)").url
     @info("Unpacking $(headers_path)")
     unpack(headers_path, prefix.path)
 
     # Install Binutils
-    binutils_path = find_tarball("Binutils", "Binutils-$(compiler_target)")
+    binutils_path = find_tarball("Binutils", "Binutils-$(compiler_target)").url
     @info("Unpacking $(binutils_path)")
     unpack(binutils_path, prefix.path)
 
@@ -58,27 +42,31 @@ temp_prefix() do prefix
         )
         glibc_version = glibc_version_dict[arch(platform_key(compiler_target))]
 
-        libc_path = find_tarball("Glibc", "Glibc.*$(glibc_version).*$(compiler_target)")
+        libc_path = find_tarball("Glibc", "Glibc.*$(glibc_version).*$(compiler_target)").url
     elseif occursin("-musl", compiler_target)
-        libc_path = find_tarball("Musl", "Musl.*$(compiler_target)")
+        libc_path = find_tarball("Musl", "Musl.*$(compiler_target)").url
     elseif occursin("-mingw", compiler_target)
-        libc_path = find_tarball("Mingw", "Mingw.*$(compiler_target)")
+        libc_path = find_tarball("Mingw", "Mingw.*$(compiler_target)").url
     elseif occursin("-freebsd", compiler_target)
-        libc_path = find_tarball("FreeBSDLibc", "FreeBSDLibc.*")
+        libc_path = find_tarball("FreeBSDLibc", "FreeBSDLibc.*").url
     elseif occursin("-darwin", compiler_target)
-        libc_path = find_tarball("MacOSLibc", "MacOSLibc.*")
+        libc_path = find_tarball("MacOSLibc", "MacOSLibc.*").url
     else
         error("Don't know how to install a Libc for $(compiler_target)!")
     end
     @info("Unpacking $(libc_path)")
     unpack(libc_path, prefix.path)
 
+    # Deploy our cmake toolchain files
+    cp(joinpath(@__DIR__, "cmake_toolchains", "$(compiler_target).toolchain"), joinpath(prefix.path, "$(compiler_target).toolchain"))
+
     # Do a little bit of cleanup; at this point we don't care about logs, manifests, etc...
     rm(joinpath(prefix, "logs"); recursive=true, force=true)
     rm(joinpath(prefix, "manifests"); recursive=true, force=true)
 
     # Package this prefix up nice and tight
+    mkpath(joinpath(pwd(), "products"))
     out_path = joinpath(pwd(), "products", name)
-    package(prefix, out_path, version; platform=platform_key(compiler_target), verbose=true, force=true)
+    package(prefix, out_path, version; platform=Linux(:x86_64, :glibc), verbose=true, force=true)
 end
 

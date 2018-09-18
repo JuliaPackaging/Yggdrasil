@@ -1,0 +1,17 @@
+Fix uninitialised memory acccess in COFF bfd backend
+https://github.com/bminor/binutils-gdb/commit/d520d4956e59bd4759932a4d1742828f88c0dd7a
+
+diff --git a/bfd/coffcode.h b/bfd/coffcode.h
+index ec0103e8f62..b7a0e9e6c2c 100644
+--- a/bfd/coffcode.h
++++ b/bfd/coffcode.h
+@@ -5864,6 +5864,9 @@ coff_bigobj_swap_aux_in (bfd *abfd,
+   AUXENT_BIGOBJ *ext = (AUXENT_BIGOBJ *) ext1;
+   union internal_auxent *in = (union internal_auxent *) in1;
+ 
++  /* Make sure that all fields in the aux structure are
++     initialised.  */
++  memset (in, 0, sizeof * in);
+   switch (in_class)
+     {
+     case C_FILE:
