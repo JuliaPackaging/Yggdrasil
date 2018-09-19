@@ -15,12 +15,10 @@ cd $WORKSPACE/srcdir
 sysroot="${prefix}/${target}/sys-root"
 
 mkdir -p "${sysroot}"
-mv usr/include "${sysroot}/"
 mv usr/lib "${sysroot}/"
 mv lib/* "${sysroot}/lib"
 mkdir -p "${sysroot}/usr"
-ln -sf "${sysroot}/include" "${sysroot}/usr/"
-ln -sf "${sysroot}/lib" "${sysroot}/usr/"
+ln -sf "../lib" "${sysroot}/usr/lib"
 ln -sf "libgcc_s.so.1" "${sysroot}/lib/libgcc_s.so"
 ln -sf "libcxxrt.so.1" "${sysroot}/lib/libcxxrt.so"
 
