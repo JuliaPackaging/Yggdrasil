@@ -26,15 +26,23 @@ open(joinpath(dirname(pathof(BinaryBuilder)), "RootfsHashTable.jl"), "w") do fou
     teeln(fout, "shard_hash_table = Dict{CompilerShard,String}(")
     for fname in targz_files
         name, version, platform = extract_name_version_platform_key(fname)
+
+        # Split out target platform if we've got one.
+        target = ""
+        if occursin("-", name)
+            target = "; target=platform_key_abi($(repr(name[first(findfirst("-", name))+1:end])))"
+            name = split(name, "-")[1]
+        end
+
         tar_hash = open(fname, "r") do f
             bytes2hex(sha256(f))
         end
-        teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :targz)")
+        teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :targz$(target))")
         teeln(fout, "      => $(repr(tar_hash)),")
         squash_hash = open(fname[1:end-7]*".squashfs", "r") do f
             bytes2hex(sha256(f))
         end
-        teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :squashfs)")
+        teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :squashfs$(target))")
         teeln(fout, "      => $(repr(squash_hash)),")
     end
     teeln(fout, ")")

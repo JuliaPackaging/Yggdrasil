@@ -12,4 +12,4 @@ done
 rm -rf "${BB_PATH}/deps/mounts"
 
 # Re-generate RootfsHashTable.jl
-./build_hashes.jl
+./checksum.jl
