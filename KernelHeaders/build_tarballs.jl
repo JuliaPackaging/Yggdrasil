@@ -65,7 +65,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 elif [[ "${target}" == *-freebsd* ]]; then
     mkdir -p "${sysroot}/usr"
     mv usr/include "${sysroot}/"
-    ln -sf "${sysroot}/include" "${sysroot}/usr/"
+    ln -sf "../include" "${sysroot}/usr/"
 
 elif [[ "${target}" == *-apple-* ]]; then
     cd $WORKSPACE/srcdir/MacOSX10.10.sdk
