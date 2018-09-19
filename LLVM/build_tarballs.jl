@@ -2,7 +2,7 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 #
 # --llvm-asserts: Build the Release+Asserts version
-# --llvm-check: Build a RelWithDebInfo+Asserts version on x86-64-linux-musl
+# --llvm-check: Build a RelWithDebInfo+Asserts version on x86-64-linux-gnu
 #               and run the testsuite. This will build for all targets.
 ###
 
@@ -122,7 +122,7 @@ if !isfile(tblgen_tarball)
     if "--debug" in ARGS
         push!(tblgen_ARGS, "--debug")
     end
-    product_hashes = build_tarballs(tblgen_ARGS, "tblgen", llvm_ver, sources, script, platforms, products, dependencies)
+    product_hashes = build_tarballs(tblgen_ARGS, "tblgen", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
 
     # Extract path information to the built tblgen tarball and its hash
     tblgen_tarball, tblgen_hash = product_hashes["x86_64-linux-gnu"]
@@ -283,7 +283,7 @@ ln -s llvm-dsymutil ${prefix}/tools/dsymutil
 
 # BB is using musl as a platform and we don't want to run glibc binaries on it.
 platforms = [
-    BinaryProvider.Linux(:x86_64, :musl)
+    BinaryProvider.Linux(:x86_64, :glibc)
 ]
 
 # The products that we will ensure are always built
