@@ -55,6 +55,9 @@ cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp $WORKSPACE/srcdir/utils/config.* ./usr/local/share/configure_scripts/
 chmod +x ./usr/local/bin/*
 
+# Deploy configuration
+cp $WORKSPACE/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
+
 # Include GlibcBuilder v2.25 output as our official native x86_64-linux-gnu and i686-linux-gnu loaders.
 # We use 2.25 because it is the latest version that can be built with GCC 4.8.5
 mkdir -p /tmp/glibc_extract ${prefix}/{lib,lib64}
