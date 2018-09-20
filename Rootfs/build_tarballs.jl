@@ -39,7 +39,7 @@ mkdir ./dev/{pts,shm}
 NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python sudo file libintl patchutils"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
-INTERACTIVE_TOOLS="bash gdb vim nano tmux"
+INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 
