@@ -6,7 +6,8 @@ set -e
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
 for f in /opt/*; do
-    echo "[docker-entrypoint] Coalescing ${f}"
+    # Okay this is actually kind of annoying once it's working
+    #echo "[docker-entrypoint] Coalescing ${f}"
     mount -t overlay overlay -olowerdir=$(join_by ":" "${f}"/*) "${f}"
 done
 
