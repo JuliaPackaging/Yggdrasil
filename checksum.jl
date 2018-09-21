@@ -50,4 +50,4 @@ open(rht_path*".new", "w") do fout
     teeln(fout, ")")
 end
 
-mv(rht_path*".new", rht_path)
+mv(rht_path*".new", rht_path; force=true)
