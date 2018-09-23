@@ -279,6 +279,9 @@ fi
 # our cleverly-named `llvm-dsymutil`.  We create a symlink to help
 # Those poor fools along:
 ln -s llvm-dsymutil ${prefix}/tools/dsymutil
+
+# We also need clang++ as well as just plain old clang
+ln -s clang ${prefix}/tools/clang++
 """
 
 # BB is using musl as a platform and we don't want to run glibc binaries on it.
