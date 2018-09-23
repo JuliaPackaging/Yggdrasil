@@ -16,7 +16,9 @@ function replace_files()
 replace_files config.guess /usr/local/share/configure_scripts
 replace_files config.sub /usr/local/share/configure_scripts
 
-for d in "${RECONF_TARGETS[@]}"; do
-    echo "Running autoreconf in $d..."
-    (cd "$d"; autoreconf -i -f)
-done
+if [[ "$1" == --reconf ]]; then
+    for d in "${RECONF_TARGETS[@]}"; do
+        echo "Running autoreconf in $d..."
+        (cd "$d"; autoreconf -i -f)
+    done
+fi
