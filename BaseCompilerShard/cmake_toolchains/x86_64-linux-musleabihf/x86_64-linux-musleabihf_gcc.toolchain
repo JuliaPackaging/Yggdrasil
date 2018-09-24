@@ -1,0 +1,13 @@
+# Simple toolchain template file for gcc running on x86_64 Linux
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+
+set(CMAKE_SYSROOT /opt/x86_64-linux-musleabihf/x86_64-linux-musleabihf/sys-root/)
+set(CMAKE_INSTALL_PREFIX /workspace/destdir/)
+
+set(CMAKE_C_COMPILER /opt/x86_64-linux-musleabihf/bin/x86_64-linux-musleabihf-gcc)
+set(CMAKE_CXX_COMPILER /opt/x86_64-linux-musleabihf/bin/x86_64-linux-musleabihf-g++)
+
+if( $ENV{CC} MATCHES ccache )
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+endif()

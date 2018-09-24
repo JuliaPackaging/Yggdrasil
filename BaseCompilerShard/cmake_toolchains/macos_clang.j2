@@ -1,6 +1,6 @@
-# Toolchain file for x86_64-apple-darwin14
-set(CMAKE_SYSTEM_NAME Darwin)
-set(CMAKE_SYSTEM_PROCESSOR x86_64)
+# MacOS-specific toolchain template file for clang running on {{ARCH}} {{OS}}
+set(CMAKE_SYSTEM_NAME {{OS}})
+set(CMAKE_SYSTEM_PROCESSOR {{ARCH}})
 set(CMAKE_SYSTEM_VERSION 14.5)
 
 # Extract out DARWIN_MAJOR_VERSION and DARWIN_MINOR_VERSION
@@ -10,7 +10,7 @@ string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\2" DARWIN_MINOR_VERSION "${CMA
 # Enable rpath support
 set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
 
-set(CMAKE_SYSROOT /opt/x86_64-apple-darwin14/MacOSX10.10.sdk/)
+set(CMAKE_SYSROOT /opt/{{TARGET}}/{{TARGET}}/sys-root)
 set(CMAKE_SYSTEM_FRAMEWORK_PATH
     ${CMAKE_SYSROOT}/System/Library/Frameworks
     ${CMAKE_SYSROOT}/System/Library/PrivateFrameworks
@@ -20,8 +20,8 @@ set(CMAKE_INSTALL_PREFIX /workspace/destdir/)
 set(CMAKE_C_COMPILER /opt/x86_64-linux-gnu/tools/clang)
 set(CMAKE_CXX_COMPILER /opt/x86_64-linux-gnu/tools/clang++)
 
-set(CMAKE_C_FLAGS "-target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root")
-set(CMAKE_CXX_FLAGS "-target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root")
+set(CMAKE_C_FLAGS -target x86_64-apple-darwin14 --sysroot ${CMAKE_SYSROOT})
+set(CMAKE_CXX_FLAGS -target x86_64-apple-darwin14 --sysroot ${CMAKE_SYSROOT})
 
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)

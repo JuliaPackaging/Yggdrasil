@@ -1,4 +1,4 @@
-# Toolchain file for i686-linux-gnu
+# Simple toolchain template file for gcc running on i686 Linux
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR i686)
 
@@ -8,13 +8,6 @@ set(CMAKE_INSTALL_PREFIX /workspace/destdir/)
 set(CMAKE_C_COMPILER /opt/i686-linux-gnu/bin/i686-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER /opt/i686-linux-gnu/bin/i686-linux-gnu-g++)
 
-# These settings don't seem to function properly, they stop cmake from being
-# able to find anything within the workspace at all.
-#set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-#set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-#set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-#set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
 endif()
-

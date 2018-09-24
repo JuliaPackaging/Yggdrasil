@@ -58,7 +58,10 @@ temp_prefix() do prefix
     unpack(libc_path, prefix.path)
 
     # Deploy our cmake toolchain files
-    cp(joinpath(@__DIR__, "cmake_toolchains", "$(compiler_target).toolchain"), joinpath(prefix.path, "$(compiler_target).toolchain"))
+    toolchain_dir = joinpath(@__DIR__, "cmake_toolchains", "$(compiler_target)")
+    for f in readdir(toolchain_dir)
+        cp(joinpath(toolchain_dir, f), joinpath(prefix.path, f))
+    end
 
     # Do a little bit of cleanup; at this point we don't care about logs, manifests, etc...
     rm(joinpath(prefix, "logs"); recursive=true, force=true)
