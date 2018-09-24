@@ -52,8 +52,8 @@ function simple_targets()
         echo "${arch}-linux-musl"
     done
     # I wave my arms back and forth
-    echo "${arch}-linux-gnueabihf"
-    echo "${arch}-linux-musleabihf"
+    echo "arm-linux-gnueabihf"
+    echo "arm-linux-musleabihf"
     # Power Overwhelming
     echo "powerpc64le-linux-gnu"
     # Clean your windows
