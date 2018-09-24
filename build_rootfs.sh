@@ -20,8 +20,8 @@ set -e
 
 # All the machines
 MACHINES=$(julia -e 'using BinaryBuilder; println(join(triplet.(supported_platforms()), " "))')
-GLIBC_VERSIONS="2.17 2.19 2.25"
-GLIBC_MACHINES_217="x86_64-linux-gnu i686-linux-gnu"
+GLIBC_VERSIONS="2.12.2 2.19 2.25"
+GLIBC_MACHINES_2122="x86_64-linux-gnu i686-linux-gnu"
 GLIBC_MACHINES_219="arm-linux-gnueabihf aarch64-linux-gnu"
 GLIBC_MACHINES_225="x86_64-linux-gnu i686-linux-gnu powerpc64le-linux-gnu"
 MUSL_MACHINES="x86_64-linux-musl i686-linux-musl arm-linux-musleabihf aarch64-linux-musl"

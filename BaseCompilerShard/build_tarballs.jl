@@ -28,14 +28,14 @@ temp_prefix() do prefix
     # Install Libc
     libc_path = ""
     if occursin("-gnu", compiler_target)
-        # If we're a `-gnu` target, install Glibc.  We install version 2.17 on
+        # If we're a `-gnu` target, install Glibc.  We install version 2.12.2 on
         # x86_64 and i686, 2.19 on armv7l and aarch64, and 2.25 on ppc64le. These
         # versions are chosen through the time-tested method of "pick the earliest
         # one that works", so as to maximize compatibility.  We also do our best
         # to match versions of official Julia binaries.
         glibc_version_dict = Dict(
-            :x86_64 => "2.17",
-            :i686 => "2.17",
+            :x86_64 => "2.12.2",
+            :i686 => "2.12.2",
             :aarch64 => "2.19",
             :armv7l => "2.19",
             :powerpc64le => "2.25",
