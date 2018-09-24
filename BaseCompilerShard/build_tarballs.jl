@@ -13,6 +13,11 @@ end
 name = "BaseCompilerShard-$(compiler_target)"
 version = v"2018.09.18"
 
+# Refresh cache of cmake toolchains
+cd(joinpath(@__DIR__, "cmake_toolchains")) do
+    run(`bash build_toolchains.sh`)
+end
+
 # We're going to install things into this prefix, then package it up as a .tar.gz
 temp_prefix() do prefix
     # Install KernelHeaders

@@ -15,7 +15,7 @@ set(CMAKE_SYSTEM_FRAMEWORK_PATH
     ${CMAKE_SYSROOT}/System/Library/Frameworks
     ${CMAKE_SYSROOT}/System/Library/PrivateFrameworks
 )
-set(CMAKE_INSTALL_PREFIX /workspace/destdir/)
+set(CMAKE_INSTALL_PREFIX $ENV{prefix})
 
 set(CMAKE_C_COMPILER /opt/{{TARGET}}/bin/gcc)
 set(CMAKE_CXX_COMPILER /opt/{{TARGET}}/bin/g++)
