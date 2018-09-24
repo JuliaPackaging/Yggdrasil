@@ -51,7 +51,7 @@ make_squashfs()
 
     # Check to see if this file already exists and is newer than the tarball
     if [[ "${SQUASHFS_PATH}" -nt "${TARBALL_PATH}" ]]; then
-        echo "Skipping $(basename "${SQUASHFS_PATH}")"
+        echo "  -> Skipping $(basename "${SQUASHFS_PATH}")"
         return
     fi
     echo "  -> Compressing into $(basename ${SQUASHFS_PATH})"
