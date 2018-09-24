@@ -9,7 +9,8 @@ for proj in Rootfs BaseCompilerShard GCC LLVM; do
 done
 
 # Clean out mounts
-rm -rf "${BB_PATH}/deps/mounts"
+sudo umount ${BB_PATH}/deps/mounts/*
+rm -rf ${BB_PATH}/deps/mounts
 
 # Re-generate RootfsHashTable.jl
 ./checksum.jl
