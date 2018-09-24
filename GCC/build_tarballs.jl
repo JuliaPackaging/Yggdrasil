@@ -138,7 +138,7 @@ done
 sed -i 's@\\./fixinc\\.sh@-c true@' gcc/Makefile.in
 
 # Update configure scripts
-#update_configure_scripts
+update_configure_scripts
 
 # Apply patch for OSX linker crash problems
 atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc810_linker_madness_on_osx.patch" || true
@@ -166,13 +166,6 @@ GCC_CONF_ARGS=""
 ## Platform-dependent arguments
 # On OSX, we need to use special `ld` and `as`.
 if [[ "\$COMPILER_TARGET" == *apple* ]]; then
-    # Un-do binary builder's typical `LD` and `AS` overrides
-    #export LD=\$(which \${COMPILER_TARGET}-ld)
-    unset LDFLAGS
-    #export AS=\$(which \${COMPILER_TARGET}-as)
-
-    #GCC_CONF_ARGS="\${GCC_CONF_ARGS} --with-ld=\"\${LD}\""
-    #GCC_CONF_ARGS="\${GCC_CONF_ARGS} --with-as=\${AS}"
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --enable-languages=c,c++,fortran,objc,obj-c++"
 
 # On Linux, we just enable C/C++/Fortran    
@@ -200,14 +193,8 @@ if [[ "\${COMPILER_TARGET}" == arm*hf ]]; then
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --with-float=hard --with-arch=armv7-a --with-fpu=vfpv3-d16"
 fi
 
-## Libc-dependent arguments
-if [[ "\${COMPILER_TARGET}" == *-gnu* ]]; then
-    # On gnu targets, pass --with-glibc-version
-    #GCC_CONF_ARGS="\${GCC_CONF_ARGS} --with-glibc-version=\$(echo "glibc_version" | cut -d '.' -f 1-2)"
-    echo foo
-    
 # On musl targets, disable a bunch of things we don't want
-elif [[ "\${COMPILER_TARGET}" == *musl* ]]; then
+if [[ "\${COMPILER_TARGET}" == *musl* ]]; then
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --disable-libssp --disable-libmpx"
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --disable-libmudflap --disable-libsanitizer"
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --disable-symvers"
@@ -228,9 +215,10 @@ mkdir -p \${prefix}/\${COMPILER_TARGET}/sys-root/{lib,usr/lib}
 mkdir -p \$WORKSPACE/srcdir/gcc_build
 cd \$WORKSPACE/srcdir/gcc_build
 
-# Un-do these overrides, let configure do its own thing with `--target`, `--host` and `--build`
-#unset -v CC CXX FC LD RANLIB
-export MACHTYPE="x86_64-linux-gnu"
+# Make sure it always thinks we're cross-compiling
+if [[ \${COMPILER_TARGET} != x86_64-linux-gnu ]]; then
+    export MACHTYPE="x86_64-linux-gnu"
+fi
 
 # Configure GCC (Don't need to bootstrap as we already have glibc installed)
 \$WORKSPACE/srcdir/gcc-*/configure \\
