@@ -1,0 +1,69 @@
+diff --git a/libstdc++-v3/include/c_global/cstdlib b/libstdc++-v3/include/c_global/cstdlib
+index 006ac689763..10335017f0c 100644
+--- a/libstdc++-v3/include/c_global/cstdlib
++++ b/libstdc++-v3/include/c_global/cstdlib
+@@ -78,6 +78,9 @@ namespace std
+ 
+ // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
+ #undef abort
++#if __cplusplus >= 201703L && defined(_GLIBCXX_HAVE_ALIGNED_ALLOC)
++# undef aligned_alloc
++#endif
+ #undef atexit
+ #if __cplusplus >= 201103L
+ # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
+@@ -125,6 +128,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+   using ::ldiv_t;
+ 
+   using ::abort;
++#if __cplusplus >= 201703L && defined(_GLIBCXX_HAVE_ALIGNED_ALLOC)
++  using ::aligned_alloc;
++#endif
+   using ::atexit;
+ #if __cplusplus >= 201103L
+ # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
+diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
+index 2406cb9d946..ba094be6f15 100755
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -53324,6 +53346,19 @@ if test "x$ac_cv_func___cxa_thread_atexit" = x""yes; then :
+ #define HAVE___CXA_THREAD_ATEXIT 1
+ _ACEOF
+ 
++fi
++done
++
++    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
++do :
++  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
++ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
++eval as_val=\$$as_ac_var
++   if test "x$as_val" = x""yes; then :
++  cat >>confdefs.h <<_ACEOF
++#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++_ACEOF
++
+ fi
+ done
+ 
+@@ -66077,6 +66112,19 @@ done
+ 
+   CXXFLAGS="$ac_save_CXXFLAGS"
+ 
++    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
++do :
++  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
++ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
++eval as_val=\$$as_ac_var
++   if test "x$as_val" = x""yes; then :
++  cat >>confdefs.h <<_ACEOF
++#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++_ACEOF
++
++fi
++done
++
+     ;;
+   *-netbsd*)
+     SECTION_FLAGS='-ffunction-sections -fdata-sections'
+ fi

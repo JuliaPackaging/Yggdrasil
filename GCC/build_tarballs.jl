@@ -140,19 +140,10 @@ sed -i 's@\\./fixinc\\.sh@-c true@' gcc/Makefile.in
 # Update configure scripts
 update_configure_scripts
 
-# Apply patch for OSX linker crash problems
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc810_linker_madness_on_osx.patch" || true
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc610_ubsan_pointer.patch" || true
-
-# Musl compatibility
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc485_header_upgrades.patch" || true
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc494_musl.patch" || true
-
-# Apply patch to build the 4.8.x line (with newer GCCs, with configure arguments they don't have yet, etc...)
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc485_libc_name_p.patch" || true
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc485_mingw_include.patch" || true
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc485_osx_nodeadstrip.patch" || true
-atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/gcc485_mingw_clock_gettime.patch" || true
+# Apply all patches
+for p in \${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 "\${p}" || true
+done
 
 # Choose compiler target
 COMPILER_TARGET="$(compiler_target)"
@@ -174,8 +165,7 @@ elif [[ "\${COMPILER_TARGET}" == *linux* ]]; then
 
 # FreeBSD has weird PIE problems.  We can also only build gfortran for now, no GCC :(
 elif [[ "\${COMPILER_TARGET}" == *freebsd* ]]; then
-    GCC_CONF_ARGS="\${GCC_CONF_ARGS} --enable-languages=fortran"
-	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --disable-default-pie"
+    GCC_CONF_ARGS="\${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
     
 # On mingw32 override native system header directories
 elif [[ "\${COMPILER_TARGET}" == *mingw* ]]; then
@@ -200,11 +190,6 @@ if [[ "\${COMPILER_TARGET}" == *musl* ]]; then
 	GCC_CONF_ARGS="\${GCC_CONF_ARGS} --disable-symvers"
 	export libat_cv_have_ifunc=no
 	export ac_cv_have_decl__builtin_ffs=yes
-fi
-
-# On many platforms (Glibc, mingw32, etc...) we need to symlink sys-include
-if [[ -d \${prefix}/\${COMPILER_TARGET}/sys-root/include ]]; then
-    ln -s sys-root/include \${prefix}/\${COMPILER_TARGET}/sys-include
 fi
 
 # GCC won't build (crti.o: no such file or directory) unless these directories exist.

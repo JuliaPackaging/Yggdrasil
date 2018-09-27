@@ -1,0 +1,13 @@
+# Simple toolchain template file for gcc running on x86_64 FreeBSD
+set(CMAKE_SYSTEM_NAME FreeBSD)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)
+
+set(CMAKE_SYSROOT /opt/x86_64-unknown-freebsd11.1/x86_64-unknown-freebsd11.1/sys-root/)
+set(CMAKE_INSTALL_PREFIX $ENV{prefix})
+
+set(CMAKE_C_COMPILER /opt/x86_64-unknown-freebsd11.1/bin/x86_64-unknown-freebsd11.1-gcc)
+set(CMAKE_CXX_COMPILER /opt/x86_64-unknown-freebsd11.1/bin/x86_64-unknown-freebsd11.1-g++)
+
+if( $ENV{CC} MATCHES ccache )
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+endif()

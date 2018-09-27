@@ -14,13 +14,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 sysroot="${prefix}/${target}/sys-root"
 
-mkdir -p "${sysroot}"
-mv usr/lib "${sysroot}/"
-mv lib/* "${sysroot}/lib"
 mkdir -p "${sysroot}/usr"
-ln -sf "../lib" "${sysroot}/usr/lib"
-ln -sf "libgcc_s.so.1" "${sysroot}/lib/libgcc_s.so"
-ln -sf "libcxxrt.so.1" "${sysroot}/lib/libcxxrt.so"
+mv usr/lib "${sysroot}/usr/"
+mv lib "${sysroot}/lib"
 
 # Many symlinks exist that point to `../../lib/libfoo.so`.
 # We need them to point to just `libfoo.so`. :P

@@ -54,6 +54,8 @@ function simple_targets()
     # I wave my arms back and forth
     echo "arm-linux-gnueabihf"
     echo "arm-linux-musleabihf"
+    # FreeBSD is free again!
+    echo "x86_64-unknown-freebsd11.1"
     # Power Overwhelming
     echo "powerpc64le-linux-gnu"
     # Clean your windows
@@ -73,10 +75,8 @@ for TARGET in $(simple_targets); do
     ln -fs ${TARGET}_gcc.toolchain ${TARGET}/${TARGET}.toolchain
 done
 
-# FreeBSD has no gcc, only clang.  :(
+# On FreeBSD we actually want to default to clang. :P
 TARGET=x86_64-unknown-freebsd11.1
-mkdir -p ${TARGET}
-template simple_clang.j2 "{{TARGET}}=${TARGET}" "{{ARCH}}=x86_64" "{{OS}}=FreeBSD" > ${TARGET}/${TARGET}_clang.toolchain
 ln -fs ${TARGET}_clang.toolchain ${TARGET}/${TARGET}.toolchain
 
 # macOS has its own templates because it is a special snoflake
