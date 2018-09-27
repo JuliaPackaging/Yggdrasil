@@ -9,8 +9,8 @@ fi
 # Paths to various programs we need
 PATCHELF=/usr/local/bin/patchelf
 MUSL_LD=/lib/ld-musl-x86_64.so.1
-#GLIBC_LD=/usr/glibc-compat/lib/ld-linux-x86-64.so.2
-GLIBC_LD=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/lib64/ld-linux-x86-64.so.2
+GLIBC64_LD=/lib64/ld-linux-x86-64.so.2
+GLIBC32_LD=/lib/ld-linux.so.2
 
 
 # If the given ELF file has an interpreter baked into it, then
@@ -20,14 +20,21 @@ if interp=$(${PATCHELF} --print-interpreter "${1}" 2>/dev/null); then
 fi
 
 # Otherwise, check out the needed section to see if we can auto-detect
-# a musl binary (as opposed to a glibc binary)
+# a musl, glibc32 or glibc64 binary
 needed=$(${PATCHELF} --print-needed "${1}" 2>/dev/null)
 
-if test "${needed#*libc.musl-x86_64.so.1}" != "$needed"; then
-    # Tell the musl loader to act like `ldd` and sub off to it
-    exec -a ldd "${MUSL_LOADER}" "$@"
-else
-    # Otherwise, tell the glibc loader to act like `ldd` and sub off to that
-    LD_TRACE_LOADED_OBJECTS=1 exec -a ldd "${GLIBC_LD}" $@
-fi
+case $needed in
+    *libc.musl-x86_64.so.1*)
+        # Tell the musl loader to act like `ldd` and sub off to it
+        exec -a ldd "${MUSL_LD}" "$@"
+        ;;
+    *ld-linux.so.2*)
+        # Tell the glibc32 loader to act like `ldd` and sub off to it
+        exec -a ldd "${GLIBC32_LD}" "$@"
+        ;;
+    *)
+        # By default, we just shove everything off to the glibc64 loader
+        exec -a ldd "${GLIBC64_LD}" "$@"
+        ;;
+esac
 
