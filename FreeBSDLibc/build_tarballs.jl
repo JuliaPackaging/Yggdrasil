@@ -14,6 +14,12 @@ script = raw"""
 cd $WORKSPACE/srcdir
 sysroot="${prefix}/${target}/sys-root"
 
+# We're going to clean out vestiges of libgcc_s and friends,
+# because we're going to compile our own from scratch
+for lib in gcc_s ssp; do
+    find . -name lib${lib}.\* -delete
+done
+
 mkdir -p "${sysroot}/usr"
 mv usr/lib "${sysroot}/usr/"
 mv lib "${sysroot}/lib"
