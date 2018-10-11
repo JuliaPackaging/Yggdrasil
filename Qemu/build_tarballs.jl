@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qemu
-./configure --extra-cflags="-target $target" --target-list=x86_64-softmmu --disable-cocoa --prefix=$prefix
+./configure --target-list=x86_64-softmmu --disable-cocoa --prefix=$prefix
 echo '#!/bin/true ' > /usr/bin/SetFile
 echo '#!/bin/true ' > /usr/bin/Rez
 chmod +x /usr/bin/Rez
