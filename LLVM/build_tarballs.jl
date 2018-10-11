@@ -155,23 +155,7 @@ CMAKE_FLAGS=""
 
 # We build for all platforms, as we're going to use this to do cross-compilation
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TARGETS_TO_BUILD:STRING=\"all\""
-
-# Also target Wasm because Javascript is the Platform Of The Future (TM)
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=\"WebAssembly\""
-
-
-if [[ "${CHECK}" == "0" ]]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release"
-else
-    # We want a more debugable version
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=RelWithDebInfo"
-    # make sure that asserts are on as well
-    ASSERTS=1
-fi
-
-if [[ "${ASSERTS}" == "1" ]]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_ENABLE_ASSERTIONS:BOOL=ON"
-fi
+CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release"
 
 # We want a build with no bindings
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_BINDINGS_LIST=\"\" "
@@ -210,53 +194,13 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.tool
 # `ld -v`, which is hilariously wrong.
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_HOST_TRIPLE=${target}"
 
-# For now we focus on building llvm, clang, polly, and compiler-rt.
-# We would like to build libc++, libc++abi and libunwind eventually
-# but we currently don't due to issues on ppc and windows with
-# libc++ and the LLVM libunwind conflicts with the one Julia is using.
+# We don't need libunwind yet
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBUNWIND_BUILD=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBCXX_BUILD=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBCXXABI_BUILD=OFF"
-
-if [[ "${target}" == *apple* ]]; then
-    # On OSX, we need to override LLVM's looking around for our SDK
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/MacOSX10.10.sdk"
-
-    # LLVM actually won't build against 10.8, so we bump ourselves up slightly to 10.9
-    export MACOSX_DEPLOYMENT_TARGET=10.9
-    export LDFLAGS=-mmacosx-version-min=10.9
-fi
-
-if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
-    # On clang-based platforms we need to override the check for ffs because it doesn't work with `clang`.
-    export ac_cv_have_decl___builtin_ffs=yes
-fi
-
-if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS="${CMAKE_CPP_FLAGS} -remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE"
-    # Windows is case-insensitive and some dependencies take full advantage of that
-    echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
-
-    # We don't Polly on windows
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_POLLY_BUILD=OFF"
-fi
-
-if [[ "${target}" == *musl* ]]; then
-    # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_INCLUDE_TESTS=ON"
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_BUILD_SANITIZERS=OFF"
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_BUILD_XRAY=OFF"
-fi
 
 # Build!
 cmake .. ${CMAKE_FLAGS} -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}" -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
 make -j${nproc} VERBOSE=1
-
-# Test
-if [[ "${CHECK}" == "1" ]]; then
-    make check -j${nproc}
-fi
 
 # Install!
 make install -j${nproc} VERBOSE=1
@@ -267,13 +211,6 @@ mv ${prefix}/bin/scan-* ${prefix}/tools/
 mv ${prefix}/bin/c-index* ${prefix}/tools/
 mv ${prefix}/bin/git-clang* ${prefix}/tools/
 mv ${prefix}/bin/lld* ${prefix}/tools/
-
-# Life is harsh on Windows and dynamic libraries are
-# expected to live alongside the binaries. So we have
-# to copy the *.dll from bin/ to tools/ as well...
-if [[ "${target}" == *mingw* ]]; then
-    cp ${prefix}/bin/*.dll ${prefix}/tools/
-fi
 
 # Lots of tools don't respect `$DSYMUTIL` and so thus do not find 
 # our cleverly-named `llvm-dsymutil`.  We create a symlink to help
@@ -306,21 +243,6 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 config = ""
 name = "LLVM"
-if "--llvm-asserts" in llvm_ARGS
-    config *= "ASSERTS=1\n"
-    name *= ".asserts"
-    warn("Removing PPC64LE from the platform list")
-    filter!(p-> p.arch != :powerpc64le, platforms)
-else
-    config *= "ASSERTS=0\n"
-end
-
-if "--llvm-check" in llvm_ARGS
-   config *= "CHECK=1\n"
-   name *= ".check"
-else
-   config *= "CHECK=0\n"
-end
 
 build_tarballs(ARGS, name, llvm_ver, sources, config * script, platforms, products, dependencies; skip_audit=true)
 
