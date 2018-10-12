@@ -23,11 +23,15 @@ cd $WORKSPACE/srcdir/tensorflow
 atomic_patch -p0 $WORKSPACE/srcdir/patches/link_against_librt.patch
 
 chmod +x $WORKSPACE/srcdir/bazel-*
-$WORKSPACE/srcdir/bazel-* --output_user_root=/workspace/bazel_root build --linkopt=-lrt -c opt --verbose_failures //tensorflow/compiler/xrt/utils:xrt_server
+$WORKSPACE/srcdir/bazel-* --output_user_root=/workspace/bazel_root build -c opt --verbose_failures //tensorflow/compiler/xrt/utils:xrt_server
+
+# Install to $prefix/bin
+mkdir -p $prefix/{bin,lib}
+cp bazel-bin/tensorflow/libtensorflow_framework.so $prefix/lib/
+cp bazel-bin/tensorflow/compiler/xrt/utils/xrt_server $prefix/bin/
 """
 
-# We attempt to build for only x86_64-linux-gnu (but using GCC 7 because it needs a newer GCC)
-#platforms = [Linux(:x86_64; compiler_abi=CompilerABI(:gcc7))]
+# We attempt to build for only x86_64-linux-gnu
 platforms = [Linux(:x86_64)]
 
 products(prefix) = [
