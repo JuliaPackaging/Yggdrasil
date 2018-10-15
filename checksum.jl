@@ -41,7 +41,12 @@ open(rht_path*".new", "w") do fout
         end
         teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :targz$(target))")
         teeln(fout, "      => $(repr(tar_hash)),")
-        squash_hash = open(fname[1:end-7]*".squashfs", "r") do f
+
+        # Open up the .squashfs file and ensure it's set to UID 0, for hashing purposes.
+        sname = fname[1:end-7]*".squashfs"
+        BinaryBuilder.rewrite_squashfs_uids(sname, 0)
+
+        squash_hash = open(sname, "r") do f
             bytes2hex(sha256(f))
         end
         teeln(fout, "    CompilerShard($(repr(name)), $(repr(version)), $(repr(platform)), :squashfs$(target))")
