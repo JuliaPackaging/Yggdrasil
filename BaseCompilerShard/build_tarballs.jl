@@ -68,6 +68,13 @@ temp_prefix() do prefix
         cp(joinpath(toolchain_dir, f), joinpath(prefix.path, f))
     end
 
+    # We create a link from /opt/${target}/${target}/sys-root/usr/local/lib to /workspace/destdir/lib
+    # This is the most reliable way for our sysroot'ed compilers to find destination libraries so far.
+    usr_local_path = joinpath(prefix.path, "$(compiler_target)", "sys-root", "usr", "local")
+    mkpath(usr_local_path)
+    symlink("/workspace/destdir/lib", joinpath(usr_local_path, "lib"))
+    symlink("/workspace/destdir/lib64", joinpath(usr_local_path, "lib64"))
+
     # Do a little bit of cleanup; at this point we don't care about logs, manifests, etc...
     rm(joinpath(prefix, "logs"); recursive=true, force=true)
     rm(joinpath(prefix, "manifests"); recursive=true, force=true)
