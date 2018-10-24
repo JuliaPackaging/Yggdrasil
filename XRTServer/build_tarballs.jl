@@ -4,12 +4,12 @@ ENV["BINARYBUILDER_USE_CCACHE"] = "false"
 using BinaryBuilder
 
 name = "XRTServer"
-version = v"2018.10.16"
+version = v"2018.10.23"
 
 # Collection of sources required
 sources = [
     "https://github.com/JuliaComputing/tensorflow.git" =>
-    "11b6ca9bc3506443c5b46f42f193ee7ba6fb1f50",
+    "36c34bd2d744f0027c24e3afae118b5d956ce741",
     "https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-linux-x86_64" =>
     "674757d40d4ac0f0175df7fe84cd7250cbf67ac7ebac565e905fdc7e24c0fac5",
 
@@ -59,6 +59,9 @@ mv build/lib/* $prefix/lib/
 cd $WORKSPACE/srcdir/tensorflow
 atomic_patch -p0 $WORKSPACE/srcdir/patches/link_against_librt.patch
 
+# Apply XRT patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/xrt.patch
+
 # Get `bazel` onto our $PATH
 chmod +x $WORKSPACE/srcdir/bazel-*
 mv $WORKSPACE/srcdir/bazel-* $WORKSPACE/srcdir/bazel
@@ -84,7 +87,9 @@ cp bazel-bin/tensorflow/libtensorflow_framework.so $prefix/lib/
 cp bazel-bin/tensorflow/compiler/xrt/utils/xrt_server $prefix/bin/
 
 # Cleanup things we don't need
-rm -rf ${prefix}/{doc,jre,samples,nsight,libnvvp}
+rm -rf ${prefix}/{doc,jre,samples,nsight,nsightee_plugins,libnvvp,libnsight}
+rm -f ${prefix}/lib64/*.a
+rm -f ${prefix}/lib/*.a
 """
 
 # We attempt to build for only x86_64-linux-gnu
