@@ -1,15 +1,11 @@
 using BinaryBuilder, SHA
 
-#if Sys.which("mksquashfs") === nothing
-#    error("Must install mksquashfs!")
-#end
-
 name = "Rootfs"
-version = v"2018.09.18"
+version = v"2018.10.23"
 
 # Sources we build from
 sources = [
-    "https://github.com/gliderlabs/docker-alpine/raw/c14b86580b9f86f42296050ec7564faf6b6db9be/versions/library-3.8/x86_64/rootfs.tar.xz" =>
+    "https://github.com/gliderlabs/docker-alpine/raw/d19c22b446ddcb16267f351ccbfeac5e6430720a/versions/library-3.8/x86_64/rootfs.tar.xz" =>
     "f4e9f66d945a5db78f092fcdd0c692c5b042e14897cd16c7e16d67a691d1ec82",
     "./bundled",
     "../Patchelf/products",
@@ -42,6 +38,11 @@ FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
+
+# chgrp and chown should be no-ops since we run in a single-user mode
+rm -f ./bin/{chown,chgrp}
+touch ./bin/{chown,chgrp}
+chmod +x ./bin/{chown,chgrp}
 
 # Install utilities we'll use.  Many of these are compatibility shims, look
 # at the files themselves to discover why we use them.
