@@ -30,11 +30,11 @@ case $needed in
         ;;
     *ld-linux.so.2*)
         # Tell the glibc32 loader to act like `ldd` and sub off to it
-        exec -a ldd "${GLIBC32_LD}" "$@"
+        LD_TRACE_LOADED_OBJECTS=1 exec -a ldd "${GLIBC32_LD}" "$@"
         ;;
     *)
         # By default, we just shove everything off to the glibc64 loader
-        exec -a ldd "${GLIBC64_LD}" "$@"
+        LD_TRACE_LOADED_OBJECTS=1 exec -a ldd "${GLIBC64_LD}" "$@"
         ;;
 esac
 
