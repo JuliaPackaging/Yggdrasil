@@ -1,0 +1,30 @@
+--- tensorflow/tensorflow.bzl	2018-10-11 09:40:48.082719946 +0000
++++ tensorflow/tensorflow.bzl	2018-10-11 09:43:07.556696737 +0000
+@@ -355,7 +355,7 @@
+         srcs = [],
+         deps = [],
+         data = [],
+-        linkopts = [],
++        linkopts = if_not_windows(["-lrt"]),
+         framework_so = tf_binary_additional_srcs(),
+         kernels = [],
+         **kwargs):
+@@ -391,7 +391,7 @@
+         srcs = [],
+         deps = [],
+         data = [],
+-        linkopts = [],
++        linkopts = if_not_windows(["-lrt"]),
+         copts = tf_copts(),
+         kernels = [],
+         **kwargs):
+--- tensorflow/core/BUILD	2018-10-11 15:17:06.405330542 +0000
++++ tensorflow/core/BUILD	2018-10-11 09:47:38.104713295 +0000
+@@ -701,6 +701,7 @@
+         "@com_google_absl//absl/strings",
+         "@com_google_absl//absl/types:optional",
+     ],
++    linkopts=if_not_windows(["-lrt"]),
+ )
+ 
+ cc_library(

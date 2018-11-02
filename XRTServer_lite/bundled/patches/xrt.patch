@@ -1,0 +1,13 @@
+diff --git a/tensorflow/BUILD b/tensorflow/BUILD
+index 9b62a50452..63eed1fb5e 100644
+--- a/tensorflow/BUILD
++++ b/tensorflow/BUILD
+@@ -442,6 +442,8 @@ tf_cc_shared_object(
+         "//tensorflow/c:exported_symbols.lds",
+         "//tensorflow/c:version_script.lds",
+         "//tensorflow/c/eager:c_api",
++        "//tensorflow/compiler/xrt:xrt_server",
++        "//tensorflow/core/distributed_runtime/rpc:grpc_session",
+         "//tensorflow/core:tensorflow",
+     ],
+ )
