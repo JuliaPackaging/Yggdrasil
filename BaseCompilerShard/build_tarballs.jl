@@ -11,7 +11,7 @@ catch
 end
 
 name = "BaseCompilerShard-$(compiler_target)"
-version = v"2018.10.10"
+version = v"2018.11.11"
 
 # Refresh cache of cmake toolchains
 cd(joinpath(@__DIR__, "cmake_toolchains")) do

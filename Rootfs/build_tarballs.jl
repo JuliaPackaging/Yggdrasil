@@ -1,7 +1,7 @@
 using BinaryBuilder, SHA
 
 name = "Rootfs"
-version = v"2018.10.23"
+version = v"2018.11.11"
 
 # Sources we build from
 sources = [
