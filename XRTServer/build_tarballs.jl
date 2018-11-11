@@ -4,7 +4,7 @@ ENV["BINARYBUILDER_USE_CCACHE"] = "false"
 using BinaryBuilder
 
 name = "XRTServer"
-version = v"2018.10.23"
+version = v"2018.10.25"
 
 # Collection of sources required
 sources = [
@@ -16,10 +16,10 @@ sources = [
     # CuDAAAAAA
     "http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run" =>
     "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217",
-    "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" =>
-    "8496c72b16fee61889f9281449b5d633d0b358b46579175c275d85c9205fe953",
-    "http://developer.download.nvidia.com/compute/redist/cudnn/v7.1.3/cudnn-9.1-linux-x64-v7.1.tgz" =>
-    "dd616d3794167ceb923d706bf73e8d6acdda770751492b921ee6827cdf190228",
+    "https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux" =>
+    "92351f0e4346694d0fcb4ea1539856c9eb82060c25654463bfd8574ec35ee39a",
+    "http://developer.download.nvidia.com/compute/redist/cudnn/v7.3.0/cudnn-10.0-linux-x64-v7.3.0.29.tgz" =>
+    "7526a33bc3c152ca5d8f3eddedaa4a0b3c721a3c0000eeb80ebfe5cbc54696b7",
     "https://github.com/NVIDIA/nccl.git" =>
     "f93fe9bfd94884cec2ba711897222e0df5569a53",
     "./bundled",
@@ -38,7 +38,8 @@ ln -sf "$AR" /usr/bin/ar
 mkdir -p ${prefix}/lib
 chmod +x NVIDIA-Linux-x86_64-*.run
 ./NVIDIA-Linux-x86_64-*.run -x
-cp NVIDIA-Linux-x86_64-*/libcuda.so.* $prefix/lib/libcuda.so.1
+cp NVIDIA-Linux-x86_64-*/libcuda.so.* $prefix/lib/
+ln -s $(cd $prefix/lib; echo libcuda.so*) $prefix/lib/libcuda.so.1
 cp NVIDIA-Linux-x86_64-*/libnvidia-fatbinaryloader.so.* $prefix/lib/
 
 # Install CUDA toolkit
@@ -62,16 +63,23 @@ atomic_patch -p0 $WORKSPACE/srcdir/patches/link_against_librt.patch
 # Apply XRT patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/xrt.patch
 
+# Apply pending TF patches
+atomic_patch -p1 $WORKSPACE/srcdir/patches/window_reversal.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/parallel_conditionals.patch
+
 # Get `bazel` onto our $PATH
 chmod +x $WORKSPACE/srcdir/bazel-*
 mv $WORKSPACE/srcdir/bazel-* $WORKSPACE/srcdir/bazel
 export PATH=$PATH:$WORKSPACE/srcdir
+export TMPDIR=$WORKSPACE/tmp
+mkdir -p $TMPDIR
 
 # Configure to enable CUDA and XLA, disable jemalloc
 export TF_NEED_CUDA=1
-export TF_CUDA_VERSION=9.1
+export TF_CUDA_VERSION=10.0
 export CUDA_TOOLKIT_PATH=$prefix
 export CUDNN_INSTALL_PATH=$prefix
+export TF_CUDA_COMPUTE_CAPABILITIES="3.0,3.5,5.2,6.0,6.1,7.0,7.5"
 export TF_ENABLE_XLA=1
 export TF_NEED_JEMALLOC=0
 yes "" | ./configure
@@ -90,13 +98,21 @@ cp bazel-bin/tensorflow/compiler/xrt/utils/xrt_server $prefix/bin/
 rm -rf ${prefix}/{doc,jre,samples,nsight,nsightee_plugins,libnvvp,libnsight}
 rm -f ${prefix}/lib64/*.a
 rm -f ${prefix}/lib/*.a
+
+# Create symlink to help xrt_server find libdevice:
+ln -s ../nvvm/libdevice ${prefix}/bin/cuda_sdk_lib
+
+# libtensorflow* has super-crazy RPATHs; fix that
+for f in ${prefix}/lib/libtensorflow*; do
+    patchelf --set-rpath '$ORIGIN:$ORIGIN/../lib:$ORIGIN/../lib64' "${f}"
+done
 """
 
 # We attempt to build for only x86_64-linux-gnu
 platforms = [Linux(:x86_64)]
 
 products(prefix) = [
-    ExecutableProduct(prefix, "xrtserver", :xrtserver),
+    ExecutableProduct(prefix, "xrt_server", :xrtserver),
 ]
 
 dependencies = [

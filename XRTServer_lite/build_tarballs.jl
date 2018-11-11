@@ -56,7 +56,7 @@ cp bazel-bin/tensorflow/compiler/xrt/utils/xrt_server $prefix/bin/
 cp bazel-bin/tensorflow/compiler/xla/tools/dumped_computation_to_text $prefix/bin/
 
 # libtensorflow* has super-crazy RPATHs; fix that
-for f in ${prefix}/lib/libtensorflow*; do
+for f in ${prefix}/lib/libtensorflow* ${prefix}/bin/*; do
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../lib:$ORIGIN/../lib64' "${f}"
 done
 """
@@ -65,7 +65,7 @@ done
 platforms = [Linux(:x86_64)]
 
 products(prefix) = [
-    ExecutableProduct(prefix, "xrt_server", :xrtserver),
+    ExecutableProduct(prefix, "xrt_server", :xrt_server),
     ExecutableProduct(prefix, "dumped_computation_to_text", :dumped_computation_to_text),
 ]
 
