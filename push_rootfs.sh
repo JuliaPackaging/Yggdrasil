@@ -3,7 +3,7 @@
 # First, build the rootfs
 #./build_rootfs.sh
 
-PROJECTS="Rootfs BaseCompilerShard GCC LLVM"
+PROJECTS="${1:-Rootfs BaseCompilerShard GCC LLVM}"
 
 # Next, upload all .tar.gz and .squashfs files in Rootfs, BaseCompilerShard, GCC and LLVM:
 for proj in ${PROJECTS}; do
