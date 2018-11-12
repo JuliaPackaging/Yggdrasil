@@ -1,0 +1,215 @@
+From 013d74dd7e96b96decccc059f9bdf2f2b01348c5 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Thu, 25 Oct 2018 16:23:33 -0400
+Subject: [PATCH] [XLA:GPU/CuDNN] Add support for 1x1 window reversal
+
+CuDNN supports both convolution (CUDNN_CONVOLUTION) and cross correlation
+(CUDNN_CROSS_CORRELATION). However, only the latter was hooked up, causing
+
+    Tensorflow error: Status: Hit a case for convolution that is not implemented on GPU.
+
+for convolutions of the first kind (corresponding to convolutions with both
+window dimensions reversed at the HLO level). Reversing the dimensions (i.e.
+doing convolutions rather than cross correlations) is the default behavior
+for the Flux.jl ML framework, so it's easy to hit this error trying to run
+pre-existing Flux models through the Julia:XLA->XLA:GPU compilation path.
+
+Plumb through the reversal option to CuDNN to make this pattern work. The
+same HLO already works fine against the CPU and TPU backends.
+---
+ .../compiler/xla/service/gpu/cudnn_conv_rewriter.cc  |  6 +++++-
+ .../compiler/xla/service/gpu/cudnn_conv_runner.cc    |  7 +++++++
+ tensorflow/compiler/xla/tests/convolution_test.cc    | 12 ++++++++++++
+ tensorflow/compiler/xla/window_util.cc               | 11 +++++++++++
+ tensorflow/compiler/xla/window_util.h                |  1 +
+ tensorflow/stream_executor/cuda/cuda_dnn.cc          |  8 ++++----
+ tensorflow/stream_executor/dnn.cc                    |  3 ++-
+ tensorflow/stream_executor/dnn.h                     | 11 +++++++++++
+ 8 files changed, 53 insertions(+), 6 deletions(-)
+
+diff --git a/tensorflow/compiler/xla/service/gpu/cudnn_conv_rewriter.cc b/tensorflow/compiler/xla/service/gpu/cudnn_conv_rewriter.cc
+index c46672c598b2..73e2a1f71935 100644
+--- a/tensorflow/compiler/xla/service/gpu/cudnn_conv_rewriter.cc
++++ b/tensorflow/compiler/xla/service/gpu/cudnn_conv_rewriter.cc
+@@ -77,7 +77,11 @@ bool CanImplementAsCudnnForwardConv(HloInstruction* conv) {
+     return false;
+   }
+ 
+-  if (window_util::HasWindowReversal(conv->window())) {
++  // CuDNN can perform either cross correlation (no reversal),
++  // or convolution (all dimensions reversed).
++  if (dnums.input_spatial_dimensions_size() == 2
++          ? !window_util::AllOrNoneReversed(conv->window())
++          : window_util::HasWindowReversal(conv->window())) {
+     return false;
+   }
+   return true;
+diff --git a/tensorflow/compiler/xla/service/gpu/cudnn_conv_runner.cc b/tensorflow/compiler/xla/service/gpu/cudnn_conv_runner.cc
+index 0006e85e160e..5c93bcc2d26c 100644
+--- a/tensorflow/compiler/xla/service/gpu/cudnn_conv_runner.cc
++++ b/tensorflow/compiler/xla/service/gpu/cudnn_conv_runner.cc
+@@ -138,6 +138,7 @@ Status RunCudnnConvImpl(CudnnConvParams params,
+ 
+   const int num_dimensions = window.dimensions_size();
+   CHECK_LE(num_dimensions, 3);
++  CHECK_GE(num_dimensions, 1);
+   // cuDNN does not support 1D convolutions. We therefore express 1D
+   // convolutions as 2D convolutions where the first spatial dimension is 1.
+   // This matches the behavior of TF (see definition of conv1d in
+@@ -148,10 +149,15 @@ Status RunCudnnConvImpl(CudnnConvParams params,
+            output_shape.element_type())
+       << ShapeUtil::HumanString(output_shape);
+ 
++  // If one dimension is reversed, we need to have all dimensions reversed (so
++  // we're doing convolution not cross correlation).
++  const bool dims_reversed = window.dimensions()[0].window_reversal();
++
+   CHECK_EQ(num_dimensions, dnums.input_spatial_dimensions_size());
+   CHECK_EQ(num_dimensions, dnums.kernel_spatial_dimensions_size());
+   CHECK_EQ(num_dimensions, dnums.output_spatial_dimensions_size());
+   for (const WindowDimension& dim : window.dimensions()) {
++    CHECK_EQ(dims_reversed, dim.window_reversal());
+     CHECK_EQ(dim.padding_low(), dim.padding_high());
+     CHECK_EQ(dim.base_dilation(), 1)
+         << "cudnn does not support base dilation; it "
+@@ -198,6 +204,7 @@ Status RunCudnnConvImpl(CudnnConvParams params,
+ 
+   ConvolutionDescriptor convolution_descriptor(effective_num_dimensions);
+   convolution_descriptor.set_group_count(feature_group_count);
++  convolution_descriptor.set_convolution_not_crosscorr(dims_reversed);
+   for (int dim = 0; dim < num_dimensions; ++dim) {
+     convolution_descriptor
+         .set_zero_padding(
+diff --git a/tensorflow/compiler/xla/tests/convolution_test.cc b/tensorflow/compiler/xla/tests/convolution_test.cc
+index 3aebf784664d..6c905f50b60d 100644
+--- a/tensorflow/compiler/xla/tests/convolution_test.cc
++++ b/tensorflow/compiler/xla/tests/convolution_test.cc
+@@ -951,6 +951,18 @@ ENTRY Test {
+   EXPECT_TRUE(RunAndCompare(kHlo, ErrorSpec{0.001}));
+ }
+ 
++XLA_TEST_F(ConvolutionHloTest, DISABLED_ON_CPU(ConvolveF64ForwardReversed)) {
++  constexpr char kHlo[] = R"(
++HloModule TestModule
++
++ENTRY Test {
++  %arg0 = f64[3,56,56,16] parameter(0)
++  %arg1 = f64[3,3,3,64] parameter(1)
++  ROOT %conv = f64[54,54,16,64] convolution(%arg0, %arg1), window={size=3x3 rhs_reversal=1x1}, dim_labels=f01b_i01o->01bf
++})";
++  EXPECT_TRUE(RunAndCompare(kHlo, ErrorSpec{0.001}));
++}
++
+ XLA_TEST_F(ConvolutionHloTest, DISABLED_ON_CPU(ConvolveF64BackwardFilter)) {
+   constexpr char kHlo[] = R"(
+ HloModule TestModule
+diff --git a/tensorflow/compiler/xla/window_util.cc b/tensorflow/compiler/xla/window_util.cc
+index 8ea8dbab2574..f113a705b41b 100644
+--- a/tensorflow/compiler/xla/window_util.cc
++++ b/tensorflow/compiler/xla/window_util.cc
+@@ -185,6 +185,17 @@ bool HasWindowReversal(const Window& window) {
+   return false;
+ }
+ 
++bool AllOrNoneReversed(const Window& window) {
++  if (window.dimensions().size() == 0) {
++    return true;
++  }
++  bool reversed = window.dimensions()[0].window_reversal();
++  return std::all_of(window.dimensions().begin(), window.dimensions().end(),
++                     [&](const WindowDimension& dim) {
++                       return dim.window_reversal() == reversed;
++                     });
++}
++
+ bool HasDilation(const Window& window) {
+   return HasBaseDilation(window) || HasWindowDilation(window);
+ }
+diff --git a/tensorflow/compiler/xla/window_util.h b/tensorflow/compiler/xla/window_util.h
+index 1fb9e855fc16..099d7ecdd5c7 100644
+--- a/tensorflow/compiler/xla/window_util.h
++++ b/tensorflow/compiler/xla/window_util.h
+@@ -56,6 +56,7 @@ bool HasWindowDilation(const Window& window);
+ bool HasDilation(const Window& window);
+ 
+ bool HasWindowReversal(const Window& window);
++bool AllOrNoneReversed(const Window& window);
+ 
+ // Returns true if the given logical dimension is inactive in the sense that it
+ // has window bound 1, no striding and no padding.
+diff --git a/tensorflow/stream_executor/cuda/cuda_dnn.cc b/tensorflow/stream_executor/cuda/cuda_dnn.cc
+index 5de9a2185c3e..6f60dd5c29dc 100644
+--- a/tensorflow/stream_executor/cuda/cuda_dnn.cc
++++ b/tensorflow/stream_executor/cuda/cuda_dnn.cc
+@@ -686,10 +686,10 @@ class CudnnConvolutionDescriptor {
+     CHECK_CUDNN_OK(cudnnSetConvolutionNdDescriptor(
+         handle_.get(), convolution_descriptor.ndims(), padding.data(),
+         strides.data(), dilations.data(),
+-        // NOTE(keveman): cuDNN supports convolution and cross correlation.
+-        // However, almost all the use cases do cross correlation, so just
+-        // hard coding it here.
+-        CUDNN_CROSS_CORRELATION, data_type));
++        convolution_descriptor.convolution_not_crosscorr()
++            ? CUDNN_CONVOLUTION
++            : CUDNN_CROSS_CORRELATION,
++        data_type));
+ 
+     // NOTE(benbarsdell): This only applies if tensor op math is enabled
+     //                      and algo selection is set to Default.
+diff --git a/tensorflow/stream_executor/dnn.cc b/tensorflow/stream_executor/dnn.cc
+index 8a5bcf428037..8c304db3cdce 100644
+--- a/tensorflow/stream_executor/dnn.cc
++++ b/tensorflow/stream_executor/dnn.cc
+@@ -443,7 +443,8 @@ ConvolutionDescriptor::ConvolutionDescriptor(int ndims)
+       dilation_rates_(ndims, 1),
+       pad_alignment_(PadAlignment::kDefault),
+       group_count_(1),
+-      ndims_(ndims) {}
++      ndims_(ndims),
++      convolution_not_crosscorr_(false) {}
+ 
+ ConvolutionDescriptor::ConvolutionDescriptor()
+     : ConvolutionDescriptor(/*ndims=*/2) {}
+diff --git a/tensorflow/stream_executor/dnn.h b/tensorflow/stream_executor/dnn.h
+index 621b155240cc..a352727127b6 100644
+--- a/tensorflow/stream_executor/dnn.h
++++ b/tensorflow/stream_executor/dnn.h
+@@ -496,6 +496,11 @@ std::ostream& operator<<(std::ostream& str, dnn::PadAlignment alignment);
+ //   cells between each filter element in the "y dimension".
+ // - horizontal_dilation_rate: there will be (horizontal_dilation_rate - 1)
+ //   skipped cells between each filter element in the "x dimension".
++// - convolution_not_crosscor: By default (convolution_not_crosscor == false),
++//   we perform cross correlation rather than convolution. With the flag set,
++//   we perform convolution. Convolution and cross correlation are related by
++//   rotating the filter by 180 degrees (or equivalently flipping all spatial
++//   dimensions).
+ class ConvolutionDescriptor {
+  public:
+   // By default construction, there is no zero-padding and the filter stride is
+@@ -552,6 +557,10 @@ class ConvolutionDescriptor {
+     group_count_ = group_count;
+     return *this;
+   }
++  ConvolutionDescriptor& set_convolution_not_crosscorr(bool conv) {
++    convolution_not_crosscorr_ = conv;
++    return *this;
++  }
+   int64 zero_padding_height() const {
+     return GetDim(zero_padding_, DimIndex::Y);
+   }
+@@ -577,6 +586,7 @@ class ConvolutionDescriptor {
+   PadAlignment pad_alignment() const { return pad_alignment_; }
+   int group_count() const { return group_count_; }
+   int ndims() const { return ndims_; }
++  bool convolution_not_crosscorr() const { return convolution_not_crosscorr_; }
+ 
+   std::vector<int64> strides() const { return filter_strides_; }
+   std::vector<int64> dilations() const { return dilation_rates_; }
+@@ -590,6 +600,7 @@ class ConvolutionDescriptor {
+   PadAlignment pad_alignment_;
+   int group_count_;
+   int ndims_;
++  bool convolution_not_crosscorr_;
+   // TODO(leary) cudnn provides these fields, but need to characterize what
+   // their effect is -- they may be boolean rather than integral.
+   // int64 upscale_input_x;

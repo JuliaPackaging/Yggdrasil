@@ -1,0 +1,495 @@
+From c162bf46c8b477f7d859f82f6111d5d8924de860 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Sun, 14 Oct 2018 19:16:20 -0400
+Subject: [PATCH] [XLA] Add simple HLO if conversion pass
+
+kConditional operations are currently generally disallowed in parallel contexts
+(e.g. in mapped computations). The julia XLA frontend was running into this limitation
+quite a bit, because existing julia code tends to use the terniary operator for select,
+e.g. to describe the derivative of a `max` call (and thus a `relu`) - see the
+definitions of the derivatives of `max` at
+https://github.com/JuliaDiff/DiffRules.jl/blob/master/src/rules.jl#L94
+
+To support these sorts of patterns, add a simple if conversion pass that converts
+conditionals in parallel context by equivalent select calls (which are well supported),
+i.e. a computation like:
+
+```
+if {
+ %pif = () parameter(0)
+ ROOT %cif = f32[] constant(0)
+}
+
+else {
+ %pelse = () parameter(0)
+ ROOT %celse = f32[] constant(1)
+}
+
+mapped {
+ %a = f32[] parameter(0)
+ %b = f32[] parameter(1)
+ %lt = pred[] less-than(%a, %b)
+ %t = () tuple()
+ ROOT %conditional = f32[] conditional(%lt, %t, %t), true_computation=if, false_computation=else
+}
+
+ENTRY comp {
+ %p1 = f32[1000]{0} parameter(0)
+ %p2 = f32[1000]{0} parameter(1)
+ ROOT %mapped = f32[1000]{0} map(%p1, %p2), dimensions={0}, to_apply=mapped
+}
+```
+
+gets rewritten to
+
+```
+mapped {
+ %a = f32[] parameter(0)
+ %b = f32[] parameter(1)
+ %cif = f32[] constant(0)
+ %celse = f32[] constant(1)
+ %lt = pred[] less-than(%a, %b)
+ ROOT %select = f32[] select(%lt, %cif, %celse)
+}
+
+ENTRY comp {
+ %p1 = f32[1000]{0} parameter(0)
+ %p2 = f32[1000]{0} parameter(1)
+ ROOT %mapped = f32[1000]{0} map(%p1, %p2) dimensions={0} to_apply=mapped
+}
+```
+
+To keep things simple, this is accomplished by first rewriting the conditional
+to two calls and a select and then inlining the individual calls. Naturally,
+the transformation is only applied if the called computation do not
+have side effects (which they generally don't if they're in parallel
+context). In the future, it would be good to let MapInliner further
+simplify this to an implicitly mapped select.
+---
+ tensorflow/compiler/xla/service/BUILD         |  29 +++
+ .../xla/service/conditional_to_select.cc      | 102 ++++++++++
+ .../xla/service/conditional_to_select.h       |  38 ++++
+ .../xla/service/conditional_to_select_test.cc | 189 ++++++++++++++++++
+ tensorflow/compiler/xla/service/cpu/BUILD     |   1 +
+ .../compiler/xla/service/cpu/cpu_compiler.cc  |   2 +
+ 6 files changed, 361 insertions(+)
+ create mode 100644 tensorflow/compiler/xla/service/conditional_to_select.cc
+ create mode 100644 tensorflow/compiler/xla/service/conditional_to_select.h
+ create mode 100644 tensorflow/compiler/xla/service/conditional_to_select_test.cc
+
+diff --git a/tensorflow/compiler/xla/service/BUILD b/tensorflow/compiler/xla/service/BUILD
+index 2b292ed0537a..cd0142afa248 100644
+--- a/tensorflow/compiler/xla/service/BUILD
++++ b/tensorflow/compiler/xla/service/BUILD
+@@ -3500,3 +3500,32 @@ tf_cc_test(
+         "//tensorflow/core:test",
+     ],
+ )
++
++cc_library(
++    name = "conditional_to_select",
++    srcs = ["conditional_to_select.cc"],
++    hdrs = ["conditional_to_select.h"],
++    deps = [
++        ":call_inliner",
++        ":hlo",
++        ":hlo_pass",
++        "//tensorflow/compiler/xla:status_macros",
++        "//tensorflow/compiler/xla:types",
++        "//tensorflow/core:lib",
++        "@com_google_absl//absl/types:span",
++    ],
++)
++
++tf_cc_test(
++    name = "conditional_to_select_test",
++    srcs = ["conditional_to_select_test.cc"],
++    deps = [
++        ":conditional_to_select",
++        ":hlo",
++        ":hlo_matchers",
++        "//tensorflow/compiler/xla:test",
++        "//tensorflow/compiler/xla/tests:hlo_verified_test_base",
++        "//tensorflow/compiler/xla/tests:xla_internal_test_main",  # fixdeps: keep
++        "@com_google_absl//absl/memory",
++    ],
++)
+diff --git a/tensorflow/compiler/xla/service/conditional_to_select.cc b/tensorflow/compiler/xla/service/conditional_to_select.cc
+new file mode 100644
+index 000000000000..13beadc0dcf5
+--- /dev/null
++++ b/tensorflow/compiler/xla/service/conditional_to_select.cc
+@@ -0,0 +1,102 @@
++/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++==============================================================================*/
++
++#include "tensorflow/compiler/xla/service/conditional_to_select.h"
++
++#include "tensorflow/compiler/xla/service/call_graph.h"
++#include "tensorflow/compiler/xla/service/call_inliner.h"
++#include "tensorflow/compiler/xla/service/hlo_computation.h"
++#include "tensorflow/compiler/xla/service/hlo_instruction.h"
++#include "tensorflow/compiler/xla/service/hlo_opcode.h"
++#include "tensorflow/compiler/xla/status_macros.h"
++#include "tensorflow/compiler/xla/types.h"
++#include "tensorflow/core/lib/core/errors.h"
++#include "tensorflow/core/lib/core/status.h"
++#include "tensorflow/core/platform/logging.h"
++
++namespace xla {
++
++static StatusOr<bool> DoConditionalToSelect(HloInstruction* conditional) {
++  // Only allow conditional to select if the called computations
++  // do not have side effects.
++  if (conditional->true_computation()->HasSideEffect() ||
++      conditional->false_computation()->HasSideEffect()) {
++    VLOG(1) << "Not transforming conditional; branches have side effects:"
++            << conditional->ToString();
++    return false;
++  }
++
++  auto computation = conditional->parent();
++
++  // Create new instructions
++  HloInstruction* if_call_op =
++      computation->AddInstruction(HloInstruction::CreateCall(
++          conditional->shape(), {conditional->mutable_operand(1)},
++          conditional->true_computation()));
++  HloInstruction* else_call_op =
++      computation->AddInstruction(HloInstruction::CreateCall(
++          conditional->shape(), {conditional->mutable_operand(2)},
++          conditional->false_computation()));
++  HloInstruction* condition = conditional->mutable_operand(0);
++  // If the output is not scalar, we need to broadcast the condition
++  // to match the contract of kSelect. For tuples, we use kTupleSelect
++  // which expects the condition to be a scalar.
++  if (!ShapeUtil::IsScalar(conditional->shape()) &&
++      !ShapeUtil::IsTuple(conditional->shape())) {
++    condition = computation->AddInstruction(HloInstruction::CreateBroadcast(
++        ShapeUtil::ChangeElementType(conditional->shape(), PrimitiveType::PRED),
++        condition, {}));
++    conditional->SetupDerivedInstruction(condition);
++  }
++  HloInstruction* select_op =
++      computation->AddInstruction(HloInstruction::CreateTernary(
++          conditional->shape(),
++          ShapeUtil::IsTuple(conditional->shape()) ? HloOpcode::kTupleSelect
++                                                   : HloOpcode::kSelect,
++          condition, if_call_op, else_call_op));
++  conditional->SetupDerivedInstruction(if_call_op);
++  conditional->SetupDerivedInstruction(else_call_op);
++  conditional->SetupDerivedInstruction(select_op);
++  TF_RETURN_IF_ERROR(computation->ReplaceInstruction(conditional, select_op));
++  TF_RETURN_IF_ERROR(CallInliner::Inline(if_call_op).status());
++  TF_RETURN_IF_ERROR(CallInliner::Inline(else_call_op).status());
++  return true;
++}
++
++StatusOr<bool> ConditionalToSelect::Run(HloModule* module) {
++  std::unique_ptr<CallGraph> call_graph = CallGraph::Build(module);
++  bool did_mutate = false;
++  VLOG(1) << "Running conditional-to-select pass";
++  TF_RETURN_IF_ERROR(
++      call_graph->VisitNodes([&](const CallGraphNode& node) -> Status {
++        std::vector<HloInstruction*> ToInline;
++        if (node.context() != CallContext::kParallel) {
++          return Status::OK();
++        }
++        for (const CallSite& callsite : node.callsites()) {
++          if (callsite.instruction()->opcode() == HloOpcode::kConditional) {
++            VLOG(1) << "Visiting conditional: " << callsite.ToString();
++            HloInstruction* conditional = callsite.instruction();
++            TF_ASSIGN_OR_RETURN(bool result,
++                                DoConditionalToSelect(conditional));
++            did_mutate |= result;
++          }
++        }
++        return Status::OK();
++      }));
++  return did_mutate;
++}
++
++}  // namespace xla
+diff --git a/tensorflow/compiler/xla/service/conditional_to_select.h b/tensorflow/compiler/xla/service/conditional_to_select.h
+new file mode 100644
+index 000000000000..3cb775505ab1
+--- /dev/null
++++ b/tensorflow/compiler/xla/service/conditional_to_select.h
+@@ -0,0 +1,38 @@
++/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++==============================================================================*/
++
++#ifndef TENSORFLOW_COMPILER_XLA_SERVICE_CONDITIONAL_TO_SELECT_H_
++#define TENSORFLOW_COMPILER_XLA_SERVICE_CONDITIONAL_TO_SELECT_H_
++
++#include "tensorflow/compiler/xla/service/hlo_module.h"
++#include "tensorflow/compiler/xla/service/hlo_pass_interface.h"
++
++namespace xla {
++
++// A pass which transforms conditionals to selects in places where conditionals
++// are not allowed to appear (e.g. mapped computation)
++class ConditionalToSelect : public HloModulePass {
++ public:
++  ~ConditionalToSelect() override = default;
++  absl::string_view name() const override { return "conditional-to-select"; }
++
++  // Run conditional to select on the given computation. Returns whether the
++  // computation was changed.
++  StatusOr<bool> Run(HloModule* module) override;
++};
++
++}  // namespace xla
++
++#endif  // TENSORFLOW_COMPILER_XLA_SERVICE_CONDITIONAL_TO_SELECT_H_
+diff --git a/tensorflow/compiler/xla/service/conditional_to_select_test.cc b/tensorflow/compiler/xla/service/conditional_to_select_test.cc
+new file mode 100644
+index 000000000000..e87ec4fef218
+--- /dev/null
++++ b/tensorflow/compiler/xla/service/conditional_to_select_test.cc
+@@ -0,0 +1,189 @@
++/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++     http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++==============================================================================*/
++
++#include "tensorflow/compiler/xla/service/conditional_to_select.h"
++
++#include <memory>
++#include <utility>
++
++#include "absl/memory/memory.h"
++#include "tensorflow/compiler/xla/literal.h"
++#include "tensorflow/compiler/xla/service/hlo_computation.h"
++#include "tensorflow/compiler/xla/service/hlo_instruction.h"
++#include "tensorflow/compiler/xla/service/hlo_matchers.h"
++#include "tensorflow/compiler/xla/service/hlo_opcode.h"
++#include "tensorflow/compiler/xla/test.h"
++#include "tensorflow/compiler/xla/tests/hlo_verified_test_base.h"
++#include "tensorflow/compiler/xla/xla_data.pb.h"
++
++namespace op = xla::testing::opcode_matchers;
++
++namespace xla {
++namespace {
++
++using ConditionalToSelectTest = HloVerifiedTestBase;
++using ::testing::_;
++
++// Test that a conditional of simple constants is transformed to a select
++TEST_F(ConditionalToSelectTest, MapConditionalConstants) {
++  const string hlo_text = R"(
++HloModule MapConditionalConstants
++
++if {
++  %pif = () parameter(0)
++  ROOT %cif = f32[] constant(0)
++}
++
++else {
++  %pelse = () parameter(0)
++  ROOT %celse = f32[] constant(1)
++}
++
++mapped {
++  %a = f32[] parameter(0)
++  %b = f32[] parameter(1)
++  %lt = pred[] less-than(%a, %b)
++  %t = () tuple()
++  ROOT %conditional = f32[] conditional(%lt, %t, %t), true_computation=if, false_computation=else
++}
++
++ENTRY comp {
++  %p1 = f32[1000]{0} parameter(0)
++  %p2 = f32[1000]{0} parameter(1)
++  ROOT %mapped = f32[1000]{0} map(%p1, %p2), dimensions={0}, to_apply=mapped
++}
++)";
++
++  ParseAndVerifyModule(hlo_text);
++  ConditionalToSelect pass;
++  ASSERT_TRUE(pass.Run(&module()).ValueOrDie());
++
++  HloInstruction* root = module().entry_computation()->root_instruction();
++  ASSERT_EQ(root->opcode(), HloOpcode::kMap);
++  HloComputation* mapped = root->called_computations()[0];
++  EXPECT_THAT(mapped->root_instruction(),
++              op::Select(op::Lt(op::Parameter(0), op::Parameter(1)),
++                         op::Constant(), op::Constant()));
++}
++
++// Test that the condition gets broadcasted for feeding into
++// select when the output is non-scalar.
++TEST_F(ConditionalToSelectTest, MapConditionalNonScalar) {
++  const string hlo_text = R"(
++HloModule MapConditionalNonScalar
++
++if {
++  %pif = () parameter(0)
++  %zero = f32[] constant(0)
++  ROOT %zero_broadcasted = f32[2,2]{1,0} broadcast(%zero), dimensions={}
++}
++
++else {
++  %pelse = () parameter(0)
++  %one = f32[] constant(0)
++  ROOT %one_broadcasted = f32[2,2]{1,0} broadcast(%one), dimensions={}
++}
++
++add {
++  %add_lhs = f32[] parameter(0)
++  %add_rhs = f32[] parameter(1)
++  ROOT %add = f32[] add(%add_lhs, %add_rhs)
++}
++
++mapped {
++  %a = f32[] parameter(0)
++  %b = f32[] parameter(1)
++  %lt = pred[] less-than(%a, %b)
++  %t = () tuple()
++  %conditional = f32[2,2]{1,0} conditional(%lt, %t, %t), true_computation=if, false_computation=else
++  %zero = f32[] constant(0)
++  ROOT %reduced = f32[] reduce(%conditional, %zero), dimensions={0,1}, to_apply=add
++}
++
++ENTRY comp {
++  %p1 = f32[1000]{0} parameter(0)
++  %p2 = f32[1000]{0} parameter(1)
++  ROOT %mapped = f32[1000]{0} map(%p1, %p2), dimensions={0}, to_apply=mapped
++}
++)";
++
++  ParseAndVerifyModule(hlo_text);
++  ConditionalToSelect pass;
++  ASSERT_TRUE(pass.Run(&module()).ValueOrDie());
++
++  HloInstruction* root = module().entry_computation()->root_instruction();
++  ASSERT_EQ(root->opcode(), HloOpcode::kMap);
++  HloComputation* mapped = root->called_computations()[0];
++  EXPECT_THAT(
++      mapped->root_instruction(),
++      op::Reduce(
++          op::Select(op::Broadcast(op::Lt(op::Parameter(0), op::Parameter(1))),
++                     _, _),
++          _));
++}
++
++// Test that conditionals of tuple type get turned into kTupleSelect
++TEST_F(ConditionalToSelectTest, MapConditionalTuples) {
++  const string hlo_text = R"(
++HloModule MapConditionalTuples
++
++if {
++  %pif = () parameter(0)
++  %zero = f32[] constant(0)
++  ROOT %tup = (f32[],f32[]) tuple(%zero, %zero)
++}
++
++else {
++  %pelse = () parameter(0)
++  %one = f32[] constant(0)
++  ROOT %tup = (f32[],f32[]) tuple(%one, %one)
++}
++
++add {
++  %add_lhs = f32[] parameter(0)
++  %add_rhs = f32[] parameter(1)
++  ROOT %add = f32[] add(%add_lhs, %add_rhs)
++}
++
++mapped {
++  %a = f32[] parameter(0)
++  %b = f32[] parameter(1)
++  %lt = pred[] less-than(%a, %b)
++  %t = () tuple()
++  %conditional = (f32[], f32[]) conditional(%lt, %t, %t), true_computation=if, false_computation=else
++  %el1 = f32[] get-tuple-element(%conditional), index=0
++  %el2 = f32[] get-tuple-element(%conditional), index=1
++  %reduced = f32[] add(%el1, %el2)
++}
++
++ENTRY comp {
++  %p1 = f32[1000]{0} parameter(0)
++  %p2 = f32[1000]{0} parameter(1)
++  ROOT %mapped = f32[1000]{0} map(%p1, %p2), dimensions={0}, to_apply=mapped
++}
++)";
++
++  ParseAndVerifyModule(hlo_text);
++  ConditionalToSelect pass;
++  ASSERT_TRUE(pass.Run(&module()).ValueOrDie());
++
++  HloInstruction* root = module().entry_computation()->root_instruction();
++  ASSERT_EQ(root->opcode(), HloOpcode::kMap);
++  HloComputation* mapped = root->called_computations()[0];
++  EXPECT_THAT(mapped->root_instruction(),
++              op::Add(op::GetTupleElement(op::TupleSelect(_, _, _)), _));
++}
++}
++}
+diff --git a/tensorflow/compiler/xla/service/cpu/BUILD b/tensorflow/compiler/xla/service/cpu/BUILD
+index 58abb330a6e3..5148bf64b86e 100644
+--- a/tensorflow/compiler/xla/service/cpu/BUILD
++++ b/tensorflow/compiler/xla/service/cpu/BUILD
+@@ -95,6 +95,7 @@ cc_library(
+         "@com_google_absl//absl/types:span",
+         "//tensorflow/compiler/tf2xla:cpu_function_runtime",
+         "//tensorflow/compiler/xla/service:map_inliner",
++        "//tensorflow/compiler/xla/service:conditional_to_select",
+         "//tensorflow/compiler/xla/service:scatter_expander",
+         "//tensorflow/compiler/xla:literal",
+         "//tensorflow/compiler/xla:protobuf_util",
+diff --git a/tensorflow/compiler/xla/service/cpu/cpu_compiler.cc b/tensorflow/compiler/xla/service/cpu/cpu_compiler.cc
+index 68c715a086af..e8deb724ec20 100644
+--- a/tensorflow/compiler/xla/service/cpu/cpu_compiler.cc
++++ b/tensorflow/compiler/xla/service/cpu/cpu_compiler.cc
+@@ -51,6 +51,7 @@ limitations under the License.
+ #include "tensorflow/compiler/xla/service/buffer_liveness.h"
+ #include "tensorflow/compiler/xla/service/call_inliner.h"
+ #include "tensorflow/compiler/xla/service/conditional_simplifier.h"
++#include "tensorflow/compiler/xla/service/conditional_to_select.h"
+ #include "tensorflow/compiler/xla/service/convolution_feature_group_converter.h"
+ #include "tensorflow/compiler/xla/service/cpu/buffer_info_util.h"
+ #include "tensorflow/compiler/xla/service/cpu/compiler_functor.h"
+@@ -249,6 +250,7 @@ Status CpuCompiler::RunHloPassesThroughLayoutAssn(
+       &pipeline, module->config().debug_options(),
+       ReducePrecisionInsertion::PassTiming::BEFORE_OPTIMIZATION);
+ 
++  pipeline.AddPass<ConditionalToSelect>();
+   pipeline.AddPass<MapInliner>();
+ 
+   // TODO(b/65775800): Fix wrong output bug in Call and remove the CallInliner

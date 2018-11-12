@@ -4,7 +4,7 @@ ENV["BINARYBUILDER_USE_CCACHE"] = "false"
 using BinaryBuilder
 
 name = "XRTServer"
-version = v"2018.10.25"
+version = v"2018.11.12"
 
 # Collection of sources required
 sources = [
@@ -84,15 +84,17 @@ export TF_ENABLE_XLA=1
 export TF_NEED_JEMALLOC=0
 yes "" | ./configure
 
-# Do the actual build for both xrt_server and libtensorflow.so
+# Do the actual build for our tools
 bazel --output_user_root=/workspace/bazel_root build -c opt --verbose_failures //tensorflow:libtensorflow.so
 bazel --output_user_root=/workspace/bazel_root build -c opt --verbose_failures //tensorflow/compiler/xrt/utils:xrt_server
+bazel --output_user_root=/workspace/bazel_root build -c opt --verbose_failures //tensorflow/compiler/xla/tools:dumped_computation_to_text
 
 # Install to $prefix/bin
 mkdir -p $prefix/{bin,lib}
 cp bazel-bin/tensorflow/libtensorflow.so $prefix/lib/
 cp bazel-bin/tensorflow/libtensorflow_framework.so $prefix/lib/
 cp bazel-bin/tensorflow/compiler/xrt/utils/xrt_server $prefix/bin/
+cp bazel-bin/tensorflow/compiler/xla/tools/dumped_computation_to_text $prefix/bin/
 
 # Cleanup things we don't need
 rm -rf ${prefix}/{doc,jre,samples,nsight,nsightee_plugins,libnvvp,libnsight}
@@ -103,7 +105,7 @@ rm -f ${prefix}/lib/*.a
 ln -s ../nvvm/libdevice ${prefix}/bin/cuda_sdk_lib
 
 # libtensorflow* has super-crazy RPATHs; fix that
-for f in ${prefix}/lib/libtensorflow*; do
+for f in ${prefix}/lib/libtensorflow* ${prefix}/bin/*; do
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../lib:$ORIGIN/../lib64' "${f}"
 done
 """
@@ -112,7 +114,8 @@ done
 platforms = [Linux(:x86_64)]
 
 products(prefix) = [
-    ExecutableProduct(prefix, "xrt_server", :xrtserver),
+    ExecutableProduct(prefix, "xrt_server", :xrt_server),
+    ExecutableProduct(prefix, "dumped_computation_to_text", :dumped_computation_to_text),
 ]
 
 dependencies = [
