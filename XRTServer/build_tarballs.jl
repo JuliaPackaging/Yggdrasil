@@ -105,7 +105,7 @@ rm -f ${prefix}/lib/*.a
 ln -s ../nvvm/libdevice ${prefix}/bin/cuda_sdk_lib
 
 # libtensorflow* has super-crazy RPATHs; fix that
-for f in ${prefix}/lib/libtensorflow* ${prefix}/bin/*; do
+for f in ${prefix}/lib/libtensorflow* ${prefix}/bin/{xrt_server,dumped_computation_to_text}; do
     patchelf --set-rpath '$ORIGIN:$ORIGIN/../lib:$ORIGIN/../lib64' "${f}"
 done
 """
