@@ -45,7 +45,7 @@ else
     mv lib ${prefix}/lib
 fi
 mkdir -p ${prefix}/share
-mv info ${prefix}/share/info
+mv info/*.txt ${prefix}/share/
 """
 
 # These are the platforms we will build for by default, unless further
