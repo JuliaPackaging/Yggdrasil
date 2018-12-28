@@ -1,0 +1,22 @@
+commit 6f77af2eef8a6ea2c5e32c66528849c319d4fb6d
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Fri Sep 21 09:19:51 2018 +0000
+
+    Add `$(LDFLAGS)` to `$(CC)` and `$(FC)` invocations within `exports/Makefile`
+
+diff --git a/exports/Makefile b/exports/Makefile
+index 29075a9c..3a5f77db 100644
+--- a/exports/Makefile
++++ b/exports/Makefile
+@@ -114,9 +114,9 @@ $(LIBDYNNAME) : ../$(LIBNAME).osx.renamed osx.def
+ endif
+ ifneq (,$(filter 1 2,$(NOFORTRAN)))
+ #only build without Fortran
+-	$(CC) $(CFLAGS) -all_load -headerpad_max_install_names -install_name "$(CURDIR)/../$(LIBDYNNAME)" -dynamiclib -o ../$(LIBDYNNAME) $< -Wl,-exported_symbols_list,osx.def  $(FEXTRALIB)
++	$(CC) $(CFLAGS) $(LDFLAGS) -all_load -headerpad_max_install_names -install_name "$(CURDIR)/../$(LIBDYNNAME)" -dynamiclib -o ../$(LIBDYNNAME) $< -Wl,-exported_symbols_list,osx.def  $(FEXTRALIB)
+ else
+-	$(FC) $(FFLAGS) -all_load -headerpad_max_install_names -install_name "$(CURDIR)/../$(LIBDYNNAME)" -dynamiclib -o ../$(LIBDYNNAME) $< -Wl,-exported_symbols_list,osx.def  $(FEXTRALIB)
++	$(FC) $(FFLAGS) $(LDFLAGS) -all_load -headerpad_max_install_names -install_name "$(CURDIR)/../$(LIBDYNNAME)" -dynamiclib -o ../$(LIBDYNNAME) $< -Wl,-exported_symbols_list,osx.def  $(FEXTRALIB)
+ endif
+ 
+ dllinit.$(SUFFIX) : dllinit.c
