@@ -16,8 +16,6 @@ sources = [
     # "9f486c3b9516a82e2cbc6968d07746ae4bad013e4358ac6f2a5c1bc829ca6700",
     "https://github.com/WebAssembly/binaryen/archive/version_58.tar.gz" =>
     "faab2ee97a4adc2607ae058bc880a5c9b99fb613c9b8397c68adefe82436812b",
-    "https://nodejs.org/download/release/latest/node-v11.4.0.tar.xz" =>
-    "b7261dd70dcac28f208e8f444dd91dc919e7ec2f5a0aeba9416eb07165a0d684",
     "./bundled",
 ]
 
@@ -27,13 +25,26 @@ script = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
-apk add nodejs
+# Manually install Node
+mkdir tmp
+cd tmp
+apk update
+apk fetch -R nodejs
+for f in *.apk
+do
+    mv $f $f.tgz
+    tar xf $f.tgz
+done
+rm *.tgz
+cp -r * ${prefix}
+
 cd $WORKSPACE/srcdir/
-mkdir ${prefix}/lib
+mkdir -p ${prefix}/lib
 mv emscripten-* ${prefix}/lib/emscripten
+cp .emscripten ${prefix}/lib/emscripten
 EMSCRIPTEN=/opt/${target}/lib/emscripten
+cp ${prefix}/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ${prefix}/wasm32-unknown-emscripten.toolchain
 mv binaryen-ver* binaryen
-cp wasm32-unknown-*.toolchain ${prefix}
 mkdir ${prefix}/lib/emscripten-cache
 mkdir ${prefix}/lib/emscripten-fastcomp
 
@@ -116,6 +127,6 @@ dependencies = [
 ]
 
 config = ""
-name = "Emscripten"
+name = "Emscripten-wasm32-unknown-emscripten"
 
 build_tarballs(["--verbose", "--debug"], name, emscripten_version, sources, script, platforms, products, dependencies; skip_audit=true)
