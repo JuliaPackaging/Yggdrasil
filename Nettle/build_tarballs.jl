@@ -11,7 +11,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/nettle-*/
-./configure --prefix=$prefix --host=$target
+
+# Force c99 mode
+export CFLAGS="${CFLAGS} -std=c99"
+
+./configure --prefix=$prefix --host=$target --with-include-path=$prefix/include
 make -j${nproc}
 make install
 """
@@ -20,14 +24,19 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Disable FreeBSD for now, because hogweed needs alloca()?
+platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+
 # The products that we will ensure are always built
 products(prefix) = [
     LibraryProduct(prefix, "libnettle", :libnettle),
+    LibraryProduct(prefix, "libhogweed", :libhogweed),
     ExecutableProduct(prefix, "nettle-hash", :nettle_hash)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
