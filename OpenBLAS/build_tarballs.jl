@@ -58,6 +58,12 @@ elif [[ ${target} == powerpc64le-* ]]; then
     flags+=(TARGET=POWER8)
 fi
 
+# If we're building for x86_64 Windows gcc7+, we need to disable usage of
+# certain AVX-512 registers (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782)
+if [[ ${target} == x86_64-w64-mingw32 ]] && [[ $(gcc --version | head -1 | awk '{ print $3 }') =~ (7|8).* ]]; then
+    CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
+fi
+
 # Enter the fun zone
 cd ${WORKSPACE}/srcdir/OpenBLAS-*/
 
