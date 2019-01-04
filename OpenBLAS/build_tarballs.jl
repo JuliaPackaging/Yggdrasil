@@ -2,11 +2,13 @@ using BinaryBuilder
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
-version = v"0.3.3"
+version = v"0.3.5"
 sources = [
     "https://github.com/xianyi/OpenBLAS/archive/v$(version).tar.gz" =>
-    "49d88f4494ae780e3d7fa51769c00d982d7cdb73e696054ac3baa81d42f13bab",
-    "./bundled",
+    "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85",
+
+    # No patches to appy at the moment
+    #"./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -66,9 +68,6 @@ fi
 
 # Enter the fun zone
 cd ${WORKSPACE}/srcdir/OpenBLAS-*/
-
-# Patch so that our LDFLAGS make it all the way through
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/osx_exports_ldflags.patch"
 
 # Build the library
 make "${flags[@]}" -j${nproc}
