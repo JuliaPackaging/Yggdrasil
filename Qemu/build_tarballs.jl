@@ -12,7 +12,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qemu
-./configure --target-list=x86_64-softmmu --disable-cocoa --prefix=$prefix
+
+./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include" --disable-cocoa --prefix=$prefix
+
 echo '#!/bin/true ' > /usr/bin/SetFile
 echo '#!/bin/true ' > /usr/bin/Rez
 chmod +x /usr/bin/Rez
@@ -24,8 +26,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    # For now, only build for MacOS
-    BinaryProvider.MacOS(),
+    Linux(:x86_64),
+    MacOS(),
 ]
 
 # The products that we will ensure are always built
