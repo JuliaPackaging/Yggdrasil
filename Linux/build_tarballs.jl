@@ -22,7 +22,7 @@ cp arch/x86/boot/bzImage $prefix
 """
 
 products = prefix -> [
-    ExecutableProduct(prefix,"vmlinux", :vmlinux)
+    ExecutableProduct(joinpath(prefix, "vmlinux"), :vmlinux)
 ]
 
 # These are the platforms built inside the wizard
