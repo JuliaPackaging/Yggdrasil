@@ -1,17 +1,19 @@
 using BinaryBuilder, SHA
 
 name = "Rootfs"
-version = v"2018.11.11"
+version = v"2019.01.04"
 
 # Sources we build from
 sources = [
     "https://github.com/gliderlabs/docker-alpine/raw/d19c22b446ddcb16267f351ccbfeac5e6430720a/versions/library-3.8/x86_64/rootfs.tar.xz" =>
-    "f4e9f66d945a5db78f092fcdd0c692c5b042e14897cd16c7e16d67a691d1ec82",
+    "4ca30c663e85c18f2cf6f2a2604c8f14950d33fca6492926998e952aeb4924cd",
     "./bundled",
     "../Patchelf/products",
     "../Objconv/products",
     "../Sandbox/products",
     "../Glibc/products",
+    "../Wine/products",
+    "../Qemu/products",
 ]
 
 # Bash recipe for building across all platforms
@@ -75,9 +77,12 @@ cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 # Extract a very recent libstdc++.so.6 to /lib64 as well
 cp -d $WORKSPACE/srcdir/libs/libstdc++.so* $prefix/lib64
 
-# Install patchelf, objconv, etc... to /usr/local/
+# Install useful tools such as patchelf, objconv, etc... to /usr/local/
 tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Patchelf*${target}*.tar.gz
 tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Objconv*${target}*.tar.gz
+tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Wine.v*${target}*.tar.gz
+tar -C ${prefix}/usr/local -xvf $WORKSPACE/srcdir/Qemu*${target}*.tar.gz
+
 
 # Useful tools
 mkdir -p ${prefix}/root

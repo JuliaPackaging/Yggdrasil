@@ -54,7 +54,7 @@ make_squashfs()
         echo "  -> Skipping $(basename "${SQUASHFS_PATH}")"
         return
     fi
-    echo "  -> Compressing into $(basename ${SQUASHFS_PATH})"
+    echo "  -> Compressing into $(basename "${SQUASHFS_PATH}")"
 
     # Unpack to temporary directory
     WORK_DIR=$(mktemp -d)
@@ -71,8 +71,9 @@ make_squashfs()
 build_cached()
 {
     (cd ${1}
-    if [[ -f "$(echo products/*${2}*.tar.gz)" ]]; then
-        echo "  -> Skipping ${2}"
+    TARBALL="$(echo products/*${2}*.tar.gz)"
+    if [[ -f "${TARBALL}" ]]; then
+        echo "  -> Skipping $(basename "${TARBALL}")"
         return
     fi
     echo "  -> Building ${1} ${3}"
@@ -84,7 +85,7 @@ build_cached()
 build_host()
 {
     echo "Building ${1}..."
-    build_cached ${1} "${1}*.x86_64-linux-gnu" x86_64-linux-gnu
+    build_cached ${1} "${1}.*.x86_64-linux-gnu" x86_64-linux-gnu
 }
 
 build_all_machines()
@@ -100,6 +101,8 @@ build_host Objconv
 build_host Patchelf
 build_host Sandbox
 build_host Linux
+build_host Wine
+build_host Qemu
 for v in ${GLIBC_VERSIONS}; do
     NODOT_VERSION=$(echo ${v} | tr -d '.')
     GLIBC_MACHINES_VAR="GLIBC_MACHINES_${NODOT_VERSION}"
