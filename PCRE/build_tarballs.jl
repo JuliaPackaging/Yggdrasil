@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/pcre-*/
 if [[ ${target} == *apple-darwin* ]]; then
     export AR=/opt/${target}/bin/${target}-ar
 fi
-./configure --prefix=$prefix --host=$target --enable-utf8
+./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
 """
