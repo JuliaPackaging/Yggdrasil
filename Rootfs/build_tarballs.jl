@@ -53,7 +53,7 @@ cp $WORKSPACE/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp $WORKSPACE/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
 cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/local/bin/uname
 cp $WORKSPACE/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
-cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/local/bin/ldd
+cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
 cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp $WORKSPACE/srcdir/utils/config.* ./usr/local/share/configure_scripts/
 chmod +x ./usr/local/bin/*
