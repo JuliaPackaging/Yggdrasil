@@ -1,0 +1,75 @@
+From dc848e779129f2cd92cafdf09d7f542398a8aeec Mon Sep 17 00:00:00 2001
+From: Marcos Kintschner <marcos.ktn@gmail.com>
+Date: Tue, 17 Jul 2018 15:52:41 -0300
+Subject: [PATCH] Fix linker error: Cannot export rpl_printf: symbol not found
+
+The original patch can be found here: http://git.savannah.gnu.org/cgit/gnulib.git/commit/?id=68b6adebef05670a312fb92b05e7bd089d2ed43a
+---
+ gettext-tools/gnulib-m4/asm-underscore.m4 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gettext-tools/gnulib-m4/asm-underscore.m4 b/gettext-tools/gnulib-m4/asm-underscore.m4
+index 547dd62..feca18d 100644
+--- a/gettext-runtime/gnulib-m4/asm-underscore.m4
++++ b/gettext-runtime/gnulib-m4/asm-underscore.m4
+@@ -29,7 +29,7 @@ int foo(void) { return 0; }
+ EOF
+      # Look for the assembly language name in the .s file.
+      AC_TRY_COMMAND(${CC-cc} $CFLAGS $CPPFLAGS $gl_c_asm_opt conftest.c) >/dev/null 2>&1
+-     if LC_ALL=C grep -E '(^|[^a-zA-Z0-9_])_foo([^a-zA-Z0-9_]|$)' conftest.$gl_asmext >/dev/null; then
++     if LC_ALL=C grep -E '(^|[[^a-zA-Z0-9_]])_foo([[^a-zA-Z0-9_]]|$)' conftest.$gl_asmext >/dev/null; then
+        gl_cv_prog_as_underscore=yes
+      else
+        gl_cv_prog_as_underscore=no
+--
+diff --git a/gettext-runtime/configure b/gettext-runtime/configure
+index f3968e1..1b251c8 100644
+--- a/gettext-runtime/configure
++++ b/gettext-runtime/configure
+@@ -24603,7 +24603,7 @@ EOF
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; } >/dev/null 2>&1
+-     if LC_ALL=C grep -E '(^|^a-zA-Z0-9_)_foo(^a-zA-Z0-9_|$)' conftest.$gl_asmext >/dev/null; then
++     if LC_ALL=C grep -E '(^|[^a-zA-Z0-9_])_foo([^a-zA-Z0-9_]|$)' conftest.$gl_asmext >/dev/null; then
+        gl_cv_prog_as_underscore=yes
+      else
+        gl_cv_prog_as_underscore=no
+@@ -35496,4 +35496,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
+ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
+ fi
+-
+diff --git a/gettext-tools/configure b/gettext-tools/configure
+index 0fa4093..2c93535 100644
+--- a/gettext-tools/configure
++++ b/gettext-tools/configure
+@@ -32286,7 +32286,7 @@ EOF
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; } >/dev/null 2>&1
+-     if LC_ALL=C grep -E '(^|^a-zA-Z0-9_)_foo(^a-zA-Z0-9_|$)' conftest.$gl_asmext >/dev/null; then
++     if LC_ALL=C grep -E '(^|[^a-zA-Z0-9_])_foo([^a-zA-Z0-9_]|$)' conftest.$gl_asmext >/dev/null; then
+        gl_cv_prog_as_underscore=yes
+      else
+        gl_cv_prog_as_underscore=no
+@@ -81172,4 +81172,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
+ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
+ fi
+-
+diff --git a/gettext-tools/gnulib-m4/asm-underscore.m4 b/gettext-tools/gnulib-m4/asm-underscore.m4
+index 547dd62..feca18d 100644
+--- a/gettext-tools/gnulib-m4/asm-underscore.m4
++++ b/gettext-tools/gnulib-m4/asm-underscore.m4
+@@ -29,7 +29,7 @@ int foo(void) { return 0; }
+ EOF
+      # Look for the assembly language name in the .s file.
+      AC_TRY_COMMAND(${CC-cc} $CFLAGS $CPPFLAGS $gl_c_asm_opt conftest.c) >/dev/null 2>&1
+-     if LC_ALL=C grep -E '(^|[^a-zA-Z0-9_])_foo([^a-zA-Z0-9_]|$)' conftest.$gl_asmext >/dev/null; then
++     if LC_ALL=C grep -E '(^|[[^a-zA-Z0-9_]])_foo([[^a-zA-Z0-9_]]|$)' conftest.$gl_asmext >/dev/null; then
+        gl_cv_prog_as_underscore=yes
+      else
+        gl_cv_prog_as_underscore=no
+2.17.0.windows.1
+
