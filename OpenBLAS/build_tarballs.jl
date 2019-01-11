@@ -6,9 +6,7 @@ version = v"0.3.5"
 sources = [
     "https://github.com/xianyi/OpenBLAS/archive/v$(version).tar.gz" =>
     "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85",
-
-    # No patches to appy at the moment
-    #"./bundled",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -50,7 +48,7 @@ fi
 
 # On Intel architectures, engage DYNAMIC_ARCH
 if [[ ${proc_family} == intel ]]; then
-    flags+=(DYNAMIC_ARCH=1)
+    flags+=(TARGET= DYNAMIC_ARCH=1)
 # Otherwise, engage a specific target
 elif [[ ${target} == aarch64-* ]]; then
     flags+=(TARGET=ARMV8)
@@ -68,6 +66,9 @@ fi
 
 # Enter the fun zone
 cd ${WORKSPACE}/srcdir/OpenBLAS-*/
+
+# Apply SkylakeX patch (https://github.com/JuliaLang/julia/pull/30661)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openblas-skylakexdgemm.patch
 
 # Build the library
 make "${flags[@]}" -j${nproc}
