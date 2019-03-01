@@ -38,17 +38,18 @@ products(prefix) = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need Pixman
-    "https://github.com/staticfloat/PixmanBuilder/releases/download/v0.34.0-0/build.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Pixman-v0.36.0-0/build_Pixman.v0.36.0.jl",
     # We need Glib
-    "https://github.com/staticfloat/GlibBuilder/releases/download/v2.54.2-2/build.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Glib-v2.59.0-0/build_Glib.v2.59.0.jl",
     # We need Pcre
-    "https://github.com/staticfloat/PcreBuilder/releases/download/v8.41-0/build.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/PCRE-v8.42-2/build_PCRE.v8.42.0.jl",
     # We need gettext
-    "https://github.com/staticfloat/GettextBuilder/releases/download/v0.19.8-0/build.jl",
-    # .....which needs libffi
-    "https://github.com/staticfloat/libffiBuilder/releases/download/v3.2.1-0/build.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Gettext-v0.19.8-0/build_Gettext.v0.19.8.jl",
+    # .....which needs libffi and iconv
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libffi-v3.2.1-0/build_Libffi.v3.2.1.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libiconv-v1.15-0/build_Libiconv.v1.15.0.jl",
     # .....which needs zlib
-    "https://github.com/staticfloat/ZlibBuilder/releases/download/v1.2.11-3/build.jl",
+    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
