@@ -17,9 +17,21 @@ cd $WORKSPACE/srcdir/pcre2-*/
 if [[ ${target} == *apple-darwin* ]]; then
     export AR=/opt/${target}/bin/${target}-ar
 fi
+
+# Update configure scripts
+update_configure_scripts
+
+# Force optimization
+export CFLAGS="${CFLAGS} -O3"
+
 ./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties --enable-jit
-make -j${nproc} VERBOSE=1
-make install VERBOSE=1
+make -j${nproc} V=1
+make install V=1
+
+# On windows we need libcpre2-8.dll as well
+if [[ ${target} == *mingw* ]]; then
+    cp ${prefix}/bin/libpcre2-8-0.dll ${prefix}/bin/libpcre2-8.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further
