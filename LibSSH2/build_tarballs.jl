@@ -7,11 +7,15 @@ version = v"1.8.0"
 sources = [
    "https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz" =>
    "39f34e2f6835f4b992cafe8625073a88e5a28ba78f83e8099610a7b3af4676d4",
+   "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libssh2-encryptedpem.patch
+atomic_patch -p0 $WORKSPACE/srcdir/patches/libssh2-netinet-in.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
