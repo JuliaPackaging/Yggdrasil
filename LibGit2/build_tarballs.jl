@@ -7,17 +7,20 @@ version = v"0.27.7"
 sources = [
    "https://github.com/libgit2/libgit2.git" =>
    "f23dc5b29f1394928a940d7ec447f4bfd53dad1f",
+   "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-mbedtls.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
+
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DTHREADSAFE=ON
     -DUSE_BUNDLED_ZLIB=ON
-    "-DCURL_INCLUDE_DIRS=
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain"
 )
@@ -28,6 +31,9 @@ if [[ ${target} == *-mingw* ]]; then
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
+elif [[ ${target} == *linux* ]]; then
+    # If we're on Linux, explicitly ask for mbedTLS instead of OpenSSL
+    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
 
@@ -45,13 +51,15 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = prefix -> [
-    LibraryProduct(prefix, "libssh2", :libssh2),
+    LibraryProduct(prefix, "libgit2", :libgit2),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.4/build_Zlib.v1.2.11.jl",
     "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.8.0-0/build_LibSSH2.v1.8.0.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibCURL-v7.61.0-0/build_LibCURL.v7.61.0.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
