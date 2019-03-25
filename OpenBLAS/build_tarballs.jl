@@ -20,8 +20,8 @@ flags+=(CROSS=1 "HOSTCC=$CC_FOR_BUILD" PREFIX=/ "CROSS_SUFFIX=${target}-")
 # We need to use our basic objconv, not a prefixed one:
 flags+=(OBJCONV=objconv)
 
-if [[ ${nbits} == 64 ]]; then
-    # If we're building for a 64-bit platform, engage ILP64
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+    # If we're building for a 64-bit platform (that is not aarch64), engage ILP64
     LIBPREFIX=libopenblas64_
     flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
 else
