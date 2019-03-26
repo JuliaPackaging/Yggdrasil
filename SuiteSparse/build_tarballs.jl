@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse/
 
+# Apply Jameson's shlib patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
+
 FLAGS=(INSTALL="${prefix}")
 
 if [[ ${target} == *mingw32* ]]; then
@@ -30,7 +33,7 @@ if [[ ${target} == "x86_64-apple-darwin14" ]]; then
     export AR=/opt/${target}/bin/${target}-ar
 fi
 
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
     FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
@@ -40,11 +43,11 @@ else
     FLAGS+=(CHOLMOD_CONFIG="-DNPARTITION")
 fi
 
-make -j -C SuiteSparse_config "${FLAGS[@]}" library config
+make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
-    make -j -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
-    make -j -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
+    make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
+    make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
 
 # For now, we'll have to adjust the name of the OpenBLAS library on macOS.
