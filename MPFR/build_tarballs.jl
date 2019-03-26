@@ -14,10 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpfr-*
-#UNAME=`uname`
 ./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=$prefix
 make -j
 make install
+
+# On Windows, make sure non-versioned filename exists...
+if [[ ${target} == *mingw* ]]; then
+    cp -v ${prefix}/bin/libmpfr-*.dll ${prefix}/bin/libmpfr.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further
