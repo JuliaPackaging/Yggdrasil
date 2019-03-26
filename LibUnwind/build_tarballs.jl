@@ -16,8 +16,9 @@ cd $WORKSPACE/srcdir/libunwind*/
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-prefer-extbl.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
 
-./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -fPIC"
+./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -fPIC" --libdir=${prefix}/lib
 make -j${nproc}
 make install
 """
