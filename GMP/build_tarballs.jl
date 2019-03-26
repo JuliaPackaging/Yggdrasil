@@ -16,18 +16,27 @@ script = raw"""
 cd $WORKSPACE/srcdir/gmp-*
 
 # Patch `configure` to include `$LDFLAGS` in its tests.  This is necessary on FreeBSD.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/configure.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.patch
+
+# Include Julia-carried patches
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp_alloc_overflow_func.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-exception.patch
 
 flags=(--enable-cxx --enable-shared --disable-static)
 
 # On x86_64 architectures, build fat binary
 if [[ ${proc_family} == intel ]]; then
-    flags+=("--enable-fat")
+    flags+=(--enable-fat)
 fi
 
 ./configure --prefix=$prefix --host=$target ${flags[@]}
 make -j${nproc}
 make install
+
+# On Windows, we need to make sure that the non-versioned dll names exist too
+if [[ ${target} == *mingw* ]]; then
+    cp -v ${prefix}/bin/libgmp-*.dll ${prefix}/bin/libgmp.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further
