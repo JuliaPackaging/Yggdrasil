@@ -31,14 +31,12 @@ if [[ ${target} == *-mingw* ]]; then
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
-elif [[ ${target} == *linux* ]]; then
-    # If we're on Linux, explicitly ask for mbedTLS instead of OpenSSL
+elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+    # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
-
-mkdir build
-cd build
+mkdir build; cd build
 
 cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
