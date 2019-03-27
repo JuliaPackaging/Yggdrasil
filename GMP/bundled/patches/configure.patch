@@ -1,60 +1,5 @@
---- gmp-6.1.2/configure.ac	2016-12-16 10:45:27.000000000 -0500
-+++ gmp-6.1.2-LDFLAGS/configure.ac	2019-03-25 18:33:48.877277818 -0400
-@@ -2124,7 +2124,7 @@ for abi in $abilist; do
-           instrument) cflags="$cflags -finstrument-functions" ;;
-         esac
- 
--        GMP_PROG_CC_WORKS($cc $cflags $cppflags,,continue)
-+        GMP_PROG_CC_WORKS($cc $cflags $cppflags $LDFLAGS,,continue)
- 
-         # If we're supposed to be using a "long long" for a limb, check that
-         # it works.
-@@ -2267,12 +2267,12 @@ if test $found_compiler = yes; then
-             #
-             if test "$abi" = 32; then
-               GMP_GCC_PENTIUM4_SSE2($cc $cflags $cppflags,, continue)
--              GMP_OS_X86_XMM($cc $cflags $cppflags,, continue)
-+              GMP_OS_X86_XMM($cc $cflags $cppflags $LDFLAGS,, continue)
-             fi
-             ;;
-           -no-cpp-precomp)
-             # special check, avoiding a warning
--            GMP_GCC_NO_CPP_PRECOMP($ccbase,$cc,$cflags,
-+            GMP_GCC_NO_CPP_PRECOMP($ccbase,$cc,$cflags $LDFLAGS,
-                                    [cflags="$cflags $flag"
-                                    break],
-                                    [continue])
-@@ -2292,7 +2292,7 @@ if test $found_compiler = yes; then
-             ;;
-         esac
- 
--        GMP_PROG_CC_WORKS($cc $cflags $cppflags $flag,
-+        GMP_PROG_CC_WORKS($cc $cflags $cppflags $flag $LDFLAGS,
-           [cflags="$cflags $flag"
-           break])
-       done
-@@ -2435,7 +2435,7 @@ if test $enable_cxx != no; then
-   #
-   for cxxflags_choice in $cxxflags_list; do
-     eval CXXFLAGS=\"\$cxxflags_$cxxflags_choice\"
--    GMP_PROG_CXX_WORKS($CXX $CPPFLAGS $CXXFLAGS,
-+    GMP_PROG_CXX_WORKS($CXX $CPPFLAGS $CXXFLAGS $LDFLAGS,
-       [want_cxx=yes
-       break])
-   done
 --- gmp-6.1.2/configure	2019-03-25 17:58:41.928471374 -0400
-+++ gmp-6.1.2-LDFLAGS/configure	2019-03-25 18:34:22.498249934 -0400
-@@ -5867,8 +5867,8 @@ fi
-           instrument) cflags="$cflags -finstrument-functions" ;;
-         esac
- 
--        { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags $cppflags" >&5
--$as_echo_n "checking compiler $cc $cflags $cppflags... " >&6; }
-+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags $cppflags $LDFLAGS" >&5
-+$as_echo_n "checking compiler $cc $cflags $cppflags $LDFLAGS... " >&6; }
- gmp_prog_cc_works=yes
- 
- # first see a simple "main()" works, then go on to other checks
++++ gmp-6.1.2-LDFLAGS/configure	2019-03-26 13:08:07.756316866 -0400
 @@ -5880,7 +5880,7 @@ if test "$gmp_prog_cc_works" = yes; then
  int main () { return 0; }
  EOF
@@ -190,24 +135,6 @@
    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -6872,7 +6872,7 @@ int foo;
- int bar () { return foo; }
- EOF
- tmp_got_emitted=no
--gmp_compile="$cc $cflags $cppflags -fPIC -S conftest.c >&5 2>&1"
-+gmp_compile="$cc $cflags $cppflags $LDFLAGS -fPIC -S conftest.c >&5 2>&1"
- if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
-   (eval $gmp_compile) 2>&5
-   ac_status=$?
-@@ -6946,7 +6946,7 @@ cat >conftest.s <<\EOF
- 	.byte	254, 220, 186, 152, 118, 84, 50, 16
- EOF
- tmp_got_good=yes
--gmp_compile="$cc $cflags $cppflags -fPIC -o conftest.o -c conftest.s >&5 2>&1"
-+gmp_compile="$cc $cflags $cppflags $LDFLAGS -fPIC -o conftest.o -c conftest.s >&5 2>&1"
- if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
-   (eval $gmp_compile) 2>&5
-   ac_status=$?
 @@ -7325,7 +7325,7 @@ _main:
  	xorl	%eax, %eax
  	ret
@@ -217,15 +144,7 @@
    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -7384,13 +7384,13 @@ esac
-           -no-cpp-precomp)
-             # special check, avoiding a warning
-             if test "$ccbase" = gcc; then
--  { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags -no-cpp-precomp" >&5
--$as_echo_n "checking compiler $cc $cflags -no-cpp-precomp... " >&6; }
-+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags $LDFLAGS -no-cpp-precomp" >&5
-+$as_echo_n "checking compiler $cc $cflags $LDFLAGS -no-cpp-precomp... " >&6; }
-   result=no
+@@ -7390,7 +7390,7 @@ $as_echo_n "checking compiler $cc $cflag
    cat >conftest.c <<EOF
  int main () { return 0; }
  EOF
@@ -234,17 +153,6 @@
    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -7485,8 +7485,8 @@ fi
-             ;;
-         esac
- 
--        { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags $cppflags $flag" >&5
--$as_echo_n "checking compiler $cc $cflags $cppflags $flag... " >&6; }
-+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler $cc $cflags $cppflags $flag $LDFLAGS" >&5
-+$as_echo_n "checking compiler $cc $cflags $cppflags $flag $LDFLAGS... " >&6; }
- gmp_prog_cc_works=yes
- 
- # first see a simple "main()" works, then go on to other checks
 @@ -7498,7 +7498,7 @@ if test "$gmp_prog_cc_works" = yes; then
  int main () { return 0; }
  EOF
@@ -380,35 +288,60 @@
    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -8490,7 +8490,7 @@ int foo;
- int bar () { return foo; }
+@@ -9987,7 +9987,7 @@ main ()
+   return 0;
+ }
  EOF
- tmp_got_emitted=no
--gmp_compile="$cc $cflags $cppflags $flag -fPIC -S conftest.c >&5 2>&1"
-+gmp_compile="$cc $cflags $cppflags $flag $LDFLAGS -fPIC -S conftest.c >&5 2>&1"
+-gmp_compile="$CC_FOR_BUILD conftest.c"
++gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c"
+ cc_for_build_works=no
+ if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
+   (eval $gmp_compile) 2>&5
+@@ -10019,7 +10019,7 @@ main ()
+   return 0;
+ }
+ EOF
+-gmp_compile="$HOST_CC conftest.c"
++gmp_compile="$HOST_CC $LDFLAGS conftest.c"
+ cc_for_build_works=no
+ if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
+   (eval $gmp_compile) 2>&5
+@@ -10052,7 +10052,7 @@ main ()
+   return 0;
+ }
+ EOF
+-gmp_compile="$i conftest.c"
++gmp_compile="$i $LDFLAGS conftest.c"
+ cc_for_build_works=no
+ if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
+   (eval $gmp_compile) 2>&5
+@@ -10132,7 +10132,7 @@ main ()
+ }
+ EOF
+ for i in .exe ,ff8 ""; do
+-  gmp_compile="$CC_FOR_BUILD conftest.c -o conftest$i"
++  gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c -o conftest$i"
+   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
+   (eval $gmp_compile) 2>&5
+   ac_status=$?
+@@ -10168,7 +10168,7 @@ main (int argc, char **argv)
+   return 0;
+ }
+ EOF
+-gmp_compile="$CC_FOR_BUILD conftest.c"
++gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c"
  if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -8564,7 +8564,7 @@ cat >conftest.s <<\EOF
- 	.byte	254, 220, 186, 152, 118, 84, 50, 16
+@@ -10210,7 +10210,7 @@ foo ()
+   return log (d);
+ }
  EOF
- tmp_got_good=yes
--gmp_compile="$cc $cflags $cppflags $flag -fPIC -o conftest.o -c conftest.s >&5 2>&1"
-+gmp_compile="$cc $cflags $cppflags $flag $LDFLAGS -fPIC -o conftest.o -c conftest.s >&5 2>&1"
+-gmp_compile="$CC_FOR_BUILD conftest.c -lm"
++gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c -lm"
  if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
    (eval $gmp_compile) 2>&5
    ac_status=$?
-@@ -10530,8 +10530,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
-   #
-   for cxxflags_choice in $cxxflags_list; do
-     eval CXXFLAGS=\"\$cxxflags_$cxxflags_choice\"
--    { $as_echo "$as_me:${as_lineno-$LINENO}: checking C++ compiler $CXX $CPPFLAGS $CXXFLAGS" >&5
--$as_echo_n "checking C++ compiler $CXX $CPPFLAGS $CXXFLAGS... " >&6; }
-+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking C++ compiler $CXX $CPPFLAGS $CXXFLAGS $LDFLAGS" >&5
-+$as_echo_n "checking C++ compiler $CXX $CPPFLAGS $CXXFLAGS $LDFLAGS... " >&6; }
- gmp_prog_cxx_works=yes
- 
- # start with a plain "main()", then go on to further checks
 @@ -10543,7 +10543,7 @@ if test "$gmp_prog_cxx_works" = yes; the
  int main (void) { return 0; }
  EOF
@@ -436,4 +369,96 @@
    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_cxxcompile\""; } >&5
    (eval $gmp_cxxcompile) 2>&5
    ac_status=$?
+@@ -27095,7 +27095,7 @@ for tmp_underscore in "" "_"; do
+ ${tmp_gsym_prefix}main$gmp_cv_asm_label_suffix
+ 	addl	$ ${tmp_underscore}_GLOBAL_OFFSET_TABLE_, %ebx
+ EOF
+-  gmp_compile="$CCAS $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.s >&5 && $CC $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.$OBJEXT >&5"
++  gmp_compile="$CCAS $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.s >&5 && $CC $CFLAGS $CPPFLAGS $LDFLAGS $lt_prog_compiler_pic conftest.$OBJEXT >&5"
+   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$gmp_compile\""; } >&5
+   (eval $gmp_compile) 2>&5
+   ac_status=$?
+--- gmp-6.1.2/acinclude.m4	2016-12-16 10:45:27.000000000 -0500
++++ gmp-6.1.2-LDFLAGS/acinclude.m4	2019-03-26 13:08:01.328189815 -0400
+@@ -826,7 +826,7 @@ AC_DEFUN([GMP_PROG_CC_WORKS_PART_TEST],
+ [$3]
+ EOF
+   echo "Test compile: [$2]" >&AC_FD_CC
+-  gmp_compile="$1 conftest.c >&AC_FD_CC"
++  gmp_compile="$1 $LDFLAGS conftest.c >&AC_FD_CC"
+   if AC_TRY_EVAL(gmp_compile); then
+     cc_works_part=yes
+     if test "$cross_compiling" = no; then
+@@ -1147,7 +1147,7 @@ AC_DEFUN([GMP_GCC_NO_CPP_PRECOMP],
+   cat >conftest.c <<EOF
+ int main () { return 0; }
+ EOF
+-  gmp_compile="$2 $3 -no-cpp-precomp conftest.c >conftest.out 2>&1"
++  gmp_compile="$2 $3 $LDFLAGS -no-cpp-precomp conftest.c >conftest.out 2>&1"
+   if AC_TRY_EVAL(gmp_compile); then
+     if grep "unrecognized option.*-no-cpp-precomp" conftest.out >/dev/null; then : ;
+     else
+@@ -1328,7 +1328,7 @@ _main:
+ 	xorl	%eax, %eax
+ 	ret
+ EOF
+-  gmp_compile="$1 conftest.s -o conftest >&AC_FD_CC"
++  gmp_compile="$1 $LDFLAGS conftest.s -o conftest >&AC_FD_CC"
+   if AC_TRY_EVAL(gmp_compile); then
+     if AC_TRY_COMMAND([./a.out || ./b.out || ./a.exe || ./a_out.exe || ./conftest]); then
+       gmp_cv_os_x86_xmm=yes
+@@ -1495,7 +1495,7 @@ AC_DEFUN([GMP_PROG_CXX_WORKS_PART],
+ int main (void) { return 0; }
+ EOF
+   echo "Test compile: [$2]" >&AC_FD_CC
+-  gmp_cxxcompile="$1 conftest.cc >&AC_FD_CC"
++  gmp_cxxcompile="$1 $LDFLAGS conftest.cc >&AC_FD_CC"
+   if AC_TRY_EVAL(gmp_cxxcompile); then
+     if test "$cross_compiling" = no; then
+       if AC_TRY_COMMAND([./a.out || ./b.out || ./a.exe || ./a_out.exe || ./conftest]); then :;
+@@ -2382,7 +2382,7 @@ for tmp_underscore in "" "_"; do
+ ${tmp_gsym_prefix}main$gmp_cv_asm_label_suffix
+ 	addl	$ ${tmp_underscore}_GLOBAL_OFFSET_TABLE_, %ebx
+ EOF
+-  gmp_compile="$CCAS $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.s >&AC_FD_CC && $CC $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.$OBJEXT >&AC_FD_CC"
++  gmp_compile="$CCAS $CFLAGS $CPPFLAGS $lt_prog_compiler_pic conftest.s >&AC_FD_CC && $CC $CFLAGS $CPPFLAGS $LDFLAGS $lt_prog_compiler_pic conftest.$OBJEXT >&AC_FD_CC"
+   if AC_TRY_EVAL(gmp_compile); then
+     if test "$tmp_underscore" = "_"; then
+       gmp_cv_asm_x86_got_underscore=yes
+@@ -3856,7 +3856,7 @@ main ()
+   return 0;
+ }
+ EOF
+-gmp_compile="$1 conftest.c"
++gmp_compile="$1 $LDFLAGS conftest.c"
+ cc_for_build_works=no
+ if AC_TRY_EVAL(gmp_compile); then
+   if (./a.out || ./b.out || ./a.exe || ./a_out.exe || ./conftest) >&AC_FD_CC 2>&1; then
+@@ -3931,7 +3931,7 @@ main ()
+ }
+ EOF
+ for i in .exe ,ff8 ""; do
+-  gmp_compile="$CC_FOR_BUILD conftest.c -o conftest$i"
++  gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c -o conftest$i"
+   if AC_TRY_EVAL(gmp_compile); then
+     if (./conftest) 2>&AC_FD_CC; then
+       gmp_cv_prog_exeext_for_build=$i
+@@ -3966,7 +3966,7 @@ main (int argc, char **argv)
+   return 0;
+ }
+ EOF
+-gmp_compile="$CC_FOR_BUILD conftest.c"
++gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c"
+ if AC_TRY_EVAL(gmp_compile); then
+   gmp_cv_c_for_build_ansi=yes
+ else
+@@ -4007,7 +4007,7 @@ foo ()
+   return log (d);
+ }
+ EOF
+-gmp_compile="$CC_FOR_BUILD conftest.c -lm"
++gmp_compile="$CC_FOR_BUILD $LDFLAGS conftest.c -lm"
+ if AC_TRY_EVAL(gmp_compile); then
+   gmp_cv_check_libm_for_build=-lm
+ else
 
