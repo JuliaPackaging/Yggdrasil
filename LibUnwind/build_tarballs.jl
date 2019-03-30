@@ -16,11 +16,19 @@ cd $WORKSPACE/srcdir/libunwind*/
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-prefer-extbl.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
+atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
+atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 
-./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -fPIC" --libdir=${prefix}/lib
+./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include" --libdir=${prefix}/lib --enable-minidebuginfo
 make -j${nproc}
 make install
+
+# Shoe-horn liblzma.a into libunwind.a
+mkdir -p unpacked/{liblzma,libunwind}
+(cd unpacked/liblzma; ${AR} -x ${prefix}/lib/liblzma.a)
+(cd unpacked/libunwind; ${AR} -x ${prefix}/lib/libunwind.a)
+rm -f ${prefix}/lib/libunwind.a
+${AR} -qc ${prefix}/lib/libunwind.a unpacked/**/*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,6 +43,7 @@ products(prefix) = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/XZ-v5.2.4-0/build_XZ.v5.2.4.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

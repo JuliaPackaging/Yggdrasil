@@ -1,5 +1,5 @@
---- a/configure	2019-03-26 03:46:55.540423566 -0400
-+++ b/configure	2019-03-26 03:47:11.765002029 -0400
+--- configure.orig	2019-03-26 03:46:55.540423566 -0400
++++ configure	2019-03-27 15:51:29.215795054 -0400
 @@ -17182,12 +17182,6 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_dwarf" >&5
  $as_echo "$use_dwarf" >&6; }
