@@ -18,7 +18,9 @@ touch -c aclocal.m4
 touch -c Makefile.in
 touch -c configure
 
-./configure --prefix=$prefix --host=$target --with-pic
+# `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
+# everywhere, especially on FreeBSD
+./configure --prefix=$prefix --host=$target --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC"
 make -j${nproc} V=1
 make install
 """
