@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "PCRE2"
-version = v"10.32"
+version = v"10.31"
 
 # Collection of sources required to build Pcre
 sources = [
     "https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.bz2" =>
-    "f29e89cc5de813f45786580101aaee3984a65818631d4ddbda7b32f699b87c2e",
+    "e07d538704aa65e477b6a392b32ff9fc5edf75ab9a40ddfc876186c4ff4d68ac",
 ]
 
 # Bash recipe for building across all platforms
