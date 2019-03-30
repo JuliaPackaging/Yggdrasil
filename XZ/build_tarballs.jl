@@ -23,7 +23,7 @@ elif [ ${target} = "i686-w64-mingw32" ]; then
     cp bin_i686/liblzma.dll ${WORKSPACE}/destdir/bin/
 else
     cd $WORKSPACE/srcdir/xz-*
-    ./configure --prefix=${prefix} --host=${target} --with-pic
+    ./configure --prefix=${prefix} --host=${target} --with-pic CFLAGS="${CFLAGS} -fPIC" CXXFLAGS="${CXXFLAGS} -fPIC"
     make -j${nproc}
     make install
 fi
