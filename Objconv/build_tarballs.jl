@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Objconv"
-version = v"2.49"
+version = v"2.49.0"
 
 # Collection of sources required to build CMake
 sources = [
@@ -16,14 +16,15 @@ script = raw"""
 cd $WORKSPACE/srcdir/objconv*/
 
 mkdir -p ${prefix}/bin
-${CXX} -O2 -o ${prefix}/bin/objconv src/*.cpp
+if [[ ${target} == *mingw* ]]; then
+    EXE=".exe"
+fi
+${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${EXE} src/*.cpp
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, :glibc)
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products(prefix) = [
