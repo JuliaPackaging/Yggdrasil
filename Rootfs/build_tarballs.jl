@@ -35,7 +35,7 @@ mkdir ./dev/{pts,shm}
 
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
-MISC_TOOLS="python sudo file libintl patchutils"
+MISC_TOOLS="python sudo file libintl patchutils grep"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
