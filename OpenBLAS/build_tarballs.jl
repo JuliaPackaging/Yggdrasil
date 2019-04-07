@@ -68,10 +68,13 @@ fi
 cd ${WORKSPACE}/srcdir/OpenBLAS-*/
 
 # Apply SkylakeX patch (https://github.com/JuliaLang/julia/pull/30661)
-#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openblas-skylakexdgemm.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openblas-skylakexdgemm.patch
 
-# Build the library
-make "${flags[@]}" -j${nproc}
+# Apply `sgemm_kernel_direct undefined` patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openblas-avx512_sgemm.patch
+
+# Build the actual library
+make "${flags[@]}"
 
 # Install the library
 make "${flags[@]}" "PREFIX=$prefix" install
