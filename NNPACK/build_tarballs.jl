@@ -6,7 +6,7 @@ version = v"2018.06.22"
 # Collection of sources required to build Ogg
 sources = [
     "https://github.com/Maratyszcza/NNPACK.git" =>
-    "af40ea7d12702f8ae55aeb13701c09cad09334c3",
+    "c039579abe21f5756e0f0e45e8e767adccc11852",
 
     # Buckets of deps
     "https://github.com/Maratyszcza/cpuinfo.git" =>
@@ -45,8 +45,20 @@ if [[ "${target}" == *-linux-* ]]; then
     EXTRA_FLAGS+=("-DCMAKE_CXX_STANDARD_LIBRARIES=-lrt")
 fi
 
+# On ARM/AArch64, use `clang` instead of `gcc`.
+TOOLCHAIN="/opt/${target}/${target}.toolchain"
+if [[ "${target}" == arm-* ]] || [[ "${target}" == aarch64-* ]]; then
+    TOOLCHAIN="/opt/${target}/${target}_clang.toolchain"
+fi
+
+# NNPACK wants "armv7l", not just "arm", so GIVE IT WHAT IT WANTS
+# Disabled for now because it thinks we don't have NEON
+#if [[ "${target}" == arm-* ]]; then
+#    sed -i.bak -e "s/set(CMAKE_SYSTEM_PROCESSOR arm)/set(CMAKE_SYSTEM_PROCESSOR armv7l)/g" "${TOOLCHAIN}"
+#fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain \
+    -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN}" \
     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
     -DPYTHON_LIBRARY=/usr/lib/libpython3.so \
     -DPYTHON_SIX_SOURCE_DIR=$(echo ${WORKSPACE}/srcdir/six*/) \
@@ -58,29 +70,26 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DPSIMD_SOURCE_DIR=${WORKSPACE}/srcdir/psimd \
     -DPTHREADPOOL_SOURCE_DIR=${WORKSPACE}/srcdir/pthreadpool \
     -DGOOGLETEST_SOURCE_DIR=$(echo ${WORKSPACE}/srcdir/googletest*/) \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DNNPACK_LIBRARY_TYPE="shared" \
     "${EXTRA_FLAGS[@]}" \
     ..
 make -j${nproc} VERBOSE=1
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, :glibc),
-    Linux(:i686, :glibc),
-    #Linux(:armv7l, :glibc),
-    Linux(:aarch64, :glibc),
-    # OSX is broken for the time being.  :(
-    #MacOS(:x86_64),
-    
-    # Looks like NNPACK doesn't support windows.  :(
-    #Windows(:x86_64),
-    #Windows(:i686),
-]
+# Build only Linux and MacOS
+platforms = filter(p -> (p isa Linux || p isa MacOS), supported_platforms())
+
+# Build only for AArch64, x86_64 and i686 (armv7l disabled for now until NEON support is figured out)
+platforms = filter(p -> arch(p) in (:aarch64, :x86_64, :i686), platforms)
+
+# AArch64 musl seems to have problems linking against libgcc_s, admit defeat for now
+platforms = filter(p -> !(arch(p) == :aarch64 && libc(p) == :musl), platforms)
 
 # The products that we will ensure are always built
 products = prefix -> Product[
+    LibraryProduct(prefix, "libnnpack", :libnnpack),
 ]
 
 # Dependencies that must be installed before this package can be built
