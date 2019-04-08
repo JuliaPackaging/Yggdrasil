@@ -28,7 +28,7 @@ MUSL_MACHINES="x86_64-linux-musl i686-linux-musl arm-linux-musleabihf aarch64-li
 MINGW_MACHINES="x86_64-w64-mingw32 i686-w64-mingw32"
 FREEBSD_MACHINES="x86_64-unknown-freebsd11.1"
 MACOS_MACHINES="x86_64-apple-darwin14"
-GCC_VERSIONS="4.8.5 6.1.0 7.1.0 8.1.0"
+GCC_VERSIONS="4.8.5 5.1.0 6.1.0 7.1.0 8.1.0"
 
 BUILD_ARGS=()
 for arg in "$@"; do

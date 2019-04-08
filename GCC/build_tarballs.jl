@@ -43,6 +43,17 @@ gcc_version_sources = Dict(
         "https://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz" =>
         "02500a4edd14875f94fe84cbeda4290425cb0c1c2474c6f75d75a303d64b4196",
     ],
+    v"5.1.0" => [
+        "https://mirrors.kernel.org/gnu/gcc/gcc-5.1.0/gcc-5.1.0.tar.bz2" =>
+        "b7dafdf89cbb0e20333dbf5b5349319ae06e3d1a30bf3515b5488f7e89dca5ad",
+        "https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz" =>
+        "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b",
+        "https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz" =>
+        "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4",
+        "https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2" =>
+        "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775",
+        "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.14.tar.bz2" =>
+        "7e3c02ff52f8540f6a85534f54158968417fd676001651c8289c705bd0228f36",
     v"6.1.0" => [
         "https://mirrors.kernel.org/gnu/gcc/gcc-6.1.0/gcc-6.1.0.tar.bz2" =>
         "09c4c85cabebb971b1de732a0219609f93fc0af5f86f6e437fd8d7f832f1a351",
