@@ -5,8 +5,8 @@ version = v"2019.01.04"
 
 # Sources we build from
 sources = [
-    "https://github.com/gliderlabs/docker-alpine/raw/d19c22b446ddcb16267f351ccbfeac5e6430720a/versions/library-3.8/x86_64/rootfs.tar.xz" =>
-    "4ca30c663e85c18f2cf6f2a2604c8f14950d33fca6492926998e952aeb4924cd",
+    "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz" =>
+    "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
     "./bundled",
     "../Patchelf/products",
     "../Objconv/products",
