@@ -11,8 +11,8 @@ sources = [
     "5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803",
     "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
     "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
-    "https://download.freebsd.org/ftp/releases/amd64/11.1-RELEASE/base.txz" =>
-    "62acaee7e7c9df66ee2c0c2d533d1da0ddf67d32833bc4b77d935ddd9fe27dab",
+    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
+    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
 ]
 
 # Bash recipe for building across all platforms
