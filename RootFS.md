@@ -48,6 +48,13 @@ Our GCC version selection is informed by two requirements: the `libgfortran` and
 
 We also compile `GCC 6.1.0` because we have had a report of at least one piece of software that refuses to build with anything older, but also contains Fortran code, and so we needed something that would work on `libgfortran.so.3` systems.  We include it here as part of the build, but it is somewhat "hidden" from the user, and will never be used to compile automatically, it must be manually selected.
 
+Expanded triplet naming convention
+==================================
+
+To disambiguate systems and build products across these dimensions of incompatibility, we have extended the platform target "triplet" concept to include tags for libgfortran ABI version and cxx11 string ABI choice.  A typical Ubuntu Xenial machine may therefore be fully identified by the triplet `x86_64-linux-gnu-gcc7-cxx11`, whereas a MacOS Mojave system may be identified by `x86_64-apple-darwin14-gcc8-cxx03`.  Note that the tag format `-gccN` was an unfortunately short-sighted choice to refer to `libgfortran` compatibility version, and that future versions of tools will support both `-gcc8` as well as the equivalent `-libgfortran5` tag format.  An (increasingly inaccurately named) triplet therefore fully specifies a given system, as well as a given build product.
+
+Not all software must be compiled for the full combinatorial explosion of (platform, libgfortran version, cxx11 ABI).  Many pieces of software can be compiled once per platform, and to signify that they do not depend on a particular `libgfortran` version or cxx11 ABI, they will simply lack those tags.  The consuming software must therefore match a particular host platform against a variety of possibly matching build products.
+
 Mounting/Using the RootFS
 =========================
 
@@ -70,3 +77,11 @@ done
 ```
 
 This will merge any shard file trees together into a single, unified tree, allowing us to, for example, merge the `binutils`, `GCC`, and `clang` shards into the same `x86_64-linux-gnu` directory.
+
+The [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl) Julia package contains all the logic necessary to download, extract, and run these compiler shares interactively on both Linux and MacOS hosts.  Run the following Julia script to install BinaryBuilder, download the appropriate compiler shard, and launch into an interactive, isolated environment with your current directory mapped into the build environment:
+
+```julia
+Pkg.add("BinaryBuilder")
+using BinaryBuilder
+BinaryBuilder.runshell(Linux(:x86_64))
+```
