@@ -76,7 +76,7 @@ for f in /opt/*; do
 done
 ```
 
-This will merge any shard file trees together into a single, unified tree, allowing us to, for example, merge the `binutils`, `GCC`, and `clang` shards into the same `x86_64-linux-gnu` directory.
+This will merge any shard file trees together into a single, unified tree, allowing us to, for example, merge the `binutils`, `GCC`, and `clang` shards into the same `/opt/x86_64-linux-gnu` directory.
 
 The [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl) Julia package contains all the logic necessary to download, extract, and run these compiler shares interactively on both Linux and MacOS hosts.  Run the following Julia script to install BinaryBuilder, download the appropriate compiler shard, and launch into an interactive, isolated environment with your current directory mapped into the build environment:
 
