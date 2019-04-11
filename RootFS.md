@@ -11,6 +11,11 @@ This document details some of the journey we have embarked upon to create a Linu
 
 These target platforms are compiled for by building a suite a cross-compilers (`gcc`, `gfortran`, `clang`, `binutils`, etc...) that run on `x86-64-linux-musl`, but target the specific platform.  Unfortunately, it is not sufficient to simply build these compilers once per target, because of incompatibilities between the generated code and the user's system where this code may eventually be running.
 
+The RootFS
+==========
+
+Our Linux environment is based upon Alpine linux, due to its small overhead, single-user nature, and because we enjoy the challenge of building all our native tools against `musl`.  It builds character.  Most native tools are installed directly through `apk`, with the notable exception of compilers such as `GCC` and `clang`, which we compile ourselves directly, as explained below.
+
 Sources of incompatibility
 ==========================
 
@@ -42,3 +47,26 @@ To deal with the above sources of incompatibility, we compile the following shar
 Our GCC version selection is informed by two requirements: the `libgfortran` and `cxx11` incompatibilities.  First off, we must select compiler versions that span the three `libgfortran` SONAMEs we support, and we choose the oldest possible compilers within each SONAME bucket, yielding GCC `4.8.5`, `7.1.0` and `8.1.0`.  We choose the oldest possible GCC version so as to maximize the chance that C++ code compiled via this shard will be portable on other user's systems even without Julia's bundled `libstdc++.so`.  Next, we must provide a way for a user that is on a system with cxx11-defaulted strings but still using `libgfortran.so.3` (this would be the case if they were using GCC 5.3.1, for example, as Ubuntu 16.04 does) to link against our C++ code, so we add `5.2.0` in as the oldest 5.X.0 version that compiles on all our platforms, links against `libgfortran.so.3`, and defaults to `cxx11` string ABI.
 
 We also compile `GCC 6.1.0` because we have had a report of at least one piece of software that refuses to build with anything older, but also contains Fortran code, and so we needed something that would work on `libgfortran.so.3` systems.  We include it here as part of the build, but it is somewhat "hidden" from the user, and will never be used to compile automatically, it must be manually selected.
+
+Mounting/Using the RootFS
+=========================
+
+The RootFS and compiler shards, as they are referred to, are hosted on Amazon S3 buckets and available in both `.tar.gz` archives as well as `.squashfs` files.  When downloaded, they should be extracted/mounted in a configuration similar to the following:
+
+* `RootFS` shard mounted at `/` (contains Alpine base image, general native tools such as `bash`, `cmake`, etc....)
+* `BaseCompilerShard` mounted at `/opt/${target}` (contains kernel headers, target libc, CMake toolchain definitions, etc...)
+* `binutils` shard mounted at `/opt/${target}/binutils-${binutils_version}` (contains `ld`, `as`, etc...)
+* `GCC` shard mounted at `/opt/${target}/gcc-${gcc_version}` (contains `gcc`,  `g++`, `gfortran`, etc...)
+* `clang` shard mounted at `/opt/x86_64-linux-gnu/clang-${clang_version}` (contains `clang`, `clang++`, etc...)
+
+Upon launch, the rootfs system should "coalesce" all files within `/opt/${target}/*` to a single, merged, tree in `/opt/${target}`.  This is done automatically by the `sandbox` isolation utility utilized by the User Namespace runner within `BinaryBuilder.jl`, but for other methods of using this build environment, you should run the following `bash` script at startup:
+
+```bash
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+for f in /opt/*; do
+    mount -t overlay overlay -olowerdir=$(join_by ":" "${f}"/*) "${f}"
+done
+```
+
+This will merge any shard file trees together into a single, unified tree, allowing us to, for example, merge the `binutils`, `GCC`, and `clang` shards into the same `x86_64-linux-gnu` directory.
