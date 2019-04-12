@@ -28,6 +28,20 @@ There are multiple sources of incompatibility that can prevent binaries from bei
 * `binutils`: Using too new of a `binutils` can cause static libraries to be unusable by older `ld` versions.  To deal with this, we use a `binutils` version that is appropriate for the GCC version in use.
 * `clang`: No incompatibilities known.  <3
 
+`glibc` Versions
+================
+
+The version of `glibc` we can compile against varies by system; we attempt to use the earliest version that will compile against a specific architecture and all our GCC versions, which works out to the following table:
+
+| Architecture | `glibc` |
+|--------------|---------|
+|    x86_64    | v2.12.2 |
+|     i686     | v2.12.2 |
+|    aarch64   | v2.19   |
+|     armv7l   | v2.19   |
+|  powerpc64le | v2.25   |
+
+
 Compiler Shards
 ===============
 
