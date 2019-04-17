@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibSSH2"
-version = v"1.8.0"
+version = v"1.8.2"
 
 # Collection of sources required to build Ogg
 sources = [
    "https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz" =>
-   "39f34e2f6835f4b992cafe8625073a88e5a28ba78f83e8099610a7b3af4676d4",
+   "088307d9f6b6c4b8c13f34602e8ff65d21c2dc4d55284dfe15d502c4ee190d67",
    "./bundled",
 ]
 
