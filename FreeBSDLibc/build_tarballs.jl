@@ -5,8 +5,8 @@ version = v"11.1"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
-    "https://download.freebsd.org/ftp/releases/amd64/11.1-RELEASE/base.txz" =>
-    "62acaee7e7c9df66ee2c0c2d533d1da0ddf67d32833bc4b77d935ddd9fe27dab"
+    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
+    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19"
 ]
 
 # Bash recipe for building across all platforms

@@ -6,9 +6,11 @@ set -e
 # previously built tarballs and squashfs files, and therefore will not rebuild
 # tarballs it doesn't think it needs to.
 
-# We're essentially going to ship three things:
-# * KernelHeaders + Libc + Binutils (per-target)
-# * GCC (per-target and per-ABI)
+# We're going to ship five things:
+# * RootFS (single product)
+# * HostTools (single product, stuff we build ourselves like `objcopy`)
+# * KernelHeaders + cmake toolchains + other misc. stuff (per-target)
+# * Libc + Binutils + GCC (per-target and per-ABI)
 # * LLVM (single product for everybody)
 #
 # Everything else is either a host tool contained within the base
@@ -28,7 +30,7 @@ MUSL_MACHINES="x86_64-linux-musl i686-linux-musl arm-linux-musleabihf aarch64-li
 MINGW_MACHINES="x86_64-w64-mingw32 i686-w64-mingw32"
 FREEBSD_MACHINES="x86_64-unknown-freebsd11.1"
 MACOS_MACHINES="x86_64-apple-darwin14"
-GCC_VERSIONS="4.8.5 5.1.0 6.1.0 7.1.0 8.1.0"
+GCC_VERSIONS="4.8.5 5.2.0 6.1.0 7.1.0 8.1.0"
 
 BUILD_ARGS=()
 for arg in "$@"; do
@@ -38,6 +40,16 @@ for arg in "$@"; do
             ;;
         --debug)
             BUILD_ARGS+=("--debug")
+            ;;
+        --clean)
+            echo "Clearing builds..."
+            ./clean_builds.sh
+            ;;
+        --nuke)
+            echo "Clearing builds..."
+            ./clean_builds.sh
+            echo "Clearing products..."
+            ./clean_products.sh
             ;;
         *)
             ;;
@@ -85,7 +97,7 @@ build_cached()
 build_host()
 {
     echo "Building ${1}..."
-    build_cached ${1} "${1}.*.x86_64-linux-gnu" x86_64-linux-gnu
+    build_cached ${1} "${1}.*.x86_64-linux-musl" x86_64-linux-musl
 }
 
 build_all_machines()
@@ -96,62 +108,43 @@ build_all_machines()
     done
 }
 
-# Start with building host-only tools and rootfs
-build_host Objconv
-build_host Patchelf
-build_host Sandbox
-build_host Linux
-build_host Wine
-build_host Qemu
-for v in ${GLIBC_VERSIONS}; do
-    NODOT_VERSION=$(echo ${v} | tr -d '.')
-    GLIBC_MACHINES_VAR="GLIBC_MACHINES_${NODOT_VERSION}"
-    for m in ${!GLIBC_MACHINES_VAR}; do
-        build_cached Glibc "Glibc*${v}*${m}" "--glibc-version ${v} ${m}"
-    done
-done
-build_host Rootfs
+## BOOTSTRAP ZONE ##
+# Everything within here needs to set `BinaryBuilder.bootstrap = true`, which will cause
+# BB to choose the latest installed rootfs as well as avoid mounting compiler shards.
+# This is how we start out; small and light.
 
-# Next build kernel headers
+# Start by assembling the Rootfs
+build_host Rootfs
+./install_dev_rootfs.sh
+
+# Collect Kernel Headers in anticipation of the GCC show about to come
 build_all_machines KernelHeaders
 
-# Then build binutils
-echo "Building Binutils..."
-for m in ${MACHINES}; do
-    build_cached Binutils "Binutils-${m}*.x86_64-linux-gnu" ${m}
-done
-
-
-# Next, Musl, Mingw, FreeBSD and MacOS
-echo "Building C runtimes..."
-for m in ${MUSL_MACHINES}; do
-    build_cached Musl "Musl*${m}" ${m}
-done
-for m in ${MINGW_MACHINES}; do
-    build_cached Mingw "Mingw*${m}" ${m}
-done
-for m in ${FREEBSD_MACHINES}; do
-    build_cached FreeBSDLibc "FreeBSDLibc*${m}" ${m}
-done
-for m in ${MACOS_MACHINES}; do
-    build_cached MacOSLibc "MacOSLibc*${m}" ${m}
-done
-
-# Assemble base compiler shards
-for m in ${MACHINES}; do
-    build_cached BaseCompilerShard "BaseCompilerShard-${m}" ${m}
-done
-
-# Next build GCC
-echo "Building GCC..."
+# Let's get at it! 
 for v in ${GCC_VERSIONS}; do
     for m in ${MACHINES}; do
-        build_cached GCC "GCC-${m}*${v}*x86_64-linux-gnu" "--gcc-version ${v} ${m}"
+        build_cached GCCBootstrap "GCCBootstrap-${m}*${v}*x86_64-linux-musl" "--gcc-version ${v} ${m}"
     done
 done
 
 # Next build LLVM, and we're done!
-build_host LLVM
+build_host LLVMBootstrap
+
+exit 0
+
+# Deploy the rootfs we've got so far
+./install_dev_rootfs.sh
+## END BOOTSTRAP ZONE
+
+# Start with building host-only tools and rootfs
+build_host Objconv
+build_host Patchelf
+build_host Linux
+build_host Wine
+build_host Qemu
+build_cached Glibc "Glibc*2.25*x86_64-linux-gnu" "--glibc-version 2.25 x86_64-linux-gnu"
+build_cached Glibc "Glibc*2.25*i686-linux-gnu" "--glibc-version 2.25 i686-linux-gnu"
+build_host Rootfs
 
 
 ## As an aside, I have realized that somehow, my Julia projects always wind

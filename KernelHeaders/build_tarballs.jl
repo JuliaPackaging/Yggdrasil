@@ -1,19 +1,40 @@
 using BinaryBuilder
 
+# Don't mount any shards that you don't need to
+Core.eval(BinaryBuilder, :(bootstrap_mode = true))
+
 name = "KernelHeaders"
 version = v"4.12" # We'll just use the linux kernel header version here, as it's likely the fastest-moving
 
 # sources to build, such as linux kernel headers, mingw32, osx  our patches, etc....
-sources = [
-	"https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
-	"a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
-    "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v5.0.4.tar.bz2" =>
-    "5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803",
-    "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
-    "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
-    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
-    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
-]
+compiler_target = platform_key_abi(ARGS[end])
+if isa(compiler_target, UnknownPlatform)
+    error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
+end
+
+if isa(compiler_target, Linux)
+	sources = [
+        "https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
+        "a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
+    ]
+elseif isa(compiler_target, Windows)
+	sources = [
+        "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
+        "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
+    ]
+elseif isa(compiler_target, MacOS)
+	sources = [
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
+        "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
+    ]
+elseif isa(compiler_target, FreeBSD)
+    sources = [
+        "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
+        "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
+    ]
+else
+    error("Unknown platform type $(compiler_target)")
+end
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -43,35 +64,48 @@ target_to_linux_arch()
 ## sysroot is where most of this stuff gets plopped
 sysroot=${prefix}/${target}/sys-root
 
-if [[ "${target}" == *-linux-* ]]; then
-    # First, install kernel headers
-    cd $WORKSPACE/srcdir/linux-*/
+case "${target}" in
+    *-linux-*)
+        cd $WORKSPACE/srcdir/linux-*/
 
-    # The kernel make system can't deal with spaces (for things like ccache) very well
-    KERNEL_FLAGS="ARCH=\\\"$(target_to_linux_arch ${target})\\\" CROSS_COMPILE=\\\"/opt/${target}/bin/${target}-\\\" HOSTCC=\\\"${HOSTCC}\\\""
-    eval make ${KERNEL_FLAGS} mrproper V=1
-    eval make ${KERNEL_FLAGS} headers_check V=1
-    eval make ${KERNEL_FLAGS} INSTALL_HDR_PATH=${sysroot}/usr V=1 headers_install
+        # Grumble, grumble, need gcc just to install some headers...
+        apk add gcc musl-dev
 
-elif [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw-*/mingw-w64-headers
-    ./configure --prefix=/ \
-        --enable-sdk=all \
-        --enable-secure-api \
-        --host=${target}
+        # The kernel make system can't deal with spaces (for things like ccache) very well
+        #KERNEL_FLAGS="ARCH=\\\"$(target_to_linux_arch ${target})\\\" CROSS_COMPILE=\\\"/opt/${target}/bin/${target}-\\\" HOSTCC=\\\"${HOSTCC}\\\""
+        KERNEL_FLAGS="ARCH=$(target_to_linux_arch ${target}) -j${nproc}"
+        make ${KERNEL_FLAGS} mrproper V=1
+        make ${KERNEL_FLAGS} headers_check V=1
+        make ${KERNEL_FLAGS} INSTALL_HDR_PATH=${sysroot}/usr V=1 headers_install
+        ;;
 
-    make install DESTDIR=${sysroot}
+    *-mingw*)
+        cd $WORKSPACE/srcdir/mingw-*/mingw-w64-headers
+        ./configure --prefix=/ \
+            --enable-sdk=all \
+            --enable-secure-api \
+            --host=${target}
 
-elif [[ "${target}" == *-freebsd* ]]; then
-    mkdir -p "${sysroot}/usr"
-    mv usr/include "${sysroot}/"
-    ln -sf "../include" "${sysroot}/usr/include"
+        make install DESTDIR=${sysroot}
+        ;;
 
-elif [[ "${target}" == *-apple-* ]]; then
-    cd $WORKSPACE/srcdir/MacOSX10.10.sdk
-    mkdir -p "${sysroot}"
-    mv usr/include "${sysroot}/"
-fi
+    *-freebsd*)
+        mkdir -p "${sysroot}/usr"
+        mv usr/include "${sysroot}/"
+        ln -sf "../include" "${sysroot}/usr/include"
+        ;;
+
+    *-apple-*)
+        cd $WORKSPACE/srcdir/MacOSX10.10.sdk
+        mkdir -p "${sysroot}/usr"
+        mv usr/include "${sysroot}/usr"
+        mv System "${sysroot}/"
+        ;;
+    *)
+        echo "ERROR: Unmatched platform!" >&2
+        exit 1
+        ;;
+esac
 """
 
 # These are the platforms we will build for by default, unless further
@@ -87,4 +121,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)

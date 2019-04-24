@@ -10,13 +10,18 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir
+for tool in LD AS AR CC CXX FC RANLIB READELF STRIP OBJDUMP OBJCOPY NM LIPO LIBTOOL; do
+    unset ${tool}
+    unset "HOST${tool}"
+    unset "BUILD_${tool}"
+    unset "${tool}_FOR_BUILD"
+done
+cd ${WORKSPACE}/srcdir/linux-*/
 export PATH=/usr/bin:$PATH
-cd linux-*/
 mv ../linuxkernel.config arch/x86/configs/binarybuilder_defconfig
-apk add libelf-dev openssl-dev libelf-dev musl-dev bc gcc linux-headers
+apk add gcc openssl-dev libelf-dev musl-dev bc linux-headers
 make binarybuilder_defconfig
-make -j40
+make -j${nproc}
 cp vmlinux $prefix
 cp arch/x86/boot/bzImage $prefix
 """
@@ -30,7 +35,8 @@ platforms = [
     Linux(:x86_64, :glibc)
 ]
 
-dependencies = []
+dependencies = [
+]
 
 # Build the given platforms using the given sources
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

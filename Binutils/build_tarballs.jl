@@ -8,14 +8,12 @@ deleteat!(ARGS, length(ARGS))
 
 # Encode the compiler target into the name
 name = "Binutils-$(compiler_target)"
-#version = v"2.31.1"
-version = v"2.29"
+version = v"2.24"
 
 # Collection of sources required to build Binutils
 sources = [
-    "https://ftp.gnu.org/gnu/binutils/binutils-2.29.tar.bz2" =>
-    #"5d20086ecf5752cc7d9134246e9588fa201740d540f7eb84d795b1f7a93bca86",
-    "29a29549869039aad75fdf507ac30366da5ad0b974fbff4a8e7148dbf4f40ebf",
+    "https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2" =>
+	"e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137",
     "https://github.com/tpoechtrager/apple-libtapi.git" =>
     "e56673694db395e25b31808b4fbb9a7005e6875f",
     "https://github.com/tpoechtrager/cctools-port.git" =>
@@ -52,7 +50,8 @@ if [[ $(compiler_target) == *apple* ]]; then
 else
     cd \${WORKSPACE}/srcdir/binutils-*/
 
-    atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/binutils_COFF_bfd.patch"
+    #atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/binutils_COFF_bfd.patch"
+    update_configure_scripts
 
     ./configure --prefix=\${prefix} \\
         --target=$(compiler_target) \\

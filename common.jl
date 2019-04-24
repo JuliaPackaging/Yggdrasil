@@ -2,7 +2,7 @@ using SHA, BinaryBuilder
 using BinaryBuilder: TarballDependency
 
 function find_tarball(project, pattern)
-    dir = joinpath("..", project, "products")
+    dir = joinpath(@__DIR__, project, "products")
     if !isdir(dir)
         error("No $(project)/products directory?!")
     end
@@ -18,4 +18,11 @@ function find_tarball(project, pattern)
         end
     end
     error("Could not find $(project) tarball matching $(pattern)!")
+end
+
+function is_outdated(test, reference)
+    if !isfile(test)
+        return true
+    end
+    return stat(test).mtime < stat(reference).mtime
 end

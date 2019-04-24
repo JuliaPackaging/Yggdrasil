@@ -7,6 +7,7 @@ version = v"1.1.19"
 sources = [
     "https://www.musl-libc.org/releases/musl-1.1.19.tar.gz" =>
     "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9",
+    "../KernelHeaders/products/",
 ]
 
 # Bash recipe for building across all platforms
@@ -14,6 +15,10 @@ script = raw"""
 mkdir ${WORKSPACE}/srcdir/musl_build
 cd ${WORKSPACE}/srcdir/musl_build
 
+# Extract mounted-in KernelHeaders
+tar -C ${prefix} -zxf ${WORKSPACE}/srcdir/KernelHeaders.*.${target}.tar.gz
+
+# The sysroot comes from the tarball we just extracted above
 sysroot=${prefix}/${target}/sys-root
 
 ${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
@@ -44,7 +49,6 @@ products(prefix) = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/staticfloat/LinuxKernelHeadersBuilder/releases/download/v4.12-0/build_LinuxKernelHeaders.v4.12.0.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -4,7 +4,7 @@
 BB_PATH=$(julia -e 'using BinaryBuilder; print(abspath(dirname(dirname(pathof(BinaryBuilder)))))')
 
 # Copy everything over to ~/.julia/dev/BinaryBuilder/deps/downloads
-for proj in Rootfs BaseCompilerShard GCC LLVM; do
+for proj in Rootfs BaseCompilerShard GCCBootstrap GCC LLVM; do
     if [[ "$1" == "--reverse" ]]; then
         rsync -Pav --size-only --include="${proj}*.tar.gz" --include="${proj}*.squashfs" --exclude='*' "${BB_PATH}/deps/downloads/" "${proj}/products"
 

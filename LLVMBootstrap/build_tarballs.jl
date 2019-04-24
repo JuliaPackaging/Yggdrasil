@@ -1,45 +1,34 @@
-###
-# LLVMBuilder -- reliable LLVM builds all the time.
-#
-# --llvm-asserts: Build the Release+Asserts version
-# --llvm-check: Build a RelWithDebInfo+Asserts version on x86-64-linux-gnu
-#               and run the testsuite. This will build for all targets.
-###
+include("../common.jl")
 
 using BinaryBuilder
+Core.eval(BinaryBuilder, :(bootstrap_mode = true))
 
 # Collection of sources required to build LLVM
-llvm_ver = "6.0.1"
+llvm_ver = v"8.0.0"
 sources = [
     "http://releases.llvm.org/$(llvm_ver)/llvm-$(llvm_ver).src.tar.xz" =>
-    "b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2",
+    "8872be1b12c61450cacc82b3d153eab02be2546ef34fa3580ed14137bb26224c",
     "http://releases.llvm.org/$(llvm_ver)/cfe-$(llvm_ver).src.tar.xz" =>
-    "7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667",
+    "084c115aab0084e63b23eee8c233abb6739c399e29966eaeccfc6e088e0b736b",
     "http://releases.llvm.org/$(llvm_ver)/compiler-rt-$(llvm_ver).src.tar.xz" =>
-    "f4cd1e15e7d5cb708f9931d4844524e4904867240c306b06a4287b22ac1c99b9",
+    "b435c7474f459e71b2831f1a4e3f1d21203cb9c0172e94e9d9b69f50354f21b1",
     #"http://releases.llvm.org/$(llvm_ver)/lldb-$(llvm_ver).src.tar.xz" =>
-    #"",
+    #"49918b9f09816554a20ac44c5f85a32dc0a7a00759b3259e78064d674eac0373",
     "http://releases.llvm.org/$(llvm_ver)/libcxx-$(llvm_ver).src.tar.xz" =>
-    "7654fbc810a03860e6f01a54c2297a0b9efb04c0b9aa0409251d9bdb3726fc67",
+    "c2902675e7c84324fb2c1e45489220f250ede016cc3117186785d9dc291f9de2",
     "http://releases.llvm.org/$(llvm_ver)/libcxxabi-$(llvm_ver).src.tar.xz" =>
-    "209f2ec244a8945c891f722e9eda7c54a5a7048401abd62c62199f3064db385f",
+    "c2d6de9629f7c072ac20ada776374e9e3168142f20a46cdb9d6df973922b07cd",
     "http://releases.llvm.org/$(llvm_ver)/polly-$(llvm_ver).src.tar.xz" =>
-    "e7765fdf6c8c102b9996dbb46e8b3abc41396032ae2315550610cf5a1ecf4ecc",
+    "e3f5a3d6794ef8233af302c45ceb464b74cdc369c1ac735b6b381b21e4d89df4",
     "http://releases.llvm.org/$(llvm_ver)/libunwind-$(llvm_ver).src.tar.xz" =>
-    "a8186c76a16298a0b7b051004d0162032b9b111b857fbd939d71b0930fd91b96",
+    "ff243a669c9cef2e2537e4f697d6fb47764ea91949016f2d643cb5d8286df660",
     "http://releases.llvm.org/$(llvm_ver)/lld-$(llvm_ver).src.tar.xz" =>
-    "e706745806921cea5c45700e13ebe16d834b5e3c0b7ad83bf6da1f28b0634e11",
-
-    # Include our LLVM patches
-    "patches",
+    "9caec8ec922e32ffa130f0fb08e4c5a242d7e68ce757631e425e9eba2e1a6e37",
 ]
 
-llvm_ver = VersionNumber(llvm_ver)
-
 # Since we kind of do this LLVM setup twice, this is the shared setup start:
-script_setup = raw"""
-# We want to exit the program if errors occur.
-set -o errexit
+script = raw"""
+apk add build-base python-dev linux-headers
 
 cd $WORKSPACE/srcdir/
 
@@ -65,81 +54,6 @@ done
 # Next, boogie on down to llvm town
 cd llvm-*.src
 
-# Update config.guess/config.sub stuff
-#update_configure_scripts
-
-# Apply all our patches
-for f in $WORKSPACE/srcdir/llvm_patches/*.patch; do
-    echo "Applying patch ${f}"
-    atomic_patch -p1 "${f}"
-done
-"""
-
-# The very first thing we need to do is to build llvm-tblgen for x86_64-linux-gnu
-# This is because LLVM's cross-compile setup is kind of borked, so we just
-# build the tools natively ourselves, directly.  :/
-script = script_setup * raw"""
-# Build llvm-tblgen, clang-tblgen, and llvm-config
-mkdir build && cd build
-CMAKE_FLAGS="-DLLVM_TARGETS_TO_BUILD:STRING=host"
-cmake .. ${CMAKE_FLAGS}
-make -j${nproc} llvm-tblgen clang-tblgen llvm-config
-
-# Copy the tblgens and llvm-config into our destination `bin` folder:
-mkdir -p $prefix/bin
-mv bin/llvm-tblgen $prefix/bin/
-mv bin/clang-tblgen $prefix/bin/
-mv bin/llvm-config $prefix/bin/
-"""
-
-# We'll do this build for x86_64-linux-gnu only, as that's the arch we're building on
-platforms = [
-    Linux(:x86_64),
-]
-
-# We only care about llvm-tblgen and clang-tblgen
-products(prefix) = [
-    ExecutableProduct(prefix, "llvm-tblgen", :llvm_tblgen)
-    ExecutableProduct(prefix, "clang-tblgen", :clang_tblgen)
-    ExecutableProduct(prefix, "llvm-config", :llvm_config)
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-]
-
-llvm_ARGS = filter(s->startswith(s, "--llvm"), ARGS)
-filter!(s->!startswith(s, "--llvm"), ARGS)
-
-# Build the tarball, overriding ARGS so that the user doesn't shoot themselves in the foot,
-# but only do this if we don't already have a Tblgen tarball available:
-tblgen_tarball = joinpath("products", "tblgen.x86_64-linux-gnu.tar.gz")
-if !isfile(tblgen_tarball)
-    tblgen_ARGS = ["x86_64-linux-gnu"]
-    if "--verbose" in ARGS
-        push!(tblgen_ARGS, "--verbose")
-    end
-    if "--debug" in ARGS
-        push!(tblgen_ARGS, "--debug")
-    end
-    product_hashes = build_tarballs(tblgen_ARGS, "tblgen", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
-
-    # Extract path information to the built tblgen tarball and its hash
-    tblgen_tarball, tblgen_hash = product_hashes["x86_64-linux-gnu"]
-    tblgen_tarball = joinpath("products", tblgen_tarball)
-else
-    info("Using pre-built tblgen tarball at $(tblgen_tarball)")
-    using SHA: sha256
-    tblgen_hash = open(tblgen_tarball) do f
-        bytes2hex(sha256(f))
-    end
-end
-
-# Take that tarball, feed it into our next build as another "source".
-push!(sources, tblgen_tarball => tblgen_hash)
-
-# Next, we will Bash recipe for building across all platforms
-script = script_setup * raw"""
 # This value is really useful later
 LLVM_DIR=$(pwd)
 
@@ -182,14 +96,6 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_CROSSCOMPILING=True"
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOLS_INSTALL_DIR=${prefix}/tools"
 
-# Tell LLVM where our pre-built tblgen tools are
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TABLEGEN=${WORKSPACE}/srcdir/bin/llvm-tblgen"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCLANG_TABLEGEN=${WORKSPACE}/srcdir/bin/clang-tblgen"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_CONFIG_PATH=${WORKSPACE}/srcdir/bin/llvm-config"
-
-# Explicitly use our cmake toolchain file
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain"
-
 # Manually set the host triplet, as otherwise on some platforms it tries to guess using
 # `ld -v`, which is hilariously wrong.
 CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_HOST_TRIPLE=${target}"
@@ -222,9 +128,7 @@ ln -s clang ${prefix}/tools/clang++
 """
 
 # BB is using musl as a platform and we don't want to run glibc binaries on it.
-platforms = [
-    BinaryProvider.Linux(:x86_64, :glibc)
-]
+platforms = [BinaryProvider.Linux(:x86_64, :musl)]
 
 # The products that we will ensure are always built
 products(prefix) = [
@@ -241,12 +145,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-config = ""
 name = "LLVM"
 
-build_tarballs(ARGS, name, llvm_ver, sources, config * script, platforms, products, dependencies; skip_audit=true)
-
-if !("--llvm-keep-tblgen" in llvm_ARGS)
-    # Remove tblgen tarball as it's no longer useful, and we don't want to upload them.
-    rm(tblgen_tarball; force=true)
-end
+build_tarballs(ARGS, name, llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
