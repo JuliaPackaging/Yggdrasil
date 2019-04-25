@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, ObjectFile
 
 verbose = "--verbose" in ARGS
 
@@ -23,7 +23,32 @@ for (platform, (suffix, hash)) in name_mapping
     extract_dir = joinpath(@__DIR__, "build", triplet(platform))
     tarball_path = joinpath(@__DIR__, "build", "$(name)-v$(version)-$(triplet(platform)).tar.gz")
     BinaryBuilder.download_verify_unpack("https://github.com/sciapp/gr/releases/download/v$(version)/gr-$(version)-$(suffix).tar.gz", hash, extract_dir; tarball_path=tarball_path, ignore_existence=true, force=true, verbose=verbose)
-    product_hashes[platform] = BinaryBuilder.package(Prefix(joinpath(extract_dir, "gr")), joinpath(@__DIR__, "products", name), version; platform=platform, verbose=verbose, force=true)
+
+    if platform isa MacOS
+        # If we're dealing with a MacOS build, rename everything from `.so`, which is just ridiculous.
+        libdir = joinpath(extract_dir, "gr", "lib")
+        ur = BinaryBuilder.preferred_runner()(libdir; cwd="/workspace/", platform=platform)
+        install_name_tool = "/opt/x86_64-apple-darwin14/bin/install_name_tool"
+        for f in readdir(libdir)
+            if endswith(f, ".so")
+                f_new = "$(f[1:end-3]).dylib"
+                mv(joinpath(libdir, f), joinpath(libdir, f_new); force=true)
+
+                # Convert all linkages from `.so` to `.dylib` endings:
+                readmeta(joinpath(libdir, f_new)) do oh
+                    for link in ObjectFile.path.(DynamicLinks(oh))
+                        if endswith(link, ".so")
+                            link_new = "$(link[1:end-3]).dylib"
+                            run(ur, `$install_name_tool -change $(link) $(link_new) $(f_new)`, "/tmp/temp.log")
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    tarball_path, hash = BinaryBuilder.package(Prefix(joinpath(extract_dir, "gr")), joinpath(@__DIR__, "products", name), version; platform=platform, verbose=verbose, force=true)
+    product_hashes[triplet(platform)] = (basename(tarball_path), hash)
 end
 
 products = [
@@ -32,4 +57,4 @@ products = [
 ]
 
 bin_path = "https://github.com/$(BinaryBuilder.get_repo_name())/releases/download/$(BinaryBuilder.get_tag_name())"
-BinaryBuilder.print_buildjl(joinpath(@__DIR__, "products"), name, version, products, product_hashes, bin_path)
+BinaryBuilder.print_buildjl(@__DIR__, name, version, products, product_hashes, bin_path)
