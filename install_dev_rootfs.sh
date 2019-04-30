@@ -3,8 +3,14 @@
 
 BB_PATH=$(julia -e 'using BinaryBuilder; print(abspath(dirname(dirname(pathof(BinaryBuilder)))))')
 
+# Install only a subset of the full set of projects if this is set
+PROJECTS="Rootfs GCCBootstrap LLVMBootstrap HostTools"
+if [[ -n "$1" ]] && [[ $1 == *"${PROJECTS}"* ]]; then
+    PROJECTS="$1"
+fi
+
 # Copy everything over to ~/.julia/dev/BinaryBuilder/deps/downloads
-for proj in Rootfs BaseCompilerShard GCCBootstrap GCC LLVM; do
+for proj in $PROJECTS; do
     if [[ "$1" == "--reverse" ]]; then
         rsync -Pav --size-only --include="${proj}*.tar.gz" --include="${proj}*.squashfs" --exclude='*' "${BB_PATH}/deps/downloads/" "${proj}/products"
 

@@ -7,6 +7,7 @@
 FILE="${!#}"
 FLAGS="${@:1:$#-1}"
 
+echo "Attempting to apply $(basename "${FILE}")..." >&2
 if ! patch -f -N ${FLAGS} < "${FILE}"; then
     echo "Patch $(basename "${FILE}") could not be applied! Reverting..." >&2
     for f in $(lsdiff --strip 1 "${FILE}"); do

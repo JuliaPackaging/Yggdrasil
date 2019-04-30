@@ -13,8 +13,8 @@ rootfs_hash = "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_tarxz_path = joinpath(@__DIR__, "build", "rootfs.tar.xz")
-rootfs_targz_path = joinpath(@__DIR__, "products", "$(name).v$(version).$(triplet(host_platform)).tar.gz")
-rootfs_squash_path = joinpath(@__DIR__, "products", "$(name).v$(version).$(triplet(host_platform)).squashfs")
+rootfs_targz_path = joinpath(@__DIR__, "products", "$(name)-stage1.v$(version).$(triplet(host_platform)).tar.gz")
+rootfs_squash_path = joinpath(@__DIR__, "products", "$(name)-stage1.v$(version).$(triplet(host_platform)).squashfs")
 BinaryBuilder.download_verify(rootfs_url, rootfs_hash, rootfs_tarxz_path; verbose=verbose, force=true)
 
 # Unpack the rootfs (using `tar` on the local machine), then pack it up again (again using tools on the local machine) and squashify it:
@@ -56,6 +56,10 @@ open(joinpath(rootfs_extracted, "etc", "resolv.conf"), "w") do io
         println(io, "nameserver $(resolver)")
     end
 end
+# we really like bash, and it's annoying to have to polymorphise, so just lie for the stage 1 bootstrap
+cp(joinpath(@__DIR__, "bundled", "utils", "fake_bash.sh"), joinpath(rootfs_extracted, "bin", "bash"); force=true)
+cp(joinpath(@__DIR__, "bundled", "utils", "profile"), joinpath(rootfs_extracted, "etc", "profile"); force=true)
+cp(joinpath(@__DIR__, "bundled", "utils", "profile.d"), joinpath(rootfs_extracted, "etc", "profile.d"); force=true)
 success(`tar -C $(rootfs_extracted) -czf $(rootfs_targz_path) .`)
 success(`mksquashfs $(rootfs_extracted) $(rootfs_squash_path) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
 
@@ -135,6 +139,9 @@ chmod +x ./usr/local/bin/*
 
 # Deploy configuration
 cp $WORKSPACE/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
+cp $WORKSPACE/srcdir/utils/profile ${prefix}/etc/
+cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
+
 
 # Include GlibcBuilder v2.25 output as our official native x86_64-linux-gnu and i686-linux-gnu loaders.
 # We use 2.25 because it is relatively recent and builds with GCC 4.8.5 and Binutils 2.24
@@ -152,10 +159,6 @@ cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
 # Extract a very recent libstdc++.so.6 to /lib64 as well
 cp -d $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
-
-# Useful tools
-mkdir -p ${prefix}/root
-echo "alias ll='ls -la'" >> ${prefix}/root/.bashrc
 
 # Create /overlay_workdir so that we know we can always mount an overlay there.  Same with /meta
 mkdir -p ${prefix}/overlay_workdir ${prefix}/meta

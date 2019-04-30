@@ -115,7 +115,7 @@ build_all_machines()
 
 # Start by assembling the Rootfs
 build_host Rootfs
-./install_dev_rootfs.sh
+./install_dev_rootfs.sh Rootfs
 
 # Collect Kernel Headers in anticipation of the GCC show about to come
 build_all_machines KernelHeaders
@@ -134,7 +134,6 @@ exit 0
 
 # Deploy the rootfs we've got so far
 ./install_dev_rootfs.sh
-## END BOOTSTRAP ZONE
 
 # Start with building host-only tools and rootfs
 build_host Objconv
@@ -145,6 +144,7 @@ build_host Qemu
 build_cached Glibc "Glibc*2.25*x86_64-linux-gnu" "--glibc-version 2.25 x86_64-linux-gnu"
 build_cached Glibc "Glibc*2.25*i686-linux-gnu" "--glibc-version 2.25 i686-linux-gnu"
 build_host Rootfs
+## END BOOTSTRAP ZONE
 
 
 ## As an aside, I have realized that somehow, my Julia projects always wind

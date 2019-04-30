@@ -1,0 +1,12 @@
+# We explicitly overwrite `/etc/profile` so that we don't pick up things
+# like `PATH` from the default system configuration.
+export CHARSET=UTF-8
+umask 022
+
+alias ll='ls -la'
+
+for script in /etc/profile.d/*.sh ; do
+    if [ -r "$script" ] ; then
+        source "$script"
+    fi
+done

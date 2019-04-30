@@ -19,6 +19,7 @@ if isempty(targz_files)
     append!(targz_files, list_targz_files(joinpath(@__DIR__, "Rootfs", "products")))
     append!(targz_files, list_targz_files(joinpath(@__DIR__, "BaseCompilerShard", "products")))
     append!(targz_files, list_targz_files(joinpath(@__DIR__, "GCCBootstrap", "products")))
+    append!(targz_files, list_targz_files(joinpath(@__DIR__, "LLVMBootstrap", "products")))
     append!(targz_files, list_targz_files(joinpath(@__DIR__, "GCC", "products")))
     append!(targz_files, list_targz_files(joinpath(@__DIR__, "LLVM", "products")))
 end
@@ -29,6 +30,7 @@ function teeln(io::IO, args...)
 end
 
 rht_path = joinpath(dirname(pathof(BinaryBuilder)), "RootfsHashTable.jl")
+rht_mtime = stat(rht_path).mtime
 if isfile(rht_path)
     shard_hash_table = include(rht_path)
 else
@@ -37,28 +39,37 @@ end
 
 # Read in all new shards, add them into shard_hash_table
 for fname in targz_files
-    name, version, platform = extract_name_version_platform_key(fname)
-
-    # Split out target platform if we've got one.
-    target = nothing
-    if occursin("-", name)
-        target = platform_key_abi(name[first(findfirst("-", name))+1:end])
-        name = split(name, "-")[1]
+    # Skip any shard that was updated less recently than the hash table itself
+    if stat(fname).mtime < rht_mtime
+        continue
     end
 
-    tar_hash = open(fname, "r") do f
-        bytes2hex(sha256(f))
-    end
-    # Open up the .squashfs file and ensure it's set to UID 0, for hashing purposes.
-    sname = fname[1:end-7]*".squashfs"
-    BinaryBuilder.rewrite_squashfs_uids(sname, 0)
+    try
+        name, version, platform = extract_name_version_platform_key(fname)
 
-    squash_hash = open(sname, "r") do f
-        bytes2hex(sha256(f))
-    end
+        # Split out target platform if we've got one.
+        target = nothing
+        if occursin("-", name)
+            target = platform_key_abi(name[first(findfirst("-", name))+1:end])
+            name = split(name, "-")[1]
+        end
 
-    shard_hash_table[CompilerShard(name, version, platform, :targz; target=target)] = tar_hash
-    shard_hash_table[CompilerShard(name, version, platform, :squashfs; target=target)] = squash_hash
+        tar_hash = open(fname, "r") do f
+            bytes2hex(sha256(f))
+        end
+        # Open up the .squashfs file and ensure it's set to UID 0, for hashing purposes.
+        sname = fname[1:end-7]*".squashfs"
+        BinaryBuilder.rewrite_squashfs_uids(sname, 0)
+
+        squash_hash = open(sname, "r") do f
+            bytes2hex(sha256(f))
+        end
+
+        shard_hash_table[CompilerShard(name, version, platform, :targz; target=target)] = tar_hash
+        shard_hash_table[CompilerShard(name, version, platform, :squashfs; target=target)] = squash_hash
+    catch
+        @warn("Failed on $(fname)")
+    end
 end
 
 

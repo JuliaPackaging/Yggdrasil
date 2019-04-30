@@ -197,6 +197,9 @@ cd ${WORKSPACE}/srcdir
 # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
 apk add build-base gettext-dev gcc-objc clang
 
+# FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
+ln -sf $(which uname) /usr/bin/uname
+
 # We like to refer to things with their full triplets
 for tool in gcc g++ ar as ld lipo ranlib nm strip objcopy objdump readelf; do
 	if [[ -f /usr/bin/${tool} ]]; then
@@ -259,8 +262,9 @@ elif [[ "${COMPILER_TARGET}" == *-mingw* ]]; then
     # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
     export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
 
-elif [[ "${COMPILER_TARGET}" == *apple* ]]; then
+elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
     # Use llvm archive tools to dodge binutils bugs
+    export LD_FOR_TARGET=${prefix}/bin/${COMPILER_TARGET}-ld
     export AR_FOR_TARGET=${prefix}/bin/llvm-ar
     export NM_FOR_TARGET=${prefix}/bin/llvm-nm
     export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
@@ -269,6 +273,12 @@ elif [[ "${COMPILER_TARGET}" == *apple* ]]; then
     mkdir -p ${prefix}/bin
     ln -s llvm-dsymutil ${prefix}/bin/dsymutil
 
+    # GCC build needs a little exdtra help finding our binutils
+    GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
+    GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-as=${prefix}/bin/${COMPILER_TARGET}-as"
+
+    # On darwin, cilk doesn't build on 5.X-7.X.  :(
+    export enable_libcilkrts=no
 fi
 
 # Link dependent packages into gcc build root:
@@ -317,6 +327,9 @@ if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
 else
     # We also need to build binutils
     cd ${WORKSPACE}/srcdir/binutils-*
+    
+    # Patch for building binutils 2.30+ against FreeBSD
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_freebsd_symbol_versioning.patch || true
 
     ./configure --prefix=${prefix} \
         --target=${COMPILER_TARGET} \
@@ -375,7 +388,7 @@ unset CXXFLAGS
 
 # This is needed for any glibc older than 2.14, which includes the following commit
 # https://sourceware.org/git/?p=glibc.git;a=commit;h=95f5a9a866695da4e038aa4e6ccbbfd5d9cf63b7
-ln -vs libgcc.a $(${CC} -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
+ln -vs libgcc.a $(${COMPILER_TARGET}-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
 
 # Build libc (stage 1)
 if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
@@ -396,7 +409,7 @@ if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
 
     # Patch glibc's sunrpc cross generator to work with musl
     # See https://sourceware.org/bugzilla/show_bug.cgi?id=21604
-    atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc-sunrpc.patch || true
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_sunrpc.patch || true
 
     # patch for building old glibc on newer binutils
     # These patches don't apply on those versions of glibc where they
@@ -407,6 +420,9 @@ if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
     # patch for avoiding linking in musl libs for a glibc-linked binary
     atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
     atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
+
+    # Patch for building glibc 2.25-2.30 on aarch64
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
 
     # Configure glibc
     mkdir ${WORKSPACE}/srcdir/glibc_build
@@ -493,9 +509,9 @@ elif [[ ${COMPILER_TARGET} == *freebsd* ]]; then
         find lib/ -name lib${lib}.\* -delete
     done
 
-    mkdir -p "${sysroot}/usr"
-    mv usr/lib "${sysroot}/usr/"
-    mv lib/* "${sysroot}/lib"
+    mkdir -p "${sysroot}/usr/lib"
+    mv usr/lib/* "${sysroot}/usr/lib/"
+    mv lib/* "${sysroot}/lib/"
 
     # Many symlinks exist that point to `../../lib/libfoo.so`.
     # We need them to point to just `libfoo.so`. :P
@@ -560,7 +576,7 @@ mkdir -p $WORKSPACE/srcdir/gcc_build
 cd $WORKSPACE/srcdir/gcc_build
 
 ## Platform-dependent arguments
-if [[ "$COMPILER_TARGET" == *apple* ]]; then
+if [[ "$COMPILER_TARGET" == *-darwin* ]]; then
     GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran,objc,obj-c++"
 
 elif [[ "${COMPILER_TARGET}" == *linux* ]]; then

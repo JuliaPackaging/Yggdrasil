@@ -24,11 +24,12 @@ sources = [
     "ff243a669c9cef2e2537e4f697d6fb47764ea91949016f2d643cb5d8286df660",
     "http://releases.llvm.org/$(llvm_ver)/lld-$(llvm_ver).src.tar.xz" =>
     "9caec8ec922e32ffa130f0fb08e4c5a242d7e68ce757631e425e9eba2e1a6e37",
+    "./bundled",
 ]
 
 # Since we kind of do this LLVM setup twice, this is the shared setup start:
 script = raw"""
-apk add build-base python-dev linux-headers
+apk add build-base python-dev linux-headers musl-dev
 
 cd $WORKSPACE/srcdir/
 
@@ -51,8 +52,16 @@ for f in *.src; do
     fi
 done
 
+# Patch compiler-rt
+cd ${WORKSPACE}/srcdir/llvm-*.src/projects/compiler-rt*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/compiler_rt_musl.patch
+
+# Patch libcxx
+cd ${WORKSPACE}/srcdir/llvm-*.src/projects/libcxx
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcxx_musl.patch
+
 # Next, boogie on down to llvm town
-cd llvm-*.src
+cd ${WORKSPACE}/srcdir/llvm-*.src
 
 # This value is really useful later
 LLVM_DIR=$(pwd)
@@ -60,71 +69,49 @@ LLVM_DIR=$(pwd)
 # Let's do the actual build within the `build` subdirectory
 mkdir build && cd build
 
-# Accumulate these flags outside CMAKE_FLAGS,
-# they will be added at the end.
-CMAKE_CPP_FLAGS=""
-CMAKE_CXX_FLAGS=""
-CMAKE_C_FLAGS=""
-CMAKE_FLAGS=""
-
+CMAKE_FLAGS=()
 # We build for all platforms, as we're going to use this to do cross-compilation
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TARGETS_TO_BUILD:STRING=\"all\""
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release"
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=all)
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 # We want a build with no bindings
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_BINDINGS_LIST=\"\" "
+CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST=)
 
-# Turn off ZLIB and XML2
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_ENABLE_ZLIB=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_ENABLE_LIBXML2=OFF"
-
-# Disable useless things like docs, terminfo, etc....
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_INCLUDE_DOCS=Off"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_ENABLE_TERMINFO=Off"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DHAVE_HISTEDIT_H=Off"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DHAVE_LIBEDIT=Off"
+# Turn off docs
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF)
 
 # We want a shared library
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_LINK_LLVM_DYLIB:BOOL=ON"
-
-# Install things into $prefix, and make sure it knows we're cross-compiling
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=${prefix}"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_CROSSCOMPILING=True"
-
-# Julia expects the produced LLVM tools to be installed into tools and not bin
-# We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOLS_INSTALL_DIR=${prefix}/tools"
+CMAKE_FLAGS+=(-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON -DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
+CMAKE_FLAGS+=("-DCMAKE_INSTALL_PREFIX=${prefix}")
 
 # Manually set the host triplet, as otherwise on some platforms it tries to guess using
-# `ld -v`, which is hilariously wrong.
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_HOST_TRIPLE=${target}"
+# `ld -v`, which is hilariously wrong. We set a bunch of musl-related options here
+CMAKE_FLAGS+=("-DLLVM_HOST_TRIPLE=${target}")
+CMAKE_FLAGS+=(-DLIBCXX_HAS_MUSL_LIBC=ON -DLIBCXX_HAS_GCC_S_LIB=OFF)
+CMAKE_FLAGS+=(-DCLANG_DEFAULT_CXX_STDLIB=libc++ -DCLANG_DEFAULT_LINKER=lld -DCLANG_DEFAULT_RTLIB=compiler-rt)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
 # We don't need libunwind yet
-CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBUNWIND_BUILD=OFF"
+#CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBUNWIND_BUILD=OFF"
+# Sanitizers don't work on musl yet
+#CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_BUILD_SANITIZERS=OFF"
+CMAKE_FLAGS="${CMAKE_FLAGS}"
 
 # Build!
-cmake .. ${CMAKE_FLAGS} -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_C_FLAGS}" -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
+cmake .. ${CMAKE_FLAGS[@]}
 cmake -LA || true
 make -j${nproc} VERBOSE=1
 
 # Install!
 make install -j${nproc} VERBOSE=1
 
-# move clang products out of $prefix/bin to $prefix/tools
-mv ${prefix}/bin/clang* ${prefix}/tools/
-mv ${prefix}/bin/scan-* ${prefix}/tools/
-mv ${prefix}/bin/c-index* ${prefix}/tools/
-mv ${prefix}/bin/git-clang* ${prefix}/tools/
-mv ${prefix}/bin/lld* ${prefix}/tools/
-
 # Lots of tools don't respect `$DSYMUTIL` and so thus do not find 
 # our cleverly-named `llvm-dsymutil`.  We create a symlink to help
 # Those poor fools along:
-ln -s llvm-dsymutil ${prefix}/tools/dsymutil
+#ln -s llvm-dsymutil ${prefix}/bin/dsymutil
 
 # We also need clang++ as well as just plain old clang
-ln -s clang ${prefix}/tools/clang++
+#ln -s clang ${prefix}/bin/clang++
 """
 
 # BB is using musl as a platform and we don't want to run glibc binaries on it.
@@ -137,7 +124,7 @@ products(prefix) = [
     LibraryProduct(prefix, "libLTO",   :libLTO)
     LibraryProduct(prefix, "libclang", :libclang)
     # tools
-    ExecutableProduct(joinpath(prefix, "tools", "llvm-config"), :llvm_config)
+    ExecutableProduct(prefix, "llvm_config", :llvm_config)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -145,6 +132,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-name = "LLVM"
-
-build_tarballs(ARGS, name, llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, "LLVM", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
