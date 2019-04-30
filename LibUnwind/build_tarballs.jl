@@ -19,7 +19,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 
-./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include" --libdir=${prefix}/lib --enable-minidebuginfo
+./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include" --libdir=${prefix}/lib --enable-minidebuginfo --disable-tests
 make -j${nproc}
 make install
 
@@ -33,8 +33,8 @@ ${AR} -qc ${prefix}/lib/libunwind.a unpacked/**/*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  libunwind is only used
-# on Linux or FreeBSD (e.g. ELF systems), and doesn't work on Musl yet
-platforms = [p for p in supported_platforms() if (isa(p, Linux) && libc(p) == :glibc) || isa(p, FreeBSD)]
+# on Linux or FreeBSD (e.g. ELF systems)
+platforms = [p for p in supported_platforms() if isa(p, Linux) || isa(p, FreeBSD)]
 
 # The products that we will ensure are always built
 products(prefix) = [
