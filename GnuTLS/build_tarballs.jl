@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "GnuTLS"
 version = v"3.6.5"
 
-# Collection of sources required to build Ogg
+# Collection of sources required to build GnuTLS
 sources = [
     "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.5.tar.xz" =>
     "073eced3acef49a3883e69ffd5f0f0b5f46e2760ad86eddc6c0866df4e7abb35",
@@ -34,9 +34,6 @@ platforms = supported_platforms()
 # Wimp out of doing FreeBSD since we don't have that for some targets
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 
-# Disable wimpy muscles for much the same reason
-platforms = [p for p in platforms if libc(p) != :musl]
-
 # Disable windows because O_NONBLOCK isn't defined
 platforms = [p for p in platforms if !(typeof(p) <: Windows)]
 
@@ -48,7 +45,7 @@ products = prefix -> [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
-    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GMP-v6.1.2-1/build_GMP.v6.1.2.jl",
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/NettleHogweed-v3.4.1-0/build_Nettle.v3.4.1.jl",
 ]
 
