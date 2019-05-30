@@ -64,6 +64,16 @@ if [[ ${target} == x86_64-w64-mingw32 ]] && [[ $(gcc --version | head -1 | awk '
     CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
 fi
 
+# Because we use this OpenBLAS within Julia, and often want to bundle our
+# libgfortran and other friends alongside, we need an RPATH of '$ORIGIN',
+# so set it here.
+if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+    LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+elif [[ ${target} == *apple* ]]; then
+    LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
+fi
+
+
 # Enter the fun zone
 cd ${WORKSPACE}/srcdir/OpenBLAS-*/
 
