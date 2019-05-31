@@ -24,7 +24,7 @@ make CC="${CC}" AR="${AR}" RANLIB="${RANLIB}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFL
 
 # Build dynamic library
 if [[ "${target}" == *-darwin* ]]; then
-    $CC -shared -o libbz2.1.0.6.dylib $LDFLAGS $OBJS
+    $CC -shared -current_version 1.0.6 -compatibility_version 1.0 -o libbz2.1.0.6.dylib $LDFLAGS $OBJS
     ln -s libbz2.1.0.6.dylib libbz2.1.0.dylib
     ln -s libbz2.1.0.6.dylib libbz2.1.dylib
     ln -s libbz2.1.0.6.dylib libbz2.dylib
