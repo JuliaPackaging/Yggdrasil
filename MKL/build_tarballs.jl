@@ -1,9 +1,9 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MKL"
 version = v"2019.0.117"
 
-target = triplet(platform_key(ARGS[end]))
+target = triplet(platform_key_abi(ARGS[end]))
 if target == "unknown-unknown-unknown"
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
@@ -53,9 +53,9 @@ mv info/*.txt ${prefix}/share/
 platforms = [platform_key_abi(target)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, ["libmkl_core", "mkl_core"], :libmkl_core),
-    LibraryProduct(prefix, ["libmkl_rt", "mkl_rt"], :libmkl_rt),
+products = [
+    LibraryProduct(["libmkl_core", "mkl_core"], :libmkl_core),
+    LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -63,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
