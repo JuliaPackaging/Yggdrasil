@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/hwloc-*
 ./configure --prefix=$prefix --host=$target
-make
+make -j${nproc}
 make install
 """
 
