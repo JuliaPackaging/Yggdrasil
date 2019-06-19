@@ -1,0 +1,26 @@
+diff --git a/src/io/local_filesys.cc b/src/io/local_filesys.cc
+index ec738e3..ce90f28 100644
+--- a/src/io/local_filesys.cc
++++ b/src/io/local_filesys.cc
+@@ -13,7 +13,7 @@ extern "C" {
+ }
+ #define stat_struct stat
+ #else  // _WIN32
+-#include <Windows.h>
++#include <windows.h>
+ #define stat _stat64
+ #define stat_struct __stat64
+ #endif  // _WIN32
+diff --git a/test/unittest/unittest_thread_group.cc b/test/unittest/unittest_thread_group.cc
+index 3cb2194..1ef81f9 100644
+--- a/test/unittest/unittest_thread_group.cc
++++ b/test/unittest/unittest_thread_group.cc
+@@ -7,7 +7,7 @@
+ #if (defined _WIN32)
+ 
+ #define NOMINMAX
+-#include <Windows.h>
++#include <windows.h>
+ static inline void dmlc_usleep(__int64 usec) {
+   HANDLE timer;
+   LARGE_INTEGER ft;
