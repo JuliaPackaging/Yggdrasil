@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibUV"
-version = v"2+1.24.0-julia"
+version = v"2+1.29.1-julia"
 
 # Collection of sources required to build libffi
 sources = [
     "https://github.com/JuliaLang/libuv.git" =>
-    "26dbe5672c33fc885462c509fe2a9b36f35866fd",
+    "35b1504507a7a4168caae3d78db54d1121b121e1",
 ]
 
 # Bash recipe for building across all platforms
@@ -40,4 +40,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
