@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "LibUV"
-version = v"2-1.24.0-1"
+version = v"2+1.24.0-julia"
 
 # Collection of sources required to build libffi
 sources = [
