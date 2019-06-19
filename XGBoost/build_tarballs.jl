@@ -19,19 +19,23 @@ git submodule update
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows_h.patch")
 
+# Because we're using OpenMP, we must use `gcc`
+export CC=gcc
+export CXX=g++
+
 # For Linux, build using CMake
 if [[ ${target} == *linux* ]]; then
     (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix})
     make -C build -j ${nproc}
 else
     if [[ ${target} == *mingw* ]]; then
-        # Turn on some special stuff for windows
-        EXTRA_FLAGS=(UNAME=Windows USE_OPENMP=1)
+        # Target Windows specifically
+        EXTRA_FLAGS=(UNAME=Windows)
     fi
     
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc} ${EXTRA_FLAGS[@]}
+    make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
 fi
 
 # Install
