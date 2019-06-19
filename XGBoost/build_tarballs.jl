@@ -21,31 +21,35 @@ git submodule update
 
 # For Linux, build using CMake
 if [[ ${target} == *linux* ]]; then
-    mkdir build
-    (cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix})
+    (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix})
     make -C build -j ${nproc}
-elif [[ ${target} == *mingw* ]]; then
-    # Windows has a special makefile because of course it does
-    #cp make/mingw64.mk config.mk
-    cp make/minimum.mk config.mk
-    make -j ${nproc} UNAME=Windows USE_OPENMP=1
 else
+    if [[ ${target} == *mingw* ]]; then
+        # Turn on some special stuff for windows
+        EXTRA_FLAGS=(UNAME=Windows USE_OPENMP=1)
+    fi
+    
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc}
+    make -j ${nproc} ${EXTRA_FLAGS[@]}
 fi
 
 # Install
 mkdir -p ${prefix}/{bin,include,lib}
 cp -ra include/xgboost ${prefix}/include/
-cp -a xgboost ${prefix}/bin
+cp -a xgboost ${prefix}/bin/xgboost${exeext}
 
 # Not every platform has a libxgboost.a
 cp -a lib/libxgboost.a ${prefix}/lib || true
+
+# We also need to bundle `libgomp`, so snarf it from the
+# compiler support directory while we copy our main bundle of joy
 if [[ ${target} == *mingw* ]]; then
     cp -a lib/xgboost.dll ${prefix}/bin
+    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
 else
     cp -a lib/libxgboost.${dlext} ${prefix}/lib
+    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
 fi
 """
 
