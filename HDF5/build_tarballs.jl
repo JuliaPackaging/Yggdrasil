@@ -33,12 +33,12 @@ fi
 
 
 unzip "${WHL_FILE}"
-mkdir -p ${prefix}/lib
+mkdir -p ${prefix}/lib ${prefix}/bin
 
 # Windows why do you hate everyone else
 if [[ ${target} == *mingw* ]]; then
-    mv h5py/hdf5.dll ${prefix}/lib
-    mv h5py/hdf5_hl.dll ${prefix}/lib
+    mv h5py/hdf5.dll ${prefix}/bin
+    mv h5py/hdf5_hl.dll ${prefix}/bin
 else
     mv h5py/${LIBSDIR}/lib{sz,aec,hdf5}* ${prefix}/lib
 
