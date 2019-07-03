@@ -83,7 +83,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products(prefix) = [
-    LibraryProduct(prefix, ["libhdf5", "hdf5"], :libhdf5),
+    LibraryProduct(prefix, ["libhdf5"], :libhdf5),
 ]
 
 # Dependencies that must be installed before this package can be built
