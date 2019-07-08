@@ -10,8 +10,11 @@ sources = [
     "https://files.pythonhosted.org/packages/c8/d6/a1f58a4ebb2cfe93dcbae2e8e8cee3d81aeda8851b5a56cdae9a4eae6a60/h5py-2.9.0-cp27-cp27m-manylinux1_x86_64.whl" => "713ac19307e11de4d9833af0c4bd6778bde0a3d967cafd2f0f347223711c1e31",
 
     # Use musm's mingw builds
-    "https://github.com/musm/hdf5-builds/files/3366166/hdf5-1.10.5-x86_64.zip" => "9d0eef78db264475d10bd3df3d09b3aac37ce83cf22a6ccf002aa7ad282de270",
-    "https://github.com/musm/hdf5-builds/files/3366165/hdf5-1.10.5-i686.zip" => "7ec5f8d3e60241a51d34706f7f64c752259df6974a22ad12337d94aa452ba20c",
+    "https://github.com/musm/hdf5-builds/files/3366273/hdf5-1.10.5-x86_64.zip" => "b4bf5067aa30210c13706c9dcfb1e99626c5139b1ae0a21102445ae0132791bc",
+    "https://github.com/musm/hdf5-builds/files/3366272/hdf5-1.10.5-i686.zip" => "31acf68b75cf81a6ca00abbd820c85cdf2d610490b8bd7decd9ee29e7de9b791",
+
+    # We need some special compiler support libraries from mingw
+    "http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz" => "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17",
 ]
 
 # Bash recipe for building across all platforms
@@ -21,11 +24,14 @@ mkdir -p ${prefix}/lib ${prefix}/bin
 
 # If we're on Windows, extract from msys2 builds.  Otherwise, extract from .whl files
 if [[ ${target} == x86_64-*mingw* ]]; then
-    mv hdf5-*x86_64/bin/libhdf5*.dll ${prefix}/bin
-    mv hdf5-*x86_64/bin/*.exe ${prefix}/bin
+    mv hdf5-1.10.5-x86_64/hdf5-1.10.5_x86_64/bin/{libhdf5,zlib}*.dll ${prefix}/bin
+    mv hdf5-1.10.5-x86_64/hdf5-1.10.5_x86_64/bin/*.exe ${prefix}/bin
 elif [[ ${target} == i686-*mingw* ]]; then
-    mv hdf5-*i686/bin/libhdf5*.dll ${prefix}/bin
-    mv hdf5-*i686/bin/*.exe ${prefix}/bin
+    mv hdf5-1.10.5-i686/hdf5-1.10.5-i686/bin/{libhdf5,zlib}*.dll ${prefix}/bin
+    mv hdf5-1.10.5-i686/hdf5-1.10.5-i686/bin/*.exe ${prefix}/bin
+
+    # We need this special libgcc_s version as well
+    mv mingw32/bin/libgcc_s_dw2*.dll ${prefix}/bin
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
         WHL_FILE="h5py-*manylinux1_x86_64*.whl"
