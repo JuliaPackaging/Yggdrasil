@@ -1,0 +1,15 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -242,6 +242,12 @@
+   SHRLD="\$(CC) \$(SHRFLAGS)"
+ 
+   case "$host_os" in
++   *mingw*)
++     SHRLIB="libwcs.dll.$LIBVER"
++     SONAME="libwcs.dll.$SHVER"
++     SHRLD="$SHRLD -shared -Wl,-h\$(SONAME)"
++     SHRLN="libwcs.dll"
++     ;;
+   darwin*)
+     SHRLIB="libwcs.$LIBVER.dylib"
+     SONAME="libwcs.$SHVER.dylib"
