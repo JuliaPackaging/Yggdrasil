@@ -6,13 +6,13 @@ verbose = "--verbose" in ARGS
 # and rename them for our own nefarious purposes.
 
 name = "GR"
-version = v"0.39.0"
+version = v"0.41.0"
 name_mapping = Dict(
-#    Linux(:x86_64, libc=:glibc) => ("Linux-x86_64", "cb5e1eb4bc94ccf7ddef268679cd4d0853a1e8ecb2f21c2a9025a14f32bfbd79"),
-#    Linux(:i686, libc=:glibc) => ("Linux-i386", "fb3fbdb19061224b14fb59a864ddfb5b34744dc77c0d7a6574b3de677c680641"),
-#    Windows(:x86_64) => ("Windows-x86_64", "da0ec3e26855de4c05043bd1c49445ddafeba837113580140f25613e25150d9f"),
-#    Windows(:i686) => ("Windows-i686", "9e927fcedb784eb60ca3ed682bb056c59b52526d7cfa7cfd1d4e1978d415acc7"),
-    MacOS(:x86_64) => ("Darwin-x86_64", "bf871c66fa3445b49771af803066d9f5cab175b3aa837714375c4b8ef2c067b8"),
+    Linux(:x86_64, libc=:glibc) => ("Linux-x86_64", "516bbd70640f4f49df5968d9d85513c6f5fa923681f59c1876d54c3b055bf2c3"),
+    Linux(:i686, libc=:glibc) => ("Linux-i386", "095b98bef33f3e140c7f8ed0008685b9c79925ee5c45545242e51fce837dd7a9"),
+    Windows(:x86_64) => ("Windows-x86_64", "ac7437bcb067cefa17c54d6851d18d4f8220dee8bb4177e4f7c5761965c0d6cc"),
+    Windows(:i686) => ("Windows-i686", "5e9ef15f0a53746fa6db965959458992314f59d33c013f693b8be3e093420e4e"),
+    MacOS(:x86_64) => ("Darwin-x86_64", "1aaa4c6cfef141a3298518178e8f8dc0f73b1ac8ab5ef826c59158ab6a590500"),
 )
 
 # Downoad, unpack, extract, then repackage each of these guys
