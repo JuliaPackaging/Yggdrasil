@@ -11,7 +11,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ntl-*/src
-./configure "PREFIX=${prefix}" "GMP_PREFIX=${prefix}" NATIVE=off
+./configure "PREFIX=${prefix}" "GMP_PREFIX=${prefix}" NATIVE=off SHARED=on TUNE=x86 CXX="ccache ${CXX}"
 make -j${nproc}
 make install
 """
