@@ -32,7 +32,6 @@ make installcore installpke installabe installsignature "${FLAGS[@]}"
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64; compiler_abi=CompilerABI(:gcc6)),
-    Linux(:i686; compiler_abi=CompilerABI(:gcc6)),
     Linux(:x86_64; libc=:musl, compiler_abi=CompilerABI(:gcc6)),
 ]
 
