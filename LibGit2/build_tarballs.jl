@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "LibGit2"
 version = v"0.28.2"
 
-# Collection of sources required to build Ogg
+# Collection of sources required to build libgit2
 sources = [
    "https://github.com/libgit2/libgit2.git" =>
    "b3e1a56ebb2b9291e82dc027ba9cbcfc3ead54d3",
