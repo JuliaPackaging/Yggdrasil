@@ -4,8 +4,8 @@ name = "CUDA"
 version = v"10.1.168"
 
 sources = [
-    "https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.168_418.67_rhel6.run" => 
-    "ee395516e85185b47fac340d452d28e107dd18bf36e5af35e8f39ab2a9893f3b",
+    "https://developer.nvidia.com/compute/cuda/10.1/Prod/cluster_management/cuda_cluster_pkgs_10.1.168_418.67_rhel6.tar.gz" => 
+    "965570c92de387cec04d77a2bdce26b6457b027c0b2b12dc537a5ca1c1aa82b3",
     "https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.168_mac.dmg" =>
     "a53d17c92b81bb8b8f812d0886a8c2ddf2730be6f5f2659aee11c0da207c2331",
     "https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.168_425.25_win10.exe" =>
@@ -15,37 +15,33 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
-apk add p7zip
+apk add p7zip rpm
 
 # Make temporary space for extraction
 mkdir -p $(pwd)/.tmp
 
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    chmod +x cuda_*_rhel6.run
-    ./cuda_*_rhel6.run \
-        --silent \
-        --toolkit \
-        --toolkitpath=${prefix} \
-        --no-man-page \
-        --tmpdir=$(pwd)/.tmp \
-        --no-drm
-    
-    # Clean up things we don't care about
-    rm -rf ${prefix}/NsightCompute*
-    rm -rf ${prefix}/nsightee*
-    rm -rf ${prefix}/doc
-    rm -rf ${prefix}/samples
-    rm -rf ${prefix}/libnvvp
-    rm -rf ${prefix}/libnsight
-    rm -rf ${prefix}/jre
+    cd cuda_cluster_pkgs*
+
+    # extract cluster packages
+    rpm2cpio cuda-cluster-devel*.rpm | cpio -idmv
+    rpm2cpio cuda-cluster-runtime*.rpm | cpio -idmv
+
+    # Install things we like
+    for subdir in bin lib64 include extras nvvm nvml targets; do
+        mv usr/local/cuda*/${subdir} ${prefix}/
+    done
+    ln -s targets/x86_64-linux/lib ${prefix}/lib
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd .tmp
     7z x ${WORKSPACE}/srcdir/cuda_*_win10.exe
 
     # Install things
-    mkdir -p ${prefix}/bin
+    mkdir -p ${prefix}/bin ${prefix}/include ${prefix}/lib/x64
     for project in curand cusparse npp cufft cublas cudart cusolver nvrtc; do
         mv ${project}/bin/* ${prefix}/bin
+        [[ -d ${project}_dev/include ]] && mv ${project}_dev/include/* ${prefix}/include
+        [[ -d ${project}_dev/lib ]] && mv ${project}_dev/lib/x64/* ${prefix}/lib/x64/
     done
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     cd .tmp
@@ -80,6 +76,7 @@ products(prefix) = [
     LibraryProduct(prefix, "libcufft", :libcufft),
     LibraryProduct(prefix, "libcufftw", :libcufftw),
     LibraryProduct(prefix, "libcurand", :libcurand),
+    LibraryProduct(prefix, "libcublas", :libcublas),
     LibraryProduct(prefix, "libcusolver", :libcusolver),
     LibraryProduct(prefix, "libcusparse", :libcusparse),
     LibraryProduct(prefix, "libnvrtc", :libnvrtc),
