@@ -29,9 +29,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
 
     # Install things we like
     for subdir in bin lib64 include extras nvvm nvml targets; do
-        mv usr/local/cuda*/${subdir} ${prefix}/
+        mkdir -p ${prefix}/${subdir}
+        mv usr/local/cuda*/${subdir}/* ${prefix}/${subdir}/
     done
-    ln -s targets/x86_64-linux/lib ${prefix}/lib
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd .tmp
     7z x ${WORKSPACE}/srcdir/cuda_*_win10.exe
@@ -39,8 +39,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # Install things
     mkdir -p ${prefix}/bin ${prefix}/include ${prefix}/lib/x64
     for project in curand cusparse npp cufft cublas cudart cusolver nvrtc; do
-        mv ${project}/bin/* ${prefix}/bin
-        [[ -d ${project}_dev/include ]] && mv ${project}_dev/include/* ${prefix}/include
+        mv ${project}/bin/* ${prefix}/bin/
+        [[ -d ${project}_dev/include ]] && mv ${project}_dev/include/* ${prefix}/include/
         [[ -d ${project}_dev/lib ]] && mv ${project}_dev/lib/x64/* ${prefix}/lib/x64/
     done
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
