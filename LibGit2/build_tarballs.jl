@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"0.27.7"
+version = v"0.28.2"
 
 # Collection of sources required to build Ogg
 sources = [
    "https://github.com/libgit2/libgit2.git" =>
-   "f23dc5b29f1394928a940d7ec447f4bfd53dad1f",
+   "b3e1a56ebb2b9291e82dc027ba9cbcfc3ead54d3",
    "./bundled",
 ]
 
@@ -14,7 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-mbedtls.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 
 BUILD_FLAGS=(
