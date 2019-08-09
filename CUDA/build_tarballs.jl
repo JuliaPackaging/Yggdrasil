@@ -32,6 +32,12 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
         mkdir -p ${prefix}/${subdir}
         mv usr/local/cuda*/${subdir}/* ${prefix}/${subdir}/
     done
+
+    # We need to maintain the "targets" directories
+    for dir in include lib; do
+        rm -rf ${prefix}/targets/x86_64-linux/${dir}
+        ln -s ../../${dir} ${prefix}/targets/x86_64-linux/${dir}
+    done
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     cd .tmp
     7z x ${WORKSPACE}/srcdir/cuda_*_win10.exe
