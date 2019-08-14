@@ -10,11 +10,11 @@ sources = [
     "https://files.pythonhosted.org/packages/c8/d6/a1f58a4ebb2cfe93dcbae2e8e8cee3d81aeda8851b5a56cdae9a4eae6a60/h5py-2.9.0-cp27-cp27m-manylinux1_x86_64.whl" => "713ac19307e11de4d9833af0c4bd6778bde0a3d967cafd2f0f347223711c1e31",
 
     # Take advantage of msys2 mingw builds of HDF5 for Windows
-    "http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.8.21-2-any.pkg.tar.xz" => "b26e8cd8108d5bd6ed1f6b10f7bdcf8e55b328627115dd85ef1324f9196f3e75",
+    "http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.10.5-1-any.pkg.tar.xz" => "d29a56297219e1981f393e266ee515605237323fc20b0a69a45961c4bfe5e9da",
     "http://repo.msys2.org/mingw/i686/mingw-w64-i686-szip-2.1.1-2-any.pkg.tar.xz" => "58b5efe1420a2bfd6e92cf94112d29b03ec588f54f4a995a1b26034076f0d369",
     "http://repo.msys2.org/mingw/i686/mingw-w64-i686-zlib-1.2.11-7-any.pkg.tar.xz" => "addf6c52134027407640f1cbdf4efc5b64430f3a286cb4e4c4f5dbb44ce55a42",
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-szip-2.1.1-2-any.pkg.tar.xz" => "ec8fe26370b0673c4b91f5ccf3404907dc7c24cb9d75c7b8830aa93a7c13ace7",
-    "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.8.21-2-any.pkg.tar.xz" => "7d3f320a875feb8e3ebc9e72829e34ee5a1dab389d1e21314dcad6203650d78a",
+    "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.10.5-1-any.pkg.tar.xz" => "e01196dd53711304aa4026932c153171606efc4d6938dd3c172b6b40d9e7cdd9",
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz" => "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2",
 ]
 
@@ -44,9 +44,8 @@ else
     fi
 
     unzip "${WHL_FILE}"
-    
-    mv h5py/${LIBSDIR}/lib{sz,aec,hdf5}* ${prefix}/lib
 
+    mv h5py/${LIBSDIR}/lib{sz,aec,hdf5}* ${prefix}/lib
 fi
 
 # We want libhdf5 to use OUR libz, so we force it to:
@@ -60,7 +59,7 @@ elif [[ ${target} == *apple* ]]; then
         install_name_tool -change $(basename h5py/${LIBSDIR}/libz*.${dlext}*) libz.1.${dlext} ${f}
     done
 fi
-    
+
 
 # We need to be able to access `libhdf5` directly, so symlink it from the hashed filename from manylinux pypi
 if [[ ${target} == *linux* ]]; then
@@ -93,4 +92,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
