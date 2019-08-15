@@ -28,6 +28,9 @@ dependencies = [
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GnuTLS-v3.6.5-0/build_GnuTLS.v3.6.5.jl",
 ]
 
+platform32 = Linux(:i686; libc=:musl)
+platform64 = Linux(:x86_64; libc=:musl)
+
 wine64_build_script = raw"""
 # First, build wine64, making the actual build directory itself the thing we will install.
 mkdir $WORKSPACE/destdir/wine64
@@ -37,10 +40,10 @@ make -j${nproc}
 """
 
 # package up the wine64 build directory itself:
-product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [Linux(:x86_64)], products, dependencies; skip_audit=true)
+product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true)
 
 # Include that tarball as one of the sources we need to include:
-wine64_build_path, wine64_build_hash = product_hashes[triplet(Linux(:x86_64))]
+wine64_build_path, wine64_build_hash = product_hashes[triplet(platform64)]
 push!(sources, joinpath("products", wine64_build_path) => wine64_build_hash)
 
 # Next, build wine32, without wine64, then use those tools to build wine32 WITH wine64
@@ -58,8 +61,8 @@ make -j${nproc}
 make install
 """
 
-product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [Linux(:i686)], products, dependencies; skip_audit=true)
-wine32_path, wine32_hash = product_hashes[triplet(Linux(:i686))]
+product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [platform32], products, dependencies; skip_audit=true)
+wine32_path, wine32_hash = product_hashes[triplet(platform32)]
 push!(sources, joinpath("products", wine32_path) => wine32_hash)
 
 # Finally, install both:
@@ -69,4 +72,4 @@ cd $WORKSPACE/srcdir/wine64
 make install
 """
 
-build_tarballs(copy(SAFE_ARGS), "Wine", version, sources, script, [Linux(:x86_64)], products, dependencies)
+build_tarballs(copy(SAFE_ARGS), "Wine", version, sources, script, [platform64], products, dependencies)

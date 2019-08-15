@@ -1,0 +1,16 @@
+diff --git a/gcc/configure b/gcc/configure
+index f247c8a357c..c3d4ec719eb 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -3320,9 +3320,9 @@ if test x${gcc_gxx_include_dir} = x; then
+     gcc_gxx_include_dir='${libsubdir}/include/c++'
+   else
+     libstdcxx_incdir='include/c++/$(version)'
+-    if test x$host != x$target; then
++    #if test x$host != x$target; then
+        libstdcxx_incdir="$target_alias/$libstdcxx_incdir"
+-    fi
++    #fi
+     gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
+   fi
+ fi

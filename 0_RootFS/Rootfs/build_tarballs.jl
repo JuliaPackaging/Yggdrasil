@@ -49,6 +49,7 @@ end
 # Copy in `sandbox` and `docker_entrypoint.sh` since we need those just to get up in the morning.
 # Also set up a DNS resolver, since that's important too.  Yes, this work is repeated below, but
 # we need a tiny world to set up our slightly larger world inside of.
+mkpath(joinpath(rootfs_extracted, "overlay_workdir"))
 cp(sandbox_path, joinpath(rootfs_extracted, "sandbox"); force=true)
 cp(joinpath(@__DIR__, "bundled", "utils", "docker_entrypoint.sh"), joinpath(rootfs_extracted, "docker_entrypoint.sh"); force=true)
 open(joinpath(rootfs_extracted, "etc", "resolv.conf"), "w") do io
@@ -92,12 +93,22 @@ rm(BinaryBuilder.mount_path(targz_shard); recursive=true, force=true)
 sources = [
     "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz" =>
     "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
+    # Objconv is very useful
+    "https://github.com/staticfloat/objconv/archive/v2.49.tar.gz" =>
+    "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f",
+    # As is patchelf
+    "https://github.com/NixOS/patchelf.git" =>
+    "e1e39f3639e39360ceebb2f7ed533cede4623070",
     "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# $prefix is our chroot
+# Get build tools ready. Note that they do not pollute the eventual Rootfs image;
+# they are only within this currently-running, ephemeral, pocket universe
+apk add build-base curl autoconf automake linux-headers
+
+# $prefix is our chroot under construction
 mv bin dev etc home lib media mnt proc root run sbin srv sys tmp usr var $prefix/
 cd $prefix
 
@@ -142,25 +153,32 @@ cp $WORKSPACE/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
 cp $WORKSPACE/srcdir/utils/profile ${prefix}/etc/
 cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
 
-
-# Include GlibcBuilder v2.25 output as our official native x86_64-linux-gnu and i686-linux-gnu loaders.
-# We use 2.25 because it is relatively recent and builds with GCC 4.8.5 and Binutils 2.24
-mkdir -p /tmp/glibc_extract ${prefix}/lib ${prefix}/lib64
-#tar -C /tmp/glibc_extract -zxf $WORKSPACE/srcdir/Glibc*2.25*x86_64-linux-gnu.tar.gz
-#tar -C /tmp/glibc_extract -zxf $WORKSPACE/srcdir/Glibc*2.25*i686-linux-gnu.tar.gz
-#mv /tmp/glibc_extract/x86_64-linux-gnu/sys-root/lib64/* ${prefix}/lib64/
-#ls -la ${prefix}/lib
-#mv /tmp/glibc_extract/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
-
-# Put sandbox and our docker entrypoint script into the root, to be used as `init` replacements.
-cp $WORKSPACE/srcdir/utils/sandbox ${prefix}/sandbox
-chmod +x ${prefix}/sandbox
+# Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
+gcc -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
 cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
-# Extract a very recent libstdc++.so.6 to /lib64 as well
+# Extract a recent libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib64
+# as well so that we can run things that were built with GCC within this environment
+mkdir -p ${prefix}/lib ${prefix}/lib64
 cp -d $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
 
-# Create /overlay_workdir so that we know we can always mount an overlay there.  Same with /meta
+# Install Glibc
+cd ${WORKSPACE}/srcdir
+curl -L 'https://github.com/sgerrand/docker-glibc-builder/releases/download/2.29-0/glibc-bin-2.29-0-x86_64.tar.gz' | tar zx
+mv usr/glibc-compat/lib/* ${prefix}/lib
+
+# Build/install objconv
+cd ${WORKSPACE}/srcdir/objconv*/
+g++ -O2 -o ${prefix}/usr/bin/objconv src/*.cpp
+
+# Build/install patchelf
+cd ${WORKSPACE}/srcdir/patchelf*/
+./bootstrap.sh
+./configure --prefix=${prefix}/usr
+make -j${nproc}
+make install
+
+# Create mount points for future bindmounts
 mkdir -p ${prefix}/overlay_workdir ${prefix}/meta
 
 

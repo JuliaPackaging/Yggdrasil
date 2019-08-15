@@ -8,7 +8,6 @@ set -e
 
 # We're going to ship five things:
 # * RootFS (single product)
-# * HostTools (single product, stuff we build ourselves like `objcopy`)
 # * KernelHeaders + cmake toolchains + other misc. stuff (per-target)
 # * Libc + Binutils + GCC (per-target and per-ABI)
 # * LLVM (single product for everybody)
@@ -22,14 +21,6 @@ set -e
 
 # All the machines
 MACHINES=$(julia -e 'using BinaryBuilder; println(join(triplet.(supported_platforms()), " "))')
-GLIBC_VERSIONS="2.12.2 2.19 2.25"
-GLIBC_MACHINES_2122="x86_64-linux-gnu i686-linux-gnu"
-GLIBC_MACHINES_219="arm-linux-gnueabihf aarch64-linux-gnu"
-GLIBC_MACHINES_225="x86_64-linux-gnu i686-linux-gnu powerpc64le-linux-gnu"
-MUSL_MACHINES="x86_64-linux-musl i686-linux-musl arm-linux-musleabihf aarch64-linux-musl"
-MINGW_MACHINES="x86_64-w64-mingw32 i686-w64-mingw32"
-FREEBSD_MACHINES="x86_64-unknown-freebsd11.1"
-MACOS_MACHINES="x86_64-apple-darwin14"
 GCC_VERSIONS="4.8.5 5.2.0 6.1.0 7.1.0 8.1.0"
 
 BUILD_ARGS=()
@@ -43,13 +34,13 @@ for arg in "$@"; do
             ;;
         --clean)
             echo "Clearing builds..."
-            ./clean_builds.sh
+            ../clean_builds.sh
             ;;
         --nuke)
             echo "Clearing builds..."
-            ./clean_builds.sh
+            ../clean_builds.sh
             echo "Clearing products..."
-            ./clean_products.sh
+            ../clean_products.sh
             ;;
         *)
             ;;
@@ -115,10 +106,10 @@ build_all_machines()
 
 # Start by assembling the Rootfs
 build_host Rootfs
-./install_dev_rootfs.sh Rootfs
+./install_dev_rootfs.sh
 
-# Collect Kernel Headers in anticipation of the GCC show about to come
-build_all_machines KernelHeaders
+# Collect Kernel Headers, cmake toolchains, etc... in anticipation of the GCC show about to come
+build_all_machines PlatformSupport
 
 # Let's get at it! 
 for v in ${GCC_VERSIONS}; do
@@ -130,22 +121,12 @@ done
 # Next build LLVM, and we're done!
 build_host LLVMBootstrap
 
-exit 0
-
 # Deploy the rootfs we've got so far
 ./install_dev_rootfs.sh
 
-# Start with building host-only tools and rootfs
-build_host Objconv
-build_host Patchelf
-build_host Linux
+# Build some useful tools as well
 build_host Wine
 build_host Qemu
-build_cached Glibc "Glibc*2.25*x86_64-linux-gnu" "--glibc-version 2.25 x86_64-linux-gnu"
-build_cached Glibc "Glibc*2.25*i686-linux-gnu" "--glibc-version 2.25 i686-linux-gnu"
-build_host Rootfs
-## END BOOTSTRAP ZONE
-
 
 ## As an aside, I have realized that somehow, my Julia projects always wind
 ## up with me rewriting some kind of build system in bash.  I need to make

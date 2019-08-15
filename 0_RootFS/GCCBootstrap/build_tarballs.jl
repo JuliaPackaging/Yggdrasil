@@ -88,9 +88,9 @@ if isa(compiler_target, MacOS)
     # MacOS doesn't actually use binutils, it uses cctools
     binutils_sources = [
         "https://github.com/tpoechtrager/apple-libtapi.git" =>
-        "e56673694db395e25b31808b4fbb9a7005e6875f",
+        "3efb201881e7a76a21e0554906cf306432539cef",
         "https://github.com/tpoechtrager/cctools-port.git" =>
-        "ecb84d757b6f011543504967193375305ffa3b2f",
+        "a2e02aad90a98ac034b8d0286496450d136ebfcd",
     ]
 else
     # Different versions of GCC should be pared with different versions of Binutils
@@ -185,7 +185,7 @@ sources = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Any[
-    find_tarball("KernelHeaders", "KernelHeaders.*$(triplet(compiler_target))"),
+    find_tarball("PlatformSupport", "PlatformSupport.*$(triplet(compiler_target))"),
 ]
 
 
@@ -200,7 +200,8 @@ apk add build-base gettext-dev gcc-objc clang
 # FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
 ln -sf $(which uname) /usr/bin/uname
 
-# We like to refer to things with their full triplets
+# We like to refer to things with their full triplets, so symlink our host tools
+# (which have no prefix) to have the machtype prefix.
 for tool in gcc g++ ar as ld lipo ranlib nm strip objcopy objdump readelf; do
 	if [[ -f /usr/bin/${tool} ]]; then
 		ln -s /usr/bin/${tool} /usr/bin/${target}-${tool}
@@ -301,22 +302,27 @@ done
 # If we're on MacOS, we need to install cctools first, separately.
 if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
     cd ${WORKSPACE}/srcdir/apple-libtapi
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/libtapi_musl.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/libtapi_fullyaml.patch"
 
     mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
     cd ${WORKSPACE}/srcdir/apple-libtapi/build
 
+    export TAPIDIR=${WORKSPACE}/srcdir/apple-libtapi
+
     # Install libtapi
-    cmake ../src/apple-llvm/src \
+    cmake ../src/llvm \
+        -DCMAKE_CXX_FLAGS="-I${TAPIDIR}/src/llvm/projects/clang/include -I${TAPIDIR}/build/projects/clang/include" \
         -DLLVM_INCLUDE_TESTS=OFF \
         -DCMAKE_BUILD_TYPE=RELEASE \
         -DCMAKE_INSTALL_PREFIX=${prefix}
+    make -j${nproc} VERBOSE=1 clangBasic
     make -j${nproc} VERBOSE=1
     make install
 
     # Install cctools.
     mkdir -p ${WORKSPACE}/srcdir/cctools_build
-    CC=/usr/bin/gcc CXX=/usr/bin/g++ ${WORKSPACE}/srcdir/cctools-port/cctools/configure --prefix=${prefix} \
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+        --prefix=${prefix} \
         --target=${COMPILER_TARGET} \
         --host=${MACHTYPE} \
         --with-libtapi=${prefix}
@@ -336,6 +342,7 @@ else
         --host=${MACHTYPE} \
         --with-sysroot="${sysroot}" \
         --enable-multilib \
+        --program-prefix="${COMPILER_TARGET}-" \
         --disable-werror
 
     make -j${nproc}
@@ -584,7 +591,7 @@ elif [[ "${COMPILER_TARGET}" == *linux* ]]; then
 
 elif [[ "${COMPILER_TARGET}" == *freebsd* ]]; then
     GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
-    
+   
 # On mingw32 override native system header directories
 elif [[ "${COMPILER_TARGET}" == *mingw* ]]; then
     GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
@@ -615,6 +622,7 @@ CC=/usr/bin/gcc CC_FOR_BUILD=/usr/bin/gcc CC_FOR_TARGET=${prefix}/bin/${COMPILER
     --enable-host-shared \
     --enable-threads=posix \
     --with-sysroot="${sysroot}" \
+    --program-prefix="${COMPILER_TARGET}-" \
 	--disable-bootstrap \
     ${GCC_CONF_ARGS}
 
@@ -622,13 +630,29 @@ CC=/usr/bin/gcc CC_FOR_BUILD=/usr/bin/gcc CC_FOR_TARGET=${prefix}/bin/${COMPILER
 make -j ${nproc}
 make install
 
+
+if [[ ${COMPILER_TARGET} == *-apple-* ]]; then
+    # We need to use this `ld` as if it were `ld64.macos`, so make a symlink:
+    ln -s ${COMPILER_TARGET}-ld ${prefix}/bin/ld64.macos
+
+    # Create -fuse-ld=macos wrappers for `clang` and `clang++`
+    for tool in clang clang++; do
+        target_tool=${prefix}/bin/${tool}
+        echo '#!/bin/bash' > ${target_tool}
+        echo "/opt/x86_64-linux-musl/bin/${tool} \"\$*\" -fuse-ld=macos" >> ${target_tool}
+        chmod +x ${target_tool}
+    done
+fi
+
 # Create a bunch of symlinks stripping out the target so that
 # things like `gcc` "just work", as long as we've got our path set properly
 # We don't worry about failure to create these symlinks, as sometimes there are files
-# named ridiculous things like ${target}-${target}-foo, which screws this up
+# named ridiculous things like ${target}-${target}-foo, which screws this up.
+# We also go the reverse direction, as when we're not cross-compiling, it doesn't
+# automatically create the properly
 for f in ${prefix}/bin/${COMPILER_TARGET}-*; do
     fbase=$(basename $f)
-    ln -s $f "${prefix}/bin/${fbase#${COMPILER_TARGET}-}" || true
+    ln -sv "${fbase}" "${prefix}/bin/${fbase#${COMPILER_TARGET}-}" || true
 done
 """
 

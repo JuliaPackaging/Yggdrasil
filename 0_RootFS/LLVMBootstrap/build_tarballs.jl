@@ -132,4 +132,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, "LLVM", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, "LLVMBootstrap", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)

@@ -1,9 +1,14 @@
 #!/bin/bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
-for f in *; do
-    if [[ ! -d ${f} ]]; then
+for parent in *; do
+    if [[ ! -d "${parent}" ]]; then
         continue
     fi
 
-    rm -rf ${f}/build
+    for project in ${parent}/*; do
+        if [[ ! -d "${parent}/${project}" ]]; then
+            rm -vrf "${parent}/${project}/build"
+        fi
+    done
 done

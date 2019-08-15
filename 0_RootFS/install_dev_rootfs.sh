@@ -3,8 +3,13 @@
 
 BB_PATH=$(julia -e 'using BinaryBuilder; print(abspath(dirname(dirname(pathof(BinaryBuilder)))))')
 
+# If `Artifacts.toml` is not writable, complain that we're not using a dev'ed version
+if [[ ! -w "${BB_PATH}/Artifacts.toml" ]]; then
+    echo "ERROR: BinaryBuilder checkout does not seem writable!"
+fi
+
 # Install only a subset of the full set of projects if this is set
-PROJECTS="Rootfs GCCBootstrap LLVMBootstrap HostTools"
+PROJECTS="Rootfs GCCBootstrap LLVMBootstrap PlatformSupport"
 if [[ -n "$1" ]] && [[ $1 == *"${PROJECTS}"* ]]; then
     PROJECTS="$1"
 fi

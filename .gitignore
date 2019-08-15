@@ -1,6 +1,6 @@
 # Ignore intermediate and final build products
-*/build
-*/products
+*/*/build
+*/*/products
 
 # Ignore my vim laziness
 *.swp

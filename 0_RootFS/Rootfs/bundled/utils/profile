@@ -5,8 +5,8 @@ umask 022
 
 alias ll='ls -la'
 
-for script in /etc/profile.d/*.sh ; do
-    if [ -r "$script" ] ; then
-        source "$script"
+for _script in /etc/profile.d/*.sh ; do
+    if [ -r "$_script" ] ; then
+        source "$_script"
     fi
 done

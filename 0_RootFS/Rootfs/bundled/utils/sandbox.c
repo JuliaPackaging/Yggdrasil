@@ -295,7 +295,7 @@ static void mount_overlay(const char * src, const char * dest, const char * bnam
 static void mount_procfs(const char * root_dir) {
   char path[PATH_MAX];
 
-  // Mount procfs at /proc
+  // Mount procfs at <root_dir>/proc
   snprintf(path, sizeof(path), "%s/proc", root_dir);
   if (verbose) {
     printf("--> Mounting procfs at %s\n", path);
