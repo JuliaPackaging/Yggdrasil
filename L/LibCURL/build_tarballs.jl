@@ -52,7 +52,7 @@ products(prefix) = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.8.0-1/build_LibSSH2.v1.8.0.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.9.0-1/build_LibSSH2.v1.9.0.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
