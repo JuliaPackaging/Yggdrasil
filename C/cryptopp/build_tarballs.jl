@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cryptopp
+make -j${nproc} dynamic
 make -j${nproc} install PREFIX=${prefix}
 """
 
