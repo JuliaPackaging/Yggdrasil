@@ -1,7 +1,7 @@
 include("../common.jl")
 
 using BinaryBuilder
-Core.eval(BinaryBuilder, :(bootstrap_mode = true))
+Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
 
 # Collection of sources required to build LLVM
 llvm_ver = v"8.0.0"

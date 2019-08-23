@@ -20,7 +20,8 @@ set -e
 
 
 # All the machines
-MACHINES=$(julia -e 'using BinaryBuilder; println(join(triplet.(supported_platforms()), " "))')
+JULIA=${JULIA:-julia}
+MACHINES=$(${JULIA} --color=yes -e 'using BinaryBuilder; println(join(triplet.(supported_platforms()), " "))')
 GCC_VERSIONS="4.8.5 5.2.0 6.1.0 7.1.0 8.1.0"
 
 BUILD_ARGS=()
@@ -80,7 +81,7 @@ build_cached()
         return
     fi
     echo "  -> Building ${1} ${3}"
-    julia --color=yes build_tarballs.jl ${BUILD_ARGS[@]} ${3}
+    ${JULIA} --color=yes build_tarballs.jl ${BUILD_ARGS[@]} ${3}
     )
     make_squashfs "$(echo ${1}/products/*${2}*.tar.gz)"
 }

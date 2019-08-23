@@ -1,10 +1,14 @@
-using BinaryBuilder, SHA, Dates
+using Pkg, BinaryBuilder, SHA, Dates
+if !isdefined(Pkg, :Artifacts)
+    error("This must be run with Julia 1.3+!")
+end
+using Pkg.Artifacts, Pkg.PlatformEngines, Pkg.BinaryPlatforms
+
 include("../common.jl")
 
 # Metadata
 name = "Rootfs"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
-host_platform = Linux(:x86_64; libc=:musl)
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
@@ -13,9 +17,7 @@ rootfs_hash = "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_tarxz_path = joinpath(@__DIR__, "build", "rootfs.tar.xz")
-rootfs_targz_path = joinpath(@__DIR__, "products", "$(name)-stage1.v$(version).$(triplet(host_platform)).tar.gz")
-rootfs_squash_path = joinpath(@__DIR__, "products", "$(name)-stage1.v$(version).$(triplet(host_platform)).squashfs")
-BinaryBuilder.download_verify(rootfs_url, rootfs_hash, rootfs_tarxz_path; verbose=verbose, force=true)
+download_verify(rootfs_url, rootfs_hash, rootfs_tarxz_path; verbose=verbose, force=true)
 
 # Unpack the rootfs (using `tar` on the local machine), then pack it up again (again using tools on the local machine) and squashify it:
 rootfs_extracted = joinpath(@__DIR__, "build", "rootfs_extracted")
@@ -34,9 +36,7 @@ if is_outdated(sandbox_path, "$(sandbox_path).c")
         build_platform = platform_key_abi(String(read(`gcc -dumpmachine`)))
         @assert isa(build_platform, Linux)
         @assert arch(build_platform) == :x86_64
-        if verbose
-            @info("Rebuilding sandbox for initial bootstrap...")
-        end
+        verbose && @info("Rebuilding sandbox for initial bootstrap...")
         success(`gcc -static -static-libgcc -o $(sandbox_path) $(sandbox_path).c`)
     catch
         if isfile(sandbox_path)
@@ -46,9 +46,11 @@ if is_outdated(sandbox_path, "$(sandbox_path).c")
         end
     end
 end
+
 # Copy in `sandbox` and `docker_entrypoint.sh` since we need those just to get up in the morning.
 # Also set up a DNS resolver, since that's important too.  Yes, this work is repeated below, but
 # we need a tiny world to set up our slightly larger world inside of.
+verbose && @info("Constructing barebones bootstrap RootFS shard...")
 mkpath(joinpath(rootfs_extracted, "overlay_workdir"))
 cp(sandbox_path, joinpath(rootfs_extracted, "sandbox"); force=true)
 cp(joinpath(@__DIR__, "bundled", "utils", "docker_entrypoint.sh"), joinpath(rootfs_extracted, "docker_entrypoint.sh"); force=true)
@@ -57,33 +59,33 @@ open(joinpath(rootfs_extracted, "etc", "resolv.conf"), "w") do io
         println(io, "nameserver $(resolver)")
     end
 end
+
 # we really like bash, and it's annoying to have to polymorphise, so just lie for the stage 1 bootstrap
 cp(joinpath(@__DIR__, "bundled", "utils", "fake_bash.sh"), joinpath(rootfs_extracted, "bin", "bash"); force=true)
 cp(joinpath(@__DIR__, "bundled", "utils", "profile"), joinpath(rootfs_extracted, "etc", "profile"); force=true)
 cp(joinpath(@__DIR__, "bundled", "utils", "profile.d"), joinpath(rootfs_extracted, "etc", "profile.d"); force=true)
-success(`tar -C $(rootfs_extracted) -czf $(rootfs_targz_path) .`)
-success(`mksquashfs $(rootfs_extracted) $(rootfs_squash_path) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
+rootfs_unpacked_hash, rootfs_squashfs_hash = generate_artifacts(rootfs_extracted, name, version)
 
 # Slip these barebones rootfs images into our BB install location, overwriting whatever Rootfs shard would be chosen:
-if verbose
-    @info("Deploying barebones bootstrap RootFS shard...")
-end
-targz_shard = BinaryBuilder.CompilerShard(name, version, host_platform, :targz)
-squash_shard = BinaryBuilder.CompilerShard(name, version, host_platform, :squashfs)
-cp(rootfs_targz_path,  BinaryBuilder.download_path(targz_shard); force=true)
-cp(rootfs_squash_path, BinaryBuilder.download_path(squash_shard); force=true)
+verbose && @info("Binding barebones bootstrap RootFS shards...")
+
+#cp(rootfs_targz_path,  BinaryBuilder.download_path(targz_shard); force=true)
+#cp(rootfs_squash_path, BinaryBuilder.download_path(squash_shard); force=true)
 
 # Insert them into the compiler shard hashtable.  From this point on; BB will use this shard as the RootFS shard,
 # because we set `bootstrap=true`.  We also opt-out of any binutils, GCC or clang shards getting mounted.
-BinaryBuilder.shard_hash_table[targz_shard] = bytes2hex(open(SHA.sha256, rootfs_targz_path))
-BinaryBuilder.shard_hash_table[squash_shard] = bytes2hex(open(SHA.sha256, rootfs_squash_path))
-Core.eval(BinaryBuilder, :(bootstrap_mode = true))
+#BinaryBuilder.shard_hash_table[targz_shard] = bytes2hex(open(SHA.sha256, rootfs_targz_path))
+#BinaryBuilder.shard_hash_table[squash_shard] = bytes2hex(open(SHA.sha256, rootfs_squash_path))
 
-if verbose
-    @info("Unmounting all shards...")
-end
-BinaryBuilder.unmount.(keys(BinaryBuilder.shard_hash_table); verbose=verbose)
-rm(BinaryBuilder.mount_path(targz_shard); recursive=true, force=true)
+insert_compiler_shard(name, version, rootfs_unpacked_hash, :unpacked)
+insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
+Core.eval(BinaryBuilder, :(bootstrap_list = Symbol[:rootfs]))
+
+#if verbose
+#    @info("Unmounting all shards...")
+#end
+#BinaryBuilder.unmount.(keys(BinaryBuilder.shard_hash_table); verbose=verbose)
+#rm(BinaryBuilder.mount_path(targz_shard); recursive=true, force=true)
 
 # PHWEW.  Okay.  Now, we do some of the same steps over again, but within BinaryBuilder, where
 # we can actulaly run tools inside of the rootfs (e.g. if we're building on OSX through docker)
@@ -135,6 +137,16 @@ apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTER
 rm -f ./bin/{chown,chgrp}
 touch ./bin/{chown,chgrp}
 chmod +x ./bin/{chown,chgrp}
+
+# usr/libexec/git-core takes up a LOT of space because it uses hardlinks; convert to symlinks:
+echo "Replacing hardlink versions of git helper commands with symlinks..."
+sha() { sha256sum "$1" | awk '{ print $1 }'; }
+GIT_SHA=$(sha ./usr/libexec/git-core/git)
+for f in ./usr/libexec/git-core/*; do
+    if [[ -f "${f}" ]] && [[ "$(basename ${f})" != "git" ]] && [[ $(sha "${f}") == ${GIT_SHA} ]]; then
+        ln -svf git "${f}"
+    fi
+done
 
 # Install utilities we'll use.  Many of these are compatibility shims, look at
 # the files themselves to discover why we use them.
@@ -195,8 +207,9 @@ find ${prefix}/usr -type f -name "*.py[co]" -delete -or -type d -name "__pycache
 platforms = [host_platform]
 
 # The products that we will ensure are always built
-products(prefix) = Product[
-    ExecutableProduct(prefix, "sandbox", :sandbox),
+products = Product[
+    ExecutableProduct("sandbox", :sandbox, "./"),
+    ExecutableProduct("bash", :bash),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -204,4 +217,8 @@ dependencies = [
 ]
 
 # Build the tarball
+verbose && @info("Building full RootfS shard...")
 build_info = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+
+# Upload the shards
+upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)

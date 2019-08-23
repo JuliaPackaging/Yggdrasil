@@ -1,41 +1,28 @@
-using BinaryBuilder, Dates
+using BinaryBuilder, Dates, Pkg, Pkg.BinaryPlatforms
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
-Core.eval(BinaryBuilder, :(bootstrap_mode = true))
+Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
 
-compiler_target = platform_key(ARGS[end])
-if typeof(compiler_target) <:UnknownPlatform
+compiler_target = platform_key_abi(ARGS[end])
+if isa(compiler_target, UnknownPlatform)
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
-
+deleteat!(ARGS, length(ARGS))
 name = "PlatformSupport"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 
-if isa(compiler_target, Linux)
-    sources = Any[
-        "https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
-        "a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
-    ]
-elseif isa(compiler_target, Windows)
-    sources = Any[
-        "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
-        "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
-    ]
-elseif isa(compiler_target, MacOS)
-    sources = Any[
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
-        "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
-    ]
-elseif isa(compiler_target, FreeBSD)
-    sources = Any[
-        "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
-        "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
-    ]
-else
-    error("Unknown platform type $(compiler_target)")
-end
-push!(sources, "./bundled")
+sources = [
+    "https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
+    "a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
+    "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
+    "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
+    "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
+    "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
+    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
+    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
+    "./bundled",
+]
 
 script = raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
@@ -120,6 +107,7 @@ ln -sf /workspace/destdir/lib ${sysroot}/usr/local/lib
 ln -sf /workspace/destdir/lib64 ${sysroot}/usr/local/lib64
 """
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, [triplet(compiler_target)], prefix -> Product[], []; skip_audit=true)
+# Build the artifacts
+build_info = build_tarballs(ARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [compiler_target], Product[], []; skip_audit=true)
 
+upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)

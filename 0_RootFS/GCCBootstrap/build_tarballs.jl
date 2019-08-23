@@ -2,7 +2,7 @@ using BinaryBuilder
 include("../common.jl")
 
 # Bootstrapping ahoy!
-Core.eval(BinaryBuilder, :(bootstrap_mode = true))
+Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs, :platform_support]))
 
 # We'll build this version of GCC
 version_idx = findfirst(x -> startswith(x, "--gcc-version"), ARGS)
@@ -184,10 +184,8 @@ sources = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Any[
-    find_tarball("PlatformSupport", "PlatformSupport.*$(triplet(compiler_target))"),
+dependencies = [
 ]
-
 
 # Bash recipe for building across all platforms
 script = "COMPILER_TARGET=$(triplet(compiler_target))\n"
@@ -650,22 +648,25 @@ fi
 # named ridiculous things like ${target}-${target}-foo, which screws this up.
 # We also go the reverse direction, as when we're not cross-compiling, it doesn't
 # automatically create the properly
-for f in ${prefix}/bin/${COMPILER_TARGET}-*; do
-    fbase=$(basename $f)
-    ln -sv "${fbase}" "${prefix}/bin/${fbase#${COMPILER_TARGET}-}" || true
-done
+#for f in ${prefix}/bin/${COMPILER_TARGET}-*; do
+#    fbase=$(basename $f)
+#    ln -sv "${fbase}" "${prefix}/bin/${fbase#${COMPILER_TARGET}-}" || true
+#done
 """
 
 # We only build for Linux x86_64
 platforms = [
-    Linux(:x86_64, :musl),
+    Linux(:x86_64; libc=:musl),
 ]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    ExecutableProduct(prefix, "gcc", :gcc),
-    ExecutableProduct(prefix, "g++", :gxx),
+products = [
+    ExecutableProduct("{target}-gcc", :gcc),
+    ExecutableProduct("{target}-g++", :gxx),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, gcc_version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_info = build_tarballs(ARGS, name, gcc_version, sources, script, platforms, products, dependencies; skip_audit=true)
+
+# Upload the artifacts
+upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
