@@ -28,6 +28,9 @@ if [[ ${target} == x86_64-*mingw* ]]; then
     mv mingw64/bin/*.dll ${prefix}/bin
 elif [[ ${target} == i686-*mingw* ]]; then
     mv mingw32/bin/*.dll ${prefix}/bin
+
+    # We need this special libgcc_s version as well	
+    mv mingw32/bin/libgcc_s_dw2*.dll ${prefix}/bin
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
         WHL_FILE="h5py-*manylinux1_x86_64*.whl"
