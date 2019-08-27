@@ -1,0 +1,11 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -492,7 +492,7 @@
+ # release number - for information only
+ FREETYPE_MIN_RELEASE=2.1.9
+ # libtool-specific version - this is what is checked
+-FREETYPE_MIN_VERSION=9.7.3
++FREETYPE_MIN_VERSION=2.1.9
+ 
+ CAIRO_ENABLE_FONT_BACKEND(ft, FreeType, auto, [
+ 
