@@ -16,6 +16,9 @@ sources = [
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-szip-2.1.1-2-any.pkg.tar.xz" => "ec8fe26370b0673c4b91f5ccf3404907dc7c24cb9d75c7b8830aa93a7c13ace7",
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.10.5-1-any.pkg.tar.xz" => "e01196dd53711304aa4026932c153171606efc4d6938dd3c172b6b40d9e7cdd9",
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz" => "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2",
+
+     # We need some special compiler support libraries from mingw
+     "http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz" => "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17",
 ]
 
 # Bash recipe for building across all platforms
@@ -28,9 +31,6 @@ if [[ ${target} == x86_64-*mingw* ]]; then
     mv mingw64/bin/*.dll ${prefix}/bin
 elif [[ ${target} == i686-*mingw* ]]; then
     mv mingw32/bin/*.dll ${prefix}/bin
-
-    # We need this special libgcc_s version as well	
-    mv mingw32/bin/libgcc_s_dw2*.dll ${prefix}/bin
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
         WHL_FILE="h5py-*manylinux1_x86_64*.whl"
