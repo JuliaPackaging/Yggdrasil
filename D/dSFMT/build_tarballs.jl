@@ -48,7 +48,7 @@ products = prefix -> [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.8.0-0/build_LibSSH2.v1.8.0.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.9.0-0/build_LibSSH2.v1.9.0.jl",
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibCURL-v7.61.0-1/build_LibCURL.v7.61.0.jl",
 ]
 

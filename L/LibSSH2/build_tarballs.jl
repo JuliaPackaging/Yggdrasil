@@ -1,24 +1,21 @@
 using BinaryBuilder
 
 name = "LibSSH2"
-version = v"1.8.2"
+version = v"1.9.0"
 
-# Collection of sources required to build Ogg
+# Collection of sources required to build LibSSH2
 sources = [
    "https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz" =>
-   "088307d9f6b6c4b8c13f34602e8ff65d21c2dc4d55284dfe15d502c4ee190d67",
-   "./bundled",
+   "d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libssh2-encryptedpem.patch
-atomic_patch -p0 $WORKSPACE/srcdir/patches/libssh2-netinet-in.patch
-
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
+    -DCRYPTO_BACKEND=mbedTLS
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_EXAMPLES=OFF
     -DBUILD_TESTING=OFF
@@ -26,12 +23,6 @@ BUILD_FLAGS=(
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain"
 )
-
-if [[ ${target} == *mingw* ]]; then
-    BUILD_FLAGS+=(-DCRYPTO_BACKEND=WinCNG)
-else
-    BUILD_FLAGS+=(-DCRYPTO_BACKEND=mbedTLS)
-fi
 
 mkdir build
 cd build
