@@ -25,7 +25,8 @@ END
 if [[ ${target} == *apple-darwin* ]]; then
     export AR=/opt/${target}/bin/${target}-ar
 fi
-./autogen.sh LDFLAGS=-L$prefix/lib CPPFLAGS=-I$prefix/include --enable-libmount=no --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
+./autogen.sh LDFLAGS="${LDFLAGS} -L$prefix/lib" CPPFLAGS=-I$prefix/include --enable-libmount=no --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
+find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
 
 make -j${nproc}
 make install
@@ -35,9 +36,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable FreeBSD for now
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-
 # The products that we will ensure are always built
 products(prefix) = [
     LibraryProduct(prefix, "libglib", :libglib)
@@ -46,7 +44,7 @@ products(prefix) = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need zlib
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
+    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.4/build_Zlib.v1.2.11.jl",
     # We need libffi
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libffi-v3.2.1-0/build_Libffi.v3.2.1.jl",
     # We need gettext
