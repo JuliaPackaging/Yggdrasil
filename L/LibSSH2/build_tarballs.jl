@@ -15,6 +15,7 @@ cd $WORKSPACE/srcdir/libssh2*/
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
+    -DCRYPTO_BACKEND=mbedTLS
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_EXAMPLES=OFF
     -DBUILD_TESTING=OFF
@@ -22,12 +23,6 @@ BUILD_FLAGS=(
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain"
 )
-
-if [[ ${target} == *mingw* ]]; then
-    BUILD_FLAGS+=(-DCRYPTO_BACKEND=WinCNG)
-else
-    BUILD_FLAGS+=(-DCRYPTO_BACKEND=mbedTLS)
-fi
 
 mkdir build
 cd build
