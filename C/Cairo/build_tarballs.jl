@@ -20,11 +20,11 @@ LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 CFLAGS="-I${prefix}/include -I${prefix}/include/freetype2"
 
 if [[ "${target}" == *-apple-* ]]; then
-    BACKEND_OPTIONS="--disable-xlib --enable-quartz"
+    BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
 elif [[ "${target}" == *-mingw* ]]; then
-    BACKEND_OPTIONS="--disable-xlib --enable-win32"
-else
-    BACKEND_OPTIONS="--disable-xlib"
+    BACKEND_OPTIONS="--enable-win32 --disable-xcb --disable-xlib"
+elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
+    BACKEND_OPTIONS="--enable-xlib --enable-xcb --enable-xlib-xcb"
 fi
 
 # There is a mess with the version of freetype2.  The following patch changes
@@ -34,6 +34,7 @@ atomic_patch -p1 ../patches/configure.ac.patch
 ./configure --prefix=${prefix} --host=${target} \
     --disable-static \
     --enable-ft \
+    --enable-tee \
     --disable-dependency-tracking \
     ${BACKEND_OPTIONS}
 make -j${nproc}
@@ -56,6 +57,8 @@ dependencies = [
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Pixman-v0.36.0-0/build_Pixman.v0.36.0.jl",
     "https://github.com/JuliaGraphics/FreeTypeBuilder/releases/download/v2.9.1-4/build_FreeType2.v2.10.0.jl",
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-2/build_Bzip2.v1.0.6.jl",
+    "https://github.com/giordano/Yggdrasil/releases/download/X11-v1.6.8/build_X11.v1.6.8.jl",
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LZO-v2.10.0%2B0/build_LZO.v2.10.0.jl",
 ]
 
 
