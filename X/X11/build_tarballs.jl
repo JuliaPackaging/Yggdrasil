@@ -36,6 +36,9 @@ sources = [
     "https://www.x.org/archive/individual/lib/libpthread-stubs-0.1.tar.bz2" =>
     "004dae11e11598584939d66d26a5ab9b48d08a00ca2d00ae8d38ee3ac7a15d65",
 
+    "https://www.x.org/archive/individual/lib/libXext-1.3.4.tar.bz2" =>
+    "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b",
+
     "https://www.x.org/archive/individual/xcb/libxcb-1.13.tar.bz2" =>
     "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa",
 ]
@@ -52,12 +55,12 @@ if [[ "${target}" == *-apple-* ]]; then
     RANLIB="/opt/${target}/bin/llvm-ranlib"
 fi
 
-for dir in *proto-* xtrans-* libXau-* libpthread-stubs-* libxcb-* libX11-*; do
+for dir in *proto-* xtrans-* libXau-* libpthread-stubs-* libxcb-* libX11-* libXext-*; do
     cd "$dir"
     if [[ "${dir}" == xextproto-* ]] || [[ "${dir}" == xproto-* ]] || [[ "${dir}" == libpthread-stubs-* ]] || [[ "${dir}" == libX11-* ]]; then
         update_configure_scripts
     fi
-    if [[ "${dir}" == libX11-* ]]; then
+    if [[ "${dir}" == libX11-* ]] || [[ "${dir}" == libXext-* ]]; then
         # Elliot checked this on all platforms, so we can skip the test.
         EXTRA_OPTS="--enable-malloc0returnsnull=no"
     fi
