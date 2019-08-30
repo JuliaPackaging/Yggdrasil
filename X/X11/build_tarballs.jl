@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 name = "X11"
 version = v"1.6.8"
@@ -57,13 +57,14 @@ fi
 
 for dir in *proto-* xtrans-* libXau-* libpthread-stubs-* libxcb-* libX11-* libXext-*; do
     cd "$dir"
-    if [[ "${dir}" == xextproto-* ]] || [[ "${dir}" == xproto-* ]] || [[ "${dir}" == libpthread-stubs-* ]] || [[ "${dir}" == libX11-* ]]; then
-        update_configure_scripts
-    fi
+    # When compiling for things like ppc64le, we need newer `config.sub` files
+    update_configure_scripts
+
     if [[ "${dir}" == libX11-* ]] || [[ "${dir}" == libXext-* ]]; then
         # Elliot checked this on all platforms, so we can skip the test.
         EXTRA_OPTS="--enable-malloc0returnsnull=no"
     fi
+
     ./configure --prefix=${prefix} --host=${target} ${EXTRA_OPTS}
     if [[ "${dir}" == libX11-* ]]; then
         # For some obscure reason, this Makefile may not get the value of CPPFLAGS
@@ -78,17 +79,16 @@ done
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [p for p in supported_platforms() if !isa(p, MacOS) && !isa(p, Windows)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libX11", :libX11),
-    LibraryProduct(prefix, "libX11-xcb", :libX11_xcb)
+products = [
+    LibraryProduct("libX11", :libX11),
+    LibraryProduct("libX11-xcb", :libX11_xcb)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
