@@ -1,0 +1,1972 @@
+diff --git a/C/Alloc.c b/C/Alloc.c
+index 2706ec0..c840242 100644
+--- a/C/Alloc.c
++++ b/C/Alloc.c
+@@ -195,7 +195,7 @@ void *MidAlloc(size_t size)
+   #ifdef _SZ_ALLOC_DEBUG
+   fprintf(stderr, "\nAlloc_Mid %10d bytes;  count = %10d", size, g_allocCountMid++);
+   #endif
+-  return VirtualAlloc(size, 0);
++  return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+ }
+ 
+ void MidFree(void *address)
+@@ -206,7 +206,7 @@ void MidFree(void *address)
+   #endif
+   if (address == 0)
+     return;
+-  VirtualFree(address);
++  VirtualFree(address, 0, MEM_RELEASE);
+ }
+ 
+ #ifdef _7ZIP_LARGE_PAGES
+@@ -303,7 +303,7 @@ void *BigAlloc(size_t size)
+       return res;
+   }
+   #endif
+-  return VirtualAlloc(size, 0);
++  return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+ }
+ 
+ void BigFree(void *address)
+@@ -315,7 +315,7 @@ void BigFree(void *address)
+ 
+   if (address == 0)
+     return;
+-  VirtualFree(address);
++  VirtualFree(address, 0, MEM_RELEASE);
+ }
+ 
+ static void *SzAlloc(void *p, size_t size) { UNUSED_VAR(p); return MyAlloc(size); }
+diff --git a/C/Threads.c b/C/Threads.c
+index 1b8203f..930ad27 100644
+--- a/C/Threads.c
++++ b/C/Threads.c
+@@ -1,582 +1,95 @@
+-/* Threads.c */
++/* Threads.c -- multithreading library
++2017-06-26 : Igor Pavlov : Public domain */
+ 
+-#include "Threads.h"
+-
+-#ifdef ENV_BEOS
+-#include <kernel/OS.h>
+-#else
+-#include <pthread.h>
+-#include <stdlib.h>
+-#endif
++#include "Precomp.h"
+ 
+-#include <errno.h>
+-
+-#if defined(__linux__) 
+-#define PTHREAD_MUTEX_ERRORCHECK PTHREAD_MUTEX_ERRORCHECK_NP
++#ifndef UNDER_CE
++#include <process.h>
+ #endif
+ 
+-#ifdef ENV_BEOS
+-
+-/* TODO : optimize the code and verify the returned values */ 
+-
+-WRes Thread_Create(CThread *thread, THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE *startAddress)(void *), LPVOID parameter)
+-{ 
+-	thread->_tid = spawn_thread((int32 (*)(void *))startAddress, "CThread", B_LOW_PRIORITY, parameter);
+-	if (thread->_tid >= B_OK) {
+-		resume_thread(thread->_tid);
+-	} else {
+-		thread->_tid = B_BAD_THREAD_ID;
+-	}
+-	thread->_created = 1;
+-	return 0; // SZ_OK;
+-}
+-
+-WRes Thread_Wait(CThread *thread)
+-{
+-  int ret;
+-
+-  if (thread->_created == 0)
+-    return EINVAL;
+-
+-  if (thread->_tid >= B_OK) 
+-  {
+-    status_t exit_value;
+-    wait_for_thread(thread->_tid, &exit_value);
+-    thread->_tid = B_BAD_THREAD_ID;
+-  } else {
+-    return EINVAL;
+-  }
+-  
+-  thread->_created = 0;
+-  
+-  return 0;
+-}
++#include "Threads.h"
+ 
+-WRes Thread_Close(CThread *thread)
++static WRes GetError()
+ {
+-    if (!thread->_created) return SZ_OK;
+-    
+-    thread->_tid = B_BAD_THREAD_ID;
+-    thread->_created = 0;
+-    return SZ_OK;
++  DWORD res = GetLastError();
++  return res ? (WRes)res : 1;
+ }
+ 
++static WRes HandleToWRes(HANDLE h) { return (h != NULL) ? 0 : GetError(); }
++static WRes BOOLToWRes(BOOL v) { return v ? 0 : GetError(); }
+ 
+-WRes Event_Create(CEvent *p, BOOL manualReset, int initialSignaled)
++WRes HandlePtr_Close(HANDLE *p)
+ {
+-  p->_index_waiting = 0;
+-  p->_manual_reset  = manualReset;
+-  p->_state         = (initialSignaled ? TRUE : FALSE);
+-  p->_created       = 1;
+-  p->_sem           = create_sem(1,"event");
+-  return 0;
+-}
+-
+-WRes Event_Set(CEvent *p) {
+-  int index;
+-  acquire_sem(p->_sem);
+-  p->_state = TRUE;
+-  for(index = 0 ; index < p->_index_waiting ; index++)
++  if (*p != NULL)
+   {
+-     send_data(p->_waiting[index], '7zCN', NULL, 0);
++    if (!CloseHandle(*p))
++      return GetError();
++    *p = NULL;
+   }
+-  p->_index_waiting = 0;
+-  release_sem(p->_sem);
+   return 0;
+ }
+ 
+-WRes Event_Reset(CEvent *p) {
+-  acquire_sem(p->_sem);
+-  p->_state = FALSE;
+-  release_sem(p->_sem);
+-  return 0;
+-}
+- 
+-WRes Event_Wait(CEvent *p) {
+-  acquire_sem(p->_sem);
+-  while (p->_state == FALSE)
+-  {
+-    thread_id sender; 
+-    p->_waiting[p->_index_waiting++] = find_thread(NULL);
+-    release_sem(p->_sem);
+-    /* int msg = */ receive_data(&sender, NULL, 0);
+-    acquire_sem(p->_sem);
+-  }
+-  if (p->_manual_reset == FALSE)
+-  {
+-     p->_state = FALSE;
+-  }
+-  release_sem(p->_sem);
+-  return 0;
+-}
++WRes Handle_WaitObject(HANDLE h) { return (WRes)WaitForSingleObject(h, INFINITE); }
+ 
+-WRes Event_Close(CEvent *p) { 
+-  if (p->_created)
+-  {
+-    p->_created = 0;
+-    delete_sem(p->_sem);
+-  }
+-  return 0;
+-}
+-
+-WRes Semaphore_Create(CSemaphore *p, UInt32 initiallyCount, UInt32 maxCount)
+-{
+-  p->_index_waiting = 0;
+-  p->_count         = initiallyCount;
+-  p->_maxCount      = maxCount;
+-  p->_created       = 1;
+-  p->_sem           = create_sem(1,"sem");
+-  return 0;
+-}
+-
+-WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 releaseCount)
++WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param)
+ {
+-  UInt32 newCount;
+-  int index;
++  /* Windows Me/98/95: threadId parameter may not be NULL in _beginthreadex/CreateThread functions */
+   
+-  if (releaseCount < 1) return EINVAL;
+-
+-  acquire_sem(p->_sem);
+-  newCount = p->_count + releaseCount;
+-  if (newCount > p->_maxCount)
+-  {
+-    release_sem(p->_sem);
+-    return EINVAL;
+-  }
+-  p->_count = newCount;
+-  for(index = 0 ; index < p->_index_waiting ; index++)
+-  {
+-     send_data(p->_waiting[index], '7zCN', NULL, 0);
+-  }
+-  p->_index_waiting = 0;
+-  release_sem(p->_sem);
+-  return 0;
+-}
+-
+-WRes Semaphore_Wait(CSemaphore *p) {
+-  acquire_sem(p->_sem);
+-  while (p->_count < 1)
+-  {
+-    thread_id sender;  
+-    p->_waiting[p->_index_waiting++] = find_thread(NULL);
+-    release_sem(p->_sem);
+-    /* int msg = */ receive_data(&sender, NULL, 0);
+-    acquire_sem(p->_sem);
+-  }
+-  p->_count--;
+-  release_sem(p->_sem); 
+-  return 0;
+-}
+-
+-WRes Semaphore_Close(CSemaphore *p) {
+-  if (p->_created)
+-  {
+-    p->_created = 0;
+-    delete_sem(p->_sem);
+-  }
+-  return 0;
+-}
+-
+-WRes CriticalSection_Init(CCriticalSection * lpCriticalSection)
+-{
+-  lpCriticalSection->_sem = create_sem(1,"cc");
+-  return 0;
+-}
+-
+-#else /* !ENV_BEOS */
+-
+-WRes Thread_Create(CThread *thread, THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE *startAddress)(void *), LPVOID parameter)
+-{ 
+-	pthread_attr_t attr;
+-	int ret;
+-
+-	thread->_created = 0;
+-
+-	ret = pthread_attr_init(&attr);
+-	if (ret) return ret;
+-
+-	ret = pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_JOINABLE);
+-	if (ret) return ret;
+-
+-	ret = pthread_create(&thread->_tid, &attr, (void * (*)(void *))startAddress, parameter);
+-
+-	/* ret2 = */ pthread_attr_destroy(&attr);
+-
+-	if (ret) return ret;
+-	
+-	thread->_created = 1;
+-
+-	return 0; // SZ_OK;
+-}
+-
+-WRes Thread_Wait(CThread *thread)
+-{
+-  void *thread_return;
+-  int ret;
+-
+-  if (thread->_created == 0)
+-    return EINVAL;
+-
+-  ret = pthread_join(thread->_tid,&thread_return);
+-  thread->_created = 0;
++  #ifdef UNDER_CE
+   
+-  return ret;
+-}
++  DWORD threadId;
++  *p = CreateThread(0, 0, func, param, 0, &threadId);
+ 
+-WRes Thread_Close(CThread *thread)
+-{
+-    if (!thread->_created) return SZ_OK;
+-    
+-    pthread_detach(thread->_tid);
+-    thread->_tid = 0;
+-    thread->_created = 0;
+-    return SZ_OK;
+-}
+-
+-#ifdef DEBUG_SYNCHRO
++  #else
+ 
+-#include <stdio.h>
++  unsigned threadId;
++  *p = (HANDLE)_beginthreadex(NULL, 0, func, param, 0, &threadId);
++   
++  #endif
+ 
+-static void dump_error(int ligne,int ret,const char *text,void *param)
+-{
+-  printf("\n##T%d#ERROR2 (l=%d) %s : param=%p ret = %d (%s)##\n",(int)pthread_self(),ligne,text,param,ret,strerror(ret));
+-    // abort();
++  /* maybe we must use errno here, but probably GetLastError() is also OK. */
++  return HandleToWRes(*p);
+ }
+ 
+-WRes Event_Create(CEvent *p, BOOL manualReset, int initialSignaled)
++static WRes Event_Create(CEvent *p, BOOL manualReset, int signaled)
+ {
+-  int ret;
+-  pthread_mutexattr_t mutexattr;
+-  memset(&mutexattr,0,sizeof(mutexattr));
+-  ret = pthread_mutexattr_init(&mutexattr);
+-  if (ret != 0) dump_error(__LINE__,ret,"Event_Create::pthread_mutexattr_init",&mutexattr);
+-  ret = pthread_mutexattr_settype(&mutexattr,PTHREAD_MUTEX_ERRORCHECK);
+-  if (ret != 0) dump_error(__LINE__,ret,"Event_Create::pthread_mutexattr_settype",&mutexattr);
+-  ret = pthread_mutex_init(&p->_mutex,&mutexattr);
+-  if (ret != 0) dump_error(__LINE__,ret,"Event_Create::pthread_mutexattr_init",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    ret = pthread_cond_init(&p->_cond,0);
+-    if (ret != 0) dump_error(__LINE__,ret,"Event_Create::pthread_cond_init",&p->_cond);
+-    p->_manual_reset = manualReset;
+-    p->_state        = (initialSignaled ? TRUE : FALSE);
+-    p->_created = 1;
+-  }
+-  return ret;
++  *p = CreateEvent(NULL, manualReset, (signaled ? TRUE : FALSE), NULL);
++  return HandleToWRes(*p);
+ }
+ 
+-WRes Event_Set(CEvent *p) {
+-  int ret = pthread_mutex_lock(&p->_mutex);
+-  if (ret != 0) dump_error(__LINE__,ret,"ES::pthread_mutex_lock",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    p->_state = TRUE;
+-    ret = pthread_cond_broadcast(&p->_cond);
+-    if (ret != 0) dump_error(__LINE__,ret,"ES::pthread_cond_broadcast",&p->_cond);
+-    if (ret == 0)
+-    {
+-       ret = pthread_mutex_unlock(&p->_mutex);
+-       if (ret != 0) dump_error(__LINE__,ret,"ES::pthread_mutex_unlock",&p->_mutex);
+-    }
+-  }
+-  return ret;
+-}
++WRes Event_Set(CEvent *p) { return BOOLToWRes(SetEvent(*p)); }
++WRes Event_Reset(CEvent *p) { return BOOLToWRes(ResetEvent(*p)); }
+ 
+-WRes Event_Reset(CEvent *p) {
+-  int ret = pthread_mutex_lock(&p->_mutex);
+-  if (ret != 0) dump_error(__LINE__,ret,"ER::pthread_mutex_lock",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    p->_state = FALSE;
+-    ret = pthread_mutex_unlock(&p->_mutex);
+-    if (ret != 0) dump_error(__LINE__,ret,"ER::pthread_mutex_unlock",&p->_mutex);
+-  }
+-  return ret;
+-}
+- 
+-WRes Event_Wait(CEvent *p) {
+-  int ret = pthread_mutex_lock(&p->_mutex);
+-  if (ret != 0) dump_error(__LINE__,ret,"EW::pthread_mutex_lock",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    while ((p->_state == FALSE) && (ret == 0))
+-    {
+-       ret = pthread_cond_wait(&p->_cond, &p->_mutex);
+-       if (ret != 0) dump_error(__LINE__,ret,"EW::pthread_cond_wait",&p->_mutex);
+-    }
+-    if (ret == 0)
+-    {
+-       if (p->_manual_reset == FALSE)
+-       {
+-         p->_state = FALSE;
+-       }
+-       ret = pthread_mutex_unlock(&p->_mutex);
+-       if (ret != 0) dump_error(__LINE__,ret,"EW::pthread_mutex_unlock",&p->_mutex);
+-    }
+-  }
+-  return ret;
+-}
+-
+-WRes Event_Close(CEvent *p) { 
+-  if (p->_created)
+-  {
+-    int ret;
+-    p->_created = 0;
+-    ret = pthread_mutex_destroy(&p->_mutex);
+-    if (ret != 0) dump_error(__LINE__,ret,"EC::pthread_mutex_destroy",&p->_mutex);
+-    ret = pthread_cond_destroy(&p->_cond);
+-    if (ret != 0) dump_error(__LINE__,ret,"EC::pthread_cond_destroy",&p->_cond);
+-  }
+-  return 0;
+-}
+-
+-WRes Semaphore_Create(CSemaphore *p, UInt32 initiallyCount, UInt32 maxCount)
+-{
+-  int ret;
+-  pthread_mutexattr_t mutexattr;
+-  memset(&mutexattr,0,sizeof(mutexattr));
+-  ret = pthread_mutexattr_init(&mutexattr);
+-  if (ret != 0) dump_error(__LINE__,ret,"SemC::pthread_mutexattr_init",&mutexattr);
+-  ret = pthread_mutexattr_settype(&mutexattr,PTHREAD_MUTEX_ERRORCHECK);
+-  if (ret != 0) dump_error(__LINE__,ret,"SemC::pthread_mutexattr_settype",&mutexattr);
+-  ret = pthread_mutex_init(&p->_mutex,&mutexattr);
+-  if (ret != 0) dump_error(__LINE__,ret,"SemC::pthread_mutexattr_init",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    ret = pthread_cond_init(&p->_cond,0);
+-    if (ret != 0) dump_error(__LINE__,ret,"SemC::pthread_cond_init",&p->_mutex);
+-    p->_count    = initiallyCount;
+-    p->_maxCount = maxCount;
+-    p->_created = 1;
+-  }
+-  return ret;
+-}
+-
+-WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 releaseCount)
+-{
+-  int ret;
+-  if (releaseCount < 1) return EINVAL;
+-
+-  ret = pthread_mutex_lock(&p->_mutex);
+-  if (ret != 0) dump_error(__LINE__,ret,"SemR::pthread_mutex_lock",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    UInt32 newCount = p->_count + releaseCount;
+-    if (newCount > p->_maxCount)
+-    {
+-      ret = pthread_mutex_unlock(&p->_mutex);
+-      if (ret != 0) dump_error(__LINE__,ret,"SemR::pthread_mutex_unlock",&p->_mutex);
+-      return EINVAL;
+-    }
+-    p->_count = newCount;
+-    ret = pthread_cond_broadcast(&p->_cond);
+-    if (ret != 0) dump_error(__LINE__,ret,"SemR::pthread_cond_broadcast",&p->_cond);
+-    if (ret == 0)
+-    {
+-       ret = pthread_mutex_unlock(&p->_mutex);
+-       if (ret != 0) dump_error(__LINE__,ret,"SemR::pthread_mutex_unlock",&p->_mutex);
+-    }
+-  }
+-  return ret;
+-}
+-
+-WRes Semaphore_Wait(CSemaphore *p) {
+-  int ret = pthread_mutex_lock(&p->_mutex);
+-  if (ret != 0) dump_error(__LINE__,ret,"SemW::pthread_mutex_lock",&p->_mutex);
+-  if (ret == 0)
+-  {
+-    while ((p->_count < 1) && (ret == 0))
+-    {
+-       ret = pthread_cond_wait(&p->_cond, &p->_mutex);
+-       if (ret != 0) dump_error(__LINE__,ret,"SemW::pthread_cond_wait",&p->_mutex);
+-    }
+-    if (ret == 0)
+-    {
+-      p->_count--;
+-      ret = pthread_mutex_unlock(&p->_mutex);
+-      if (ret != 0) dump_error(__LINE__,ret,"SemW::pthread_mutex_unlock",&p->_mutex);
+-    }
+-  }
+-  return ret;
+-}
++WRes ManualResetEvent_Create(CManualResetEvent *p, int signaled) { return Event_Create(p, TRUE, signaled); }
++WRes AutoResetEvent_Create(CAutoResetEvent *p, int signaled) { return Event_Create(p, FALSE, signaled); }
++WRes ManualResetEvent_CreateNotSignaled(CManualResetEvent *p) { return ManualResetEvent_Create(p, 0); }
++WRes AutoResetEvent_CreateNotSignaled(CAutoResetEvent *p) { return AutoResetEvent_Create(p, 0); }
+ 
+-WRes Semaphore_Close(CSemaphore *p) {
+-  if (p->_created)
+-  {
+-    int ret;
+-    p->_created = 0;
+-    ret = pthread_mutex_destroy(&p->_mutex);
+-    if (ret != 0) dump_error(__LINE__,ret,"Semc::pthread_mutex_destroy",&p->_mutex);
+-    ret = pthread_cond_destroy(&p->_cond);
+-    if (ret != 0) dump_error(__LINE__,ret,"Semc::pthread_cond_destroy",&p->_cond);
+-  }
+-  return 0;
+-}
+ 
+-WRes CriticalSection_Init(CCriticalSection * lpCriticalSection)
++WRes Semaphore_Create(CSemaphore *p, UInt32 initCount, UInt32 maxCount)
+ {
+-	if (lpCriticalSection)
+-	{
+-		int ret;
+-		pthread_mutexattr_t mutexattr;
+-		memset(&mutexattr,0,sizeof(mutexattr));
+-		ret = pthread_mutexattr_init(&mutexattr);
+-		if (ret != 0) dump_error(__LINE__,ret,"CS I::pthread_mutexattr_init",&mutexattr);
+-		ret = pthread_mutexattr_settype(&mutexattr,PTHREAD_MUTEX_ERRORCHECK);
+-		if (ret != 0) dump_error(__LINE__,ret,"CS I::pthread_mutexattr_settype",&mutexattr);
+-		ret = pthread_mutex_init(&lpCriticalSection->_mutex,&mutexattr);
+-		if (ret != 0) dump_error(__LINE__,ret,"CS I::pthread_mutexattr_init",&lpCriticalSection->_mutex);
+-		return ret;
+-	}
+-	return EINTR;
+-}
+-
+-void CriticalSection_Enter(CCriticalSection * lpCriticalSection)
+-{
+-	if (lpCriticalSection)
+-	{
+-		int ret = pthread_mutex_lock(&(lpCriticalSection->_mutex));
+-                if (ret != 0) dump_error(__LINE__,ret,"CS::pthread_mutex_lock",&(lpCriticalSection->_mutex));
+-	}
+-}
+-
+-void CriticalSection_Leave(CCriticalSection * lpCriticalSection)
+-{
+-	if (lpCriticalSection)
+-	{
+-		int ret = pthread_mutex_unlock(&(lpCriticalSection->_mutex));
+-                if (ret != 0) dump_error(__LINE__,ret,"CS::pthread_mutex_unlock",&(lpCriticalSection->_mutex));
+-	}
+-}
+-
+-void CriticalSection_Delete(CCriticalSection * lpCriticalSection)
+-{
+-	if (lpCriticalSection)
+-	{
+-		int ret = pthread_mutex_destroy(&(lpCriticalSection->_mutex));
+-                if (ret != 0) dump_error(__LINE__,ret,"CS::pthread_mutex_destroy",&(lpCriticalSection->_mutex));
+-	}
+-}
+-
+-#else
+-
+-WRes Event_Create(CEvent *p, BOOL manualReset, int initialSignaled)
+-{
+-  pthread_mutex_init(&p->_mutex,0);
+-  pthread_cond_init(&p->_cond,0);
+-  p->_manual_reset = manualReset;
+-  p->_state        = (initialSignaled ? TRUE : FALSE);
+-  p->_created = 1;
+-  return 0;
++  *p = CreateSemaphore(NULL, (LONG)initCount, (LONG)maxCount, NULL);
++  return HandleToWRes(*p);
+ }
+ 
+-WRes Event_Set(CEvent *p) {
+-  pthread_mutex_lock(&p->_mutex);
+-  p->_state = TRUE;
+-  pthread_cond_broadcast(&p->_cond);
+-  pthread_mutex_unlock(&p->_mutex);
+-  return 0;
+-}
+-
+-WRes Event_Reset(CEvent *p) {
+-  pthread_mutex_lock(&p->_mutex);
+-  p->_state = FALSE;
+-  pthread_mutex_unlock(&p->_mutex);
+-  return 0;
+-}
+- 
+-WRes Event_Wait(CEvent *p) {
+-  pthread_mutex_lock(&p->_mutex);
+-  while (p->_state == FALSE)
+-  {
+-     pthread_cond_wait(&p->_cond, &p->_mutex);
+-  }
+-  if (p->_manual_reset == FALSE)
+-  {
+-     p->_state = FALSE;
+-  }
+-  pthread_mutex_unlock(&p->_mutex);
+-  return 0;
+-}
++static WRes Semaphore_Release(CSemaphore *p, LONG releaseCount, LONG *previousCount)
++  { return BOOLToWRes(ReleaseSemaphore(*p, releaseCount, previousCount)); }
++WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 num)
++  { return Semaphore_Release(p, (LONG)num, NULL); }
++WRes Semaphore_Release1(CSemaphore *p) { return Semaphore_ReleaseN(p, 1); }
+ 
+-WRes Event_Close(CEvent *p) { 
+-  if (p->_created)
+-  {
+-    p->_created = 0;
+-    pthread_mutex_destroy(&p->_mutex);
+-    pthread_cond_destroy(&p->_cond);
+-  }
+-  return 0;
+-}
+-
+-WRes Semaphore_Create(CSemaphore *p, UInt32 initiallyCount, UInt32 maxCount)
++WRes CriticalSection_Init(CCriticalSection *p)
+ {
+-  pthread_mutex_init(&p->_mutex,0);
+-  pthread_cond_init(&p->_cond,0);
+-  p->_count    = initiallyCount;
+-  p->_maxCount = maxCount;
+-  p->_created  = 1;
+-  return 0;
+-}
+-
+-WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 releaseCount)
+-{
+-  UInt32 newCount;
+-
+-  if (releaseCount < 1) return EINVAL;
+-
+-  pthread_mutex_lock(&p->_mutex);
+-
+-  newCount = p->_count + releaseCount;
+-  if (newCount > p->_maxCount)
++  /* InitializeCriticalSection can raise only STATUS_NO_MEMORY exception */
++  #ifdef _MSC_VER
++  __try
++  #endif
+   {
+-    pthread_mutex_unlock(&p->_mutex);
+-    return EINVAL;
++    InitializeCriticalSection(p);
++    /* InitializeCriticalSectionAndSpinCount(p, 0); */
+   }
+-  p->_count = newCount;
+-  pthread_cond_broadcast(&p->_cond);
+-  pthread_mutex_unlock(&p->_mutex);
++  #ifdef _MSC_VER
++  __except (EXCEPTION_EXECUTE_HANDLER) { return 1; }
++  #endif
+   return 0;
+ }
+-
+-WRes Semaphore_Wait(CSemaphore *p) {
+-  pthread_mutex_lock(&p->_mutex);
+-  while (p->_count < 1)
+-  {
+-     pthread_cond_wait(&p->_cond, &p->_mutex);
+-  }
+-  p->_count--;
+-  pthread_mutex_unlock(&p->_mutex);
+-  return 0;
+-}
+-
+-WRes Semaphore_Close(CSemaphore *p) {
+-  if (p->_created)
+-  {
+-    p->_created = 0;
+-    pthread_mutex_destroy(&p->_mutex);
+-    pthread_cond_destroy(&p->_cond);
+-  }
+-  return 0;
+-}
+-
+-WRes CriticalSection_Init(CCriticalSection * lpCriticalSection)
+-{
+-	return pthread_mutex_init(&(lpCriticalSection->_mutex),0);
+-}
+-
+-#endif /* DEBUG_SYNCHRO */
+-
+-#endif /* ENV_BEOS */
+-
+-WRes ManualResetEvent_Create(CManualResetEvent *p, int initialSignaled)
+-  { return Event_Create(p, TRUE, initialSignaled); }
+-
+-WRes ManualResetEvent_CreateNotSignaled(CManualResetEvent *p) 
+-  { return ManualResetEvent_Create(p, 0); }
+-
+-WRes AutoResetEvent_Create(CAutoResetEvent *p, int initialSignaled)
+-  { return Event_Create(p, FALSE, initialSignaled); }
+-WRes AutoResetEvent_CreateNotSignaled(CAutoResetEvent *p) 
+-  { return AutoResetEvent_Create(p, 0); }
+-
+diff --git a/C/Threads.h b/C/Threads.h
+index a285bc9..e53ace4 100644
+--- a/C/Threads.h
++++ b/C/Threads.h
+@@ -1,123 +1,68 @@
+ /* Threads.h -- multithreading library
+-2008-11-22 : Igor Pavlov : Public domain */
++2017-06-18 : Igor Pavlov : Public domain */
+ 
+-#ifndef __7Z_THRESDS_H
+-#define __7Z_THRESDS_H
++#ifndef __7Z_THREADS_H
++#define __7Z_THREADS_H
++
++#ifdef _WIN32
++#include <windows.h>
++#endif
+ 
+ #include "7zTypes.h"
+-#include "windows.h"
+ 
+-#ifdef ENV_BEOS
+-#include <kernel/OS.h>
+-#define MAX_THREAD 256
+-#else
+-#include <pthread.h>
+-#endif
++EXTERN_C_BEGIN
+ 
+-/* #define DEBUG_SYNCHRO 1 */
++WRes HandlePtr_Close(HANDLE *h);
++WRes Handle_WaitObject(HANDLE h);
+ 
+-typedef struct _CThread
+-{
+-#ifdef ENV_BEOS
+-	thread_id _tid;
++typedef HANDLE CThread;
++#define Thread_Construct(p) *(p) = NULL
++#define Thread_WasCreated(p) (*(p) != NULL)
++#define Thread_Close(p) HandlePtr_Close(p)
++#define Thread_Wait(p) Handle_WaitObject(*(p))
++
++typedef
++#ifdef UNDER_CE
++  DWORD
+ #else
+-	pthread_t _tid;
++  unsigned
+ #endif
+-	int _created;
+-
+-} CThread;
++  THREAD_FUNC_RET_TYPE;
+ 
+-#define Thread_Construct(thread) (thread)->_created = 0
+-#define Thread_WasCreated(thread) ((thread)->_created != 0)
+-
+-typedef unsigned THREAD_FUNC_RET_TYPE;
+ #define THREAD_FUNC_CALL_TYPE MY_STD_CALL
+ #define THREAD_FUNC_DECL THREAD_FUNC_RET_TYPE THREAD_FUNC_CALL_TYPE
+-
+ typedef THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE * THREAD_FUNC_TYPE)(void *);
++WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param);
+ 
+-WRes Thread_Create(CThread *thread, THREAD_FUNC_TYPE startAddress, LPVOID parameter);
+-WRes Thread_Wait(CThread *thread);
+-WRes Thread_Close(CThread *thread);
+-
+-typedef struct _CEvent
+-{
+-  int _created;
+-  int _manual_reset;
+-  int _state;
+-#ifdef ENV_BEOS
+-  thread_id _waiting[MAX_THREAD];
+-  int       _index_waiting;
+-  sem_id    _sem;
+-#else
+-  pthread_mutex_t _mutex;
+-  pthread_cond_t  _cond;
+-#endif
+-} CEvent;
+-
++typedef HANDLE CEvent;
+ typedef CEvent CAutoResetEvent;
+ typedef CEvent CManualResetEvent;
+-
+-#define Event_Construct(event) (event)->_created = 0
+-#define Event_IsCreated(event) ((event)->_created)
+-
+-WRes ManualResetEvent_Create(CManualResetEvent *event, int initialSignaled);
+-WRes ManualResetEvent_CreateNotSignaled(CManualResetEvent *event);
+-WRes AutoResetEvent_Create(CAutoResetEvent *event, int initialSignaled);
+-WRes AutoResetEvent_CreateNotSignaled(CAutoResetEvent *event);
+-WRes Event_Set(CEvent *event);
+-WRes Event_Reset(CEvent *event);
+-WRes Event_Wait(CEvent *event);
+-WRes Event_Close(CEvent *event);
+-
+-
+-typedef struct _CSemaphore
+-{
+-  int _created;
+-  UInt32 _count;
+-  UInt32 _maxCount;
+-#ifdef ENV_BEOS
+-  thread_id _waiting[MAX_THREAD];
+-  int       _index_waiting;
+-  sem_id    _sem;
+-#else
+-  pthread_mutex_t _mutex;
+-  pthread_cond_t  _cond;
+-#endif
+-} CSemaphore;
+-
+-#define Semaphore_Construct(p) (p)->_created = 0
+-
+-WRes Semaphore_Create(CSemaphore *p, UInt32 initiallyCount, UInt32 maxCount);
++#define Event_Construct(p) *(p) = NULL
++#define Event_IsCreated(p) (*(p) != NULL)
++#define Event_Close(p) HandlePtr_Close(p)
++#define Event_Wait(p) Handle_WaitObject(*(p))
++WRes Event_Set(CEvent *p);
++WRes Event_Reset(CEvent *p);
++WRes ManualResetEvent_Create(CManualResetEvent *p, int signaled);
++WRes ManualResetEvent_CreateNotSignaled(CManualResetEvent *p);
++WRes AutoResetEvent_Create(CAutoResetEvent *p, int signaled);
++WRes AutoResetEvent_CreateNotSignaled(CAutoResetEvent *p);
++
++typedef HANDLE CSemaphore;
++#define Semaphore_Construct(p) *(p) = NULL
++#define Semaphore_IsCreated(p) (*(p) != NULL)
++#define Semaphore_Close(p) HandlePtr_Close(p)
++#define Semaphore_Wait(p) Handle_WaitObject(*(p))
++WRes Semaphore_Create(CSemaphore *p, UInt32 initCount, UInt32 maxCount);
+ WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 num);
+-#define Semaphore_Release1(p) Semaphore_ReleaseN(p, 1)
+-WRes Semaphore_Wait(CSemaphore *p);
+-WRes Semaphore_Close(CSemaphore *p);
+-
+-typedef struct {
+-#ifdef ENV_BEOS
+-	sem_id _sem;
+-#else
+-        pthread_mutex_t _mutex;
+-#endif
+-} CCriticalSection;
++WRes Semaphore_Release1(CSemaphore *p);
+ 
++typedef CRITICAL_SECTION CCriticalSection;
+ WRes CriticalSection_Init(CCriticalSection *p);
+-#ifdef ENV_BEOS
+-#define CriticalSection_Delete(p) delete_sem((p)->_sem)
+-#define CriticalSection_Enter(p)  acquire_sem((p)->_sem)
+-#define CriticalSection_Leave(p)  release_sem((p)->_sem)
+-#else
+-#ifdef DEBUG_SYNCHRO
+-void CriticalSection_Delete(CCriticalSection *);
+-void CriticalSection_Enter(CCriticalSection *);
+-void CriticalSection_Leave(CCriticalSection *);
+-#else
+-#define CriticalSection_Delete(p) pthread_mutex_destroy(&((p)->_mutex))
+-#define CriticalSection_Enter(p)  pthread_mutex_lock(&((p)->_mutex))
+-#define CriticalSection_Leave(p)  pthread_mutex_unlock(&((p)->_mutex))
+-#endif
+-#endif
++#define CriticalSection_Delete(p) DeleteCriticalSection(p)
++#define CriticalSection_Enter(p) EnterCriticalSection(p)
++#define CriticalSection_Leave(p) LeaveCriticalSection(p)
+ 
+-#endif
++EXTERN_C_END
+ 
++#endif
+diff --git a/CPP/Windows/FileMapping.h b/CPP/Windows/FileMapping.h
+new file mode 100644
+index 0000000..f90c429
+--- /dev/null
++++ b/CPP/Windows/FileMapping.h
+@@ -0,0 +1,66 @@
++// Windows/FileMapping.h
++
++#ifndef __WINDOWS_FILEMAPPING_H
++#define __WINDOWS_FILEMAPPING_H
++
++#include "../Common/MyTypes.h"
++
++#include "Handle.h"
++
++namespace NWindows {
++
++class CFileMapping: public CHandle
++{
++public:
++  WRes Create(DWORD protect, UInt64 maxSize, LPCTSTR name)
++  {
++    _handle = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, protect, (DWORD)(maxSize >> 32), (DWORD)maxSize, name);
++    return ::GetLastError();
++  }
++
++  WRes Open(DWORD
++      #ifndef UNDER_CE
++      desiredAccess
++      #endif
++      , LPCTSTR name)
++  {
++    #ifdef UNDER_CE
++    WRes res = Create(PAGE_READONLY, 0, name);
++    if (res == ERROR_ALREADY_EXISTS)
++      return 0;
++    Close();
++    if (res == 0)
++      res = ERROR_FILE_NOT_FOUND;
++    return res;
++    #else
++    _handle = ::OpenFileMapping(desiredAccess, FALSE, name);
++    if (_handle != 0)
++      return 0;
++    return ::GetLastError();
++    #endif
++  }
++
++  LPVOID Map(DWORD desiredAccess, UInt64 fileOffset, SIZE_T numberOfBytesToMap)
++  {
++    return ::MapViewOfFile(_handle, desiredAccess, (DWORD)(fileOffset >> 32), (DWORD)fileOffset, numberOfBytesToMap);
++  }
++
++  #ifndef UNDER_CE
++  LPVOID Map(DWORD desiredAccess, UInt64 fileOffset, SIZE_T numberOfBytesToMap, LPVOID baseAddress)
++  {
++    return ::MapViewOfFileEx(_handle, desiredAccess, (DWORD)(fileOffset >> 32), (DWORD)fileOffset, numberOfBytesToMap, baseAddress);
++  }
++  #endif
++};
++
++class CFileUnmapper
++{
++  const void *_data;
++public:
++  CFileUnmapper(const void *data) : _data(data) {}
++  ~CFileUnmapper() { ::UnmapViewOfFile(_data); }
++};
++
++}
++
++#endif
+diff --git a/CPP/Windows/Handle.h b/CPP/Windows/Handle.h
+new file mode 100644
+index 0000000..bb7cb70
+--- /dev/null
++++ b/CPP/Windows/Handle.h
+@@ -0,0 +1,37 @@
++// Windows/Handle.h
++
++#ifndef __WINDOWS_HANDLE_H
++#define __WINDOWS_HANDLE_H
++
++namespace NWindows {
++
++class CHandle
++{
++protected:
++  HANDLE _handle;
++public:
++  operator HANDLE() { return _handle; }
++  CHandle(): _handle(NULL) {}
++  ~CHandle() { Close(); }
++  bool IsCreated() const { return (_handle != NULL); }
++  bool Close()
++  {
++    if (_handle == NULL)
++      return true;
++    if (!::CloseHandle(_handle))
++      return false;
++    _handle = NULL;
++    return true;
++  }
++  void Attach(HANDLE handle) { _handle = handle; }
++  HANDLE Detach()
++  {
++    HANDLE handle = _handle;
++    _handle = NULL;
++    return handle;
++  }
++};
++
++}
++
++#endif
+diff --git a/CPP/Windows/SecurityUtils.h b/CPP/Windows/SecurityUtils.h
+new file mode 100644
+index 0000000..8966dfd
+--- /dev/null
++++ b/CPP/Windows/SecurityUtils.h
+@@ -0,0 +1,167 @@
++// Windows/SecurityUtils.h
++
++#ifndef __WINDOWS_SECURITY_UTILS_H
++#define __WINDOWS_SECURITY_UTILS_H
++
++#include <NTSecAPI.h>
++
++#include "Defs.h"
++
++namespace NWindows {
++namespace NSecurity {
++
++class CAccessToken
++{
++  HANDLE _handle;
++public:
++  CAccessToken(): _handle(NULL) {};
++  ~CAccessToken() { Close(); }
++  bool Close()
++  {
++    if (_handle == NULL)
++      return true;
++    bool res = BOOLToBool(::CloseHandle(_handle));
++    if (res)
++      _handle = NULL;
++    return res;
++  }
++
++  bool OpenProcessToken(HANDLE processHandle, DWORD desiredAccess)
++  {
++    Close();
++    return BOOLToBool(::OpenProcessToken(processHandle, desiredAccess, &_handle));
++  }
++
++  /*
++  bool OpenThreadToken(HANDLE threadHandle, DWORD desiredAccess, bool openAsSelf)
++  {
++    Close();
++    return BOOLToBool(::OpenTreadToken(threadHandle, desiredAccess, BoolToBOOL(anOpenAsSelf), &_handle));
++  }
++  */
++
++  bool AdjustPrivileges(bool disableAllPrivileges, PTOKEN_PRIVILEGES newState,
++      DWORD bufferLength, PTOKEN_PRIVILEGES previousState, PDWORD returnLength)
++    { return BOOLToBool(::AdjustTokenPrivileges(_handle, BoolToBOOL(disableAllPrivileges),
++      newState, bufferLength, previousState, returnLength)); }
++  
++  bool AdjustPrivileges(bool disableAllPrivileges, PTOKEN_PRIVILEGES newState)
++    { return AdjustPrivileges(disableAllPrivileges, newState, 0, NULL, NULL); }
++  
++  bool AdjustPrivileges(PTOKEN_PRIVILEGES newState)
++    { return AdjustPrivileges(false, newState); }
++
++};
++
++#ifndef _UNICODE
++typedef NTSTATUS (NTAPI *LsaOpenPolicyP)(PLSA_UNICODE_STRING SystemName,
++    PLSA_OBJECT_ATTRIBUTES ObjectAttributes, ACCESS_MASK DesiredAccess, PLSA_HANDLE PolicyHandle);
++typedef NTSTATUS (NTAPI *LsaCloseP)(LSA_HANDLE ObjectHandle);
++typedef NTSTATUS (NTAPI *LsaAddAccountRightsP)(LSA_HANDLE PolicyHandle,
++    PSID AccountSid, PLSA_UNICODE_STRING UserRights, ULONG CountOfRights );
++#define MY_STATUS_NOT_IMPLEMENTED           ((NTSTATUS)0xC0000002L)
++#endif
++
++struct CPolicy
++{
++protected:
++  LSA_HANDLE _handle;
++  #ifndef _UNICODE
++  HMODULE hModule;
++  #endif
++public:
++  operator LSA_HANDLE() const { return _handle; }
++  CPolicy(): _handle(NULL)
++  {
++    #ifndef _UNICODE
++    hModule = GetModuleHandle(TEXT("Advapi32.dll"));
++    #endif
++  };
++  ~CPolicy() { Close(); }
++
++  NTSTATUS Open(PLSA_UNICODE_STRING systemName, PLSA_OBJECT_ATTRIBUTES objectAttributes,
++      ACCESS_MASK desiredAccess)
++  {
++    #ifndef _UNICODE
++    if (hModule == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    LsaOpenPolicyP lsaOpenPolicy = (LsaOpenPolicyP)GetProcAddress(hModule, "LsaOpenPolicy");
++    if (lsaOpenPolicy == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    #endif
++
++    Close();
++    return
++      #ifdef _UNICODE
++      ::LsaOpenPolicy
++      #else
++      lsaOpenPolicy
++      #endif
++      (systemName, objectAttributes, desiredAccess, &_handle);
++  }
++  
++  NTSTATUS Close()
++  {
++    if (_handle == NULL)
++      return 0;
++
++    #ifndef _UNICODE
++    if (hModule == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    LsaCloseP lsaClose = (LsaCloseP)GetProcAddress(hModule, "LsaClose");
++    if (lsaClose == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    #endif
++
++    NTSTATUS res =
++      #ifdef _UNICODE
++      ::LsaClose
++      #else
++      lsaClose
++      #endif
++      (_handle);
++    _handle = NULL;
++    return res;
++  }
++  
++  NTSTATUS EnumerateAccountsWithUserRight(PLSA_UNICODE_STRING userRights,
++      PLSA_ENUMERATION_INFORMATION *enumerationBuffer, PULONG countReturned)
++    { return LsaEnumerateAccountsWithUserRight(_handle, userRights, (void **)enumerationBuffer, countReturned); }
++
++  NTSTATUS EnumerateAccountRights(PSID sid, PLSA_UNICODE_STRING* userRights, PULONG countOfRights)
++    { return ::LsaEnumerateAccountRights(_handle, sid, userRights, countOfRights); }
++
++  NTSTATUS LookupSids(ULONG count, PSID* sids,
++      PLSA_REFERENCED_DOMAIN_LIST* referencedDomains, PLSA_TRANSLATED_NAME* names)
++    { return LsaLookupSids(_handle, count, sids, referencedDomains, names); }
++
++  NTSTATUS AddAccountRights(PSID accountSid, PLSA_UNICODE_STRING userRights, ULONG countOfRights)
++  {
++    #ifndef _UNICODE
++    if (hModule == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    LsaAddAccountRightsP lsaAddAccountRights = (LsaAddAccountRightsP)GetProcAddress(hModule, "LsaAddAccountRights");
++    if (lsaAddAccountRights == NULL)
++      return MY_STATUS_NOT_IMPLEMENTED;
++    #endif
++
++    return
++      #ifdef _UNICODE
++      ::LsaAddAccountRights
++      #else
++      lsaAddAccountRights
++      #endif
++      (_handle, accountSid, userRights, countOfRights);
++  }
++  NTSTATUS AddAccountRights(PSID accountSid, PLSA_UNICODE_STRING userRights)
++    { return AddAccountRights(accountSid, userRights, 1); }
++
++  NTSTATUS RemoveAccountRights(PSID accountSid, bool allRights, PLSA_UNICODE_STRING userRights, ULONG countOfRights)
++    { return LsaRemoveAccountRights(_handle, accountSid, (BOOLEAN)(allRights ? TRUE : FALSE), userRights, countOfRights); }
++};
++
++bool AddLockMemoryPrivilege();
++
++}}
++
++#endif
+diff --git a/CPP/Windows/Synchronization.cpp b/CPP/Windows/Synchronization.cpp
+index 8130f9a..5f86d1e 100644
+--- a/CPP/Windows/Synchronization.cpp
++++ b/CPP/Windows/Synchronization.cpp
+@@ -4,154 +4,7 @@
+ 
+ #include "Synchronization.h"
+ 
+-// #define TRACEN(u) u;
+-#define TRACEN(u)  /* */
+-
+-#define MAGIC 0x1234CAFE
+-class CSynchroTest
+-{
+-  int _magic;
+-  public:
+-  CSynchroTest() {
+-    _magic = MAGIC;
+-  }
+-  void testConstructor() {
+-    if (_magic != MAGIC) {
+-      printf("ERROR : no constructors called during loading of plugins (please look at LINK_SHARED in makefile.machine)\n");
+-      exit(EXIT_FAILURE);
+-    }
+-  }
+-};
+-
+-static CSynchroTest gbl_synchroTest;
+-
+-extern "C" void sync_TestConstructor(void) {
+-	gbl_synchroTest.testConstructor();
+-}
+-
+-
+ namespace NWindows {
+ namespace NSynchronization {
+ 
+-
+-#ifndef ENV_BEOS
+-#ifdef DEBUG_SYNCHRO
+-  void CSynchro::dump_error(int ligne,int ret,const char *text,void *param)
+-  {
+-    printf("\n##T%d#ERROR2 (l=%d) %s : param=%p ret = %d (%s)##\n",(int)pthread_self(),ligne,text,param,ret,strerror(ret));
+-    // abort();
+-  }
+-  CSynchro::CSynchro() {
+-    TRACEN((printf("\nT%d : E1-CSynchro(this=%p,m=%p,cond=%p)\n",(int)pthread_self(),(void *)this,(void *)&_object,(void *)&_cond)))
+-    _isValid = false;
+-  }
+-
+-  void CSynchro::Create() {
+-    TRACEN((printf("\nT%d : E1-CSynchro::Create(this=%p,m=%p,cond=%p)\n",(int)pthread_self(),(void *)this,(void *)&_object,(void *)&_cond)))
+-    pthread_mutexattr_t mutexattr;
+-    memset(&mutexattr,0,sizeof(mutexattr));
+-    int ret = pthread_mutexattr_init(&mutexattr);
+-    if (ret != 0) {
+-	dump_error(__LINE__,ret,"pthread_mutexattr_init",&mutexattr);
+-    }
+-    ret = pthread_mutexattr_settype(&mutexattr,PTHREAD_MUTEX_ERRORCHECK);
+-    if (ret != 0) dump_error(__LINE__,ret,"pthread_mutexattr_settype",&mutexattr);
+-    ret = ::pthread_mutex_init(&_object,&mutexattr);
+-    if (ret != 0) dump_error(__LINE__,ret,"pthread_mutex_init",&_object);
+-    ret = ::pthread_cond_init(&_cond,0);
+-    if (ret != 0) dump_error(__LINE__,ret,"pthread_cond_init",&_cond);
+-    TRACEN((printf("\nT%d : E2-CSynchro::Create(m=%p,cond=%p)\n",(int)pthread_self(),(void *)&_object,(void *)&_cond)))
+-  }
+-  CSynchro::~CSynchro() {
+-    TRACEN((printf("\nT%d : E1-~CSynchro(this=%p,m=%p,cond=%p)\n",(int)pthread_self(),(void *)this,(void *)&_object,(void *)&_cond)))
+-    if (_isValid) {
+-      int ret = ::pthread_mutex_destroy(&_object);
+-      if (ret != 0) dump_error(__LINE__,ret,"pthread_mutex_destroy",&_object);
+-      ret = ::pthread_cond_destroy(&_cond);
+-      if (ret != 0) dump_error(__LINE__,ret,"pthread_cond_destroy",&_cond);
+-      TRACEN((printf("\nT%d : E2-~CSynchro(m=%p,cond=%p)\n",(int)pthread_self(),(void *)&_object,(void *)&_cond)))
+-    }
+-    _isValid = false;
+-  }
+-  void CSynchro::Enter() { 
+-    TRACEN((printf("\nT%d : E1-CSynchro::Enter(%p)\n",(int)pthread_self(),(void *)&_object)))
+-    int ret = ::pthread_mutex_lock(&_object);
+-    if (ret != 0) {
+-      dump_error(__LINE__,ret,"CSynchro::Enter-pthread_mutex_lock",&_object);
+-    }
+-    TRACEN((printf("\nT%d : E2-CSynchro::Enter(%p)\n",(int)pthread_self(),(void *)&_object)))
+-  }
+-  void CSynchro::Leave() {
+-    TRACEN((printf("\nT%d : E1-CSynchro::Leave(%p)\n",(int)pthread_self(),(void *)&_object)))
+-    int ret = ::pthread_mutex_unlock(&_object);
+-    if (ret != 0) dump_error(__LINE__,ret,"Leave::pthread_mutex_unlock",&_object);
+-    TRACEN((printf("\nT%d : E2-CSynchro::Leave(%p)\n",(int)pthread_self(),(void *)&_object)))
+-  }
+-  void CSynchro::WaitCond() {
+-    TRACEN((printf("\nT%d : E1-CSynchro::WaitCond(%p,%p)\n",(int)pthread_self(),(void *)&_cond,(void *)&_object)))
+-    int ret = ::pthread_cond_wait(&_cond, &_object);
+-    if (ret != 0) dump_error(__LINE__,ret,"pthread_cond_wait",&_cond);
+-    TRACEN((printf("\nT%d : E2-CSynchro::WaitCond(%p,%p)\n",(int)pthread_self(),(void *)&_cond,(void *)&_object)))
+-  }
+-  void CSynchro::LeaveAndSignal() {
+-    TRACEN((printf("\nT%d : E1-CSynchro::LeaveAndSignal(%p)\n",(int)pthread_self(),(void *)&_cond)))
+-    int ret = ::pthread_cond_broadcast(&_cond);
+-    if (ret != 0) dump_error(__LINE__,ret,"pthread_cond_broadcast",&_cond);
+-    TRACEN((printf("\nT%d : E2-CSynchro::LeaveAndSignal(%p)\n",(int)pthread_self(),(void *)&_object)))
+-    ret = ::pthread_mutex_unlock(&_object);
+-    if (ret != 0) dump_error(__LINE__,ret,"LeaveAndSignal::pthread_mutex_unlock",&_object);
+-    TRACEN((printf("\nT%d : E3-CSynchro::LeaveAndSignal(%p)\n",(int)pthread_self(),(void *)&_cond)))
+-  }
+-#endif
+-#endif
+-
+ }}
+-
+-DWORD WINAPI WaitForMultipleObjects( DWORD count, const HANDLE *handles, BOOL wait_all, DWORD timeout )
+-{
+-    TRACEN((printf("\nT%d : E1-WaitForMultipleObjects(%d)\n",(int)pthread_self(),(int)count)))
+-  if (wait_all != FALSE) {
+-      printf("\n\n INTERNAL ERROR - WaitForMultipleObjects(...) wait_all(%d) != FALSE\n\n",(unsigned)wait_all);
+-      abort();
+-  }
+-
+-  if (timeout != INFINITE) {
+-      printf("\n\n INTERNAL ERROR - WaitForMultipleObjects(...) timeout(%u) != INFINITE\n\n",(unsigned)timeout);
+-      abort();
+-  }
+-
+-  if (count < 1) {
+-      printf("\n\n INTERNAL ERROR - WaitForMultipleObjects(...) count(%u) < 1\n\n",(unsigned)count);
+-      abort();
+-  }
+-
+-  NWindows::NSynchronization::CSynchro *synchro = handles[0]->_sync;
+-
+-  TRACEN((printf("\nT%d : E2-WaitForMultipleObjects(%d)\n",(int)pthread_self(),(int)count)))
+-  synchro->Enter();
+-  TRACEN((printf("\nT%d : E3-WaitForMultipleObjects(%d)\n",(int)pthread_self(),(int)count)))
+-
+-#ifdef DEBUG_SYNCHRO
+-  for(DWORD i=1;i<count;i++) {
+-    if (synchro != handles[i]->_sync) {
+-      printf("\n\n INTERNAL ERROR - WaitForMultipleObjects(...) synchro(%p) != handles[%d]->_sync(%p)\n\n",
+-              synchro,(unsigned)i,handles[i]->_sync);
+-      abort();
+-    }
+-  }
+-#endif
+-
+-  while(1) {
+-    for(DWORD i=0;i<count;i++) {
+-      if (handles[i]->IsSignaledAndUpdate()) {
+-        synchro->Leave();
+-  TRACEN((printf("\nT%d : E4-WaitForMultipleObjects(%d)\n",(int)pthread_self(),(int)count)))
+-        return WAIT_OBJECT_0+i;
+-      }
+-    }
+-    synchro->WaitCond();
+-  }
+-  synchro->Leave();
+-  return ETIMEDOUT; // WAIT_TIMEOUT;
+-}
+-
+diff --git a/CPP/Windows/Synchronization.h b/CPP/Windows/Synchronization.h
+index df3c693..95c798b 100644
+--- a/CPP/Windows/Synchronization.h
++++ b/CPP/Windows/Synchronization.h
+@@ -3,12 +3,9 @@
+ #ifndef __WINDOWS_SYNCHRONIZATION_H
+ #define __WINDOWS_SYNCHRONIZATION_H
+ 
+-#include "Defs.h"
+-
+-extern "C" 
+-{ 
+ #include "../../C/Threads.h"
+-}
++
++#include "Defs.h"
+ 
+ #ifdef _WIN32
+ #include "Handle.h"
+@@ -17,42 +14,28 @@ extern "C"
+ namespace NWindows {
+ namespace NSynchronization {
+ 
+-class Uncopyable {
+-protected: 
+-  Uncopyable() {} // allow construction
+-  ~Uncopyable() {} // and destruction of derived objects...
+-private:
+-  Uncopyable(const Uncopyable&);             // ...but prevent copying
+-  Uncopyable& operator=(const Uncopyable&);
+-};
+-
+-
+-class CBaseEvent // FIXME : private Uncopyable
++class CBaseEvent
+ {
+ protected:
+   ::CEvent _object;
+ public:
+   bool IsCreated() { return Event_IsCreated(&_object) != 0; }
+-#ifdef _WIN32
+-  operator HANDLE() { return _object.handle; }
+-#endif
++  operator HANDLE() { return _object; }
+   CBaseEvent() { Event_Construct(&_object); }
+   ~CBaseEvent() { Close(); }
+   WRes Close() { return Event_Close(&_object); }
+   #ifdef _WIN32
+-  WRes Create(bool manualReset, bool initiallyOwn, LPCTSTR name = NULL,
+-      LPSECURITY_ATTRIBUTES securityAttributes = NULL)
++  WRes Create(bool manualReset, bool initiallyOwn, LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES sa = NULL)
+   {
+-    _object.handle = ::CreateEvent(securityAttributes, BoolToBOOL(manualReset),
+-        BoolToBOOL(initiallyOwn), name);
+-    if (_object.handle != 0)
++    _object = ::CreateEvent(sa, BoolToBOOL(manualReset), BoolToBOOL(initiallyOwn), name);
++    if (name == NULL && _object != 0)
+       return 0;
+     return ::GetLastError();
+   }
+   WRes Open(DWORD desiredAccess, bool inheritHandle, LPCTSTR name)
+   {
+-    _object.handle = ::OpenEvent(desiredAccess, BoolToBOOL(inheritHandle), name);
+-    if (_object.handle != 0)
++    _object = ::OpenEvent(desiredAccess, BoolToBOOL(inheritHandle), name);
++    if (_object != 0)
+       return 0;
+     return ::GetLastError();
+   }
+@@ -110,14 +93,14 @@ public:
+ class CMutex: public CObject
+ {
+ public:
+-  WRes Create(bool initiallyOwn, LPCTSTR name = NULL,
+-      LPSECURITY_ATTRIBUTES securityAttributes = NULL)
++  WRes Create(bool initiallyOwn, LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES sa = NULL)
+   {
+-    _handle = ::CreateMutex(securityAttributes, BoolToBOOL(initiallyOwn), name);
+-    if (_handle != 0)
++    _handle = ::CreateMutex(sa, BoolToBOOL(initiallyOwn), name);
++    if (name == NULL && _handle != 0)
+       return 0;
+     return ::GetLastError();
+   }
++  #ifndef UNDER_CE
+   WRes Open(DWORD desiredAccess, bool inheritHandle, LPCTSTR name)
+   {
+     _handle = ::OpenMutex(desiredAccess, BoolToBOOL(inheritHandle), name);
+@@ -125,8 +108,9 @@ public:
+       return 0;
+     return ::GetLastError();
+   }
+-  WRes Release() 
+-  { 
++  #endif
++  WRes Release()
++  {
+     return ::ReleaseMutex(_handle) ? 0 : ::GetLastError();
+   }
+ };
+@@ -134,21 +118,19 @@ class CMutexLock
+ {
+   CMutex *_object;
+ public:
+-  CMutexLock(CMutex &object): _object(&object) { _object->Lock(); } 
++  CMutexLock(CMutex &object): _object(&object) { _object->Lock(); }
+   ~CMutexLock() { _object->Release(); }
+ };
+ #endif
+ 
+-class CSemaphore : private Uncopyable
++class CSemaphore
+ {
+   ::CSemaphore _object;
+ public:
+   CSemaphore() { Semaphore_Construct(&_object); }
+   ~CSemaphore() { Close(); }
+   WRes Close() {  return Semaphore_Close(&_object); }
+-#ifdef _WIN32
+-  operator HANDLE() { return _object.handle; }
+-#endif
++  operator HANDLE() { return _object; }
+   WRes Create(UInt32 initiallyCount, UInt32 maxCount)
+   {
+     return Semaphore_Create(&_object, initiallyCount, maxCount);
+@@ -158,7 +140,7 @@ public:
+   WRes Lock() { return Semaphore_Wait(&_object); }
+ };
+ 
+-class CCriticalSection : private Uncopyable
++class CCriticalSection
+ {
+   ::CCriticalSection _object;
+ public:
+@@ -168,20 +150,161 @@ public:
+   void Leave() { CriticalSection_Leave(&_object); }
+ };
+ 
+-class CCriticalSectionLock : private Uncopyable
++class CCriticalSectionLock
+ {
+   CCriticalSection *_object;
+   void Unlock()  { _object->Leave(); }
+ public:
+-  CCriticalSectionLock(CCriticalSection &object): _object(&object) {_object->Enter(); } 
++  CCriticalSectionLock(CCriticalSection &object): _object(&object) {_object->Enter(); }
+   ~CCriticalSectionLock() { Unlock(); }
+ };
+ 
+-}}
++class CSynchro
++{
++  pthread_mutex_t _object;
++  pthread_cond_t _cond;
++  bool _isValid;
++public:
++  CSynchro() { _isValid = false; }
++  ~CSynchro() {
++    if (_isValid) {
++      ::pthread_mutex_destroy(&_object);
++      ::pthread_cond_destroy(&_cond);
++    }
++    _isValid = false;
++  }
++  void Create() {
++    ::pthread_mutex_init(&_object,0);
++    ::pthread_cond_init(&_cond,0);
++  }
++  void Enter() {
++     ::pthread_mutex_lock(&_object);
++  }
++  void Leave() {
++    ::pthread_mutex_unlock(&_object);
++  }
++  void WaitCond() {
++    ::pthread_cond_wait(&_cond, &_object);
++  }
++  void LeaveAndSignal() {
++    ::pthread_cond_broadcast(&_cond);
++    ::pthread_mutex_unlock(&_object);
++  }
++};
+ 
+-#ifndef _WIN32
+-#include "Synchronization2.h"
+-#endif
++struct CBaseHandleWFMO // FIXME : private Uncopyable
++{
++  CSynchro *_sync;
+ 
+-#endif
++  CBaseHandleWFMO() { }
++
++  operator HANDLE() { return this; }
++  virtual bool IsSignaledAndUpdate() = 0;
++};
++
++class CBaseEventWFMO : public CBaseHandleWFMO
++{
++  bool _manual_reset;
++  bool _state;
++
++public:
++
++  bool IsCreated()  { return (this->_sync != 0); }
++  CBaseEventWFMO()  { this->_sync = 0; } 
++  ~CBaseEventWFMO() { Close(); }
++
++  WRes Close() { this->_sync = 0; return S_OK; }
++
++  WRes Create(CSynchro *sync,bool manualReset, bool initiallyOwn)
++  {
++    this->_sync         = sync;
++    this->_manual_reset = manualReset;
++    this->_state        = initiallyOwn;
++    return S_OK;
++  }
++
++  WRes Set() {
++    this->_sync->Enter();
++    this->_state = true;
++    this->_sync->LeaveAndSignal();
++    return S_OK;
++  }
++
++  WRes Reset() {
++    this->_sync->Enter();
++    this->_state = false;
++    this->_sync->Leave();
++    return S_OK;
++  }
++  virtual bool IsSignaledAndUpdate() {
++    if (this->_state == true) {
++      if (this->_manual_reset == false) this->_state = false;
++      return true;
++    }
++    return false;
++  }
++};
++
++class CManualResetEventWFMO: public CBaseEventWFMO
++{
++public:
++  WRes Create(CSynchro *sync,bool initiallyOwn = false) { return CBaseEventWFMO::Create(sync,true, initiallyOwn); }
++};
++
++class CAutoResetEventWFMO: public CBaseEventWFMO
++{
++public:
++  WRes Create(CSynchro *sync) { return CBaseEventWFMO::Create(sync,false, false); }
++  WRes CreateIfNotCreated(CSynchro *sync)
++  {
++    if (IsCreated())
++      return 0;
++    return CBaseEventWFMO::Create(sync,false, false);
++  }
++};
++
++class CSemaphoreWFMO : public CBaseHandleWFMO
++{
++  LONG _count;
++  LONG _maxCount;
++
++public:
++  CSemaphoreWFMO() : _count(0), _maxCount(0) { this->_sync=0;} 
++  WRes Create(CSynchro *sync,LONG initiallyCount, LONG maxCount)
++  {
++    if ((initiallyCount < 0) || (initiallyCount > maxCount) || (maxCount < 1)) return S_FALSE;
++    this->_sync     = sync;
++    this->_count    = initiallyCount;
++    this->_maxCount = maxCount;
++    return S_OK;
++  }
++  WRes Release(LONG releaseCount = 1) {
++    if (releaseCount < 1) return S_FALSE;
++
++    this->_sync->Enter();
++    LONG newCount = this->_count + releaseCount;
++    if (newCount > this->_maxCount)
++    {
++      this->_sync->Leave();
++      return S_FALSE;
++    }
++    this->_count = newCount;
+ 
++    this->_sync->LeaveAndSignal();
++
++    return S_OK;
++  }
++  WRes Close() { this->_sync=0; return S_OK; }
++
++  virtual bool IsSignaledAndUpdate() {
++    if (this->_count > 0) {
++      this->_count--;
++      return true;
++    }
++    return false;
++  }
++};
++
++}}
++
++#endif
+diff --git a/CPP/Windows/Thread.h b/CPP/Windows/Thread.h
+index ed72507..16a509d 100644
+--- a/CPP/Windows/Thread.h
++++ b/CPP/Windows/Thread.h
+@@ -3,12 +3,9 @@
+ #ifndef __WINDOWS_THREAD_H
+ #define __WINDOWS_THREAD_H
+ 
+-#include "Defs.h"
+-
+-extern "C"
+-{
+ #include "../../C/Threads.h"
+-}
++
++#include "Defs.h"
+ 
+ namespace NWindows {
+ 
+diff --git a/CPP/include_windows/basetyps.h b/CPP/include_windows/basetyps.h
+deleted file mode 100644
+index bca58a5..0000000
+--- a/CPP/include_windows/basetyps.h
++++ /dev/null
+@@ -1,19 +0,0 @@
+-#ifndef _BASETYPS_H
+-#define _BASETYPS_H
+-
+-#ifdef ENV_HAVE_GCCVISIBILITYPATCH
+-  #define DLLEXPORT __attribute__ ((visibility("default")))
+-#else
+-  #define DLLEXPORT
+-#endif
+-
+-#ifdef __cplusplus
+-#define STDAPI extern "C" DLLEXPORT HRESULT
+-#else
+-#define STDAPI extern DLLEXPORT HRESULT
+-#endif  /* __cplusplus */ 
+-
+-typedef GUID IID;
+-typedef GUID CLSID;
+-#endif
+-
+diff --git a/CPP/include_windows/tchar.h b/CPP/include_windows/tchar.h
+deleted file mode 100644
+index 4aa1a4f..0000000
+--- a/CPP/include_windows/tchar.h
++++ /dev/null
+@@ -1,89 +0,0 @@
+-/* 
+- * tchar.h
+- *
+- * Unicode mapping layer for the standard C library. By including this
+- * file and using the 't' names for string functions
+- * (eg. _tprintf) you can make code which can be easily adapted to both
+- * Unicode and non-unicode environments. In a unicode enabled compile define
+- * _UNICODE before including tchar.h, otherwise the standard non-unicode
+- * library functions will be used.
+- *
+- * Note that you still need to include string.h or stdlib.h etc. to define
+- * the appropriate functions. Also note that there are several defines
+- * included for non-ANSI functions which are commonly available (but using
+- * the convention of prepending an underscore to non-ANSI library function
+- * names).
+- *
+- * This file is part of the Mingw32 package.
+- *
+- * Contributors:
+- *  Created by Colin Peters <colin@bird.fu.is.saga-u.ac.jp>
+- *
+- *  THIS SOFTWARE IS NOT COPYRIGHTED
+- *
+- *  This source code is offered for use in the public domain. You may
+- *  use, modify or distribute it freely.
+- *
+- *  This code is distributed in the hope that it will be useful but
+- *  WITHOUT ANY WARRANTY. ALL WARRANTIES, EXPRESS OR IMPLIED ARE HEREBY
+- *  DISCLAIMED. This includes but is not limited to warranties of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+- *
+- * $Revision: 1.11 $
+- * $Author: earnie $
+- * $Date: 2003/05/03 13:48:46 $
+- *
+- */
+-
+-#ifndef	_TCHAR_H_
+-#define _TCHAR_H_
+-
+-/* All the headers include this file. */
+-#ifndef __int64
+-#define __int64 long long
+-#endif
+-
+-#ifndef __cdecl
+-#define __cdecl /* */
+-#endif
+-
+-/*
+- * NOTE: This tests _UNICODE, which is different from the UNICODE define
+- *       used to differentiate Win32 API calls.
+- */
+-#ifdef	_UNICODE
+-
+-
+-/*
+- * Use TCHAR instead of char or wchar_t. It will be appropriately translated
+- * if _UNICODE is correctly defined (or not).
+- */
+-#ifndef _TCHAR_DEFINED
+-typedef	wchar_t	TCHAR;
+-#define _TCHAR_DEFINED
+-#endif
+-
+-/*
+- * Unicode functions
+- */
+-/*
+-#define _tfopen     _wfopen
+-FILE *_wfopen( const wchar_t *filename, const wchar_t *mode );
+-*/
+-
+-#else	/* Not _UNICODE */
+-
+-#define _tfopen     fopen
+-
+-/*
+- * TCHAR, the type you should use instead of char.
+- */
+-#ifndef _TCHAR_DEFINED
+-typedef char	TCHAR;
+-#define _TCHAR_DEFINED
+-#endif
+-
+-#endif	/* Not _UNICODE */
+-
+-#endif	/* Not _TCHAR_H_ */
+-
+diff --git a/CPP/include_windows/windows.h b/CPP/include_windows/windows.h
+deleted file mode 100644
+index 3f4b1e0..0000000
+--- a/CPP/include_windows/windows.h
++++ /dev/null
+@@ -1,201 +0,0 @@
+-/*
+-	windows.h - main header file for the Win32 API
+-
+-	Written by Anders Norlander <anorland@hem2.passagen.se>
+-
+-	This file is part of a free library for the Win32 API.
+-
+-	This library is distributed in the hope that it will be useful,
+-	but WITHOUT ANY WARRANTY; without even the implied warranty of
+-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+-
+-*/
+-#ifndef _WINDOWS_H
+-#define _WINDOWS_H
+-
+-#include <stdarg.h>
+-
+-/* BEGIN #include <windef.h> */
+-
+-#include "Common/MyWindows.h" // FIXED
+-
+-#ifndef CONST
+-#define CONST const
+-#endif
+-
+-#undef MAX_PATH
+-#define MAX_PATH 4096  /* Linux : 4096  - Windows : 260 */
+-
+-#ifndef FALSE
+-#define FALSE 0
+-#endif
+-#ifndef TRUE
+-#define TRUE 1
+-#endif
+-
+-#define WINAPI 
+-
+-#undef BOOL
+-typedef int BOOL;
+-
+-
+-#define CREATE_NEW	  1
+-#define CREATE_ALWAYS	  2
+-#define OPEN_EXISTING	  3
+-#define OPEN_ALWAYS	  4
+-/* #define TRUNCATE_EXISTING 5 */
+-
+-
+-
+-/* BEGIN #include <winnt.h> */
+-/* BEGIN <winerror.h> */
+-#define NO_ERROR                    0L
+-#define ERROR_ALREADY_EXISTS        EEXIST
+-#define ERROR_FILE_EXISTS           EEXIST
+-#define ERROR_INVALID_HANDLE        EBADF
+-#define ERROR_PATH_NOT_FOUND        ENOENT
+-#define ERROR_DISK_FULL             ENOSPC
+-#define ERROR_NO_MORE_FILES         0x100018 // FIXME
+-#define ERROR_DIRECTORY             267 // FIXME
+-
+-// #define ERROR_NEGATIVE_SEEK         0x100131 // FIXME
+-
+-
+-/* see Common/WyWindows.h
+-#define S_OK ((HRESULT)0x00000000L)
+-#define S_FALSE ((HRESULT)0x00000001L)
+-#define E_INVALIDARG ((HRESULT)0x80070057L)
+-#define E_NOTIMPL ((HRESULT)0x80004001L)
+-#define E_NOINTERFACE ((HRESULT)0x80004002L)
+-#define E_ABORT ((HRESULT)0x80004004L)
+-#define E_FAIL ((HRESULT)0x80004005L)
+-#define E_OUTOFMEMORY ((HRESULT)0x8007000EL)
+-#define STG_E_INVALIDFUNCTION ((HRESULT)0x80030001L)
+-#define SUCCEEDED(Status) ((HRESULT)(Status) >= 0)
+-#define FAILED(Status) ((HRESULT)(Status)<0)
+-*/
+-#ifndef VOID
+-#define VOID void
+-#endif
+-typedef void *PVOID,*LPVOID;
+-typedef WCHAR *LPWSTR;
+-typedef CHAR *LPSTR;
+-typedef TCHAR *LPTSTR;
+-
+-#ifdef UNICODE
+-/*
+- * P7ZIP_TEXT is a private macro whose specific use is to force the expansion of a
+- * macro passed as an argument to the macro TEXT.  DO NOT use this
+- * macro within your programs.  It's name and function could change without
+- * notice.
+- */
+-#define P7ZIP_TEXT(q) L##q
+-#else
+-#define P7ZIP_TEXT(q) q
+-#endif
+-/*
+- * UNICODE a constant string when UNICODE is defined, else returns the string
+- * unmodified.
+- * The corresponding macros  _TEXT() and _T() for mapping _UNICODE strings
+- * passed to C runtime functions are defined in mingw/tchar.h
+- */
+-#define TEXT(q) P7ZIP_TEXT(q)    
+-
+-typedef BYTE BOOLEAN;
+-
+-/* BEGIN #include <basetsd.h> */
+-#ifndef __int64
+-#define __int64 long long
+-#endif
+-typedef unsigned __int64 UINT64;
+-typedef __int64 INT64;
+-/* END #include <basetsd.h> */
+-
+-#define FILE_ATTRIBUTE_READONLY             1
+-#define FILE_ATTRIBUTE_HIDDEN               2
+-#define FILE_ATTRIBUTE_SYSTEM               4
+-#define FILE_ATTRIBUTE_DIRECTORY           16
+-#define FILE_ATTRIBUTE_ARCHIVE             32
+-#define FILE_ATTRIBUTE_DEVICE              64
+-#define FILE_ATTRIBUTE_NORMAL             128
+-#define FILE_ATTRIBUTE_TEMPORARY          256
+-#define FILE_ATTRIBUTE_SPARSE_FILE        512
+-#define FILE_ATTRIBUTE_REPARSE_POINT     1024
+-#define FILE_ATTRIBUTE_COMPRESSED        2048
+-#define FILE_ATTRIBUTE_OFFLINE          0x1000
+-#define FILE_ATTRIBUTE_ENCRYPTED        0x4000
+-#define FILE_ATTRIBUTE_UNIX_EXTENSION   0x8000   /* trick for Unix */
+-
+-/* END   <winerror.h> */
+-
+-#include <string.h>
+-#include <stddef.h>
+-
+-/* END #include <winnt.h> */
+-
+-/* END #include <windef.h> */
+-
+-/* BEGIN #include <winbase.h> */
+-
+-#define WAIT_OBJECT_0 0
+-#define INFINITE	0xFFFFFFFF
+-
+-typedef struct _SYSTEMTIME {
+-	WORD wYear;
+-	WORD wMonth;
+-	WORD wDayOfWeek;
+-	WORD wDay;
+-	WORD wHour;
+-	WORD wMinute;
+-	WORD wSecond;
+-	WORD wMilliseconds;
+-} SYSTEMTIME;
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-BOOL WINAPI DosDateTimeToFileTime(WORD,WORD,FILETIME *);
+-BOOL WINAPI FileTimeToDosDateTime(CONST FILETIME *,WORD *, WORD *);
+-BOOL WINAPI FileTimeToLocalFileTime(CONST FILETIME *,FILETIME *);
+-BOOL WINAPI FileTimeToSystemTime(CONST FILETIME *,SYSTEMTIME *);
+-BOOL WINAPI LocalFileTimeToFileTime(CONST FILETIME *,FILETIME *);
+-VOID WINAPI GetSystemTime(SYSTEMTIME *);
+-BOOL WINAPI SystemTimeToFileTime(const SYSTEMTIME*,FILETIME *);
+-VOID WINAPI GetSystemTimeAsFileTime(FILETIME * time);
+-
+-DWORD WINAPI GetTickCount(VOID);
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-/* END #include <winbase.h> */
+-
+-/* BEGIN #include <winnls.h> */
+-
+-#define CP_ACP   0
+-#define CP_OEMCP 1
+-#define CP_UTF8  65001
+-
+-/* #include <unknwn.h> */
+-#include <basetyps.h>
+-
+-#ifdef __cplusplus
+-extern "C" const IID IID_ISequentialStream;
+-struct ISequentialStream : public IUnknown
+-{
+-	STDMETHOD(QueryInterface)(REFIID,PVOID*) PURE;
+-	STDMETHOD_(ULONG,AddRef)(void) PURE;
+-	STDMETHOD_(ULONG,Release)(void) PURE;
+-	STDMETHOD(Read)(void*,ULONG,ULONG*) PURE;
+-	STDMETHOD(Write)(void const*,ULONG,ULONG*) PURE;
+-};
+-#else
+-extern const IID IID_ISequentialStream;
+-#endif  /* __cplusplus */
+-
+-
+-/* END #include <ole2.h> */
+-
+-#endif
+-
+diff --git a/CPP/myWindows/StdAfx.h b/CPP/myWindows/StdAfx.h
+index 0a72949..17eb103 100644
+--- a/CPP/myWindows/StdAfx.h
++++ b/CPP/myWindows/StdAfx.h
+@@ -15,6 +15,8 @@
+ #endif
+ 
+ #include "Common/Common.h"
++
++#ifndef _WIN32
+ #include "Common/MyWindows.h"
+ #include "Common/MyTypes.h"
+ #include "Common/MyString.h" // FIXME
+@@ -214,3 +216,4 @@ LANGID GetSystemDefaultLangID(void);
+ 
+ #endif 
+ 
++#endif
