@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpfr-*
-./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=$prefix
+./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix}
 make -j
 make install
 
@@ -29,13 +29,13 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libmpfr", :libmpfr)
+products = [
+    LibraryProduct("libmpfr", :libmpfr)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GMP-v6.1.2-0/build_GMP.v6.1.2.jl"
+    "GMP_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -15,6 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gmp-*
 
+# Update config.status
+update_configure_scripts
+
 # Patch `configure` to include `$LDFLAGS` in its tests.  This is necessary on FreeBSD.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.patch
 
@@ -44,13 +47,12 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libgmp", :libgmp)
+products = [
+    LibraryProduct("libgmp", :libgmp)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
