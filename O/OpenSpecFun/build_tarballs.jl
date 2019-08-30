@@ -33,12 +33,11 @@ make install OS=${OS} prefix=$prefix
 # platforms are passed in on the command line. Since openspecfun uses
 # Fortran for AMOS, we need the combinatorial explosion of platforms
 # and GCC versions.
-platforms = supported_platforms()
-platforms = expand_gcc_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
-products = prefix -> [
-    LibraryProduct(prefix, "libopenspecfun", :libopenspecfun)
+products = [
+    LibraryProduct("libopenspecfun", :libopenspecfun)
 ]
 
 # Dependencies that must be installed before this package can be built
