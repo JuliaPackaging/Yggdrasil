@@ -21,7 +21,7 @@ if [[ ${target} == *-w64-mingw* ]]; then
 fi
 
 if [[ ${target} == *-freebsd* ]]; then
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain
+    cmake -DCMAKE_INSTALL_PREFIX=${prefix}
 else
     ./configure ${EXTRA_CONFIGURE_FLAGS} --prefix=${prefix}
 fi
