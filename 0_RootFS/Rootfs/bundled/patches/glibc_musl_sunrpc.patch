@@ -1,0 +1,20 @@
+--- sunrpc/rpc/types.h.old
++++ sunrpc/rpc/types.h
+@@ -69,7 +69,7 @@
+ #include <sys/types.h>
+ #endif
+
+-#ifndef __u_char_defined
++#if 0
+ typedef __u_char u_char;
+ typedef __u_short u_short;
+ typedef __u_int u_int;
+@@ -79,7 +79,7 @@
+ typedef __fsid_t fsid_t;
+ # define __u_char_defined
+ #endif
+-#ifndef __daddr_t_defined
++#if 0
+ typedef __daddr_t daddr_t;
+ typedef __caddr_t caddr_t;
+ # define __daddr_t_defined

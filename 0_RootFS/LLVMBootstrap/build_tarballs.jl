@@ -1,7 +1,7 @@
 include("../common.jl")
 
 using BinaryBuilder
-Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
+Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs, :platform_support]))
 
 # Collection of sources required to build LLVM
 llvm_ver = v"8.0.0"
@@ -114,17 +114,14 @@ make install -j${nproc} VERBOSE=1
 #ln -s clang ${prefix}/bin/clang++
 """
 
-# BB is using musl as a platform and we don't want to run glibc binaries on it.
-platforms = [BinaryProvider.Linux(:x86_64, :musl)]
-
 # The products that we will ensure are always built
-products(prefix) = [
+products = [
     # libraries
-    LibraryProduct(prefix, "libLLVM",  :libLLVM)
-    LibraryProduct(prefix, "libLTO",   :libLTO)
-    LibraryProduct(prefix, "libclang", :libclang)
+    LibraryProduct("libLLVM",  :libLLVM)
+    LibraryProduct("libLTO",   :libLTO)
+    LibraryProduct("libclang", :libclang)
     # tools
-    ExecutableProduct(prefix, "llvm_config", :llvm_config)
+    ExecutableProduct("llvm-config", :llvm_config)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -132,4 +129,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, "LLVMBootstrap", llvm_ver, sources, script, platforms, products, dependencies; skip_audit=true)
+build_info = build_tarballs(ARGS, "LLVMBootstrap", llvm_ver, sources, script, [host_platform], products, dependencies; skip_audit=true)
+
+# Upload the artifacts
+upload_and_insert_shards("JuliaPackaging/Yggdrasil", "LLVMBootstrap", llvm_ver, build_info)

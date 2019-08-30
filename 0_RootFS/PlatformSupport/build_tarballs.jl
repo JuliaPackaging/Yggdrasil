@@ -24,7 +24,7 @@ sources = [
     "./bundled",
 ]
 
-script = raw"""
+script = "COMPILER_TARGET=$(triplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
 ## linux kernel arch like "arm64".
 target_to_linux_arch()
@@ -49,10 +49,10 @@ target_to_linux_arch()
 }
 
 ## sysroot is where most of this stuff gets plopped
-sysroot=${prefix}/${target}/sys-root
+sysroot=${prefix}/${COMPILER_TARGET}/sys-root
 
 # Install kernel headers
-case "${target}" in
+case "${COMPILER_TARGET}" in
     *-linux-*)
         cd $WORKSPACE/srcdir/linux-*/
 
@@ -60,7 +60,7 @@ case "${target}" in
         apk add gcc musl-dev
 
         # The kernel make system can't deal with spaces (for things like ccache) very well
-        KERNEL_FLAGS="ARCH=$(target_to_linux_arch ${target}) -j${nproc}"
+        KERNEL_FLAGS="ARCH=$(target_to_linux_arch ${COMPILER_TARGET}) -j${nproc}"
         make ${KERNEL_FLAGS} mrproper V=1
         make ${KERNEL_FLAGS} headers_check V=1
         make ${KERNEL_FLAGS} INSTALL_HDR_PATH=${sysroot}/usr V=1 headers_install
@@ -71,7 +71,7 @@ case "${target}" in
         ./configure --prefix=/ \
             --enable-sdk=all \
             --enable-secure-api \
-            --host=${target}
+            --host=${COMPILER_TARGET}
 
         make install DESTDIR=${sysroot}
         ;;
@@ -97,9 +97,9 @@ esac
 # Install cmake templates
 cd ${WORKSPACE}/srcdir/cmake_toolchains
 ./build_toolchains.sh
-mv ${target}/* ${prefix}
+mv ${COMPILER_TARGET}/* ${prefix}
 
-# We create a link from ${target}/sys-root/usr/local/lib to /workspace/destdir/lib
+# We create a link from ${COMPILER_TARGET}/sys-root/usr/local/lib to /workspace/destdir/lib
 # This is the most reliable way for our sysroot'ed compilers to find destination
 # libraries so far, hopefully this changes in the future.
 mkdir -p ${sysroot}/usr/local
@@ -108,6 +108,6 @@ ln -sf /workspace/destdir/lib64 ${sysroot}/usr/local/lib64
 """
 
 # Build the artifacts
-build_info = build_tarballs(ARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [compiler_target], Product[], []; skip_audit=true)
+build_info = build_tarballs(ARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
 
 upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)

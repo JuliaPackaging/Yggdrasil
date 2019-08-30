@@ -93,8 +93,8 @@ function upload_and_insert_shards(repo, name, version, build_info; target=nothin
         squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; target=target)
 
         # Upload them both to GH releases on Yggdrasil
-        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform)
-        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform)
+        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
 
         # Insert these final versions into BB
         insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)

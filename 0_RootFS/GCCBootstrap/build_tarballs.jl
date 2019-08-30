@@ -17,7 +17,7 @@ if isa(compiler_target, UnknownPlatform)
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
 deleteat!(ARGS, length(ARGS))
-name = "GCCBootstrap-$(triplet(compiler_target))"
+name = "GCCBootstrap"
 
 # Since we can build a variety of GCC versions, track them and their hashes here.
 # We download GCC, MPFR, MPC, ISL and GMP.
@@ -169,7 +169,6 @@ elseif isa(compiler_target, Windows)
     libc_sources = [
         "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
         "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
-    	#"5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803",
     ]
 else
     error("Unknown libc mapping for platform $(compiler_target)")
@@ -188,26 +187,25 @@ dependencies = [
 ]
 
 # Bash recipe for building across all platforms
-script = "COMPILER_TARGET=$(triplet(compiler_target))\n"
+script  = "COMPILER_TARGET=$(triplet(compiler_target))\n"
+script *= "HOST_TARGET=$(triplet(host_platform))\n"
 script *= raw"""
 cd ${WORKSPACE}/srcdir
 
 # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
 apk add build-base gettext-dev gcc-objc clang
 
-# FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
-ln -sf $(which uname) /usr/bin/uname
-
 # We like to refer to things with their full triplets, so symlink our host tools
 # (which have no prefix) to have the machtype prefix.
 for tool in gcc g++ ar as ld lipo ranlib nm strip objcopy objdump readelf; do
 	if [[ -f /usr/bin/${tool} ]]; then
-		ln -s /usr/bin/${tool} /usr/bin/${target}-${tool}
+		ln -s /usr/bin/${tool} /usr/bin/${HOST_TARGET}-${tool}
 	fi
 done
 
 # Default sysroot
 sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
+cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
 
 # Some things need /lib64, others just need /lib
 case ${COMPILER_TARGET} in
@@ -317,9 +315,10 @@ if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
     make -j${nproc} VERBOSE=1
     make install
 
-    # Install cctools.
+    # Install cctools, make sure it links against musl, not glibc!
     mkdir -p ${WORKSPACE}/srcdir/cctools_build
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+    cd ${WORKSPACE}/srcdir/cctools_build
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
         --prefix=${prefix} \
         --target=${COMPILER_TARGET} \
         --host=${MACHTYPE} \
@@ -654,19 +653,17 @@ fi
 #done
 """
 
-# We only build for Linux x86_64
-platforms = [
-    Linux(:x86_64; libc=:musl),
-]
-
 # The products that we will ensure are always built
-products = [
-    ExecutableProduct("{target}-gcc", :gcc),
-    ExecutableProduct("{target}-g++", :gxx),
+products = Product[
+    # Normally, we would want to provide these, but since our build process is expecting
+    # things like .exe files, it doesn't quite work properly.  Just forgo them for now.
+    #ExecutableProduct("\${target}-gcc", :gcc),
+    #ExecutableProduct("\${target}-g++", :gxx),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_info = build_tarballs(ARGS, name, gcc_version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_info = build_tarballs(ARGS, "$(name)-$(triplet(compiler_target))", gcc_version, sources, script, [compiler_target], products, dependencies; skip_audit=true)
+build_info = Dict(host_platform => first(values(build_info)))
 
 # Upload the artifacts
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
+upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, gcc_version, build_info; target=compiler_target)

@@ -6,16 +6,16 @@
 # a similar system that understands how to cross-compile.  This
 # script queues off of the `$target` environment variable.
 
-if [[ -z "${target}" ]]; then
+if [[ -z "${bb_target}" ]]; then
     # Fast path if target environment variable is empty
     /bin/uname "$@"
     exit 0
 fi
 
-# ${target} overrides the -s part of uname
+# ${bb_target} overrides the -s part of uname
 s_flag()
 {
-    case "${target}" in
+    case "${bb_target}" in
         *-linux*)
             echo "Linux" ;;
         *-darwin*)
@@ -32,7 +32,7 @@ s_flag()
 # Kernel version.  Mimic Cygwin/Darwin when appropriate
 r_flag()
 {
-    case "${target}" in
+    case "${bb_target}" in
         *-darwin*)
             echo "14.5.0" ;;
         *-mingw*)
@@ -49,7 +49,7 @@ v_flag()
 {
     # Easter egg
     julia_tag_time=$(date -u -d 2013.02.13-00:49:00)
-    case "${target}" in
+    case "${bb_target}" in
         *-darwin*)
             echo "Darwin Kernel Version $(r_flag): ${julia_tag_time}; root:xnu-9000/RELEASE_X86_64" ;;
         *-linux*)
@@ -65,13 +65,13 @@ v_flag()
 
 m_flag()
 {
-    case "${target}" in
+    case "${bb_target}" in
         arm*)
             echo "armv7l" ;;
         powerpc64le*)
             echo "ppc64le" ;;
         x86_64*)
-            case "${target}" in
+            case "${bb_target}" in
                 *-freebsd*)
                     # FreeBSD calls x86_64 amd64 instead.
                     echo "amd64" ;;
@@ -90,7 +90,7 @@ m_flag()
 
 o_flag()
 {
-    case "${target}" in
+    case "${bb_target}" in
         # Darwin doesn't have an -o flag!
         *-darwin*)
             echo "" ;;

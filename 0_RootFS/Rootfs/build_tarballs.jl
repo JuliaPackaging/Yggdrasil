@@ -69,23 +69,9 @@ rootfs_unpacked_hash, rootfs_squashfs_hash = generate_artifacts(rootfs_extracted
 # Slip these barebones rootfs images into our BB install location, overwriting whatever Rootfs shard would be chosen:
 verbose && @info("Binding barebones bootstrap RootFS shards...")
 
-#cp(rootfs_targz_path,  BinaryBuilder.download_path(targz_shard); force=true)
-#cp(rootfs_squash_path, BinaryBuilder.download_path(squash_shard); force=true)
-
-# Insert them into the compiler shard hashtable.  From this point on; BB will use this shard as the RootFS shard,
-# because we set `bootstrap=true`.  We also opt-out of any binutils, GCC or clang shards getting mounted.
-#BinaryBuilder.shard_hash_table[targz_shard] = bytes2hex(open(SHA.sha256, rootfs_targz_path))
-#BinaryBuilder.shard_hash_table[squash_shard] = bytes2hex(open(SHA.sha256, rootfs_squash_path))
-
 insert_compiler_shard(name, version, rootfs_unpacked_hash, :unpacked)
 insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
 Core.eval(BinaryBuilder, :(bootstrap_list = Symbol[:rootfs]))
-
-#if verbose
-#    @info("Unmounting all shards...")
-#end
-#BinaryBuilder.unmount.(keys(BinaryBuilder.shard_hash_table); verbose=verbose)
-#rm(BinaryBuilder.mount_path(targz_shard); recursive=true, force=true)
 
 # PHWEW.  Okay.  Now, we do some of the same steps over again, but within BinaryBuilder, where
 # we can actulaly run tools inside of the rootfs (e.g. if we're building on OSX through docker)
@@ -101,6 +87,12 @@ sources = [
     # As is patchelf
     "https://github.com/NixOS/patchelf.git" =>
     "e1e39f3639e39360ceebb2f7ed533cede4623070",
+    # We need glibc for x86_64 and i686
+	"https://github.com/staticfloat/GlibcBuilder/releases/download/v2.27-3/Glibc.v2.27.0.x86_64-linux-gnu.tar.gz" =>
+	"62a8f82962ce81c7de15554203953ee3fa68ef98e532d8f8f308a1bd23766984",
+	"https://github.com/staticfloat/GlibcBuilder/releases/download/v2.27-3/Glibc.v2.27.0.i686-linux-gnu.tar.gz" =>
+	"2bf2d65ed3576e0ab7ddb548b3db2ebdca6d5a7a4945032d054d8ebd37983ede",
+    # And also our own local patches, utilities, etc...
     "./bundled",
 ]
 
@@ -108,7 +100,7 @@ sources = [
 script = raw"""
 # Get build tools ready. Note that they do not pollute the eventual Rootfs image;
 # they are only within this currently-running, ephemeral, pocket universe
-apk add build-base curl autoconf automake linux-headers
+apk add build-base curl autoconf automake linux-headers gawk python3 bison
 
 # $prefix is our chroot under construction
 mv bin dev etc home lib media mnt proc root run sbin srv sys tmp usr var $prefix/
@@ -153,7 +145,7 @@ done
 mkdir -p ./usr/local/bin ./usr/local/share/configure_scripts
 cp $WORKSPACE/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp $WORKSPACE/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
-cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/local/bin/uname
+cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/bin/uname
 cp $WORKSPACE/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
 cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
 cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
@@ -169,15 +161,16 @@ cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
 gcc -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
 cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
-# Extract a recent libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib64
-# as well so that we can run things that were built with GCC within this environment
+# Extract a recent libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib
+# as well so that we can run things that were built with GCC within this environment.
 mkdir -p ${prefix}/lib ${prefix}/lib64
-cp -d $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
+cp -vd $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
 
-# Install Glibc
-cd ${WORKSPACE}/srcdir
-curl -L 'https://github.com/sgerrand/docker-glibc-builder/releases/download/2.29-0/glibc-bin-2.29-0-x86_64.tar.gz' | tar zx
-mv usr/glibc-compat/lib/* ${prefix}/lib
+# Install glibc (32 and 64-bit)
+cp -Rv ${WORKSPACE}/srcdir/x86_64-linux-gnu/sys-root/lib64/* ${prefix}/lib64/
+cp -Rv ${WORKSPACE}/srcdir/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
+ln -sv libc.so.6 ${prefix}/lib64/libc.so
+ln -sv libc.so.6 ${prefix}/lib/libc.so
 
 # Build/install objconv
 cd ${WORKSPACE}/srcdir/objconv*/
