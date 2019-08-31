@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 # Collection of sources required to build Pixman
 name = "Pixman"
@@ -27,25 +27,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# ARM support is broken on GCC 4, so we manually set it to build gcc7 instead.
-function workaround_arm(p)
-    if arch(p) == :armv7l
-        return typeof(p)(arch(p); libc=libc(p), call_abi=call_abi(p), compiler_abi=CompilerABI(:gcc7, BinaryProvider.compiler_abi(p).cxx_abi))
-    end
-    return p
-end
-function unworkaround_arm(p)
-    if arch(p) == :armv7l
-        return typeof(p)(arch(p), libc(p), call_abi(p))
-    end
-    return p
-end
-
-platforms = workaround_arm.(platforms)
-
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libpixman", :libpixman)
+products = [
+    LibraryProduct("libpixman", :libpixman)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -53,22 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-product_hashes = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
-# Jump through some hoops to create a new build.jl that lists our ARM tarball as not actually gcc7.
-for (t, (fname, hash)) in copy(product_hashes)
-    p = platform_key_abi(t)
-    if arch(p) == :armv7l
-        new_t = triplet(unworkaround_arm(p))
-        new_fname = "$(name).v$(version).$(new_t).tar.gz"
-        @info("Moving $(fname) => $(new_fname)")
-        mv(joinpath("products", basename(fname)), joinpath("products", new_fname))
-        product_hashes[new_t] = (new_fname, hash)
-        delete!(product_hashes, t)
-    end
-end
-
-repo = BinaryBuilder.get_repo_name()
-tag = BinaryBuilder.get_tag_name()
-bin_path = "https://github.com/$(repo)/releases/download/$(tag)"
-BinaryBuilder.print_buildjl(pwd(), name, version, products(Prefix(pwd())), product_hashes, bin_path)
+product_hashes = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
