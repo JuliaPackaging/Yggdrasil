@@ -7,25 +7,6 @@ if !haskey(ENV, "GITHUB_TOKEN")
     error("export GITHUB_TOKEN you dolt!")
 end
 
-function find_tarball(project, pattern)
-    dir = joinpath(@__DIR__, project, "products")
-    if !isdir(dir)
-        error("No $(project)/products directory?!")
-    end
-
-    pattern = Regex(".*$(pattern).*\\.tar\\.gz")
-    for f in readdir(dir)
-        if match(pattern, f) !== nothing
-            path = abspath(joinpath(dir, f))
-            hash = open(path, "r") do io
-                return bytes2hex(sha256(io))
-            end
-            return TarballDependency(path, hash)
-        end
-    end
-    error("Could not find $(project) tarball matching $(pattern)!")
-end
-
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
     if !isfile(test)

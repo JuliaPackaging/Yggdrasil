@@ -17,11 +17,8 @@ set(CMAKE_SYSTEM_FRAMEWORK_PATH
 )
 set(CMAKE_INSTALL_PREFIX $ENV{prefix})
 
-set(CMAKE_C_COMPILER /opt/x86_64-linux-musl/bin/clang)
-set(CMAKE_CXX_COMPILER /opt/x86_64-linux-musl/bin/clang++)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-apple-darwin14 --sysroot ${CMAKE_SYSROOT} -fuse-ld=macos")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-apple-darwin14 --sysroot ${CMAKE_SYSROOT} -stdlib=libc++ -fuse-ld=macos")
+set(CMAKE_C_COMPILER /opt/bin/clang)
+set(CMAKE_CXX_COMPILER /opt/bin/clang++)
 
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
