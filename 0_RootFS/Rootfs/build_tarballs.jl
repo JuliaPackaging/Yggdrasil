@@ -37,12 +37,12 @@ if is_outdated(sandbox_path, "$(sandbox_path).c")
         @assert isa(build_platform, Linux)
         @assert arch(build_platform) == :x86_64
         verbose && @info("Rebuilding sandbox for initial bootstrap...")
-        success(`gcc -static -static-libgcc -o $(sandbox_path) $(sandbox_path).c`)
+        success(`gcc -O2 -static -static-libgcc -o $(sandbox_path) $(sandbox_path).c`)
     catch
         if isfile(sandbox_path)
             @warn("Sandbox outdated and we can't build it, continuing, but be warned, initial bootstrap might fail!")
         else
-            error("Sandbox missing and we can't build it!  Build it somewhere else via `gcc -static -static-libgcc -o sandbox sandbox.c`")
+            error("Sandbox missing and we can't build it!  Build it somewhere else via `gcc -O2 -static -static-libgcc -o sandbox sandbox.c`")
         end
     end
 end
@@ -158,7 +158,7 @@ cp $WORKSPACE/srcdir/utils/profile ${prefix}/etc/
 cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
-gcc -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
+gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
 cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
 # Extract a recent libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib
