@@ -1,0 +1,13 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -308,8 +308,8 @@
+ # Checks for FreeType
+ #
+ dnl See http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/docs/VERSIONS.TXT for versioning in freetype
+-PKG_CHECK_MODULES(FREETYPE, freetype2 >= 21.0.15)
+-PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES freetype2 >= 21.0.15"
++PKG_CHECK_MODULES(FREETYPE, freetype2 >= 2.8.1)
++PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES freetype2 >= 2.8.1"
+ 
+ AC_SUBST(FREETYPE_LIBS)
+ AC_SUBST(FREETYPE_CFLAGS)
