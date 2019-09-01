@@ -1,11 +1,11 @@
 using BinaryBuilder
 
-# Collection of sources required to build Gettext
+# Collection of sources required to build Libiconv
 name = "Libiconv"
-version = v"1.15"
+version = v"1.16"
 sources = [
     "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz" =>
-    "ccf536620a45458d26ba83887a983b96827001e92a13847b45e4925cc8913178",
+    "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04",
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +21,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libiconv", :libiconv)
+products = [
+    LibraryProduct("libiconv", :libiconv)
 ]
 
 # Dependencies that must be installed before this package can be built
