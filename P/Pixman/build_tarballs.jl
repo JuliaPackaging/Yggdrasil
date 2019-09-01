@@ -12,9 +12,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/pixman-*/
 
-# Pixman has issues with clang 8, use gcc instead
-export CC=gcc
-export CXX=g++
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
