@@ -2,22 +2,19 @@ using BinaryBuilder, Pkg.BinaryPlatforms
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.36.0"
+version = v"0.38.4"
 sources = [
     "https://www.cairographics.org/releases/pixman-$(version).tar.gz" =>
-    "1ca19c8d4d37682adfbc42741d24977903fec1169b4153ec05bb690d4acf9fae",
+    "da66d6fd6e40aee70f7bd02e4f8f76fc3f006ec879d346bae6a723025cfbdde7",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pixman-*/
 
-# Apply patch for compilation with clang
-#patch < $WORKSPACE/srcdir/patches/clang.patch
-
-# Apply patch for arm on musl
-#patch -p1 < $WORKSPACE/srcdir/patches/arm_musl.patch
-
+# Pixman has issues with clang 8, use gcc instead
+export CC=gcc
+export CXX=g++
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
