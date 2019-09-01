@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "LZO"
 version = v"2.10"
 
-# Collection of sources required to build Harfbuzz
+# Collection of sources required to build LZO
 sources = [
     "https://www.oberhumer.com/opensource/lzo/download/lzo-$(version.major).$(version.minor).tar.gz" =>
     "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072",
@@ -24,13 +24,12 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = Product[
-    # LibraryProduct(prefix, "libharfbuzz-subset", :libharfbuzz_subset)
+products = Product[
+    LibraryProduct("liblzo2", :liblzo2)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
