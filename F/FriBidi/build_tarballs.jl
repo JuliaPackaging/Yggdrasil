@@ -24,14 +24,13 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libfribidi", :libfribidi),
-    ExecutableProduct(prefix, "fribidi", :fribidi)
+products = [
+    LibraryProduct("libfribidi", :libfribidi),
+    ExecutableProduct("fribidi", :fribidi)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
