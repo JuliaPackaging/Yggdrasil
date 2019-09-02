@@ -28,8 +28,8 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libffi", :libffi)
+products = [
+    LibraryProduct("libffi", :libffi)
 ]
 
 # Dependencies that must be installed before this package can be built
