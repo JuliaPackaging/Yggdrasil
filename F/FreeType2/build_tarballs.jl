@@ -14,11 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*/
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" \
-         -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain \
-         -DBUILD_SHARED_LIBS=true
-
+./configure --prefix=${prefix} --host=${target} --enable-shared --disable-static
 make -j${nproc}
 make install
 """
