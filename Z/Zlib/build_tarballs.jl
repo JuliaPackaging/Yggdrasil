@@ -13,8 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/zlib-*
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain
-make install -j${nproc}
+mkdir build && cd build
+
+# We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something ridiculous like that.
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain -DUNIX=true ..
+make install -j${nproc} ${EXTRA_MAKE_FLAGS}
 """
 
 # Build for ALL THE PLATFORMS!
