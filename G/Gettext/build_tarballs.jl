@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.19.8"
+version = v"0.20.1"
 sources = [
     "https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version).tar.xz" =>
-    "9c1781328238caa1685d7bc7a2e1dcf1c6c134e86b42ed554066734b621bd12f",
+    "53f02fbbec9e798b0faaf7c73272f83608e835c6288dd58be6c9bb54624a3800",
     "./bundled",
 ]
 
@@ -13,9 +13,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gettext-*/
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Fix-linker-error-Cannot-export-rpl_printf.patch
+#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Fix-linker-error-Cannot-export-rpl_printf.patch
 
-autoreconf -f -i
 ./configure --prefix=$prefix --host=$target CFLAGS="-O2"
 make -j${nproc}
 make install
@@ -26,13 +25,13 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libgettext", :libgettext)
+products = [
+    LibraryProduct("libgettext", :libgettext)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libiconv-v1.15-0/build_Libiconv.v1.15.0.jl",
+    "Libiconv_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
