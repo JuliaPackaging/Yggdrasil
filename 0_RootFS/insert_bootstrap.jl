@@ -25,7 +25,7 @@ build_tarballs("Rootfs")
 # Next, build the PlatformSupport packages.
 for target in supported_platforms()
     build_tarballs("PlatformSupport", triplet(target))
-nd
+end
 
 # Next, bulid the GCC packages
 for gcc_version in ("4.8.5", "5.2.0", "6.1.0", "7.1.0", "8.1.0")

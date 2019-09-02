@@ -146,6 +146,8 @@ mkdir -p ./usr/local/bin ./usr/local/share/configure_scripts
 cp $WORKSPACE/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp $WORKSPACE/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
 cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/bin/uname
+mv ./sbin/sysctl ./sbin/_sysctl
+cp $WORKSPACE/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
 cp $WORKSPACE/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
 cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
 cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
