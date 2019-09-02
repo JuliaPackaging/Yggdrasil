@@ -15,6 +15,12 @@ cd $WORKSPACE/srcdir/libffi-*/
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
+if [[ -d ${prefix}/lib64 ]]; then
+    for f in ${prefix}/lib64/*.${dlext}; do
+        fbase="$(basename "${f}")"
+        ln -s "../lib64/${fbase}" "${prefix}/lib/${fbase}"
+    done
+fi
 """
 
 # These are the platforms we will build for by default, unless further
