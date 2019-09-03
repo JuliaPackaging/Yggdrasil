@@ -54,7 +54,7 @@ for target in supported_platforms()
     if length(mapping["CFLAGS"]) > 0
         C_ARGS = "'" * join(split(mapping["CFLAGS"]), "\', \'") * "\'"
     else
-        C_ARGS= "''"
+        C_ARGS= ""
     end
     if length(split(mapping["CC"])) > 1
         C_ARGS = "\'" * join(split(mapping["CC"])[2:end], "\', \'") * "\', " * C_ARGS
@@ -62,9 +62,13 @@ for target in supported_platforms()
     if length(split(mapping["CXX"])) > 1
         CXX_ARGS = "\'" * join(split(mapping["CXX"])[2:end], "\', \'") * "\'"
     else
-        CXX_ARGS = "''"
+        CXX_ARGS = ""
     end
-    LDFLAGS = "'" * join(split(mapping["LDFLAGS"]), "\', \'") * "\'"
+    if length(split(mapping["LDFLAGS"])) > 0
+        LDFLAGS = "'" * join(split(mapping["LDFLAGS"]), "\', \'") * "\'"
+    else
+        LDFLAGS = ""
+    end
 
     host_system, host_cpu_family, host_cpu, host_endian = machine_info(host)
     target_system, target_cpu_family, target_cpu, target_endian = machine_info(target)
