@@ -12,11 +12,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pcre-*/
-
-# On OSX, override choice of AR
-if [[ ${target} == *apple-darwin* ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
 ./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
@@ -27,8 +22,8 @@ make install VERBOSE=1
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libpcre", :libpcre)
+products = [
+    LibraryProduct("libpcre", :libpcre)
 ]
 
 # Dependencies that must be installed before this package can be built
