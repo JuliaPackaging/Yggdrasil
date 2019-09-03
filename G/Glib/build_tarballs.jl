@@ -22,9 +22,6 @@ glib_cv_stack_grows=no
 glib_cv_uscore=no
 END
 
-if [[ ${target} == *apple-darwin* ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
 ./autogen.sh LDFLAGS="${LDFLAGS} -L$prefix/lib" CPPFLAGS=-I$prefix/include --enable-libmount=no --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
 find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
 
@@ -37,22 +34,16 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libglib", :libglib)
+products = [
+    LibraryProduct("libglib", :libglib)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We need zlib
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.4/build_Zlib.v1.2.11.jl",
-    # We need libffi
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libffi-v3.2.1-0/build_Libffi.v3.2.1.jl",
-    # We need gettext
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Gettext-v0.19.8-0/build_Gettext.v0.19.8.jl",
-    # We need pcre
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/PCRE-v8.42-2/build_PCRE.v8.42.0.jl",
-    # We need iconv
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libiconv-v1.15-0/build_Libiconv.v1.15.0.jl",
+    "Libffi_jll",
+    "Gettext_jll",
+    "PCRE_jll",
+    "Zlib_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
