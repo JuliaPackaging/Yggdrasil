@@ -80,6 +80,8 @@ for target in supported_platforms()
 c = '$CC'
 cpp = '$CXX'
 ar = '$(mapping["AR"])'
+ld = '$(mapping["LD"])'
+nm = '$(mapping["NM"])'
 strip = '$(mapping["STRIP"])'
 pkgconfig = '/usr/bin/pkg-config'
 
@@ -87,6 +89,7 @@ pkgconfig = '/usr/bin/pkg-config'
 c_args = [$(C_ARGS)]
 cpp_args = [$(CXX_ARGS)]
 link_args = [$(LDFLAGS)]
+needs_exe_wrapper = true
 
 [host_machine]
 system = '$(host_system)'
