@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 # Collection of sources required to build Nettle
 name = "Nettle"
@@ -28,15 +28,15 @@ platforms = supported_platforms()
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libnettle", :libnettle),
-    LibraryProduct(prefix, "libhogweed", :libhogweed),
-    ExecutableProduct(prefix, "nettle-hash", :nettle_hash)
+products = [
+    LibraryProduct("libnettle", :libnettle),
+    LibraryProduct("libhogweed", :libhogweed),
+    ExecutableProduct("nettle-hash", :nettle_hash)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
+    "GMP_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
