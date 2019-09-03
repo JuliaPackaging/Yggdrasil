@@ -21,9 +21,15 @@ apk add gperf
 # Ensure that `${prefix}/include` is..... included
 export CPPFLAGS="-I${prefix}/include"
 
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    FONTS_DIR="/usr/local/share/fonts"
+elif [[ "${target}" == *-apple-* ]]; then
+    FONTS_DIR="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5"
+fi
+
 atomic_patch -p1 ../patches/configure_freetype2_version.patch
 autoreconf
-./configure --prefix=$prefix --host=$target --disable-docs
+./configure --prefix=$prefix --host=$target --disable-docs --with-add-fonts="${FONTS_DIR}"
 
 make -j${nproc}
 make install
