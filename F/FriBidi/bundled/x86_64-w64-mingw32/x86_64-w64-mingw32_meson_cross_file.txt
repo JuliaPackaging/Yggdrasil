@@ -1,0 +1,31 @@
+[binaries]
+c = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-gcc'
+cpp = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-g++'
+ar = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-ar'
+ld = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-ld'
+nm = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-nm'
+strip = '/opt/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-strip'
+pkgconfig = '/usr/bin/pkg-config'
+
+[properties]
+c_args = []
+cpp_args = []
+link_args = []
+needs_exe_wrapper = True
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'i686'
+endian = 'little'
+
+[target_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'i686'
+endian = 'little'
+
+[paths]
+prefix = '/workspace/destdir'
+libdir = 'lib'
+bindir = 'bin'

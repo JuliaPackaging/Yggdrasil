@@ -1,0 +1,31 @@
+[binaries]
+c = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-gcc'
+cpp = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-g++'
+ar = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-ar'
+ld = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-ld'
+nm = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-nm'
+strip = '/opt/arm-linux-musleabihf/bin/arm-linux-musleabihf-strip'
+pkgconfig = '/usr/bin/pkg-config'
+
+[properties]
+c_args = []
+cpp_args = []
+link_args = []
+needs_exe_wrapper = True
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'i686'
+endian = 'little'
+
+[target_machine]
+system = 'linux'
+cpu_family = 'arm'
+cpu = 'arm'
+endian = 'little'
+
+[paths]
+prefix = '/workspace/destdir'
+libdir = 'lib'
+bindir = 'bin'
