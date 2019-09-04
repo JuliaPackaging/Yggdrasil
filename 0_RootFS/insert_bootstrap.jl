@@ -34,6 +34,9 @@ for gcc_version in ("4.8.5", "5.2.0", "6.1.0", "7.1.0", "8.1.0")
     end
 end
 
-# LLVM as well
+# LLVM, Rust, etc...
 build_tarballs("LLVMBootstrap")
+for target in [p for p in supported_platforms() if libc(p) != :musl]
+    build_tarballs("Rust", triplet(target))
+end
 
