@@ -114,8 +114,11 @@ printf '%s\n' \
     > etc/resolv.conf
 
 # Insert system mountpoints
-touch ./dev/{null,ptmx,urandom}
-mkdir ./dev/{pts,shm}
+touch ./dev/null
+touch ./dev/ptmx
+touch ./dev/urandom
+mkdir ./dev/pts
+mkdir ./dev/shm
 
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
