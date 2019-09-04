@@ -7,7 +7,7 @@ sources = [
 ]
 
 name = "FFTW"
-version = v"3.3.9-alpha1"
+version = v"3.3.9"
 
 # Bash recipe for building across all platforms
 script = raw"""
