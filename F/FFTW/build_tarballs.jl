@@ -30,7 +30,6 @@ make -j${nprocs}
 make install
 cd ..
 if [[ $target == powerpc64le-*  ]]; then config="$config --enable-altivec"; fi
-if [[ $target == arm-*  ]]; then config="$config --enable-neon"; fi
 mkdir single && cd single
 ../configure $config --enable-single
 perl -pi -e "s/tools m4/m4/" Makefile # work around FFTW/fftw3#146
