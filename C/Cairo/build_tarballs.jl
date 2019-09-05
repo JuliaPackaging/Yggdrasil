@@ -21,9 +21,6 @@ export CFLAGS="-I${prefix}/include -I${prefix}/include/freetype2"
 
 if [[ "${target}" == *-apple-* ]]; then
     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
-
-    # Apparently there's a conflict between libuuid and an internal apple uuid
-    rm -f ${prefix}/include/uuid/uuid.h
 elif [[ "${target}" == *-mingw* ]]; then
     BACKEND_OPTIONS="--enable-win32 --disable-xcb --disable-xlib"
 elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -58,6 +55,7 @@ dependencies = [
     "Pixman_jll",
     "libpng_jll",
     "Fontconfig_jll",
+    "FreeType2_jll",
     "Bzip2_jll",
     "X11_jll",
     "LZO_jll",
