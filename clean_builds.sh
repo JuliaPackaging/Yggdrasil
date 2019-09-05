@@ -7,8 +7,9 @@ for parent in *; do
     fi
 
     for project in ${parent}/*; do
-        if [[ ! -d "${parent}/${project}" ]]; then
-            rm -vrf "${parent}/${project}/build"
+        if [[ -d "${project}/build" ]]; then
+            echo "Removing ${project}/build"
+            rm -rf "${project}/build"
         fi
     done
 done
