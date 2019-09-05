@@ -1,4 +1,5 @@
 # Ignore intermediate and final build products
+build/
 */*/build
 */*/products
 
