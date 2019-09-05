@@ -15,6 +15,7 @@ cd $WORKSPACE/srcdir/nettle-*/
 # Force c99 mode
 export CFLAGS="${CFLAGS} -std=c99"
 
+update_configure_scripts
 ./configure --prefix=$prefix --host=$target --with-include-path=$prefix/include
 make -j${nproc}
 make install
