@@ -84,7 +84,11 @@ platforms = [p for p in supported_platforms() if !isa(p, MacOS) && !isa(p, Windo
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libX11", :libX11),
-    LibraryProduct("libX11-xcb", :libX11_xcb)
+    LibraryProduct("libX11-xcb", :libX11_xcb),
+    LibraryProduct("libXext", :libXext),
+    LibraryProduct("libxcb-render", :libxcb_render),
+    LibraryProduct("libxcb-shm", :libxcb_shm),
+    LibraryProduct("libXau", :libXau),
 ]
 
 # Dependencies that must be installed before this package can be built
