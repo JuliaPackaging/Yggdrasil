@@ -50,6 +50,9 @@ if [[ "${target}" == i686-w64-* ]]; then FLAGS+=( --with-incoming-stack-boundary
 # see https://sourceforge.net/p/mingw-w64/mailman/message/36287627/ for more info
 if [[ "${target}" == x86_64-w64-* ]]; then export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"; fi
 
+# On ppc64le, enable VSX
+if [[ "${target}" == powerpc64le-*  ]]; then FLAGS+=( --enable-vsx ); fi
+
 # We need to do this a couple times, so functionalize it
 build_fftw()
 {
@@ -64,9 +67,6 @@ build_fftw()
 
 # Build the double-precision version, then the single-precision version
 build_fftw double
-
-# On ppc64le, enable altivec for single precision only
-if [[ "${target}" == powerpc64le-*  ]]; then FLAGS+=( --enable-altivec ); fi
 
 build_fftw single --enable-single
 """
