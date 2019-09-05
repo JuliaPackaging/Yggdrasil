@@ -14,10 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
-if [[ ${target} == *darwin* ]]; then
-    # Remove uuid.h on macOS
-    rm -f ${prefix}/include/uuid/uuid.h
-fi
 
 ./configure --prefix=$prefix --host=$target \
     --disable-introspection \
