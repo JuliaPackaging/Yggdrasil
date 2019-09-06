@@ -1,0 +1,31 @@
+[binaries]
+c = '/opt/bin/cc'
+cpp = '/opt/bin/c++'
+ar = '/opt/bin/ar'
+ld = '/opt/bin/ld'
+nm = '/opt/bin/nm'
+strip = '/opt/bin/strip'
+pkgconfig = '/usr/bin/pkg-config'
+
+[properties]
+c_args = []
+cpp_args = []
+link_args = []
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[target_machine]
+system = '{{OS}}'
+cpu_family = '{{CPU_FAMILY}}'
+cpu = '{{CPU}}'
+endian = 'little'
+
+[paths]
+prefix = '/workspace/destdir'
+libdir = 'lib'
+bindir = 'bin'

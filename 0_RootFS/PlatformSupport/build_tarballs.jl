@@ -95,8 +95,8 @@ case "${COMPILER_TARGET}" in
 esac
 
 # Install cmake templates
-cd ${WORKSPACE}/srcdir/cmake_toolchains
-./build_toolchains.sh
+cd ${WORKSPACE}/srcdir/buildsystem_toolchains
+./build_toolchains.sh ${COMPILER_TARGET}
 mv ${COMPILER_TARGET}/* ${prefix}
 
 # We create a link from ${COMPILER_TARGET}/sys-root/usr/local/lib to /workspace/destdir/lib

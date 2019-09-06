@@ -56,7 +56,7 @@ function upload_compiler_shard(repo, name, version, hash, archive_type; platform
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
     return [
-        ("https://github.com/$(repo)/releases/download/$(tag)/$(filename)", tarball_hash),
+        ("https://github.com/$(repo)/releases/download/$(tag)/$(filename).tar.gz", tarball_hash),
     ]
 end
 
@@ -71,7 +71,7 @@ end
 function upload_and_insert_shards(repo, name, version, build_info; target=nothing)
     for platform in keys(build_info)
         unpacked_hash = build_info[platform][3]
-        squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; target=target)
+        squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; platform=platform, target=target)
 
         # Upload them both to GH releases on Yggdrasil
         unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)

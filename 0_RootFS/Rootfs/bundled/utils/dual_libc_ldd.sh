@@ -7,7 +7,7 @@ if test ! -e "${1}"; then
 fi
 
 # Paths to various programs we need
-PATCHELF=/usr/local/bin/patchelf
+PATCHELF=/usr/bin/patchelf
 MUSL_LD=/lib/ld-musl-x86_64.so.1
 GLIBC64_LD=/lib64/ld-linux-x86-64.so.2
 GLIBC32_LD=/lib/ld-linux.so.2

@@ -166,10 +166,11 @@ cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
 gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
 cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
-# Extract a recent libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib
+# Extract a recent libgcc_s and libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib
 # as well so that we can run things that were built with GCC within this environment.
 mkdir -p ${prefix}/lib ${prefix}/lib64
 cp -vd $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
+cp -vd $WORKSPACE/srcdir/libs/libgcc_s.so* ${prefix}/lib64
 
 # Install glibc (32 and 64-bit)
 cp -Rv ${WORKSPACE}/srcdir/x86_64-linux-gnu/sys-root/lib64/* ${prefix}/lib64/
