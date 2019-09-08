@@ -26,7 +26,9 @@ fi
 
 platforms = supported_platforms()
 
-products(prefix) = [LibraryProduct(prefix, "libzstd", :libzstd)]
+products = [
+    LibraryProduct("libzstd", :libzstd)
+]
 
 dependencies = []
 
