@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "WCS"
-version = v"6.3.0"
+version = v"6.4.0"
 
 # Collection of sources required to build WCS
 sources = [
-    "https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-6.3.tar.bz2" =>
-    "4c37f07d64d51abaf30093238fdd426a321ffaf5a9575f7fd81e155d973822ea",
+    "https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-$(version.major).$(version.minor).tar.bz2" =>
+    "13c11ff70a7725563ec5fa52707a9965fce186a1766db193d08c9766ea107000",
     "./patches"
 ]
 
@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wcslib-*/
 if [[ "${target}" == *mingw* ]]; then
-    atomic_patch "${WORKSPACE}/srcdir/configure-mingw.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/configure-mingw.patch"
     autoconf
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
 fi
@@ -30,8 +30,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libwcs", :libwcs)
+products = [
+    LibraryProduct("libwcs", :libwcs)
 ]
 
 # Dependencies that must be installed before this package can be built
