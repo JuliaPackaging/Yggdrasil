@@ -24,13 +24,13 @@ make -j${nproc} install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libxml2", :libxml2)
+products = [
+    LibraryProduct("libxml2", :libxml2)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.4/build_Zlib.v1.2.11.jl"
+    "Zlib_jll"
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
