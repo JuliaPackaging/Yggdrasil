@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 name = "FriBidi"
 version = v"1.0.5"
@@ -11,7 +11,6 @@ sources = [
     "0f849e344d446934b4ecdbe9edc32abd29029731",
     "https://github.com/mesonbuild/meson/releases/download/0.51.2/meson-0.51.2.tar.gz" =>
     "23688f0fc90be623d98e80e1defeea92bbb7103bf9336a5f5b9865d36e892d76",
-    "./bundled"
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +27,7 @@ NM=${NM_FOR_BUILD}
 STRIP=${STRIP_FOR_BUILD}
 LDFLAGS=""
 
-$MESON .. -Ddocs=false --cross-file="$WORKSPACE/srcdir/${target}/${target}_meson_cross_file.txt"
+$MESON .. -Ddocs=false --cross-file="/opt/${target}/${target}.meson"
 ninja -j${nproc}
 ninja install
 """
