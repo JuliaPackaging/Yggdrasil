@@ -29,21 +29,17 @@ else
 fi
 flags+=("LIBPREFIX=${LIBPREFIX}")
 
-# Set BINARY=32 on 32-bit platforms
+# Set BINARY=32 on 32-bit platforms, use fewer threads on 32-bit arch
 if [[ ${nbits} == 32 ]]; then
     flags+=(BINARY=32)
+    flags+=(NUM_THREADS=8)
+else
+    flags+=(NUM_THREADS=32)
 fi
 
 # Set BINARY=64 on x86_64 platforms (but not AArch64 or powerpc64le)
 if [[ ${target} == x86_64-* ]]; then
     flags+=(BINARY=64)
-fi
-
-# Use 16 threads unless we're on an i686 arch:
-if [[ ${target} == i686* ]]; then
-    flags+=(NUM_THREADS=8)
-else
-    flags+=(NUM_THREADS=16)
 fi
 
 # On Intel architectures, engage DYNAMIC_ARCH
