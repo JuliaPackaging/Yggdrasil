@@ -132,9 +132,9 @@ for TARGET in ${ENABLED_TARGETS}; do
 
     # On FreeBSD and MacOS we actually want to default to clang, otherwise gcc
     if [[ ${TARGET} == *freebsd* ]] || [[ ${TARGET} == *-darwin-* ]]; then
-        ln -fs cmake_${TARGET}_clang.toolchain ${TARGET}/${TARGET}.cmake
+        ln -fs ${TARGET}_clang.cmake ${TARGET}/${TARGET}.cmake
     else
-        ln -fs cmake_${TARGET}_gcc.toolchain ${TARGET}/${TARGET}.cmake
+        ln -fs ${TARGET}_gcc.cmake ${TARGET}/${TARGET}.cmake
     fi
 
     # Next, generate meson templates
