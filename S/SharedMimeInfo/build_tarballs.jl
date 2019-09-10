@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/shared-mime-info-*/
 apk add intltool
+
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
@@ -25,7 +26,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsharedmime", :libsharedmime)
+    ExecutableProduct("update-mime-database", :update_mime_database),
+    FileProduct("share/locale", :locale_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -35,5 +37,6 @@ dependencies = [
     "XML2_jll",
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Build the tarballs, and possibly a `build.jl` as well.  We use GCC 8 because it is the only GCC version that links
+# properly on powerpc64le.  Shocking, I know, but this is the world we live in.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
