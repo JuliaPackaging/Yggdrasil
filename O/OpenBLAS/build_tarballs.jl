@@ -39,11 +39,11 @@ if [[ ${target} == x86_64-* ]]; then
     flags+=(BINARY=64)
 fi
 
-# Use 16 threads unless we're on an i686 arch:
-if [[ ${target} == i686* ]]; then
+# Use fewer threads on 32-bit arch:
+if [[ ${nbits} == 32 ]]; then
     flags+=(NUM_THREADS=8)
 else
-    flags+=(NUM_THREADS=16)
+    flags+=(NUM_THREADS=32)
 fi
 
 # On Intel architectures, engage DYNAMIC_ARCH
