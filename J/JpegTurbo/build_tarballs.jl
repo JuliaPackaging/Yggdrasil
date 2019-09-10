@@ -29,12 +29,12 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = prefix -> [
-    LibraryProduct(prefix, "libjpeg", :libjpeg),
-    LibraryProduct(prefix, "libturbojpeg", :libturbojpeg),
-    ExecutableProduct(prefix, "cjpeg", :cjpeg),
-    ExecutableProduct(prefix, "djpeg", :djpeg),
-    ExecutableProduct(prefix, "jpegtran", :jpegtran),
+products = [
+    LibraryProduct("libjpeg", :libjpeg),
+    LibraryProduct("libturbojpeg", :libturbojpeg),
+    ExecutableProduct("cjpeg", :cjpeg),
+    ExecutableProduct("djpeg", :djpeg),
+    ExecutableProduct("jpegtran", :jpegtran),
 ]
 
 # Dependencies that must be installed before this package can be built
