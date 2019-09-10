@@ -16,12 +16,15 @@ function is_outdated(test, reference)
 end
 
 function unpacked_to_squashfs(unpacked_hash::Base.SHA1, name, version; platform=host_platform, target=nothing)
-    create_artifact() do target_dir
-        path = artifact_path(unpacked_hash)
-        squashfs_cs = CompilerShard(name, version, platform, :squashfs; target=target)
-        target_squashfs = joinpath(target_dir, BinaryBuilder.artifact_name(squashfs_cs))
+    path = artifact_path(unpacked_hash)
+    squashfs_cs = CompilerShard(name, version, platform, :squashfs; target=target)
+    art_name = BinaryBuilder.artifact_name(squashfs_cs)
+    squash_hash = create_artifact() do target_dir
+        target_squashfs = joinpath(target_dir, art_name)
         success(`mksquashfs $(path) $(target_squashfs) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
     end
+    @info("$(art_name) hash: $(bytes2hex(squash_hash.bytes))")
+    return squash_hash
 end
 
 # Generate artifacts for a given path, creating both an unpacked version and a squashfs version
@@ -31,10 +34,13 @@ function generate_artifacts(path::AbstractString, name, version; platform=host_p
     end
 
     # First, the unpacked version
+    squashfs_cs = CompilerShard(name, version, platform, :unpacked; target=target)
+    art_name = BinaryBuilder.artifact_name(squashfs_cs)
     unpacked_hash = create_artifact() do target
         rm(target; force=true, recursive=true)
         cp(path, target)
     end
+    @info("$(art_name) hash: $(bytes2hex(unpacked_hash.bytes))")
 
     # Next, the squashfs version
     squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; platform=platform, target=target)

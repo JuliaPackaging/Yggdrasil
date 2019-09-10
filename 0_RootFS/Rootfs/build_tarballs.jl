@@ -92,6 +92,9 @@ sources = [
 	"62a8f82962ce81c7de15554203953ee3fa68ef98e532d8f8f308a1bd23766984",
 	"https://github.com/staticfloat/GlibcBuilder/releases/download/v2.27-3/Glibc.v2.27.0.i686-linux-gnu.tar.gz" =>
 	"2bf2d65ed3576e0ab7ddb548b3db2ebdca6d5a7a4945032d054d8ebd37983ede",
+    # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
+    "https://github.com/mesonbuild/meson/releases/download/0.51.2/meson-0.51.2.tar.gz" =>
+    "23688f0fc90be623d98e80e1defeea92bbb7103bf9336a5f5b9865d36e892d76",
     # And also our own local patches, utilities, etc...
     "./bundled",
 ]
@@ -178,6 +181,11 @@ cp -Rv ${WORKSPACE}/srcdir/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
 ln -sv libc.so.6 ${prefix}/lib64/libc.so
 ln -sv libc.so.6 ${prefix}/lib/libc.so
 
+# Build/install meson
+cd ${WORKSPACE}/srcdir/meson-*/
+python3 setup.py build
+python3 setup.py install --prefix=/usr/local --root="${prefix}"
+
 # Build/install objconv
 cd ${WORKSPACE}/srcdir/objconv*/
 g++ -O2 -o ${prefix}/usr/bin/objconv src/*.cpp
@@ -217,6 +225,7 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
+@show artifact_exists(rootfs_unpacked_hash), artifact_exists(rootfs_squashfs_hash)
 build_info = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # Upload the shards
