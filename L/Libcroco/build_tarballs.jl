@@ -15,15 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libcroco-*/
 
+FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
-    export EXTRA_OPTS="--disable-Bsymbolic"
-    # Work around for
-    #     size too large (archive member extends past the end of the file)
-    # error.
-    export RANLIB="/opt/${target}/bin/llvm-ranlib"
+    # We purposefully use an old binutils, so we must disable -Bsymbolic
+    FLAGS+=(--disable-Bsymbolic)
 fi
 
-./configure --prefix=$prefix --host=$target --disable-gtk-doc "${EXTRA_OPTS}"
+./configure --prefix=$prefix --host=$target --disable-gtk-doc "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
@@ -34,7 +32,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcroco", :libcroco)
+    # Why must you flaunt the well-accepted ways of versioning your filename, libcroco?!
+    # And even worse, why must you do so IN A SYNACTICALLY AMBIGUOUS MANNER?!
+    LibraryProduct(["libcroco", "libcroco-$(version.major)", "libcroco-$(version.major).$(version.minor)"], :libcroco),
 ]
 
 # Dependencies that must be installed before this package can be built
