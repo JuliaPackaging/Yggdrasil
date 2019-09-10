@@ -16,10 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/tiff-*/
 CPPFLAGS="-I${prefix}/include"
 
-if [[ "${target}" == *-apple-* ]]; then
-    AR=/opt/${target}/bin/${target}-ar
-fi
-
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
@@ -36,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "JpegTurbo_jl",
-    "Zlib_jl",
+    "JpegTurbo_jll",
+    "Zlib_jll",
     "Zstd_jll",
 ]
 
