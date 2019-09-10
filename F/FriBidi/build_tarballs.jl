@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "FriBidi"
 version = v"1.0.5"
@@ -23,7 +23,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Union{MacOS,FreeBSD})]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
