@@ -81,6 +81,15 @@ function meson_cpu_family_from_target()
     fi
 }
 
+function meson_is_foreign()
+{
+    if [[ "$1" == x86_64-linux-* ]] || [[ "$1" == i686-linux-* ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
 
 # All the targets that get the simple_gcc AND simple_clang templates
 function simple_targets()
@@ -117,8 +126,6 @@ for TARGET in ${ENABLED_TARGETS}; do
         
     ARCH=$(arch_from_target "${TARGET}")
     OS=$(os_from_target "${TARGET}")
-    MESON_CPU=$(meson_cpu_from_target "${TARGET}")
-    MESON_CPU_FAMILY=$(meson_cpu_family_from_target "${TARGET}")
 
     # MacOS has a special toolchain template
     CMAKE_SRC="cmake_simple"
@@ -138,6 +145,11 @@ for TARGET in ${ENABLED_TARGETS}; do
     fi
 
     # Next, generate meson templates
-    template meson.j2 "{{TARGET}}=${TARGET}" "{{ARCH}}=${ARCH}" "{{OS}}=$(echo ${OS} | tr '[:upper:]' '[:lower:]')" \
-                      "{{CPU}}=${MESON_CPU}" "{{CPU_FAMILY}}=${MESON_CPU_FAMILY}"> ${TARGET}/${TARGET}.meson
+    template meson.j2 "{{TARGET}}=${TARGET}" \
+                      "{{ARCH}}=${ARCH}" \
+                      "{{OS}}=$(echo ${OS} | tr '[:upper:]' '[:lower:]')" \
+                      "{{CPU}}=$(meson_cpu_from_target "${TARGET}")" \
+                      "{{CPU_FAMILY}}=$(meson_cpu_family_from_target "${TARGET}")" \
+                      "{{IS_FOREIGN}}=$(meson_is_foreign "${TARGET}")" \
+                      > "${TARGET}/${TARGET}.meson"
 done

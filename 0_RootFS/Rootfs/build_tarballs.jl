@@ -181,6 +181,9 @@ cp -Rv ${WORKSPACE}/srcdir/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
 ln -sv libc.so.6 ${prefix}/lib64/libc.so
 ln -sv libc.so.6 ${prefix}/lib/libc.so
 
+# Install loader for 32-bit musl
+cp -v ${WORKSPACE}/srcdir/libs/ld-musl-i386.so.1 ${prefix}/lib/
+
 # Build/install meson
 cd ${WORKSPACE}/srcdir/meson-*/
 python3 setup.py build
