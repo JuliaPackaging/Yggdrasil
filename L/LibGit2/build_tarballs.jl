@@ -21,7 +21,7 @@ BUILD_FLAGS=(
     -DTHREADSAFE=ON
     -DUSE_BUNDLED_ZLIB=ON
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
-    "-DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain"
+    "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
 
 # Special windows flags

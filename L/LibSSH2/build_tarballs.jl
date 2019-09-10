@@ -21,7 +21,7 @@ BUILD_FLAGS=(
     -DBUILD_TESTING=OFF
     -DENABLE_ZLIB_COMPRESSION=OFF
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
-    "-DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain"
+    "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
 
 mkdir build

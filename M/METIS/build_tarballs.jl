@@ -24,7 +24,7 @@ mkdir -p build
 cd build/
 cmake $WORKSPACE/srcdir/metis-5.1.0/ \
     -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_VERBOSE_MAKEFILE=1 \
     -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
     -DSHARED=1
