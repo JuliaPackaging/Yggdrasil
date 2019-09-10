@@ -184,7 +184,7 @@ ln -sv libc.so.6 ${prefix}/lib/libc.so
 # Build/install meson
 cd ${WORKSPACE}/srcdir/meson-*/
 python3 setup.py build
-python3 setup.py install --prefix=/usr/local --root="${prefix}"
+python3 setup.py install --prefix=/usr --root="${prefix}"
 
 # Build/install objconv
 cd ${WORKSPACE}/srcdir/objconv*/
