@@ -9,14 +9,11 @@ version = v"1.0.5"
 sources = [
     "https://github.com/fribidi/fribidi.git" =>
     "0f849e344d446934b4ecdbe9edc32abd29029731",
-    "https://github.com/mesonbuild/meson/releases/download/0.51.2/meson-0.51.2.tar.gz" =>
-    "23688f0fc90be623d98e80e1defeea92bbb7103bf9336a5f5b9865d36e892d76",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/fribidi/
-MESON="$WORKSPACE/srcdir/meson-0.51.2/meson.py"
 mkdir build
 cd build
 
@@ -27,7 +24,7 @@ NM=${NM_FOR_BUILD}
 STRIP=${STRIP_FOR_BUILD}
 LDFLAGS=""
 
-$MESON .. -Ddocs=false --cross-file="/opt/${target}/${target}.meson"
+meson .. -Ddocs=false --cross-file="/opt/${target}/${target}.meson"
 ninja -j${nproc}
 ninja install
 """
