@@ -6,7 +6,6 @@ version = v"3.7.0"
 sources = [
     "https://github.com/opencollab/arpack-ng/archive/v$(version).tar.gz" =>
     "972e3fc3cd0b9d6b5a737c9bf6fd07515c0d6549319d4ffb06970e64fa3cc2d6",
-    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
