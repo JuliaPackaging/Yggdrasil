@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
-version = v"0.3.5"
+version = v"0.3.7"
 sources = [
     "https://github.com/xianyi/OpenBLAS/archive/v$(version).tar.gz" =>
-    "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85",
+    "bde136122cef3dd6efe2de1c6f65c10955bbb0cc01a520c2342f5287c28f9379",
     "./bundled",
 ]
 
