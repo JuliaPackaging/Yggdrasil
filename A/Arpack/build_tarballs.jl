@@ -1,15 +1,12 @@
-# Lies!  Lies and Slander!  Supposedly ccache doesn't make things fail, but
-# WHAT DO WE HAVE?! Literal proof that this is not the case.  This whole thing
-# fails to do the proper symbol renaming with `ccache`, which is TERRIBLE.
-ENV["BINARYBUILDER_USE_CCACHE"] = "false"
 using BinaryBuilder
 
 # Collection of sources required to build Arpack
 name = "Arpack"
-version = v"3.5.0"
+version = v"3.7.0"
 sources = [
-    "https://github.com/opencollab/arpack-ng.git" =>
-    "b095052372aa95d4281a645ee1e367c28255c947",
+    "https://github.com/opencollab/arpack-ng/archive/v$(version).tar.gz" =>
+    "972e3fc3cd0b9d6b5a737c9bf6fd07515c0d6549319d4ffb06970e64fa3cc2d6",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
