@@ -13,6 +13,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mbedtls
 mkdir -p $prefix/lib
+
+# llvm-ranlib gets confused, use binutils
+if [[ "${target}" == *apple* ]]; then
+    ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
+fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DUSE_SHARED_MBEDTLS_LIBRARY=On
 make -j${nproc} && make install
 """
