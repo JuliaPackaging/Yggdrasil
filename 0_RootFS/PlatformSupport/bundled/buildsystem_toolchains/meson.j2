@@ -1,6 +1,7 @@
 [binaries]
 c = '/opt/bin/{{TARGET}}-cc'
 cpp = '/opt/bin/{{TARGET}}-c++'
+objc = '/opt/bin/{{TARGET}}-objc'
 ar = '/opt/bin/{{TARGET}}-ar'
 ld = '/opt/bin/{{TARGET}}-ld'
 nm = '/opt/bin/{{TARGET}}-nm'
@@ -10,7 +11,8 @@ pkgconfig = '/usr/bin/pkg-config'
 [properties]
 c_args = []
 cpp_args = []
-link_args = []
+c_link_args = []
+cpp_link_args = []
 needs_exe_wrapper = {{IS_FOREIGN}}
 
 [build_machine]
