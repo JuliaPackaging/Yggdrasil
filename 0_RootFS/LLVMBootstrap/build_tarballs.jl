@@ -60,6 +60,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/compiler_rt_musl.patch
 cd ${WORKSPACE}/srcdir/llvm-*.src/projects/libcxx
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcxx_musl.patch
 
+# Patch clang
+cd ${WORKSPACE}/srcdir/llvm-*.src/tools/clang
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clang_musl_gcc_detector.patch
+
 # Next, boogie on down to llvm town
 cd ${WORKSPACE}/srcdir/llvm-*.src
 
@@ -91,11 +95,13 @@ CMAKE_FLAGS+=(-DLIBCXX_HAS_MUSL_LIBC=ON -DLIBCXX_HAS_GCC_S_LIB=OFF)
 CMAKE_FLAGS+=(-DCLANG_DEFAULT_CXX_STDLIB=libc++ -DCLANG_DEFAULT_LINKER=lld -DCLANG_DEFAULT_RTLIB=compiler-rt)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
+# Tell compiler-rt to generate builtins for all the supported arches
+CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
+
 # We don't need libunwind yet
 #CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBUNWIND_BUILD=OFF"
 # Sanitizers don't work on musl yet
 #CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_BUILD_SANITIZERS=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS}"
 
 # Build!
 cmake .. ${CMAKE_FLAGS[@]}
