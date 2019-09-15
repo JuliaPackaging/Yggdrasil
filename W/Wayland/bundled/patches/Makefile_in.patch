@@ -1,0 +1,11 @@
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -341,7 +341,7 @@
+ @ENABLE_LIBRARIES_TRUE@am_fixed_benchmark_OBJECTS =  \
+ @ENABLE_LIBRARIES_TRUE@	tests/fixed-benchmark.$(OBJEXT)
+ fixed_benchmark_OBJECTS = $(am_fixed_benchmark_OBJECTS)
+-fixed_benchmark_LDADD = $(LDADD)
++fixed_benchmark_LDADD = $(LDADD) -lrt
+ am__fixed_test_SOURCES_DIST = tests/fixed-test.c
+ @ENABLE_LIBRARIES_TRUE@am_fixed_test_OBJECTS =  \
+ @ENABLE_LIBRARIES_TRUE@	tests/fixed-test.$(OBJEXT)
