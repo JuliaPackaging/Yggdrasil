@@ -1,9 +1,9 @@
 using BinaryBuilder
 
-# Collection of sources required to build ZMQ
+# Collection of sources required to build FFTW
 sources = [
-    "http://fftw.org/~stevenj/fftw-3.3.9-alpha1.tar.gz" =>
-    "3db033dbc8a703ed644e6973d82bf0497a15a77dc071a4391cfb844b119e7b4c",
+    "https://github.com/FFTW/fftw3.git" =>
+    "8a9236c494f680e550c536eeb6aa7102ecfad2ca",
 ]
 
 name = "FFTW"
