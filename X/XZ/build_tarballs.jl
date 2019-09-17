@@ -34,8 +34,8 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "liblzma", :liblzma)
+products = [
+    LibraryProduct("liblzma", :liblzma)
 ]
 
 # Dependencies that must be installed before this package can be built
