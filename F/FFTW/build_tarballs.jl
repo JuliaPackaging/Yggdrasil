@@ -2,8 +2,8 @@ using BinaryBuilder
 
 # Collection of sources required to build ZMQ
 sources = [
-    "http://fftw.org/~stevenj/fftw-3.3.9-alpha1.tar.gz" =>
-    "3db033dbc8a703ed644e6973d82bf0497a15a77dc071a4391cfb844b119e7b4c",
+    "http://fftw.org/~stevenj/fftw-3.3.9.tar.gz" => # prerelease tarball
+    "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042",
 ]
 
 name = "FFTW"
@@ -31,13 +31,10 @@ if [[ "${target}" == x86_64-*  ]] || [[ "${target}" == i686-* ]]; then
     FLAGS+=( --enable-sse2 --enable-avx2 )
 fi
 
-# On x86_64, enable AVX512.  Because of this, we can't use `clang` due
-# to https://github.com/FFTW/fftw3/issues/153, so we use `gcc` instead:
-export CC=gcc
-export CXX=g++
-if [[ "${target}" == x86_64-* ]]; then
-    FLAGS+=( --enable-avx512 );
-fi
+# On x86_64, enable AVX512, once this is no longer marked "experimental" in the FFTW release notes.
+# if [[ "${target}" == x86_64-* ]]; then
+#    FLAGS+=( --enable-avx512 );
+# fi
 
 # Enable NEON on Aarch64
 if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-neon ); fi
