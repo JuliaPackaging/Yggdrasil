@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/fribidi/
 mkdir build && cd build
 
-meson .. -Ddocs=false --cross-file="/opt/${target}/${target}.meson"
+meson .. -Ddocs=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
