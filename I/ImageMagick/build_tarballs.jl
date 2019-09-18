@@ -49,7 +49,7 @@ products(prefix) = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Zlib_jll",
-    "Libpng_jll",
+    "libpng_jll",
     "JpegTurbo_jll",
     "Libtiff_jll"
 ]
