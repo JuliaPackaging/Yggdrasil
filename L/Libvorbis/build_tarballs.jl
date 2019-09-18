@@ -22,29 +22,7 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    # Windows
-    Windows(:i686),
-    Windows(:x86_64),
-
-    # linux
-    Linux(:i686, :glibc),
-    Linux(:x86_64, :glibc),
-    Linux(:aarch64, :glibc),
-    Linux(:armv7l, :glibc),
-    Linux(:powerpc64le, :glibc),
-
-    # musl
-    Linux(:i686, :musl),
-    Linux(:x86_64, :musl),
-    Linux(:aarch64, :musl),
-    Linux(:armv7l, :musl),
-
-    # The BSD's
-    FreeBSD(:x86_64),
-    MacOS(:x86_64),
-]
-
+platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libvorbis", :libvorbis),
