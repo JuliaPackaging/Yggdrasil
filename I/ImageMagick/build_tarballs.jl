@@ -13,28 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
-if [[ ${target} == *-apple-* ]]; then
-    # Work around the "size too large (archive member
-    # extends past the end of the file)" issue
-    AR=/opt/${target}/bin/${target}-ar
-fi
 ./configure --prefix=$prefix --host=$target --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl
 make -j${nproc}
 make install
-
-if [[ ${target} == *-apple-* ]]; then
-    echo "-- Modifying link references for ImageMagick libraries"
-    opts=""
-    # for some reason libtiff and libpng don't need help?
-    for XLIB in libMagick++-6.Q16.8 libMagickCore-6.Q16.6 libMagickWand-6.Q16.6 libjpeg.9 libz.1
-    do
-        opts="${opts} -change ${WORKSPACE}/destdir/lib/${XLIB}.dylib @rpath/${XLIB}.dylib"
-    done
-    for YLIB in libMagickWand-6.Q16.6 libMagickCore-6.Q16.6 libMagick++-6.Q16.8
-    do
-        install_name_tool ${opts} ${prefix}/lib/${YLIB}.dylib
-    done
-fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,8 +23,8 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libMagickWand", :libwand),
+products = [
+    LibraryProduct("libMagickWand", :libwand),
 ]
 
 # Dependencies that must be installed before this package can be built
