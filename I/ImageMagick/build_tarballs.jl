@@ -24,7 +24,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libMagickWand", :libwand),
+    LibraryProduct(["libMagickWand", "libMagickWand-6.Q16"], :libwand),
 ]
 
 # Dependencies that must be installed before this package can be built

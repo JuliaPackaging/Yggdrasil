@@ -1,6 +1,6 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
-name = "SCALE-MAMBA"
+name = "SCALE_MAMBA"
 version = v"1.5"
 
 # Collection of sources required to build SuiteSparse
@@ -47,16 +47,16 @@ platforms = [p for p in supported_platforms() if arch(p) == :x86_64 && !isa(p, F
 platforms = BinaryBuilder.replace_gcc_version.(platforms, :gcc6)
 
 # The products that we will ensure are always built
-products(prefix) = [
-    ExecutableProduct(prefix, "Player.x", :playerx),
-    ExecutableProduct(prefix, "Setup.x", :setupx),
+products = [
+    ExecutableProduct("Player.x", :playerx),
+    ExecutableProduct("Setup.x", :setupx),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenSSL-v1.1.1%2Bc%2B0/build_OpenSSL.v1.1.1+c.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/MPIR-v3.0.0%2B0/build_MPIR.v3.0.0.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/cryptopp-v8.2.0%2B1/build_cryptopp.v8.2.0.jl",
+    "OpenSSL_jll",
+    "MPIR_jll",
+    "cryptopp_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

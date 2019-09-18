@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "gdk-pixbuf"
+name = "gdk_pixbuf"
 version = v"2.38.2" # we are actually on master
 
 # Collection of sources required to build gdk-pixbuf
