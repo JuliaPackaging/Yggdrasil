@@ -19,7 +19,7 @@ cd x265_3.0/
 apk add nasm
 export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
 mkdir bld && cd bld
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain -DENABLE_PIC=ON -DENABLE_SHARED=off ../source
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DENABLE_PIC=ON -DENABLE_SHARED=off ../source
 make -j${nproc}
 make install
 
