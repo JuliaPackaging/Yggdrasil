@@ -14,8 +14,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add nasm
 cd libass-0.14.0/
-sed -i 's/9.10.3/2.9.1/' configure.ac
-autoreconf
 # Grumble-grumble apple grumble-grumble broken linkers...
 if [[ ${target} == *-apple-* ]]; then
     export AR=/opt/${target}/bin/ar
