@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.59.0"
+version = v"2.62.0"
 
 # Collection of sources required to build Glib
 sources = [
@@ -12,36 +12,30 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
+mkdir build_glib && cd build_glib
 
-# Get a local gettext for msgfmt cross-building
-apk add gettext
-
-# Provide answers to a few configure questions automatically
-cat > glib.cache <<END
-glib_cv_stack_grows=no
-glib_cv_uscore=no
-END
-
-export NOCONFIGURE=true
-export LDFLAGS="${LDFLAGS} -L${libdir}"
-export CPPFLAGS="-I${prefix}/include"
-
-./autogen.sh
-
+SED_SCRIPT=()
 if [[ "${target}" == i686-linux-musl ]]; then
-    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
-    # bugged and it can run only a few programs, with the result that the
-    # configure test to check whether we're cross-compiling returns that we're
-    # doing a native build, but then it fails to run a bunch of programs during
-    # other tests.
-    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+    # We can't run executables for i686-linux-musl in the BB environment
+    SED_SCRIPT+=(-e "s/needs_exe_wrapper = false/needs_exe_wrapper = true/" "${MESON_TARGET_TOOLCHAIN}")
+elif [[ "${target}" == *-mingw* ]]; then
+    # Tell meson where to find libintl.h
+    SED_SCRIPT+=(-e "s?c_args = \[]?c_args = ['-I${prefix}/include']?")
 fi
 
-./configure --cache-file=glib.cache --with-libiconv=gnu --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
+# We need to link to iconv, but ninja doesn't know how to do that as libiconv
+# doesn't have a pkgconfig file.  Let's give meson a tip
+sed -i -e "s/c_link_args = \[]/c_link_args = ['-liconv']/" \
+    "${SED_SCRIPT[@]}" \
+    "${MESON_TARGET_TOOLCHAIN}"
+# We need a new version of objcopy (in binutils) and a native "msgfmt" (in gettext)
+apk add binutils gettext
+# Get rid of the old objcopy
+rm /opt/bin/objcopy
 
-make -j${nproc}
-make install
+meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -68,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
