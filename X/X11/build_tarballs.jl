@@ -179,7 +179,9 @@ products = [
     LibraryProduct("libXrender", :libXrender),
     LibraryProduct("libxshmfence", :libxshmfence),
     LibraryProduct("libXtst", :libXtst),
-    LibraryProduct("libXxf86vm", :libXxf86vm),
+
+    # ppc64le doesn't build this as a shared library.  Why?
+    #LibraryProduct("libXxf86vm", :libXxf86vm),
 ]
 
 # Dependencies that must be installed before this package can be built
