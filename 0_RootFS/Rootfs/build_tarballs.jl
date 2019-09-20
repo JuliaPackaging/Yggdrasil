@@ -228,7 +228,6 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-@show artifact_exists(rootfs_unpacked_hash), artifact_exists(rootfs_squashfs_hash)
 build_info = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # Upload the shards

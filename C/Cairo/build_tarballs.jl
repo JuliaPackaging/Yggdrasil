@@ -13,6 +13,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cairo-*/
 
+# Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
+export CPPFLAGS="-I${prefix}/include"
+
 if [[ "${target}" == *-apple-* ]]; then
     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
 elif [[ "${target}" == *-mingw* ]]; then

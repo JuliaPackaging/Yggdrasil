@@ -12,21 +12,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
+mkdir build_glib && cd build_glib
+meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 
-# Get a local gettext for msgfmt cross-building
-apk add gettext
-
-# Provide answers to a few configure questions automatically
-cat > glib.cache <<END
-glib_cv_stack_grows=no
-glib_cv_uscore=no
-END
-
-./autogen.sh LDFLAGS="${LDFLAGS} -L$prefix/lib" CPPFLAGS=-I$prefix/include --enable-libmount=no --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
-find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
-
-make -j${nproc}
-make install
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,6 +38,7 @@ dependencies = [
     "Gettext_jll",
     "PCRE_jll",
     "Zlib_jll",
+    "Libmount_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
