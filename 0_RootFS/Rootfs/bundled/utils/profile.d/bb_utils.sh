@@ -54,5 +54,5 @@ save_srcdir() {
 
 if [ -f /meta/.env ]; then
 	vecho_red "Loading previous environment..."
-    source /meta/.env
+	source /meta/.env
 fi
