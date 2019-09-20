@@ -10,7 +10,6 @@ compiler_shard_def()
 
     if [[ -z "$(qwhich "$PROG")" ]]; then
         eval "${PROG}() { \
-            set -x
             if [ -z \"\$(qwhich ${PROG})\" ]; then \
                 echo \"You tried to run '$PROG' which requires the '$SHARD_NAME' shard; add 'compilers=[:${SHARD_NAME}]' to your invocation!\" >&2; \
                 return 1; \
