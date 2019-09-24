@@ -36,7 +36,5 @@ end
 
 # LLVM, Rust, etc...
 build_tarballs("LLVMBootstrap")
-for target in [p for p in supported_platforms() if libc(p) != :musl]
-    build_tarballs("Rust", triplet(target))
-end
+build_tarballs("Rust")
 build_tarballs("Go")

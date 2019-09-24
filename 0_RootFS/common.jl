@@ -74,18 +74,22 @@ function insert_compiler_shard(name, version, hash, archive_type; platform=host_
     bind_artifact!(artifacts_toml, BinaryBuilder.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
+function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
+    # Upload them both to GH releases on Yggdrasil
+    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+
+    # Insert these final versions into BB
+    insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
+    insert_compiler_shard(name, version, squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
+end
+
 function upload_and_insert_shards(repo, name, version, build_info; target=nothing)
     for platform in keys(build_info)
         unpacked_hash = build_info[platform][3]
         squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; platform=platform, target=target)
 
-        # Upload them both to GH releases on Yggdrasil
-        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
-        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
-
-        # Insert these final versions into BB
-        insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
-        insert_compiler_shard(name, version, squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
+        upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=target)
     end
 end
 

@@ -62,8 +62,8 @@ end
 
 # we really like bash, and it's annoying to have to polymorphise, so just lie for the stage 1 bootstrap
 cp(joinpath(@__DIR__, "bundled", "utils", "fake_bash.sh"), joinpath(rootfs_extracted, "bin", "bash"); force=true)
-cp(joinpath(@__DIR__, "bundled", "utils", "profile"), joinpath(rootfs_extracted, "etc", "profile"); force=true)
-cp(joinpath(@__DIR__, "bundled", "utils", "profile.d"), joinpath(rootfs_extracted, "etc", "profile.d"); force=true)
+cp(joinpath(@__DIR__, "bundled", "conf", "profile"), joinpath(rootfs_extracted, "etc", "profile"); force=true)
+cp(joinpath(@__DIR__, "bundled", "conf", "profile.d"), joinpath(rootfs_extracted, "etc", "profile.d"); force=true)
 rootfs_unpacked_hash, rootfs_squashfs_hash = generate_artifacts(rootfs_extracted, name, version)
 
 # Slip these barebones rootfs images into our BB install location, overwriting whatever Rootfs shard would be chosen:
@@ -162,8 +162,11 @@ chmod +x ./usr/local/bin/*
 
 # Deploy configuration
 cp $WORKSPACE/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
-cp $WORKSPACE/srcdir/utils/profile ${prefix}/etc/
-cp -d $WORKSPACE/srcdir/utils/profile.d/* ${prefix}/etc/profile.d/
+
+# Clear out all previous profile stuff first
+rm -f ${prefix}/etc/profile.d/*
+cp $WORKSPACE/srcdir/conf/profile ${prefix}/etc/
+cp -d $WORKSPACE/srcdir/conf/profile.d/* ${prefix}/etc/profile.d/
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
 gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
