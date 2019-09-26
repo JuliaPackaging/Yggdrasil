@@ -12,32 +12,42 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openssl-*/
 
+# This build system does not like llvm-ranlib
+if [[ ${target} == *darwin* ]]; then
+    export RANLIB=/opt/${target}/bin/${target}-ranlib
+fi
+
 # Manual translation of BB $target to Configure-target
 function translate_target()
 {
-#    if [[ ${target} == x86_64-linux* ]]; then
-#        echo linux-x86_64
-#    elif [[ ${target} == i686-linux* ]]; then
-#        echo linux-x86
-#    elif [[ ${target} == armv7l-linux* ]]; then
-##        echo linux-armv4
-#    elif [[ ${target} == aarch64-linux* ]]; then
-#        echo linux-aarch64
-    if [[ ${target} == x86_64-apple-darwin* ]]; then
+    if [[ ${target} == x86_64-linux* ]]; then
+        echo linux-x86_64
+    elif [[ ${target} == i686-linux* ]]; then
+        echo linux-x86
+    elif [[ ${target} == arm-linux* ]]; then
+        echo linux-armv4
+    elif [[ ${target} == aarch64-linux* ]]; then
+        echo linux-aarch64
+    elif [[ ${target} == powerpc64le-linux* ]]; then
+        echo linux-ppc64le
+    elif [[ ${target} == x86_64-apple-darwin* ]]; then
         echo darwin64-x86_64-cc
+    elif [[ ${target} == x86_64-unknown-freebsd* ]]; then
+        echo BSD-x86_64
     elif [[ ${target} == x86_64*mingw* ]]; then
         echo mingw64
     elif [[ ${target} == i686*mingw* ]]; then
         echo mingw
     else
-        echo gcc
+        if [[ ${nbits} == 32 ]]; then
+            echo linux-generic32
+        else
+            echo linux-generic64
+        fi
     fi
 }
 
-#if [[ ${target} == x86_64*mingw* ]]; then
-#    ./Configure --prefix=$prefix
-
-./Configure --prefix=$prefix $(translate_target)
+./Configure shared --prefix=$prefix $(translate_target)
 make -j${nproc}
 make install
 """
@@ -46,14 +56,11 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Disable FreeBSD for now, because hogweed needs alloca()?
-#platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-
-# The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libcrypto", :libcrypto),
-    LibraryProduct(prefix, "libssl", :libssl),
-    ExecutableProduct(prefix, "openssl", :openssl),
+# The products that we will ensure are always built.  What are these naming conventions guys?  Seriously?!
+products = [
+    LibraryProduct(["libcrypto", "libcrypto-1_1", "libcrypto-1_1-x64"], :libcrypto),
+    LibraryProduct(["libssl", "libssl-1_1", "libssl-1_1-x64"], :libssl),
+    ExecutableProduct("openssl", :openssl),
 ]
 
 # Dependencies that must be installed before this package can be built
