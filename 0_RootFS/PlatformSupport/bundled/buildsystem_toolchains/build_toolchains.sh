@@ -138,7 +138,7 @@ for TARGET in ${ENABLED_TARGETS}; do
     template "${CMAKE_SRC}_clang.j2" "{{TARGET}}=${TARGET}" "{{ARCH}}=${ARCH}" "{{OS}}=${OS}" > ${TARGET}/${TARGET}_clang.cmake
 
     # On FreeBSD and MacOS we actually want to default to clang, otherwise gcc
-    if [[ ${TARGET} == *freebsd* ]] || [[ ${TARGET} == *-darwin-* ]]; then
+    if [[ ${TARGET} == *freebsd* ]] || [[ ${TARGET} == *darwin* ]]; then
         ln -fs ${TARGET}_clang.cmake ${TARGET}/${TARGET}.cmake
     else
         ln -fs ${TARGET}_gcc.cmake ${TARGET}/${TARGET}.cmake
