@@ -1,15 +1,17 @@
---- sunrpc/rpc/types.h.old
-+++ sunrpc/rpc/types.h
-@@ -69,7 +69,7 @@
- #include <sys/types.h>
+diff --git a/sunrpc/rpc/types.h b/sunrpc/rpc/types.h
+index beded52..a0e30a2 100644
+--- a/sunrpc/rpc/types.h
++++ b/sunrpc/rpc/types.h
+@@ -74,7 +74,7 @@ typedef unsigned long rpcport_t;
+ # define __daddr_t_defined
  #endif
-
+ 
 -#ifndef __u_char_defined
 +#if 0
  typedef __u_char u_char;
  typedef __u_short u_short;
  typedef __u_int u_int;
-@@ -79,7 +79,7 @@
+@@ -84,7 +84,7 @@ typedef __u_quad_t u_quad_t;
  typedef __fsid_t fsid_t;
  # define __u_char_defined
  #endif
