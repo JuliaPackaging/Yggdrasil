@@ -1,5 +1,5 @@
 diff --git a/elf/dl-load.c b/elf/dl-load.c
-index a5318f9..cb82dfd 100644
+index a5318f9..2bd9920 100644
 --- a/elf/dl-load.c
 +++ b/elf/dl-load.c
 @@ -45,6 +45,7 @@
@@ -10,7 +10,7 @@ index a5318f9..cb82dfd 100644
  
  #include <endian.h>
  #if BYTE_ORDER == BIG_ENDIAN
-@@ -1439,6 +1440,60 @@ print_search_path (struct r_search_path_elem **list,
+@@ -1439,6 +1440,61 @@ print_search_path (struct r_search_path_elem **list,
    else
      _dl_debug_printf_c ("\t\t(%s)\n", what);
  }
@@ -44,6 +44,7 @@ index a5318f9..cb82dfd 100644
 +    {
 +        if (dyn_entry->d_tag == DT_STRTAB) {
 +            string_offset = dyn_entry->d_un.d_val;
++            break;
 +        }
 +    }
 +    if (string_offset != 0) {
@@ -71,7 +72,7 @@ index a5318f9..cb82dfd 100644
  
  /* Open a file and verify it is an ELF file for this architecture.  We
     ignore only ELF files for other architectures.  Non-ELF files and
-@@ -1484,6 +1539,8 @@ open_verify (const char *name, int fd,
+@@ -1484,6 +1540,8 @@ open_verify (const char *name, int fd,
    } expected_note = { 4, 16, 1, "GNU" };
    /* Initialize it to make the compiler happy.  */
    const char *errstring = NULL;
@@ -80,7 +81,7 @@ index a5318f9..cb82dfd 100644
    int errval = 0;
  
  #ifdef SHARED
-@@ -1675,8 +1732,15 @@ open_verify (const char *name, int fd,
+@@ -1675,8 +1733,15 @@ open_verify (const char *name, int fd,
  			     loader, fd)))
  	goto close_and_out;
  
@@ -97,7 +98,7 @@ index a5318f9..cb82dfd 100644
  	if (ph->p_type == PT_NOTE && ph->p_filesz >= 32 && ph->p_align >= 4)
  	  {
  	    ElfW(Addr) size = ph->p_filesz;
-@@ -1724,6 +1788,20 @@ open_verify (const char *name, int fd,
+@@ -1724,6 +1789,20 @@ open_verify (const char *name, int fd,
  
  	    break;
  	  }
