@@ -1,24 +1,32 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 name = "Qemu"
-version = v"2.12.50"
+version = v"4.1.0"
 
 # Collection of sources required to build libffi
 sources = [
-    "https://github.com/Keno/qemu.git" =>
-    "2ed3b3c2f2c79208b689673a257ab04a6aa984a3",
+    "https://gitlab.com/virtio-fs/qemu.git" =>
+    "bf5775237ee563b4baa1c7f3c1a65b7c93b93fca",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qemu
 
-./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include" --disable-cocoa --prefix=$prefix
+# Patch out usage of MADV_NOHUGEPAGE which does not exist in glibc 2.12.X
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
 
-echo '#!/bin/true ' > /usr/bin/SetFile
-echo '#!/bin/true ' > /usr/bin/Rez
-chmod +x /usr/bin/Rez
-chmod +x /usr/bin/SetFile
+# Patch in adapter for `clock_gettime()` on macOS 10.12-
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
+
+# Configure, ignoring some warnings that we don't need, etc...
+./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include -Wno-unused-result" --disable-cocoa --prefix=$prefix
+
+#echo '#!/bin/true ' > /usr/bin/SetFile
+#echo '#!/bin/true ' > /usr/bin/Rez
+#chmod +x /usr/bin/Rez
+#chmod +x /usr/bin/SetFile
 make -j${nproc}
 make install
 """
@@ -26,30 +34,21 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64),
+    Linux(:x86_64; libc=:glibc),
     MacOS(),
 ]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "x86_64-softmmu/qemu-system-x86_64", :qemu_x86_64)
+products = [
+    ExecutableProduct("qemu-system-x86_64", :qemu_system_x86_64),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We need Pixman
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Pixman-v0.36.0-0/build_Pixman.v0.36.0.jl",
-    # We need Glib
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Glib-v2.59.0-0/build_Glib.v2.59.0.jl",
-    # We need Pcre
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/PCRE-v8.42-2/build_PCRE.v8.42.0.jl",
-    # We need gettext
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Gettext-v0.19.8-0/build_Gettext.v0.19.8.jl",
-    # .....which needs libffi and iconv
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libffi-v3.2.1-0/build_Libffi.v3.2.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Libiconv-v1.15-0/build_Libiconv.v1.15.0.jl",
-    # .....which needs zlib
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
+    "Pixman_jll",
+    "Glib_jll",
+    "PCRE_jll",
+    "Gettext_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

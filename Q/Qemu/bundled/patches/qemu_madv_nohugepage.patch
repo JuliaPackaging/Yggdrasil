@@ -1,0 +1,13 @@
+diff --git a/contrib/libvhost-user/libvhost-user.c b/contrib/libvhost-user/libvhost-user.c
+index 8af8c84dec..d86395f31a 100644
+--- a/contrib/libvhost-user/libvhost-user.c
++++ b/contrib/libvhost-user/libvhost-user.c
+@@ -646,7 +646,7 @@ vu_set_mem_table_exec_postcopy(VuDev *dev, VhostUserMsg *vmsg)
+          */
+         ret = madvise((void *)dev_region->mmap_addr,
+                       dev_region->size + dev_region->mmap_offset,
+-                      MADV_NOHUGEPAGE);
++                      QEMU_MADV_NOHUGEPAGE);
+         if (ret) {
+             /* Note: This can happen legally on kernels that are configured
+              * without madvise'able hugepages
