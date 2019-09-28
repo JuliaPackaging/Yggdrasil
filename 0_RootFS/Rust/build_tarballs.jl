@@ -43,6 +43,10 @@ for rust_target in "${RUST_TARGETS[@]}"; do
     # Install our target-specific stuffs
     ${CARGO_HOME}/bin/rustup target add ${rust_target}
 done
+
+# We're going to bundle cargo-edit since it's a useful dep
+export OPENSSL_STATIC=yes
+${CARGO_HOME}/bin/cargo install cargo-edit
 """
 
 # We assemble this giant tarball, then will split it up immediately after this:
@@ -50,7 +54,10 @@ platforms = [Linux(:x86_64; libc=:glibc)]
 products = [
     ExecutableProduct("cargo", :cargo),
 ]
-build_info = build_tarballs(ARGS, "MegaRust", version, sources, script, platforms, products, []; skip_audit=true)
+dependencies = [
+    "OpenSSL_jll",
+]
+build_info = build_tarballs(ARGS, "MegaRust", version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # We don't actually need the .tar.gz it creates, so delete that to save space
 rm(joinpath("products", first(values(build_info))[1]))
@@ -83,6 +90,19 @@ unpacked_hash = create_artifact() do dir
     rm(joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "etc"); recursive=true)
     for rust_target_triplet in BinaryBuilder.map_rust_target.(supported_platforms())
         rm(joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
+    end
+
+    # Also generate "config" file for Cargo where we give it the linkers for all our targets
+    open(joinpath(dir, "config"), "w") do io
+        write(io, """
+        # Configuration file for `cargo`
+        """)
+        for platform in supported_platforms()
+            write(io, """
+            [target.$(BinaryBuilder.map_rust_target(platform))]
+            linker = "$(triplet(platform))-gcc"
+            """)
+        end
     end
 end
 
