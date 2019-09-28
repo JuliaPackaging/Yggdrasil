@@ -20,13 +20,16 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
 # Patch in adapter for `clock_gettime()` on macOS 10.12-
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
 
+# Patch to fix pointer mismatch between `size_t` and `uint64_t`
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_size_uint64.patch"
+
 # Configure, ignoring some warnings that we don't need, etc...
 ./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include -Wno-unused-result" --disable-cocoa --prefix=$prefix
 
-#echo '#!/bin/true ' > /usr/bin/SetFile
-#echo '#!/bin/true ' > /usr/bin/Rez
-#chmod +x /usr/bin/Rez
-#chmod +x /usr/bin/SetFile
+echo '#!/bin/true ' > /usr/bin/Rez
+echo '#!/bin/true ' > /usr/bin/SetFile
+chmod +x /usr/bin/Rez
+chmod +x /usr/bin/SetFile
 make -j${nproc}
 make install
 """
