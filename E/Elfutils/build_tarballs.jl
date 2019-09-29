@@ -14,8 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/elfutils-*/
-./configure --prefix=${prefix} --host=${target}
-make -j${nproc} CPPFLAGS="-I${prefix}/include" CFLAGS="-Wno-error=unused-result"
+CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target}
+make -j${nproc}
 make install
 """
 
