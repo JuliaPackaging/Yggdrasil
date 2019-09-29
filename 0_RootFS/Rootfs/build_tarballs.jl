@@ -52,12 +52,6 @@ if any(is_outdated.(libc_paths, download_libcs))
     success(`$download_libcs`)
 end
 
-#gcclib_paths = [joinpath(@__DIR__, "bundled", "libs", "gcclibs", "$(libc)-$(arch)") for libc in ("musl", "gnu") for arch in ("i686", "x86_64")]
-#download_gcclibs = joinpath(@__DIR__, "bundled", "libs", "gcclibs", "download_gcclibs.sh")
-#if any(is_outdated.(gcclib_paths, download_gcclibs))
-#    success(`$download_gcclibs`)
-#end
-
 # Copy in `sandbox` and `docker_entrypoint.sh` since we need those just to get up in the morning.
 # Also set up a DNS resolver, since that's important too.  Yes, this work is repeated below, but
 # we need a tiny world to set up our slightly larger world inside of.
@@ -186,12 +180,6 @@ cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-x86_64/* ${prefix}/lib64
 cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-i686/* ${prefix}/lib
 cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-x86_64/* ${prefix}/lib
 cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-i686/* ${prefix}/lib
-
-# Next, copy in compiler support libraries.  Because these are not named like the loaders, (and
-# even better, the do not have such strict location requirements) we place them in separate
-# directories, then use `LD_LIBRARY_PATH` to let programs find them at runtime.
-#mkdir -p ${prefix}/usr/lib
-#cp -vdR ${WORKSPACE}/srcdir/libs/gcclibs/* ${prefix}/usr/lib/
 
 # Build/install meson
 cd ${WORKSPACE}/srcdir/meson-*/

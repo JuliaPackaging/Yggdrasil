@@ -1,3 +1,0 @@
-# we're going to ignore these files, downloading them on-demand when we require them
-gnu-*
-musl-*
