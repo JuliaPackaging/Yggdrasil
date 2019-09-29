@@ -15,6 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libepoxy-*/
 mkdir build && cd build
+
+# build doesn't find libx11 properly; add certain cflags into meson invocation
+sed -i "s&c_args = \[\]&c_args = \['-I${prefix}/include'\]&g" "${MESON_TARGET_TOOLCHAIN}"
+
+# Next, build
 meson .. -Dtest=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
@@ -31,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libglvnd_jll"
+    "Libglvnd_jll",
     "X11_jll",
 ]
 
