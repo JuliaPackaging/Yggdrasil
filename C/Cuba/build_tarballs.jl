@@ -6,18 +6,13 @@ using BinaryBuilder
 name = "Cuba"
 version = v"4.2a"
 sources = [
-    "https://github.com/giordano/cuba/archive/11bfbf509088f168622b8268f49c0a59ee81758b.tar.gz" =>
-    "9cbb3a9c6ea541d7f3b0efcba6a865082e70536aded6a347bcec4873df3f3cc4",
-
+    "https://github.com/giordano/cuba/archive/7f3613d28881cf984830e04282a483e7fe64e91a.tar.gz" =>
+    "606fa27858bf93ce78af3c139d0c450555bff6244758faae6b542df3a04faf95",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cuba-*/
-if [[ "${target}" == *-freebsd* ]]; then
-    CC=/opt/${target}/bin/${target}-gcc
-    LD=/opt/${target}/bin/${target}-ld
-fi
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc} shared
 make install
@@ -28,8 +23,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libcuba", :libcuba)
+products = [
+    LibraryProduct("libcuba", :libcuba)
 ]
 
 # Dependencies that must be installed before this package can be built
