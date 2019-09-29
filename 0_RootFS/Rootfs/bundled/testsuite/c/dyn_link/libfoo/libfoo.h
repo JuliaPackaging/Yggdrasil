@@ -1,0 +1,1 @@
+double foo(double a);

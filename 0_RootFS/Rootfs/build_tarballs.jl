@@ -46,6 +46,17 @@ if is_outdated(sandbox_path, "$(sandbox_path).c")
         end
     end
 end
+libc_paths = [joinpath(@__DIR__, "bundled", "libs", "libc", "$(libc)-$(arch)") for libc in ("musl", "glibc") for arch in ("i686", "x86_64")]
+download_libcs = joinpath(@__DIR__, "bundled", "libs", "libc", "download_libcs.sh")
+if any(is_outdated.(libc_paths, download_libcs))
+    success(`$download_libcs`)
+end
+
+#gcclib_paths = [joinpath(@__DIR__, "bundled", "libs", "gcclibs", "$(libc)-$(arch)") for libc in ("musl", "gnu") for arch in ("i686", "x86_64")]
+#download_gcclibs = joinpath(@__DIR__, "bundled", "libs", "gcclibs", "download_gcclibs.sh")
+#if any(is_outdated.(gcclib_paths, download_gcclibs))
+#    success(`$download_gcclibs`)
+#end
 
 # Copy in `sandbox` and `docker_entrypoint.sh` since we need those just to get up in the morning.
 # Also set up a DNS resolver, since that's important too.  Yes, this work is repeated below, but
@@ -87,11 +98,6 @@ sources = [
     # As is patchelf
     "https://github.com/NixOS/patchelf.git" =>
     "e1e39f3639e39360ceebb2f7ed533cede4623070",
-    # We need glibc for x86_64 and i686
-	"https://github.com/staticfloat/GlibcBuilder/releases/download/v2.27-3/Glibc.v2.27.0.x86_64-linux-gnu.tar.gz" =>
-	"62a8f82962ce81c7de15554203953ee3fa68ef98e532d8f8f308a1bd23766984",
-	"https://github.com/staticfloat/GlibcBuilder/releases/download/v2.27-3/Glibc.v2.27.0.i686-linux-gnu.tar.gz" =>
-	"2bf2d65ed3576e0ab7ddb548b3db2ebdca6d5a7a4945032d054d8ebd37983ede",
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     "https://github.com/mesonbuild/meson/releases/download/0.51.2/meson-0.51.2.tar.gz" =>
     "23688f0fc90be623d98e80e1defeea92bbb7103bf9336a5f5b9865d36e892d76",
@@ -132,9 +138,9 @@ BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmak
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 
 # chgrp and chown should be no-ops since we run in a single-user mode
-rm -f ./bin/{chown,chgrp}
-touch ./bin/{chown,chgrp}
-chmod +x ./bin/{chown,chgrp}
+rm -f ./bin/chown ./bin/chgrp
+touch ./bin/chown ./bin/chgrp
+chmod +x ./bin/chown ./bin/chgrp
 
 # usr/libexec/git-core takes up a LOT of space because it uses hardlinks; convert to symlinks:
 echo "Replacing hardlink versions of git helper commands with symlinks..."
@@ -149,43 +155,43 @@ done
 # Install utilities we'll use.  Many of these are compatibility shims, look at
 # the files themselves to discover why we use them.
 mkdir -p ./usr/local/bin ./usr/local/share/configure_scripts
-cp $WORKSPACE/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
-cp $WORKSPACE/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
-cp $WORKSPACE/srcdir/utils/fake_uname.sh ./usr/bin/uname
+cp -vd ${WORKSPACE}/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
+cp -vd ${WORKSPACE}/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
+cp -vd ${WORKSPACE}/srcdir/utils/fake_uname.sh ./usr/bin/uname
 mv ./sbin/sysctl ./sbin/_sysctl
-cp $WORKSPACE/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
-cp $WORKSPACE/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
-cp $WORKSPACE/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
-cp $WORKSPACE/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
-cp $WORKSPACE/srcdir/utils/config.* ./usr/local/share/configure_scripts/
+cp -vd ${WORKSPACE}/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
+cp -vd ${WORKSPACE}/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
+cp -vd ${WORKSPACE}/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
+cp -vd ${WORKSPACE}/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
+cp -vd ${WORKSPACE}/srcdir/utils/config.* ./usr/local/share/configure_scripts/
 chmod +x ./usr/local/bin/*
 
 # Deploy configuration
-cp $WORKSPACE/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
+cp -vd ${WORKSPACE}/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
 
 # Clear out all previous profile stuff first
 rm -f ${prefix}/etc/profile.d/*
-cp $WORKSPACE/srcdir/conf/profile ${prefix}/etc/
-cp -d $WORKSPACE/srcdir/conf/profile.d/* ${prefix}/etc/profile.d/
+cp -vd ${WORKSPACE}/srcdir/conf/profile ${prefix}/etc/
+cp -vd ${WORKSPACE}/srcdir/conf/profile.d/* ${prefix}/etc/profile.d/
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
 gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
-cp $WORKSPACE/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
+cp -vd ${WORKSPACE}/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
-# Extract a recent libgcc_s and libstdc++.so.6 (currently the one you get from GCC 8.1.0) to /lib
-# as well so that we can run things that were built with GCC within this environment.
-mkdir -p ${prefix}/lib ${prefix}/lib64
-cp -vd $WORKSPACE/srcdir/libs/libstdc++.so* ${prefix}/lib64
-cp -vd $WORKSPACE/srcdir/libs/libgcc_s.so* ${prefix}/lib64
+# Move over libc loaders from our bundled directory.  These have very strict location requirements,
+# so they MUST exist in /lib and /lib64.  These were generated from the `Glibc` and `Musl` builders
+# in this Rootfs directory.  Note that `musl` always goes to `/lib`, not `/lib64`
+mkdir -p ${prefix}/lib64 ${prefix}/lib
+cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-x86_64/* ${prefix}/lib64
+cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-i686/* ${prefix}/lib
+cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-x86_64/* ${prefix}/lib
+cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-i686/* ${prefix}/lib
 
-# Install glibc (32 and 64-bit)
-cp -Rv ${WORKSPACE}/srcdir/x86_64-linux-gnu/sys-root/lib64/* ${prefix}/lib64/
-cp -Rv ${WORKSPACE}/srcdir/i686-linux-gnu/sys-root/lib/* ${prefix}/lib/
-ln -sv libc.so.6 ${prefix}/lib64/libc.so
-ln -sv libc.so.6 ${prefix}/lib/libc.so
-
-# Install loader for 32-bit musl
-cp -v ${WORKSPACE}/srcdir/libs/ld-musl-i386.so.1 ${prefix}/lib/
+# Next, copy in compiler support libraries.  Because these are not named like the loaders, (and
+# even better, the do not have such strict location requirements) we place them in separate
+# directories, then use `LD_LIBRARY_PATH` to let programs find them at runtime.
+#mkdir -p ${prefix}/usr/lib
+#cp -vdR ${WORKSPACE}/srcdir/libs/gcclibs/* ${prefix}/usr/lib/
 
 # Build/install meson
 cd ${WORKSPACE}/srcdir/meson-*/
@@ -206,6 +212,8 @@ make install
 # Create mount points for future bindmounts
 mkdir -p ${prefix}/overlay_workdir ${prefix}/meta
 
+# Sneak some test suites into the build environment, so we can do sanity checks easily
+cp -vdR ${WORKSPACE}/srcdir/testsuite ${prefix}/usr/share/
 
 ## Cleanup
 # We can never extract these files, because they are too fancy  :(

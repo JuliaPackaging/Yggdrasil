@@ -1,28 +1,16 @@
-commit ee14fe4c606fa577ae4375985b75ec0cb8e79fec
-Author: Keno Fischer <keno@alumni.harvard.edu>
-Date:   Fri Jun 22 18:03:46 2018 -0400
-
-    dl-load: Reject musl-linked libraries
-    
-    This prevents the glibc dynamic linker from considering shared
-    libraries linked against musl (similar to how it would reject
-    libraries for other architectures).
-    
-    See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/297
-
 diff --git a/elf/dl-load.c b/elf/dl-load.c
-index 7554a99..fe9e483 100644
+index 5abeb867..4d5f947f 100644
 --- a/elf/dl-load.c
 +++ b/elf/dl-load.c
-@@ -46,6 +46,7 @@
- #include <dl-machine-reject-phdr.h>
- #include <dl-sysdep-open.h>
+@@ -85,6 +85,7 @@ struct filebuf
+ 
+ #define STRING(x) __STRING (x)
  
 +#include <ldconfig.h>
  
- #include <endian.h>
- #if BYTE_ORDER == BIG_ENDIAN
-@@ -1382,6 +1383,60 @@ print_search_path (struct r_search_path_elem **list,
+ int __stack_prot attribute_hidden attribute_relro
+ #if _STACK_GROWS_DOWN && defined PROT_GROWSDOWN
+@@ -1437,6 +1438,60 @@ print_search_path (struct r_search_path_elem **list,
    else
      _dl_debug_printf_c ("\t\t(%s)\n", what);
  }
@@ -83,7 +71,7 @@ index 7554a99..fe9e483 100644
  
  /* Open a file and verify it is an ELF file for this architecture.  We
     ignore only ELF files for other architectures.  Non-ELF files and
-@@ -1427,6 +1482,8 @@ open_verify (const char *name, int fd,
+@@ -1482,6 +1537,8 @@ open_verify (const char *name, int fd,
    } expected_note = { 4, 16, 1, "GNU" };
    /* Initialize it to make the compiler happy.  */
    const char *errstring = NULL;
@@ -92,7 +80,7 @@ index 7554a99..fe9e483 100644
    int errval = 0;
  
  #ifdef SHARED
-@@ -1618,8 +1675,15 @@ open_verify (const char *name, int fd,
+@@ -1675,8 +1732,15 @@ open_verify (const char *name, int fd,
  			     loader, fd)))
  	goto close_and_out;
  
@@ -109,29 +97,29 @@ index 7554a99..fe9e483 100644
  	if (ph->p_type == PT_NOTE && ph->p_filesz >= 32 && ph->p_align >= 4)
  	  {
  	    ElfW(Addr) size = ph->p_filesz;
-@@ -1678,6 +1742,20 @@ open_verify (const char *name, int fd,
- 
+@@ -1751,6 +1815,20 @@ open_verify (const char *name, int fd,
  	    break;
  	  }
-+       }
-+       /* Check the dynamic section */
-+       if (dynamic_addr != 0) {
-+         int err = validate_lib(fd, dynamic_addr, dynamic_size);
-+         if (err == -2) {
-+            errstring = N_("failed to read file");
-+            goto call_lose;
-+         }
-+         else if (err != 0) {
-+           __close (fd);
-+           __set_errno (ENOENT);
-+           fd = -1;
-+         }
-+       }
+       free (abi_note_malloced);
++
++      /* Check the dynamic section */
++      if (dynamic_addr != 0) {
++        int err = validate_lib(fd, dynamic_addr, dynamic_size);
++        if (err == -2) {
++          errstring = N_("failed to read file");
++          goto call_lose;
++        }
++        else if (err != 0) {
++          __close (fd);
++          __set_errno (ENOENT);
++          fd = -1;
++        }
++      }
      }
  
    return fd;
 diff --git a/elf/ldconfig.c b/elf/ldconfig.c
-index fbdd814..53a1f87 100644
+index 3bc9e618..55c949c7 100644
 --- a/elf/ldconfig.c
 +++ b/elf/ldconfig.c
 @@ -875,6 +875,16 @@ search_dir (const struct dir_entry *entry)
@@ -152,7 +140,7 @@ index fbdd814..53a1f87 100644
  	soname = implicit_soname (direntry->d_name, flag);
  
 diff --git a/sysdeps/generic/ldconfig.h b/sysdeps/generic/ldconfig.h
-index 59e20dc..13c4215 100644
+index 2e9ca92c..bd0f32bc 100644
 --- a/sysdeps/generic/ldconfig.h
 +++ b/sysdeps/generic/ldconfig.h
 @@ -27,6 +27,7 @@
@@ -164,7 +152,7 @@ index 59e20dc..13c4215 100644
  #define FLAG_SPARC_LIB64		0x0100
  #define FLAG_IA64_LIB64			0x0200
 diff --git a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
-index c7e9ad6..abd724e 100644
+index 111180a6..3a084f45 100644
 --- a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 +++ b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 @@ -23,4 +23,5 @@
