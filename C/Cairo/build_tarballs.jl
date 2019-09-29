@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.14.12"
+version = v"1.16.0"
 
 sources = [
     "https://www.cairographics.org/releases/cairo-$(version).tar.xz" =>
-    "8c90f00c500b2299c0a323dd9beead2a00353752b2092ead558139bd67f7bf16",
+    "5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331",
 ]
 
 # Bash recipe for building across all platforms
