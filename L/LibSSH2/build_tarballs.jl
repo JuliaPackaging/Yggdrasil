@@ -37,13 +37,13 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = prefix -> [
-    LibraryProduct(prefix, "libssh2", :libssh2),
+products = [
+    LibraryProduct("libssh2", :libssh2),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
+    "MbedTLS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
