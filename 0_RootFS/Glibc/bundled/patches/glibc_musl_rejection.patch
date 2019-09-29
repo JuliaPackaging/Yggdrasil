@@ -152,6 +152,39 @@ index a61ce5c..6aae9a2 100644
  #define FLAG_REQUIRED_MASK		0xff00
  #define FLAG_SPARC_LIB64		0x0100
  #define FLAG_IA64_LIB64			0x0200
+diff --git a/sysdeps/unix/sysv/linux/aarch64/ldconfig.h b/sysdeps/unix/sysv/linux/aarch64/ldconfig.h
+index e1c334c..db85947 100644
+--- a/sysdeps/unix/sysv/linux/aarch64/ldconfig.h
++++ b/sysdeps/unix/sysv/linux/aarch64/ldconfig.h
+@@ -27,4 +27,5 @@
+   { "/lib/ld-linux-armhf.so.3", FLAG_ELF_LIBC6 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.6", FLAG_ELF_LIBC6 },	\
+-  { "libm.so.6", FLAG_ELF_LIBC6 },
++  { "libm.so.6", FLAG_ELF_LIBC6 },  \
++  { "libc.musl-aarch64.so.1", FLAG_ELF_MUSL },
+diff --git a/sysdeps/unix/sysv/linux/arm/ldconfig.h b/sysdeps/unix/sysv/linux/arm/ldconfig.h
+index a9a467c..cb27b1b 100644
+--- a/sysdeps/unix/sysv/linux/arm/ldconfig.h
++++ b/sysdeps/unix/sysv/linux/arm/ldconfig.h
+@@ -22,4 +22,5 @@
+   { "/lib/ld-linux-armhf.so.3", FLAG_ELF_LIBC6 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.6", FLAG_ELF_LIBC6 },	\
+-  { "libm.so.6", FLAG_ELF_LIBC6 },
++  { "libm.so.6", FLAG_ELF_LIBC6 },  \
++  { "libc.musl-armhf.so.1", FLAG_ELF_MUSL }
+diff --git a/sysdeps/unix/sysv/linux/i386/ldconfig.h b/sysdeps/unix/sysv/linux/i386/ldconfig.h
+index 7112cb2..07fe905 100644
+--- a/sysdeps/unix/sysv/linux/i386/ldconfig.h
++++ b/sysdeps/unix/sysv/linux/i386/ldconfig.h
+@@ -21,4 +21,5 @@
+   { "/lib/ld-linux.so.1", FLAG_ELF_LIBC5 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.5", FLAG_ELF_LIBC5 },	\
+-  { "libm.so.5", FLAG_ELF_LIBC5 },
++  { "libm.so.5", FLAG_ELF_LIBC5 },  \
++  { "libc.musl-i386.so.1", FLAG_ELF_MUSL }
 diff --git a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
 index 3a7a75b..e04826a 100644
 --- a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
