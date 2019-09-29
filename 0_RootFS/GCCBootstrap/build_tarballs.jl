@@ -255,6 +255,18 @@ if [[ "${COMPILER_TARGET}" == *-musl* ]]; then
     export libat_cv_have_ifunc=no
     export ac_cv_have_decl__builtin_ffs=yes
 
+    musl_arch()
+    {
+        case "${COMPILER_TARGET}" in
+            i686*)
+                echo i386 ;;
+            arm*)
+                echo armhf ;;
+            *)
+                echo ${COMPILER_TARGET%%-*} ;;
+        esac
+    }
+
 elif [[ "${COMPILER_TARGET}" == *-mingw* ]]; then
     # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
     export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
@@ -457,7 +469,7 @@ elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
     # Configure musl
     mkdir -p ${WORKSPACE}/srcdir/musl_build
     cd ${WORKSPACE}/srcdir/musl_build
-    LDFLAGS="-Wl,-soname,libc.musl-${target%%-*}.so.1" ${WORKSPACE}/srcdir/musl-*/configure \
+    LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
         --prefix=/usr \
         --host=${COMPILER_TARGET} \
         --with-headers="${sysroot}/usr/include" \
@@ -544,7 +556,7 @@ elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
     cd ${WORKSPACE}/srcdir/musl_build
     rm -rf *
 
-    LDFLAGS="-Wl,-soname,libc.musl-${target%%-*}.so.1" ${WORKSPACE}/srcdir/musl-*/configure \
+    LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
         --prefix=/usr \
         --host=${COMPILER_TARGET} \
         --with-headers="${sysroot}/usr/include" \
@@ -560,7 +572,7 @@ elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
     make install DESTDIR=${sysroot}
 
     # Fix broken symlink
-    ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-x86_64.so.1
+    ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
 
 elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then    
     cd $WORKSPACE/srcdir/mingw_crt_build

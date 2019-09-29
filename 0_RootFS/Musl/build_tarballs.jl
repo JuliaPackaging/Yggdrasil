@@ -13,8 +13,19 @@ sources = [
 script = raw"""
 mkdir ${WORKSPACE}/srcdir/musl_build
 cd ${WORKSPACE}/srcdir/musl_build
+musl_arch()                                                                                                                                                                                             
+{
+    case "${target}" in
+        i686*)
+            echo i386 ;;
+        arm*)
+            echo armhf ;;
+        *)
+            echo ${target%%-*} ;;
+    esac
+}
 
-export LDFLAGS="${LDFLAGS} -Wl,-soname,libc.musl-${target%%-*}.so.1"
+export LDFLAGS="${LDFLAGS} -Wl,-soname,libc.musl-$(musl_target).so.1"
 ${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
     --host=${target} \
     --disable-multilib \
