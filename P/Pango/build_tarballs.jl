@@ -16,6 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
 
 ./configure --prefix=$prefix --host=$target \
+    --enable-freetype2 \
     --disable-introspection \
     --disable-gtk-doc-html
 # The generated Makefile tries to build some examples in the "tests" directory,
@@ -31,8 +32,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpango", :libpango),
-    LibraryProduct("libpangocairo", :libpangocairo),
+    LibraryProduct(["libpango", "libpango-1", "libpango-1.0"], :libpango),
+    LibraryProduct(["libpangocairo", "libpangocairo-1", "libpangocairo-1.0"], :libpangocairo),
 ]
 
 # Dependencies that must be installed before this package can be built
