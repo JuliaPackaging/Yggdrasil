@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "p7zip"
 version = v"16.02"
 
-# Collection of sources required to build Pcre
+# Collection of sources required to build p7zip
 sources = [
     "https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2" =>
     "5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f",
