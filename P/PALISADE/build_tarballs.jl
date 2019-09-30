@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-# Collection of sources required to build Nettle
+# Collection of sources required to build PALISADE
 name = "PALISADE"
 version = v"1.4.1"
 sources = [
