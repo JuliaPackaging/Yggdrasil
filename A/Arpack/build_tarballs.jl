@@ -6,7 +6,6 @@ version = v"3.7.0"
 sources = [
     "https://github.com/opencollab/arpack-ng/archive/v$(version).tar.gz" =>
     "972e3fc3cd0b9d6b5a737c9bf6fd07515c0d6549319d4ffb06970e64fa3cc2d6",
-    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -91,7 +90,7 @@ products(prefix) = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenBLAS-v0.3.5-0/build_OpenBLAS.v0.3.5.jl"
+    "OpenBLAS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
