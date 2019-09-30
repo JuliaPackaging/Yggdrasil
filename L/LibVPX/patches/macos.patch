@@ -1,0 +1,26 @@
+diff --git a/libs.mk b/libs.mk
+index d0c4d64..28633ce 100644
+--- a/libs.mk
++++ b/libs.mk
+
+@@ -145,7 +145,6 @@
+ endif
+ CODEC_EXPORTS-yes += vpx/exports_com
+ CODEC_EXPORTS-$(CONFIG_ENCODERS) += vpx/exports_enc
+-CODEC_EXPORTS-$(CONFIG_VP9_ENCODER) += vpx/exports_spatial_svc
+ CODEC_EXPORTS-$(CONFIG_DECODERS) += vpx/exports_dec
+
+ INSTALL-LIBS-yes += include/vpx/vpx_codec.h
+
+diff --git a/vpx/exports_spatial_svc b/vpx/exports_spatial_svc
+deleted file mode 100644
+index 9d60cb6..0000000
+--- a/vpx/exports_spatial_svc
++++ /dev/null
+
+@@ -1,5 +0,0 @@
+-text vpx_svc_dump_statistics
+-text vpx_svc_encode
+-text vpx_svc_init
+-text vpx_svc_release
+-text vpx_svc_set_options
