@@ -90,7 +90,7 @@ products(prefix) = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenBLAS-v0.3.5-0/build_OpenBLAS.v0.3.5.jl"
+    "OpenBLAS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
