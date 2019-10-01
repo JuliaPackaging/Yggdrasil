@@ -16,7 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
 
 ./configure --prefix=$prefix --host=$target \
-    --enable-freetype2 \
     --disable-introspection \
     --disable-gtk-doc-html
 # The generated Makefile tries to build some examples in the "tests" directory,
