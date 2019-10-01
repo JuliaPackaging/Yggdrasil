@@ -28,7 +28,9 @@ make install
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
-products = Product[
+products = [
+    LibraryProduct("libX11", :libX11),
+    LibraryProduct("libX11-xcb", :libX11_xcb),
 ]
 
 # Dependencies that must be installed before this package can be built

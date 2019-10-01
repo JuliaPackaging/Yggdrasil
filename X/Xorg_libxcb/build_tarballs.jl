@@ -26,11 +26,40 @@ make install
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
-products = Product[
+products = [
+    LibraryProduct("libxcb-composite", :libxcb_composite),
+    LibraryProduct("libxcb-damage", :libxcb_damage),
+    LibraryProduct("libxcb-dpms", :libxcb_dpms),
+    LibraryProduct("libxcb-dri2", :libxcb_dri2),
+    LibraryProduct("libxcb-dri3", :libxcb_dri3),
+    LibraryProduct("libxcb-glx", :libxcb_glx),
+    LibraryProduct("libxcb-present", :libxcb_present),
+    LibraryProduct("libxcb-randr", :libxcb_randr),
+    LibraryProduct("libxcb-record", :libxcb_record),
+    LibraryProduct("libxcb-render", :libxcb_render),
+    LibraryProduct("libxcb-res", :libxcb_res),
+    LibraryProduct("libxcb-screensaver", :libxcb_screensaver),
+    LibraryProduct("libxcb-shape", :libxcb_shape),
+    LibraryProduct("libxcb-shm", :libxcb_shm),
+    LibraryProduct("libxcb", :libxcb),
+    LibraryProduct("libxcb-sync", :libxcb_sync),
+    LibraryProduct("libxcb-xf86dri", :libxcb_xf86dri),
+    LibraryProduct("libxcb-xfixes", :libxcb_xfixes),
+    LibraryProduct("libxcb-xinerama", :libxcb_xinerama),
+    LibraryProduct("libxcb-xinput", :libxcb_xinput),
+    LibraryProduct("libxcb-xkb", :libxcb_xkb),
+    LibraryProduct("libxcb-xtest", :libxcb_xtest),
+    LibraryProduct("libxcb-xvmc", :libxcb_xvmc),
+    LibraryProduct("libxcb-xv", :libxcb_xv),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "Xorg_libXau_jll",
+    "Xorg_libXdmcp_jll",
+    "Xorg_xcb_proto_jll",
+    "Libxslt_jll",
+    "Xorg_util_macros_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
