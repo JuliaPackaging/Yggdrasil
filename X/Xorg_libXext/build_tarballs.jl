@@ -26,11 +26,15 @@ make install
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
-products = Product[
+products = [
+    LibraryProduct("libXext", :libXext),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "Xorg_libX11_jll",
+    "Xorg_xextproto",
+    "Xorg_util_macros_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
