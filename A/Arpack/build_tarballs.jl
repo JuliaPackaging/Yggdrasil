@@ -4,7 +4,7 @@ using BinaryBuilder
 name = "Arpack"
 version = v"3.7.0"
 sources = [
-    "https://github.com/opencollab/arpack-ng/archive/v$(version).tar.gz" =>
+    "https://github.com/opencollab/arpack-ng/archive/$(version).tar.gz" =>
     "972e3fc3cd0b9d6b5a737c9bf6fd07515c0d6549319d4ffb06970e64fa3cc2d6",
 ]
 
@@ -14,7 +14,7 @@ mkdir ${WORKSPACE}/srcdir/arpack-build
 
 # arpack tests require finding libgfortran when linking with C linkers,
 # and gcc doesn't automatically add that search path.  So we do it for it.
-EXE_LINK_FLAGS=("${LDFLAGS}")
+EXE_LINK_FLAGS=()
 if [[ ${target} != *darwin* ]]; then
     EXE_LINK_FLAGS+=("-Wl,-rpath-link,/opt/${target}/${target}/lib")
     EXE_LINK_FLAGS+=("-Wl,-rpath-link,/opt/${target}/${target}/lib64")
@@ -64,28 +64,27 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 fi
 
 cd ${WORKSPACE}/srcdir/arpack-build
-cmake ../arpack-ng -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_TOOLCHAIN_FILE="/opt/$target/$target.toolchain" -DBUILD_SHARED_LIBS=ON -DBLAS_LIBRARIES="-L$prefix/lib -l${LIBOPENBLAS}" -DLAPACK_LIBRARIES="-L$prefix/lib -l${LIBOPENBLAS}" -DCMAKE_Fortran_FLAGS="${FFLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINK_FLAGS}"
+export LDFLAGS="${EXE_LINK_FLAGS[@]} -L$prefix/lib -lpthread"
+cmake ../arpack-ng-* -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBLAS_LIBRARIES="-l${LIBOPENBLAS}" \
+    -DLAPACK_LIBRARIES="-l${LIBOPENBLAS}" \
+    -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
-
-# For now, we'll have to adjust the name of the OpenBLAS library on macOS.
-# Eventually, this should be fixed upstream
-if [[ ${target} == "x86_64-apple-darwin14" ]]; then
-    echo "-- Modifying library name for OpenBLAS"
-    install_name_tool -change libopenblas64_.0.3.0.dev.dylib libopenblas64_.dylib ${prefix}/lib/libarpack.2.0.0.dylib
-fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We enable the full
 # combinatorial explosion of GCC versions because this package most
 # definitely links against libgfortran.
-platforms = expand_gcc_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libarpack", :libarpack)
+products = [
+    LibraryProduct("libarpack", :libarpack),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -94,5 +93,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
 
