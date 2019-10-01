@@ -15,14 +15,17 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/graphite2-*/
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+         -DBUILD_SHARED_LIBS=ON \
+         -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Windows)]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -33,5 +36,6 @@ products = [
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# We require gcc 5+ so that mingw defines __MINGW_INTSAFE_WORKS, which allows `intsafe.h` to actually
+# have an effect.  Otherwise, we get a bevvy of errors around `SizeTMult` not being defined.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
