@@ -18,18 +18,24 @@ cd $WORKSPACE/srcdir/ncurses-*/
 # We need to run the native "tic" program
 apk add ncurses
 
-./configure --prefix=${prefix} --host=${target} \
+CONFIG_FLAGS=""
+if [[ ${target} == x86_64-apple-darwin14 ]]; then
+    CONFIG_FLAGS="${CONFIG_FLAGS} --disable-stripping"
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-shared \
     --with-normal \
     --without-debug \
     --without-ada \
     --without-cxx-binding \
     --enable-widec \
-    --enable-pc-files
+    --enable-pc-files \
+    ${CONFIG_FLAGS}
 make -j${nproc}
 make install
 
-# Install pc files and fool packages lookinf for non-wide-character ncurses
+# Install pc files and fool packages looking for non-wide-character ncurses
 for lib in ncurses form panel menu; do
     install -Dm644 "misc/${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}w.pc"
     ln -s "${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}.pc"
@@ -39,7 +45,7 @@ done
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Union{MacOS,Windows})]
+platforms = [p for p in supported_platforms() if !(p isa Windows)]
 
 # The products that we will ensure are always built
 products = Product[
