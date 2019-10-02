@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg.BinaryPlatforms
 
 name = "LibVPX"
 version = v"1.8.0"
@@ -14,58 +14,58 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libvpx-*/
+cd ${WORKSPACE}/srcdir/libvpx-*/
 sed -i 's/cp -p/cp/' build/make/Makefile
 patch -p1 < $WORKSPACE/srcdir/macos.patch
-mkdir libvpx-build
-cd libvpx-build
+
+mkdir vpx_build && cd vpx_build
 apk add diffutils yasm
 
-export CONFIG_OPTS="--enable-shared --disable-static"
-export TARGET=generic-gnu
 if [[ "${target}" == i686-linux-* ]]; then
-    export CROSS=x86-linux-gcc
+    export TARGET=x86-linux-gcc
 elif [[ "${target}" == x86_64-linux-* ]]; then
-    export CROSS=x86_64-linux-gcc
+    export TARGET=x86_64-linux-gcc
 elif [[ "${target}" == arm-linux-* ]]; then
-    export CROSS=armv7-linux-gcc
-elif [[ "${target}" == powerpc64le-linux-* ]]; then
-    export CROSS=ppc64le-linux-gcc
-elif [[ "${target}" == x86_64-apple-* ]]; then
-    export CROSS=x86_64-darwin14-gcc
-    export TARGET=$CROSS
-elif [[ "${target}" == i686-w64-mingw32 ]]; then
-    export CROSS=x86-win32-gcc
-    export CONFIG_OPTS=""
-    export TARGET=$CROSS
-elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
-    export CROSS=x86_64-win64-gcc
-    export CONFIG_OPTS=""
-    export TARGET=$CROSS
-elif [[ "${target}" == *freebsd* ]]; then
-    export CROSS=x86_64-unknown-gcc
-    export CONFIG_OPTS="--enable-shared --disable-static --disable-multithread"
-    export TARGET=generic-gnu
+    export TARGET=armv7-linux-gcc
 elif [[ "${target}" == aarch64-linux-* ]]; then
-    export CROSS=aarch64-linux-gcc
-else
-    export CROSS=$target
+    export TARGET=arm64-linux-gcc
+elif [[ "${target}" == powerpc64le-linux-* ]]; then
+    export TARGET=ppc64le-linux-gcc
+elif [[ "${target}" == x86_64-apple-* ]]; then
+    export TARGET=x86_64-darwin14-gcc
+elif [[ "${target}" == i686-w64-mingw32 ]]; then
+    export TARGET=x86-win32-gcc
+elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    export TARGET=x86_64-win64-gcc
+    export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
+elif [[ "${target}" == *freebsd* ]]; then
+    export TARGET=generic-gnu
+    export CONFIG_OPTS="--disable-multithread"
 fi
 
-../configure --prefix=$prefix --target=${TARGET} --as=yasm ${CONFIG_OPTS}
+../configure --prefix=$prefix --target=${TARGET} \
+    --as=yasm \
+    --enable-postproc \
+    --enable-pic \
+    --enable-vp8 \
+    --enable-vp9 \
+    --enable-vp9-highbitdepth \
+    --enable-runtime-cpu-detect \
+    ${CONFIG_OPTS}
 echo "SRC_PATH_BARE=.." >> config.mk
 echo "target=libs" >> config.mk
 make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# Disable ppc64le for now due to altivec problems
+platforms = filter(p -> arch(p) != :powerpc64le, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libvpx", :libvpx)
+    # While we want this, it's not available on windows.  :/
+    #LibraryProduct("libvpx", :libvpx),
+    FileProduct("\${libdir}/libvpx.a", :libvpx),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -73,4 +73,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
