@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "x265Builder"
+name = "x265"
 version = v"3.0"
 
 # Collection of sources required to build x265Builder
@@ -13,12 +13,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd x265_3.0/
+cd $WORKSPACE/srcdir/x265*/
+
+# We need `nasm` for x86_64
 apk add nasm
-export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
+
 mkdir bld && cd bld
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DENABLE_PIC=ON -DENABLE_SHARED=off ../source
+cmake -DCMAKE_INSTALL_PREFIX="${prefix}" -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DENABLE_PIC=ON -DENABLE_SHARED=ON ../source
 make -j${nproc}
 make install
 """
@@ -29,7 +30,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct(prefix, "x265", :x265),
+    ExecutableProduct("x265", :x265),
     LibraryProduct("libx265", :libx265)
 ]
 
