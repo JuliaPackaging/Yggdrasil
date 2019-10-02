@@ -35,6 +35,9 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
 autoreconf
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs --with-add-fonts="${FONTS_DIR}"
 
+# Disable tests
+sed -i 's,all-am: Makefile $(PROGRAMS),all-am:,' test/Makefile
+
 make -j${nproc}
 make install
 """
