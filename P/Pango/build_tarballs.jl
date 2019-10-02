@@ -15,9 +15,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
 
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
+
+# Be able to find libffi on ppc64le
+if [[ ${target} == powerpc64le* ]]; then
+    export LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${prefix}/lib64"
+fi
+
 ./configure --prefix=$prefix --host=$target \
     --disable-introspection \
     --disable-gtk-doc-html
+
 # The generated Makefile tries to build some examples in the "tests" directory,
 # but this would fail for some unknown reasons.  Let's skip it.
 sed -i 's/^\(SUBDIRS = .*\) tests/\1/' Makefile
@@ -33,6 +42,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct(["libpango", "libpango-1", "libpango-1.0"], :libpango),
     LibraryProduct(["libpangocairo", "libpangocairo-1", "libpangocairo-1.0"], :libpangocairo),
+    LibraryProduct(["libpangoft2", "libpangoft2-1", "libpangoft2-1.0"], :libpangoft),
 ]
 
 # Dependencies that must be installed before this package can be built
