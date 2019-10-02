@@ -27,9 +27,13 @@ elif [[ "${target}" == *-apple-* ]]; then
     FONTS_DIR="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5"
 fi
 
-atomic_patch -p1 ../patches/configure_freetype2_version.patch
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure_freetype2_version.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
 autoreconf
-./configure --prefix=$prefix --host=$target --disable-docs --with-add-fonts="${FONTS_DIR}"
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs --with-add-fonts="${FONTS_DIR}"
 
 make -j${nproc}
 make install
@@ -37,7 +41,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Windows)]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
