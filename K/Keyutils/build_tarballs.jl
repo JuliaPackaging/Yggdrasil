@@ -24,6 +24,9 @@ make install \
     INCLUDEDIR="include" \
     MANDIR="share/man" \
     SHAREDIR="share/keyutils"
+
+# Fix broken symlink
+ln -sf libkeyutils.so.1 ${prefix}/lib/libkeyutils.so
 """
 
 # These are the platforms we will build for by default, unless further
