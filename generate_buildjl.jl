@@ -150,7 +150,8 @@ end)
 
 product_hashes = product_hashes_from_github_release(repo_name, tag_name)
 
-buildjl_path = joinpath("build", "build_$(name).v$(version).jl")
+mkpath(joinpath(@__DIR__, "build"))
+buildjl_path = joinpath(@__DIR__, "build", "build_$(name).v$(version).jl")
 bin_path = "https://github.com/$(repo_name)/releases/download/$(tag_name)"
 @info("Writing out to $(buildjl_path)")
 open(buildjl_path, "w") do io
