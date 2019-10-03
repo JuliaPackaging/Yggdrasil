@@ -7,7 +7,7 @@ version = v"1.6.37"
 
 # Collection of sources required to build libpng
 sources = [
-    "https://vorboss.dl.sourceforge.net/project/libpng/libpng16/$(version)/libpng-$(version).tar.gz" =>
+    "https://downloads.sourceforge.net/libpng/libpng-$(version).tar.gz" =>
     "daeb2620d829575513e35fecc83f0d3791a620b9b93d800b763542ece9390fb4",
 ]
 
