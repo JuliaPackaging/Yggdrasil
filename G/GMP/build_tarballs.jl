@@ -32,7 +32,12 @@ if [[ ${proc_family} == intel ]]; then
     flags+=(--enable-fat)
 fi
 
-./configure --prefix=$prefix --host=$target ${flags[@]}
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
+
+# Something is broken in the libtool that gets generated on macOS; I can't
+# figure out why, but `hardcode_action` is set to blank for CXX files.  /shrug
+sed -i -e 's&hardcode_action=$&hardcode_action=immediate&g' libtool
+
 make -j${nproc}
 make install
 
@@ -56,4 +61,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
