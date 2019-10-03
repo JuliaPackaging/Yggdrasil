@@ -3,9 +3,9 @@ using BinaryBuilder
 name = "CompilerSupportLibraries"
 version = v"0.2.0"
 
-# Collection of sources required to build Ogg
+# We don't actually have any sources, so just fake it out
 sources = [
-    "./bundled",
+    ".",
 ]
 
 # Bash recipe for building across all platforms
@@ -56,6 +56,7 @@ products = [
     LibraryProduct(["libgcc_s", "libgcc_s_sjlj", "libgcc_s_seh"], :libgcc_s),
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgfortran", :libgfortran),
+    LibraryProduct("libgomp", :libgomp),
 ]
 
 # Dependencies that must be installed before this package can be built
