@@ -27,7 +27,6 @@ elif [[ "${target}" == *-apple-* ]]; then
     FONTS_DIR="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5"
 fi
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure_freetype2_version.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
