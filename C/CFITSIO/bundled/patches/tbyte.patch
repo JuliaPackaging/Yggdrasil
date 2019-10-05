@@ -1,0 +1,1754 @@
+--- a/cfileio.c
++++ b/cfileio.c
+@@ -2654,7 +2654,7 @@ int fits_copy_cell2image(
+     }
+ 
+     /* determine BITPIX value for the image */
+-    if (typecode == TBYTE)
++    if (typecode == _TBYTE)
+     {
+         bitpix = BYTE_IMG;
+         nbytes = repeat;
+@@ -2881,7 +2881,7 @@ int fits_copy_image2cell(
+ 
+     /* Determine the TFORM value for the table cell */
+     if (bitpix == BYTE_IMG) {
+-      typecode = TBYTE;
++      typecode = _TBYTE;
+       tformchar = 'B';
+       nbytes = repeat;
+     } else if (bitpix == SHORT_IMG) {
+@@ -2970,7 +2970,7 @@ int fits_copy_image2cell(
+  
+     /* Force the writing of the row of the table by writing the last byte of
+         the array, which grows the table, and/or shifts following extensions */
+-    ffpcl(newptr, TBYTE, colnum, rownum, repeat, 1, &dummy, status);
++    ffpcl(newptr, _TBYTE, colnum, rownum, repeat, 1, &dummy, status);
+ 
+     /* byte offset within the row to the start of the image column */
+     colptr  = (newptr->Fptr)->tableptr;   /* point to first column */
+--- a/editcol.c
++++ b/editcol.c
+@@ -1452,7 +1452,7 @@ int ffmvec(fitsfile *fptr,  /* I - FITS file pointer                        */
+     /* construct the new TFORM keyword for the column */
+     if (datacode == TBIT)
+       strcpy(tcode,"X");
+-    else if (datacode == TBYTE)
++    else if (datacode == _TBYTE)
+       strcpy(tcode,"B");
+     else if (datacode == TLOGICAL)
+       strcpy(tcode,"L");
+--- a/eval_f.c
++++ b/eval_f.c
+@@ -634,7 +634,7 @@ int ffcalc_rng( fitsfile *infptr,   /* I - Input FITS file                  */
+             if( gParse.hdutype==BINARY_TBL ) {
+ 	       LONGLONG nullVal=0;
+                fits_binary_tform( parInfo, &typecode, &repeat, &width, status );
+-               if( typecode==TBYTE )
++               if( typecode==_TBYTE )
+                   nullVal = UCHAR_MAX;
+                else if( typecode==TSHORT )
+                   nullVal = SHRT_MIN;
+@@ -1076,9 +1076,9 @@ int parse_data( long    totalrows,     /* I - Total rows to be processed     */
+        /* Determine the size of each element of the returned result */
+ 
+        switch( userInfo->datatype ) {
+-       case TBIT:       /*  Fall through to TBYTE  */
+-       case TLOGICAL:   /*  Fall through to TBYTE  */
+-       case TBYTE:     datasize = sizeof(char);     break;
++       case TBIT:       /*  Fall through to _TBYTE  */
++       case TLOGICAL:   /*  Fall through to _TBYTE  */
++       case _TBYTE:     datasize = sizeof(char);     break;
+        case TSHORT:    datasize = sizeof(short);    break;
+        case TINT:      datasize = sizeof(int);      break;
+        case TLONG:     datasize = sizeof(long);     break;
+@@ -1115,7 +1115,7 @@ int parse_data( long    totalrows,     /* I - Total rows to be processed     */
+ 
+        switch( userInfo->datatype ) {
+        case TLOGICAL: *(char  *)Null = 'U';             break;
+-       case TBYTE:    *(char  *)Null = (char )jnull;    break;
++       case _TBYTE:    *(char  *)Null = (char )jnull;    break;
+        case TSHORT:   *(short *)Null = (short)jnull;    break;
+        case TINT:     *(int   *)Null = (int  )jnull;    break;
+        case TLONG:    *(long  *)Null = (long )jnull;    break;
+@@ -1218,7 +1218,7 @@ int parse_data( long    totalrows,     /* I - Total rows to be processed     */
+ 
+        case BITSTR:
+           switch( userInfo->datatype ) {
+-          case TBYTE:
++          case _TBYTE:
+              idx = -1;
+              for( kk=0; kk<ntodo; kk++ ) {
+                 for( jj=0; jj<result->value.nelem; jj++ ) {
+@@ -1303,7 +1303,7 @@ int parse_data( long    totalrows,     /* I - Total rows to be processed     */
+ 
+        /*  Increment Data to point to where the next block should go  */
+ 
+-       if( result->type==BITSTR && userInfo->datatype==TBYTE )
++       if( result->type==BITSTR && userInfo->datatype==_TBYTE )
+           Data = (char*)Data
+                     + datasize * ( (result->value.nelem+7)/8 ) * ntodo;
+        else if( result->type==STRING )
+@@ -1516,7 +1516,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TLOGICAL:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             if( ((unsigned char*)input)[i] )
+                 ((unsigned char*)output)[i] = 1;
+@@ -1563,10 +1563,10 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+       }
+       break;
+ 
+-   case TBYTE:
++   case _TBYTE:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((unsigned char*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1614,7 +1614,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TSHORT:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((short*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1662,7 +1662,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TINT:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((int*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1697,7 +1697,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TLONG:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((long*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1732,7 +1732,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TLONGLONG:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((LONGLONG*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1768,7 +1768,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TFLOAT:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((float*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -1803,7 +1803,7 @@ int ffcvtn( int   inputType,  /* I - Data type of input array               */
+    case TDOUBLE:
+       switch( inputType ) {
+       case TLOGICAL:
+-      case TBYTE:
++      case _TBYTE:
+          for( i=0; i<ntodo; i++ )
+             ((double*)output)[i] = ((unsigned char*)input)[i];
+          break;
+@@ -2332,10 +2332,10 @@ if (gParse.hdutype != IMAGE_HDU) {
+    switch( typecode ) {
+    case TBIT:
+       varInfo->type     = BITSTR;
+-      colIter->datatype = TBYTE;
++      colIter->datatype = _TBYTE;
+       type = BITCOL;
+       break;
+-   case TBYTE:
++   case _TBYTE:
+    case TSHORT:
+    case TLONG:
+       /* The datatype of column with TZERO and TSCALE keywords might be 
+@@ -2535,7 +2535,7 @@ static int load_column( int varNum, long fRow, long nRows,
+    nelem = nRows * var->repeat;
+ 
+    switch( var->datatype ) {
+-   case TBYTE:
++   case _TBYTE:
+       nbytes = ((var->repeat+7)/8) * nRows;
+       bytes = (unsigned char *)malloc( nbytes * sizeof(char) );
+ 
+@@ -2723,7 +2723,7 @@ int fits_pixel_filter (PixelFilter * filter, int * status)
+    }
+ 
+    switch (bitpix) {
+-      case BYTE_IMG: datatype = TLONG; Info.datatype = TBYTE; break;
++      case BYTE_IMG: datatype = TLONG; Info.datatype = _TBYTE; break;
+       case SHORT_IMG: datatype = TLONG; Info.datatype = TSHORT; break;
+       case LONG_IMG: datatype = TLONG; Info.datatype = TLONG; break;
+       case FLOAT_IMG: datatype = TDOUBLE; Info.datatype = TFLOAT; break;
+--- a/fitscore.c
++++ b/fitscore.c
+@@ -865,7 +865,7 @@ int ffpxsz(int datatype)
+    return the number of bytes per pixel associated with the datatype
+ */
+ {
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+        return(sizeof(char));
+     else if (datatype == TUSHORT)
+        return(sizeof(short));
+@@ -2924,7 +2924,7 @@ int ffbnfm(char *tform,     /* I - format code from the TFORMn keyword */
+     }
+     else if (form[0] == 'B')
+     {
+-        datacode = TBYTE;
++        datacode = _TBYTE;
+         width = 1;
+     }
+     else if (form[0] == 'S') /* internal code to signify signed byte */
+@@ -3125,7 +3125,7 @@ int ffbnfmll(char *tform,     /* I - format code from the TFORMn keyword */
+     }
+     else if (form[0] == 'B')
+     {
+-        datacode = TBYTE;
++        datacode = _TBYTE;
+         width = 1;
+     }
+     else if (form[0] == 'S') /* internal code to signify signed byte */
+@@ -3782,7 +3782,7 @@ int ffeqtyll( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+     switch (tcode)
+     {
+-      case TBYTE:   /* binary table 'rB' column */
++      case _TBYTE:   /* binary table 'rB' column */
+         min_val = 0.;
+         max_val = 255.0;
+         break;
+@@ -3822,7 +3822,7 @@ int ffeqtyll( fitsfile *fptr,  /* I - FITS file pointer                       */
+         (tzero != 9223372036854775808.) &&  /* indicates unsigned long long */
+        (lngzero != tzero || lngscale != tscale)) { /* not integers? */
+        /* floating point scaled values; just decide on required precision */
+-       if (tcode == TBYTE || tcode == TSHORT)
++       if (tcode == _TBYTE || tcode == TSHORT)
+           effcode = TFLOAT;
+        else
+           effcode = TDOUBLE;
+@@ -4100,7 +4100,7 @@ int ffgbclll( fitsfile *fptr,   /* I - FITS file pointer                      */
+ 
+         if      (abs(colptr->tdatatype) == TBIT)
+             strcat(dtype, "X");
+-        else if (abs(colptr->tdatatype) == TBYTE)
++        else if (abs(colptr->tdatatype) == _TBYTE)
+             strcat(dtype, "B");
+         else if (abs(colptr->tdatatype) == TLOGICAL)
+             strcat(dtype, "L");
+@@ -4480,7 +4480,7 @@ int ffpinit(fitsfile *fptr,      /* I - FITS file pointer */
+ 
+     if (bitpix == BYTE_IMG)   /* test  bitpix and set the datatype code */
+     {
+-        ttype=TBYTE;
++        ttype=_TBYTE;
+         bytlen=1;
+     }
+     else if (bitpix == SHORT_IMG)
+@@ -5612,7 +5612,7 @@ int ffgcprll( fitsfile *fptr, /* I - FITS file pointer                      */
+     /* Special case: interprete 'X' column as 'B' */
+     if (abs(*tcode) == TBIT)
+     {
+-        *tcode  = *tcode / TBIT * TBYTE;
++        *tcode  = *tcode / TBIT * _TBYTE;
+         *repeat = (*repeat + 7) / 8;
+     }
+ 
+@@ -8797,7 +8797,7 @@ int ffdtyp(const char *cval,  /* I - formatted string representation of the valu
+ }
+ /*--------------------------------------------------------------------------*/
+ int ffinttyp(char *cval,  /* I - formatted string representation of the integer */
+-           int *dtype, /* O - datatype code: TBYTE, TSHORT, TUSHORT, etc */
++           int *dtype, /* O - datatype code: _TBYTE, TSHORT, TUSHORT, etc */
+            int *negative, /* O - is cval negative? */
+            int *status)  /* IO - error status */
+ /*
+@@ -8860,7 +8860,7 @@ int ffinttyp(char *cval,  /* I - formatted string representation of the integer
+ 	    if (strcmp(p,"127") <= 0 ) {
+ 	        *dtype = TSBYTE;
+ 	    } else if (strcmp(p,"255") <= 0 ) {
+-	        *dtype = TBYTE;
++	        *dtype = _TBYTE;
+ 	    } else {
+ 	        *dtype = TSHORT;
+ 	    }
+--- a/fitsio.h
++++ b/fitsio.h
+@@ -217,7 +217,7 @@ SERVICES PROVIDED HEREUNDER."
+ #define FLEN_STATUS    31  /* max length of a FITSIO status text string */
+  
+ #define TBIT          1  /* codes for FITS table data types */
+-#define TBYTE        11
++#define _TBYTE        11
+ #define TSBYTE       12
+ #define TLOGICAL     14
+ #define TSTRING      16
+--- a/fpackutil.c
++++ b/fpackutil.c
+@@ -1703,7 +1703,7 @@ int fits_read_image_speed (fitsfile *infptr, float *whole_elapse,
+          /*       (infptr->Fptr)->tilerow = 0; */
+ 
+ 		marktime(status);
+-		fits_read_subset(infptr, TBYTE, fpixel, lpixel, inc, &cnull, 
++		fits_read_subset(infptr, _TBYTE, fpixel, lpixel, inc, &cnull, 
+ 		      carray, &anynull, status);
+ 		
+ 		/* get elapsped times */
+@@ -1719,7 +1719,7 @@ int fits_read_image_speed (fitsfile *infptr, float *whole_elapse,
+ 		  marktime(status);
+ 		  for (ii = 0; ii < naxes[1]; ii++) {
+ 		   fpixel[1] = ii+1;
+-		   fits_read_pix(infptr, TBYTE, fpixel, naxes[0], &cnull, 
++		   fits_read_pix(infptr, _TBYTE, fpixel, naxes[0], &cnull, 
+ 		      carray, &anynull, status);
+ 		   }
+ 		   /* get elapsped times */
+--- a/getcol.c
++++ b/getcol.c
+@@ -130,7 +130,7 @@ int ffgpxvll( fitsfile *fptr, /* I - FITS file pointer                       */
+       and the second column contains the image itself.
+     */
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       if (nulval == 0)
+         ffgclb(fptr, 2, 1, firstelem, nelem, 1, 1, 0,
+@@ -332,7 +332,7 @@ int ffgpxfll( fitsfile *fptr, /* I - FITS file pointer                       */
+       and the second column contains the image itself.
+     */
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+         ffgclb(fptr, 2, 1, firstelem, nelem, 1, 2, 0,
+                (unsigned char *) array, nullarray, anynul, status);
+@@ -445,7 +445,7 @@ int ffgsv(  fitsfile *fptr,   /* I - FITS file pointer                       */
+         }
+     }
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       if (nulval == 0)
+         ffgsvb(fptr, 1, naxis, naxes, blc, trc, inc, 0,
+@@ -588,7 +588,7 @@ int ffgpv(  fitsfile *fptr,   /* I - FITS file pointer                       */
+       and the second column contains the image itself.
+     */
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       if (nulval == 0)
+         ffgpvb(fptr, 1, firstelem, nelem, 0,
+@@ -732,7 +732,7 @@ int ffgpf(  fitsfile *fptr,   /* I - FITS file pointer                       */
+       and the second column contains the image itself.
+     */
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+         ffgpfb(fptr, 1, firstelem, nelem, 
+                (unsigned char *) array, nullarray, anynul, status);
+@@ -827,7 +827,7 @@ int ffgcv(  fitsfile *fptr,   /* I - FITS file pointer                       */
+     {
+       ffgcx(fptr, colnum, firstrow, firstelem, nelem, (char *) array, status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+       if (nulval == 0)
+         ffgclb(fptr, colnum, firstrow, firstelem, nelem, 1, 1, 0,
+@@ -1012,7 +1012,7 @@ int ffgcf(  fitsfile *fptr,   /* I - FITS file pointer                       */
+     {
+       ffgcx(fptr, colnum, firstrow, firstelem, nelem, (char *) array, status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+        ffgclb(fptr, colnum, firstrow, firstelem, nelem, 1, 2, (unsigned char )
+               nulval, (unsigned char *) array, nullarray, anynul, status);
+--- a/getcolb.c
++++ b/getcolb.c
+@@ -39,7 +39,7 @@ int ffgpvb( fitsfile *fptr,   /* I - FITS file pointer                       */
+         /* this is a compressed image in a binary table */
+          nullvalue = nulval;  /* set local variable */
+ 
+-        fits_read_compressed_pixels(fptr, TBYTE, firstelem, nelem,
++        fits_read_compressed_pixels(fptr, _TBYTE, firstelem, nelem,
+             nullcheck, &nullvalue, array, NULL, anynul, status);
+         return(*status);
+     }
+@@ -81,7 +81,7 @@ int ffgpfb( fitsfile *fptr,   /* I - FITS file pointer                       */
+     {
+         /* this is a compressed image in a binary table */
+ 
+-        fits_read_compressed_pixels(fptr, TBYTE, firstelem, nelem,
++        fits_read_compressed_pixels(fptr, _TBYTE, firstelem, nelem,
+             nullcheck, NULL, array, nularray, anynul, status);
+         return(*status);
+     }
+@@ -162,7 +162,7 @@ int ffg3db(fitsfile *fptr,  /* I - FITS file pointer                       */
+         lpixel[2] = naxis3;
+         nullvalue = nulval;  /* set local variable */
+ 
+-        fits_read_compressed_img(fptr, TBYTE, fpixel, lpixel, inc,
++        fits_read_compressed_img(fptr, _TBYTE, fpixel, lpixel, inc,
+             nullcheck, &nullvalue, array, NULL, anynul, status);
+         return(*status);
+     }
+@@ -253,7 +253,7 @@ int ffgsvb(fitsfile *fptr, /* I - FITS file pointer                         */
+ 
+         nullvalue = nulval;  /* set local variable */
+ 
+-        fits_read_compressed_img(fptr, TBYTE, blcll, trcll, inc,
++        fits_read_compressed_img(fptr, _TBYTE, blcll, trcll, inc,
+             nullcheck, &nullvalue, array, NULL, anynul, status);
+         return(*status);
+     }
+@@ -428,7 +428,7 @@ int ffgsfb(fitsfile *fptr, /* I - FITS file pointer                         */
+ 	    trcll[ii] = trc[ii];
+ 	}
+ 
+-        fits_read_compressed_img(fptr, TBYTE, blcll, trcll, inc,
++        fits_read_compressed_img(fptr, _TBYTE, blcll, trcll, inc,
+             nullcheck, NULL, array, flagval, anynul, status);
+         return(*status);
+     }
+@@ -723,7 +723,7 @@ int ffgclb( fitsfile *fptr,   /* I - FITS file pointer                       */
+ 
+         /*  we have to reset some of the values returned by ffgcpr */
+         
+-        tcode = TBYTE;
++        tcode = _TBYTE;
+         incre = 1;         /* each element is 1 byte wide */
+         repeat = twidth;   /* total no. of chars in the col */
+         twidth = 1;        /* width of each element */
+@@ -760,7 +760,7 @@ int ffgclb( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -771,7 +771,7 @@ int ffgclb( fitsfile *fptr,   /* I - FITS file pointer                       */
+     /*  not need to use a temporary buffer to store intermediate datatype.  */
+     /*----------------------------------------------------------------------*/
+     convert = 1;
+-    if (tcode == TBYTE) /* Special Case:                        */
++    if (tcode == _TBYTE) /* Special Case:                        */
+     {                             /* no type convertion required, so read */
+                                   /* data directly into output buffer.    */
+ 
+@@ -820,7 +820,7 @@ int ffgclb( fitsfile *fptr,   /* I - FITS file pointer                       */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, &array[next], status);
+                 if (convert)
+                     fffi1i1(&array[next], ntodo, scale, zero, nulcheck, 
+--- a/getcold.c
++++ b/getcold.c
+@@ -795,7 +795,7 @@ int ffgcld( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -862,7 +862,7 @@ int ffgcld( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulval, &nularray[next], anynul, 
+                            &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1r8((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcole.c
++++ b/getcole.c
+@@ -796,7 +796,7 @@ int ffgcle( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -863,7 +863,7 @@ int ffgcle( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulval, &nularray[next], anynul, 
+                            &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1r4((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcoli.c
++++ b/getcoli.c
+@@ -719,7 +719,7 @@ int ffgcli( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -793,7 +793,7 @@ int ffgcli( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                       status);
+                 fffi1i2((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcolj.c
++++ b/getcolj.c
+@@ -718,7 +718,7 @@ int ffgclj( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -802,7 +802,7 @@ int ffgclj( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1i4((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+@@ -2660,7 +2660,7 @@ int ffgcljj( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -2735,7 +2735,7 @@ int ffgcljj( fitsfile *fptr,   /* I - FITS file pointer                       */
+                         nulcheck, (INT32BIT) tnull, nulval, &nularray[next], 
+                         anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1i8((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcolk.c
++++ b/getcolk.c
+@@ -735,7 +735,7 @@ int ffgclk( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -810,7 +810,7 @@ int ffgclk( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1int((unsigned char *) buffer, ntodo, scale, zero, nulcheck,
+--- a/getcoll.c
++++ b/getcoll.c
+@@ -270,7 +270,7 @@ int ffgcx(  fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+     tcode = colptr->tdatatype;
+ 
+-    if (abs(tcode) > TBYTE)
++    if (abs(tcode) > _TBYTE)
+         return(*status = NOT_LOGICAL_COL); /* not correct datatype column */
+ 
+     if (tcode > 0)
+@@ -424,7 +424,7 @@ int ffgcxui(fitsfile *fptr,   /* I - FITS file pointer                       */
+     colptr  = (fptr->Fptr)->tableptr;   /* point to first column */
+     colptr += (colnum - 1);     /* offset to correct column structure */
+ 
+-    if (abs(colptr->tdatatype) > TBYTE)
++    if (abs(colptr->tdatatype) > _TBYTE)
+     {
+         ffpmsg("Can only read bits from X or B type columns. (ffgcxui)");
+         return(*status = NOT_LOGICAL_COL); /* not correct datatype column */
+@@ -440,7 +440,7 @@ int ffgcxui(fitsfile *fptr,   /* I - FITS file pointer                       */
+         ffpmsg("Too many bits. Tried to read past width of column (ffgcxui)");
+         return(*status = BAD_ELEM_NUM);
+     }
+-    else if (colptr->tdatatype == TBYTE && lastbyte > (long) colptr->trepeat)
++    else if (colptr->tdatatype == _TBYTE && lastbyte > (long) colptr->trepeat)
+     {
+         ffpmsg("Too many bits. Tried to read past width of column (ffgcxui)");
+         return(*status = BAD_ELEM_NUM);
+@@ -561,7 +561,7 @@ int ffgcxuk(fitsfile *fptr,   /* I - FITS file pointer                       */
+     colptr  = (fptr->Fptr)->tableptr;   /* point to first column */
+     colptr += (colnum - 1);     /* offset to correct column structure */
+ 
+-    if (abs(colptr->tdatatype) > TBYTE)
++    if (abs(colptr->tdatatype) > _TBYTE)
+     {
+         ffpmsg("Can only read bits from X or B type columns. (ffgcxuk)");
+         return(*status = NOT_LOGICAL_COL); /* not correct datatype column */
+@@ -577,7 +577,7 @@ int ffgcxuk(fitsfile *fptr,   /* I - FITS file pointer                       */
+         ffpmsg("Too many bits. Tried to read past width of column (ffgcxuk)");
+         return(*status = BAD_ELEM_NUM);
+     }
+-    else if (colptr->tdatatype == TBYTE && lastbyte > (long) colptr->trepeat)
++    else if (colptr->tdatatype == _TBYTE && lastbyte > (long) colptr->trepeat)
+     {
+         ffpmsg("Too many bits. Tried to read past width of column (ffgcxuk)");
+         return(*status = BAD_ELEM_NUM);
+--- a/getcols.c
++++ b/getcols.c
+@@ -473,7 +473,7 @@ int ffgcls( fitsfile *fptr,   /* I - FITS file pointer                       */
+                  /* this is a binary table, need to convert the format */
+                   if (tcode == TBIT) {            /* 'X' */
+                      strcpy(cform, "%4d");
+-                  } else if (tcode == TBYTE) {    /* 'B' */
++                  } else if (tcode == _TBYTE) {    /* 'B' */
+                      strcpy(cform, "%4d");
+                   } else if (tcode == TSHORT) {   /* 'I' */
+                      strcpy(cform, "%6d");
+@@ -662,7 +662,7 @@ int ffgcdw( fitsfile *fptr,   /* I - FITS file pointer                       */
+                  /* this is a binary table */
+                   if (tcode == TBIT)           /* 'X' */
+                      *width = 8;
+-                  else if (tcode == TBYTE)     /* 'B' */
++                  else if (tcode == _TBYTE)     /* 'B' */
+                      *width = 4;
+                   else if (tcode == TSHORT)    /* 'I' */
+                      *width = 6;
+--- a/getcolsb.c
++++ b/getcolsb.c
+@@ -722,7 +722,7 @@ int ffgclsb(fitsfile *fptr,   /* I - FITS file pointer                       */
+ 
+         /*  we have to reset some of the values returned by ffgcpr */
+         
+-        tcode = TBYTE;
++        tcode = _TBYTE;
+         incre = 1;         /* each element is 1 byte wide */
+         repeat = twidth;   /* total no. of chars in the col */
+         twidth = 1;        /* width of each element */
+@@ -759,7 +759,7 @@ int ffgclsb(fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -800,7 +800,7 @@ int ffgclsb(fitsfile *fptr,   /* I - FITS file pointer                       */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) &array[next], status);
+                 fffi1s1((unsigned char *)&array[next], ntodo, scale, zero,
+                         nulcheck, (unsigned char) tnull, nulval, &nularray[next], 
+--- a/getcolui.c
++++ b/getcolui.c
+@@ -704,7 +704,7 @@ int ffgclui( fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -767,7 +767,7 @@ int ffgclui( fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                       status);
+                 fffi1u2((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcoluj.c
++++ b/getcoluj.c
+@@ -705,7 +705,7 @@ int ffgcluj(fitsfile *fptr,   /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -778,7 +778,7 @@ int ffgcluj(fitsfile *fptr,   /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1u4((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+@@ -2681,7 +2681,7 @@ int ffgclujj( fitsfile *fptr,   /* I - FITS file pointer                       *
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -2738,7 +2738,7 @@ int ffgclujj( fitsfile *fptr,   /* I - FITS file pointer                       *
+                         nulcheck, (INT32BIT) tnull, nulval, &nularray[next], 
+                         anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1u8((unsigned char *) buffer, ntodo, scale, zero, nulcheck, 
+--- a/getcoluk.c
++++ b/getcoluk.c
+@@ -722,7 +722,7 @@ int ffgcluk( fitsfile *fptr,  /* I - FITS file pointer                       */
+     else if (tcode == TSHORT && (tnull > SHRT_MAX || tnull < SHRT_MIN) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+-    else if (tcode == TBYTE && (tnull > 255 || tnull < 0) )
++    else if (tcode == _TBYTE && (tnull > 255 || tnull < 0) )
+             nulcheck = 0;            /* Impossible null value */
+ 
+     else if (tcode == TSTRING && snull[0] == ASCII_NULL_UNDEFINED)
+@@ -785,7 +785,7 @@ int ffgcluk( fitsfile *fptr,  /* I - FITS file pointer                       */
+                            nulcheck, tnull, nulval, &nularray[next], 
+                             anynul, &array[next], status);
+                 break;
+-            case (TBYTE):
++            case (_TBYTE):
+                 ffgi1b(fptr, readptr, ntodo, incre, (unsigned char *) buffer,
+                        status);
+                 fffi1uint((unsigned char *) buffer, ntodo, scale, zero,nulcheck,
+--- a/getkey.c
++++ b/getkey.c
+@@ -295,7 +295,7 @@ int ffgky( fitsfile *fptr,     /* I - FITS file pointer        */
+     {
+         ffgkys(fptr, keyname, (char *) value, comm, status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+         if (ffgkyjj(fptr, keyname, &longval, comm, status) <= 0)
+         {
+--- a/histo.c
++++ b/histo.c
+@@ -111,7 +111,7 @@ int ffbins(char *binspec,   /* I - binning specification */
+     }
+     else if (*ptr == 'b' )  /* binb */
+     {
+-        *imagetype = TBYTE;
++        *imagetype = _TBYTE;
+         defaulttype = 0;
+         ptr ++;
+     }
+@@ -565,7 +565,7 @@ int ffhist2(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
+     if ((*fptr)->HDUposition != ((*fptr)->Fptr)->curhdu)
+         ffmahd(*fptr, ((*fptr)->HDUposition) + 1, NULL, status);
+ 
+-    if (imagetype == TBYTE)
++    if (imagetype == _TBYTE)
+         bitpix = BYTE_IMG;
+     else if (imagetype == TSHORT)
+         bitpix = SHORT_IMG;
+@@ -710,7 +710,7 @@ fitsfile *ffhist3(fitsfile *fptr, /* I - ptr to table with X and Y cols*/
+     if ((fptr)->HDUposition != ((fptr)->Fptr)->curhdu)
+         ffmahd(fptr, ((fptr)->HDUposition) + 1, NULL, status);
+ 
+-    if (imagetype == TBYTE)
++    if (imagetype == _TBYTE)
+         bitpix = BYTE_IMG;
+     else if (imagetype == TSHORT)
+         bitpix = SHORT_IMG;
+@@ -868,7 +868,7 @@ int ffhist(fitsfile **fptr,  /* IO - pointer to table with X and Y cols;    */
+     histData.haxis      = naxis;
+     histData.rowselector = selectrow;
+ 
+-    if (imagetype == TBYTE)
++    if (imagetype == _TBYTE)
+         bitpix = BYTE_IMG;
+     else if (imagetype == TSHORT)
+         bitpix = SHORT_IMG;
+@@ -2157,7 +2157,7 @@ int fits_make_histd(fitsfile *fptr, /* IO - pointer to table with X and Y cols;
+     }
+ 
+     if   (bitpix == BYTE_IMG)
+-         imagetype = TBYTE;
++         imagetype = _TBYTE;
+     else if (bitpix == SHORT_IMG)
+          imagetype = TSHORT;
+     else if (bitpix == LONG_IMG)
+@@ -2329,7 +2329,7 @@ int ffwritehisto(long totaln, long pixoffset, long firstn, long nvalues,
+     /* store pointer to the histogram array, and initialize to zero */
+ 
+     switch( histData->himagetype ) {
+-    case TBYTE:
++    case _TBYTE:
+        histData->hist.b = (char *  ) fits_iter_get_array(imagepars);
+        break;
+     case TSHORT:
+@@ -2502,7 +2502,7 @@ int ffcalchist(long totalrows, long offset, long firstrow, long nrows,
+               histData.hist.r[ipix] += histData.weight;
+             else if (histData.himagetype == TDOUBLE)
+               histData.hist.d[ipix] += histData.weight;
+-            else if (histData.himagetype == TBYTE)
++            else if (histData.himagetype == _TBYTE)
+               histData.hist.b[ipix] += (char) histData.weight;
+         }
+         else if (histData.wtrecip) /* use reciprocal of the weight */
+@@ -2515,7 +2515,7 @@ int ffcalchist(long totalrows, long offset, long firstrow, long nrows,
+               histData.hist.r[ipix] += (float) (1./wtcol[ii]);
+             else if (histData.himagetype == TDOUBLE)
+               histData.hist.d[ipix] += 1./wtcol[ii];
+-            else if (histData.himagetype == TBYTE)
++            else if (histData.himagetype == _TBYTE)
+               histData.hist.b[ipix] += (char) (1./wtcol[ii]);
+         }
+         else   /* no weights */
+@@ -2528,7 +2528,7 @@ int ffcalchist(long totalrows, long offset, long firstrow, long nrows,
+               histData.hist.r[ipix] += wtcol[ii];
+             else if (histData.himagetype == TDOUBLE)
+               histData.hist.d[ipix] += wtcol[ii];
+-            else if (histData.himagetype == TBYTE)
++            else if (histData.himagetype == _TBYTE)
+               histData.hist.b[ipix] += (char) wtcol[ii];
+         }
+ 
+--- a/imcompress.c
++++ b/imcompress.c
+@@ -1554,7 +1554,7 @@ int imcomp_compress_image (fitsfile *infptr, fitsfile *outfptr, int *status)
+     else if ((outfptr->Fptr)->zbitpix == BYTE_IMG)
+     {
+ 
+-        datatype = TBYTE;
++        datatype = _TBYTE;
+         if ( (outfptr->Fptr)->compress_type == RICE_1  ||
+ 	     (outfptr->Fptr)->compress_type == BZIP2_1 ||
+ 	     (outfptr->Fptr)->compress_type == GZIP_1  ||
+@@ -1670,7 +1670,7 @@ int imcomp_compress_image (fitsfile *infptr, fitsfile *outfptr, int *status)
+               ffgsvi(infptr, 1, naxis, naxes, fpixel, lpixel, incre, 
+                   0, (short *) tiledata,  &anynul, status);
+           }
+-          else if (datatype == TBYTE)
++          else if (datatype == _TBYTE)
+           {
+               ffgsvb(infptr, 1, naxis, naxes, fpixel, lpixel, incre, 
+                   0, (unsigned char *) tiledata,  &anynul, status);
+@@ -1883,7 +1883,7 @@ int imcomp_compress_tile (fitsfile *outfptr,
+     } else if (datatype == TUSHORT) {
+        imcomp_convert_tile_tushort(outfptr, tiledata, tilelen, nullcheck, nullflagval,
+            nullval, zbitpix, scale, zero, &intlength, status);
+-    } else if (datatype == TBYTE) {
++    } else if (datatype == _TBYTE) {
+        imcomp_convert_tile_tbyte(outfptr, tiledata, tilelen, nullcheck, nullflagval,
+            nullval, zbitpix, scale, zero,  &intlength, status);
+     } else if (datatype == TSBYTE) {
+@@ -3549,7 +3549,7 @@ int fits_write_compressed_img(fitsfile *fptr,   /* I - FITS file pointer     */
+     {
+        pixlen = sizeof(int);
+     }
+-    else if (datatype == TBYTE || datatype == TSBYTE)
++    else if (datatype == _TBYTE || datatype == TSBYTE)
+     {
+        pixlen = 1;
+     }
+@@ -4057,7 +4057,7 @@ int fits_img_decompress (fitsfile *infptr, /* image (bintable) to uncompress */
+     /* determine datatype for image */
+     if ((infptr->Fptr)->zbitpix == BYTE_IMG)
+     {
+-        datatype = TBYTE;
++        datatype = _TBYTE;
+     }
+     else if ((infptr->Fptr)->zbitpix == SHORT_IMG)
+     {
+@@ -4159,7 +4159,7 @@ int fits_decompress_img (fitsfile *infptr, /* image (bintable) to uncompress */
+     /* determine datatype for image */
+     if ((infptr->Fptr)->zbitpix == BYTE_IMG)
+     {
+-        datatype = TBYTE;
++        datatype = _TBYTE;
+         byte_per_pix = 1;
+     }
+     else if ((infptr->Fptr)->zbitpix == SHORT_IMG)
+@@ -4493,7 +4493,7 @@ int fits_read_compressed_img(fitsfile *fptr,   /* I - FITS file pointer      */
+        if (nullval)
+            testnullval = *(unsigned long *) nullval;
+     }
+-    else if (datatype == TBYTE || datatype == TSBYTE)
++    else if (datatype == _TBYTE || datatype == TSBYTE)
+     {
+        buffer =  malloc ((fptr->Fptr)->maxtilelen * sizeof (char));
+        pixlen = 1;
+@@ -4791,7 +4791,7 @@ int fits_read_write_compressed_img(fitsfile *fptr,   /* I - FITS file pointer
+ 	 }
+        }
+     }
+-    else if (datatype == TBYTE || datatype == TSBYTE)
++    else if (datatype == _TBYTE || datatype == TSBYTE)
+     {
+        buffer =  malloc ((fptr->Fptr)->maxtilelen * sizeof (char));
+        if (cnull) {
+@@ -5959,7 +5959,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+             }
+ 
+             /* read array of compressed bytes */
+-            if (fits_read_col(infptr, TBYTE, (infptr->Fptr)->cn_gzip_data, nrow,
++            if (fits_read_col(infptr, _TBYTE, (infptr->Fptr)->cn_gzip_data, nrow,
+                  1, (long) nelemll, &charnull, cbuf, NULL, status) > 0) {
+                 ffpmsg("error reading compressed byte stream from binary table");
+ 	        free (cbuf);
+@@ -6218,7 +6218,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+         fits_read_col(infptr, TSHORT, (infptr->Fptr)->cn_compressed, nrow,
+              1, (long) nelemll, &snull, (short *) cbuf, NULL, status);
+     } else {
+-       fits_read_col(infptr, TBYTE, (infptr->Fptr)->cn_compressed, nrow,
++       fits_read_col(infptr, _TBYTE, (infptr->Fptr)->cn_compressed, nrow,
+              1, (long) nelemll, &charnull, cbuf, NULL, status);
+     }
+ 
+@@ -6239,7 +6239,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+         if ((infptr->Fptr)->rice_bytepix == 1 ) {
+             *status = fits_rdecomp_byte (cbuf, (long) nelemll, (unsigned char *)idata,
+                         tilelen, blocksize);
+-            tiledatatype = TBYTE;
++            tiledatatype = _TBYTE;
+         } else if ((infptr->Fptr)->rice_bytepix == 2 ) {
+             *status = fits_rdecomp_short (cbuf, (long) nelemll, (unsigned short *)idata,
+                         tilelen, blocksize);
+@@ -6316,7 +6316,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+         } else if (tilebytesize == (size_t) tilelen) {
+ 	    
+ 	    /* this is an unsigned char I*1 array */
+-            tiledatatype = TBYTE;
++            tiledatatype = _TBYTE;
+ 
+         } else {
+             ffpmsg("error: uncompressed tile has wrong size");
+@@ -6340,7 +6340,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+         }
+ 
+         if ((infptr->Fptr)->zbitpix == BYTE_IMG) {
+-	     tiledatatype = TBYTE;
++	     tiledatatype = _TBYTE;
+         } else if ((infptr->Fptr)->zbitpix == SHORT_IMG) {
+   	     tiledatatype = TSHORT;
+ #if BYTESWAPPED
+@@ -6420,7 +6420,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2i2((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(short *) nulval, bnullarray, anynul,
+           (short *) buffer, status);
+-        } else if (tiledatatype == TBYTE) {
++        } else if (tiledatatype == _TBYTE) {
+           fffi1i2((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(short *) nulval, bnullarray, anynul,
+           (short *) buffer, status);
+@@ -6459,7 +6459,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2int((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(int *) nulval, bnullarray, anynul,
+            (int *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1int((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(int *) nulval, bnullarray, anynul,
+            (int *) buffer, status);
+@@ -6497,7 +6497,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2i4((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(long *) nulval, bnullarray, anynul,
+             (long *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1i4((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(long *) nulval, bnullarray, anynul,
+             (long *) buffer, status);
+@@ -6538,7 +6538,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+ 	   tilelen, bscale, bzero, (infptr->Fptr)->quantize_method, nullcheck, (short) tnull,
+            fnulval, bnullarray, anynul,
+             (float *) buffer, status);
+-         else if (tiledatatype == TBYTE)
++         else if (tiledatatype == _TBYTE)
+           unquantize_i1r4(nrow + (infptr->Fptr)->dither_seed - 1, (unsigned char *)idata, 
+ 	   tilelen, bscale, bzero, (infptr->Fptr)->quantize_method, nullcheck, (unsigned char) tnull,
+            fnulval, bnullarray, anynul,
+@@ -6562,7 +6562,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2r4((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,  
+            fnulval, bnullarray, anynul,
+             (float *) buffer, status);
+-         else if (tiledatatype == TBYTE)
++         else if (tiledatatype == _TBYTE)
+           fffi1r4((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            fnulval, bnullarray, anynul,
+             (float *) buffer, status);
+@@ -6603,7 +6603,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+ 	   tilelen, bscale, bzero, (infptr->Fptr)->quantize_method, nullcheck, (short) tnull,
+            dnulval, bnullarray, anynul,
+             (double *) buffer, status);
+-         else if (tiledatatype == TBYTE)
++         else if (tiledatatype == _TBYTE)
+           unquantize_i1r8(nrow + (infptr->Fptr)->dither_seed - 1, (unsigned char *)idata,
+ 	   tilelen, bscale, bzero, (infptr->Fptr)->quantize_method, nullcheck, (unsigned char) tnull,
+            dnulval, bnullarray, anynul,
+@@ -6627,13 +6627,13 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2r8((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            dnulval, bnullarray, anynul,
+             (double *) buffer, status);
+-         } else if (tiledatatype == TBYTE)
++         } else if (tiledatatype == _TBYTE)
+           fffi1r8((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            dnulval, bnullarray, anynul,
+             (double *) buffer, status);
+ 	}
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+         pixlen = sizeof(char);
+         if (tiledatatype == TINT)
+@@ -6644,7 +6644,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2i1((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(unsigned char *) nulval, bnullarray, anynul,
+             (unsigned char *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1i1((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(unsigned char *) nulval, bnullarray, anynul,
+             (unsigned char *) buffer, status);
+@@ -6660,7 +6660,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2s1((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(signed char *) nulval, bnullarray, anynul,
+             (signed char *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1s1((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(signed char *) nulval, bnullarray, anynul,
+             (signed char *) buffer, status);
+@@ -6698,7 +6698,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2u2((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(unsigned short *) nulval, bnullarray, anynul,
+             (unsigned short *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1u2((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(unsigned short *) nulval, bnullarray, anynul,
+             (unsigned short *) buffer, status);
+@@ -6737,7 +6737,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2uint((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(unsigned int *) nulval, bnullarray, anynul,
+             (unsigned int *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1uint((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(unsigned int *) nulval, bnullarray, anynul,
+             (unsigned int *) buffer, status);
+@@ -6775,7 +6775,7 @@ int imcomp_decompress_tile (fitsfile *infptr,
+           fffi2u4((short *)idata, tilelen, bscale, bzero, nullcheck, (short) tnull,
+            *(unsigned long *) nulval, bnullarray, anynul, 
+             (unsigned long *) buffer, status);
+-        else if (tiledatatype == TBYTE)
++        else if (tiledatatype == _TBYTE)
+           fffi1u4((unsigned char *)idata, tilelen, bscale, bzero, nullcheck, (unsigned char) tnull,
+            *(unsigned long *) nulval, bnullarray, anynul, 
+             (unsigned long *) buffer, status);
+@@ -8212,7 +8212,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ 	        if (compalgor[ii] != GZIP_1 && compalgor[ii] != GZIP_2 && compalgor[ii] != RICE_1) {
+ 			compalgor[ii] = RICE_1;
+ 		}
+-	} else if ( abs(coltype[ii]) == TBYTE ) {
++	} else if ( abs(coltype[ii]) == _TBYTE ) {
+ 	        if (compalgor[ii] != GZIP_1 && compalgor[ii] != RICE_1 ) {
+ 			compalgor[ii] = GZIP_1;
+ 		}
+@@ -8410,7 +8410,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ #endif
+ 			  dlen = fits_rcomp ((int *)(vlamem), (int) vlalen, (unsigned char *) cvlamem,
+                            (int) compmemlen, 32);
+-		        } else if (-coltype[ii] == TBYTE) {
++		        } else if (-coltype[ii] == _TBYTE) {
+ 			  dlen = fits_rcomp_byte ((signed char *)(vlamem), (int) vlalen, (unsigned char *) cvlamem,
+                            (int) compmemlen, 32);
+ 		        } else {
+@@ -8452,17 +8452,17 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ 		    /* the uncompressed array */
+ 		    fits_set_tscale(outfptr, ii + 1, 1.0, 0.0, status);  /* turn off any data scaling, first */
+ 		    if (dlen < vlamemlen) {
+-		        fits_write_col(outfptr, TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
++		        fits_write_col(outfptr, _TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
+ 		        compressed_size += dlen;  /* total size of the compressed VLAs */
+ 		        tot_compressed_size += dlen;  /* total size of the compressed file */
+ 		    } else {
+-			if ( -coltype[ii] != TBYTE && compalgor[ii] != GZIP_1) {
++			if ( -coltype[ii] != _TBYTE && compalgor[ii] != GZIP_1) {
+ 			    /* it is probably faster to reread the raw bytes, rather than unshuffle or unswap them */
+ 			    bytepos = (infptr->Fptr)->datastart + (infptr->Fptr)->heapstart + vlastart;
+ 			    ffmbyt(infptr, bytepos, REPORT_EOF, status);
+ 			    ffgbyt(infptr, vlamemlen, vlamem, status);  /* read the bytes */
+ 			}
+-		        fits_write_col(outfptr, TBYTE, ii + 1, ll+1, 1, vlamemlen, vlamem, status);
++		        fits_write_col(outfptr, _TBYTE, ii + 1, ll+1, 1, vlamemlen, vlamem, status);
+ 		        compressed_size += vlamemlen;  /* total size of the compressed VLAs */
+ 		        tot_compressed_size += vlamemlen;  /* total size of the compressed file */
+ 		    }
+@@ -8510,7 +8510,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ 		/* write the compressed descriptors to the output column */
+ 		fits_set_tscale(outfptr, ii + 1, 1.0, 0.0, status);  /* turn off any data scaling, first */
+ 		fits_write_descript(outfptr, ii+1, ll+1, 0, 0, status); /* First, reset the descriptor */
+-		fits_write_col(outfptr, TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
++		fits_write_col(outfptr, _TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
+ 		free(cvlamem); 
+ 
+ 		if (ll == 0) {  /* only write the ZCTYPn keyword once, while processing the first column */
+@@ -8562,7 +8562,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+    	            dlen = fits_rcomp ((int *)(cm_buffer + cm_colstart[ii]), datasize / 4, (unsigned char *) cvlamem,
+                        datasize * 2, 32);
+ 
+-	        } else if (coltype[ii] == TBYTE) {
++	        } else if (coltype[ii] == _TBYTE) {
+ 
+   	            dlen = fits_rcomp_byte ((signed char *)(cm_buffer + cm_colstart[ii]), datasize, (unsigned char *) cvlamem,
+                        datasize * 2, 32);
+@@ -8595,7 +8595,7 @@ int fits_compress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ 
+ 	    /* write the compressed data to the output column */
+ 	    fits_set_tscale(outfptr, ii + 1, 1.0, 0.0, status);  /* turn off any data scaling, first */
+-	    fits_write_col(outfptr, TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
++	    fits_write_col(outfptr, _TBYTE, ii + 1, ll+1, 1, dlen, cvlamem, status);
+ 	    tot_compressed_size += dlen;
+ 
+ 	    free(cvlamem);   /* don't need the compressed data any more */
+@@ -9221,7 +9221,7 @@ int fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *status)
+ #if BYTESWAPPED
+ 				   ffswap4((int *) uncompressed_vla, (long) vlalen); 
+ #endif
+- 				} else if (-coltype[ii] == TBYTE) {
++ 				} else if (-coltype[ii] == _TBYTE) {
+ 				    dlen = fits_rdecomp_byte((unsigned char *) compressed_vla, (int) cvlalen, (unsigned char *) uncompressed_vla, 
+ 					(int) vlalen, 32);
+ 				} else {
+--- a/imcopy.c
++++ b/imcopy.c
+@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
+ 	  
+           switch(bitpix) {
+               case BYTE_IMG:
+-                  datatype = TBYTE;
++                  datatype = _TBYTE;
+                   break;
+               case SHORT_IMG:
+                   datatype = TSHORT;
+--- a/modkey.c
++++ b/modkey.c
+@@ -30,7 +30,7 @@ int ffuky( fitsfile *fptr,     /* I - FITS file pointer        */
+     {
+         ffukys(fptr, keyname, (char *) value, comm, status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+         ffukyj(fptr, keyname, (LONGLONG) *(unsigned char *) value, comm, status);
+     }
+--- a/putcol.c
++++ b/putcol.c
+@@ -46,7 +46,7 @@ int ffppx(  fitsfile *fptr,  /* I - FITS file pointer                       */
+     }
+     firstelem++;
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffpprb(fptr, group, firstelem, nelem, (unsigned char *) array, status);
+     }
+@@ -136,7 +136,7 @@ int ffppxll(  fitsfile *fptr,  /* I - FITS file pointer                       */
+     }
+     firstelem++;
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffpprb(fptr, group, firstelem, nelem, (unsigned char *) array, status);
+     }
+@@ -233,7 +233,7 @@ int ffppxn(  fitsfile *fptr,  /* I - FITS file pointer                       */
+     }
+     firstelem++;
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffppnb(fptr, group, firstelem, nelem, (unsigned char *) array, 
+              *(unsigned char *) nulval, status);
+@@ -341,7 +341,7 @@ int ffppxnll(  fitsfile *fptr,  /* I - FITS file pointer                       *
+     }
+     firstelem++;
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffppnb(fptr, group, firstelem, nelem, (unsigned char *) array, 
+              *(unsigned char *) nulval, status);
+@@ -426,7 +426,7 @@ int ffppr(  fitsfile *fptr,  /* I - FITS file pointer                       */
+     if (*status > 0)           /* inherit input status value if > 0 */
+         return(*status);
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffpprb(fptr, group, firstelem, nelem, (unsigned char *) array, status);
+     }
+@@ -507,7 +507,7 @@ int ffppn(  fitsfile *fptr,  /* I - FITS file pointer                       */
+         return(*status);
+     }
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffppnb(fptr, group, firstelem, nelem, (unsigned char *) array, 
+              *(unsigned char *) nulval, status);
+@@ -599,7 +599,7 @@ int ffpss(  fitsfile *fptr,   /* I - FITS file pointer                       */
+     ffgidm(fptr, &naxis, status);
+     ffgisz(fptr, 9, naxes, status);
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+         ffpssb(fptr, 1, naxis, naxes, blc, trc,
+                (unsigned char *) array, status);
+@@ -689,7 +689,7 @@ int ffpcl(  fitsfile *fptr,  /* I - FITS file pointer                       */
+       ffpclx(fptr, colnum, firstrow, (long) firstelem, (long) nelem, (char *) array, 
+              status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+       ffpclb(fptr, colnum, firstrow, firstelem, nelem, (unsigned char *) array,
+              status);
+@@ -802,7 +802,7 @@ int ffpcn(  fitsfile *fptr,  /* I - FITS file pointer                       */
+         return(*status);
+     }
+ 
+-    if (datatype == TBYTE)
++    if (datatype == _TBYTE)
+     {
+       ffpcnb(fptr, colnum, firstrow, firstelem, nelem, (unsigned char *) array,
+             *(unsigned char *) nulval, status);
+@@ -1143,7 +1143,7 @@ int ffiter(int n_cols,
+             type*=-1;
+         }
+ 
+-        if (type != 0      && type != TBYTE  &&
++        if (type != 0      && type != _TBYTE  &&
+             type != TSBYTE && type != TLOGICAL && type != TSTRING &&
+             type != TSHORT && type != TINT     && type != TLONG && 
+             type != TFLOAT && type != TDOUBLE  && type != TCOMPLEX &&
+@@ -1353,7 +1353,7 @@ int ffiter(int n_cols,
+            fits_get_img_type(cols[jj].fptr, &bitpix, status);
+            switch(bitpix) {
+              case BYTE_IMG:
+-                 typecode = TBYTE;
++                 typecode = _TBYTE;
+                  break;
+              case SHORT_IMG:
+                  typecode = TSHORT;
+@@ -1407,7 +1407,7 @@ int ffiter(int n_cols,
+         /* Special case: interprete 'X' column as 'B' */
+         if (abs(typecode) == TBIT)
+         {
+-            typecode  = typecode / TBIT * TBYTE;
++            typecode  = typecode / TBIT * _TBYTE;
+             rept = (rept + 7) / 8;
+         }
+ 
+@@ -1427,7 +1427,7 @@ int ffiter(int n_cols,
+             cols[jj].repeat = 1;
+ 
+             /* get the BLANK keyword value, if it exists */
+-            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++            if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                 || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+             {
+                 tstatus = 0;
+@@ -1456,7 +1456,7 @@ int ffiter(int n_cols,
+             cols[jj].repeat = rept;
+ 
+             /* get the TNULL keyword value, if it exists */
+-            if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++            if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                 || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+             {
+                 tstatus = 0;
+@@ -1513,11 +1513,11 @@ int ffiter(int n_cols,
+ 
+         switch (cols[jj].datatype)
+         {
+-         case TBYTE:
++         case _TBYTE:
+           cols[jj].array = calloc(ntodo + 1, sizeof(char));
+           col[jj].nullsize  = sizeof(char);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, 255);
+@@ -1534,7 +1534,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(char));
+           col[jj].nullsize  = sizeof(char);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, 127);
+@@ -1551,7 +1551,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(short));
+           col[jj].nullsize  = sizeof(short);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+               || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, SHRT_MAX);
+@@ -1568,7 +1568,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned short));
+           col[jj].nullsize  = sizeof(unsigned short);  /* bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, (long) USHRT_MAX);
+@@ -1585,7 +1585,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(sizeof(int), ntodo + 1);
+           col[jj].nullsize  = sizeof(int);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, INT_MAX);
+@@ -1602,7 +1602,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned int));
+           col[jj].nullsize  = sizeof(unsigned int);  /* bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               tnull = minvalue(tnull, INT32_MAX);
+@@ -1619,7 +1619,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(long));
+           col[jj].nullsize  = sizeof(long);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               col[jj].null.longnull = tnull;
+@@ -1634,7 +1634,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(unsigned long));
+           col[jj].nullsize  = sizeof(unsigned long);  /* bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               if (tnull < 0)  /* can't use a negative null value */
+@@ -1652,7 +1652,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(float));
+           col[jj].nullsize  = sizeof(float);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               col[jj].null.floatnull = (float) tnull;
+@@ -1673,7 +1673,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(double));
+           col[jj].nullsize  = sizeof(double);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG
+                || abs(typecode) == TINT || abs(typecode) == TLONGLONG)
+           {
+               col[jj].null.doublenull = (double) tnull;
+@@ -1742,7 +1742,7 @@ int ffiter(int n_cols,
+           cols[jj].array = calloc(ntodo + 1, sizeof(LONGLONG));
+           col[jj].nullsize  = sizeof(LONGLONG);  /* number of bytes per value */
+ 
+-          if (abs(typecode) == TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG ||
++          if (abs(typecode) == _TBYTE || abs(typecode) == TSHORT || abs(typecode) == TLONG ||
+ 	      abs(typecode) == TLONGLONG || abs(typecode) == TINT)
+           {
+               col[jj].null.longlongnull = tnull;
+--- a/putcolb.c
++++ b/putcolb.c
+@@ -37,7 +37,7 @@ int ffpprb( fitsfile *fptr,  /* I - FITS file pointer                       */
+     {
+         /* this is a compressed image in a binary table */
+ 
+-        fits_write_compressed_pixels(fptr, TBYTE, firstelem, nelem,
++        fits_write_compressed_pixels(fptr, _TBYTE, firstelem, nelem,
+             0, array, &nullvalue, status);
+         return(*status);
+     }
+@@ -79,7 +79,7 @@ int ffppnb( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+ 
+         nullvalue = nulval;  /* set local variable */
+-        fits_write_compressed_pixels(fptr, TBYTE, firstelem, nelem,
++        fits_write_compressed_pixels(fptr, _TBYTE, firstelem, nelem,
+             1, array, &nullvalue, status);
+         return(*status);
+     }
+@@ -143,7 +143,7 @@ int ffp3db(fitsfile *fptr,   /* I - FITS file pointer                     */
+         lpixel[1] = (long) nrows;
+         lpixel[2] = (long) naxis3;
+        
+-        fits_write_compressed_img(fptr, TBYTE, fpixel, lpixel,
++        fits_write_compressed_img(fptr, _TBYTE, fpixel, lpixel,
+             0,  array, NULL, status);
+     
+         return(*status);
+@@ -214,7 +214,7 @@ int ffpssb(fitsfile *fptr,   /* I - FITS file pointer                       */
+     {
+         /* this is a compressed image in a binary table */
+ 
+-        fits_write_compressed_img(fptr, TBYTE, fpixel, lpixel,
++        fits_write_compressed_img(fptr, _TBYTE, fpixel, lpixel,
+             0,  array, NULL, status);
+     
+         return(*status);
+@@ -393,7 +393,7 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
+       we must convert the raw values into the scaled and/or machine dependent
+       format in a temporary buffer that has been allocated for this purpose.
+     */
+-    if (scale == 1. && zero == 0. && tcode == TBYTE)
++    if (scale == 1. && zero == 0. && tcode == _TBYTE)
+     {
+         writeraw = 1;
+         if (nelem < (LONGLONG)INT32_MAX) {
+@@ -429,7 +429,7 @@ int ffpclb( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+               if (writeraw)
+               {
+                 /* write raw input bytes without conversion */
+--- a/putcold.c
++++ b/putcold.c
+@@ -452,7 +452,7 @@ int ffpcld( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffr8fi1(&array[next], ntodo, scale, zero, 
+                         (unsigned char *) buffer, status);
+--- a/putcole.c
++++ b/putcole.c
+@@ -466,7 +466,7 @@ int ffpcle( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffr4fi1(&array[next], ntodo, scale, zero, 
+                         (unsigned char *) buffer, status);
+--- a/putcoli.c
++++ b/putcoli.c
+@@ -453,7 +453,7 @@ int ffpcli( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-             case (TBYTE):
++             case (_TBYTE):
+ 
+                 ffi2fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putcolj.c
++++ b/putcolj.c
+@@ -453,7 +453,7 @@ int ffpclj( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffi4fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+@@ -1453,7 +1453,7 @@ int ffpcljj(fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi4b(fptr, ntodo, incre, (INT32BIT *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffi8fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putcolk.c
++++ b/putcolk.c
+@@ -467,7 +467,7 @@ int ffpclk( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffintfi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putcoll.c
++++ b/putcoll.c
+@@ -276,7 +276,7 @@ int ffpclx( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+     tcode = colptr->tdatatype;
+ 
+-    if (abs(tcode) > TBYTE)
++    if (abs(tcode) > _TBYTE)
+         return(*status = NOT_LOGICAL_COL); /* not correct datatype column */
+ 
+     if (tcode > 0)
+--- a/putcolsb.c
++++ b/putcolsb.c
+@@ -407,7 +407,7 @@ int ffpclsb( fitsfile *fptr,  /* I - FITS file pointer                      */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+ 
+                 /* convert the raw data before writing to FITS file */
+                 ffs1fi1(&array[next], ntodo, scale, zero,
+--- a/putcolu.c
++++ b/putcolu.c
+@@ -170,7 +170,7 @@ int ffpclu( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+       strncpy(cstring, snull, leng);  /* copy null string to temp buffer */
+     }
+-    else if ( tcode == TBYTE  ||
++    else if ( tcode == _TBYTE  ||
+               tcode == TSHORT ||
+               tcode == TLONG  ||
+               tcode == TLONGLONG) 
+@@ -182,7 +182,7 @@ int ffpclu( fitsfile *fptr,  /* I - FITS file pointer                       */
+         return(*status = NO_NULL);
+       }
+ 
+-      if (tcode == TBYTE)
++      if (tcode == _TBYTE)
+          i1null = (unsigned char) tnull;
+       else if (tcode == TSHORT)
+       {
+@@ -228,7 +228,7 @@ int ffpclu( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 for (ii = 0; ii < ntodo; ii++)
+                   ffpbyt(fptr, 1,  &i1null, status);
+@@ -412,7 +412,7 @@ int ffpcluc( fitsfile *fptr,  /* I - FITS file pointer                       */
+       strncpy(cstring, snull, leng);  /* copy null string to temp buffer */
+ 
+     }
+-    else if ( tcode == TBYTE  ||
++    else if ( tcode == _TBYTE  ||
+               tcode == TSHORT ||
+               tcode == TLONG  ||
+               tcode == TLONGLONG) 
+@@ -424,7 +424,7 @@ int ffpcluc( fitsfile *fptr,  /* I - FITS file pointer                       */
+         return(*status = NO_NULL);
+       }
+ 
+-      if (tcode == TBYTE)
++      if (tcode == _TBYTE)
+          i1null = (unsigned char) tnull;
+       else if (tcode == TSHORT)
+       {
+@@ -470,7 +470,7 @@ int ffpcluc( fitsfile *fptr,  /* I - FITS file pointer                       */
+ 
+         switch (tcode) 
+         {
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 for (ii = 0; ii < ntodo; ii++)
+                   ffpbyt(fptr, 1,  &i1null, status);
+--- a/putcolui.c
++++ b/putcolui.c
+@@ -422,7 +422,7 @@ int ffpclui( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffu2fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putcoluj.c
++++ b/putcoluj.c
+@@ -422,7 +422,7 @@ int ffpcluj( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffu4fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+@@ -1398,7 +1398,7 @@ int ffpclujj( fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi4b(fptr, ntodo, incre, (INT32BIT *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffu8fi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putcoluk.c
++++ b/putcoluk.c
+@@ -437,7 +437,7 @@ int ffpcluk(fitsfile *fptr,  /* I - FITS file pointer                       */
+                 ffpi8b(fptr, ntodo, incre, (long *) buffer, status);
+                 break;
+ 
+-            case (TBYTE):
++            case (_TBYTE):
+  
+                 ffuintfi1(&array[next], ntodo, scale, zero,
+                         (unsigned char *) buffer, status);
+--- a/putkey.c
++++ b/putkey.c
+@@ -205,7 +205,7 @@ int ffpky( fitsfile *fptr,     /* I - FITS file pointer        */
+     {
+         ffpkys(fptr, keyname, (char *) value, comm, status);
+     }
+-    else if (datatype == TBYTE)
++    else if (datatype == _TBYTE)
+     {
+         ffpkyj(fptr, keyname, (LONGLONG) *(unsigned char *) value, comm, status);
+     }
+@@ -2722,7 +2722,7 @@ int ffphbn(fitsfile *fptr,  /* I - FITS file pointer                        */
+         }
+         else if (datatype == TBIT)
+            strcat(comm, ": BIT");
+-        else if (datatype == TBYTE)
++        else if (datatype == _TBYTE)
+            strcat(comm, ": BYTE");
+         else if (datatype == TLOGICAL)
+            strcat(comm, ": 1-byte LOGICAL");
+--- a/testprog.c
++++ b/testprog.c
+@@ -292,8 +292,8 @@ int main()
+         &status) > 0)
+         printf("ffpky status = %d\n", status);
+ 
+-    cval = TBYTE;
+-    if (ffpky(fptr, TBYTE, "tbyte", &cval, "tbyte comment", &status) > 0)
++    cval = _TBYTE;
++    if (ffpky(fptr, _TBYTE, "tbyte", &cval, "tbyte comment", &status) > 0)
+         printf("ffpky status = %d\n", status);
+ 
+     oshtkey = TSHORT;
+@@ -351,7 +351,7 @@ int main()
+ /*  test the newer ffpx routine, instead of the older ffppr_ routines */
+     firstpix[0]=1;
+     firstpix[1]=1;
+-    ffppx(fptr, TBYTE, firstpix, 2, &boutarray[0],  &status);
++    ffppx(fptr, _TBYTE, firstpix, 2, &boutarray[0],  &status);
+     firstpix[0]=5;
+     ffppx(fptr, TSHORT, firstpix, 2, &ioutarray[4],  &status);
+     firstpix[0]=9;
+@@ -372,7 +372,7 @@ int main()
+     firstpix[0]=3;
+     firstpix[1]=1;
+     bnul = 4;
+-    ffppxn(fptr, TBYTE, firstpix, 2, &boutarray[2], &bnul,  &status);
++    ffppxn(fptr, _TBYTE, firstpix, 2, &boutarray[2], &bnul,  &status);
+     firstpix[0]=7;
+     inul = 8;
+     ffppxn(fptr, TSHORT, firstpix, 2, &ioutarray[6], &inul, &status);
+@@ -651,7 +651,7 @@ int main()
+     ffgky(fptr, TLOGICAL, "key_pkyl", &ilkey, comment, &status);
+     printf("KEY_PKY L %d %s %d\n", ilkey, comment, status);
+ 
+-    ffgky(fptr, TBYTE, "KEY_PKYJ", &cval, comment, &status);
++    ffgky(fptr, _TBYTE, "KEY_PKYJ", &cval, comment, &status);
+     printf("KEY_PKY BYTE %d %s %d\n",cval, comment, status);
+ 
+     ffgky(fptr, TSHORT, "KEY_PKYJ", &ishtkey, comment, &status);
+@@ -2239,7 +2239,7 @@ int main()
+     }
+ 
+     /* write a few pixels with each datatype */
+-    ffppr(fptr, TBYTE,   1,  2, &boutarray[0],  &status);
++    ffppr(fptr, _TBYTE,   1,  2, &boutarray[0],  &status);
+     ffppr(fptr, TSHORT,  3,  2, &ioutarray[2],  &status);
+     ffppr(fptr, TINT,    5,  2, &koutarray[4],  &status);
+     ffppr(fptr, TSHORT,  7,  2, &ioutarray[6],  &status);
+@@ -2256,7 +2256,7 @@ int main()
+     enul = 0.;
+     dnul = 0.;
+ 
+-    ffgpv(fptr, TBYTE,   1,  14, &bnul, binarray, &anynull, &status);
++    ffgpv(fptr, _TBYTE,   1,  14, &bnul, binarray, &anynull, &status);
+     ffgpv(fptr, TSHORT,  1,  14, &inul, iinarray, &anynull, &status);
+     ffgpv(fptr, TINT,    1,  14, &knul, kinarray, &anynull, &status);
+     ffgpv(fptr, TLONG,   1,  14, &jnul, jinarray, &anynull, &status);
+@@ -2391,7 +2391,7 @@ int main()
+ 
+     for (ii = 2; ii < 6; ii++)   /* loop over cols 2 - 5 */
+     {
+-        ffpcl(fptr, TBYTE,   ii, 1, 1, 2, boutarray,     &status); 
++        ffpcl(fptr, _TBYTE,   ii, 1, 1, 2, boutarray,     &status); 
+         ffpcl(fptr, TSHORT,  ii, 3, 1, 2, &ioutarray[2], &status);  
+         ffpcl(fptr, TLONG,   ii, 5, 1, 2, &joutarray[4], &status);  
+         ffpcl(fptr, TFLOAT,  ii, 7, 1, 2, &eoutarray[6], &status);
+@@ -2400,7 +2400,7 @@ int main()
+     printf("ffpcl status = %d\n", status);
+ 
+     /* read back the pixels with each datatype */
+-    ffgcv(fptr, TBYTE,   2, 1, 1, 10, &bnul, binarray, &anynull, &status);
++    ffgcv(fptr, _TBYTE,   2, 1, 1, 10, &bnul, binarray, &anynull, &status);
+     ffgcv(fptr, TSHORT,  2, 1, 1, 10, &inul, iinarray, &anynull, &status);
+     ffgcv(fptr, TINT,    3, 1, 1, 10, &knul, kinarray, &anynull, &status);
+     ffgcv(fptr, TLONG,   3, 1, 1, 10, &jnul, jinarray, &anynull, &status);

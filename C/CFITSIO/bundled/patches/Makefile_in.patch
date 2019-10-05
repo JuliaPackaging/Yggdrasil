@@ -1,0 +1,35 @@
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -40,12 +40,13 @@
+ CFLAGS =	@CFLAGS@
+ CPPFLAGS =	@CPPFLAGS@
+ SSE_FLAGS =	@SSE_FLAGS@
++CURL_CFLAGS = 	@CURL_CFLAGS@
++CURL_LIBS =	@CURL_LIBS@
+ FC =		@FC@
+ LDFLAGS =	@LDFLAGS@
+ LDFLAGS_BIN =	@LDFLAGS_BIN@
+ DEFS =		@DEFS@
+ LIBS =		@LIBS@
+-LIBS_CURL =	@LIBS_CURL@
+ FLEX =		flex
+ BISON =		bison
+ 
+@@ -103,7 +104,7 @@
+ shared: lib${PACKAGE}${SHLIB_SUFFIX}
+ 
+ lib${PACKAGE}${SHLIB_SUFFIX}: ${OBJECTS}
+-		${SHLIB_LD} ${LDFLAGS} -o ${CFITSIO_SHLIB} ${OBJECTS} -lm ${LIBS_CURL} ${LIBS}
++		${SHLIB_LD} ${LDFLAGS} -o ${CFITSIO_SHLIB} ${OBJECTS} -lm ${CURL_LIBS} ${LIBS}
+ 		@if [ "x${CFITSIO_SHLIB_SONAME}" != x ]; then \
+ 			ln -sf ${CFITSIO_SHLIB} ${CFITSIO_SHLIB_SONAME}; \
+ 			ln -sf ${CFITSIO_SHLIB_SONAME} $@; \
+@@ -128,7 +129,7 @@
+ 		done
+ 
+ .c.o:
+-		${CC} -c -o ${<D}/${@F} ${CFLAGS} ${CPPFLAGS} ${DEFS} $<
++		${CC} -c -o ${<D}/${@F} ${CFLAGS} ${CURL_CFLAGS} ${CPPFLAGS} ${DEFS} $<
+ 
+ UTILS		= cookbook fitscopy imcopy smem speed testprog
+ 
