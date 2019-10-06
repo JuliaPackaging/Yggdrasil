@@ -51,6 +51,6 @@ for platform in supported_platforms()
     elseif platform isa MacOS
         build_tarballs(ARGS, name, version, binaries_macos, script, [platform], products, [])
     else
-        build_tarballs(ARGS, name, version, sources_unix, script, [platform], products, [])
+        build_tarballs(ARGS, name, version, binaries_linux, script, [platform], products, [])
     end
 end
