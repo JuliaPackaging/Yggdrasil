@@ -41,7 +41,7 @@ products = [
     ExecutableProduct("electron", :electron),
 ]
 
-for platform in supported_platforms()
+for platform in platforms
     if platform isa Windows
         if arch(platform) === :i686
             build_tarballs(ARGS, name, version, binaries_w32, script, [platform], products, [])
