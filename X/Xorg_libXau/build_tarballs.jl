@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Xorg_libXau"
 version = v"1.0.9"

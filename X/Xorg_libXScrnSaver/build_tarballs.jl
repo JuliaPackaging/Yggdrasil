@@ -2,18 +2,18 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "Xorg_libXdamage"
-version = v"1.1.5"
+name = "Xorg_libXScrnSaver"
+version = v"1.2.3"
 
-# Collection of sources required to build libXdamage
+# Collection of sources required to build libXScrnSaver
 sources = [
-    "https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2" =>
-    "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45",
+    "https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.bz2" =>
+    "f917075a1b7b5a38d67a8b0238eaab14acd2557679835b154cf2bca576e89bf8",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXdamage-*/
+cd $WORKSPACE/srcdir/libXScrnSaver-*/
 CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
@@ -27,13 +27,14 @@ make install
 platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
 products = [
-    LibraryProduct("libXdamage", :libXdamage),
+    LibraryProduct("libXss", :libXScrnSaver),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_damageproto_jll",
-    "Xorg_libXfixes_jll",
+    "Xorg_scrnsaverproto_jll",
+    "Xorg_libXext_jll",
+    "Xorg_util_macros_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
