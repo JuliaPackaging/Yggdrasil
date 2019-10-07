@@ -1,0 +1,53 @@
+--- a/configure.in
++++ b/configure.in
+@@ -64,6 +64,7 @@
+ 	;;
+ esac
+ 
++PKG_PROG_PKG_CONFIG
+ 
+ case "$host" in
+     *-*-beos*)
+@@ -87,23 +88,30 @@
+ AM_CONDITIONAL(USE_VERSION_RC, test x$use_version_rc = xtrue)
+ 
+ dnl Check for the FreeType 2 library
+-PKG_CHECK_MODULES([FT2], [freetype2 >= 7.0.1], [], [dnl
+-    AC_CHECK_FT2(,,[AC_MSG_ERROR([dnl
+-*** Unable to find FreeType2 library (http://www.freetype.org/)])]
+-    )
+-])
+-CFLAGS="$CFLAGS $FT2_CFLAGS"
+-LIBS="$LIBS $FT2_LIBS"
++PKG_CHECK_MODULES(
++	FREETYPE2,
++	freetype2,
++	[
++		ft_found=yes
++		CFLAGS="$CFLAGS $FREETYPE2_CFLAGS"
++		LIBS="$LIBS $FREETYPE2_LIBS"
++	],
++	ft_found=no
++)
+ 
+ dnl Check for SDL
+ SDL_VERSION=2.0.8
+ AC_SUBST(SDL_VERSION)
+-AM_PATH_SDL2($SDL_VERSION,
+-            :,
+-	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
++PKG_CHECK_MODULES(
++	SDL2,
++	sdl2,
++	[
++		sdl2_found=yes
++		CFLAGS="$CFLAGS $SDL22_CFLAGS"
++		LIBS="$LIBS $SDL2_LIBS"
++	],
++	sdl2_found=no
+ )
+-CFLAGS="$CFLAGS $SDL_CFLAGS"
+-LIBS="$LIBS $SDL_LIBS"
+ 
+ dnl Check for OpenGL
+ case "$host" in
