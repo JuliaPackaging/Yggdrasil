@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Qemu"
 version = v"4.1.0"

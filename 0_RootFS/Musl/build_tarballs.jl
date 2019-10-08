@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Musl"
 version = v"1.1.22"

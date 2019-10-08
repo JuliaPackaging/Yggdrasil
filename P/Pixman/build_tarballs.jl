@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 # Collection of sources required to build Pixman
 name = "Pixman"

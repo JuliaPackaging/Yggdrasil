@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Ncurses"
 version = v"6.1"
@@ -57,6 +57,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "Gettext_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
