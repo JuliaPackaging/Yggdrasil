@@ -21,6 +21,9 @@ apk add ncurses
 CONFIG_FLAGS=""
 if [[ ${target} == x86_64-apple-darwin14 ]]; then
     CONFIG_FLAGS="${CONFIG_FLAGS} --disable-stripping"
+elif [[ "${target}" == *-mingw* ]]; then
+    CONFIG_FLAGS="--enable-sp-funcs --enable-term-driver"
+    export CFLAGS="-lintl -liconv"
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -31,6 +34,13 @@ fi
     --without-cxx-binding \
     --enable-widec \
     --enable-pc-files \
+    --disable-rpath \
+    --enable-colorfgbg \
+    --enable-ext-colors \
+    --enable-ext-mouse \
+    --enable-warnings \
+    --enable-assertions \
+    --enable-database \
     ${CONFIG_FLAGS}
 make -j${nproc}
 make install
@@ -45,7 +55,7 @@ done
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Windows)]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -57,6 +67,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "Gettext_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
