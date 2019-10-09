@@ -57,10 +57,6 @@ cd $WORKSPACE/srcdir/mingw*/
 cp -r * ${prefix}
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("git", :git),
@@ -77,14 +73,10 @@ dependencies = [
     "Zlib_jll",
 ]
 
-for platform in supported_platforms()
-    if platform isa Windows
-        if arch(platform) === :i686
-            build_tarballs(ARGS, name, version, sources_w32, script_win, [platform], products, [])
-        else
-            build_tarballs(ARGS, name, version, sources_w64, script_win, [platform], products, [])
-        end
-    else
-        build_tarballs(ARGS, name, version, sources_unix, script_unix, [platform], products, dependencies)
-    end
-end
+# Install first for win32, then win64.  This will accumulate files into `products` and also wrappers into the JLL package.
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+build_tarballs(non_reg_ARGS, name, version, sources_w32, script_win, [Windows(:i686)], products, [])
+build_tarballs(non_reg_ARGS, name, version, sources_w64, script_win, [Windows(:x86_64)], products, [])
+
+# Then for everything else.  This is the only one that we try to register, and this is the step that will open a PR against General
+build_tarballs(ARGS, name, version, sources_unix, script_unix, filter(p -> !isa(p, Windows), supported_platforms()), products, dependencies)
