@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Wayland"
 version = v"1.17.0"

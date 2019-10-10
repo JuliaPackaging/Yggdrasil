@@ -2,7 +2,7 @@ using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
     error("This must be run with Julia 1.3+!")
 end
-using Pkg.Artifacts, Pkg.PlatformEngines, Pkg.BinaryPlatforms
+using Pkg.Artifacts, Pkg.PlatformEngines
 
 include("../common.jl")
 

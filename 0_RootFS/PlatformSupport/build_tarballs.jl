@@ -1,4 +1,4 @@
-using BinaryBuilder, Dates, Pkg, Pkg.BinaryPlatforms
+using BinaryBuilder, Dates, Pkg
 include("../common.jl")
 
 # Don't mount any shards that you don't need to

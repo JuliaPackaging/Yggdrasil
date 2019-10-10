@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "SCALE_MAMBA"
 version = v"1.5"

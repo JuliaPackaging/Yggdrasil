@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms
+using BinaryBuilder
 
 name = "Glibc"
 version = v"2.25"

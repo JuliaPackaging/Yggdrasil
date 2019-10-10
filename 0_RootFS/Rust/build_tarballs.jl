@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg.BinaryPlatforms, Pkg.Artifacts
+using BinaryBuilder, Pkg.Artifacts
 
 include("../common.jl")
 
