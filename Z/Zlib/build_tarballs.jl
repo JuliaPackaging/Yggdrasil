@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/zlib-*
 mkdir build && cd build
 
 # We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something ridiculous like that.
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain -DUNIX=true ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DUNIX=true ..
 make install -j${nproc} ${EXTRA_MAKE_FLAGS}
 """
 
