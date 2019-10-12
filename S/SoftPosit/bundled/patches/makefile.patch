@@ -1,0 +1,39 @@
+--- a/Makefile
++++ b/Makefile
+@@ -42,18 +42,18 @@
+ SOURCE_DIR ?= ../../source
+ PYTHON_DIR ?= ../../python
+ SPECIALIZE_TYPE ?= 8086-SSE
+-COMPILER ?= gcc
++CC ?= gcc
+ 
+ SOFTPOSIT_OPTS ?=  \
+   -DINLINE_LEVEL=5 #\
+   -DSOFTPOSIT_QUAD -lquadmath 
+ 
+ COMPILE_PYTHON = \
+-  $(COMPILER) -fPIC -c $(PYTHON_DIR)/softposit_python_wrap.c \
++  $(CC) -fPIC -c $(PYTHON_DIR)/softposit_python_wrap.c \
+ 		-I/usr/include/python \
+ 		-I$(SOURCE_DIR)/include -I.
+ COMPILE_PYTHON3 = \
+-  $(COMPILER) -fPIC -c $(PYTHON_DIR)/softposit_python_wrap.c \
++  $(CC) -fPIC -c $(PYTHON_DIR)/softposit_python_wrap.c \
+ 		-I/usr/include/python3 \
+ 		-I$(SOURCE_DIR)/include -I.
+ LINK_PYTHON = \
+@@ -69,11 +69,11 @@ endif
+ C_INCLUDES = -I. -I$(SOURCE_DIR)/$(SPECIALIZE_TYPE) -I$(SOURCE_DIR)/include
+ OPTIMISATION  = -O2 #-march=core-avx2
+ COMPILE_C = \
+-  $(COMPILER) -c -Werror-implicit-function-declaration -DSOFTPOSIT_FAST_INT64 \
+-    $(SOFTPOSIT_OPTS) $(C_INCLUDES) $(OPTIMISATION) \
++  $(CC) -c -Werror-implicit-function-declaration -DSOFTPOSIT_FAST_INT64 \
++    $(SOFTPOSIT_OPTS) $(LDFLAGS) $(C_INCLUDES) $(OPTIMISATION) \
+     -o $@ 
+ MAKELIB = ar crs $@
+-MAKESLIB = $(COMPILER) -shared $^
++MAKESLIB = $(CC) -shared $(LDFLAGS) $^
+ 
+ OBJ = .o
+ LIB = .a
