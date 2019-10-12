@@ -2,11 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-# Collection of sources required to build GMPBuilder
+# Collection of sources required to build GMP
 name = "GMP"
 version = v"6.1.2"
+
 sources = [
-    "https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2" =>
+    "https://gmplib.org/download/gmp/gmp-$(version).tar.bz2" =>
     "5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2",
     "./bundled",
 ]
@@ -45,6 +46,9 @@ make install
 if [[ ${target} == *mingw* ]]; then
     cp -v ${prefix}/bin/libgmp-*.dll ${prefix}/bin/libgmp.dll
 fi
+
+# GMP is dual-licensed, install all license files
+install_license COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
