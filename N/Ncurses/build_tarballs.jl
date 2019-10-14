@@ -45,6 +45,19 @@ fi
 make -j${nproc}
 make install
 
+# Remove duplicates that don't work on case-insensitive filesystems
+rm -f  ${prefix}/share/terminfo/2/2621a
+rm -rf ${prefix}/share/terminfo/a
+rm -rf ${prefix}/share/terminfo/e
+rm -f  ${prefix}/share/terminfo/h/hp2621a
+rm -f  ${prefix}/share/terminfo/h/hp70092a
+rm -rf ${prefix}/share/terminfo/l
+rm -rf ${prefix}/share/terminfo/m
+rm -rf ${prefix}/share/terminfo/n
+rm -rf ${prefix}/share/terminfo/p
+rm -rf ${prefix}/share/terminfo/q
+rm -rf ${prefix}/share/terminfo/x
+
 # Install pc files and fool packages looking for non-wide-character ncurses
 for lib in ncurses form panel menu; do
     install -Dm644 "misc/${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}w.pc"
