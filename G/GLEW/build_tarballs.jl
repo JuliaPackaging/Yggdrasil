@@ -12,24 +12,26 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-builddir = "glew-$(version)"
-script = """
-cd \$WORKSPACE/srcdir
-
-cd $builddir
-make glew.lib.shared INCLUDE="-Iinclude -I\${prefix}/include"
-cp -r lib \${prefix}
+script = raw"""
+cd $WORKSPACE/srcdir/glew-*
+EXTRA_VARS=()
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # On Linux and FreeBSD this variable by default does `-L/usr/lib`
+    EXTRA_VARS+=(LDFLAGS.EXTRA="")
+fi
+make INCLUDE="-Iinclude -I${prefix}/include" \
+    GLEW_DEST="${prefix}" \
+    "${EXTRA_VARS[@]}" \
+    install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:glibc)
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libglew", "libGLEW"], :libGLEW),
+    LibraryProduct(["libGLEW", "glew32"], :libGLEW),
 ]
 
 # Dependencies that must be installed before this package can be built
