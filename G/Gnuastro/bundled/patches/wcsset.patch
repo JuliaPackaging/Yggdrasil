@@ -1,0 +1,120 @@
+--- a/lib/arithmetic.c
++++ b/lib/arithmetic.c
+@@ -25,7 +25,9 @@
+ #include <errno.h>
+ #include <error.h>
+ #include <stdio.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ #include <stdlib.h>
+ #include <stdarg.h>
+ 
+--- a/lib/gnuastro/fits.h
++++ b/lib/gnuastro/fits.h
+@@ -37,7 +37,9 @@
+ /* Include other headers if necessary here. Note that other header files
+    must be included before the C++ preparations below */
+ #include <math.h>
++#define wcsset wcsset_
+ #include <time.h>
++#undef wcsset
+ #include <float.h>
+ 
+ #include <fitsio.h>
+--- a/lib/binary.c
++++ b/lib/binary.c
+@@ -26,7 +26,9 @@
+ #include <errno.h>
+ #include <error.h>
+ #include <stdlib.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ 
+ #include <gnuastro/fits.h>
+ #include <gnuastro/tile.h>
+--- a/lib/blank.c
++++ b/lib/blank.c
+@@ -25,7 +25,9 @@
+ #include <errno.h>
+ #include <error.h>
+ #include <stdio.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ #include <stdlib.h>
+ #include <inttypes.h>
+ 
+--- a/lib/checkset.c
++++ b/lib/checkset.c
+@@ -26,7 +26,9 @@
+ #include <errno.h>
+ #include <error.h>
+ #include <stdlib.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ #include <unistd.h>
+ #include <sys/stat.h>
+ #include <sys/fcntl.h>
+--- a/lib/convolve.c
++++ b/lib/convolve.c
+@@ -25,7 +25,9 @@
+ #include <stdio.h>
+ #include <errno.h>
+ #include <error.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ #include <stdlib.h>
+ 
+ #include <gnuastro/list.h>
+--- a/lib/data.c
++++ b/lib/data.c
+@@ -22,6 +22,7 @@
+ **********************************************************************/
+ #include <config.h>
+ 
++#define wcsset wcsset_
+ #include <errno.h>
+ #include <error.h>
+ #include <fcntl.h>
+@@ -31,6 +32,7 @@
+ #include <string.h>
+ #include <dirent.h>
+ #include <inttypes.h>
++#undef wcsset
+ 
+ #include <gnuastro/wcs.h>
+ #include <gnuastro/data.h>
+--- a/lib/eps.c
++++ b/lib/eps.c
+@@ -26,7 +26,9 @@
+ #include <errno.h>
+ #include <error.h>
+ #include <stdlib.h>
++#define wcsset wcsset_
+ #include <string.h>
++#undef wcsset
+ 
+ #include <gnuastro/eps.h>
+ #include <gnuastro/list.h>
+--- a/lib/fits.c
++++ b/lib/fits.c
+@@ -22,6 +22,7 @@
+ **********************************************************************/
+ #include <config.h>
+ 
++#define wcsset wcsset_
+ #include <time.h>
+ #include <errno.h>
+ #include <error.h>
+@@ -30,6 +31,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#undef wcsset
+ 
+ #include <gsl/gsl_version.h>
+ 
