@@ -16,6 +16,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/gnome-themes-extra-*/
 apk add intltool
 
+# Clear out `.la` files since they're often wrong and screw us up
+rm -f ${prefix}/lib/*.la
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(ac_cv_path_GTK_UPDATE_ICON_CACHE=gtk-update-icon-cache.exe)
@@ -31,11 +34,14 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = supported_platforms()
+#platforms = supported_platforms()
+
+# Limit to the same platforms as Gtk for now
+platforms = [p for p in supported_platforms() if p isa Union{MacOS,Windows}]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libadwaita", :libadwaita),
+    FileProduct("share/themes/Adwaita/index.theme", :adwaita_index),
 ]
 
 # Dependencies that must be installed before this package can be built
