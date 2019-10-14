@@ -64,6 +64,17 @@ case "${COMPILER_TARGET}" in
         make ${KERNEL_FLAGS} mrproper V=1
         make ${KERNEL_FLAGS} headers_check V=1
         make ${KERNEL_FLAGS} INSTALL_HDR_PATH=${sysroot}/usr V=1 headers_install
+
+        # Move case-sensitivity issues, breaking netfilter without a patch
+        NF="${prefix}/${COMPILER_TARGET}/sys-root/usr/include/linux/netfilter"
+        for NAME in CONNMARK DSCP MARK RATEEST TCPMSS; do
+            mv "${NF}/xt_${NAME}.h" "${NF}/xt_${NAME}_.h"
+        done
+
+        for NAME in ECN TTL; do
+            mv "${NF}_ipv4/ipt_${NAME}.h" "${NF}_ipv4/ipt_${NAME}_.h"
+        done
+        mv "${NF}_ipv6/ip6t_HL.h" "${NF}_ipv6/ip6t_HL_.h"
         ;;
 
     *-mingw*)

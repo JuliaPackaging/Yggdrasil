@@ -207,6 +207,9 @@ cp -vdR ${WORKSPACE}/srcdir/testsuite ${prefix}/usr/share/
 # We can never extract these files, because they are too fancy  :(
 rm -rf ${prefix}/usr/share/terminfo
 
+# This causes a case insensitivity error; good thing it's empty
+rm -rf ${prefix}/usr/share/perl5/core_perl/pod
+
 # Cleanup .pyc/.pyo files as they're not redistributable
 find ${prefix}/usr -type f -name "*.py[co]" -delete -or -type d -name "__pycache__" -delete
 """
