@@ -27,7 +27,7 @@ make install
 # The configure script doesn't want to build the shared library for PowerPC
 if [[ "${target}" == powerpc64le-* ]]; then
     cd ${libdir}
-    ${AR} x libgif.a
+    ar x libgif.a
     cc -shared -o libgif.so *.o
 fi
 """
