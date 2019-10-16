@@ -22,9 +22,8 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+# There's a problem on ppc64le that I don't understand yet, we'll tackle this when it's necessary
+platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD} && arch(p) != :powerpc64le]
 
 products = Product[
     LibraryProduct("libXxf86vm", :libXxf86vm),

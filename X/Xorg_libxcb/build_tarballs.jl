@@ -58,8 +58,9 @@ dependencies = [
     "Xorg_libXau_jll",
     "Xorg_libXdmcp_jll",
     "Xorg_xcb_proto_jll",
-    "Libxslt_jll",
+    "XSLT_jll",
     "Xorg_util_macros_jll",
+    "Xorg_libpthread_stubs_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
