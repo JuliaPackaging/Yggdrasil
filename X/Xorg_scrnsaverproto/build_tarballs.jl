@@ -8,7 +8,7 @@ version = v"1.2.2"
 # Collection of sources required to build scrnsaverproto
 sources = [
     "https://www.x.org/archive/individual/proto/scrnsaverproto-$(version).tar.bz2" =>
-    "d8dee19c52977f65af08fad6aa237bacee11bc5a33e1b9b064e8ac1fd99d6e79",
+    "8bb70a8da164930cceaeb4c74180291660533ad3cc45377b30a795d1b85bcd65",
 ]
 
 # Bash recipe for building across all platforms

@@ -33,7 +33,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Xorg_libX11_jll",
-    "Xorg_xextproto",
+    "Xorg_xextproto_jll",
     "Xorg_util_macros_jll",
 ]
 
