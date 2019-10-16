@@ -64,14 +64,14 @@ qfind() {
 
 # Function to automatically install license files at the end of the build
 auto_install_license () {
-    if [[ -z "$(qfind "${prefix}/share/licenses/${SRC_NAME}" -mindepth 1)" ]]; then
-        # There are no licenses already installed, let's find 'em all
+    if [[ ! -d "${prefix}/share/licenses/${SRC_NAME}" ]]; then
+        # The license directory doesn't exist, let's find all licenses
 
         DIR="${WORKSPACE}/srcdir"
         # Build the list of known names for license files
         LICENSE_FILENAMES=()
         for bname in COPYING COPYRIGHT LICENCE LICENSE ; do
-            for extension in "" .md .txt; do
+            for extension in "" .md .rtf .txt; do
                 # These are actually going to be options for `find`
                 LICENSE_FILENAMES+=(-iname "${bname}${extension}" -o)
             done
