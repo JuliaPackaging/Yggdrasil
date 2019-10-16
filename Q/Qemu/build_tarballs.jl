@@ -52,6 +52,7 @@ dependencies = [
     "Glib_jll",
     "PCRE_jll",
     "Gettext_jll",
+    "libcap_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
