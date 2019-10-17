@@ -25,6 +25,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     FileProduct("share/icons/hicolor/index.theme", :hicolor_icon_theme)
+    FileProduct("share/icons", :hicolor_icons_dir)
 ]
 
 # Dependencies that must be installed before this package can be built
