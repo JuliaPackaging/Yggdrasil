@@ -29,7 +29,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
-    FileProduct("share/icons", :icons_dir),
+    FileProduct("share/icons", :adwaita_icons_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
