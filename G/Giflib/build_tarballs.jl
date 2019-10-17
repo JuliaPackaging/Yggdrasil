@@ -19,17 +19,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/giflib-*/
 atomic_patch -p1 ../debian/patches/CVE-2016-3977.patch
+
+# We need to massage configure script to convince it to build the shared library
+# for PowerPC.
+if [[ "${target}" == powerpc64le-* ]]; then
+    autoreconf -vi
+fi
+
 update_configure_scripts
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc}
 make install
-
-# The configure script doesn't want to build the shared library for PowerPC
-if [[ "${target}" == powerpc64le-* ]]; then
-    cd ${libdir}
-    ar x libgif.a
-    cc -shared -o libgif.so *.o
-fi
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
