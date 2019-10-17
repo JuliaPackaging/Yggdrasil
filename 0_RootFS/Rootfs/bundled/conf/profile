@@ -5,8 +5,14 @@ umask 022
 
 alias ll='ls -la'
 
-for _script in /etc/profile.d/*.sh ; do
-    if [ -r "$_script" ] ; then
-        source "$_script"
-    fi
-done
+# Only source all of profile.d if we're actually `bash`
+if [[ "${SHELL}" == "bash" ]]; then
+    for _script in /etc/profile.d/*.sh ; do
+        if [ -r "$_script" ] ; then
+            source "$_script"
+        fi
+    done
+else
+    # These things are actually necessary
+    source /etc/profile.d/0_bb_utils.sh
+fi
