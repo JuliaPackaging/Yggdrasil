@@ -33,6 +33,9 @@ meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
+
+# Cleanup `loaders.cache` file, we're going to generate a new one on the user's machine
+rm -f ${prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders/loaders.cache
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,6 +45,8 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgdk_pixbuf-2", "libgdk_pixbuf-2.0"], :libgdkpixbuf),
+    ExecutableProduct("gdk-pixbuf-query-loaders", :gdk_pixbuf_query_loaders),
+    FileProduct("lib/gdk-pixbuf-2.0/2.10.0/loaders", :gdk_pixbuf_loaders_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
