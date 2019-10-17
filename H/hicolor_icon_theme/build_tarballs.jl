@@ -2,21 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "adwaita_icon_theme"
-version = v"3.33.92"
+name = "hicolor_icon_theme"
+version = v"0.17"
 
-# Collection of sources required to build adwaita-icon-theme
+# Collection of sources required to build hicolor_icon_theme
 sources = [
-    "https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/archive/$(version)/adwaita-icon-theme-$(version).tar.bz2" =>
-    "9e2078bf9e4d28f2a921fa88159733fe83a1fd37f8cbd768a5de3b83f44f0973"
+    "https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-$(version.major).$(version.minor).tar.xz" =>
+    "317484352271d18cbbcfac3868eab798d67fff1b8402e740baa6ff41d588a9d8"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/adwaita-icon-theme-*/
-./autogen.sh --prefix=$prefix --host=$target
+cd $WORKSPACE/srcdir/hicolor-icon-theme-*/
 ./configure --prefix=$prefix --host=$target
-make -j${nproc}
 make install
 """
 
@@ -25,13 +23,12 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
-    FileProduct("share/icons", :icons_dir),
+products = [
+    FileProduct("share/icons/hicolor/index.theme", :hicolor_icon_theme)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "hicolor_icon_theme_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
