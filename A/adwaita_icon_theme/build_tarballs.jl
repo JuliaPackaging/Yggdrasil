@@ -14,6 +14,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/adwaita-icon-theme-*/
+
+# Install native gtk+3.0 so that we get `gtk-encode-symbolic-svg`
+apk add gtk+3.0 librsvg
 ./autogen.sh --prefix=$prefix --host=$target
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
