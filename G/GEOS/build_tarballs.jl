@@ -7,7 +7,7 @@ version = v"3.8.0"
 
 # Collection of sources required to build GEOS
 sources = [
-    "http://download.osgeo.org/geos/geos-$src_version.tar.bz2" =>
+    "http://download.osgeo.org/geos/geos-$version.tar.bz2" =>
     "99114c3dc95df31757f44d2afde73e61b9f742f0b683fd1894cbbee05dda62d5",
 ]
 
@@ -24,7 +24,7 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("libgeos_c", :libgeos),
     LibraryProduct("libgeos", :libgeos_cpp)
 ]
