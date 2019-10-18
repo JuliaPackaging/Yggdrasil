@@ -36,6 +36,7 @@ platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
 products = [
     LibraryProduct("libdbus-1", :libdbus),
+    ExecutableProduct("dbus-daemon", :dbus_daemon)
 ]
 
 # Dependencies that must be installed before this package can be built
