@@ -1,8 +1,3 @@
-# Quiet find
-qfind() {
-    find "$@" 2>/dev/null
-}
-
 # Function to automatically install license files at the end of the build
 auto_install_license () {
     if [[ ! -d "${prefix}/share/licenses/${SRC_NAME}" ]]; then

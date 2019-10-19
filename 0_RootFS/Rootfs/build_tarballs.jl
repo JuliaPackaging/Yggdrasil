@@ -101,9 +101,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+set -x
 # Get build tools ready. Note that they do not pollute the eventual Rootfs image;
 # they are only within this currently-running, ephemeral, pocket universe
-apk add build-base curl autoconf automake linux-headers gawk python3 bison
+apk add build-base curl autoconf automake linux-headers gawk python3 bison git
 
 # $prefix is our chroot under construction
 mv bin dev etc home lib media mnt proc root run sbin srv sys tmp usr var $prefix/
@@ -168,6 +169,12 @@ cp -vd ${WORKSPACE}/srcdir/conf/nsswitch.conf ./etc/nsswitch.conf
 rm -f ${prefix}/etc/profile.d/*
 cp -vd ${WORKSPACE}/srcdir/conf/profile ${prefix}/etc/
 cp -vd ${WORKSPACE}/srcdir/conf/profile.d/* ${prefix}/etc/profile.d/
+
+# Install vim configuration/.vimrc
+cp -vd ${WORKSPACE}/srcdir/conf/vimrc ${prefix}/etc/vim/vimrc
+mkdir -p ${prefix}/etc/vim/
+git clone https://github.com/VundleVim/Vundle.vim ${prefix}/etc/vim/bundle/Vundle.vim
+chroot ${prefix} vim -E -u /etc/vim/vimrc -c PluginInstall -c qall
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
 gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c

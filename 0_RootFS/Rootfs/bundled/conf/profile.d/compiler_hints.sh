@@ -1,8 +1,3 @@
-qwhich()
-{
-    which "$@" 2>/dev/null
-}
-
 compiler_shard_def()
 {
     PROG="$1"
