@@ -19,9 +19,13 @@ qwhich() {
 
 # Save bash history (and optionally echo it out as it happens)
 save_history() {
+    # Skip special commands
+    if [[ "${BASH_COMMAND}" != trap* ]] || [[ "${BASH_COMMAND}" == false ]]; then
+        return
+    fi
 	vecho_red " ---> ${BASH_COMMAND}"
-	history -s "${BASH_COMMAND}"
-	history -a
+    history -s "${BASH_COMMAND}"
+    history -a
 }
 
 # Save our environment into `/meta/.env`, eliminating read-only variables
