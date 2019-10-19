@@ -9,6 +9,14 @@ vecho_red() {
 	vecho "$@" >&2
 }
 
+# Quiet tools
+qfind() {
+    find "$@" 2>/dev/null
+}
+qwhich() {
+    which "$@" 2>/dev/null
+}
+
 # Save bash history (and optionally echo it out as it happens)
 save_history() {
 	vecho_red " ---> ${BASH_COMMAND}"

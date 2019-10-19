@@ -1,0 +1,35 @@
+" death to tabs!
+set tabstop=4 shiftwidth=4 expandtab
+" Keep 5 lines below and above the cursor
+set scrolloff=5
+" Highlight search terms
+set hlsearch
+
+" Begin Vundle config
+set nocompatible
+filetype off
+set backspace=indent,eol,start
+
+" Enable 256 colors fo sho
+set t_Co=256
+
+" set the runtime path to include Vundle and initialize
+set rtp+=/etc/vim/bundle/Vundle.vim
+call vundle#begin('/etc/vim/bundle')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'sheerun/vim-polyglot'
+Plugin 'tpope/vim-fugitive'
+Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'flazz/vim-colorschemes'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+syntax on
+
+" Customize NERDTreeTabsToggle
+map <C-\> <plug>NERDTreeTabsToggle<CR>
+
