@@ -14,9 +14,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geos-*/
-./configure --prefix=$prefix --host=$target
+
+EXTRA_CONFIGURE_FLAGS=()
+if [[ ${target} == arm* ]]; then
+    EXTRA_CONFIGURE_FLAGS+=(--disable-inline)
+fi
+./configure --prefix=$prefix --host=$target --enable-shared ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
+false
 """
 
 # These are the platforms we will build for by default, unless further

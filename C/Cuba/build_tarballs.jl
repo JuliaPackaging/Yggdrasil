@@ -8,11 +8,17 @@ version = v"4.2a"
 sources = [
     "https://github.com/giordano/cuba/archive/7f3613d28881cf984830e04282a483e7fe64e91a.tar.gz" =>
     "606fa27858bf93ce78af3c139d0c450555bff6244758faae6b542df3a04faf95",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cuba-*/
+
+#if [[ ${target} != *darwin* ]]; then
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cuba_whole_archive.patch"
+#fi
+
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc} shared
 make install

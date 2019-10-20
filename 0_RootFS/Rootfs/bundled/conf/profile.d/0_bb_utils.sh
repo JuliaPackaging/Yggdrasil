@@ -20,7 +20,7 @@ qwhich() {
 # Save bash history (and optionally echo it out as it happens)
 save_history() {
     # Skip special commands
-    if [[ "${BASH_COMMAND}" != trap* ]] || [[ "${BASH_COMMAND}" == false ]]; then
+    if [[ "${BASH_COMMAND}" == trap* ]] || [[ "${BASH_COMMAND}" == false ]]; then
         return
     fi
 	vecho_red " ---> ${BASH_COMMAND}"
