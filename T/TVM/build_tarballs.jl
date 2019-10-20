@@ -30,7 +30,9 @@ done
 cd $WORKSPACE/srcdir/tvm
 
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" \
+         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+         -DCMAKE_
 make -j${nproc}
 make install
 """
@@ -59,6 +61,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Zlib_jll",
+    "LLVM_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
