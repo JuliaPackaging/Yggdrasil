@@ -1,0 +1,12 @@
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -56,3 +56,9 @@
+     value: true,
+     description: 'Enable support for Wayland utility programs',
+ )
++option(
++  'native-wayland-scanner',
++  type: 'string',
++  value: 'wayland-scanner',
++  description: 'Path to a native wayland-scanner',
++)
