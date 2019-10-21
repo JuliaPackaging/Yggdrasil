@@ -23,8 +23,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libogg", :libogg),
+products = prefix -> [
+    LibraryProduct(prefix, "libogg", :libogg),
 ]
 
 # Dependencies that must be installed before this package can be built
