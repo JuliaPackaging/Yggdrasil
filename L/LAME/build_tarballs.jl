@@ -30,7 +30,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmp3lame", :libmp3lame)
+    ExecutableProduct("lame", :lame),
+    LibraryProduct("libmp3lame", :libmp3lame),
 ]
 
 # Dependencies that must be installed before this package can be built
