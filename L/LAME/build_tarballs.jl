@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "liblame"
+name = "LAME"
 version = v"3.100"
 
 # Collection of sources required to build liblame
