@@ -56,7 +56,8 @@ dependencies = [
     "Fontconfig_jll",
     "FreeType2_jll",
     "Bzip2_jll",
-    "X11_jll",
+    "Xorg_libXext_jll",
+    "Xorg_libXrender_jll",
     "LZO_jll",
     "Zlib_jll",
 ]

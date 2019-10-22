@@ -30,7 +30,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "X11_jll",
+    "Xorg_util_macros_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

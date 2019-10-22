@@ -55,7 +55,7 @@ dependencies = [
     "JpegTurbo_jll",
     "libpng_jll",
     "Libtiff_jll",
-    "X11_jll",
+    "Xorg_libX11_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
