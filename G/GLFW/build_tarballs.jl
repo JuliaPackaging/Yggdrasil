@@ -35,7 +35,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Libglvnd_jll",
-    "X11_jll",
+    "Xorg_libXcursor_jll",
+    "Xorg_libXi_jll",
+    "Xorg_libXinerama_jll",
+    "Xorg_libXrandr_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
