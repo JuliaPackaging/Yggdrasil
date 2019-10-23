@@ -81,6 +81,15 @@ function meson_cpu_family_from_target()
     fi
 }
 
+function meson_link_args()
+{
+    if [[ "$1" == powerpc64le-* ]]; then
+        echo "'-Wl,-rpath-link,/workspace/destdir/lib64'"
+    else
+        echo ""
+    fi
+}
+
 function meson_is_foreign()
 {
     if [[ "$1" == x86_64-linux-* ]] || [[ "$1" == i686-linux-* ]]; then
@@ -150,6 +159,8 @@ for TARGET in ${ENABLED_TARGETS}; do
                       "{{OS}}=$(echo ${OS} | tr '[:upper:]' '[:lower:]')" \
                       "{{CPU}}=$(meson_cpu_from_target "${TARGET}")" \
                       "{{CPU_FAMILY}}=$(meson_cpu_family_from_target "${TARGET}")" \
+                      "{{C_LINK_ARGS}}=$(meson_link_args "${TARGET}")" \
+                      "{{CXX_LINK_ARGS}}=$(meson_link_args "${TARGET}")" \
                       "{{IS_FOREIGN}}=$(meson_is_foreign "${TARGET}")" \
                       > "${TARGET}/${TARGET}.meson"
 done
