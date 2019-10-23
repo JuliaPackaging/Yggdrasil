@@ -1,0 +1,12 @@
+--- a/meson.build
++++ b/meson.build
+@@ -959,7 +959,8 @@
+ meson.add_install_script('build-aux/meson/post-install.py',
+                          gtk_api_version,
+                          gtk_binary_version,
+-                         join_paths(gtk_prefix, get_option('bindir')),
++                         # We need to run native tools
++                         '/usr/bin',
+                          gtk_libdir,
+                          gtk_datadir)
+ 

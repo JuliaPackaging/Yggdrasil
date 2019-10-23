@@ -1,0 +1,11 @@
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -2190,7 +2190,7 @@
+                                             GdkWindowTypeHint hint)
+ {
+ #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 10110
++#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101100
+ #define GDK_QUARTZ_ALLOWS_TILING NSWindowCollectionBehaviorFullScreenAllowsTiling
+ #define GDK_QUARTZ_DISALLOWS_TILING NSWindowCollectionBehaviorFullScreenDisallowsTiling
+ #else
