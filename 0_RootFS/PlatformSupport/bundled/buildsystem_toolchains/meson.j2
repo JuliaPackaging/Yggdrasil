@@ -11,8 +11,8 @@ pkgconfig = '/usr/bin/pkg-config'
 [properties]
 c_args = []
 cpp_args = []
-c_link_args = []
-cpp_link_args = []
+c_link_args = [{{C_LINK_ARGS}}]
+cpp_link_args = [{{CXX_LINK_ARGS}}]
 needs_exe_wrapper = {{IS_FOREIGN}}
 
 [build_machine]
