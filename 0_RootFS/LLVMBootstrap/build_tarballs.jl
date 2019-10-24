@@ -29,7 +29,7 @@ sources = [
 
 # Since we kind of do this LLVM setup twice, this is the shared setup start:
 script = raw"""
-apk add build-base python-dev linux-headers musl-dev
+apk add build-base python-dev linux-headers musl-dev zlib-dev
 
 cd $WORKSPACE/srcdir/
 
@@ -98,11 +98,6 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 # Tell compiler-rt to generate builtins for all the supported arches
 CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
 
-# We don't need libunwind yet
-#CMAKE_FLAGS="${CMAKE_FLAGS} -DLLVM_TOOL_LIBUNWIND_BUILD=OFF"
-# Sanitizers don't work on musl yet
-#CMAKE_FLAGS="${CMAKE_FLAGS} -DCOMPILER_RT_BUILD_SANITIZERS=OFF"
-
 # Build!
 cmake .. ${CMAKE_FLAGS[@]}
 cmake -LA || true
@@ -110,14 +105,6 @@ make -j${nproc} VERBOSE=1
 
 # Install!
 make install -j${nproc} VERBOSE=1
-
-# Lots of tools don't respect `$DSYMUTIL` and so thus do not find 
-# our cleverly-named `llvm-dsymutil`.  We create a symlink to help
-# Those poor fools along:
-#ln -s llvm-dsymutil ${prefix}/bin/dsymutil
-
-# We also need clang++ as well as just plain old clang
-#ln -s clang ${prefix}/bin/clang++
 """
 
 # The products that we will ensure are always built
