@@ -24,6 +24,10 @@ if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(ac_cv_path_GTK_UPDATE_ICON_CACHE=gtk-update-icon-cache.exe)
 fi
 
+if [[ "${target}" == powerpc64le-* ]]; then
+    export CFLAGS="-Wl,-rpath-link,${prefix}/lib64"
+fi
+
 ./configure --prefix=${prefix} --host=${target} \
     --disable-gtk2-engine \
     "${FLAGS[@]}"
@@ -37,7 +41,7 @@ make install
 #platforms = supported_platforms()
 
 # Limit to the same platforms as Gtk for now
-platforms = [p for p in supported_platforms() if p isa Union{MacOS,Windows}]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
