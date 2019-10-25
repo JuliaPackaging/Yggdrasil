@@ -28,6 +28,11 @@ fi
 ./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
+# Tk needs private headers
+make install-private-headers
+
+# Install license file
+install_license $WORKSPACE/srcdir/tcl*/license.terms
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,7 +41,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libtcl8.6", "libtcl8", "tcl86"], :libtcl86),
+    LibraryProduct(["libtcl8.6", "libtcl8", "tcl86"], :libtcl),
 ]
 
 # Dependencies that must be installed before this package can be built
