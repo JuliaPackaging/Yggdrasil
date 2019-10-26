@@ -5,17 +5,17 @@ using BinaryBuilder
 name = "libsndfile"
 version = v"1.0.28"
 
-# Collection of sources required to build FLAC
+# Collection of sources required to build
 sources = [
-    "http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.28.tar.gz" =>
+    "http://www.mega-nerd.com/libsndfile/files/libsndfile-$(version).tar.gz" =>
     "1ff33929f042fa333aed1e8923aa628c3ee9e1eb85512686c55092d1e5a9dfa9"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-./configure --prefix=$prefix --host=$target --disable-static
-make
+CFLAGS="-I${prefix}/include" ./configure --prefix=$prefix --host=$target --disable-static
+make -j${nproc}
 make install
 """
 
@@ -35,7 +35,6 @@ products = [
     ExecutableProduct("sndfile-metadata-get", :sndfile_metadata_get),
     ExecutableProduct("sndfile-metadata-set", :sndfile_metadata_set),
     ExecutableProduct("sndfile-play", :sndfile_play),
-    ExecutableProduct("sndfile-regtest", :sndfile_regtest),
     ExecutableProduct("sndfile-salvage", :sndfile_salvage)
 ]
 
