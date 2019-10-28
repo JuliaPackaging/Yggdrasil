@@ -1,0 +1,13 @@
+diff --git a/makefile.in b/makefile.in
+index 381a36d..2c1f545 100644
+--- a/makefile.in
++++ b/makefile.in
+@@ -295,7 +295,7 @@ $(LIB): $(LIB)(Vegas.o)     $(LIB)(Vegas_.o)     \
+ 
+ $(SHARED_OBJ): $(LIB)
+ 	$(AR) x $^
+-	$(CC) @SHARED_OBJ_OPT@ -o $@ *.o $(LIBS) $(LDFLAGS)
++	$(CC) @SHARED_OBJ_OPT@ -o $@ *.o -Wl,--whole-archive $(LIBS) -Wl,--no-whole-archive $(LDFLAGS)
+ 	rm *.o
+ 
+ cubal.h: cuba.h
