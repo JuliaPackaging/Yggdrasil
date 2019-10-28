@@ -1,5 +1,8 @@
 using BinaryBuilder
 
+name = "Sundials"
+version = v"3.1.1"
+
 # Collection of sources required to build SundialsBuilder
 sources = [
     "https://computation.llnl.gov/projects/sundials/download/sundials-3.1.1.tar.gz" =>
@@ -69,47 +72,37 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = [
-    BinaryProvider.Windows(:i686),
-    BinaryProvider.Windows(:x86_64),
-    BinaryProvider.MacOS(),
-    BinaryProvider.Linux(:x86_64, :glibc),
-    BinaryProvider.Linux(:i686, :glibc),
-    BinaryProvider.Linux(:aarch64, :glibc),
-    BinaryProvider.Linux(:armv7l, :glibc),
-    BinaryProvider.Linux(:powerpc64le, :glibc),
-]
+platforms = supported_platforms()
 
-
-products(prefix) = [
-    LibraryProduct(prefix, "libbtf", :libbtf),
-    LibraryProduct(prefix, "libsundials_sunlinsolspfgmr", :libsundials_sunlinsolspfgmr),
-    LibraryProduct(prefix, "libsundials_ida", :libsundials_ida),
-    LibraryProduct(prefix, "libsundials_cvode", :libsundials_cvode),
-    LibraryProduct(prefix, "libsundials_cvodes", :libsundials_cvodes),
-    LibraryProduct(prefix, "libcolamd", :libcolamd),
-    LibraryProduct(prefix, "libsundials_sunmatrixdense", :libsundials_sunmatrixdense),
-    LibraryProduct(prefix, "libsundials_sunlinsolspbcgs", :libsundials_sunlinsolspbcgs),
-    LibraryProduct(prefix, "libsundials_idas", :libsundials_idas),
-    LibraryProduct(prefix, "libsundials_nvecserial", :libsundials_nvecserial),
-    LibraryProduct(prefix, "libsundials_sunlinsoldense", :libsundials_sunlinsoldense),
-    LibraryProduct(prefix, "libsundials_sunlinsolspgmr", :libsundials_sunlinsolspgmr),
-    LibraryProduct(prefix, "libsundials_sunlinsolpcg", :libsundials_sunlinsolpcg),
-    LibraryProduct(prefix, "libsundials_sunlinsolsptfqmr", :libsundials_sunlinsolsptfqmr),
-    LibraryProduct(prefix, "libsundials_sunlinsolklu", :libsundials_sunlinsolklu),
-    LibraryProduct(prefix, "libsundials_sunmatrixsparse", :libsundials_sunmatrixsparse),
-    LibraryProduct(prefix, "libsundials_sunlinsolband", :libsundials_sunlinsolband),
-    LibraryProduct(prefix, "libsundials_sunmatrixband", :libsundials_sunmatrixband),
-    LibraryProduct(prefix, "libsundials_kinsol", :libsundials_kinsol),
-    LibraryProduct(prefix, "libsundials_arkode", :libsundials_arkode),
-    LibraryProduct(prefix, "libklu", :libklu),
-    LibraryProduct(prefix, "libsuitesparseconfig", :libsuitesparseconfig),
-    LibraryProduct(prefix, "libamd", :libamd),
+products = [
+    LibraryProduct("libbtf", :libbtf),
+    LibraryProduct("libsundials_sunlinsolspfgmr", :libsundials_sunlinsolspfgmr),
+    LibraryProduct("libsundials_ida", :libsundials_ida),
+    LibraryProduct("libsundials_cvode", :libsundials_cvode),
+    LibraryProduct("libsundials_cvodes", :libsundials_cvodes),
+    LibraryProduct("libcolamd", :libcolamd),
+    LibraryProduct("libsundials_sunmatrixdense", :libsundials_sunmatrixdense),
+    LibraryProduct("libsundials_sunlinsolspbcgs", :libsundials_sunlinsolspbcgs),
+    LibraryProduct("libsundials_idas", :libsundials_idas),
+    LibraryProduct("libsundials_nvecserial", :libsundials_nvecserial),
+    LibraryProduct("libsundials_sunlinsoldense", :libsundials_sunlinsoldense),
+    LibraryProduct("libsundials_sunlinsolspgmr", :libsundials_sunlinsolspgmr),
+    LibraryProduct("libsundials_sunlinsolpcg", :libsundials_sunlinsolpcg),
+    LibraryProduct("libsundials_sunlinsolsptfqmr", :libsundials_sunlinsolsptfqmr),
+    LibraryProduct("libsundials_sunlinsolklu", :libsundials_sunlinsolklu),
+    LibraryProduct("libsundials_sunmatrixsparse", :libsundials_sunmatrixsparse),
+    LibraryProduct("libsundials_sunlinsolband", :libsundials_sunlinsolband),
+    LibraryProduct("libsundials_sunmatrixband", :libsundials_sunmatrixband),
+    LibraryProduct("libsundials_kinsol", :libsundials_kinsol),
+    LibraryProduct("libsundials_arkode", :libsundials_arkode),
+    LibraryProduct("libklu", :libklu),
+    LibraryProduct("libsuitesparseconfig", :libsuitesparseconfig),
+    LibraryProduct("libamd", :libamd),
 ]
 
 dependencies = [
-    "https://github.com/staticfloat/OpenBLASBuilder/releases/download/v0.2.20-7/build.jl",
+    "OpenBLAS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, "Sundials", sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
