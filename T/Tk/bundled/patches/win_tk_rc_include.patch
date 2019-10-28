@@ -1,0 +1,13 @@
+diff --git a/win/Makefile.in b/win/Makefile.in
+index e878484..808c972 100644
+--- a/win/Makefile.in
++++ b/win/Makefile.in
+@@ -696,7 +696,7 @@ tkWindow.$(OBJEXT): configure Makefile
+ 	$(CC) -c $(CC_SWITCHES) -DBUILD_tk -DBUILD_ttk @DEPARG@ $(CC_OBJNAME)
+ 
+ .rc.$(RES):
+-	$(RC) @RC_OUT@ $@ @RC_TYPE@ @RC_DEFINES@ @RC_INCLUDE@ "$(GENERIC_DIR_NATIVE)" @RC_INCLUDE@ "$(TCL_GENERIC_NATIVE)" @RC_INCLUDE@ "$(RC_DIR_NATIVE)" @DEPARG@
++	$(RC) @RC_OUT@ $@ @RC_TYPE@ @RC_DEFINES@ @RC_INCLUDE@ "$(prefix)/include" @RC_INCLUDE@ "$(GENERIC_DIR_NATIVE)" @RC_INCLUDE@ "$(TCL_GENERIC_NATIVE)" @RC_INCLUDE@ "$(RC_DIR_NATIVE)" @DEPARG@
+ 
+ depend:
+ 

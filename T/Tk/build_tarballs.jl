@@ -20,7 +20,7 @@ else
     cd $WORKSPACE/srcdir/tk*/unix/
 fi
 
-export CPPFLAGS="-I${prefix}/include ${CPPFLAGS}"
+export CFLAGS="-I${prefix}/include ${CFLAGS}"
 
 FLAGS=(--enable-threads --disable-rpath)
 if [[ "${target}" == x86_64-* ]]; then
@@ -34,7 +34,11 @@ if [[ "${target}" == *-apple-* ]]; then
 
     # The following patch replaces the hard-coded path of Cocoa framework
     # with the actual path on our system.
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple_cocoa_configure.patch"
+fi
+if [[ "${target}" == *mingw* ]]; then
+    # `windres` invocations don't get the proper tk include path; just hack it in
+    atomic_patch -p2 "${WORKSPACE}/srcdir/patches/win_tk_rc_include.patch"
 fi
 
 ./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
