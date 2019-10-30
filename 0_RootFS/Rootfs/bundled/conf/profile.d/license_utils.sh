@@ -1,5 +1,8 @@
 # Function to automatically install license files at the end of the build
 auto_install_license () {
+    # Do not stop suddenly if something fails
+    set +e
+
     if [[ ! -d "${prefix}/share/licenses/${SRC_NAME}" ]]; then
         # The license directory doesn't exist, let's find all licenses
 
