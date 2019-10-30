@@ -2,6 +2,38 @@
 
 using GitHub, BinaryBuilder, Pkg.BinaryPlatforms, Pkg.PlatformEngines, SHA
 
+"""
+    extract_platform_key(path::AbstractString)
+
+Given the path to a tarball, return the platform key of that tarball. If none
+can be found, prints a warning and return the current platform suffix.
+"""
+function extract_platform_key(path::AbstractString)
+    try
+        return extract_name_version_platform_key(path)[3]
+    catch
+        @warn("Could not extract the platform key of $(path); continuing...")
+        return platform_key_abi()
+    end
+end
+
+"""
+    extract_name_version_platform_key(path::AbstractString)
+
+Given the path to a tarball, return the name, platform key and version of that
+tarball. If any of those things cannot be found, throw an error.
+"""
+function extract_name_version_platform_key(path::AbstractString)
+    m = match(r"^(.*?)\.v(.*?)\.([^\.\-]+-[^\.\-]+-([^\-]+-){0,2}[^\-]+).tar.gz$", basename(path))
+    if m === nothing
+        error("Could not parse name, platform key and version from $(path)")
+    end
+    name = m.captures[1]
+    version = VersionNumber(m.captures[2])
+    platkey = platform_key_abi(m.captures[3])
+    return name, version, platkey
+end
+
 function product_hashes_from_github_release(repo_name::AbstractString, tag_name::AbstractString;
                                             verbose::Bool = true)
     # Get list of files within this release
