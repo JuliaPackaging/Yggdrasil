@@ -1,0 +1,13 @@
+diff --git a/src/util/memory_manager.cpp b/src/util/memory_manager.cpp
+index 3fe71c5e3e..a325afca75 100644
+--- a/src/util/memory_manager.cpp
++++ b/src/util/memory_manager.cpp
+@@ -163,7 +163,7 @@ unsigned long long memory::get_max_used_memory() {
+ }
+
+ #if defined(_WINDOWS)
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+
+ unsigned long long memory::get_max_memory_size() {
