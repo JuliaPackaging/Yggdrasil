@@ -44,8 +44,7 @@ if [[ ${target} == *mingw* ]]; then
 else
     mv lib ${prefix}/lib
 fi
-mkdir -p ${prefix}/share
-mv info/*.txt ${prefix}/share/
+install_license info/*.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -63,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
