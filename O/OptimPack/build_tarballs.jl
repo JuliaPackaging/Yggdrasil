@@ -8,21 +8,20 @@ version = v"3.1.0"
 # Collection of sources required to build OptimPAck
 sources = [
     "https://github.com/emmt/OptimPack/releases/download/v$(version)/optimpack-$(version).tar.gz" =>
-        "fa1efdbebf6efa42a1d6b4f6223c7ca0b871fad5c0b53f7dc9be296e4c766190",
+    "fa1efdbebf6efa42a1d6b4f6223c7ca0b871fad5c0b53f7dc9be296e4c766190",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/optimpack-*
 ./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
-make -j${nproc}
-make install
-
-# On Windows platforms, we need to move our .dll files to bin
+FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/*.dll ${prefix}/bin
+    # This is needed in order to build the shared library on Windows
+    FLAGS+=(LDFLAGS="-no-undefined")
 fi
+make -j${nproc} "${FLAGS[@]}"
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,11 +29,11 @@ fi
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libopk",    :libopk),
-    LibraryProduct(prefix, "libcobyla", :libcobyla),
-    LibraryProduct(prefix, "libbobyqa", :libbobyqa),
-    LibraryProduct(prefix, "libnewuoa", :libnewuoa)
+products = [
+    LibraryProduct("libopk",    :libopk),
+    LibraryProduct("libcobyla", :libcobyla),
+    LibraryProduct("libbobyqa", :libbobyqa),
+    LibraryProduct("libnewuoa", :libnewuoa)
 ]
 
 # Dependencies that must be installed before this package can be built
