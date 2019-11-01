@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mpfr-*
 ./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix}
-make -j
+make -j${nproc}
 make install
 
 # On Windows, make sure non-versioned filename exists...
