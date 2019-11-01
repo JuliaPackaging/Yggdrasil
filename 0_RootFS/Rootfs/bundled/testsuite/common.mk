@@ -61,8 +61,18 @@ $(PROJECT_BUILD):
 	@mkdir -p $@
 $(PROJECT_BUILD)/$(PROJECT_NAME)$(exeext): | $(PROJECT_BUILD)
 
-# Create default rule for `build`
-build: $(PROJECT_BUILD)/$(PROJECT_NAME)
+# By default, `build` just tries to build all of our BINS and LIBS:
+build: $(addprefix $(PROJECT_BUILD)/,$(BINS)) $(addprefix $(PROJECT_BUILD)/,$(LIBS))
+
+# Create default rule for `install`
+install: build
+	@mkdir -p $(bindir) $(libdir)
+	@for f in $(BINS); do \
+		install -m755 $(PROJECT_BUILD)/$$f $(bindir); \
+	done
+	@for f in $(LIBS); do \
+		install -m755 $(PROJECT_BUILD)/$$f $(libdir); \
+	done
 
 # Create default rule for `clean`
 clean:

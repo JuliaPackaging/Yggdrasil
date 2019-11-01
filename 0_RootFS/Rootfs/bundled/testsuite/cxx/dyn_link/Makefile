@@ -1,4 +1,7 @@
 PROJECT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+BINS = $(PROJECT_NAME)$(exeext)
+LIBS = librepeater/librepeater.$(dlext)
+
 include ../../common.mk
 
 $(PROJECT_BUILD)/$(PROJECT_NAME)$(exeext): $(PROJECT_NAME).cc $(PROJECT_BUILD)/librepeater/librepeater.$(dlext)

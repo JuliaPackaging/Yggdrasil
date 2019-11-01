@@ -57,7 +57,7 @@ end
 
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
-    tag = BinaryBuilder.get_tag_name(name, BinaryBuilder.get_next_wrapper_version(name, version))
+    tag = "$(name)-v$(BinaryBuilder.get_next_wrapper_version(name, version))"
     filename = BinaryBuilder.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 

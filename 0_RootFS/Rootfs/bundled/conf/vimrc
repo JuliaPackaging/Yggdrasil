@@ -33,3 +33,6 @@ syntax on
 " Customize NERDTreeTabsToggle
 map <C-\> <plug>NERDTreeTabsToggle<CR>
 
+" Disable mouse events
+set mouse=
+set ttymouse=
