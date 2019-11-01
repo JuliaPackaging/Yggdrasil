@@ -8,7 +8,7 @@ LANGUAGES=c cxx fortran go rust
 PROJECTS=hello_world dyn_link
 
 define unesc
-$(subst -,/,$(subst build-,,$(subst clean-,,$(subst run-,,$1))))
+$(subst -,/,$(subst install-,,$(subst build-,,$(subst clean-,,$(subst run-,,$1)))))
 endef
 
 # Helper function that adds $(2) as a dependency to rule $(1), but only if $(2) actually exists.
