@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/z3/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/memory_manager_windows.patch
 
 mkdir z3-build && cd z3-build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
 make -j${nproc}
 make install
 """
