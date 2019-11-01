@@ -18,7 +18,8 @@ TESTSUITE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 # Calculate the relative path from $(TESTSUITE_DIR) to $(PROJECT_DIR)
 PROJECT_REL_DIR := $(call relpath,$(PROJECT_DIR),$(TESTSUITE_DIR))
-PROJECT_NAME := $(notdir $(dir $(PROJECT_DIR)))-$(notdir $(PROJECT_DIR))
+PROJECT_NAME := $(notdir $(PROJECT_DIR))
+PROJECT_LANG := $(notdir $(abspath $(dir $(PROJECT_DIR))))
 
 # Inherit some things from the environment, setting dumb defaults otherwise
 target ?= x86_64-linux-gnu
@@ -68,10 +69,10 @@ build: $(addprefix $(PROJECT_BUILD)/,$(BINS)) $(addprefix $(PROJECT_BUILD)/,$(LI
 install: build
 	@mkdir -p $(bindir) $(libdir)
 	@for f in $(BINS); do \
-		install -m755 $(PROJECT_BUILD)/$$f $(bindir); \
+		install -m755 $(PROJECT_BUILD)/$${f} $(bindir)/$${f}_$(PROJECT_LANG); \
 	done
 	@for f in $(LIBS); do \
-		install -m755 $(PROJECT_BUILD)/$$f $(libdir); \
+		install -m755 $(PROJECT_BUILD)/$${f} $(libdir); \
 	done
 
 # Create default rule for `clean`
