@@ -211,6 +211,9 @@ mkdir -p ${prefix}/overlay_workdir ${prefix}/meta
 # Sneak some test suites into the build environment, so we can do sanity checks easily
 cp -vdR ${WORKSPACE}/srcdir/testsuite ${prefix}/usr/share/
 
+# Add some licenses for quick-and-dirty licensing
+cp -vdR ${WORKSPACE}/srcdir/licenses ${prefix}/usr/share/
+
 ## Cleanup
 # We can never extract these files, because they are too fancy  :(
 rm -rf ${prefix}/usr/share/terminfo
