@@ -93,8 +93,8 @@ sources = [
     "https://github.com/NixOS/patchelf.git" =>
     "e1e39f3639e39360ceebb2f7ed533cede4623070",
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    "https://github.com/mesonbuild/meson/releases/download/0.51.2/meson-0.51.2.tar.gz" =>
-    "23688f0fc90be623d98e80e1defeea92bbb7103bf9336a5f5b9865d36e892d76",
+    "https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz" =>
+    "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32",
     # And also our own local patches, utilities, etc...
     "./bundled",
 ]
