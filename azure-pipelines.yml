@@ -1,5 +1,11 @@
+# Trigger on pushes to `master`
 trigger:
-  - azure*
+- master
+
+# Trigger on PRs against `master`
+pr:
+- master
+
 variables:
   # We run off of the latest `master`
   BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
@@ -13,9 +19,9 @@ jobs:
       PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
       # LLVM is special, we won't build it automatically since it takes special attention
       EXCLUDE_PROJECTS=" LLVM "
-      echo -n "##vso[task.setVariable variable=legs;isOutput=true]{"
-      # TODO: deal with empty PROJECTS.  Related: filter excluded projects
-      # before entering the for loop
+
+      # This is the dynamic mapping we're going to build up, if it's empty we don't do anything
+      PROJECTS_MAPPING=""
       for PROJECT in ${PROJECTS}; do
           NAME=$(basename "${PROJECT}")
           # Only accept things that contain a `build_tarballs.jl`
@@ -34,31 +40,40 @@ jobs:
           fi
 
           # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
-          echo -n "'${NAME}':{'PROJECT':'${PROJECT}'}, "
+          PROJECTS_MAPPING="${PROJECTS_MAPPING} '${NAME}':{'PROJECT':'${PROJECT}'}, "
       done
-      echo "}"
+      if [[ -n "${PROJECTS_MAPPING}" ]]; then
+          echo -n "##vso[task.setVariable variable=legs;isOutput=true]{"
+          echo -n "${PROJECTS_MAPPING}"
+          echo "}"
+      fi
     name: mtrx
+
 - job: runner
   dependsOn: generator
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
+  variables:
+    mtrx_legs: $[ dependencies.generator.outputs['mtrx.legs'] ] 
   steps:
   # we map /storage (which is a persistent volume mapped within the overall `docker-compose.yml`) to /storage
   - script: |
       # Pull down the latest source BB image
-      docker pull $(BINARYBUILDER_DOCKER_IMAGE)
+      docker pull $(BINARYBUILDER_IMAGE_NAME)
 
       # Create a docker image that sucks in the current Yggdrasil tree
-      echo "FROM $(BINARYBUILDER_DOCKER_IMAGE)" > builder.Dockerfile
+      echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
       echo "ADD . /workspace" >> builder.Dockerfile
 
       # Build it, tag it with a unique tag name
-      docker build --rm -t bb_worker-$(Build.SourceVersion)-$(PROJECT) -f builder.Dockerfile .
+      docker build --rm -t bb_worker:$(Build.SourceVersion)_$(PROJECT) -f builder.Dockerfile .
 
-      # Run inside of that
-      docker run --rm --privileged -v "/storage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" "${ID}" julia --color=yes ./build_tarballs.jl --verbose
+      docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose
     displayName: "Build the tarballs"
+    condition: ne(variables['mtrx_legs'], '')
   - script: |
-      docker rmi bb_worker-$(Build.SourceVersion)-$(PROJECT)
-    displayName: "Cleanup"
-    condition: always() # We need to run this even if the build fails
+      docker rmi bb_worker:$(Build.SourceVersion)_$(PROJECT)
+    displayName: "Cleanup docker image"
+    # This is so janky, but `always()` eliminates the implicit "previous run succeeded" condition, and 
+    # the `ne()` allows us to disable this if no PROJECT values were run at all
+    condition: and(always(), ne(variables['mtrx_legs'], ''))
