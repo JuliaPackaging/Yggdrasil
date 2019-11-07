@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "Patchelf"
-version = v"2018.05.09"
+version = v"2019.10.23"
 
 sources = [
     "https://github.com/NixOS/patchelf.git" =>
-    "27ffe8ae871e7a186018d66020ef3f6162c12c69",
+    "2ba64817ec6f3b714503ea6e6aa8439505bb7393",
 ]
 
 # Bash recipe for building across all platforms
@@ -23,12 +23,12 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, :glibc)
+    Linux(:x86_64; libc=:glibc)
 ]
 
 # The products that we will ensure are always built
-products(prefix) = Product[
-    ExecutableProduct(prefix, "patchelf", :patchelf),
+products = Product[
+    ExecutableProduct("patchelf", :patchelf),
 ]
 
 # Dependencies that must be installed before this package can be built
