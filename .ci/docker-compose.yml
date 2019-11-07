@@ -10,4 +10,7 @@ services:
             - AZP_AGENT_NAME=${AZP_AGENT_NAME}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+            - yggdrasil_storage:/storage
         restart: unless-stopped
+volumes:
+    yggdrasil_storage:

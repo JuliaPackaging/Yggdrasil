@@ -15,8 +15,12 @@ pool: Default
 jobs:
 - job: generator
   steps:
+  - checkout: self
+    fetchDepth: 99999
+    clean: true
   - bash: |
-      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
+      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD remotes/origin/$(System.PullRequest.TargetBranch) | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
+      echo "ALL PROJECTS: ${PROJECTS}"
       # LLVM is special, we won't build it automatically since it takes special attention
       EXCLUDE_PROJECTS=" LLVM "
 
@@ -24,22 +28,27 @@ jobs:
       PROJECTS_MAPPING=""
       for PROJECT in ${PROJECTS}; do
           NAME=$(basename "${PROJECT}")
+          echo "Considering ${PROJECT}"
           # Only accept things that contain a `build_tarballs.jl`
           if [[ ! -f "${PROJECT}/build_tarballs.jl" ]]; then
+              echo " --> Skipping as it does not have a build_tarballs.jl"
               continue
           fi
 
           # Ignore RootFS stuff, we'll do that manually
           if [[ "${NAME}" == "0_RootFS/"* ]]; then
+              echo " --> Skipping as it's within 0_RootFS/"
               continue
           fi
 
           # Ignore stuff in our excluded projects
           if [[ "${EXCLUDE_PROJECTS}" == *" ${NAME} "* ]]; then
+              echo " --> Skipping as it's excluded"
               continue
           fi
 
           # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
+          echo " --> Accepted!"
           PROJECTS_MAPPING="${PROJECTS_MAPPING} '${NAME}':{'PROJECT':'${PROJECT}'}, "
       done
       if [[ -n "${PROJECTS_MAPPING}" ]]; then
@@ -66,13 +75,14 @@ jobs:
       echo "ADD . /workspace" >> builder.Dockerfile
 
       # Build it, tag it with a unique tag name
-      docker build --rm -t bb_worker:$(Build.SourceVersion)_$(PROJECT) -f builder.Dockerfile .
+      docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
 
+      # Run inside of that just-built docker image
       docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose
     displayName: "Build the tarballs"
     condition: ne(variables['mtrx_legs'], '')
   - script: |
-      docker rmi bb_worker:$(Build.SourceVersion)_$(PROJECT)
+      docker rmi bb_worker:$(Build.SourceVersion)
     displayName: "Cleanup docker image"
     # This is so janky, but `always()` eliminates the implicit "previous run succeeded" condition, and 
     # the `ne()` allows us to disable this if no PROJECT values were run at all
