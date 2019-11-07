@@ -18,6 +18,11 @@ jobs:
       # before entering the for loop
       for PROJECT in ${PROJECTS}; do
           NAME=$(basename "${PROJECT}")
+          # Only accept things that contain a `build_tarballs.jl`
+          if [[ ! -f "${PROJECT}/build_tarballs.jl" ]]; then
+              continue
+          fi
+
           # Ignore RootFS stuff, we'll do that manually
           if [[ "${NAME}" == "0_RootFS/"* ]]; then
               continue
