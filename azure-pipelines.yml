@@ -1,0 +1,59 @@
+trigger:
+  - azure*
+variables:
+  # We run off of the latest `master`
+  BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
+
+pool: Default
+
+jobs:
+- job: generator
+  steps:
+  - bash: |
+      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
+      # LLVM is special, we won't build it automatically since it takes special attention
+      EXCLUDE_PROJECTS=" LLVM "
+      echo -n "##vso[task.setVariable variable=legs;isOutput=true]{"
+      # TODO: deal with empty PROJECTS.  Related: filter excluded projects
+      # before entering the for loop
+      for PROJECT in ${PROJECTS}; do
+          NAME=$(basename "${PROJECT}")
+          # Ignore RootFS stuff, we'll do that manually
+          if [[ "${NAME}" == "0_RootFS/"* ]]; then
+              continue
+          fi
+
+          # Ignore stuff in our excluded projects
+          if [[ "${EXCLUDE_PROJECTS}" == *" ${NAME} "* ]]; then
+              continue
+          fi
+
+          # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
+          echo -n "'${NAME}':{'PROJECT':'${PROJECT}'}, "
+      done
+      echo "}"
+    name: mtrx
+- job: runner
+  dependsOn: generator
+  strategy:
+    matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
+  steps:
+  # we map /storage (which is a persistent volume mapped within the overall `docker-compose.yml`) to /storage
+  - script: |
+      # Pull down the latest source BB image
+      docker pull $(BINARYBUILDER_DOCKER_IMAGE)
+
+      # Create a docker image that sucks in the current Yggdrasil tree
+      echo "FROM $(BINARYBUILDER_DOCKER_IMAGE)" > builder.Dockerfile
+      echo "ADD . /workspace" >> builder.Dockerfile
+
+      # Build it, tag it with a unique tag name
+      docker build --rm -t bb_worker-$(Build.SourceVersion)-$(PROJECT) -f builder.Dockerfile .
+
+      # Run inside of that
+      docker run --rm --privileged -v "/storage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" "${ID}" julia --color=yes ./build_tarballs.jl --verbose
+    displayName: "Build the tarballs"
+  - script: |
+      docker rmi bb_worker-$(Build.SourceVersion)-$(PROJECT)
+    displayName: "Cleanup"
+    condition: always() # We need to run this even if the build fails
