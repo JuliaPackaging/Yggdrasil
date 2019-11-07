@@ -24,6 +24,3 @@ RUN curl -L 'https://download.docker.com/linux/static/stable/x86_64/docker-19.03
 COPY ./start.sh .
 RUN chmod +x start.sh
 CMD ["./start.sh"]
-
-# Copy in our builder.Dockerfile
-COPY ./builder.Dockerfile /usr/local/share
