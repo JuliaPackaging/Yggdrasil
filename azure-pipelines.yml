@@ -1,0 +1,108 @@
+# Trigger on pushes to `master`
+trigger:
+- master
+
+# Trigger on PRs against `master`
+pr:
+- master
+
+variables:
+  # We run off of the latest `master`
+  BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
+
+pool: Default
+
+jobs:
+- job: generator
+  steps:
+  - checkout: self
+    fetchDepth: 99999
+    clean: true
+  - bash: |
+      # Normally we look at the last pushed commit
+      COMPARE_AGAINST="HEAD~1"
+
+      # If we're on a PR though, we look at the entire branch at once
+      if [[ $(Build.Reason) == "PullRequest" ]]; then
+          COMPARE_AGAINST="remotes/origin/$(System.PullRequest.TargetBranch)"
+      fi
+
+      # Get the directories holding all changed files
+      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD "${COMPARE_AGAINST}" | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
+      
+      # LLVM is special, we won't build it automatically since it takes special attention
+      EXCLUDE_PROJECTS=" LLVM "
+
+      # This is the dynamic mapping we're going to build up, if it's empty we don't do anything
+      PROJECTS_MAPPING=""
+      for PROJECT in ${PROJECTS}; do
+          NAME=$(basename "${PROJECT}")
+          echo "Considering ${PROJECT}"
+          # Only accept things that contain a `build_tarballs.jl`
+          if [[ ! -f "${PROJECT}/build_tarballs.jl" ]]; then
+              echo " --> Skipping as it does not have a build_tarballs.jl"
+              continue
+          fi
+
+          # Ignore RootFS stuff, we'll do that manually
+          if [[ "${NAME}" == "0_RootFS/"* ]]; then
+              echo " --> Skipping as it's within 0_RootFS/"
+              continue
+          fi
+
+          # Ignore stuff in our excluded projects
+          if [[ "${EXCLUDE_PROJECTS}" == *" ${NAME} "* ]]; then
+              echo " --> Skipping as it's excluded"
+              continue
+          fi
+
+          # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
+          echo " --> Accepted!"
+          PROJECTS_MAPPING="${PROJECTS_MAPPING} '${NAME}':{'PROJECT':'${PROJECT}'}, "
+      done
+      if [[ -n "${PROJECTS_MAPPING}" ]]; then
+          echo -n "##vso[task.setVariable variable=legs;isOutput=true]{"
+          echo -n "${PROJECTS_MAPPING}"
+          echo "}"
+      fi
+    name: mtrx
+
+- job: runner
+  dependsOn: generator
+  strategy:
+    matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
+  variables:
+    mtrx_legs: $[ dependencies.generator.outputs['mtrx.legs'] ] 
+  steps:
+  # we map /storage (which is a persistent volume mapped within the overall `docker-compose.yml`) to /storage
+  - script: |
+      # Pull down the latest source BB image
+      docker pull $(BINARYBUILDER_IMAGE_NAME)
+
+      # Create a docker image that sucks in the current Yggdrasil tree
+      echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
+      echo "ADD . /workspace" >> builder.Dockerfile
+
+      # Ignore 0_RootFS and .git to make things nice and fast:
+      echo "0_RootFS/*" >> .dockerignore
+      echo ".git/*" >> .dockerignore
+
+      # Build it, tag it with a unique tag name
+      docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
+
+      # If we're not on a pull request, then DEPLOY
+      DEPLOY=""
+      if [[ $(Build.Reason) != "PullRequest" ]]; then
+          DEPLOY="--deploy --register"
+      fi
+
+      # Run inside of that just-built Yggdrasil image
+      docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
+    displayName: "Build the tarballs"
+    condition: ne(variables['mtrx_legs'], '')
+  - script: |
+      docker rmi bb_worker:$(Build.SourceVersion)
+    displayName: "Cleanup docker image"
+    # This is so janky, but `always()` eliminates the implicit "previous run succeeded" condition, and 
+    # the `ne()` allows us to disable this if no PROJECT values were run at all
+    condition: and(always(), ne(variables['mtrx_legs'], ''))
