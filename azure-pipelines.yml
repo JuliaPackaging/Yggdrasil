@@ -83,6 +83,10 @@ jobs:
       echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
       echo "ADD . /workspace" >> builder.Dockerfile
 
+      # Ignore 0_RootFS and .git to make things nice and fast:
+      echo "0_RootFS/*" >> .dockerignore
+      echo ".git/*" >> .dockerignore
+
       # Build it, tag it with a unique tag name
       docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
 
