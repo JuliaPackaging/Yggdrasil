@@ -19,8 +19,17 @@ jobs:
     fetchDepth: 99999
     clean: true
   - bash: |
-      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD remotes/origin/$(System.PullRequest.TargetBranch) | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
-      echo "ALL PROJECTS: ${PROJECTS}"
+      # Normally we look at the last pushed commit
+      COMPARE_AGAINST="HEAD~1"
+
+      # If we're on a PR though, we look at the entire branch at once
+      if [[ $(Build.Reason) == "PullRequest" ]]; then
+          COMPARE_AGAINST="remotes/origin/$(System.PullRequest.TargetBranch)"
+      fi
+
+      # Get the directories holding all changed files
+      PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD "${COMPARE_AGAINST}" | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
+      
       # LLVM is special, we won't build it automatically since it takes special attention
       EXCLUDE_PROJECTS=" LLVM "
 
@@ -77,8 +86,14 @@ jobs:
       # Build it, tag it with a unique tag name
       docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
 
-      # Run inside of that just-built docker image
-      docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose
+      # If we're not on a pull request, then DEPLOY
+      DEPLOY=""
+      if [[ $(Build.Reason) != "PullRequest" ]]; then
+          DEPLOY="--deploy --register"
+      fi
+
+      # Run inside of that just-built Yggdrasil image
+      docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
     displayName: "Build the tarballs"
     condition: ne(variables['mtrx_legs'], '')
   - script: |
