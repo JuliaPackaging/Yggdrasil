@@ -69,6 +69,8 @@ jobs:
 
 - job: runner
   dependsOn: generator
+  timeoutInMinutes: 180
+  cancelTimeoutInMinutes: 2
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
     maxParallel: 4
