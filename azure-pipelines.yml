@@ -97,7 +97,7 @@ jobs:
       fi
 
       # Run inside of that just-built Yggdrasil image
-      docker run --rm --privileged -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
+      docker run --rm --privileged -e GITHUB_TOKEN -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
     displayName: "Build the tarballs"
     condition: ne(variables['mtrx_legs'], '')
   - script: |
