@@ -7,7 +7,7 @@ version = v"4.1.0"
 
 # Collection of sources required to build FFMPEG
 sources = [
-    "https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2" =>
+    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2" =>
     "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5",
 ]
 
@@ -72,6 +72,7 @@ pkg-config --list-all
   --enable-nonfree     \
   --disable-static     \
   --enable-shared      \
+  --enable-pic         \
   --disable-debug      \
   --disable-doc        \
   --enable-avresample  \
@@ -88,6 +89,8 @@ pkg-config --list-all
   --enable-muxers      \
   --enable-demuxers    \
   --enable-parsers     \
+  --enable-openssl     \
+  --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
   --extra-ldflags="-L${prefix}/lib"
 make -j${nproc}
@@ -102,8 +105,6 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ffmpeg", :ffmpeg),
     ExecutableProduct("ffprobe", :ffprobe),
-    ExecutableProduct("x264", :x264),
-    ExecutableProduct("x265", :x265),
     LibraryProduct("libavformat", :libavformat),
     LibraryProduct("libavcodec", :libavcodec),
     LibraryProduct("libavutil", :libavutil),
@@ -120,16 +121,17 @@ products = [
 dependencies = [
     "libass_jll",
     "libfdk_jll",
-    "fribidi_jll",
+    "FriBidi_jll",
     "FreeType2_jll",
-    "liblame_jll",
+    "LAME_jll",
     "libvorbis_jll",
     "Ogg_jll",
     "LibVPX_jll",
     "x264Builder_jll",
     "x265Builder_jll",
     "Bzip2_jll",
-    "Zlib_jll"
+    "Zlib_jll",
+    "OpenSSL_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
