@@ -30,7 +30,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Ogg_jll"
+    "Ogg_jll",
 ]
 
 
