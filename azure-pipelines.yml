@@ -90,9 +90,11 @@ jobs:
       # Build it, tag it with a unique tag name
       docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
 
-      # If we're not on a pull request, then DEPLOY
+      # If we're on master and this is not a pull request, then DEPLOY.  NOTE: A
+      # manual rebuild of a PR in Azure web interface is not a `PullRequest` for
+      # Azure.
       DEPLOY=""
-      if [[ $(Build.Reason) != "PullRequest" ]]; then
+      if [[ "$(Build.Reason)" != "PullRequest" ]] && [[ "$(Build.SourceBranch)" == "refs/heads/master" ]] ; then
           DEPLOY="--deploy --register"
       fi
 
