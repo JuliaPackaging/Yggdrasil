@@ -67,7 +67,7 @@ jobs:
       fi
     name: mtrx
 
-- job: runner
+- job: build
   dependsOn: generator
   timeoutInMinutes: 180
   cancelTimeoutInMinutes: 2
