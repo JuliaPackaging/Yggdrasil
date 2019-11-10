@@ -29,7 +29,7 @@ jobs:
 
       # Get the directories holding all changed files
       PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD "${COMPARE_AGAINST}" | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
-      
+
       # LLVM is special, we won't build it automatically since it takes special attention
       EXCLUDE_PROJECTS=" LLVM "
 
@@ -75,7 +75,9 @@ jobs:
     matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
     maxParallel: 4
   variables:
-    mtrx_legs: $[ dependencies.generator.outputs['mtrx.legs'] ] 
+    mtrx_legs: $[ dependencies.generator.outputs['mtrx.legs'] ]
+  # If PROJECT is empty, there is nothing to build
+  condition: ne(variables['mtrx_legs'], '')
   steps:
   # we map /storage (which is a persistent volume mapped within the overall `docker-compose.yml`) to /storage
   - script: |
@@ -102,10 +104,8 @@ jobs:
       # Run inside of that just-built Yggdrasil image
       docker run --rm --privileged -e GITHUB_TOKEN -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(System.JobId) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
     displayName: "Build the tarballs"
-    condition: ne(variables['mtrx_legs'], '')
   - script: |
       docker rmi bb_worker:$(System.JobId)
     displayName: "Cleanup docker image"
-    # This is so janky, but `always()` eliminates the implicit "previous run succeeded" condition, and 
-    # the `ne()` allows us to disable this if no PROJECT values were run at all
-    condition: and(always(), ne(variables['mtrx_legs'], ''))
+    # Cleanup also if previous step failed
+    condition: always()
