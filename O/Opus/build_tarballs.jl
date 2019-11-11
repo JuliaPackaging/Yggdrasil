@@ -15,9 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/opus-*/
 
-# On musl, force linkage against libssp_nonshared
+# On musl, disable stack protection (https://www.openwall.com/lists/musl/2018/09/11/2)
 if [[ ${target} == *musl* ]]; then
-    LDFLAGS="${LDFLAGS} -lssp_nonshared"
+    CFLAGS="${CFLAGS} -fno-stack-protector"
 fi
 
 ./configure --prefix=$prefix --host=$target --disable-static --enable-custom-modes
