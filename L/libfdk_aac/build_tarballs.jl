@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/fdk-aac-*
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
+install_license NOTICE
 """
 
 # These are the platforms we will build for by default, unless further
