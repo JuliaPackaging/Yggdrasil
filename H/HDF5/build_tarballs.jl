@@ -1,8 +1,9 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
-# Collection of sources required to build Nettle
+# Collection of sources required to build HDF5
 name = "HDF5"
 version = v"1.10.5"
+
 sources = [
     # Crib MacOS and Linux binaries from PyPI
     "https://files.pythonhosted.org/packages/98/06/0e711ae0c95d92ec238218448a15c23590cb117ded59e4bfa322b085b59e/h5py-2.9.0-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl" => "f3b49107fbfc77333fc2b1ef4d5de2abcd57e7ea3a1482455229494cf2da56ce",
@@ -19,6 +20,9 @@ sources = [
 
      # We need some special compiler support libraries from mingw
      "http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz" => "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17",
+
+    # License file
+    "https://support.hdfgroup.org/ftp/HDF5/releases/COPYING" => "1001425406c6f36ba30f7ac863c4b44a0355dfd5a0a0cf71e1f27201193a3f1e",
 ]
 
 # Bash recipe for building across all platforms
@@ -33,13 +37,13 @@ elif [[ ${target} == i686-*mingw* ]]; then
     mv mingw32/bin/*.dll ${prefix}/bin
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
-        WHL_FILE="h5py-*manylinux1_x86_64*.whl"
+        WHL_FILE="*-h5py-*manylinux1_x86_64*.whl"
         LIBSDIR=.libs
     elif [[ ${target} == i686-linux-gnu ]]; then
-        WHL_FILE="h5py-*manylinux1_i686*.whl"
+        WHL_FILE="*-h5py-*manylinux1_i686*.whl"
         LIBSDIR=.libs
     elif [[ ${target} == x86_64-apple-darwin* ]]; then
-        WHL_FILE="h5py-*macosx*.whl"
+        WHL_FILE="*-h5py-*macosx*.whl"
         LIBSDIR=.dylibs
     else
         echo "ERROR: Unsupported platform ${target}" >&2
@@ -71,6 +75,10 @@ if [[ ${target} == *linux* ]]; then
     ext="${libhdf5name#$base}"
     ln -s ${libhdf5name} ${prefix}/lib/libhdf5${ext}
 fi
+
+# Remove the hash from license file name and then install it
+mv ${WORKSPACE}/srcdir/*-COPYING ${WORKSPACE}/srcdir/COPYING
+install_license ${WORKSPACE}/srcdir/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -84,13 +92,13 @@ platforms = [
 ]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, ["libhdf5"], :libhdf5),
+products = [
+    LibraryProduct("libhdf5", :libhdf5),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.4/build_Zlib.v1.2.11.jl",
+    "Zlib_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
