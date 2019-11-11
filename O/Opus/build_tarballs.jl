@@ -17,10 +17,10 @@ cd $WORKSPACE/srcdir/opus-*/
 
 # On musl, disable stack protection (https://www.openwall.com/lists/musl/2018/09/11/2)
 if [[ ${target} == *musl* ]]; then
-    CFLAGS="${CFLAGS} -fno-stack-protector"
+    STACK_PROTECTOR="--disable-stack-protector"
 fi
 
-./configure --prefix=$prefix --host=$target --disable-static --enable-custom-modes
+./configure --prefix=$prefix --host=$target --disable-static --enable-custom-modes ${STACK_PROTECTOR}
 make -j${nproc}
 make install
 """
