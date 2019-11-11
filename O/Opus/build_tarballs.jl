@@ -15,7 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/opus-*/
 
-# Try forcing hard floating point 
+# On musl, force linkage against libssp_nonshared
+if [[ ${target} == *musl* ]]; then
+    LDFLAGS="${LDFLAGS} -lssp_nonshared"
+fi
+
 ./configure --prefix=$prefix --host=$target --disable-static --enable-custom-modes
 make -j${nproc}
 make install
