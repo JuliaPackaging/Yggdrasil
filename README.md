@@ -1,5 +1,7 @@
 # Yggdrasil
 
+![Yggdrasil](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Yggdrasil.jpg/430px-Yggdrasil.jpg)
+
 This repository contains recipes for building binaries for Julia packages using [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).  To contribute a new recipe, simply copy another build recipe using it as a template, and open a pull request to this repository.  It will be built, and binaries will be uploaded to GitHub releases.  At the moment, `@staticfloat` builds these binaries on-demand.
 
 To test your buildscript, I suggest running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  If running on a MacOS system, I suggest using the `docker`-based backend instead of the default QEMU backend by installing docker and exporting `BINARYBUILDER_RUNNER=docker` before invoking Julia.
