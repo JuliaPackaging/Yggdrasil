@@ -4,15 +4,14 @@ using BinaryBuilder
 name = "libserialport"
 version = v"0.1.1"
 sources = [
-    "https://sigrok.org/gitweb/?p=libserialport.git;a=snapshot;h=HEAD;sf=zip" =>
-    "4e30b81d51bb7c6bfa0c64beaba79616d18092f2f416de5061b0bf4d68f39c6d",
+    "http://sigrok.org/download/source/libserialport/libserialport-$(version).tar.gz" =>
+    "4a2af9d9c3ff488e92fb75b4ba38b35bcf9b8a66df04773eba2a7bbf1fa7529d",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libserialport-*/
 
-./autogen.sh
 ./configure --prefix=$prefix --host=$target --with-include-path=$prefix/include
 make -j${nproc}
 make install
