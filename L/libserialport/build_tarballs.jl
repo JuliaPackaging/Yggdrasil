@@ -26,7 +26,7 @@ platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libserialport", :libnettle)
+    LibraryProduct("libserialport", :libserialport)
 ]
 
 # Dependencies that must be installed before this package can be built
