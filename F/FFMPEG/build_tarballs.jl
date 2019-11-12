@@ -12,7 +12,7 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-# TODO: Theora and Opus once their releases are available
+# TODO: Theora once it's available
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-4.1/
@@ -80,6 +80,7 @@ pkg-config --list-all
   --enable-libfdk-aac  \
   --enable-libfreetype \
   --enable-libmp3lame  \
+  --enable-libopus     \
   --enable-libvorbis   \
   --enable-libx264     \
   --enable-libx265     \
@@ -117,7 +118,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# TODO: Theora and Opus once their releases are available
+# TODO: Theora once it's available
 dependencies = [
     "libass_jll",
     "libfdk_jll",
@@ -132,6 +133,7 @@ dependencies = [
     "Bzip2_jll",
     "Zlib_jll",
     "OpenSSL_jll",
+    "Opus_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
