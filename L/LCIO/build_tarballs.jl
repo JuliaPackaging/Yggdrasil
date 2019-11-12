@@ -13,14 +13,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/LCIO-*/
 mkdir build && cd build
 
-# Let's see if we can avoid doing this
-#ln -s /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/sys /usr/include
-
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ../LCIO-02-12-01/
-VERBOSE=ON cmake --build . --config Release --target install
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
