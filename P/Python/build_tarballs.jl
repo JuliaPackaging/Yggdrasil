@@ -13,15 +13,32 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Python-*/
-./configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" \
-    --disable-ipv6 \
-    PYTHON_FOR_BUILD=python3 \
-    ac_cv_file__dev_ptmx=yes \
-    ac_cv_file__dev_ptc=no
-make -j${nproc} CFLAGSFORSHARED="-Wno-error=implicit-function-declaration" _PYTHON_HOST_PLATFORM=${target}
-make install
+# Having a global `python3` screws things up a bit, so get rid of that
+rm -f $(which python3)
 
+# We need these for the host python build
+apk add zlib-dev libffi-dev
+
+# First, build host version
+cd $WORKSPACE/srcdir/Python-*/
+mkdir build_host && cd build_host
+CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
+make -j${nproc} python sharedmods
+
+# Next, build target version
+cd $WORKSPACE/srcdir/Python-*/
+mkdir build_target && cd build_target
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
+export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
+../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" \
+    --enable-ipv6 \
+    --with-ensurepip=no \
+    ac_cv_file__dev_ptmx=no \
+    ac_cv_file__dev_ptc=no \
+    ac_cv_have_chflags=no
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
