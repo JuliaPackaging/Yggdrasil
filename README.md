@@ -8,12 +8,12 @@ This repository contains recipes for building binaries for Julia packages using 
 
 To contribute a new recipe, you can either
 
-* use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successfull build for all requested platforms,
-* or simply copy another build recipe using it as a template, and then open a manual pull request to this repository.
+* use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successfull build for all requested platforms
+* Copy another build recipe using it as a template, and then open a manual pull request to this repository
 
 [Azure pipelines](https://dev.azure.com/JuliaPackaging/Yggdrasil/_build?view=runs) are used to test that the builders can successfully produce the tarballs.
 
-If you prefer to test your manual buildscript before opening the pull request, I suggest running `julia --color=yes build_tarballs.jl --verbose --debug` locally.
+If you prefer to test your manual buildscript before opening the pull request, we suggest installing `BinaryBuilder.jl` on Julia 1.3 and running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  On MacOS, you will need to have `docker` installed for this to work.
 
 ## Using JLL packages
 
