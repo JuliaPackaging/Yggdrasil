@@ -54,6 +54,13 @@ echo "SRC_PATH_BARE=.." >> config.mk
 echo "target=libs" >> config.mk
 make -j${nproc}
 make install
+
+# pkgconfig file on Windows is installed to ${libdir}/pkgconfig,
+# we have to move it to ${prefix}/lib/pkgconfig/
+if [[ "${target}" == *-mingw* ]] && [[ -d "${libdir}/pkgconfig" ]] ; then
+    mkdir -p "${prefix}/lib"
+    mv "${libdir}/pkgconfig" "${prefix}/lib/pkgconfig"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
