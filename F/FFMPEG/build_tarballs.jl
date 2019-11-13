@@ -47,7 +47,6 @@ else
     export ccARCH="x86_64"
 fi
 
-export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
 pkg-config --list-all
 
 ./configure            \
