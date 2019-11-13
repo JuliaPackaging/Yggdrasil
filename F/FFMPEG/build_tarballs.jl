@@ -121,15 +121,15 @@ products = [
 # TODO: Theora once it's available
 dependencies = [
     "libass_jll",
-    "libfdk_jll",
+    "libfdk_aac_jll",
     "FriBidi_jll",
     "FreeType2_jll",
     "LAME_jll",
     "libvorbis_jll",
     "Ogg_jll",
     "LibVPX_jll",
-    "x264Builder_jll",
-    "x265Builder_jll",
+    "x264_jll",
+    "x265_jll",
     "Bzip2_jll",
     "Zlib_jll",
     "OpenSSL_jll",
