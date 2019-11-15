@@ -5,3 +5,6 @@ build/
 
 # Ignore my vim laziness
 *.swp
+
+# Ignore meta.json files
+meta.json
