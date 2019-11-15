@@ -3,20 +3,18 @@
 using BinaryBuilder
 
 name = "LibVPX"
-version = v"1.8.0"
+version = v"1.8.1"
 
 # Collection of sources required to build LibVPX
 sources = [
-    "https://github.com/webmproject/libvpx/archive/v1.8.0.tar.gz" =>
-    "86df18c694e1c06cc8f83d2d816e9270747a0ce6abe316e93a4f4095689373f6",
-    "./patches"
+    "https://github.com/webmproject/libvpx/archive/v$(version).tar.gz" =>
+    "df19b8f24758e90640e1ab228ab4a4676ec3df19d23e4593375e6f3847dee03e",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libvpx-*/
 sed -i 's/cp -p/cp/' build/make/Makefile
-patch -p1 < $WORKSPACE/srcdir/macos.patch
 
 mkdir vpx_build && cd vpx_build
 apk add diffutils yasm
@@ -56,10 +54,18 @@ echo "SRC_PATH_BARE=.." >> config.mk
 echo "target=libs" >> config.mk
 make -j${nproc}
 make install
+
+# pkgconfig file on Windows is installed to ${libdir}/pkgconfig,
+# we have to move it to ${prefix}/lib/pkgconfig/
+if [[ "${target}" == *-mingw* ]] && [[ -d "${libdir}/pkgconfig" ]] ; then
+    mkdir -p "${prefix}/lib"
+    mv "${libdir}/pkgconfig" "${prefix}/lib/pkgconfig"
+fi
 """
 
-# Disable ppc64le for now due to altivec problems
-platforms = filter(p -> arch(p) != :powerpc64le, supported_platforms())
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
