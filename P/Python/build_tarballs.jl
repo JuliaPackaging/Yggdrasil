@@ -9,6 +9,7 @@ version = v"3.7.4"
 sources = [
     "https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz" =>
     "fb799134b868199930b75f26678f18932214042639cd52b16da7fd134cd9b13f",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -19,20 +20,32 @@ rm -f $(which python3)
 # We need these for the host python build
 apk add zlib-dev libffi-dev
 
-# First, build host version
-cd $WORKSPACE/srcdir/Python-*/
+# Create fake `arch` command:
+echo '#!/bin/bash' >> /usr/bin/arch
+echo 'echo i386'   >> /usr/bin/arch
+chmod +x /usr/bin/arch
+
+# Patch out cross compile limitations
+cd ${WORKSPACE}/srcdir/Python-*/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross_compile_configure_ac.patch
+autoreconf -i
+
+# Next, build host version
 mkdir build_host && cd build_host
-CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
+
+# Override `bb_target`, `CC`, etc... to give this `./configure` the impression
+# that we are actually targeting `${MACHTYPE}` and not `${target}`
+bb_target=${MACHTYPE} CC=${HOSTCC} CPPFLAGS=-I/usr/include LDFLAGS="-L/lib -L/usr/lib" ../configure --host="${MACHTYPE}" --build="${MACHTYPE}"
 make -j${nproc} python sharedmods
 
 # Next, build target version
-cd $WORKSPACE/srcdir/Python-*/
+cd ${WORKSPACE}/srcdir/Python-*/
 mkdir build_target && cd build_target
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" \
-    --enable-ipv6 \
+    --disable-ipv6 \
     --with-ensurepip=no \
     ac_cv_file__dev_ptmx=no \
     ac_cv_file__dev_ptc=no \
