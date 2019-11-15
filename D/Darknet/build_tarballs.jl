@@ -29,6 +29,8 @@ sed -i 's/OPENMP=0/OPENMP=$OPENMP/g' Makefile
 sed -i 's/LIBSO=0/LIBSO=$LIBSO/g' Makefile
 sed -i 's/ZED_CAMERA=0/ZED_CAMERA=$ZED_CAMERA/g' Makefile
 
+sed -i 's/LIBNAMESO=libdarknet.so/LIBNAMESO=libdarknet.\${dlext}/g' Makefile
+
 ./configure --prefix=\$prefix --host=\$target
 make -j\${nproc}
 make install
