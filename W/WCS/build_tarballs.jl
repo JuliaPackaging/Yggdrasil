@@ -23,6 +23,9 @@ fi
 ./configure --prefix=$prefix --host=$target --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
 make install
+
+# Install all license files
+install_license COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -31,7 +34,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libwcs", :libwcs)
+    LibraryProduct("libwcs", :libwcs),
 ]
 
 # Dependencies that must be installed before this package can be built
