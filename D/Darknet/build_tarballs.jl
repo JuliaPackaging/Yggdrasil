@@ -30,7 +30,7 @@ sed -i 's/LIBSO=0/LIBSO=$LIBSO/g' Makefile
 sed -i 's/ZED_CAMERA=0/ZED_CAMERA=$ZED_CAMERA/g' Makefile
 
 ./configure --prefix=\$prefix --host=\$target
-make -j${nproc}
+make -j\${nproc}
 make install
 """
 
