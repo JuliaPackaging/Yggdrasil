@@ -9,6 +9,8 @@ pr:
 variables:
   # We run off of the latest `master`
   BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
+  # Things we pretty much always want when running with Docker
+  BASE_DOCKER_OPTS: -t -v /data/staticfloat/yggstorage:/storage -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e TERM=xterm-16color
 
 pool: Default
 
@@ -34,7 +36,7 @@ jobs:
       EXCLUDE_PROJECTS=" LLVM "
 
       # This is the dynamic mapping we're going to build up, if it's empty we don't do anything
-      PROJECTS_MAPPING=""
+      PROJECTS_ACCEPTED=""
       for PROJECT in ${PROJECTS}; do
           NAME=$(basename "${PROJECT}")
           echo "Considering ${PROJECT}"
@@ -58,11 +60,66 @@ jobs:
 
           # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
           echo " --> Accepted!"
-          PROJECTS_MAPPING="${PROJECTS_MAPPING} '${NAME}':{'PROJECT':'${PROJECT}'}, "
+          PROJECTS_ACCEPTED="${PROJECTS_ACCEPTED} ${PROJECT}"
       done
-      if [[ -n "${PROJECTS_MAPPING}" ]]; then
-          echo -n "##vso[task.setVariable variable=legs;isOutput=true]{"
-          echo -n "${PROJECTS_MAPPING}"
+      if [[ -n "${PROJECTS_ACCEPTED}" ]]; then
+          # Pull down the latest source BB image, since we're gonna do some building
+          docker pull $(BINARYBUILDER_IMAGE_NAME)
+
+          # Create a docker image that sucks in the current Yggdrasil tree
+          echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
+          echo "ADD . /workspace" >> builder.Dockerfile
+
+          # Ignore 0_RootFS and .git to make things nice and fast:
+          echo "0_RootFS/*" >> .dockerignore
+          echo ".git/*" >> .dockerignore
+
+          # Build it, tag it with a unique tag name
+          docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
+          
+          # Next, for each project, download its sources
+          for PROJECT in ${PROJECTS_ACCEPTED}; do
+              NAME=$(basename ${PROJECT})
+              DOCKER_OPTS="$(BASE_DOCKER_OPTS) -w /workspace/${PROJECT} bb_worker:$(Build.SourceVersion)"
+
+              # First, we get build metadata in the form of a JSON object:
+              CONTAINER_NAME=meta_json-${NAME}-$(Build.SourceVersion)
+              docker run --name=${CONTAINER_NAME} ${DOCKER_OPTS} bash -c " \
+                  echo \"Generating meta.json...\"; \
+                  julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
+                  echo \"Downloading sources...\"; \
+                  julia --color=yes /workspace/.ci/download_sources.jl ./meta.json ./platforms.list; \
+              "
+              docker cp ${CONTAINER_NAME}:/workspace/${PROJECT}/platforms.list ${NAME}.platforms.list
+              docker cp ${CONTAINER_NAME}:/workspace/${PROJECT}/meta.json ${NAME}.meta.json
+
+              # Remove that container, but do it silently!
+              docker rm ${CONTAINER_NAME} 2>/dev/null >/dev/null
+          done
+
+          # Emit project variable declarations
+          echo -n "##vso[task.setVariable variable=projects;isOutput=true]{"
+          for PROJECT in ${PROJECTS_ACCEPTED}; do
+              echo -n "'${NAME}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}'}, "
+          done
+          echo "}"
+
+          # Emit project/platform joint variable declarations
+          echo -n "##vso[task.setVariable variable=projplatforms;isOutput=true]{"
+          for PROJECT in ${PROJECTS_ACCEPTED}; do
+              NAME=$(basename ${PROJECT})
+
+              # Load in the platforms
+              PLATFORMS=$(cat ${NAME}.platforms.list)
+              if [[ -n "${PLATFORMS}" ]]; then
+                  for PLATFORM in ${PLATFORMS}; do
+                      echo -n "'${NAME}-${PLATFORM}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORM':'${PLATFORM}'}, "
+                  done
+              else
+                  # If we were unable to determine the proper platforms, then create a single output with empty platform
+                  echo -n "'${NAME}-${PLATFORM}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORM':''}, "
+              fi
+          done
           echo "}"
       fi
     name: mtrx
@@ -72,42 +129,52 @@ jobs:
   timeoutInMinutes: 180
   cancelTimeoutInMinutes: 2
   strategy:
-    matrix: $[ dependencies.generator.outputs['mtrx.legs'] ]
-    maxParallel: 4
+    matrix: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   variables:
-    mtrx_legs: $[ dependencies.generator.outputs['mtrx.legs'] ]
+    projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   steps:
-  # we map /storage (which is a persistent volume mapped within the overall `docker-compose.yml`) to /storage
   - script: |
-      # Pull down the latest source BB image
-      docker pull $(BINARYBUILDER_IMAGE_NAME)
-
-      # Create a docker image that sucks in the current Yggdrasil tree
-      echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
-      echo "ADD . /workspace" >> builder.Dockerfile
-
-      # Ignore 0_RootFS and .git to make things nice and fast:
-      echo "0_RootFS/*" >> .dockerignore
-      echo ".git/*" >> .dockerignore
-
-      # Build it, tag it with a unique tag name
-      docker build --rm -t bb_worker:$(System.JobId) -f builder.Dockerfile .
-
       # If we're on master and this is not a pull request, then DEPLOY.  NOTE: A
-      # manual rebuild of a PR in Azure web interface is not a `PullRequest` for
-      # Azure.
+      # manual rebuild of a PR in Azure web interface is not a `PullRequest`
       DEPLOY=""
       if [[ "$(Build.Reason)" != "PullRequest" ]] && [[ "$(Build.SourceBranch)" == "refs/heads/master" ]] ; then
-          DEPLOY="--deploy --register"
+          DEPLOY="--deploy"
       fi
 
-      # Run inside of that just-built Yggdrasil image
-      docker run -t --rm --privileged -e "GITHUB_TOKEN=$(GITHUB_TOKEN)" -v "/data/staticfloat/yggstorage:/storage" -w "/workspace/$(PROJECT)" -e "TERM=xterm-16color" bb_worker:$(System.JobId) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY}
-    displayName: "Build the tarballs"
-    condition: ne(variables['mtrx_legs'], '')
+      # Run inside of that just-built Yggdrasil image, mapping /storage in
+      DOCKER_OPTS="$(BASE_DOCKER_OPTS) --rm --privileged -w /workspace/$(PROJECT)"
+      docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
+    displayName: "run build_tarballs.jl"
+    condition: ne(variables['projplatforms'], '')
+
+- job: register
+  dependsOn: build
+  strategy:
+    matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  variables:
+    projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  # We only register if this is on `master`; same as setting `${DEPLOY}` above.
+  condition: and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  steps:
   - script: |
-      docker rmi bb_worker:$(System.JobId)
+      DOCKER_OPTS="$(BASE_DOCKER_OPS) --rm -w /workspace/.ci"
+      # Extract important values from the stored meta.json
+      NAME=$(jq '[inputs] | add | .name | @sh' $(NAME).meta.json)
+      VERSION=$(jq '[inputs] | add | .version | @sh' $(NAME).meta.json)
+      DEPS=$(jq '[inputs] | add | .dependencies | @sh' $(NAME).meta.json)
+      docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes register_package.jl "${NAME}" "${VERSION}" "${DEPS}"
+    displayName: "register JLL package"
+
+- job: cleanup
+  dependsOn:
+  - build
+  - register
+  condition: always()
+  steps:
+  - script: |
+      docker rmi bb_worker:$(Build.SourceVersion) || true
     displayName: "Cleanup docker image"
-    # This is so janky, but `always()` eliminates the implicit "previous run succeeded" condition, and
-    # the `ne()` allows us to disable this if no PROJECT values were run at all
-    condition: and(always(), ne(variables['mtrx_legs'], ''))
+    # Use always() so that we run regardless of whether previous steps were successful or not
+  - script: |
+      rm -f *.meta.json *.platform.list
+    displayName: "Cleanup meta files"
