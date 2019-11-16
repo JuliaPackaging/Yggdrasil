@@ -161,9 +161,10 @@ else
     # Force-update the registry here, since we may have pushed a new version recently
     BinaryBuilder.update_registry(ctx)
     versions = VersionNumber[]
-    if any(isfile(joinpath(p, "Package.toml")) for p in Pkg.Operations.registered_paths(ctx.env, BinaryBuilder.jll_uuid("$(src_name)_jll")))
+    paths = Pkg.Operations.registered_paths(ctx.env, BinaryBuilder.jll_uuid("$(src_name)_jll"))
+    if any(p -> isfile(joinpath(p, "Package.toml")), paths)
         # Find largest version number that matches ours in the registered paths
-        for path in Pkg.Operations.registered_paths(ctx.env, BinaryBuilder.jll_uuid("$(src_name)_jll"))
+        for path in paths
             append!(versions, Pkg.Compress.load_versions(joinpath(path, "Versions.toml")))
         end
     end
