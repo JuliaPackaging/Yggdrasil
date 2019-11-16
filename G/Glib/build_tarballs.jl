@@ -15,18 +15,25 @@ cd $WORKSPACE/srcdir/glib-*/
 mkdir build_glib && cd build_glib
 
 SED_SCRIPT=()
+# We need to link to iconv, but ninja doesn't know how to do that as libiconv
+# doesn't have a pkgconfig file.  Let's give meson a tip.  Note: on PowerPC the
+# cross-file has already entries for `c_link_args`, so we have to append.
+if [[ "${target}" == powerpc64le-* ]]; then
+    SED_SCRIPT+=(-e "s?c_link_args = \[\(.*\)]?c_link_args = [\1, '-liconv']?")
+elif [[ "${target}" == *-freebsd* ]]; then
+    SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-L${libdir}', '-liconv']?")
+else
+    SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-liconv']?")
+fi
 if [[ "${target}" == i686-linux-musl ]]; then
     # We can't run executables for i686-linux-musl in the BB environment
-    SED_SCRIPT+=(-e "s/needs_exe_wrapper = false/needs_exe_wrapper = true/" "${MESON_TARGET_TOOLCHAIN}")
-elif [[ "${target}" == *-mingw* ]]; then
+    SED_SCRIPT+=(-e "s?needs_exe_wrapper = false?needs_exe_wrapper = true?" "${MESON_TARGET_TOOLCHAIN}")
+elif [[  "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
     # Tell meson where to find libintl.h
     SED_SCRIPT+=(-e "s?c_args = \[]?c_args = ['-I${prefix}/include']?")
 fi
 
-# We need to link to iconv, but ninja doesn't know how to do that as libiconv
-# doesn't have a pkgconfig file.  Let's give meson a tip
-sed -i -e "s/c_link_args = \[]/c_link_args = ['-liconv']/" \
-    "${SED_SCRIPT[@]}" \
+sed -i "${SED_SCRIPT[@]}" \
     "${MESON_TARGET_TOOLCHAIN}"
 # We need a new version of objcopy (in binutils) and a native "msgfmt" (in gettext)
 apk add binutils gettext
@@ -62,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
