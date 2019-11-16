@@ -105,15 +105,15 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ffmpeg", :ffmpeg),
     ExecutableProduct("ffprobe", :ffprobe),
-    LibraryProduct("libavformat", :libavformat),
-    LibraryProduct("libavcodec", :libavcodec),
-    LibraryProduct("libavutil", :libavutil),
-    LibraryProduct("libpostproc", :libpostproc),
-    LibraryProduct("libswresample", :libswresample),
-    LibraryProduct("libavdevice", :libavdevice),
-    LibraryProduct("libavresample", :libavresample),
-    LibraryProduct("libavfilter", :libavfilter),
-    LibraryProduct("libswscale", :libswscale)
+    LibraryProduct(["libavcodec", "avcodec"], :libavcodec),
+    LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
+    LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
+    LibraryProduct(["libavformat", "avformat"], :libavformat),
+    LibraryProduct(["libavresample", "swresample"], :libavresample),
+    LibraryProduct(["libavutil", "avutil"], :libavutil),
+    LibraryProduct(["libpostproc", "postproc"], :libpostproc),
+    LibraryProduct(["libswresample", "swresample"], :libswresample),
+    LibraryProduct(["libswscale", "swscale"], :libswscale),
 ]
 
 # Dependencies that must be installed before this package can be built
