@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using GitHub, BinaryBuilder, Pkg.BinaryPlatforms, Pkg.PlatformEngines, SHA
+using GitHub, BinaryBuilder, Pkg, Pkg.PlatformEngines, SHA
 
 """
     extract_platform_key(path::AbstractString)
@@ -139,14 +139,46 @@ end
 
 
 
-if length(ARGS) != 3
-	@error("Usage: generate_buildjl.jl path/to/build_tarballs.jl <repo_name> <tag_name>")
+if length(ARGS) < 1 || length(ARGS) > 3
+	@error("Usage: generate_buildjl.jl path/to/build_tarballs.jl [<repo_name> <tag_name>]")
     exit(1)
 end
 
 build_tarballs_path = ARGS[1]
-repo_name = ARGS[2]
-tag_name = ARGS[3]
+@info "Build tarballs script: $(build_tarballs_path)"
+src_name = basename(dirname(build_tarballs_path))
+if 2 <= length(ARGS) <= 3
+    repo_name = ARGS[2]
+else
+    repo_name = "JuliaBinaryWrappers/$(src_name)_jll.jl"
+end
+@info "Repo name: $(repo_name)"
+
+if length(ARGS) == 3
+    tag_name = ARGS[3]
+else
+    ctx = Pkg.Types.Context()
+    # Force-update the registry here, since we may have pushed a new version recently
+    BinaryBuilder.update_registry(ctx)
+    versions = VersionNumber[]
+    paths = Pkg.Operations.registered_paths(ctx.env, BinaryBuilder.jll_uuid("$(src_name)_jll"))
+    if any(p -> isfile(joinpath(p, "Package.toml")), paths)
+        # Find largest version number that matches ours in the registered paths
+        for path in paths
+            append!(versions, Pkg.Compress.load_versions(joinpath(path, "Versions.toml")))
+        end
+    end
+    if !isempty(versions)
+        last_version = maximum(versions)
+        tag_name = "$(src_name)-v$(last_version)"
+    else
+        @error("""Unable to determine latest version of $(src_name),
+               please specify it as third argument to this script:
+                   generate_buildjl.jl $(build_tarballs_path) $(repo_name) <tag_name>""")
+        exit(1)
+    end
+end
+@info "Tag name: $(tag_name)"
 
 # First, snarf out the Product variables:
 if !isfile(build_tarballs_path)
