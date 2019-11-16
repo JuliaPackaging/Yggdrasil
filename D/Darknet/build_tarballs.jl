@@ -6,34 +6,31 @@ version = v"2019.11.15"
 sources = [
     "https://github.com/AlexeyAB/darknet/archive/71e835458904f782a905a06d28b4558d9e9830b4.zip" =>
     "d77017462ae49f9ce2540c3e47589e68b2ce565573bf7d2f011b560bc989fbfa",
+    "./bundled",
 ]
 
-GPU = 0
-CUDNN = 0
-CUDNN_HALF = 0
-OPENCV = 0
-DEBUG = 0
-OPENMP = 0
-LIBSO = 1
-ZED_CAMERA = 0
+script = raw"""
+cd $WORKSPACE/srcdir/darknet-*
 
-script = """
-cd \$WORKSPACE/srcdir/darknet-*
+# Fix case of some Windows headers
+atomic_patch -p1 ../patches/windows_headers_case.patch
 
-sed -i 's/GPU=0/GPU=$GPU/g' Makefile
-sed -i 's/CUDNN=0/CUDNN=$CUDNN/g' Makefile
-sed -i 's/CUDNN_HALF=0/CUDNN_HALF=$CUDNN_HALF/g' Makefile
-sed -i 's/OPENCV=0/OPENCV=$OPENCV/g' Makefile
-sed -i 's/DEBUG=0/DEBUG=$DEBUG/g' Makefile
-sed -i 's/OPENMP=0/OPENMP=$OPENMP/g' Makefile
-sed -i 's/LIBSO=0/LIBSO=$LIBSO/g' Makefile
-sed -i 's/ZED_CAMERA=0/ZED_CAMERA=$ZED_CAMERA/g' Makefile
+# Make sure to have the directories, before building
+make obj backup results setchmod
+make -j${nproc} libdarknet.${dlext} \
+    LIBNAMESO="libdarknet.${dlext}" \
+    LIBSO=1 \
+    GPU=0 \
+    CUDNN=0 \
+    CUDNN_HALF=0 \
+    OPENCV=0 \
+    DEBUG=0 \
+    OPENMP=0 \
+    LIBSO=1 \
+    ZED_CAMERA=0
 
-sed -i 's/LIBNAMESO=libdarknet.so/LIBNAMESO=libdarknet.\${dlext}/g' Makefile
-
-./configure --prefix=\$prefix --host=\$target
-make -j\${nproc}
-make install
+mkdir -p "${libdir}"
+cp libdarknet.${dlext} "${libdir}"
 """
 
 # These are the platforms we will build for by default, unless further
