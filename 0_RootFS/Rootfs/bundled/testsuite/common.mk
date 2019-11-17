@@ -69,7 +69,7 @@ build: $(addprefix $(PROJECT_BUILD)/,$(BINS)) $(addprefix $(PROJECT_BUILD)/,$(LI
 install: build
 	@mkdir -p $(bindir) $(libdir)
 	@for f in $(BINS); do \
-		install -m755 $(PROJECT_BUILD)/$${f} $(bindir)/$${f}_$(PROJECT_LANG); \
+		install -m755 $(PROJECT_BUILD)/$${f} $(bindir)/$${f%$${exeext}}_$(PROJECT_LANG)$${exeext}; \
 	done
 	@for f in $(LIBS); do \
 		install -m755 $(PROJECT_BUILD)/$${f} $(libdir); \
