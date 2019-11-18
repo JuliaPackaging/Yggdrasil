@@ -45,6 +45,11 @@ for d in /opt/${target}/${target}/lib*; do
         fi
     done
 done
+
+# change permissions so that rpath succeeds
+for l in ${libdir}/*; do
+    chmod a+w "${l}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -64,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
