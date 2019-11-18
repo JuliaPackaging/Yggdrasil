@@ -158,12 +158,12 @@ jobs:
   condition: and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   steps:
   - script: |
-      DOCKER_OPTS="$(BASE_DOCKER_OPS) --rm -w /workspace/.ci"
-      # Extract important values from the stored meta.json
-      NAME=$(jq '[inputs] | add | .name | @sh' $(NAME).meta.json)
-      VERSION=$(jq '[inputs] | add | .version | @sh' $(NAME).meta.json)
-      DEPS=$(jq '[inputs] | add | .dependencies | @sh' $(NAME).meta.json)
-      docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes register_package.jl "${NAME}" "${VERSION}" "${DEPS}"
+      docker run $(BASE_DOCKER_OPS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
+          echo \"Generating meta.json...\"; \
+          julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
+          echo \"Registering $(NAME)...\"; \
+          julia --color=yes /workspace/.ci/register_package.jl meta.json; \
+      "
     displayName: "register JLL package"
 
 - job: cleanup
