@@ -48,7 +48,7 @@ done
 
 # change permissions so that rpath succeeds
 for l in ${libdir}/*; do
-    chmod a+w "${l}"
+    chmod 0755 "${l}"
 done
 """
 
