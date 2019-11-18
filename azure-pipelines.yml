@@ -151,6 +151,7 @@ jobs:
   dependsOn: build
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
+    maxParallel: 1
   variables:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   # We only register if this is on `master`; same as setting `${DEPLOY}` above.
