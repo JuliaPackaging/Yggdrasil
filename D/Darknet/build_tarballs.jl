@@ -34,7 +34,8 @@ cp libdarknet.${dlext} "${libdir}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=[Windows(:i686),Windows(:x86_64)])
+platforms = supported_platforms()
+#platforms = supported_platforms(exclude=[Windows(:i686),Windows(:x86_64)])
 
 # The products that we will ensure are always built
 products = [
