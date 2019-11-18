@@ -47,7 +47,7 @@ jobs:
           fi
 
           # Ignore RootFS stuff, we'll do that manually
-          if [[ "${NAME}" == "0_RootFS/"* ]]; then
+          if [[ "${PROJECT}" == "0_RootFS/"* ]]; then
               echo " --> Skipping as it's within 0_RootFS/"
               continue
           fi

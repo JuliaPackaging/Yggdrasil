@@ -30,7 +30,7 @@ success(`tar -C $(rootfs_extracted) -Jxf $(rootfs_tarxz_path)`)
 # to build it inside of BB, but in the worst case, where we've made an incompatible change and the last
 # checked-in version of `sandbox` won't do, we need to be able to build it and build it now.  So if
 # we're on a compatible platform, and `sandbox` is outdated, build it.
-sandbox_path = joinpath(@__DIR__, "bundled", "utils", "sandbox") 
+sandbox_path = joinpath(@__DIR__, "bundled", "utils", "sandbox")
 if is_outdated(sandbox_path, "$(sandbox_path).c")
     try
         build_platform = platform_key_abi(String(read(`gcc -dumpmachine`)))
