@@ -17,16 +17,18 @@ if [[ ${target} != *darwin* ]]; then
         cd $WORKSPACE/destdir/lib
     fi
     if [[ ${nbits} == 32 ]]; then
-        ln -sf libopenblas.${dlext} libblas.${dlext}
+        #ln -sf libopenblas.${dlext} libblas.${dlext}
+        LIBOPENBLAS=openblas
     else
-        ln -sf libopenblas64_.${dlext} libblas.${dlext}
+        #ln -sf libopenblas64_.${dlext} libblas.${dlext}
+        LIBOPENBLAS=openblas64_
     fi
 fi
 
 cd $WORKSPACE/srcdir/FastTransforms-*
 
 if [[ ${target} == *mingw* ]]; then
-    gcc  -std=gnu99 -Ofast -march=native -mtune=native -mno-vzeroupper -I./src -I/workspace/destdir/include -lm -shared -fPIC src/transforms.c src/rotations.c src/permute.c src/tdc.c src/drivers.c src/fftw.c -L/workspace/destdir/bin -lm -lquadmath -fopenmp -lblas -lfftw3 -lgmp -lmpfr -o libfasttransforms.dll
+    gcc  -std=gnu99 -Ofast -march=native -mtune=native -mno-vzeroupper -I./src -I/workspace/destdir/include -lm -shared -fPIC src/transforms.c src/rotations.c src/permute.c src/tdc.c src/drivers.c src/fftw.c -L/workspace/destdir/bin -lm -lquadmath -fopenmp -l${LIBOPENBLAS} -lfftw3 -lgmp -lmpfr -o libfasttransforms.dll
     cp -a libfasttransforms.${dlext} ${prefix}/bin
 else
     make lib CC=gcc FT_USE_PREDEFINED_LIBRARIES=1 FT_FFTW_WITH_COMBINED_THREADS=1
@@ -34,12 +36,12 @@ else
 fi
 """
 
-platforms = expand_gfortran_versions([Linux(:i686, libc=:glibc);
-                                      Linux(:x86_64, libc=:glibc);
-                                      Linux(:i686, libc=:musl);
-                                      Linux(:x86_64, libc=:musl);
-                                      MacOS(:x86_64);
-                                      FreeBSD(:x86_64);
+platforms = expand_gfortran_versions([#Linux(:i686, libc=:glibc);
+                                      #Linux(:x86_64, libc=:glibc);
+                                      #Linux(:i686, libc=:musl);
+                                      #Linux(:x86_64, libc=:musl);
+                                      #MacOS(:x86_64);
+                                      #FreeBSD(:x86_64);
                                       Windows(:i686);
                                       Windows(:x86_64)])
 
