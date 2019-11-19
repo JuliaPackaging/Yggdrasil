@@ -132,6 +132,7 @@ jobs:
     matrix: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   variables:
     projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
+  condition: ne(variables['projplatforms'], '')
   steps:
   - script: |
       # If we're on master and this is not a pull request, then DEPLOY.  NOTE: A
@@ -145,7 +146,6 @@ jobs:
       DOCKER_OPTS="$(BASE_DOCKER_OPTS) --rm --privileged -w /workspace/$(PROJECT)"
       docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
     displayName: "run build_tarballs.jl"
-    condition: ne(variables['projplatforms'], '')
 
 - job: register
   dependsOn: build
