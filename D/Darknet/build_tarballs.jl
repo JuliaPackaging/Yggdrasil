@@ -19,6 +19,8 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/getopt_windows.patch
     # Link against ws2_32 on Windows
     atomic_patch -p1 ../patches/windows_ldflags.patch
+    # This makes it work for 64-bit Windows
+    atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
 fi
 
 # Make sure to have the directories, before building
@@ -41,7 +43,6 @@ cp libdarknet.${dlext} "${libdir}"
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#platforms = supported_platforms(exclude=[Windows(:i686),Windows(:x86_64)])
 
 # The products that we will ensure are always built
 products = [
