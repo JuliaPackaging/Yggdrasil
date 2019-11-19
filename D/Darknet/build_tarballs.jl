@@ -12,8 +12,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/darknet-*
 
-# Fix case of some Windows headers
-atomic_patch -p1 ../patches/windows_headers_case.patch
+if [[ "${target}" == *-mingw* ]]; then
+    # Fix case of some Windows headers
+    atomic_patch -p1 ../patches/windows_headers_case.patch
+    # Comment out a couple of definitions
+    atomic_patch -p1 ../patches/getopt_windows.patch
+    # Link against ws2_32 on Windows
+    atomic_patch -p1 ../patches/windows_ldflags.patch
+fi
 
 # Make sure to have the directories, before building
 make obj backup results setchmod
