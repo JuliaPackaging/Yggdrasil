@@ -24,7 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]]; then
-    # Disable AVX on arm, aarch & windows
+    # Disable AVX on powerpc, arm, aarch & windows
     export AVXENABLE=0
 else
     # Enable everywhere else
