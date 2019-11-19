@@ -9,7 +9,7 @@ version = v"2.34.1"
 sources = [
     "http://ftp.gnome.org/pub/gnome/sources/at-spi2-atk/$(version.major).$(version.minor)/at-spi2-atk-$(version).tar.xz" =>
     "776df930748fde71c128be6c366a987b98b6ee66d508ed9c8db2355bf4b9cc16",
-    "./bundled"
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
