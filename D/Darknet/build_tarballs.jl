@@ -23,7 +23,7 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
 fi
 
-if [[ "${target}" = *-arm* ]] || [[ "${target}" == *-aarch* ]] || [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]]; then
     # Disable AVX on arm, aarch & windows
     export AVXENABLE=0
 else
