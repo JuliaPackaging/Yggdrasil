@@ -7,12 +7,12 @@ version = v"4.1.0"
 
 # Collection of sources required to build FFMPEG
 sources = [
-    "https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2" =>
+    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2" =>
     "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5",
 ]
 
 # Bash recipe for building across all platforms
-# TODO: Theora and Opus once their releases are available
+# TODO: Theora once it's available
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-4.1/
@@ -47,7 +47,6 @@ else
     export ccARCH="x86_64"
 fi
 
-export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig"
 pkg-config --list-all
 
 ./configure            \
@@ -72,6 +71,7 @@ pkg-config --list-all
   --enable-nonfree     \
   --disable-static     \
   --enable-shared      \
+  --enable-pic         \
   --disable-debug      \
   --disable-doc        \
   --enable-avresample  \
@@ -79,6 +79,7 @@ pkg-config --list-all
   --enable-libfdk-aac  \
   --enable-libfreetype \
   --enable-libmp3lame  \
+  --enable-libopus     \
   --enable-libvorbis   \
   --enable-libx264     \
   --enable-libx265     \
@@ -88,6 +89,8 @@ pkg-config --list-all
   --enable-muxers      \
   --enable-demuxers    \
   --enable-parsers     \
+  --enable-openssl     \
+  --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
   --extra-ldflags="-L${prefix}/lib"
 make -j${nproc}
@@ -102,35 +105,35 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ffmpeg", :ffmpeg),
     ExecutableProduct("ffprobe", :ffprobe),
-    ExecutableProduct("x264", :x264),
-    ExecutableProduct("x265", :x265),
-    LibraryProduct("libavformat", :libavformat),
-    LibraryProduct("libavcodec", :libavcodec),
-    LibraryProduct("libavutil", :libavutil),
-    LibraryProduct("libpostproc", :libpostproc),
-    LibraryProduct("libswresample", :libswresample),
-    LibraryProduct("libavdevice", :libavdevice),
-    LibraryProduct("libavresample", :libavresample),
-    LibraryProduct("libavfilter", :libavfilter),
-    LibraryProduct("libswscale", :libswscale)
+    LibraryProduct(["libavcodec", "avcodec"], :libavcodec),
+    LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
+    LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
+    LibraryProduct(["libavformat", "avformat"], :libavformat),
+    LibraryProduct(["libavresample", "swresample"], :libavresample),
+    LibraryProduct(["libavutil", "avutil"], :libavutil),
+    LibraryProduct(["libpostproc", "postproc"], :libpostproc),
+    LibraryProduct(["libswresample", "swresample"], :libswresample),
+    LibraryProduct(["libswscale", "swscale"], :libswscale),
 ]
 
 # Dependencies that must be installed before this package can be built
-# TODO: Theora and Opus once their releases are available
+# TODO: Theora once it's available
 dependencies = [
     "libass_jll",
-    "libfdk_jll",
-    "fribidi_jll",
+    "libfdk_aac_jll",
+    "FriBidi_jll",
     "FreeType2_jll",
-    "liblame_jll",
+    "LAME_jll",
     "libvorbis_jll",
     "Ogg_jll",
     "LibVPX_jll",
-    "x264Builder_jll",
-    "x265Builder_jll",
+    "x264_jll",
+    "x265_jll",
     "Bzip2_jll",
-    "Zlib_jll"
+    "Zlib_jll",
+    "OpenSSL_jll",
+    "Opus_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
