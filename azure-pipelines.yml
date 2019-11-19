@@ -148,7 +148,9 @@ jobs:
     condition: ne(variables['projplatforms'], '')
 
 - job: register
-  dependsOn: build
+  dependsOn:
+  - generator
+  - build
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
     maxParallel: 1
