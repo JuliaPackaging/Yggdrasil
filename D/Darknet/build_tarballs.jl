@@ -23,6 +23,13 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
 fi
 
+if [[ "${target}" == *-a* ]]; then
+    # Disable AVX on arm & aarch
+    AVXENABLE = 0
+else
+    AVXENABLE = 1
+fi
+
 # Make sure to have the directories, before building
 make obj backup results setchmod
 make -j${nproc} libdarknet.${dlext} \
@@ -34,7 +41,8 @@ make -j${nproc} libdarknet.${dlext} \
     OPENCV=0 \
     DEBUG=0 \
     OPENMP=0 \
-    ZED_CAMERA=0
+    ZED_CAMERA=0 \
+    AVX=${AVXENABLE}
 
 mkdir -p "${libdir}"
 cp libdarknet.${dlext} "${libdir}"
