@@ -100,6 +100,7 @@ jobs:
           # Emit project variable declarations
           echo -n "##vso[task.setVariable variable=projects;isOutput=true]{"
           for PROJECT in ${PROJECTS_ACCEPTED}; do
+              NAME=$(basename ${PROJECT})
               echo -n "'${NAME}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}'}, "
           done
           echo "}"
