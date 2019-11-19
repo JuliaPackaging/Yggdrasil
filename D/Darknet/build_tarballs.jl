@@ -23,12 +23,12 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
 fi
 
-if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
-    # Enable AVX on i686 and x86_64
-    export AVXENABLE=1
-else
-    # Disable everywhere else
+if [[ "${target}" = *-arm* ]] || [[ "${target}" == *-aarch* ]] || [[ "${target}" == *-mingw* ]]; then
+    # Disable AVX on arm, aarch & windows
     export AVXENABLE=0
+else
+    # Enable everywhere else
+    export AVXENABLE=1
 fi
 
 # Make sure to have the directories, before building
