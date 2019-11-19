@@ -132,7 +132,6 @@ jobs:
     matrix: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   variables:
     projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
-  condition: ne(variables['projplatforms'], '')
   steps:
   - script: |
       # If we're on master and this is not a pull request, then DEPLOY.  NOTE: A
@@ -146,6 +145,7 @@ jobs:
       DOCKER_OPTS="$(BASE_DOCKER_OPTS) --rm --privileged -w /workspace/$(PROJECT)"
       docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
     displayName: "run build_tarballs.jl"
+    condition: ne(variables['projplatforms'], '')
 
 - job: register
   dependsOn: build
@@ -154,8 +154,6 @@ jobs:
     maxParallel: 1
   variables:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
-  # We only register if this is on `master`; same as setting `${DEPLOY}` above.
-  condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
   steps:
   - script: |
       docker run $(BASE_DOCKER_OPS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
@@ -165,6 +163,8 @@ jobs:
           julia --color=yes /workspace/.ci/register_package.jl meta.json; \
       "
     displayName: "register JLL package"
+    # We only register if this is on `master`; same as setting `${DEPLOY}` above.
+    condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
 - job: cleanup
   dependsOn:
