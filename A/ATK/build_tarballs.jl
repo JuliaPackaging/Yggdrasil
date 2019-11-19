@@ -8,7 +8,7 @@ version = v"2.34.1"
 # Collection of sources required to build ATK
 sources = [
     "https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_$(version.major)_$(version.minor)_$(version.patch)/atk-ATK_$(version.major)_$(version.minor)_$(version.patch).tar.bz2" =>
-    "337b0a0aa3be88a79091bb023c6792e1489c187b9492777b1cc3514b0b686b8a"
+    "337b0a0aa3be88a79091bb023c6792e1489c187b9492777b1cc3514b0b686b8a",
 ]
 
 # Bash recipe for building across all platforms
