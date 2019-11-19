@@ -17,5 +17,5 @@ BinaryBuilder.download_sources(merged["sources"]; verbose=true)
 
 # Then export platforms to file
 open(ARGS[2], "w") do io
-    println(io, join(merged["platforms"], " "))
+    println(io, join(triplet.(merged["platforms"]), " "))
 end
