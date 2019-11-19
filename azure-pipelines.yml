@@ -158,7 +158,7 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
-      docker run $(BASE_DOCKER_OPS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
+      docker run $(BASE_DOCKER_OPTS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
           echo \"Generating meta.json...\"; \
           julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
           echo \"Registering $(NAME)...\"; \
