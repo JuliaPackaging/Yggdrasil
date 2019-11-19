@@ -25,9 +25,9 @@ fi
 
 if [[ "${target}" == *-a* ]]; then
     # Disable AVX on arm & aarch
-    export AVXENABLE = 0
+    export AVXENABLE=0
 else
-    export AVXENABLE = 1
+    export AVXENABLE=1
 fi
 
 # Make sure to have the directories, before building
