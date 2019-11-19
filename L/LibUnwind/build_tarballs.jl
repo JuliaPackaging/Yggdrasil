@@ -14,6 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libunwind*/
 
+# We need to massage configure script to convince it to build the shared library
+# for PowerPC.
+if [[ "${target}" == powerpc64le-* ]]; then
+    autoreconf -vi
+fi
+
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-prefer-extbl.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
@@ -25,10 +31,10 @@ make install
 
 # Shoe-horn liblzma.a into libunwind.a
 mkdir -p unpacked/{liblzma,libunwind}
-(cd unpacked/liblzma; ${AR} -x ${prefix}/lib/liblzma.a)
-(cd unpacked/libunwind; ${AR} -x ${prefix}/lib/libunwind.a)
+(cd unpacked/liblzma; ar -x ${prefix}/lib/liblzma.a)
+(cd unpacked/libunwind; ar -x ${prefix}/lib/libunwind.a)
 rm -f ${prefix}/lib/libunwind.a
-${AR} -qc ${prefix}/lib/libunwind.a unpacked/**/*
+ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,13 +43,13 @@ ${AR} -qc ${prefix}/lib/libunwind.a unpacked/**/*
 platforms = [p for p in supported_platforms() if isa(p, Linux) || isa(p, FreeBSD)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libunwind", :libunwind)
+products = [
+    LibraryProduct("libunwind", :libunwind)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/XZ-v5.2.4-0/build_XZ.v5.2.4.jl",
+    "XZ_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
