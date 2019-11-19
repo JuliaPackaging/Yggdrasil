@@ -155,7 +155,7 @@ jobs:
   variables:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   # We only register if this is on `master`; same as setting `${DEPLOY}` above.
-  condition: and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
   steps:
   - script: |
       docker run $(BASE_DOCKER_OPS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
