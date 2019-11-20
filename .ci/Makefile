@@ -1,4 +1,4 @@
-NUM_AGENTS=4
+NUM_AGENTS=10
 
 up:
 	# Initialize loop devices
