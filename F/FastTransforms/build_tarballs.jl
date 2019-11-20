@@ -2,46 +2,30 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.2.9"
+version = v"0.2.10"
 sources = [
     "https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz" =>
-    "555e8fb19ad76ee888fbab7bfaf4c269416c1c5950e9428cbe08edb44c22bf35",
+    "33ee9dc2181d060080d97aaf90b75ed8488a2a5bbc1552ac263d1b6c852647b4",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ ${target} != *darwin* ]]; then
-    if [[ ${target} == *mingw* ]]; then
-        cd $WORKSPACE/destdir/bin
-    else
-        cd $WORKSPACE/destdir/lib
-    fi
-    if [[ ${nbits} == 32 ]]; then
-        #ln -sf libopenblas.${dlext} libblas.${dlext}
-        LIBOPENBLAS=openblas
-    else
-        #ln -sf libopenblas64_.${dlext} libblas.${dlext}
-        LIBOPENBLAS=openblas64_
-    fi
-fi
-
 cd $WORKSPACE/srcdir/FastTransforms-*
-
-if [[ ${target} == *mingw* ]]; then
-    gcc  -std=gnu99 -Ofast -march=native -mtune=native -mno-vzeroupper -I./src -I/workspace/destdir/include -lm -shared -fPIC src/transforms.c src/rotations.c src/permute.c src/tdc.c src/drivers.c src/fftw.c -L/workspace/destdir/bin -lm -lquadmath -fopenmp -l${LIBOPENBLAS} -lfftw3 -lgmp -lmpfr -o libfasttransforms.dll
-    cp -a libfasttransforms.${dlext} ${prefix}/bin
+if [[ ${nbits} == 64 ]]; then
+    BLAS=openblas64_
 else
-    make lib CC=gcc FT_USE_PREDEFINED_LIBRARIES=1 FT_FFTW_WITH_COMBINED_THREADS=1
-    cp -a libfasttransforms.${dlext} ${prefix}/lib
+    BLAS=openblas
 fi
+make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
+mv -f libfasttransforms.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions([#Linux(:i686, libc=:glibc);
-                                      #Linux(:x86_64, libc=:glibc);
-                                      #Linux(:i686, libc=:musl);
-                                      #Linux(:x86_64, libc=:musl);
-                                      #MacOS(:x86_64);
-                                      #FreeBSD(:x86_64);
+platforms = expand_gfortran_versions([Linux(:i686, libc=:glibc);
+                                      Linux(:x86_64, libc=:glibc);
+                                      Linux(:i686, libc=:musl);
+                                      Linux(:x86_64, libc=:musl);
+                                      MacOS(:x86_64);
+                                      FreeBSD(:x86_64);
                                       Windows(:i686);
                                       Windows(:x86_64)])
 
@@ -54,7 +38,6 @@ products = [
 dependencies = [
     "CompilerSupportLibraries_jll";
     "FFTW_jll";
-    "GMP_jll";
     "MPFR_jll";
     "OpenBLAS_jll"
 ]
