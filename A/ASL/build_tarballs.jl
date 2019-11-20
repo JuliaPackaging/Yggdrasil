@@ -1,0 +1,75 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder
+
+name = "ASL"
+version = v"0.1.0"
+
+# Collection of sources required to build ThinASLBuilder
+sources = [
+    "http://netlib.org/ampl/solvers.tgz" =>
+    "775b92cadaf95af73fdeec3effba6b9c6ffdc518e5f628b575140fb170885903",
+    "./bundled"
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir
+cd solvers/
+mkdir -p ${libdir}
+
+all_load="--whole-archive"
+noall_load="--no-whole-archive"
+makefile="makefile.u"
+cflags=""
+
+if [ -f $WORKSPACE/srcdir/asl-extra/arith.h.$target ]; then
+    cp $WORKSPACE/srcdir/asl-extra/arith.h.$target ./arith.h
+fi
+if [ $target = "arm-linux-musleabihf" ]; then
+    cp $WORKSPACE/srcdir/asl-extra/arith.h.arm-linux-gnueabihf ./arith.h
+fi
+if [ $target = "i686-linux-musl" ]; then
+    cp $WORKSPACE/srcdir/asl-extra/arith.h.i686-linux-gnu ./arith.h
+fi
+if [ $target = "aarch64-linux-musl" ]; then
+    cp $WORKSPACE/srcdir/asl-extra/arith.h.aarch64-linux-gnu ./arith.h
+fi
+if [ $target = "x86_64-unknown-freebsd11.1" ]; then
+    cp $WORKSPACE/srcdir/asl-extra/arith.h.x86_64-linux-gnu ./arith.h
+    cflags="-D__XSI_VISIBLE=1"
+fi
+
+if [ $target = "x86_64-w64-mingw32" || $target = "i686-w64-mingw32" ]; then
+    makefile="$WORKSPACE/srcdir/asl-extra/makefile.mingw"
+fi
+if [ $target = "x86_64-apple-darwin14" ]; then
+    all_load="-all_load"
+    noall_load="-noall_load"
+else
+    CC=gcc
+    CXX=g++
+fi
+
+make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
+$CXX -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
+mv libasl.${dlext} ${libdir}
+
+exit
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libasl", :libasl)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
