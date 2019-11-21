@@ -47,15 +47,15 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = prefix -> [
-    LibraryProduct(prefix, "libgit2", :libgit2),
+products = [
+    LibraryProduct("libgit2", :libgit2),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.9.0+0/build_LibSSH2.v1.9.0.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibCURL-v7.61.0-1/build_LibCURL.v7.61.0.jl",
+    "MbedTLS_jll",
+    "LibSSH2_jll",
+    "LibCURL_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
