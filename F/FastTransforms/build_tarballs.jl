@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.2.10"
+version = v"0.2.11"
 sources = [
     "https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz" =>
-    "33ee9dc2181d060080d97aaf90b75ed8488a2a5bbc1552ac263d1b6c852647b4",
+    "f3d5d7f22af40df36f60ca85cda916d54a1c5fa98df07d6062d02424599938cd",
 ]
 
 # Bash recipe for building across all platforms
@@ -20,14 +20,8 @@ make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREAD
 mv -f libfasttransforms.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions([Linux(:i686, libc=:glibc);
-                                      Linux(:x86_64, libc=:glibc);
-                                      Linux(:i686, libc=:musl);
-                                      Linux(:x86_64, libc=:musl);
-                                      MacOS(:x86_64);
-                                      FreeBSD(:x86_64);
-                                      Windows(:i686);
-                                      Windows(:x86_64)])
+platforms = expand_gfortran_versions(supported_platforms())
+platforms = [p for p in platforms if BinaryBuilder.proc_family(p) == :intel]
 
 # The products that we will ensure are always built
 products = [
