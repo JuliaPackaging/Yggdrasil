@@ -12,6 +12,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/FastTransforms-*
 if [[ ${nbits} == 64 ]]; then
+    SYMBOL_DEFS=()
+    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm)
+    for sym in ${SYMBOLS[@]}; do
+        SYMBOL_DEFS+=("-Dcblas_${sym}=cblas_${sym}64_")
+    done
+    export CFLAGS=${SYMBOL_DEFS[@]}
     BLAS=openblas64_
 else
     BLAS=openblas
