@@ -17,14 +17,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/GSW-C-*
 $CC $CFLAGS -fPIC -c -O3 -Wall  gsw_oceanographic_toolbox.c gsw_saar.c
 
-if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ] || [ $target = "x86_64-apple-darwin14" ]; then
-   LD=$CC
-elif [ $target = "x86_64-unknown-freebsd11.1" ]; then
+if [ $target = "x86_64-unknown-freebsd11.1" ]; then
    LD=ld
+else
+   LD=$CC
 fi
 
-$LD $LDFLAGS -fPIC -shared -o libgswteos-10.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
-cp libgswteos-10.$dlext $prefix
+$LD $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
+cp libgswteos.$dlext $prefix
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,7 +33,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgswteos-10", :libgswteos)
+    LibraryProduct("libgswteos", :libgswteos)
 ]
 
 # Dependencies that must be installed before this package can be built
