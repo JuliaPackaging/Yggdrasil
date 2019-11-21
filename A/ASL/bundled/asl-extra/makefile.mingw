@@ -1,0 +1,453 @@
+# /****************************************************************
+# Copyright (C) 1997-2001 Lucent Technologies
+# All Rights Reserved
+#
+# Permission to use, copy, modify, and distribute this software and
+# its documentation for any purpose and without fee is hereby
+# granted, provided that the above copyright notice appear in all
+# copies and that both that the copyright notice and this
+# permission notice and warranty disclaimer appear in supporting
+# documentation, and that the name of Lucent or any of its entities
+# not be used in advertising or publicity pertaining to
+# distribution of the software without specific, written prior
+# permission.
+#
+# LUCENT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.
+# IN NO EVENT SHALL LUCENT OR ANY OF ITS ENTITIES BE LIABLE FOR ANY
+# SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+# IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+# ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+# THIS SOFTWARE.
+# ****************************************************************/
+
+# For making amplsolver.a on Unix systems.
+
+.SUFFIXES: .c .o
+CC = cc
+CFLAGS = -O
+SHELL=/bin/sh
+
+# Add -DNO_RUSAGE to the CFLAGS assignment if your system
+# lacks getrusage().  This only matters for compiling xectim.c.
+
+# Add -DKR_headers to CFLAGS if your C compiler does not
+# understand ANSI C function headers, e.g.
+#	CFLAGS = -O -DKR_headers
+# You may also need to add
+#	strerror.c \
+# to the "a =" assignment below (if you get an error message about
+# strerror not being found when you try to link a solver).
+# If things don't run right, you may need to change -O to -g
+# so you can poke around with a debugger.
+# You may also need to add -D_SIZE_T to CFLAGS, or to
+# comment out the definition of size_t in nlp.h .
+
+# For non-Solaris SunOS systems (i.e., for SunOS 4.x but not 5.x), try
+# CFLAGS = -O -DKR_headers -D_SIZE_T
+
+# For the DEC Alpha, try
+# CFLAGS = -O -ieee_with_no_inexact
+
+# For HP, try
+# CFLAGS = -O -Aa -Ae
+# or (if the compiler does not recognize -Aa for ANSI syntax)
+# CFLAGS = -O -DKR_headers
+
+# For IBM RS6000 machines, add
+#	-qnomaf
+# to CFLAGS (to avoid surprises from fused mutiply-add instructions),
+# and for AIX versions less than 4.3, remove funcadd1.c from the "a ="
+# assignment below.
+
+# For some versions of MacOSX (e.g., 10.5), it is necessary to add
+# -D_NONSTD_SOURCE to CFLAGS (for reasons that perhaps Apple can explain):
+# CFLAGS = -O2 -D_NONSTD_SOURCE
+
+# For compilation by PGI's pgcc compiler, try using
+# CFLAGS = -fast -Kieee -DNO_fpu_control -pc 64
+
+# For Solaris on the i386 architecture, add fpsetprec.s to the "a ="
+# assignment below.  For compilation with Sun's cc and -xarch=generic64
+# or -xarch=amd64, add fpsetprec64.s rather than fpsetprec.s to the "a ="
+# assignment.  If you use gcc (try "cc --version" to see if cc is really gcc),
+# no changes to the "a =" assignment are needed.
+
+# For cygwin, change a.out to a.exe in the rule below for arith.h, and use
+# CC = gcc
+# CFLAGS = -O2
+
+# For MinGW, change a.out to a.exe in the rule below for arith.h,
+# change fpinit.c to fpinitmt.c in the "a =" list below, and use
+# CC = gcc
+# CFLAGS = -O2 -DNO_RUSAGE
+
+.c.o:
+	$(CC) -c $(CFLAGS) $*.c
+
+all: arith.h stdio1.h amplsolver.a funcadd0.o
+
+a = \
+	asldate.c \
+	atof.c \
+	auxinfo.c \
+	avltree.c \
+	b_search.c \
+	basename.c \
+	bscanf.c \
+	com2eval.c \
+	comeval.c \
+	con1ival.c \
+	con2ival.c \
+	con2val.c \
+	conadj.c \
+	conpval.c \
+	conscale.c \
+	conval.c \
+	degree.c \
+	derprop.c \
+	details.c \
+	dtoa1.c \
+	duthes.c \
+	dynlink.c \
+	f_read.c \
+	fg_read.c \
+	fg_write.c \
+	fgh_read.c \
+	fpecatch.c \
+	fpinitmt.c \
+	fullhes.c \
+	func_add.c \
+	funcadd1.c \
+	g_fmt.c \
+	genrowno.c \
+	getenv.c \
+	getstub.c \
+	htcl.c \
+	indic_cons.c \
+	jac0dim.c \
+	jac2dim.c \
+	jacdim.c \
+	jacinc.c \
+	jacinc1.c \
+	libnamsave.c \
+	mach.c \
+	mainexit.c \
+	mip_pri.c \
+	misc.c \
+	mpec_adj.c \
+	mqpcheckv.c \
+	mypow.c \
+	names.c \
+	nl_obj.c \
+	nqpcheck.c \
+	nqpcheckZ.c \
+	obj2val.c \
+	obj_adj.c \
+	obj_prec.c \
+	objconst.c \
+	objval.c \
+	objval_.c \
+	op_type.c \
+	pfg_read.c \
+	pfghread.c \
+	printf.c \
+	pshvprod.c \
+	punknown.c \
+	qp_read.c \
+	qpcheck.c \
+	qpcheckZ.c \
+	qsortv.c \
+	readsol.c \
+	repwhere.c \
+	rops.c \
+	rops2.c \
+	sigcatch.c \
+	sos_add.c \
+	sphes.c \
+	sscanf.c \
+	stderr.c \
+	studchk0.c \
+	suf_sos.c \
+	value.c \
+	writesol.c \
+	wrtsol_.c \
+	ws_desc.c \
+	wsu_desc.c \
+	x2check.c \
+	xectim.c \
+	xp1known.c \
+	xp2known.c
+
+ARFLAGS = ruv
+amplsolver.a: $a
+	$(CC) -c $(CFLAGS) $?
+	ar $(ARFLAGS) amplsolver.a ${a:.c=.o}
+	ranlib amplsolver.a || true
+
+#x=`echo $? | sed 's/\.[cs]/.o/g'` && ar $(ARFLAGS) amplsolver.a $$x && rm $$x
+# If your system lacks ranlib, add a dummy ranlib to your
+# search path, e.g.
+#	exec true
+# or just comment out the ranlib invocation above.
+
+Aslh = arith.h asl.h funcadd.h stdio1.h
+auxinfo.o libnamsave.o: funcadd.h stdio1.h
+mach.o: arith.h
+avltree.o bscanf.o conscale.o derprop.o dynlink.o func_add.o\
+ funcadd.o funcadd1.o funcaddk.o funcaddr.o funcadd0.o g_fmt.o\
+ genrowno.o jac0dim.o jacdim.o jac2dim.o jacinc.o jacinc1.o\
+ names.o obj_prec.o objval_.o sigcatch.o sjac0dim.o studchk0.o: $(Aslh)
+avltree.o: avltree.h
+repwhere.o: errchk.h $(Aslh)
+xp1known.o: asl_pfg.h psinfo.h nlp.h $(Aslh)
+duthes.o fullhes.o htcl.o sphes.o: asl_pfgh.h psinfo.h nlp2.h $(Aslh)
+getstub.o value.o writesol.o wrtsol_.o: getstub.h $(Aslh)
+com2eval.o con2ival.o con2val.o obj2val.o\
+ x2check.o: jac2dim.h nlp2.h $(Aslh)
+conpval.o pshvprod.o xp2known.o:\
+	jacpdim.h asl_pfgh.h psinfo.h nlp2.h $(Aslh)
+comeval.o con1ival.o conval.o degree.o mip_pri.o objval.o qpcheck.o\
+ qpcheckZ.o readsol.o: nlp.h $(Aslh)
+indic_cons.o misc.o mpec_adj.o nl_obj.o obj_adj.o sos_add.o suf_sos.o:\
+	nlp.h nlp2.h asl_pfg.h asl_pfgh.h psinfo.h $(Aslh)
+op_type.o: op_type.hd op_typeb.hd
+fgh_read.o: jac2dim.h opnos.hd op_type.hd dvalue.hd nlp2.h $(Aslh)
+rops.o: nlp.h errchk.h $(Aslh)
+rops2.o: nlp2.h errchk.h $(Aslh)
+conadj.o fg_write.o qp_read.o: nlp.h r_opn.hd $(Aslh)
+f_read.o fg_read.o: fg_read.c nlp.h r_opn.hd dvalue.hd $(Aslh)
+objconst.o: r_opn0.hd nlp.h nlp2.h asl_pfg.h asl_pfgh.h psinfo.h $(Aslh)
+pfg_read.o: asl_pfg.h r_opn0.hd dvalue.hd nlp.h psinfo.h $(Aslh)
+pfghread.o: pfg_read.c jacpdim.h asl_pfgh.h opnos.hd r_opn0.hd dvalue.hd\
+	psinfo.h nlp2.h $(Aslh)
+nqpcheck.o nqpcheckZ.o: nlp.h r_qp.hd $(Aslh)
+printf.o punknown.o sscanf.o: stdio1.h
+dtoa1.o: dtoa.c arith.h stdio1.h
+nl_obj.o nqpcheck.o nqpcheckZ.o obj_adj.o objconst.o: obj_adj.h
+mqpcheckv.o: mqpcheckv.c avltree.h nlp.h obj_adj.h r_qp.hd
+
+# Use CFLAGS in compiling arithchk.c in case something in CFLAGS affects
+# the number of bits in integral data types.  (It's probably best not to
+# add such options to CFLAGS.)
+
+arith.h: arithchk.c fpinit.c
+	$(CC) -c $(CFLAGS) -DASL_NO_FPINITMT fpinit.c
+	$(CC) $(CFLAGS) arithchk.c fpinit.o -lm ||\
+	 $(CC) -DNO_LONG_LONG $(CFLAGS) arithchk.c fpinit.o -lm ||\
+	 $(CC) -DNO_SSIZE_T $(CFLAGS) arithchk.c fpinit.o -lm ||\
+	 $(CC) -DNO_LONG_LONG -DNO_SSIZE_T $(CFLAGS) arithchk.c fpinit.o -lm
+	a.exe >arith.h
+	rm -f a.out arithchk.o fpinit.o
+
+### Alternative to arithchk.c: copy arith.h0 to arith.h, then edit
+### arith.h to activate the appropriate #define line, as explained
+### in the comments at the top.  For systems with IBM-mainframe
+### arithmetic, see README.  You'll need to #define Arith_Kind_ASL
+### suitably.  If "make arith.h" works, use the #define it gives
+### (and don't fool with arith.h0).  Otherwise use
+###	#define Arith_Kind_ASL 0
+
+# If compiling dtoa1.c reveals that your system lacks float.h, malloc.h
+# or memory.h, you could try
+#
+#	  make float.h
+#
+#         make malloc.h
+# and/or
+#         make memory.h
+#
+# as appropriate.
+
+# For possible use with nested parallel make invocations, make details.c
+# depend artifically on arith.h and stdio1.h, so the big amplsolver.a compile
+# will start only after arith.h and stdio1.h have been created.
+
+details.c: details.c0 arith.h stdio1.h
+	sed "s!System_details!`uname -sm`!" details.c0 >details.c
+
+float.h: float.h0
+	ln float.h0 float.h
+
+malloc.h:
+	echo 'extern char *malloc();' >malloc.h
+
+memory.h:
+	echo 'extern char *memcpy();' >memory.h
+
+stdio1.h: stdio1.h0
+	cat stdio1.h0 >stdio1.h
+
+### The rule above arranges for amplsolver.a to use printf, fprintf,
+### and sprintf (renamed Printf, Fprintf, and Sprintf) as described
+### in the comments at the start of printf.c, rather than the
+### system-supplied routines (whose sprintf has the wrong return
+### type and values on some systems).  In your solver, say
+### #include "stdio1.h" rather than <stdio.h> for consistency
+### with amplsolver.a .  To use the system-supplied printf (etc.),
+### say "make systemprintf", and change printf.c to sprintf.c
+### in the "a =" assignment above.
+
+systemprintf:
+	echo '#define NO_STDIO1' >stdio1.h
+	cat stdio1.h0 >>stdio1.h
+
+# "make xsum.out" to check for transmission errors.
+# This assumes you have the xsum program, whose source is
+# /netlib/f2c/src/xsum.c, e.g.,
+#	http://www.netlib.org/f2c/src/xsum.c
+# or
+#	http://netlib.sandia.gov/f2c/src/xsum.c.gz
+
+xs0 = \
+	README \
+	README.f77 \
+	amplsolv.lbc \
+	amplsolv.sy \
+	arith.ibm \
+	arith.h0 \
+	arithchk.c \
+	asl.h \
+	asl_pfg.h \
+	asl_pfgh.h \
+	asldate.c \
+	atof.c \
+	auxinfo.c \
+	avltree.c \
+	avltree.h \
+	b_search.c \
+	basename.c \
+	bscanf.c \
+	com2eval.c \
+	comeval.c \
+	comptry.bat \
+	con1ival.c \
+	con2ival.c \
+	con2val.c \
+	conadj.c \
+	configure \
+	configurehere \
+	conpval.c \
+	conscale.c \
+	conval.c \
+	degree.c \
+	derprop.c \
+	details.c0 \
+	dtoa.c \
+	dtoa1.c \
+	duthes.c \
+	dvalue.hd \
+	dynlink.c \
+	errchk.h \
+	f_read.c \
+	fg_read.c \
+	fg_write.c \
+	fgh_read.c \
+	float.h0 \
+	fpecatch.c \
+	fpinit.c \
+	fpinitmt.c \
+	fpsetprec.s \
+	fpsetprec64.s \
+	fullhes.c \
+	func_add.c \
+	funcadd.c \
+	funcadd.h \
+	funcadd0.c \
+	funcadd1.c \
+	funcaddk.c \
+	funcaddr.c \
+	g_fmt.c \
+	genrowno.c \
+	getenv.c \
+	getstub.c \
+	getstub.h \
+	htcl.c \
+	indic_cons.c \
+	jac0dim.c \
+	jac2dim.c \
+	jac2dim.h \
+	jacdim.c \
+	jacinc.c \
+	jacinc1.c \
+	jacpdim.h \
+	libnamsave.c \
+	mach.c \
+	mainexit.c \
+	makefile.lc \
+	makefile.sy \
+	makefile.u \
+	makefile.vc \
+	makefile.wat \
+	mip_pri.c \
+	misc.c \
+	mpec_adj.c \
+	mpec_adj0.c \
+	mqpcheckv.c \
+	mypow.c \
+	names.c \
+	nl_obj.c \
+	nlp.h \
+	nlp2.h \
+	nqpcheck.c \
+	nqpcheckZ.c \
+	obj2val.c \
+	obj_adj.c \
+	obj_adj.h \
+	obj_adj0.c \
+	obj_prec.c \
+	objconst.c \
+	objval.c \
+	objval_.c \
+	op_type.c \
+	op_type.hd \
+	op_typeb.hd \
+	opcode.hd \
+	opnos.hd \
+	pfg_read.c \
+	pfghread.c \
+	printf.c \
+	pshvprod.c \
+	psinfo.h \
+	punknown.c \
+	qp_read.c \
+	qpcheck.c \
+	qpcheckZ.c \
+	qsortv.c \
+	r_op.hd \
+	r_opn.hd \
+	r_opn0.hd \
+	r_qp.hd \
+	readsol.c \
+	repwhere.c \
+	rnd_prod.s \
+	rops.c \
+	rops2.c \
+	sigcatch.c \
+	sjac0dim.c \
+	sos_add.c \
+	sphes.c \
+	sprintf.c \
+	sscanf.c \
+	stderr.c \
+	stdio1.h0 \
+	strerror.c \
+	studchk0.c \
+	suf_sos.c \
+	value.c \
+	writesol.c \
+	wrtsol_.c \
+	ws_desc.c \
+	wsu_desc.c \
+	x2check.c \
+	xectim.c \
+	xp1known.c \
+	xp2known.c
+
+xsum.out: xsum0.out $(xs0)
+	xsum $(xs0) >xsum1.out
+	cmp xsum0.out xsum1.out && mv xsum1.out xsum.out || diff xsum[01].out
+
+clean:
+	rm -f amplsolver.a *.o arith.h details.c float.h stdio1.h
