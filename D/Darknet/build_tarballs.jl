@@ -23,13 +23,14 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
 fi
 
-if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-apple* ]]; then
-    # Disable AVX on powerpc, arm, aarch, windows, apple
-    export AVXENABLE=0
-else
-    # Enable everywhere else (linux)
-    export AVXENABLE=1
-fi
+# if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-apple* ]]; then
+#     # Disable AVX on powerpc, arm, aarch, windows, apple
+#     export AVXENABLE=0
+# else
+#     # Enable everywhere else (linux)
+#     export AVXENABLE=1
+# fi
+export AVXENABLE=0
 
 # Make sure to have the directories, before building
 make obj backup results setchmod
