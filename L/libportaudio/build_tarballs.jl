@@ -18,7 +18,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-set -e
 cd $WORKSPACE/srcdir
 
 # move the ASIO SDK to where CMake can find it
@@ -27,7 +26,7 @@ mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
     ../portaudio/
 make
