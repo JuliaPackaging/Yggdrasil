@@ -12,8 +12,12 @@ sources = [
     "http://portaudio.com/archives/pa_stable_v190600_20161030.tgz" =>
         "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513",
 
-    "http://www.steinberg.net/sdk_downloads/ASIOSDK2.3.1.zip" =>
-        "31074764475059448a9b7a56f103f4723ed60465e0e9d1a9446ca03dcf840f04"
+    # uncomment the following lines to include ASIO support. To distribute the
+    # resulting binaries you'll need to sign the licence agreement included with
+    # the SDK at: https://www.steinberg.net/en/company/developers.html
+
+    # "http://www.steinberg.net/sdk_downloads/ASIOSDK2.3.1.zip" =>
+    #     "31074764475059448a9b7a56f103f4723ed60465e0e9d1a9446ca03dcf840f04"
         ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +25,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 # move the ASIO SDK to where CMake can find it
-mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
+if [ -d "asiosdk2.3.1" ]; then
+    mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
+fi
 
 mkdir build
 cd build
