@@ -31,20 +31,22 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     ../portaudio/
 make
 make install
+install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc)
-    Linux(:x86_64, libc=:glibc)
-    Linux(:aarch64, libc=:glibc)
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
-    Linux(:powerpc64le, libc=:glibc)
-    MacOS(:x86_64)
-    Windows(:i686)
-    Windows(:x86_64)
-]
+# platforms = [
+#     Linux(:i686, libc=:glibc)
+#     Linux(:x86_64, libc=:glibc)
+#     Linux(:aarch64, libc=:glibc)
+#     Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
+#     Linux(:powerpc64le, libc=:glibc)
+#     MacOS(:x86_64)
+#     Windows(:i686)
+#     Windows(:x86_64)
+# ]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
