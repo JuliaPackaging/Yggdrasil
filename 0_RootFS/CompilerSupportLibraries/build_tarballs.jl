@@ -10,11 +10,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ ${target} == *mingw* ]]; then
-    libdir=${prefix}/bin
-else
-    libdir=${prefix}/lib
-fi
 mkdir -p ${libdir}
 
 file_valid()
@@ -45,6 +40,16 @@ for d in /opt/${target}/${target}/lib*; do
         fi
     done
 done
+
+# change permissions so that rpath succeeds
+for l in ${libdir}/*; do
+    chmod 0755 "${l}"
+done
+
+# libgcc_s.1.dylib receives special treatment for now
+if [[ ${target} == *apple* ]]; then
+    install_name_tool -id @rpath/libgcc_s.1.dylib ${libdir}/libgcc_s.1.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -64,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
