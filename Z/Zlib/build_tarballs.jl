@@ -6,7 +6,7 @@ version = v"1.2.11"
 
 # Collection of sources required to build zlib
 sources = [
-    "https://zlib.net/zlib-$(version).tar.gz" =>
+    "https://zlib.net/zlib$(version).tar.gz" =>
     "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
 ]
 
