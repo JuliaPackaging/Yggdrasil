@@ -26,7 +26,7 @@ EXTRA_CONFIGURE_FLAGS=()
 if [[ ${target} == arm* ]]; then
     EXTRA_CONFIGURE_FLAGS+=(--disable-inline)
 fi
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared ${EXTRA_CONFIGURE_FLAGS[@]}
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
 """
