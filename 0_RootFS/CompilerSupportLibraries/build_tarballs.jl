@@ -50,6 +50,9 @@ done
 if [[ ${target} == *apple* ]]; then
     install_name_tool -id @rpath/libgcc_s.1.dylib ${libdir}/libgcc_s.1.dylib
 fi
+
+# Install license (we license these all as GPL3, since they're from GCC)
+install_license /usr/share/licenses/GPL3
 """
 
 # These are the platforms we will build for by default, unless further
