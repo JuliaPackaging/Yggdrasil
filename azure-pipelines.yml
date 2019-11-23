@@ -76,7 +76,10 @@ jobs:
 
           # Build it, tag it with a unique tag name
           docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
-          
+
+          # Fail in case of any error
+          set -e
+
           # Next, for each project, download its sources
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
