@@ -64,6 +64,7 @@ for lib in ncurses form panel menu; do
     ln -s "${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}.pc"
     ln -s "lib${lib}w.${dlext}" "${libdir}/lib${lib}.${dlext}"
 done
+ln -s ncursesw ${prefix}/include/ncurses
 """
 
 # These are the platforms we will build for by default, unless further
