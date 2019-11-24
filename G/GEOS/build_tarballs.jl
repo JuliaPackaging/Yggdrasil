@@ -26,7 +26,7 @@ EXTRA_CONFIGURE_FLAGS=()
 if [[ ${target} == arm* ]]; then
     EXTRA_CONFIGURE_FLAGS+=(--disable-inline)
 fi
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static CFLAGS="${CFLAGS} -O2" ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
 """
@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-]
+] resp
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
