@@ -10,7 +10,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT-*
-make -j${nproc}
+make -j${nproc} amalg PREFIX="${prefix}"
 make install PREFIX="${prefix}"
 """
 
