@@ -14,11 +14,13 @@ make -j${nproc}
 make install PREFIX="${prefix}"
 """
 
-platforms = supported_platforms()
+platforms = filter(supported_platforms()) do platform
+    arch(platform) !== :aarch64 && arch(platform) !== :powerpc64le
+end
 
 products = [
     ExecutableProduct("luajit", :luajit),
-    LibraryProduct("libluajit", :libluajit),
+    LibraryProduct(["libluajit-5.1", "lua51"], :libluajit),
 ]
 
 dependencies = []
