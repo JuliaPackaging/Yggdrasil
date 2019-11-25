@@ -60,9 +60,13 @@ rm -rf ${prefix}/share/terminfo/x
 
 # Install pc files and fool packages looking for non-wide-character ncurses
 for lib in ncurses form panel menu; do
+    if [[ "${target}" == *-mingw* ]]; then
+        # O Windows, Windows, wherefore art thou Windows?
+        abiver=6
+    fi
     install -Dm644 "misc/${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}w.pc"
     ln -s "${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}.pc"
-    ln -s "lib${lib}w.${dlext}" "${libdir}/lib${lib}.${dlext}"
+    ln -s "lib${lib}w${abiver}.${dlext}" "${libdir}/lib${lib}${abiver}.${dlext}"
 done
 ln -s ncursesw ${prefix}/include/ncurses
 """
@@ -73,10 +77,10 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct("libform", :libform),
-    LibraryProduct("libmenu", :libmenu),
-    LibraryProduct("libncurses", :libncurses),
-    LibraryProduct("libpanel", :libpanel),
+    LibraryProduct(["libform", "libform6"], :libform),
+    LibraryProduct(["libmenu", "libmenu6"], :libmenu),
+    LibraryProduct(["libncurses", "libncurses6"], :libncurses),
+    LibraryProduct(["libpanel", "libpanel6"], :libpanel),
 ]
 
 # Dependencies that must be installed before this package can be built
