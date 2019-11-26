@@ -12,9 +12,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/FastTransforms-*
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    export CFLAGS="-mavx2 -mfma -fno-asynchronous-unwind-tables "
+    export CFLAGS="-mavx -fno-asynchronous-unwind-tables "
 else
-    export CFLAGS="-mavx2 -mfma "
+    export CFLAGS="-mavx "
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
