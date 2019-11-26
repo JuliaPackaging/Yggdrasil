@@ -2,19 +2,19 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.2.11"
+version = v"0.2.12"
 sources = [
     "https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz" =>
-    "f3d5d7f22af40df36f60ca85cda916d54a1c5fa98df07d6062d02424599938cd",
+    "640c39f148d757760c2658d96ae86e46a568cb3971410c736ce85b0725f28e8a",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/FastTransforms-*
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    export CFLAGS="-fno-asynchronous-unwind-tables "
+    export CFLAGS="-mavx -fno-asynchronous-unwind-tables "
 else
-    export CFLAGS
+    export CFLAGS="-mavx "
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
