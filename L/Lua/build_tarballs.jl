@@ -24,6 +24,7 @@ elif [[ ${target} == *-mingw* ]]; then
     MAKE_TARGET=mingw
 else
     MAKE_TARGET=linux
+    export CPPFLAGS="-I${prefix}/include"
 fi
 
 # XXX: Work around Lua apparently not understanding its own Windows setup
