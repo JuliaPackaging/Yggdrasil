@@ -14,8 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd solvers/
+cd $WORKSPACE/srcdir/solvers/
 mkdir -p ${libdir}
 
 all_load="--whole-archive"
@@ -23,39 +22,29 @@ noall_load="--no-whole-archive"
 makefile="makefile.u"
 cflags=""
 
-if [ -f $WORKSPACE/srcdir/asl-extra/arith.h.$target ]; then
+if [[ -f $WORKSPACE/srcdir/asl-extra/arith.h.$target ]]; then
     cp $WORKSPACE/srcdir/asl-extra/arith.h.$target ./arith.h
 fi
-if [ $target = "arm-linux-musleabihf" ]; then
+
+if [[ "${target}" == "arm-linux-musleabihf" ]]; then
     cp $WORKSPACE/srcdir/asl-extra/arith.h.arm-linux-gnueabihf ./arith.h
-fi
-if [ $target = "i686-linux-musl" ]; then
+elif [[ $target == "i686-linux-musl" ]]; then
     cp $WORKSPACE/srcdir/asl-extra/arith.h.i686-linux-gnu ./arith.h
-fi
-if [ $target = "aarch64-linux-musl" ]; then
+elif [[ "${target}" == "aarch64-linux-musl" ]]; then
     cp $WORKSPACE/srcdir/asl-extra/arith.h.aarch64-linux-gnu ./arith.h
-fi
-if [ $target = "x86_64-unknown-freebsd11.1" ]; then
+elif [[ "${target}" == *-freebsd* ]]; then
     cp $WORKSPACE/srcdir/asl-extra/arith.h.x86_64-linux-gnu ./arith.h
     cflags="-D__XSI_VISIBLE=1"
-fi
-
-if [ $target = "x86_64-w64-mingw32" || $target = "i686-w64-mingw32" ]; then
+elif [[ "${target}" == *-mingw* ]]; then
     makefile="$WORKSPACE/srcdir/asl-extra/makefile.mingw"
-fi
-if [ $target = "x86_64-apple-darwin14" ]; then
+elif [[ "${target}" == *-apple-* ]]; then
     all_load="-all_load"
     noall_load="-noall_load"
-else
-    CC=gcc
-    CXX=g++
 fi
 
 make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
-$CXX -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
+c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
 mv libasl.${dlext} ${libdir}
-
-exit
 """
 
 # These are the platforms we will build for by default, unless further
