@@ -49,6 +49,8 @@ products = [
     LibraryProduct(["liblua", "lua53"], :liblua),
 ]
 
-dependencies = []
+dependencies = [
+    "Readline_jll",
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
