@@ -39,11 +39,11 @@ You can read more about the `Artifacts` system and JLL packages and how they are
 
 ### BinaryProvider.jl
 
-We hope we convinced you about why it is important to switch to JLL packages.  However, if you really need to support Julia v1.2 or previous versions, you should probably keep using [BinaryProvider.jl](https://github.com/JuliaPackaging/BinaryProvider.jl) instead.  As explained in the previous section, a `build.jl` file is no more generated after the build as that is not used for JLL packages, instead you would need to generate it yourself.  In the top-directory of Yggdrasil there is a script to do this: [`generate_buildjl.jl`](./generate_buildjl.jl).  It takes three positional arguments:
+We hope we convinced you about why it is important to switch to JLL packages.  However, if you really need to support Julia v1.2 or previous versions, you should keep using [BinaryProvider.jl](https://github.com/JuliaPackaging/BinaryProvider.jl).  As explained in the previous section, a `build.jl` file is not generated after the build anymore as that is not used for JLL packages, instead you would need to generate it yourself: In the top-directory of Yggdrasil there is a script to do this: [`generate_buildjl.jl`](./generate_buildjl.jl).  It takes three positional arguments:
 
 * the path to the `build_tarballs.jl` script
-* the `owener/name` of the repository where the tarballs have been uploaded.  If omitted, this defaults to `JuliaBinaryWrappers/LIBRARY-NAME_jll.jl`
-* the tage name where the tarballs have been uploaded.  If omitted, this defaults to the latest version of the JLL package in the [General registry](https://github.com/JuliaRegistries/General).  If there are no versions of the package in the registry, the script will fail.
+* the `owner/name` of the repository where the tarballs have been uploaded.  If omitted, this defaults to `JuliaBinaryWrappers/BuilderName_jll.jl`
+* the tag name where the tarballs have been uploaded.  If omitted, this defaults to the latest version of the JLL package in the [General registry](https://github.com/JuliaRegistries/General).  If there are no versions of the package in the registry, the script will fail.
 
 For example, to get the `build.jl` file for the latest version of Zlib you can run the following command:
 
@@ -57,11 +57,11 @@ If instead you want to get the `build_tarballs.jl` file for the tag named [Zlib-
 julia --color=yes generate_buildjl.jl Z/Zlib/build_tarballs.jl JuliaBinaryWrappers/Zlib_jll.jl Zlib-v1.2.11+6
 ```
 
-*Note*: you have to manually add `prefix` as the first argument to all `Product` constructors in the generated `build.jl` files.
+*Note*: you have to manually add `prefix` as the first argument to all `Product` constructors in the generated `build.jl` files.  This is necessary because the syntax between `BinaryBuilder v0.2+` and `BinaryProvider` has diverged.
 
-Remember that you will need the `build.jl` file also for all direct and indirect dependencies of the binary library.
+Remember that you will also need the `build.jl` files for all direct and indirect dependencies.
 
-Here are a few examples of packages using this system to install the libraries:
+Here are a few examples of packages using this system to install their libraries:
 
 * [Cairo.jl](https://github.com/JuliaGraphics/Cairo.jl/tree/15706f267cbb31da58f62270e46dc892c0c7ff9f/deps)
 * [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl/tree/b6cca77f788e58409a13cac5ab6eaa6a5841b5c6/deps)
