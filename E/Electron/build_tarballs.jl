@@ -29,7 +29,8 @@ binaries_w64 = [
 # Bash recipe for installing on Windows
 script = raw"""
 cd $WORKSPACE/srcdir/
-cp -r * ${prefix}
+mkdir ${bindir}
+cp -r * ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
