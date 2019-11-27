@@ -26,6 +26,8 @@ EXTRA_CONFIGURE_FLAGS=()
 if [[ ${target} == arm* ]]; then
     EXTRA_CONFIGURE_FLAGS+=(--disable-inline)
 fi
+export CFLAGS="-O2"
+export CXXFLAGS="-O2"
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
