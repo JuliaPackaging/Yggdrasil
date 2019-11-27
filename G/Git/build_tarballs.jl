@@ -76,33 +76,18 @@ dependencies = [
 # Install first for win32, then win64.  This will accumulate files into `products` and also wrappers into the JLL package.
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
-# Get the list of platforms requested from the command line.  This should be the
-# only argument not prefixed with "--".
-requested_platforms = filter(arg -> !occursin(r"^--.*", arg), ARGS)
-# This returns whether the builder for the given `platform` should be run.
-function run_platform(platform)
-    if isone(length(requested_platforms))
-        # `requested_platforms` has only one element: the comma-separated list
-        # of platform.  We'll run the platform only if it's in the list
-        return platform in split(requested_platforms[1], ",")
-    else
-        # `requested_platforms` doesn't have only one element: if its length is
-        # zero, no platform has been explicitely passed from the command line
-        # and we we'll run all platforms, otherwise we don't know what to do, so
-        # let's return false.
-        return iszero(length(requested_platforms))
-    end
-end
+include("../../fancy_toys.jl")
 
-if run_platform("i686-w64-mingw32")
+if should_build_platform("i686-w64-mingw32")
     build_tarballs(non_reg_ARGS, name, version, sources_w32, script_win, [Windows(:i686)], products, [])
 end
-if run_platform("x86_64-w64-mingw32")
+if should_build_platform("x86_64-w64-mingw32")
     build_tarballs(non_reg_ARGS, name, version, sources_w64, script_win, [Windows(:x86_64)], products, [])
 end
 # Then for everything else.  This is the only one that we try to register, and this is the step that will open a PR against General
 platforms = filter!(p -> !isa(p, Windows), supported_platforms())
-if any(run_platform.(triplet.(platforms)))
+# Get the non-Windows platforms that have been actually requested
+filter!(p -> should_build_platform(triplet(p)), platforms)
+if !isempty(platforms)
     build_tarballs(ARGS, name, version, sources_unix, script_unix, platforms, products, dependencies)
 end
-
