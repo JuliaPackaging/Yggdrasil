@@ -14,7 +14,7 @@ cd ${WORKSPACE}/srcdir/LuaJIT-*
 # This is needed in order to avoid building "minilua," a tiny implementation of plain
 # Lua included in LuaJIT's build system that requires building with the host system's
 # compiler rather than a cross compiler.
-apk add lua5.1 luarocks5.1
+apk add lua5.1 lua5.1-dev luarocks5.1
 luarocks-5.1 install luabitop
 
 make -j${nproc} amalg PREFIX="${prefix}" HOST_LUA="$(which lua)"
