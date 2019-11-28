@@ -57,9 +57,9 @@ pkg-config --list-all
   --cc="${CC}"         \
   --cxx="${CXX}"       \
   --dep-cc="${CC}"     \
-  --ar="${AR}"         \
-  --nm="${NM}"         \
-  --objcc="${CC} -ObjC" \
+  --ar=ar              \
+  --nm=nm              \
+  --objcc="${OBJC}"    \
   --sysinclude=${prefix}/include \
   --pkg-config=$(which pkg-config) \
   --pkg-config-flags=--static \
@@ -109,7 +109,7 @@ products = [
     LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
     LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
     LibraryProduct(["libavformat", "avformat"], :libavformat),
-    LibraryProduct(["libavresample", "swresample"], :libavresample),
+    LibraryProduct(["libavresample", "avresample"], :libavresample),
     LibraryProduct(["libavutil", "avutil"], :libavutil),
     LibraryProduct(["libpostproc", "postproc"], :libpostproc),
     LibraryProduct(["libswresample", "swresample"], :libswresample),
