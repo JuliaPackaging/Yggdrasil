@@ -15,7 +15,7 @@ cd ${WORKSPACE}/srcdir/LuaJIT-*
 # Lua included in LuaJIT's build system that requires building with the host system's
 # compiler rather than a cross compiler.
 apk add lua5.1 luarocks5.1
-luarocks-5.1 install bitop
+luarocks-5.1 install luabitop
 
 make -j${nproc} amalg PREFIX="${prefix}" HOST_LUA="$(which lua)"
 make install PREFIX="${prefix}"
