@@ -6,10 +6,13 @@ version = v"2.0.5"
 sources = [
     "https://luajit.org/download/LuaJIT-$(version).tar.gz" =>
         "874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979",
+    "./bundled",
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT-*
+
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/src_Makefile.patch"
 
 # This is needed in order to avoid building "minilua," a tiny implementation of plain
 # Lua included in LuaJIT's build system that requires building with the host system's
