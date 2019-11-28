@@ -10,7 +10,14 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT-*
-make -j${nproc} amalg PREFIX="${prefix}"
+
+# This is needed in order to avoid building "minilua," a tiny implementation of plain
+# Lua included in LuaJIT's build system that requires building with the host system's
+# compiler rather than a cross compiler.
+apk add lua5.1 luarocks5.1
+luarocks install bitop
+
+make -j${nproc} amalg PREFIX="${prefix}" HOST_LUA="$(which lua)"
 make install PREFIX="${prefix}"
 """
 
