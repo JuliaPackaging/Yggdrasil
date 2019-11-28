@@ -15,16 +15,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GSW-C-*
-$CC $CFLAGS -fPIC -c -O3 -Wall  gsw_oceanographic_toolbox.c gsw_saar.c
-
-if [ $target = "x86_64-unknown-freebsd11.1" ]; then
-   LD=ld
-else
-   LD=$CC
-fi
-
-$LD $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
-cp libgswteos.$dlext $prefix
+cc $CFLAGS -fPIC -c -O3 -Wall gsw_oceanographic_toolbox.c gsw_saar.c
+cc $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
+mkdir -p ${libdir}
+cp libgswteos.$dlext ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,7 +32,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
