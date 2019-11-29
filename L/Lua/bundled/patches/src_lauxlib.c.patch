@@ -1,0 +1,17 @@
+diff --git a/src/lauxlib.c b/src/lauxlib.c
+index 8bdada5..080301d 100644
+--- a/src/lauxlib.c
++++ b/src/lauxlib.c
+@@ -1041,3 +1041,12 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
+                   (LUAI_UACNUMBER)ver, (LUAI_UACNUMBER)*v);
+ }
+ 
++/* Julia-specific extensions for accessing configuration parameters */
++
++LUALIB_API int jl_lua_int_type() {
++    return LUA_INT_TYPE;
++}
++
++LUALIB_API int jl_lua_float_type() {
++    return LUA_FLOAT_TYPE;
++}
