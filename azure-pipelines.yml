@@ -10,7 +10,8 @@ variables:
   # We run off of the latest `master`
   BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
   # Things we pretty much always want when running with Docker
-  BASE_DOCKER_OPTS: -t -v /data/staticfloat/yggstorage:/storage -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e TERM=xterm-16color
+  BASE_DOCKER_OPTS: -t -v /data/staticfloat/yggstorage:/storage -e MAPPED_GITHUB_TOKEN -e TERM=xterm-16color
+  MAPPED_GITHUB_TOKEN: $(GITHUB_TOKEN)
 
 pool: Default
 
