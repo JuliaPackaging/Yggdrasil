@@ -15,8 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-image-*/
 CPPFLAGS="-I${prefix}/include"
+
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
+
 ./configure --prefix=${prefix} --host=${target} --enable-malloc0returnsnull=no
 make -j${nproc}
 make install
