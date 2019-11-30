@@ -24,9 +24,7 @@ make -j${nproc} amalg \
     STATIC_CC="${CC}" \
     DYNAMIC_CC="${CC} -fPIC" \
     CROSS="" \
-    TARGET_LD="${LD}" \
-    TARGET_AR="${AR} rcus 2>/dev/null" \
-    TARGET_STRIP="${STRIP}"
+    TARGET_LD="${CC}"
 make install PREFIX="${prefix}"
 """
 
