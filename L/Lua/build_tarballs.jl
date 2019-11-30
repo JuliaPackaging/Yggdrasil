@@ -13,6 +13,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/lua-*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/src_Makefile.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/src_lauxlib.c.patch"
 
 if [[ ${target} == *-apple-* ]]; then
     MAKE_TARGET=macosx
