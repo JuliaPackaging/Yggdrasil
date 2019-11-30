@@ -83,7 +83,7 @@ jobs:
               DOCKER_OPTS="$(BASE_DOCKER_OPTS) -w /workspace/${PROJECT} bb_worker:$(Build.SourceVersion)"
 
               # First, we get build metadata in the form of a JSON object:
-              CONTAINER_NAME=meta_json-${NAME}-$(Build.SourceVersion)
+              CONTAINER_NAME=$(echo meta_json-${NAME}-$(Build.SourceVersion) | tr '[@]' '_')
               docker run --name=${CONTAINER_NAME} ${DOCKER_OPTS} bash -c " \
                   echo \"Generating meta.json...\"; \
                   julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
