@@ -9,14 +9,22 @@ sources = [
     "51f743d0d31a761d1739865f56e0978178e7a6a8",
 ]
 
-# Previously the ./configure line was
-# # if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then ./configure --prefix=${prefix} --host=${target} CFLAGS="-I$prefix/include" LDFLAGS="-L$prefix/lib"; else ./configure --prefix=${prefix} --host=${target}; fi
-
 # Bash recipe for building across all platforms
 script = raw"""
+# Add `gettext` for `autogen.sh`
+apk add gettext-dev
+
+# GCC builds complain about string truncation, but we don't care
+if [[ ${target} != *apple* ]] && [[ ${target} != *freebsd* ]]; then
+    export CFLAGS="${CFLAGS} -Wno-stringop-truncation"
+fi
+
+# Windows doesn't search ${prefix}/include?
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+
 cd $WORKSPACE/srcdir/ReadStat/
 ./autogen.sh
-./configure
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -34,6 +42,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Libiconv_jll",
+    "Zlib_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
