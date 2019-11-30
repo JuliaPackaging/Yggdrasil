@@ -33,7 +33,7 @@ jobs:
       PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD "${COMPARE_AGAINST}" | grep -E ".+/.+" | cut -d/ -f1,2 | sort -u)
 
       # LLVM is special, we won't build it automatically since it takes special attention
-      EXCLUDE_PROJECTS=" LLVM "
+      EXCLUDED_NAMES=" LLVM "
 
       # This is the dynamic mapping we're going to build up, if it's empty we don't do anything
       PROJECTS_ACCEPTED=""
@@ -53,7 +53,7 @@ jobs:
           fi
 
           # Ignore stuff in our excluded projects
-          if [[ "${EXCLUDE_PROJECTS}" == *" ${NAME} "* ]]; then
+          if [[ "${EXCLUDED_NAMES}" == *" ${NAME} "* ]]; then
               echo " --> Skipping as it's excluded"
               continue
           fi
