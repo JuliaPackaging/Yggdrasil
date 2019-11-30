@@ -9,16 +9,14 @@ version = v"1.0"
 sources = [
     "https://github.com/anowacki/mineos.git" =>
     "e2558b486d7656ef112608a8776643da66dc87cf",
-
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/mineos
-./configure --prefix=$prefix --host=$target --disable-doc
+cd ${WORKSPACE}/srcdir/mineos
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
 make
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,7 +37,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
