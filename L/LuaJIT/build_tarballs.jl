@@ -13,7 +13,7 @@ cd ${WORKSPACE}/srcdir/LuaJIT-*
 
 make -j${nproc} amalg \
     PREFIX="${prefix}" \
-    HOST_CC="${CC_BUILD}" \
+    HOST_CC="${CC}" \
     STATIC_CC="${CC}" \
     DYNAMIC_CC="${CC} -fPIC" \
     CROSS="" \
