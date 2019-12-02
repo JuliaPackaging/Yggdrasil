@@ -18,17 +18,15 @@ cd $WORKSPACE/srcdir/proj-*/
 apk add sqlite
 
 if [[ ${target} == *mingw* ]]; then
-    SQLITE3_LIBRARY=$prefix/bin/libsqlite3-0.dll
-elif [[ ${target} == *darwin* ]]; then
-    SQLITE3_LIBRARY=$prefix/lib/libsqlite3.dylib
+    SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
 else
-    SQLITE3_LIBRARY=$prefix/lib/libsqlite3.so
+    SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
 fi
 
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-      -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DSQLITE3_INCLUDE_DIR=$prefix/include \
       -DSQLITE3_LIBRARY=$SQLITE3_LIBRARY \
       -DHAVE_PTHREAD_MUTEX_RECURSIVE_DEFN=1 \
