@@ -42,6 +42,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct(["libproj", "libproj_$(version.major)_$(version.minor)"], :libproj),
 
+    # Excecutables
     ExecutableProduct("cct", :cct),
     ExecutableProduct("cs2cs", :cs2cs),
     ExecutableProduct("geod", :geod),
