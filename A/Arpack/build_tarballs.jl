@@ -13,7 +13,7 @@ script = raw"""
 mkdir ${WORKSPACE}/srcdir/arpack-build
 
 # arpack tests require finding libgfortran when linking with C linkers,
-# and gcc doesn't automatically add that search path.  So we do it for it.
+# and gcc doesn't automatically add that search path.  So we do it for it with `rpath-link`.
 EXE_LINK_FLAGS=()
 if [[ ${target} != *darwin* ]]; then
     EXE_LINK_FLAGS+=("-Wl,-rpath-link,/opt/${target}/${target}/lib")
