@@ -44,7 +44,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libproj", :libproj),
+    LibraryProduct(["libproj", "libproj_$(version.major)_$(version.minor)"], :libproj),
 
     ExecutableProduct("cct", :cct_path),
     ExecutableProduct("cs2cs", :cs2cs_path),
