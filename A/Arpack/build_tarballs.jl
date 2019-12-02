@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Arpack
 name = "Arpack"
-version = v"3.7.0"
+version = v"3.5.0"
 sources = [
     "https://github.com/opencollab/arpack-ng/archive/$(version).tar.gz" =>
-    "972e3fc3cd0b9d6b5a737c9bf6fd07515c0d6549319d4ffb06970e64fa3cc2d6",
+    "50f7a3e3aec2e08e732a487919262238f8504c3ef927246ec3495617dde81239",
 ]
 
 # Bash recipe for building across all platforms
