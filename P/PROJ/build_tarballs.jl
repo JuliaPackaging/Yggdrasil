@@ -34,10 +34,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       ..
 cmake --build .
 make install
-
-# add proj-datumgrid files directly to the result
-wget https://download.osgeo.org/proj/proj-datumgrid-1.8.tar.gz
-tar xzf proj-datumgrid-1.8.tar.gz -C $prefix/share/proj/
 """
 
 platforms = supported_platforms()
@@ -66,16 +62,6 @@ products = [
     FileProduct(joinpath("share", "proj", "other.extra"), :other_extra_path),
     FileProduct(joinpath("share", "proj", "proj.db"), :proj_db_path),
     FileProduct(joinpath("share", "proj", "world"), :world_path),
-
-    # part of files from proj-datumgrid which are added to the default ones
-    # all are added but only the few below are checked if they are added
-    # note that none of proj-datumgrid-europe, proj-datumgrid-north-america,
-    # proj-datumgrid-oceania, proj-datumgrid-world is added by default,
-    # though users are free to add them to the rest themselves
-    FileProduct(joinpath("share", "proj", "alaska"), :alaska_path),
-    FileProduct(joinpath("share", "proj", "conus"), :conus_path),
-    FileProduct(joinpath("share", "proj", "egm96_15.gtx"), :egm96_15_path),
-    FileProduct(joinpath("share", "proj", "ntv1_can.dat"), :ntv1_can_path),
 ]
 
 # Dependencies that must be installed before this package can be built
