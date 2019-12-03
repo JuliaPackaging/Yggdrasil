@@ -77,8 +77,9 @@ make install VERBOSE=1
 
 # Arpack links against a _very_ specific version of OpenBLAS on macOS by default:
 if [[ ${target} == *apple* ]]; then
-    # Rewrite it to be more accomodating
-    install_name_tool -change libopenblas64_0.3.7.dylib libopenblas64_.dylib ${prefix}/lib/libarpack.2.0.0.dylib
+    # Figure out what version it probably latched on to:
+    OPENBLAS_LINK=$(otool -L ${prefix}/lib/libarpack.dylib | grep libopenblas64_ | awk '{ print $1 }')
+    install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${prefix}/lib/libarpack.dylib
 fi
 """
 
