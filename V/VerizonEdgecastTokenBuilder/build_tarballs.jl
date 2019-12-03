@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 export OPENSSL_INCLUDE="-I $prefix/include"
-export OPENSSL_LIBS="$prefix/lib/libssl.a $prefix/lib/libcrypto.a"
+export OPENSSL_LIBS="-lssl -lcrypto"
 cd ectoken/c-ectoken/ecencrypt/
 gcc -m64 -O2 -Wall -Werror -std=gnu99 ec_encrypt.c ectoken_v3.c base64.c -o 64/ectoken3 $OPENSSL_LIBS $OPENSSL_INCLUDE -lm -lpthread -ldl
 cp 64/ectoken3 $prefix/bin/
@@ -37,14 +37,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "PackageSpec(
-  name = OpenSSL_jll
-  uuid = 458c3c95-2e84-50aa-8efc-19380b2a3a95
-  version = *
-)",
-
+  "OpenSSL_jll"
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
