@@ -74,6 +74,12 @@ cmake ../arpack-ng-* -DCMAKE_INSTALL_PREFIX="$prefix" \
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
+
+# Arpack links against a _very_ specific version of OpenBLAS on macOS by default:
+if [[ ${target} == *apple* ]]; then
+    # Rewrite it to be more accomodating
+    install_name_tool -change libopenblas64_0.3.7.dylib libopenblas64_.dylib ${prefix}/lib/libarpack.2.0.0.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
