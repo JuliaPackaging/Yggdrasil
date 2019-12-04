@@ -6,9 +6,9 @@ version = v"1.10.5"
 
 sources = [
     # Crib MacOS and Linux binaries from PyPI
-    "https://files.pythonhosted.org/packages/98/06/0e711ae0c95d92ec238218448a15c23590cb117ded59e4bfa322b085b59e/h5py-2.9.0-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl" => "f3b49107fbfc77333fc2b1ef4d5de2abcd57e7ea3a1482455229494cf2da56ce",
-    "https://files.pythonhosted.org/packages/11/6c/b23aa4269df44df11b0409372bc20c3d249a4c7f7554009166010b2cc296/h5py-2.9.0-cp27-cp27m-manylinux1_i686.whl" => "0f94de7a10562b991967a66bbe6dda9808e18088676834c0a4dcec3fdd3bcc6f",
-    "https://files.pythonhosted.org/packages/c8/d6/a1f58a4ebb2cfe93dcbae2e8e8cee3d81aeda8851b5a56cdae9a4eae6a60/h5py-2.9.0-cp27-cp27m-manylinux1_x86_64.whl" => "713ac19307e11de4d9833af0c4bd6778bde0a3d967cafd2f0f347223711c1e31",
+    "https://files.pythonhosted.org/packages/2c/47/e0d58be6f292684a4541d10b1da953542ff679f3ffc6096bee73634832b1/h5py-2.10.0-cp27-cp27m-macosx_10_6_intel.whl" => "ecf4d0b56ee394a0984de15bceeb97cbe1fe485f1ac205121293fc44dcf3f31f",
+    "https://files.pythonhosted.org/packages/3f/b6/23155e343f8719923449ccfebac296c1ab0dda9bdccc28242e1594469f5a/h5py-2.10.0-cp27-cp27m-manylinux1_i686.whl" => "86868dc07b9cc8cb7627372a2e6636cdc7a53b7e2854ad020c9e9d8a4d3fd0f5",
+    "https://files.pythonhosted.org/packages/3a/9b/5b68a27110d459704550cfc0c765a1ae6ee98981cbbbf0ca92983c87046a/h5py-2.10.0-cp27-cp27m-manylinux1_x86_64.whl" => "aac4b57097ac29089f179bbc2a6e14102dd210618e94d77ee4831c65f82f17c0",
 
     # Take advantage of msys2 mingw builds of HDF5 for Windows
     "http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.10.5-1-any.pkg.tar.xz" => "d29a56297219e1981f393e266ee515605237323fc20b0a69a45961c4bfe5e9da",
