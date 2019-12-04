@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
-version = v"1.10.5"
+version = v"1.11.0"
 
 sources = [
     # Crib MacOS and Linux binaries from PyPI
