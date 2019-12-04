@@ -32,9 +32,9 @@ sources_linux64 = [
 script = raw"""
 cd $WORKSPACE/srcdir
 if [[ ${target} == *mingw* ]]; then
-    mv Library/bin ${libdir}
+    cp -r Library/bin/* ${libdir}
 else
-    mv lib ${libdir}
+    cp -r lib/* ${libdir}
 fi
 install_license info/*.txt
 """
@@ -47,6 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "IntelOpenMP_jll",
 ]
 
 # Install first for win32, then win64.  This will accumulate files into `products` and also wrappers into the JLL package.
@@ -55,17 +56,17 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 
 if should_build_platform("i686-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_win32, script, [Windows(:i686)], products, [])
+    build_tarballs(non_reg_ARGS, name, version, sources_win32, script, [Windows(:i686)], products, dependencies)
 end
 if should_build_platform("x86_64-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_win64, script, [Windows(:x86_64)], products, [])
+    build_tarballs(non_reg_ARGS, name, version, sources_win64, script, [Windows(:x86_64)], products, dependencies)
 end
 if should_build_platform("x86_64-apple-darwin14")
-    build_tarballs(non_reg_ARGS, name, version, sources_macos, script, [MacOS(:x86_64)], products, [])
+    build_tarballs(non_reg_ARGS, name, version, sources_macos, script, [MacOS(:x86_64)], products, dependencies)
 end
 if should_build_platform("i686-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version, sources_linux32, script, [Linux(:i686)], products, [])
+    build_tarballs(non_reg_ARGS, name, version, sources_linux32, script, [Linux(:i686)], products, dependencies)
 end
 if should_build_platform("x86_64-linux-gnu")
-    build_tarballs(ARGS, name, version, sources_linux64, script, [Linux(:x86_64)], products, [])
+    build_tarballs(ARGS, name, version, sources_linux64, script, [Linux(:x86_64)], products, dependencies)
 end
