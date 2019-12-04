@@ -68,12 +68,17 @@ elif [[ ${target} == *apple* ]]; then
 fi
 
 
-# We need to be able to access `libhdf5` directly, so symlink it from the hashed filename from manylinux pypi
+# We need to be able to access `libhdf5` and `libhdf5_hl` directly, so symlink it from the hashed filename from manylinux pypi
 if [[ ${target} == *linux* ]]; then
     libhdf5name=$(basename ${prefix}/lib/libhdf5-*.${dlext}*)
     base="${libhdf5name%%.*}"
     ext="${libhdf5name#$base}"
     ln -s ${libhdf5name} ${prefix}/lib/libhdf5${ext}
+
+    libhdf5_hlname=$(basename ${prefix}/lib/libhdf5_hl-*.${dlext}*)
+    base="${libhdf5_hlname%%.*}"
+    ext="${libhdf5_hlname#$base}"
+    ln -s ${libhdf5_hlname} ${prefix}/lib/libhdf5_hl${ext}
 fi
 
 # Remove the hash from license file name and then install it
@@ -94,6 +99,7 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libhdf5", :libhdf5),
+    LibraryProduct("libhdf5_hl", :libhdf5_hl),
 ]
 
 # Dependencies that must be installed before this package can be built
