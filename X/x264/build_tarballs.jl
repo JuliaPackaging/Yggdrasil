@@ -21,7 +21,7 @@ if [[ "${target}" == x86_64* ]] || [[ "${target}" == i686* ]]; then
 else
     export AS="${CC}"
 fi
-./configure --prefix=$prefix --host=$target --enable-static --enable-pic
+./configure --prefix=$prefix --host=$target --enable-shared --enable-pic
 make -j${nproc}
 make install
 """
@@ -32,7 +32,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("x264", :x264)
+    ExecutableProduct("x264", :x264),
+    LibraryProduct("libx264", :libx264),
 ]
 
 # Dependencies that must be installed before this package can be built
