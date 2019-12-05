@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "VerizonEdgecastTokenBuilder"
+name = "VerizonEctoken"
 version = v"0.1.0"
 
 # Collection of sources required to complete build
