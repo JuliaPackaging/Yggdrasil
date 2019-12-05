@@ -55,7 +55,7 @@ else
     mv h5py/${LIBSDIR}/lib{sz,aec,hdf5}* ${prefix}/lib
 fi
 
-# We want libhdf5 to use OUR libz, so we force it to:
+# We want libhdf5 to use OUR libz so we force it to do so:
 if [[ ${target} == *linux* ]]; then
     # We want libhdf5 to use OUR libz, so we force it to:
     for f in ${prefix}/lib/lib{sz,aec,hdf5}*; do
