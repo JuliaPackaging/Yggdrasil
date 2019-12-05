@@ -95,6 +95,7 @@ pkg-config --list-all
   --extra-ldflags="-L${prefix}/lib"
 make -j${nproc}
 make install
+install_license LICENSE.md COPYING.*
 """
 
 # These are the platforms we will build for by default, unless further
