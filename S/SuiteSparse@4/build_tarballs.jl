@@ -83,28 +83,28 @@ make "${FLAGS[@]}" install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gcc_versions(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libsuitesparseconfig",   :libsuitesparseconfig),
-    LibraryProduct(prefix, "libamd",                 :libamd),
-    LibraryProduct(prefix, "libbtf",                 :libbtf),
-    LibraryProduct(prefix, "libcamd",                :libcamd),
-    LibraryProduct(prefix, "libccolamd",             :libccolamd),
-    LibraryProduct(prefix, "libcolamd",              :libcolamd),
-    LibraryProduct(prefix, "libcholmod",             :libcholmod),
-    LibraryProduct(prefix, "libldl",                 :libldl),
-    LibraryProduct(prefix, "libklu",                 :libklu),
-    LibraryProduct(prefix, "libumfpack",             :libumfpack),
-    LibraryProduct(prefix, "librbio",                :librbio),
-    LibraryProduct(prefix, "libspqr",                :libspqr),
-    LibraryProduct(prefix, "libsuitesparse_wrapper", :libsuitesparse_wrapper),
+products = [
+    LibraryProduct("libsuitesparseconfig",   :libsuitesparseconfig),
+    LibraryProduct("libamd",                 :libamd),
+    LibraryProduct("libbtf",                 :libbtf),
+    LibraryProduct("libcamd",                :libcamd),
+    LibraryProduct("libccolamd",             :libccolamd),
+    LibraryProduct("libcolamd",              :libcolamd),
+    LibraryProduct("libcholmod",             :libcholmod),
+    LibraryProduct("libldl",                 :libldl),
+    LibraryProduct("libklu",                 :libklu),
+    LibraryProduct("libumfpack",             :libumfpack),
+    LibraryProduct("librbio",                :librbio),
+    LibraryProduct("libspqr",                :libspqr),
+    LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenBLAS-v0.3.5-0/build_OpenBLAS.v0.3.5.jl",
+    "OpenBLAS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
