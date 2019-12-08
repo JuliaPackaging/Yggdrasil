@@ -28,11 +28,6 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/lib")
 fi
 
-# Switch `ar` usage on OSX
-if [[ ${target} == "x86_64-apple-darwin14" ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
-
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
@@ -52,11 +47,13 @@ done
 
 # For now, we'll have to adjust the name of the OpenBLAS library on macOS.
 # Eventually, this should be fixed upstream
-if [[ ${target} == "x86_64-apple-darwin14" ]]; then
+if [[ ${target} == "*-apple-*" ]]; then
     echo "-- Modifying library name for OpenBLAS"
 
     for nm in libcholmod.3.0.13 libspqr.2.0.9 libumfpack.5.7.8; do
-        install_name_tool -change libopenblas64_.0.3.3.dylib @rpath/libopenblas64_.dylib ${prefix}/lib/${nm}.dylib
+        # Figure out what version it probably latched on to:
+        OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
+        install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
     done
 fi
 
