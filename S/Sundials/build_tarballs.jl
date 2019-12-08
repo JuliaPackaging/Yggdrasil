@@ -48,7 +48,6 @@ make install
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct("libbtf", :libbtf),
     LibraryProduct("libsundials_sunlinsolspfgmr", :libsundials_sunlinsolspfgmr),
     LibraryProduct("libsundials_ida", :libsundials_ida),
     LibraryProduct("libsundials_cvode", :libsundials_cvode),
