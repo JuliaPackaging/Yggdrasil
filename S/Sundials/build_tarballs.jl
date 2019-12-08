@@ -7,31 +7,11 @@ version = v"3.1.1"
 sources = [
     "https://computation.llnl.gov/projects/sundials/download/sundials-3.1.1.tar.gz" =>
     "a24d643d31ed1f31a25b102a1e1759508ce84b1e4739425ad0e18106ab471a24",
-    "http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.5.3.tar.gz" =>
-    "6199a3a35fbce82b155fd2349cf81d2b7cddaf0dac218c08cb172f9bc143f37a",
     "./patches",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# SuiteSparse for KLU
-cd $WORKSPACE/srcdir/SuiteSparse*/
-
-# Patches for windows build system
-patch -p0 < $WORKSPACE/srcdir/patches/SuiteSparse_windows.patch
-
-for proj in SuiteSparse_config AMD COLAMD BTF KLU; do
-    cd $WORKSPACE/srcdir/SuiteSparse/$proj
-    make -j${nproc} library
-    INSTALL=$WORKSPACE/destdir/ make install
-done
-
-echo "KLU Includes"
-ls $WORKSPACE/destdir/include
-echo "KLU Lib"
-ls $WORKSPACE/destdir/lib
-
-# Now the full Sundials build
 cd $WORKSPACE/srcdir/sundials-*/
 patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
@@ -62,13 +42,6 @@ fi
 make -j${nproc}
 make install
 
-# On windows, move all `.dll` files to `bin`. We don't want to follow symlinks
-# because non-administrative users cannot create symlinks on Windows, so we
-# use `cp -L` followed by `rm` instead of just `mv`.
-if [[ ${target} == *-mingw32 ]]; then
-    cp -L $WORKSPACE/destdir/lib/*.dll $WORKSPACE/destdir/bin
-    rm -f $WORKSPACE/destdir/lib/*.dll
-fi
 """
 
 # We attempt to build for all defined platforms
@@ -95,9 +68,6 @@ products = [
     LibraryProduct("libsundials_sunmatrixband", :libsundials_sunmatrixband),
     LibraryProduct("libsundials_kinsol", :libsundials_kinsol),
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
-    LibraryProduct("libklu", :libklu),
-    LibraryProduct("libsuitesparseconfig", :libsuitesparseconfig),
-    LibraryProduct("libamd", :libamd),
 ]
 
 dependencies = [
