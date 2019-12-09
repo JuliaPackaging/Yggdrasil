@@ -17,19 +17,15 @@ cd $WORKSPACE/srcdir/SuiteSparse/
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
-FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include")
+# Disable OpenMP as it will probably interfere with blas threads and Julia threads
+FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
-    FLAGS+=(CFOPENMP=)
 else
     FLAGS+=(UNAME="$(uname)")
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
-fi
-
-if [[ ${target} == *-freebsd* ]]; then
-    FLAGS+=(CFOPENMP=)
 fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
