@@ -17,15 +17,15 @@ cd $WORKSPACE/srcdir/SuiteSparse/
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
-FLAGS=(INSTALL="${prefix}")
+FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include")
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/lib -shared")
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
     FLAGS+=(CFOPENMP=)
 else
     FLAGS+=(UNAME="$(uname)")
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/lib")
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
@@ -60,6 +60,8 @@ fi
 # Compile suitesparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 make "${FLAGS[@]}" install
+
+install_license ${WORKSPACE}/srcdir/SuiteSparse/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
