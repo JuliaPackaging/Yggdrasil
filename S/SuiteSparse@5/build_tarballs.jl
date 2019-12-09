@@ -28,6 +28,10 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
+if [[ ${target} == *-freebsd* ]]; then
+    FLAGS+=(CFOPENMP=)
+fi
+
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
