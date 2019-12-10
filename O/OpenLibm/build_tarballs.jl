@@ -9,7 +9,7 @@ sources = [
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/OpenLibm
+cd ${WORKSPACE}/srcdir/openlibm-*
 
 # Install into output
 flags=("prefix=${libdir}")
@@ -31,7 +31,7 @@ make "${flags[@]}" -j${nproc}
 # Install the library
 make "${flags[@]}" install
 
-install_license ${WORKSPACE}/srcdir/OpenLibm/LICENSE.md
+install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
