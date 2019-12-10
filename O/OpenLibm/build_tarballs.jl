@@ -12,7 +12,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/openlibm-*
 
 # Install into output
-flags=("prefix=${libdir}")
+flags=("prefix=${prefix}")
 
 # Build ARCH from ${target}
 flags+=("ARCH=${target%-*-*}")
