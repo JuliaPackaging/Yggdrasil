@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "Openlibm"
+name = "OpenLibm"
 version = v"0.7.0"
 sources = [
     "https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz" =>
@@ -9,7 +9,7 @@ sources = [
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/Openlibm
+cd ${WORKSPACE}/srcdir/OpenLibm
 
 # Install into output
 flags=("prefix=${libdir}")
@@ -17,12 +17,12 @@ flags=("prefix=${libdir}")
 # Build ARCH from ${target}
 flags+=("ARCH=${target%-*-*}")
 
-# Openlibm build system doesn't recognize our windows cross compilers properly
+# OpenLibm build system doesn't recognize our windows cross compilers properly
 if [[ ${target} == *mingw* ]]; then
     flags+=("OS=WINNT")
 fi
 
-# Add `CC` override, since Openlibm seems to think it knows best:
+# Add `CC` override, since OpenLibm seems to think it knows best:
 flags+=("CC=$CC")
 
 # Build the library
@@ -31,7 +31,7 @@ make "${flags[@]}" -j${nproc}
 # Install the library
 make "${flags[@]}" install
 
-install_license ${WORKSPACE}/srcdir/Openlibm/LICENSE.md
+install_license ${WORKSPACE}/srcdir/OpenLibm/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
