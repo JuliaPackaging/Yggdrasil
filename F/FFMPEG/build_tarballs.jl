@@ -92,7 +92,7 @@ pkg-config --list-all
   --enable-openssl     \
   --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${prefix}/lib"
+  --extra-ldflags="-L${libdir}"
 make -j${nproc}
 make install
 install_license LICENSE.md COPYING.*

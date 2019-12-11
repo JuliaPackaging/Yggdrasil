@@ -8,7 +8,7 @@ version = v"2.38.2" # we are actually on master
 # Collection of sources required to build gdk-pixbuf
 sources = [
     "https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/3c7740498fd31b6746dd7e04601886766a6644b7/gdk-pixbuf-3c7740498fd31b6746dd7e04601886766a6644b7.tar.bz2" =>
-    "9fad057e8c51bc4373948a02c8ee7d8afe254b361fb4abc43767fce43982dd25",
+    "9fad057e8c51bc4373948a02c8ee7d8afe254b361fb4abc43767fce43982dd25"
 ]
 
 # Bash recipe for building across all platforms
