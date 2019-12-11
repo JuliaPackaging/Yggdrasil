@@ -139,7 +139,7 @@ jobs:
       # manual rebuild of a PR in Azure web interface is not a `PullRequest`
       DEPLOY=""
       if [[ "$(Build.Reason)" != "PullRequest" ]] && [[ "$(Build.SourceBranch)" == "refs/heads/master" ]] ; then
-          DEPLOY="--deploy"
+          DEPLOY="--deploy-bin"
       fi
 
       # Run inside of that just-built Yggdrasil image, mapping /storage in
