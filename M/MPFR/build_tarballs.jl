@@ -30,7 +30,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmpfr", :libmpfr)
+    LibraryProduct("libmpfr", :libmpfr),
 ]
 
 # Dependencies that must be installed before this package can be built
