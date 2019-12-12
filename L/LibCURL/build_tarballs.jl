@@ -46,7 +46,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcurl", :libcurl),
-    ExecutableProduct("curl", :curl)
+    ExecutableProduct("curl", :curl),
 ]
 
 # Dependencies that must be installed before this package can be built
