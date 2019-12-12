@@ -29,6 +29,8 @@ else
 fi
 
 CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"${BLAS}\" -DLAPACK_LIBRARIES=\"${BLAS}\""
+echo "CMAKE_FLAGS:"
+echo $CMAKE_FLAGS
 
 mkdir build
 cd build
