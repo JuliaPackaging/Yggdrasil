@@ -22,14 +22,13 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_ENABLE=ON -DENABLE_LAPACK=ON"
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-    BLAS="-lopenblas64_"
+    BLAS="-L$prefix/lib -lopenblas64_"
 else
     CMAKE_FLAGS="${CMAKE_FLAGS} -DSUNDIALS_INDEX_TYPE=int32_t"
-    BLAS="-lopenblas"
+    BLAS="-L$prefix/lib -lopenblas"
 fi
-LAPACK=$BLAS
 
-CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=$BLAS -DLAPACK_LIBRARIES=$LAPACK"
+CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=${BLAS} -DLAPACK_LIBRARIES=${BLAS}"
 
 mkdir build
 cd build
