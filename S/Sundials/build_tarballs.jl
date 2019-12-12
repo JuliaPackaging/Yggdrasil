@@ -46,7 +46,6 @@ products = [
     LibraryProduct("libsundials_ida", :libsundials_ida),
     LibraryProduct("libsundials_cvode", :libsundials_cvode),
     LibraryProduct("libsundials_cvodes", :libsundials_cvodes),
-    LibraryProduct("libcolamd", :libcolamd),
     LibraryProduct("libsundials_sunmatrixdense", :libsundials_sunmatrixdense),
     LibraryProduct("libsundials_sunlinsolspbcgs", :libsundials_sunlinsolspbcgs),
     LibraryProduct("libsundials_idas", :libsundials_idas),
