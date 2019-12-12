@@ -30,7 +30,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libmbedcrypto", :libmbedcrypto),
     LibraryProduct("libmbedx509", :libmbedx509),
-    LibraryProduct("libmbedtls", :libmbedtls)
+    LibraryProduct("libmbedtls", :libmbedtls),
 ]
 
 # Dependencies that must be installed before this package can be built
