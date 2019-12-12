@@ -35,7 +35,7 @@ platforms = expand_cxxstring_abis(Windows(:x86_64))
 platforms = vcat(platforms, a)
 
 # The products that we will ensure are always built
-products(prefix) = [
+products = [
     LibraryProduct(["libsymengine", "libsymengine-$(version.major).$(version.minor)"], :libsymengine)
 ]
 
