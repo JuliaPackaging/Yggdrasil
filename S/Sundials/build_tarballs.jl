@@ -22,19 +22,18 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_ENABLE=ON -DLAPACK_ENABLE=ON"
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-    BLAS="-L$prefix/lib -lopenblas64_"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"-L$prefix/lib -lopenblas64_\" -DLAPACK_LIBRARIES=\"-L$prefix/lib -lopenblas64_\""
 else
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DSUNDIALS_INDEX_TYPE=int32_t"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"-L$prefix/lib -lopenblas\" -DLAPACK_LIBRARIES=\"-L$prefix/lib -lopenblas\""
     BLAS="-L$prefix/lib -lopenblas"
 fi
 
-CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"${BLAS}\" -DLAPACK_LIBRARIES=\"${BLAS}\""
 echo "CMAKE_FLAGS:"
 echo $CMAKE_FLAGS
 
 mkdir build
 cd build
-cmake ${CMAKE_FLAGS} ..
+cmake "${CMAKE_FLAGS}" ..
 make -j${nproc}
 make install
 
