@@ -28,10 +28,10 @@ make install
 
 """
 
-# For some reason, on MinGW, using a DLL comppiled with a different gcc
+# For some reason, on MinGW, using a DLL compiled with a different gcc
 # segfaults. Expand only on Windows. Other OSes work fine.
 a = supported_platforms(exclude=[Windows(:x86_64)])
-platforms = BinaryBuilder.expand_gcc_versions(Windows(:x86_64))
+platforms = BinaryBuilder.expand_cxxstring_abis(Windows(:x86_64))
 platforms = vcat(platforms, a)
 
 # The products that we will ensure are always built
