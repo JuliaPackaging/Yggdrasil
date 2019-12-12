@@ -28,14 +28,16 @@ else
     BLAS="-L${libdir} -lopenblas"
 fi
 
-echo "CMAKE_FLAGS:"
-echo "${CMAKE_FLAGS[@]}"
-
 mkdir build
 cd build
 cmake "${CMAKE_FLAGS[@]}" ..
 make -j${nproc}
 make install
+
+# Move libraries to ${libdir} on Windows
+if [[ "${target}" == *-mingw* ]]; then
+    mv ${prefix}/lib/libsundials_*.${dlext} "${libdir}"
+fi
 """
 
 # We attempt to build for all defined platforms
