@@ -1,7 +1,7 @@
-diff --git a/include/locale b/include/locale
-index a86645d..2efcd82 100644
---- a/include/locale
-+++ b/include/locale
+diff --git a/libcxx/include/locale b/libcxx/include/locale
+index e240799f383..68faaa2139b 100644
+--- a/libcxx/include/locale
++++ b/libcxx/include/locale
 @@ -736,7 +736,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
          typename remove_reference<decltype(errno)>::type __save_errno = errno;
          errno = 0;
