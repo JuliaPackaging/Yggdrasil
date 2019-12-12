@@ -71,6 +71,7 @@ products = [
 
 dependencies = [
     "OpenBLAS_jll",
+    "SuiteSparse_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
