@@ -29,11 +29,7 @@ make install
 
 """
 
-# For some reason, on MinGW, using a DLL compiled with a different gcc
-# segfaults. Expand only on Windows. Other OSes work fine.
-a = supported_platforms(exclude=[Windows(:x86_64)])
-platforms = expand_cxxstring_abis(Windows(:x86_64))
-platforms = vcat(platforms, a)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
