@@ -1,5 +1,7 @@
---- a/lib/Driver/ToolChains/Gnu.cpp.orig	2019-03-30 15:08:33.136000000 +0100
-+++ b/lib/Driver/ToolChains/Gnu.cpp	2019-03-30 15:10:24.666000000 +0100
+diff --git a/clang/lib/Driver/ToolChains/Gnu.cpp b/clang/lib/Driver/ToolChains/Gnu.cpp
+index 2ad45097dce..17b1d76028a 100644
+--- a/clang/lib/Driver/ToolChains/Gnu.cpp
++++ b/clang/lib/Driver/ToolChains/Gnu.cpp
 @@ -1882,7 +1882,8 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
    static const char *const ARMHFTriples[] = {"arm-linux-gnueabihf",
                                               "armv7hl-redhat-linux-gnueabi",
@@ -10,7 +12,7 @@
    static const char *const ARMebLibDirs[] = {"/lib"};
    static const char *const ARMebTriples[] = {"armeb-linux-gnueabi",
                                               "armeb-linux-androideabi"};
-@@ -2014,6 +2015,78 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
+@@ -2074,6 +2075,79 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
      return;
    }
  
@@ -86,6 +88,7 @@
 +    return;
 +  }
 +
-   // Android targets should not use GNU/Linux tools or libraries.
-   if (TargetTriple.isAndroid()) {
-     static const char *const AArch64AndroidTriples[] = {
++
+   switch (TargetTriple.getArch()) {
+   case llvm::Triple::aarch64:
+     LibDirs.append(begin(AArch64LibDirs), end(AArch64LibDirs));
