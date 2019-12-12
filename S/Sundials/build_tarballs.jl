@@ -25,7 +25,6 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     CMAKE_FLAGS+=(-DBLAS_LIBRARIES="-L${libdir} -lopenblas64_" -DLAPACK_LIBRARIES="-L${libdir} -lopenblas64_")
 else
     CMAKE_FLAGS+=(-DBLAS_LIBRARIES="-L${libdir} -lopenblas" -DLAPACK_LIBRARIES="-L${libdir} -lopenblas")
-    BLAS="-L${libdir} -lopenblas"
 fi
 
 mkdir build
