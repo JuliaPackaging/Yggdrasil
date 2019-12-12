@@ -24,8 +24,7 @@ BUILD_FLAGS=(
     "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
 
-mkdir build
-cd build
+mkdir build && cd build
 
 cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
