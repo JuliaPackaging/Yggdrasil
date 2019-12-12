@@ -35,7 +35,7 @@ elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
-mkdir build; cd build
+mkdir build && cd build
 
 cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
