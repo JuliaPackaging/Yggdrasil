@@ -22,6 +22,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DBUILD_BENCHMARKS=no \
       -DBUILD_SHARED_LIBS=yes \
       -DWITH_MPC=yes \
+      -DWITH_COTIRE=no \
       -DWITH_SYMENGINE_THREAD_SAFE=yes ..
 make -j${nproc}
 make install
