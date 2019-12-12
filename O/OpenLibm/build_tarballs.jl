@@ -1,10 +1,10 @@
 using BinaryBuilder
 
-name = "Openlibm"
-version = v"0.6.0"
+name = "OpenLibm"
+version = v"0.7.0"
 sources = [
     "https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz" =>
-    "d45439093d1fd15e2ac3acf69955e462401c7a160d3330256cb4a86c51bdae28",
+    "1699f773198018b55b12631db9c1801fe3ed191e618a1ee1be743f4570ae06a3",
 ]
 
 script = raw"""
@@ -17,12 +17,12 @@ flags=("prefix=${prefix}")
 # Build ARCH from ${target}
 flags+=("ARCH=${target%-*-*}")
 
-# Openlibm build system doesn't recognize our windows cross compilers properly
+# OpenLibm build system doesn't recognize our windows cross compilers properly
 if [[ ${target} == *mingw* ]]; then
     flags+=("OS=WINNT")
 fi
 
-# Add `CC` override, since Openlibm seems to think it knows best:
+# Add `CC` override, since OpenLibm seems to think it knows best:
 flags+=("CC=$CC")
 
 # Build the library
@@ -30,15 +30,16 @@ make "${flags[@]}" -j${nproc}
 
 # Install the library
 make "${flags[@]}" install
+
+install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
-platforms = expand_gcc_versions(platforms)
 
-products = prefix -> [
-    LibraryProduct(prefix, "libopenlibm", :libopenlibm)
+products = [
+    LibraryProduct("libopenlibm", :libopenlibm)
 ]
 
 dependencies = [
