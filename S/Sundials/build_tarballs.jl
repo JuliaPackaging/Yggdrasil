@@ -17,14 +17,14 @@ patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR=\"$prefix/include/\" -DKLU_LIBRARY_DIR=\"$prefix/lib\""
+CMAKE_FLAGS="${CMAKE_FLAGS} -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR=\\"$prefix/include/\\" -DKLU_LIBRARY_DIR=\\"$prefix/lib\\""
 CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_ENABLE=ON -DLAPACK_ENABLE=ON"
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"-L$prefix/lib -lopenblas64_\" -DLAPACK_LIBRARIES=\"-L$prefix/lib -lopenblas64_\""
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\\"-L$prefix/lib -lopenblas64_\\" -DLAPACK_LIBRARIES=\\"-L$prefix/lib -lopenblas64_\\""
 else
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"-L$prefix/lib -lopenblas\" -DLAPACK_LIBRARIES=\"-L$prefix/lib -lopenblas\""
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\\"-L$prefix/lib -lopenblas\\\" -DLAPACK_LIBRARIES=\\"-L$prefix/lib -lopenblas\\""
     BLAS="-L$prefix/lib -lopenblas"
 fi
 
@@ -36,7 +36,6 @@ cd build
 cmake "${CMAKE_FLAGS}" ..
 make -j${nproc}
 make install
-
 """
 
 # We attempt to build for all defined platforms
