@@ -15,7 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/sundials-*/
 patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
-export LDFLAGS="-L$prefix/lib -lpthread"
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF"
 CMAKE_FLAGS="${CMAKE_FLAGS} -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR=\"$prefix/include/\" -DKLU_LIBRARY_DIR=\"$prefix/lib\""
@@ -23,13 +22,13 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_ENABLE=ON -DENABLE_LAPACK=ON"
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-    BLAS="-lopenblas64_"
+    BLAS="-L$prefix/lib -lopenblas64_"
 else
     CMAKE_FLAGS="${CMAKE_FLAGS} -DSUNDIALS_INDEX_TYPE=int32_t"
-    BLAS="-lopenblas"
+    BLAS="-L$prefix/lib -lopenblas"
 fi
 
-CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=${BLAS} -DLAPACK_LIBRARIES=${BLAS}"
+CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"${BLAS}\" -DLAPACK_LIBRARIES=\"${BLAS}\""
 
 mkdir build
 cd build
