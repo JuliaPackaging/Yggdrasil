@@ -7,7 +7,7 @@ version = v"3.1.1"
 sources = [
     "https://computation.llnl.gov/projects/sundials/download/sundials-3.1.1.tar.gz" =>
     "a24d643d31ed1f31a25b102a1e1759508ce84b1e4739425ad0e18106ab471a24",
-    "./patches",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -15,30 +15,24 @@ script = raw"""
 cd $WORKSPACE/srcdir/sundials-*/
 patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
-# On 64-bit, we need to patch the BLAS libraries to use the Julia name-mangling scheme.
-if [[ ${nbits} == 64 ]]; then
+CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
+CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF"
+CMAKE_FLAGS="${CMAKE_FLAGS} -DKLU_ENABLE=ON -DBLAS_ENABLE=ON -DENABLE_LAPACK=ON"
+
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
+    BLAS="-lopenblas64_"
+else
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DSUNDIALS_INDEX_TYPE=int32_t"
+    BLAS="-lopenblas"
 fi
+LAPACK=$BLAS
+
+CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_LIBRARIES=$BLAS -DLAPACK_LIBRARIES=$LAPACK"
 
 mkdir build
 cd build
-
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR=\"$prefix/include/\" -DKLU_LIBRARY_DIR=\"$prefix/lib\""
-CMAKE_FLAGS="${CMAKE_FLAGS} -DBLAS_ENABLE=ON"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DENABLE_LAPACK=ON -DLAPACK_LIBRARIES=$LIBBLAS"
-
-if [[ ${nbits} == 32 ]]; then
-    echo "***   32-bit BUILD   ***"
-    LIBBLAS="$prefix/lib/libopenblas.so"
-    cmake ${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"$LIBBLAS\" -DSUNDIALS_INDEX_TYPE=int32_t ..
-else
-    echo "***   64-bit BUILD   ***"
-    LIBBLAS="$prefix/lib/libopenblas64_.so"
-    cmake ${CMAKE_FLAGS} -DBLAS_LIBRARIES=\"$LIBBLAS\" ..
-fi
-
+cmake ${CMAKE_FLAGS} ..
 make -j${nproc}
 make install
 
