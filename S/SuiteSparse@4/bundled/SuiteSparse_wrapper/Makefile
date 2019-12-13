@@ -11,4 +11,4 @@ else
 endif
 
 install:
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -O2 -shared -fPIC -I $(prefix)/include SuiteSparse_wrapper.c -o $(prefix)/lib/libsuitesparse_wrapper.$(SHLIB_EXT) -L $(prefix)/lib $(RPATH) $(LDFLAGS) -lcholmod -lumfpack -lspqr
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -O2 -shared -fPIC -I $(prefix)/include SuiteSparse_wrapper.c -o $(libdir)/libsuitesparse_wrapper.$(SHLIB_EXT) -L $(libdir) $(RPATH) $(LDFLAGS) -lcholmod -lumfpack -lspqr
