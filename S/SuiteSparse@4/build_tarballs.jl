@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse/
 
-FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${prefix}/lib" INSTALL_INCLUDE="${prefix}/include")
+FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include")
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
