@@ -47,7 +47,7 @@ done
 
 # For now, we'll have to adjust the name of the OpenBLAS library on macOS.
 # Eventually, this should be fixed upstream
-if [[ ${target} == "*-apple-*" ]]; then
+if [[ ${target} == *-apple-* ]]; then
     echo "-- Modifying library name for OpenBLAS"
 
     for nm in libcholmod.3.0.13 libspqr.2.0.9 libumfpack.5.7.8; do
