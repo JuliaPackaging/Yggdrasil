@@ -25,11 +25,6 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/lib")
 fi
 
-# Switch `ar` usage on OSX
-if [[ ${target} == "x86_64-apple-darwin14" ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
-
 if [[ ${nbits} == 64 ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
