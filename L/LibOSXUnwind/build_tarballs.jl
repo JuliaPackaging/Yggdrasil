@@ -13,7 +13,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libosxunwind*/
 
-
 EXTRA_CFLAGS="-ggdb3 -O0"
 
 FLAGS=(
@@ -31,10 +30,10 @@ FLAGS=(
 make -j${nproc} "${FLAGS[@]}"
 
 # Manual installation as the osxunwind `Makefile` doesnt' even know how to do this
-mkdir -p ${prefix}/lib
-cp libosxunwind.dylib ${prefix}/lib
-cp libosxunwind.a ${prefix}/lib
-cp -R include ${prefix}
+mkdir -p ${libdir}
+cp libosxunwind.dylib ${libdir}/
+cp libosxunwind.a ${libdir}/
+cp -aR include ${prefix}/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,8 +41,8 @@ cp -R include ${prefix}
 platforms = [p for p in supported_platforms() if isa(p, MacOS)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libosxunwind", :libosxunwind)
+products = [
+    LibraryProduct("libosxunwind", :libosxunwind)
 ]
 
 # Dependencies that must be installed before this package can be built
