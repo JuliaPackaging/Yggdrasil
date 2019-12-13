@@ -88,18 +88,19 @@ make "${FLAGS[@]}" install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
+# Temporarily commenting out static-only libraries
 products = [
     LibraryProduct("libsuitesparseconfig",   :libsuitesparseconfig),
     LibraryProduct("libamd",                 :libamd),
-    LibraryProduct("libbtf",                 :libbtf),
+    #LibraryProduct("libbtf",                 :libbtf),
     LibraryProduct("libcamd",                :libcamd),
     LibraryProduct("libccolamd",             :libccolamd),
     LibraryProduct("libcolamd",              :libcolamd),
     LibraryProduct("libcholmod",             :libcholmod),
-    LibraryProduct("libldl",                 :libldl),
-    LibraryProduct("libklu",                 :libklu),
+    #LibraryProduct("libldl",                 :libldl),
+    #LibraryProduct("libklu",                 :libklu),
     LibraryProduct("libumfpack",             :libumfpack),
-    LibraryProduct("librbio",                :librbio),
+    #LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
     LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
 ]
