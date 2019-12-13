@@ -45,15 +45,20 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
 
-# For now, we'll have to adjust the name of the OpenBLAS library on macOS.
+# For now, we'll have to adjust the name of the OpenBLAS library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
-if [[ ${target} == *-apple-* ]]; then
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     echo "-- Modifying library name for OpenBLAS"
 
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
-        OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
-        install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
+        if [[ ${target} == *-apple-* ]]; then
+            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
+            install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
+        elif [[ ${target} == *freebsd* ]]; then
+            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep libopenblas64_ | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${OPENBLAS_LINK} libopenblas64_.so
+        fi
     done
 fi
 
