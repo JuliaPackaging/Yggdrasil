@@ -57,7 +57,7 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
             install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
             OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep libopenblas64_ | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${OPENBLAS_LINK} libopenblas64_.so
+            patchelf --replace-needed ${OPENBLAS_LINK} libopenblas64_.so ${libdir}/${nm}.so
         fi
     done
 fi
