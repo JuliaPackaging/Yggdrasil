@@ -50,7 +50,7 @@ done
 if [[ ${target} == *-apple-* ]]; then
     echo "-- Modifying library name for OpenBLAS"
 
-    for nm in libcholmod.3.0.13 libspqr.2.0.9 libumfpack.5.7.8; do
+    for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
         OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
         install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
