@@ -29,6 +29,8 @@ cmake $WORKSPACE/srcdir/metis-5.1.0/ \
     -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
     -DSHARED=1
 make -j${nproc} install
+
+install_license ${WORKSPACE}/srcdir/metis-5.1.0/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
