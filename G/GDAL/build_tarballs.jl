@@ -14,7 +14,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal-*/
 
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="${libdir}"
+    export LDFLAGS="-L${libdir}"
     cp ${libdir}/libproj_6_2.dll ${libdir}/libproj.dll
 fi
 
