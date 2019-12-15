@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir/SuiteSparse/
 
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
+
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include" CFOPENMP=)
 
@@ -31,30 +32,13 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
     FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
-    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN" SPQR_CONFIG="$SUN")
+    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 else
     FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
+    FLAGS+=(CHOLMOD_CONFIG="-DNPARTITION")
 fi
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
-
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0003-WIN32-Install-RUNTIME-to-bin.patch
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
-fi
-
-cd metis-5.1.0/build
-cmake -DGKLIB_PATH=../GKlib -DSHARED=1 -DCMAKE_INSTALL_PREFIX=$WORKSPACE/srcdir/SuiteSparse -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" ..
-make -j${nproc}
-make install
-if [[ "${target}" == *-mingw* ]]; then
-    cp -a $WORKSPACE/srcdir/SuiteSparse/bin/libmetis.* ${libdir}
-else
-    cp -a $WORKSPACE/srcdir/SuiteSparse/lib/libmetis.* ${libdir}
-fi
-cd ../..
 
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
@@ -103,7 +87,6 @@ products = [
     LibraryProduct("libumfpack",             :libumfpack),
     LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
-    LibraryProduct("libmetis",               :libmetis),
     LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
 ]
 
