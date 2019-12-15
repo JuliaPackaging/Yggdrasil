@@ -57,6 +57,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    "CompilerSupportLibraries_jll",
     "GEOS_jll",
     "PROJ_jll",
     "Zlib_jll",
