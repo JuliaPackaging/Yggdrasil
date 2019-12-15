@@ -36,8 +36,8 @@ make -j${nproc} install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libmetis", :libmetis)
+products = [
+    LibraryProduct("libmetis", :libmetis)
 ]
 
 # Dependencies that must be installed before this package can be built
