@@ -13,6 +13,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdal-*/
 
+if [[ ${target} == *mingw* ]]; then
+    export LDFLAGS="${libdir}"
+    cp ${libdir}/libproj_6_2.dll ${libdir}/libproj.dll
+fi
+
 # Show options in the log
 ./configure --help
 ./configure --prefix=$prefix --host=$target \
@@ -30,6 +35,7 @@ make install
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -57,7 +63,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "CompilerSupportLibraries_jll",
     "GEOS_jll",
     "PROJ_jll",
     "Zlib_jll",
