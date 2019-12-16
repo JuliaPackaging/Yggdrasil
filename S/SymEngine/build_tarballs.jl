@@ -26,10 +26,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DWITH_SYMENGINE_THREAD_SAFE=yes ..
 make -j${nproc}
 make install
-
 """
 
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -45,4 +44,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
