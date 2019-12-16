@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/SuiteSparse/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
-FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
+FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include" CFOPENMP=)
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
@@ -62,9 +62,9 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     done
 fi
 
-# Compile suitesparse_wrapper shim
+# Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
-make "${FLAGS[@]}" install
+"${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod -lumfpack -lspqr
 
 install_license ${WORKSPACE}/srcdir/SuiteSparse/LICENSE.txt
 """
@@ -93,6 +93,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "OpenBLAS_jll",
+    "METIS_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
