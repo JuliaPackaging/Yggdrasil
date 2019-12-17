@@ -5,14 +5,14 @@ version = v"5.4.0"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    "http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-$(version).tar.gz" =>
-    "374dd136696c653e34ef3212dc8ab5b61d9a67a6791d5ec4841efb838e94dbd1",
+    "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz" =>
+    "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770",
     "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SuiteSparse/
+cd $WORKSPACE/srcdir/SuiteSparse-*
 
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
@@ -32,10 +32,9 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
     FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
-    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN" SPQR_CONFIG="$SUN")
 else
     FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
-    FLAGS+=(CHOLMOD_CONFIG="-DNPARTITION")
 fi
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
@@ -64,9 +63,7 @@ fi
 
 # Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
-"${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod -lumfpack -lspqr
-
-install_license ${WORKSPACE}/srcdir/SuiteSparse/LICENSE.txt
+"${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
 # These are the platforms we will build for by default, unless further
