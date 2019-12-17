@@ -18,8 +18,9 @@ if [[ ${target} == *mingw* ]]; then
     cp ${libdir}/libproj_6_2.dll ${libdir}/libproj.dll
 fi
 
-# Show options in the log
-./configure --help
+# Clear out `.la` files since they're often wrong and screw us up
+rm -f ${prefix}/lib/*.la
+
 ./configure --prefix=$prefix --host=$target \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
