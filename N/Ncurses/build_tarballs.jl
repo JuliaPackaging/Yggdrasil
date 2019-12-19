@@ -56,7 +56,7 @@ rm -rf ${prefix}/share/terminfo/m
 rm -rf ${prefix}/share/terminfo/n
 rm -rf ${prefix}/share/terminfo/p
 rm -rf ${prefix}/share/terminfo/q
-rm -rf ${prefix}/share/terminfo/x
+rm -rf ${prefix}/share/terminfo/X
 
 # Install pc files and fool packages looking for non-wide-character ncurses
 for lib in ncurses form panel menu; do
