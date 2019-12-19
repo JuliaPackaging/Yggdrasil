@@ -1,0 +1,80 @@
+diff --git a/configure.ac b/configure.ac
+index 7051dc109a..474fdcbd82 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -364,38 +364,12 @@ AC_ARG_VAR([MACHDEP], [name for machine-dependent library files])
+ AC_MSG_CHECKING(MACHDEP)
+ if test -z "$MACHDEP"
+ then
+-    # avoid using uname for cross builds
+-    if test "$cross_compiling" = yes; then
+-       # ac_sys_system and ac_sys_release are used for setting
+-       # a lot of different things including 'define_xopen_source'
+-       # in the case statement below.
+-	case "$host" in
+-	*-*-linux-android*)
+-		ac_sys_system=Linux-android
+-		;;
+-	*-*-linux*)
+-		ac_sys_system=Linux
+-		;;
+-	*-*-cygwin*)
+-		ac_sys_system=Cygwin
+-		;;
+-	*-*-vxworks*)
+-	    ac_sys_system=VxWorks
+-	    ;;
+-	*)
+-		# for now, limit cross builds to known configurations
+-		MACHDEP="unknown"
+-		AC_MSG_ERROR([cross build not supported for $host])
+-	esac
+-	ac_sys_release=
+-    else
+ 	ac_sys_system=`uname -s`
+ 	if test "$ac_sys_system" = "AIX" \
+ 	-o "$ac_sys_system" = "UnixWare" -o "$ac_sys_system" = "OpenUNIX"; then
+ 		ac_sys_release=`uname -v`
+ 	else
+ 		ac_sys_release=`uname -r`
+-	fi
+     fi
+     ac_md_system=`echo $ac_sys_system |
+ 			tr -d '[/ ]' | tr '[[A-Z]]' '[[a-z]]'`
+@@ -415,28 +389,14 @@ AC_MSG_RESULT("$MACHDEP")
+ 
+ AC_SUBST(_PYTHON_HOST_PLATFORM)
+ if test "$cross_compiling" = yes; then
+-	case "$host" in
+-	*-*-linux*)
+-		case "$host_cpu" in
+-		arm*)
+-			_host_cpu=arm
+-			;;
+-		*)
+-			_host_cpu=$host_cpu
+-		esac
+-		;;
+-	*-*-cygwin*)
+-		_host_cpu=
+-		;;
+-	*-*-vxworks*)
+-		_host_cpu=$host_cpu
+-		;;
+-	*)
+-		# for now, limit cross builds to known configurations
+-		MACHDEP="unknown"
+-		AC_MSG_ERROR([cross build not supported for $host])
+-	esac
+-	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
++    case "$host_cpu" in
++    arm*)
++        _host_cpu=arm
++        ;;
++    *)
++        _host_cpu=$host_cpu
++    esac
++    _PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
+ fi
+ 
+ # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
