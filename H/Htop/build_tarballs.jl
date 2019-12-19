@@ -9,7 +9,6 @@ version = v"2.2.0"
 sources = [
     "http://hisham.hm/htop/releases/2.2.0/htop-2.2.0.tar.gz" =>
     "d9d6826f10ce3887950d709b53ee1d8c1849a70fa38e91d5896ad8cbc6ba3c57",
-
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +17,6 @@ cd $WORKSPACE/srcdir/htop-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,12 +42,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "PackageSpec(
+    PackageSpec(
   name = Ncurses_jll
   uuid = 68e3532b-a499-55ff-9963-d1c0c0748b3a
   version = *
-)",
-
+)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
