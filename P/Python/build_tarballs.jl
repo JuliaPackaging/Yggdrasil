@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.7.4"
+version = v"3.8.1"
 
 # Collection of sources required to build Python
 sources = [
     "https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz" =>
-    "fb799134b868199930b75f26678f18932214042639cd52b16da7fd134cd9b13f",
+    "75894117f6db7051c1b34f37410168844bbb357c139a8a10a352e9bf8be594e8",
     "./bundled",
 ]
 
@@ -57,6 +57,11 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# Disable windows for now, until we can sort through all of these patches
+# and choose the ones that we need:
+# https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
+platforms = filter(p -> !isa(p, Windows), platforms)
 
 # The products that we will ensure are always built
 products = Product[
