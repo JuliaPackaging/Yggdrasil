@@ -42,9 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    PackageSpec(name = Ncurses_jll,
-                uuid = 68e3532b-a499-55ff-9963-d1c0c0748b3a,
-                version = *)
+    "Ncurses_jll"
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
