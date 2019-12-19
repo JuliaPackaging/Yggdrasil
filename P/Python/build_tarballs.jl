@@ -67,7 +67,7 @@ platforms = filter(p -> !isa(p, Windows), platforms)
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["python", "python3"], :python),
-    LibraryProduct(["libPython3.8"], :libpython),
+    LibraryProduct(["libpython3", "libpython3.8"], :libpython),
 ]
 
 # Dependencies that must be installed before this package can be built
