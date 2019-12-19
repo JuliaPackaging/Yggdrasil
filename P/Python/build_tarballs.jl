@@ -66,7 +66,7 @@ platforms = filter(p -> !isa(p, Windows), platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduxct(:python, ["python", "python3"]),
+    ExecutableProduct(:python, ["python", "python3"]),
     LibraryProduct(:libpython, ["libPython3"]),
 ]
 
