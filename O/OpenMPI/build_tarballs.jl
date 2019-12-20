@@ -11,7 +11,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
+./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-mpi-fortran
 
 # Build the library
 make "${flags[@]}" -j${nproc}
