@@ -45,6 +45,7 @@ export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" \
+    --enable-shared \
     --disable-ipv6 \
     --with-ensurepip=no \
     ac_cv_file__dev_ptmx=no \
@@ -65,6 +66,8 @@ platforms = filter(p -> !isa(p, Windows), platforms)
 
 # The products that we will ensure are always built
 products = Product[
+    ExecutableProduct(["python", "python3"], :python),
+    LibraryProduct(["libpython3", "libpython3.8"], :libpython),
 ]
 
 # Dependencies that must be installed before this package can be built
