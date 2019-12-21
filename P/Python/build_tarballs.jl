@@ -76,7 +76,8 @@ dependencies = [
     "Bzip2_jll",
     "Libffi_jll",
     "Zlib_jll",
-    "XZ_jll"
+    "XZ_jll",
+    "OpenSSL_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
