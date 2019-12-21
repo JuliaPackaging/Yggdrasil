@@ -11,6 +11,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich-*
 
+export CROSS_F77_SIZEOF_INTEGER=4
 ./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
 
 # Build the library
