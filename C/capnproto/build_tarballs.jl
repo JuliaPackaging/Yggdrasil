@@ -39,7 +39,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcapnp", :libcapnp),
+    LibraryProduct(["libcapnp", "libcapnp-$(version.major)-$(version.minor)"], :libcapnp),
     ExecutableProduct("capnp", :capnp)
 ]
 
