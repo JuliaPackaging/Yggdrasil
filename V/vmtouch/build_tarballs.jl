@@ -2,14 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Vmtouch"
+name = "vmtouch"
 version = v"1.3.1"
 
 # Collection of sources required to complete build
 sources = [
     "https://github.com/hoytech/vmtouch/archive/v1.3.1.tar.gz" =>
     "d57b7b3ae1146c4516429ab7d6db6f2122401db814ddd9cdaad10980e9c8428c",
-
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +17,6 @@ cd $WORKSPACE/srcdir/vmtouch-*/
 export PREFIX=$prefix
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,9 +42,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
