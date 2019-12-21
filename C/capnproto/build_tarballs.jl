@@ -19,9 +19,9 @@ atomic_patch -p2 ${WORKSPACE}/srcdir/patches/aligned-alloc.patch
 (
     # Do native build to get a capnp that we can run
     mkdir build_native && cd build_native
-    export CC=${MACHTYPE}-cc
-    export CXX=${MACHTYPE}-c++
-    export LD=${MACHTYPE}-ld
+    export CC=${CC_BUILD}
+    export CXX=${CXX_BUILD}
+    export LD=${LD_BUILD}
     ../configure --host=${MACHTYPE} --with-pic \
         lt_cv_prog_compiler_pic_works=yes \
         lt_cv_prog_compiler_pic_works_CXX=yes
