@@ -72,32 +72,23 @@ make ${BUILD_FLAGS[@]} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(:gcc7)),
-    Linux(:i686; libc=:glibc, compiler_abi=CompilerABI(:gcc7)),
-    Windows(:x86_64; compiler_abi=CompilerABI(:gcc7)),
-    Windows(:i686; compiler_abi=CompilerABI(:gcc7)),
+    Linux(:x86_64; libc=:glibc),
+    Linux(:i686; libc=:glibc),
+    Windows(:x86_64;),
+    Windows(:i686;),
 ]
 
 # The products that we will ensure are always built
-products(prefix) = Product[
-    ExecutableProduct(prefix, "julia", :julia),
-    LibraryProduct(prefix, "libjulia", :libjulia),
+products = Product[
+    ExecutableProduct("julia", :julia),
+    LibraryProduct("libjulia", :libjulia),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-#    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenBLAS-v0.3.5-0/build_OpenBLAS.v0.3.5.jl",
-#    "https://github.com/staticfloat/LLVMBuilder/releases/download/v6.0.1-4%2Bnowasm/build_LLVM.v6.0.1.jl",
-#    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibGit2-v1.8.0-0/build_LibGit2.v0.27.7.jl",
-#    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.8.0-0/build_LibSSH2.v1.8.0.jl",
-#    "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
-#    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibCURL-v7.61.0-0/build_LibCURL.v7.61.0.jl",
-#    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/PCRE2-v10.32-0/build_PCRE2.v10.32.0.jl",
-#    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
-#    "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1-3/build_MPFR.v4.0.1.jl",
+    "Zlib_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
 
