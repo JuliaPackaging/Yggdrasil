@@ -11,8 +11,8 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich-*
 
-export CROSS_F77_SIZEOF_INTEGER=4
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
+#export CROSS_F77_SIZEOF_INTEGER=4
+./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-fortran
 
 # Build the library
 make "${flags[@]}" -j${nproc}
@@ -23,7 +23,7 @@ make "${flags[@]}" install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = expand_gfortran_versions(filter(p -> !isa(p, Windows), supported_platforms()))
+platforms = filter(p -> !isa(p, Windows), supported_platforms())
 
 products = [
     LibraryProduct("libmpi", :libmpi)
