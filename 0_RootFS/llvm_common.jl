@@ -7,11 +7,8 @@ llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
     v"7.1.0" => "4856a9330ee01d30e9e11b6c2f991662b4c04b07",
     v"8.0.1" => "19a71f6bdf2dddb10764939e7f0ec2b98dba76c9",
-
-    # This one doesn't work on musl yet.  :/
-    #v"9.0.0" => "0399d5a9682b3cef71c653373e38890c63c4c365",
+    v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
 )
-
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
     return [
@@ -48,15 +45,18 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
     export LDFLAGS="${LDFLAGS} -L${prefix}/${target}/lib64"
 
-    # Patch compiler-rt
     cd ${WORKSPACE}/srcdir/llvm-project
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/llvm${LLVM_MAJ_VER}_compiler_rt_musl.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/llvm${LLVM_MAJ_VER}_libcxx_musl.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/llvm${LLVM_MAJ_VER}_clang_musl_gcc_detector.patch
+    # Apply all our patches
+    if [ -d $WORKSPACE/srcdir/patches ]; then
+    for f in $WORKSPACE/srcdir/patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
 
     # This value is really useful later
     cd ${WORKSPACE}/srcdir/llvm-project/llvm
-    LLVM_DIR=$(pwd)
+    LLVM_SRCDIR=$(pwd)
 
     # Let's do the actual build within the `build` subdirectory
     mkdir build && cd build
@@ -91,7 +91,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLIBCXXABI_USE_LLVM_UNWINDER=YES)
 
     # Build!
-    cmake .. ${CMAKE_FLAGS[@]}
+    cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
     cmake -LA || true
     make -j${nproc} VERBOSE=1
 
