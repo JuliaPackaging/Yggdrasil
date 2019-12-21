@@ -31,6 +31,12 @@ export CAPNP=build_native/capnp
 ./configure --prefix=$prefix --host=$target --with-external-capnp
 make -j${nproc}
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # The build for Windows creates "${bindir}/capnpc" as a broken link to
+    # "capnp": let's remove it and copy capnp.exe to capnpc.exe
+    rm "${bindir}/capnpc"
+    cp "${bindir}/capnp${exeext}" "${bindir}/capnpc${exeext}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
