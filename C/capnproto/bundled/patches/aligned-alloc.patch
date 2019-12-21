@@ -1,0 +1,16 @@
+diff --git a/c++/src/kj/table.c++ b/c++/src/kj/table.c++
+index 5f363e0a..ce5aae63 100644
+--- a/c++/src/kj/table.c++
++++ b/c++/src/kj/table.c++
+@@ -288,7 +288,7 @@ void BTreeImpl::growTree(uint minCapacity) {
+   // aligned_alloc() function. Unfortunately, many platforms don't implement it. Luckily, there
+   // are usually alternatives.
+ 
+-#if __APPLE__ || __BIONIC__
++#if __APPLE__ || __BIONIC__ || (defined(__GLIBC__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ < 16))
+   // OSX and Android lack aligned_alloc(), but have posix_memalign(). Fine.
+   void* allocPtr;
+   int error = posix_memalign(&allocPtr,
+-- 
+2.24.1
+
