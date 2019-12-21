@@ -11,8 +11,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich-*
 
-#export CROSS_F77_SIZEOF_INTEGER=4
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-fortran
+./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-dependency-tracking --disable-fortran --docdir=/tmp
 
 # Build the library
 make "${flags[@]}" -j${nproc}
