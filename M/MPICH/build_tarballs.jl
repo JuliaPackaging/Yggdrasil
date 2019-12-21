@@ -22,8 +22,7 @@ make "${flags[@]}" install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = supported_platforms()
-#platforms = filter(p -> !isa(p, Windows), supported_platforms())
+platforms = expand_gfortran_versions(filter(p -> !isa(p, Windows), supported_platforms()))
 
 products = [
     LibraryProduct("libmpi", :libmpi)
