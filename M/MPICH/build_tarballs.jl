@@ -21,9 +21,9 @@ make "${flags[@]}" -j${nproc}
 make "${flags[@]}" install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
+# Windows and MUSL are not supported
 platforms = filter(p -> !isa(p, Windows), supported_platforms())
+platforms = filter(p -> !(libc(p) == :musl), platforms)
 
 products = [
     LibraryProduct("libmpi", :libmpi)
