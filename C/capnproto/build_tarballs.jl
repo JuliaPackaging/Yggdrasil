@@ -16,7 +16,19 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/capnproto-*/
 atomic_patch -p2 ${WORKSPACE}/srcdir/patches/aligned-alloc.patch
-./configure --prefix=$prefix --host=$target
+(
+    # Do native build to get a capnp that we can run
+    mkdir build_native && cd build_native
+    export CC=${MACHTYPE}-cc
+    export CXX=${MACHTYPE}-c++
+    export LD=${MACHTYPE}-ld
+    ../configure --host=${MACHTYPE} --with-pic \
+        lt_cv_prog_compiler_pic_works=yes \
+        lt_cv_prog_compiler_pic_works_CXX=yes
+    make -j${nproc}
+)
+export CAPNP=build_native/capnp
+./configure --prefix=$prefix --host=$target --with-external-capnp
 make -j${nproc}
 make install
 """
