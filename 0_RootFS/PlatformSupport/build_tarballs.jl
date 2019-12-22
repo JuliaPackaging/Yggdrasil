@@ -21,6 +21,8 @@ sources = [
     "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
     "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
     "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
+    "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz" =>
+    "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78",
     "./bundled",
 ]
 
@@ -94,10 +96,24 @@ case "${COMPILER_TARGET}" in
         ;;
 
     *-apple-*)
-        cd $WORKSPACE/srcdir/MacOSX10.10.sdk
+        cd ${WORKSPACE}/srcdir/MacOSX10.10.sdk
         mkdir -p "${sysroot}/usr"
         mv usr/include "${sysroot}/usr"
         mv System "${sysroot}/"
+
+        # Grumble, grumble, need gcc just to install some headers...
+        apk add gcc g++ musl-dev
+
+        # Also deploy libcxx headers
+        cd ${WORKSPACE}/srcdir/libcxx*
+        mkdir build && cd build
+        PREFIX="${sysroot}" cmake .. -DLLVM_ENABLE_PROJECTS='libcxx' \
+                 -DCMAKE_INSTALL_PREFIX="${sysroot}/usr" \
+                 -DCMAKE_CROSSCOMPILING=True \
+                 -DLLVM_HOST_TRIPLE=${COMPILER_TARGET} \
+                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}" \
+                 -DDARWIN_osx_ARCHS=x86_64
+        make install-cxx-headers
         ;;
     *)
         echo "ERROR: Unmatched platform!" >&2
