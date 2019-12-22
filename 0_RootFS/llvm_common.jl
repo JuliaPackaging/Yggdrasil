@@ -41,7 +41,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
 
     # Then create the symlinks
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
+    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
+    ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
     export LDFLAGS="${LDFLAGS} -L${prefix}/${target}/lib64"
