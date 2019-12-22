@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.12.01"
+version = v"02.13.01"
 
 # Collection of sources required to build LCIO
 sources = [
-    "https://github.com/iLCSoft/LCIO/archive/v02-12-01.tar.gz" =>
-    "8a3d2e66c2f2d4489fc2e1c96335472728d913d4090327208a1d93b3b0728737",
+    "https://github.com/iLCSoft/LCIO/archive/v02-13-01.tar.gz" =>
+    "aa572e2ba38c0cadd6a92fa933c3ed97e21d016c7982578d3f293901169f4ec0",
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Linux(:x86_64),
+    MacOS(:x86_64),
+]
 
 # The products that we will ensure are always built
 products = [
