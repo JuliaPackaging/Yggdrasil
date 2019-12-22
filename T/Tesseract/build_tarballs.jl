@@ -9,11 +9,16 @@ version = v"4.1.0"
 sources = [
     "https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz" =>
     "5c5ed5f1a76888dc57a83704f24ae02f8319849f5c4cf19d254296978a1a1961",
+    "./bundled"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tesseract-*/
+if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # Apply layman patch to make this work
+    atomic_patch -p1 "$WORKSPACE/srcdir/patches/sys_time_musl_freebsd.patch"
+fi
 ./autogen.sh
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
@@ -25,7 +30,9 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
+    LibraryProduct("libtesseract", :libtesseract),
+    ExecutableProduct("tesseract", :tesseract),
 ]
 
 # Dependencies that must be installed before this package can be built
