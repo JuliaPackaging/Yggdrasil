@@ -59,12 +59,12 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libicudata", :libicudata),
-    LibraryProduct("libicui18n", :libicui18n),
-    LibraryProduct("libicuio", :libicuio),
-    LibraryProduct("libicutest", :libicutest),
-    LibraryProduct("libicutu", :libicutu),
-    LibraryProduct("libicuuc", :libicuuc),
+    LibraryProduct(["libicudata", "icudata"], :libicudata),
+    LibraryProduct(["libicui18n", "icui18n"], :libicui18n),
+    LibraryProduct(["libicuio", "icuio"], :libicuio),
+    LibraryProduct(["libicutest", "icutest"], :libicutest),
+    LibraryProduct(["libicutu", "icutu"], :libicutu),
+    LibraryProduct(["libicuuc", "icuuc"], :libicuuc),
 ]
 
 # Dependencies that must be installed before this package can be built
