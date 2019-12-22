@@ -39,11 +39,6 @@ cd $WORKSPACE/srcdir/icu/
     make -j${nproc}
 )
 
-# Don't use llvm-ar since ICU doesn't know how to deal with it
-if [[ ${target} == *apple* ]] || [[ ${target} == *freebsd* ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
-
 # Do the cross build
 cd source/
 update_configure_scripts
