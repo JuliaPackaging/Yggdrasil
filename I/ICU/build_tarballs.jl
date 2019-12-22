@@ -54,8 +54,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libicudata", "icudata"], :libicudata),
-    LibraryProduct(["libicui18n", "icui18n"], :libicui18n),
+    LibraryProduct(["libicudata", "icudt"], :libicudata),
+    LibraryProduct(["libicui18n", "icuin"], :libicui18n),
     LibraryProduct(["libicuio", "icuio"], :libicuio),
     LibraryProduct(["libicutest", "icutest"], :libicutest),
     LibraryProduct(["libicutu", "icutu"], :libicutu),
