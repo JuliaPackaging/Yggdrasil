@@ -29,7 +29,7 @@ platforms = [
     Linux(:x86_64, libc=:glibc),
     MacOS(:x86_64),
 ]
-
+expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblcio", :liblcio),
