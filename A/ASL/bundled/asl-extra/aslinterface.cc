@@ -155,67 +155,91 @@ double *asl_ucon(ASL *asl) {
 // Objective.
 
 void asl_varscale(ASL *asl, double *s, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   int this_nvar = asl->i.n_var_;
 
   for (int i = 0; i < this_nvar; i++) {
     varscale_ASL(asl, i, s[i], &ne);
-    *err = (int)ne;
+    if (ne)
+      *err = (int)ne;
+    else
+      *err = 0;
     if (ne) return;
   }
 }
 
 double asl_obj(ASL *asl, double *x, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   double f = asl->p.Objval(asl, 0, x, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
   return f;
 }
 
 void asl_grad(ASL *asl, double *x, double *g, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Objgrd(asl, 0, x, g, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
 }
 
 // Lagrangian.
 
 void asl_lagscale(ASL *asl, double s, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   lagscale_ASL(asl, s, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
 }
 
 // Constraints and Jacobian.
 
 void asl_conscale(ASL *asl, double *s, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   int this_ncon = asl->i.n_con_;
 
   for (int j = 0; j < this_ncon; j++) {
     conscale_ASL(asl, j, s[j], &ne);
-    *err = (int)ne;
+    if (ne)
+      *err = (int)ne;
+    else
+      *err = 0;
     if (ne) return;
   }
 }
 
 void asl_cons(ASL *asl, double *x, double *c, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Conval(asl, x, c, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
 }
 
 double asl_jcon(ASL *asl, double *x, int j, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   double cj = asl->p.Conival(asl, j, x, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
   return cj;
 }
 
 void asl_jcongrad(ASL *asl, double *x, double *g, int j, int *err) {
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Congrd(asl, j, x, g, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
 }
 
 size_t asl_sparse_congrad_nnz(ASL *asl, int j) {
@@ -229,9 +253,12 @@ void asl_sparse_congrad(
   int congrd_mode_bkup = asl->i.congrd_mode;
   asl->i.congrd_mode = 1;  // Sparse gradient mode.
 
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Congrd(asl, j, x, vals, &ne);
-  *err = (int)ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
   if (ne) return;
 
   int k = 0;
@@ -245,9 +272,12 @@ void asl_sparse_congrad(
 void asl_jac(ASL *asl, double *x, int *rows, int *cols, double *vals, int *err) {
   int this_ncon = asl->i.n_con_;
 
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Jacval(asl, x, vals, &ne);
-  *err = ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
   if (ne) return;
 
   // Fill in sparsity pattern.
@@ -274,9 +304,12 @@ void asl_jac_structure(ASL *asl, int *rows, int *cols) {
 void asl_jacval(ASL *asl, double *x, double *vals, int *err) {
   int this_ncon = asl->i.n_con_;
 
-  fint ne;
+  fint ne = (fint)0;
   asl->p.Jacval(asl, x, vals, &ne);
-  *err = ne;
+  if (ne)
+    *err = (int)ne;
+  else
+    *err = 0;
 }
 
 // Hessian.
