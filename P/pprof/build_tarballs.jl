@@ -10,7 +10,7 @@ hash = "f9b734f9ee64d0f5b63636a45cc77ed2744997ab"
 timestamp = "20191205061153"
 version = Base.VersionNumber("0.0.0-$timestamp")
 
-# Collection of sources required to build glfw
+# Collection of sources required to build pprof
 sources = [
     "https://github.com/google/pprof.git" =>
     hash,
