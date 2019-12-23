@@ -57,6 +57,7 @@ products = [
     ExecutableProduct("fc-query", :fc_query),
     ExecutableProduct("fc-scan", :fc_scan),
     ExecutableProduct("fc-validate", :fc_validate),
+    FileProduct("etc/fonts/fonts.conf", :fonts_conf),
 ]
 
 # Dependencies that must be installed before this package can be built
