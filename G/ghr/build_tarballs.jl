@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "ghr"
 version = v"0.13.0"
 
-# Collection of sources required to build glfw
+# Collection of sources required to build ghr
 sources = [
     "https://github.com/tcnksm/ghr.git" =>
     "d43a5d2dae1573e03dec545a2103f1bc61a3e0d6",
