@@ -9,7 +9,6 @@ version = v"3.5.0"
 sources = [
     "https://github.com/thom311/libnl/releases/download/libnl3_5_0/libnl-3.5.0.tar.gz" =>
     "352133ec9545da76f77e70ccb48c9d7e5324d67f6474744647a7ed382b5e05fa",
-
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +17,6 @@ cd $WORKSPACE/srcdir/libnl-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,13 +35,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnl-xfrm", :libnl_xfrm_3),
-    LibraryProduct("libnl-genl", :libnl_genl_3),
-    LibraryProduct("libnl-route", :libnl_route_3),
-    LibraryProduct("libnl", :libnl_3),
-    LibraryProduct("libnl-idiag", :lignl_idiag_3),
-    LibraryProduct("libnl-cli", :libnl_cli_3),
-    LibraryProduct("libnl-nf", :lignl_nf_3)
+    LibraryProduct("libnl", :libnl)
 ]
 
 # Dependencies that must be installed before this package can be built
