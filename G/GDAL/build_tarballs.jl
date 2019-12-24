@@ -7,6 +7,7 @@ version = v"3.0.2"
 sources = [
     "https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz" =>
     "787cf150346e58bff0ccf8c131b333139273e35d2abd590ad7196a9ee08f0039",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +16,10 @@ cd $WORKSPACE/srcdir/gdal-*/
 
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
-    cp ${libdir}/libproj_6_2.dll ${libdir}/libproj.dll
+    # Apply patch to customise PROJ library
+    atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
+    autoreconf -vi
+    export PROJ_LIBS="proj_6_2"
 fi
 
 # Clear out `.la` files since they're often wrong and screw us up
