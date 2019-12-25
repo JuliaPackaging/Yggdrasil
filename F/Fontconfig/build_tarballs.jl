@@ -46,8 +46,18 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
-    LibraryProduct("libfontconfig", :libfontconfig)
+products = [
+    LibraryProduct("libfontconfig", :libfontconfig),
+    ExecutableProduct("fc-cache", :fc_cache),
+    ExecutableProduct("fc-cat", :fc_cat),
+    ExecutableProduct("fc-conflist", :fc_conflist),
+    ExecutableProduct("fc-list", :fc_list),
+    ExecutableProduct("fc-match", :fc_match),
+    ExecutableProduct("fc-pattern", :fc_pattern),
+    ExecutableProduct("fc-query", :fc_query),
+    ExecutableProduct("fc-scan", :fc_scan),
+    ExecutableProduct("fc-validate", :fc_validate),
+    FileProduct("etc/fonts/fonts.conf", :fonts_conf),
 ]
 
 # Dependencies that must be installed before this package can be built
