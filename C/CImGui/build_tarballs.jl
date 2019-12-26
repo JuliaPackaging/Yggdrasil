@@ -19,16 +19,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mv imgui cimgui/
-mv wrapper/helper.c cimgui/
-mv wrapper/helper.h cimgui/
-cd cimgui/
-rm CMakeLists.txt
-mv ../wrapper/CMakeLists.txt ./
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-make
+rm cimgui/CMakeLists.txt
+mv imgui wrapper/helper.c wrapper/helper.h wrapper/CMakeLists.txt cimgui/
+mkdir -p cimgui/build && cd cimgui/build
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+make -j${nproc}
 make install
+install_license ../LICENSE ../imgui/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,13 +34,12 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcimgui", :libcimgui)
-    LibraryProduct("libcimgui_helper", :libcimgui_helper)
+    LibraryProduct("libcimgui", :libcimgui),
+    LibraryProduct("libcimgui_helper", :libcimgui_helper),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
