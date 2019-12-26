@@ -86,6 +86,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCLANG_DEFAULT_CXX_STDLIB=libc++ -DCLANG_DEFAULT_LINKER=lld -DCLANG_DEFAULT_RTLIB=compiler-rt)
     CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
+    # tell libcxx to use compiler-rt
+    CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
+
     # Tell compiler-rt to generate builtins for all the supported arches, and to use our unwinder
     CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
     CMAKE_FLAGS+=(-DLIBCXXABI_USE_LLVM_UNWINDER=YES)
