@@ -90,6 +90,12 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
     CMAKE_FLAGS+=(-DLIBCXXABI_USE_LLVM_UNWINDER=YES)
 
+    # Sanitizers don't support musl
+    # https://reviews.llvm.org/D63785
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_SANITIZERS_TO_BUILD=none)
+
     # Build!
     cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
     cmake -LA || true
