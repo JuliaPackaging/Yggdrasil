@@ -64,6 +64,11 @@ fi
 # Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
+
+# Compile GraphBLAS
+cd $WORKSPACE/srcdir/SuiteSparse-*/GraphBLAS/build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+make install -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -85,6 +90,8 @@ products = [
     LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
     LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
+    LibraryProduct("libgraphblas",           :libgraphblas),
+
 ]
 
 # Dependencies that must be installed before this package can be built
