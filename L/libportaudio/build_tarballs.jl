@@ -31,6 +31,16 @@ if [ -d "asiosdk2.3.1" ]; then
     mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
 fi
 
+# Add the ringbuffer symbols needed by `pa_shim.c` to the windows export lists:
+IDX=80
+for SYM in PaUtil_GetRingBufferWriteAvailable \
+           PaUtil_GetRingBufferReadAvailable \
+           PaUtil_WriteRingBuffer \
+           PaUtil_ReadRingBuffer; do
+    echo "${SYM}    @${IDX}" >> ${WORKSPACE}/srcdir/portaudio/cmake_support/template_portaudio.def
+    IDX=$((IDX+1))
+done
+
 # First, build libportaudio
 mkdir build
 cd build
