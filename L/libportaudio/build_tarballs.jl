@@ -42,10 +42,11 @@ make
 make install
 install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
 
-# Next, build libpa_shim
+# Next, build libpa_shim.  Note that we explicitly install to `${prefix}/lib` since that's
+# what `portaudio` does, and we need to be together to get auto-moved.
 cd ${WORKSPACE}/srcdir
 SOURCEHASH=$(sha256sum pa_shim.c  | awk '{print $1}')
-${CC} -O2 -fPIC '-DSOURCEHASH="${SOURCEHASH}"' -I${WORKSPACE}/srcdir/portaudio/include -I${WORKSPACE}/srcdir/portaudio/src/common pa_shim.c -lportaudio -o ${libdir}/libpa_shim.${dlext} -shared
+${CC} -O2 -fPIC '-DSOURCEHASH="${SOURCEHASH}"' -I${WORKSPACE}/srcdir/portaudio/include -I${WORKSPACE}/srcdir/portaudio/src/common pa_shim.c -lportaudio -o ${prefix}/lib/libpa_shim.${dlext} -shared
 """
 
 # These are the platforms we will build for by default, unless further
