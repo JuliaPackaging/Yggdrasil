@@ -16,9 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/portaudio*
 mkdir -p ${libdir} ${prefix}/include
-${CC} -g -fPIC src/common/pa_ringbuffer.c -o ${libdir}/libpa_ringbuffer.${dlext}
+${CC} -g -fPIC src/common/pa_ringbuffer.c -o ${libdir}/libpa_ringbuffer.${dlext} -shared
 install -m644 src/common/pa_ringbuffer.h ${prefix}/include/
-install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
 """
 
 # These are the platforms we will build for by default, unless further
