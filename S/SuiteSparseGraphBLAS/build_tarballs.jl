@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/SuiteSparse-*/GraphBLAS/build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_SHARED_LIBS=ON ..
 make install -j${nproc}
 """
 
