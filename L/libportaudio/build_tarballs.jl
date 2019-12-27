@@ -9,7 +9,10 @@ version = v"19.6.0"
 # are used for all platforms.
 sources = [
     "http://portaudio.com/archives/pa_stable_v190600_20161030.tgz" =>
-        "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513",
+    "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513",
+
+    # This includes the sources for libpa_shim
+    "./bundled",
 
     # uncomment the following lines to include ASIO support. To distribute the
     # resulting binaries you'll need to sign the licence agreement included with
@@ -17,7 +20,7 @@ sources = [
 
     # "http://www.steinberg.net/sdk_downloads/ASIOSDK2.3.1.zip" =>
     #     "31074764475059448a9b7a56f103f4723ed60465e0e9d1a9446ca03dcf840f04"
-        ]
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -28,6 +31,7 @@ if [ -d "asiosdk2.3.1" ]; then
     mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
 fi
 
+# First, build libportaudio
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -37,6 +41,11 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 make
 make install
 install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
+
+# Next, build libpa_shim
+cd ${WORKSPACE}/srcdir
+SOURCEHASH=$(sha256sum pa_shim.c  | awk '{print $1}')
+${CC} -O2 -fPIC '-DSOURCEHASH="${SOURCEHASH}"' -I${WORKSPACE}/srcdir/portaudio/include -I${WORKSPACE}/srcdir/portaudio/src/common pa_shim.c -lportaudio -o ${libdir}/libpa_shim.${dlext} -shared
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,10 +53,14 @@ install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [ LibraryProduct("libportaudio", :libportaudio) ]
+products = [
+    LibraryProduct("libportaudio", :libportaudio),
+    LibraryProduct("libpa_shim", :libpa_shim),
+]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = [
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
