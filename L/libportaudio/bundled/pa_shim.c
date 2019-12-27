@@ -57,7 +57,7 @@ int pa_shim_processcb(const void *input, void *output,
                      PaStreamCallbackFlags statusFlags,
                      void *userData)
 {
-    pa_shim_info_t *info = userData;
+    pa_shim_info_t *info = (pa_shim_info_t *)userData;
     if(info->notifycb == NULL) {
         fprintf(stderr, "pa_shim ERROR: notifycb is NULL\n");
     }
