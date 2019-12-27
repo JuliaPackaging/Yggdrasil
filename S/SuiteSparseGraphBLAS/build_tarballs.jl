@@ -13,8 +13,14 @@ sources = [
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/SuiteSparse-*/GraphBLAS/build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_SHARED_LIBS=ON ..
-make install -j${nproc}
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+make -j${nproc} install
+if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
+    # For mysterious reasons, the shared library is not installed
+    # when building for Windows
+    mkdir -p "${libdir}"
+    cp "libgraphblas.${dlext}" "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
