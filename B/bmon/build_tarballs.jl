@@ -19,7 +19,7 @@ export CFLAGS=-I$prefix/include
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
+install_license LICENSE.*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,4 +51,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
