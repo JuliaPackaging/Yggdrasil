@@ -34,6 +34,15 @@ export CPPFLAGS="-I${prefix}/include/SDL2"
     "${FLAGS[@]}"
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # As usual, build system for Windows is wrecked
+    # and the shared library is not built at all
+    cd ${prefix}/lib
+    ar x libSDL2_ttf.a
+    cc -shared -o ${libdir}/SDL2_ttf.dll SDL_ttf.o ${libdir}/libfreetype-6.dll ${libdir}/SDL2.dll
+    rm SDL_ttf.o
+fi
 """
 
 # These are the platforms we will build for by default, unless further
