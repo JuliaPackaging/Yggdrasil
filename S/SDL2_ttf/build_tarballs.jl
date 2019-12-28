@@ -22,6 +22,7 @@ if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 
 atomic_patch -p1 ../patches/configure_in-v2.0.15.patch
+atomic_patch -p1 ../patches/Makefile_in_dont_build_programs.patch
 touch NEWS README AUTHORS ChangeLog
 # For some reasons, the first time `autoreconf` may fail,
 # but with some encouragement it can do it
