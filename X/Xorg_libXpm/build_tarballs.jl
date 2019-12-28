@@ -7,16 +7,17 @@ version = v"3.5.13"
 
 # Collection of sources required to complete build
 sources = [
-    "https://www.x.org/archive/individual/lib/libXpm-3.5.13.tar.bz2" =>
+    "https://www.x.org/archive/individual/lib/libXpm-$(version).tar.bz2" =>
     "9cd1da57588b6cb71450eff2273ef6b657537a9ac4d02d0014228845b935ac25",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libXpm-3.5.13/
+cd $WORKSPACE/srcdir/libXpm-*/
+# We need a native xgettext
+apk add gettext
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
