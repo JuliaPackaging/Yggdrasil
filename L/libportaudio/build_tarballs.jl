@@ -71,6 +71,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Build against `ALSA` on Linux
+    "alsa_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
