@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/SDL2-*/
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
+elif [[ "${target}" == *-mingw* ]]; then
+    FLAGS+='libSDL2main_la_LDFLAGS=-no-undefined'
+    FLAGS+='libSDL2_test_la_LDFLAGS=-no-undefined'
 fi
 
 ./configure --prefix=${prefix} --host=${target} \
