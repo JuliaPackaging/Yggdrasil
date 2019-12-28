@@ -41,7 +41,7 @@
 +	sdl2,
 +	[
 +		sdl2_found=yes
-+		CFLAGS="$CFLAGS $SDL22_CFLAGS"
++		CFLAGS="$CFLAGS $SDL2_CFLAGS"
 +		LIBS="$LIBS $SDL2_LIBS"
 +	],
 +	sdl2_found=no
