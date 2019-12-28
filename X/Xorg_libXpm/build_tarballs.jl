@@ -22,10 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:glibc)
-]
-
+platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
 
 # The products that we will ensure are always built
 products = [
