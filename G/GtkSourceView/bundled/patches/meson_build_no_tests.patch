@@ -1,0 +1,13 @@
+--- a/meson.build
++++ b/meson.build
+@@ -265,8 +265,8 @@
+ subdir('data')
+ subdir('docs')
+ subdir('po')
+-subdir('tests')
+-subdir('testsuite')
++# subdir('tests')
++# subdir('testsuite')
+ 
+ summary = [
+   '',
