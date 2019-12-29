@@ -37,5 +37,14 @@ auto_install_license () {
             fi
         fi
     fi
-}
 
+    if [[ "${@}" == "-c" ]]; then
+        if [[ -d "${prefix}/share/licenses/${SRC_NAME}" ]]; then
+            # If we pass the `-c` option, check if we installed anything,
+            # if not then return non-zero exit code.
+            return 0
+        else
+            return 1
+        fi
+    fi
+}
