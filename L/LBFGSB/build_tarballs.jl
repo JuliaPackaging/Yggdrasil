@@ -9,25 +9,20 @@ version = v"3.0.0"
 sources = [
     "http://users.iems.northwestern.edu/~nocedal/Software/Lbfgsb.3.0.tar.gz" =>
     "f5b9a1c8c30ff6bcc8df9b5d5738145f4cbe4c7eadec629220e808dcf0e54720",
-
-    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-rm Lbfgsb.3.0/Makefile
-mv Makefile Lbfgsb.3.0/
-cd Lbfgsb.3.0
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/Lbfgsb.*/
+mkdir -p "${libdir}"
+FFLAGS="-O3 -fPIC -shared -Wall -fbounds-check -Wno-uninitialized"
+${FC} ${LDFLAGS} ${FFLAGS} lbfgsb.f linpack.f blas.f timer.f -o "${libdir}/liblbfgsb.${dlext}"
 install_license License.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +31,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
