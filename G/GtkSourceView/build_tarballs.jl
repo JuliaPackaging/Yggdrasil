@@ -9,6 +9,7 @@ version = v"4.4.0"
 sources = [
     "https://download.gnome.org/sources/gtksourceview/4.4/gtksourceview-$(version).tar.xz" =>
     "9ddb914aef70a29a66acd93b4f762d5681202e44094d2d6370e51c9e389e689a",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +18,9 @@ cd $WORKSPACE/srcdir/gtksourceview-*/
 
 # We need to run native `xmllint` and `glib-compile-resources`
 apk add libxml2-utils glib-dev
+
+# Don't build broken tests
+atomic_patch -p1 ../patches/meson_build_no_tests.patch
 
 mkdir build && cd build
 meson .. \
