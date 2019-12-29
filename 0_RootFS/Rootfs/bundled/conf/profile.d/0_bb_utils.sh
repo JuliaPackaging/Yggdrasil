@@ -69,3 +69,8 @@ if [ -f /meta/.env ]; then
 	source /meta/.env
 fi
 
+fc() {
+    # `fc` is a bash-builtin, we have to define a function to override it and be
+    # able to use `fc` as the default fortran compiler
+    /opt/bin/fc "$@"
+}
