@@ -29,7 +29,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libusb", :libusb)
+    LibraryProduct("libusb-1.0", :libusb)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -39,4 +39,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
