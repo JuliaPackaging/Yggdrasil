@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "LBFGSB"
+name = "L_BFGS_B"
 version = v"3.0.0"
 
 # Collection of sources required to build LBFGSB
