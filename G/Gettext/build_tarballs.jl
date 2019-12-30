@@ -11,8 +11,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gettext-*/
-
-./configure --prefix=$prefix --host=$target CFLAGS="-O2"
+export CFLAGS="-O2"
+./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
 """
@@ -29,6 +29,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Libiconv_jll",
+    "XML2_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
