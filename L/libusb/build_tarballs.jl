@@ -25,7 +25,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [p for p in supported_platforms() if !isa(p, FreeBSD)]
 
 # The products that we will ensure are always built
 products = [
