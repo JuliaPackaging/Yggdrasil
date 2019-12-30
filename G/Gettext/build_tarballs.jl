@@ -23,7 +23,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgettext", :libgettext)
+    LibraryProduct(["libgettextlib", "libgettextlib-0-20"], :libgettext)
 ]
 
 # Dependencies that must be installed before this package can be built
