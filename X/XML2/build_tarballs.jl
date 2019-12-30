@@ -14,8 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
-./autogen.sh
-./configure --prefix=${prefix} --host=${target} --without-python --with-zlib=${prefix}
+./autogen.sh --prefix=${prefix} --host=${target} \
+    --without-python \
+    --with-zlib=${prefix} \
+    --with-iconv=${prefix}
 make -j${nproc} install
 """
 
@@ -25,12 +27,15 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libxml2", :libxml2)
+    LibraryProduct("libxml2", :libxml2),
+    ExecutableProduct("xmlcatalog", :xmlcatalog),
+    ExecutableProduct("xmllint", :xmllint),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll"
+    "Zlib_jll",
+    "Libiconv_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
