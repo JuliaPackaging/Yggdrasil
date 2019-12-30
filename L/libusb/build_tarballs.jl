@@ -20,7 +20,7 @@ cd libusb/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-udev
 make -j${nproc}
 make install
-
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -29,7 +29,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libusb-1.0", :libusb)
+    LibraryProduct(["libusb","libusb-1.0"], :libusb)
 ]
 
 # Dependencies that must be installed before this package can be built
