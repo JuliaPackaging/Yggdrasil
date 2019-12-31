@@ -13,21 +13,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd graphviz-2.40.1/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd $WORKSPACE/srcdir/graphviz-*/
 
-# For some reason the build wasn't able to pick up that the system provided a
-# `sys/stat.h` file, so lib/sfio/sfsetbuf.c redefines `struct stat` which is an
-# error. So we manually set the preprocessor macro definition to prevent that.
-# (Presumably only some of the linux systems provide it, otherwise it wouldn't
-# be configurable, so we probably need to enable this iff it's missing.)
-if [[ "${target}" == *-linux* ]]; then  # TODO: figure out what this should be
-    make CFLAGS="-D_sys_stat=1" -j${nproc}
-else
-    make -j${nproc}
+if [[ "${target}" == *-linux-* ]]; then
+    # For some reason the build wasn't able to pick up that the system provided a
+    # `sys/stat.h` file, so lib/sfio/sfsetbuf.c redefines `struct stat` which is an
+    # error. So we manually set the preprocessor macro definition to prevent that.
+    # (Presumably only some of the linux systems provide it, otherwise it wouldn't
+    # be configurable, so we probably need to enable this iff it's missing.)
+    export CFLAGS="-D_sys_stat=1"
 fi
 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
 make install
 """
 
@@ -52,15 +50,8 @@ products = [
 dependencies = [
     PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")
     PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201")
-    PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7")
-    PackageSpec(name="Fontconfig_jll", uuid="a3f928ae-7b40-5064-980b-68af3947d34b")
-    PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d")
     PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")
-    PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")
-    PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")
-    PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
