@@ -71,7 +71,9 @@ fi
 
 
 # Enter the fun zone
-cd ${WORKSPACE}/srcdir/OpenBLAS-*/
+cd ${WORKSPACE}/srcdir/OpenBLAS*/
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/openblas-winexit.patch
 
 # Build the actual library
 make "${flags[@]}"
