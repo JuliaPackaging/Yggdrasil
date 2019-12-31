@@ -29,7 +29,7 @@ platforms = [p for p in supported_platforms() if !isa(p, FreeBSD)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libusb","libusb-1.0"], :libusb)
+    LibraryProduct(["libusb", "libusb-1", "libusb-1.0"], :libusb)
 ]
 
 # Dependencies that must be installed before this package can be built
