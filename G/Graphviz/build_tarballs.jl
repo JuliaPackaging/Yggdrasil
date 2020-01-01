@@ -21,6 +21,9 @@ cd $WORKSPACE/srcdir/graphviz-*/
 # build environment.
 atomic_patch -p1 ../patches/gvpr-build-native-mkdefs.patch
 
+# This patch disable generation of dot's configuration
+atomic_patch -p1 ../patches/do-not-build-dot-config.patch
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
