@@ -20,8 +20,14 @@ if [[ "${target}" == *-freebsd* ]]; then
     #   undefined reference to `backtrace'
     export LDFLAGS="-lexecinfo"
 fi
+FLAGS=()
+if [[ "${target}" == *-mingw* ]]; then
+    # This is needed in order to build the shared library on Windows when we get
+    #   libtool: warning: undefined symbols not allowed in x86_64-w64-mingw32 shared libraries; building static only
+    FLAGS+=(LDFLAGS="-no-undefined")
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j ${nprocs}
+make -j ${nprocs} "${FLAGS[@]}"
 make install
 """
 
