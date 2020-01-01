@@ -3,27 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Graphviz"
-version = v"2.40.1"
+version = v"2.42.3"
 
 # Collection of sources required to complete build
 sources = [
-    "https://graphviz.gitlab.io/pub/graphviz/stable/SOURCES/graphviz.tar.gz" =>
-    "ca5218fade0204d59947126c38439f432853543b0818d9d728c589dfe7f3a421",
+    "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz" =>
+    "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/graphviz-*/
-
-if [[ "${target}" == *-linux-* ]]; then
-    # For some reason the build wasn't able to pick up that the system provided a
-    # `sys/stat.h` file, so lib/sfio/sfsetbuf.c redefines `struct stat` which is an
-    # error. So we manually set the preprocessor macro definition to prevent that.
-    # (Presumably only some of the linux systems provide it, otherwise it wouldn't
-    # be configurable, so we probably need to enable this iff it's missing.)
-    export CFLAGS="-D_sys_stat=1"
-fi
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
