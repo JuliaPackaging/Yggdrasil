@@ -9,7 +9,7 @@ version = v"2.31.0"
 sources = [
     "https://github.com/IntelRealSense/librealsense.git" =>
     "bdce5a4ebbd716e9d7372ad8831a929bccccd0b2",
-
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
