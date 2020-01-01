@@ -9,11 +9,18 @@ version = v"2.42.3"
 sources = [
     "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz" =>
     "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add",
+
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/graphviz-*/
+
+# Apply patch to build a native `mkdefs` utility that can be run within the
+# build environment.
+atomic_patch -p1 ../patches/gvpr-build-native-mkdefs.patch
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install

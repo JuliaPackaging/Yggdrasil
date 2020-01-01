@@ -1,0 +1,18 @@
+--- a/lib/gvpr/Makefile.in
++++ b/lib/gvpr/Makefile.in
+@@ -702,9 +702,14 @@
+ 	echo " rm -f" $$list; \
+ 	rm -f $$list
+ 
++$(mkdefs_OBJECTS): $(mkdefs_SOURCES)
++	$(CC_FOR_BUILD) $(CFLAGS) $(LDFLAGS) -c $<
++
+ mkdefs$(EXEEXT): $(mkdefs_OBJECTS) $(mkdefs_DEPENDENCIES) $(EXTRA_mkdefs_DEPENDENCIES) 
+ 	@rm -f mkdefs$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(mkdefs_OBJECTS) $(mkdefs_LDADD) $(LIBS)
++	$(AM_V_CCLD)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
++	$(LIBTOOLFLAGS) --mode=link $(CC_FOR_BUILD) $(AM_CFLAGS) $(CFLAGS) \
++	$(AM_LDFLAGS) $(LDFLAGS) -o $@ $(mkdefs_OBJECTS) $(mkdefs_LDADD) $(LIBS)
+ 
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)
