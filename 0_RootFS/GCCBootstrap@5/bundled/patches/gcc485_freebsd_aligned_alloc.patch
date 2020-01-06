@@ -1,0 +1,38 @@
+diff --git a/libstdc++-v3/configure b/libstdc++-v3/configure
+index 4ab39e02fb4..c4bafa7146c 100755
+--- a/libstdc++-v3/configure
++++ b/libstdc++-v3/configure
+@@ -45704,6 +45704,21 @@ $as_echo "$ac_ld_relro" >&6; }
+       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
+ 
+     fi
++
++ for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
++do :
++  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
++ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
++eval as_val=\$$as_ac_var
++   if test "x$as_val" = x""yes; then :
++  cat >>confdefs.h <<_ACEOF
++#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
++_ACEOF
++
++fi
++done
++
++
+     ;;
+   *-hpux*)
+     SECTION_FLAGS='-ffunction-sections -fdata-sections'
+diff --git a/libstdc++-v3/crossconfig.m4 b/libstdc++-v3/crossconfig.m4
+index 943ea676ea2..947f8b5304c 100644
+--- a/libstdc++-v3/crossconfig.m4
++++ b/libstdc++-v3/crossconfig.m4
+@@ -98,6 +98,7 @@ case "${host}" in
+       AC_DEFINE(HAVE_ISINFL)
+       AC_DEFINE(HAVE_ISNANL)
+     fi
++    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+     ;;
+   *-hpux*)
+     SECTION_FLAGS='-ffunction-sections -fdata-sections'
