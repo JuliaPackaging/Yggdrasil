@@ -1,33 +1,32 @@
 using BinaryBuilder
 
 name = "Zstd"
-version = v"1.4.2"
+version = v"1.4.4"
 
 sources = [
     "https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz" =>
-        "12730983b521f9a604c6789140fcb94fadf9a3ca99199765e33c56eb65b643c9",
-    "https://github.com/facebook/zstd/releases/download/v$version/zstd-v$version-win32.zip" =>
-        "430f21b1a4e006f3bfb2e97efa94deb03aadcda8c38b5f9832a0d069e4cad19e",
-    "https://github.com/facebook/zstd/releases/download/v$version/zstd-v$version-win64.zip" =>
-        "13e9fd7a979398a4109fedbd6dc2f25dd0f2b0fb42b9fc957ad7b837c815949d",
+    "59ef70ebb757ffe74a7b3fe9c305e2ba3350021a918d168a046c6300aeea9315",
+    "./bundled"
 ]
 
 script = raw"""
-if [[ ${target} == *mingw* ]]; then
-    # For Windows, just use the prebuilt binaries provided by Facebook
-    mkdir -p ${WORKSPACE}/destdir/bin
-    cp ${WORKSPACE}/srcdir/zstd-v*-win${nbits}/dll/* ${WORKSPACE}/destdir/bin/
-else
-    # There should only be one directory like this
-    cd $(ls -d ${WORKSPACE}/srcdir/zstd* | grep -v win)
-    make -j${nproc} prefix=${prefix} install
+cd ${WORKSPACE}/srcdir/zstd-*/
+atomic_patch -p1 ../patches/timefn_h_windows.patch
+mkdir build-zstd && cd build-zstd
+if [[ "${target}" == aarch64-linux-gnu ]]; then
+    # Work around https://github.com/facebook/zstd/issues/1872
+    export CFLAGS=-D_POSIX_C_SOURCE
 fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../build/cmake/
+make -j${nproc}
+make install
 """
 
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct("libzstd", :libzstd)
+    LibraryProduct("libzstd", :libzstd),
+    ExecutableProduct("zstd", :zstd),
 ]
 
 dependencies = []
