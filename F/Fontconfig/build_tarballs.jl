@@ -21,10 +21,16 @@ apk add gperf
 # Ensure that `${prefix}/include` is..... included
 export CPPFLAGS="-I${prefix}/include"
 
+FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    FONTS_DIR="/usr/local/share/fonts"
+    FLAGS+=(--with-add-fonts="/usr/local/share/fonts")
+    if [[ "${target}" == *-linux-* ]]; then
+        FLAGS+=(--with-cache-dir="/var/cache/fontconfig")
+    elif [[ "${target}" == *-freebsd* ]]; then
+        FLAGS+=(--with-cache-dir="/var/db/fontconfig")
+    fi
 elif [[ "${target}" == *-apple-* ]]; then
-    FONTS_DIR="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5"
+    FLAGS+=(--with-add-fonts="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5")
 fi
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
@@ -32,7 +38,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
 autoreconf
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs --with-add-fonts="${FONTS_DIR}"
+./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --disable-docs "${FLAGS[@]}"
 
 # Disable tests
 sed -i 's,all-am: Makefile $(PROGRAMS),all-am:,' test/Makefile
