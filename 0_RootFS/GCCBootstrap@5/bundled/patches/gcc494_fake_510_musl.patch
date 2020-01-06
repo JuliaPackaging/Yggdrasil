@@ -1,0 +1,10 @@
+Index: b/gcc/config/aarch64/aarch64-linux.h
+===================================================================
+--- a/gcc/config/aarch64/aarch64-linux.h
++++ b/gcc/config/aarch64/aarch64-linux.h
+@@ -22,4 +22,4 @@
+ #define GCC_AARCH64_LINUX_H
+
+-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
++#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64%{mbig-endian:_be}.so.1"
+

@@ -1,0 +1,135 @@
+diff --git a/gcc/config/mips/linux.h b/gcc/config/mips/linux.h
+index 9b4c68db6ee..e539422d48d 100644
+--- a/gcc/config/mips/linux.h
++++ b/gcc/config/mips/linux.h
+@@ -1,5 +1,5 @@
+ /* Definitions for MIPS running Linux-based GNU systems with ELF format.
+-   Copyright (C) 1998-2013 Free Software Foundation, Inc.
++   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+ 
+ This file is part of GCC.
+ 
+@@ -17,4 +17,9 @@ You should have received a copy of the GNU General Public License
+ along with GCC; see the file COPYING3.  If not see
+ <http://www.gnu.org/licenses/>.  */
+ 
+-#define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
++#define GLIBC_DYNAMIC_LINKER \
++  "%{mnan=2008:/lib/ld-linux-mipsn8.so.1;:/lib/ld.so.1}"
++
++#undef UCLIBC_DYNAMIC_LINKER
++#define UCLIBC_DYNAMIC_LINKER \
++  "%{mnan=2008:/lib/ld-uClibc-mipsn8.so.0;:/lib/ld-uClibc.so.0}"
+diff --git a/gcc/config/linux.h b/gcc/config/linux.h
+index 2be1079b92f..d38ef81e34f 100644
+--- a/gcc/config/linux.h
++++ b/gcc/config/linux.h
+@@ -2,7 +2,7 @@
+    MMU, using ELF at the compiler level but possibly FLT for final
+    linked executables and shared libraries in some no-MMU cases, and
+    possibly with a choice of libc implementations.
+-   Copyright (C) 1995-2013 Free Software Foundation, Inc.
++   Copyright (C) 1995-2014 Free Software Foundation, Inc.
+    Contributed by Eric Youngdale.
+    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
+ 
+@@ -95,15 +95,35 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERX32, UCLIBC_DYNAMIC_LINKERX32, \
+ 			 BIONIC_DYNAMIC_LINKERX32)
+ 
+-/* Determine whether the entire c99 runtime
+-   is present in the runtime library.  */
+-#undef TARGET_C99_FUNCTIONS
+-#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
+-
+-/* Whether we have sincos that follows the GNU extension.  */
+-#undef TARGET_HAS_SINCOS
+-#define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)
+-
+ /* Whether we have Bionic libc runtime */
+ #undef TARGET_HAS_BIONIC
+ #define TARGET_HAS_BIONIC (OPTION_BIONIC)
++
++#if (DEFAULT_LIBC == LIBC_UCLIBC) && defined (SINGLE_LIBC) /* uClinux */
++/* This is a *uclinux* target.  We don't define below macros to normal linux
++   versions, because doing so would require *uclinux* targets to include
++   linux.c, linux-protos.h, linux.opt, etc.  We could, alternatively, add
++   these files to *uclinux* targets, but that would only pollute option list
++   (add -mglibc, etc.) without adding any useful support.  */
++
++/* Define TARGET_LIBC_HAS_FUNCTION for *uclinux* targets to
++   no_c99_libc_has_function, because uclibc does not, normally, have
++   c99 runtime.  If, in special cases, uclibc does have c99 runtime,
++   this should be defined to a new hook.  Also please note that for targets
++   like *-linux-uclibc that similar check will also need to be added to
++   linux_libc_has_function.  */
++# undef TARGET_LIBC_HAS_FUNCTION
++# define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
++
++#else /* !uClinux, i.e., normal Linux */
++
++/* IFUNCs are supported by glibc, but not by uClibc or Bionic.  */
++# undef TARGET_HAS_IFUNC_P
++# define TARGET_HAS_IFUNC_P linux_has_ifunc_p
++
++/* Determine what functions are present at the runtime;
++   this includes full c99 runtime and sincos.  */
++# undef TARGET_LIBC_HAS_FUNCTION
++# define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function
++
++#endif
+diff --git a/gcc/config/aarch64/aarch64-linux.h b/gcc/config/aarch64/aarch64-linux.h
+index a012baed284..88e5206e63a 100644
+--- a/gcc/config/aarch64/aarch64-linux.h
++++ b/gcc/config/aarch64/aarch64-linux.h
+@@ -1,5 +1,5 @@
+ /* Machine description for AArch64 architecture.
+-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
++   Copyright (C) 2009-2014 Free Software Foundation, Inc.
+    Contributed by ARM Ltd.
+ 
+    This file is part of GCC.
+@@ -21,7 +21,7 @@
+ #ifndef GCC_AARCH64_LINUX_H
+ #define GCC_AARCH64_LINUX_H
+ 
+-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64.so.1"
++#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64%{mbig-endian:_be}.so.1"
+ 
+ #define CPP_SPEC "%{pthread:-D_REENTRANT}"
+ 
+@@ -29,10 +29,12 @@
+    %{static:-Bstatic}				\
+    %{shared:-shared}				\
+    %{symbolic:-Bsymbolic}			\
+-   %{rdynamic:-export-dynamic}			\
+-   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "	\
++   %{!static:					\
++     %{rdynamic:-export-dynamic}		\
++     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
+    -X						\
+-   %{mbig-endian:-EB} %{mlittle-endian:-EL}"
++   %{mbig-endian:-EB} %{mlittle-endian:-EL}     \
++   -maarch64linux%{mbig-endian:b}"
+ 
+ #ifdef TARGET_FIX_ERR_A53_835769_DEFAULT
+ #define CA53_ERR_835769_SPEC \
+@@ -42,8 +44,17 @@
+   " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
+ #endif
+ 
++#ifdef TARGET_FIX_ERR_A53_843419_DEFAULT
++#define CA53_ERR_843419_SPEC \
++  " %{!mno-fix-cortex-a53-843419:--fix-cortex-a53-843419}"
++#else
++#define CA53_ERR_843419_SPEC \
++  " %{mfix-cortex-a53-843419:--fix-cortex-a53-843419}"
++#endif
++
+ #define LINK_SPEC LINUX_TARGET_LINK_SPEC \
+-                  CA53_ERR_835769_SPEC
++                  CA53_ERR_835769_SPEC \
++                  CA53_ERR_843419_SPEC
+ 
+ #define TARGET_OS_CPP_BUILTINS()		\
+   do						\

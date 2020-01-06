@@ -1,0 +1,198 @@
+From db8fed87d9741b6b3da6c2257f01d63ef2fe407c Mon Sep 17 00:00:00 2001
+From: Martin Sebor <msebor@redhat.com>
+Date: Mon, 1 Jun 2015 14:12:09 -0300
+Subject: [PATCH] powerpc: setcontext.S uses power6 mtfsf when not supported
+ [BZ #18116]
+
+The attached patch fixes a glibc build failure with gcc 5 on powerpc64le
+caused by a recent change in gcc where the compiler defines the
+_ARCH_PWR6 macro when processing assembly files but doesn't invoke the
+assembler in the corresponding machine mode (unless it has been
+explicitly configured to target POWER 6 or later).  A bug had been filed
+with gcc for this (65341) but was closed as won't fix. Glibc relies on
+the _ARCH_PWR6 macro in a few .S files to make use of Power ISA 2.5
+instructions (specifically, the four-argument form of the mtfsf insn).
+A similar problem had occurred in the past (bug 10118) but the fix that
+was committed for it didn't anticipate this new problem.
+---
+ ChangeLog                                          |  9 ++++++
+ .../unix/sysv/linux/powerpc/powerpc64/setcontext.S | 30 ++++++++++++++----
+ .../sysv/linux/powerpc/powerpc64/swapcontext.S     | 36 +++++++++++++++++-----
+ 3 files changed, 61 insertions(+), 14 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6d295e7..239a0e6 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,12 @@
++2015-03-11  Martin Sebor  <msebor@redhat.com>
++
++	[BZ #18116]
++        * sysdeps/unix/sysv/linux/powerpc/powerpc64/setcontext.S
++        (__setcontext): Use extended four-operand version of mtsf whenever
++	possible.
++        * sysdeps/unix/sysv/linux/powerpc/powerpc64/swapcontext.S
++        (__novec_swapcontext): Likewise.
++
+ 2015-06-01  Siddhesh Poyarekar  <siddhesh@redhat.com>
+ 
+ 	* benchtests/scripts/compare_bench.py: New file.
+diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc64/setcontext.S b/sysdeps/unix/sysv/linux/powerpc/powerpc64/setcontext.S
+index e47a57a..8a08dc4 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/powerpc64/setcontext.S
++++ b/sysdeps/unix/sysv/linux/powerpc/powerpc64/setcontext.S
+@@ -81,22 +81,31 @@ ENTRY(__novec_setcontext)
+ 
+ # ifdef _ARCH_PWR6
+   /* Use the extended four-operand version of the mtfsf insn.  */
+-  mtfsf  0xff,fp0,1,0
+-# else
+   .machine push
+   .machine "power6"
++
++  mtfsf  0xff,fp0,1,0
++
++  .machine pop
++# else
+   /* Availability of DFP indicates a 64-bit FPSCR.  */
+   andi.  r6,r5,PPC_FEATURE_HAS_DFP
+   beq    5f
+   /* Use the extended four-operand version of the mtfsf insn.  */
++  .machine push
++  .machine "power6"
++
+   mtfsf  0xff,fp0,1,0
++
++  .machine pop
++
+   b      6f
+   /* Continue to operate on the FPSCR as if it were 32-bits.  */
+ 5:
+   mtfsf  0xff,fp0
+ 6:
+-  .machine pop
+ # endif /* _ARCH_PWR6 */
++
+   lfd  fp29,(SIGCONTEXT_FP_REGS+(PT_R29*8))(r31)
+   lfd  fp28,(SIGCONTEXT_FP_REGS+(PT_R28*8))(r31)
+   lfd  fp27,(SIGCONTEXT_FP_REGS+(PT_R27*8))(r31)
+@@ -364,22 +373,31 @@ L(has_no_vec):
+ 
+ # ifdef _ARCH_PWR6
+   /* Use the extended four-operand version of the mtfsf insn.  */
+-  mtfsf  0xff,fp0,1,0
+-# else
+   .machine push
+   .machine "power6"
++
++  mtfsf  0xff,fp0,1,0
++
++  .machine pop
++# else
+   /* Availability of DFP indicates a 64-bit FPSCR.  */
+   andi.  r6,r5,PPC_FEATURE_HAS_DFP
+   beq    7f
+   /* Use the extended four-operand version of the mtfsf insn.  */
++  .machine push
++  .machine "power6"
++
+   mtfsf  0xff,fp0,1,0
++
++  .machine pop
++
+   b      8f
+   /* Continue to operate on the FPSCR as if it were 32-bits.  */
+ 7:
+   mtfsf  0xff,fp0
+ 8:
+-  .machine pop
+ # endif /* _ARCH_PWR6 */
++
+   lfd  fp29,(SIGCONTEXT_FP_REGS+(PT_R29*8))(r31)
+   lfd  fp28,(SIGCONTEXT_FP_REGS+(PT_R28*8))(r31)
+   lfd  fp27,(SIGCONTEXT_FP_REGS+(PT_R27*8))(r31)
+diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc64/swapcontext.S b/sysdeps/unix/sysv/linux/powerpc/powerpc64/swapcontext.S
+index bc02a21..2421ca4 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/powerpc64/swapcontext.S
++++ b/sysdeps/unix/sysv/linux/powerpc/powerpc64/swapcontext.S
+@@ -173,24 +173,34 @@ ENTRY(__novec_swapcontext)
+   lfd  fp0,(SIGCONTEXT_FP_REGS+(32*8))(r31)
+   lfd  fp31,(SIGCONTEXT_FP_REGS+(PT_R31*8))(r31)
+   lfd  fp30,(SIGCONTEXT_FP_REGS+(PT_R30*8))(r31)
++
+ # ifdef _ARCH_PWR6
+   /* Use the extended four-operand version of the mtfsf insn.  */
+-  mtfsf  0xff,fp0,1,0
+-# else
+   .machine push
+   .machine "power6"
++
++  mtfsf  0xff,fp0,1,0
++
++  .machine pop
++# else
+   /* Availability of DFP indicates a 64-bit FPSCR.  */
+   andi.  r6,r8,PPC_FEATURE_HAS_DFP
+   beq    5f
+-  /* Use the extended four-operand version of the mtfsf insn.  */
++
++  .machine push
++  .machine "power6"
++
+   mtfsf  0xff,fp0,1,0
++
++  .machine pop
++
+   b      6f
+   /* Continue to operate on the FPSCR as if it were 32-bits.  */
+ 5:
+   mtfsf  0xff,fp0
+ 6:
+-  .machine pop
+ #endif /* _ARCH_PWR6 */
++
+   lfd  fp29,(SIGCONTEXT_FP_REGS+(PT_R29*8))(r31)
+   lfd  fp28,(SIGCONTEXT_FP_REGS+(PT_R28*8))(r31)
+   lfd  fp27,(SIGCONTEXT_FP_REGS+(PT_R27*8))(r31)
+@@ -652,24 +662,34 @@ L(has_no_vec2):
+   lfd  fp0,(SIGCONTEXT_FP_REGS+(32*8))(r31)
+   lfd  fp31,(SIGCONTEXT_FP_REGS+(PT_R31*8))(r31)
+   lfd  fp30,(SIGCONTEXT_FP_REGS+(PT_R30*8))(r31)
++
+ # ifdef _ARCH_PWR6
+   /* Use the extended four-operand version of the mtfsf insn.  */
+-  mtfsf  0xff,fp0,1,0
+-# else
+   .machine push
+   .machine "power6"
++
++  mtfsf  0xff,fp0,1,0
++
++  .machine pop
++# else
+   /* Availability of DFP indicates a 64-bit FPSCR.  */
+   andi.  r6,r8,PPC_FEATURE_HAS_DFP
+   beq    7f
+-  /* Use the extended four-operand version of the mtfsf insn.  */
++
++  .machine push
++  .machine "power6"
++
+   mtfsf  0xff,fp0,1,0
++
++  .machine pop
++
+   b      8f
+   /* Continue to operate on the FPSCR as if it were 32-bits.  */
+ 7:
+   mtfsf  0xff,fp0
+ 8:
+-  .machine pop
+ #endif /* _ARCH_PWR6 */
++
+   lfd  fp29,(SIGCONTEXT_FP_REGS+(PT_R29*8))(r31)
+   lfd  fp28,(SIGCONTEXT_FP_REGS+(PT_R28*8))(r31)
+   lfd  fp27,(SIGCONTEXT_FP_REGS+(PT_R27*8))(r31)
+-- 
+2.9.3
+
