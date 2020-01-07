@@ -17,8 +17,15 @@ set(CMAKE_SYSTEM_FRAMEWORK_PATH
 )
 set(CMAKE_INSTALL_PREFIX $ENV{prefix})
 
-set(CMAKE_C_COMPILER /opt/bin/{{TARGET}-gcc)
+set(CMAKE_C_COMPILER   /opt/bin/{{TARGET}}-gcc)
 set(CMAKE_CXX_COMPILER /opt/bin/{{TARGET}}-g++)
+
+set(CMAKE_LINKER  /opt/bin/{{TARGET}}-ld)
+set(CMAKE_OBJCOPY /opt/bin/{{TARGET}}-objcopy)
+
+set(CMAKE_AR     /opt/{{TARGET}}/bin/{{TARGET}}-gcc-ar)
+set(CMAKE_NM     /opt/{{TARGET}}/bin/{{TARGET}}-gcc-nm)
+set(CMAKE_RANLIB /opt/{{TARGET}}/bin/{{TARGET}}-gcc-ranlib)
 
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)

@@ -17,8 +17,15 @@ set(CMAKE_SYSTEM_FRAMEWORK_PATH
 )
 set(CMAKE_INSTALL_PREFIX $ENV{prefix})
 
-set(CMAKE_C_COMPILER /opt/bin/clang)
+set(CMAKE_C_COMPILER   /opt/bin/clang)
 set(CMAKE_CXX_COMPILER /opt/bin/clang++)
+
+set(CMAKE_LINKER  /opt/bin/{{TARGET}}-ld)
+set(CMAKE_OBJCOPY /opt/bin/{{TARGET}}-objcopy)
+
+set(CMAKE_AR     /opt/bin/{{TARGET}}-ar)
+set(CMAKE_NM     /opt/bin/{{TARGET}}-nm)
+set(CMAKE_RANLIB /opt/bin/{{TARGET}}-ranlib)
 
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
