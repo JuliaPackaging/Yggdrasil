@@ -12,8 +12,17 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz"
-rootfs_hash = "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4"
+rootfs_sources = Dict(
+    v"3.9" => (
+        "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz",
+        "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
+    ),
+    v"3.7" => (
+        "https://github.com/gliderlabs/docker-alpine/raw/491dd665ca26a474277b266f2a2cc7e8fd8097bf/versions/library-3.7/x86_64/roootfs.tar.xz",
+        "d9a23a0cadcf6955846f072f16a8e36412f745227c357d0879dffc99a3dc0b72",
+    ),
+)
+rootfs_url, rootfs_hash = rootfs_sources[v"3.9"]
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_tarxz_path = joinpath(@__DIR__, "build", "rootfs.tar.xz")
@@ -242,7 +251,10 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-build_info = build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+ndARGS = filter(x -> !occursin("--deploy", x), ARGS)
+build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # Upload the shards
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)
+if any(occursin.("--deploy", ARGS))
+    upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)
+end
