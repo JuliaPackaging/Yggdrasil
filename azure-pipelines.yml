@@ -130,7 +130,7 @@ jobs:
 
 - job: build
   dependsOn: generator
-  timeoutInMinutes: 180
+  timeoutInMinutes: 240
   cancelTimeoutInMinutes: 2
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
