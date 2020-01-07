@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-include("../OpenBLAS/common.jl")
+include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
