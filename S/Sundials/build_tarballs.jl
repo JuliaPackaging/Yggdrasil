@@ -5,8 +5,8 @@ version = v"3.1.1"
 
 # Collection of sources required to build SundialsBuilder
 sources = [
-    "https://computation.llnl.gov/projects/sundials/download/sundials-3.1.1.tar.gz" =>
-    "a24d643d31ed1f31a25b102a1e1759508ce84b1e4739425ad0e18106ab471a24",
+    "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
+    "d03fca24d7adbfe52e05bd4e61340251e1cf56927540cc77a1ca817716091166",
     "./bundled",
 ]
 
