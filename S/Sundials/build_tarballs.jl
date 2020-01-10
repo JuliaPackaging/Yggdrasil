@@ -22,9 +22,9 @@ CMAKE_FLAGS+=(-DBLAS_ENABLE=ON -DLAPACK_ENABLE=ON)
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="-L${libdir} -lopenblas64_" -DLAPACK_LIBRARIES="-L${libdir} -lopenblas64_")
+    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas64_.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
 else
-    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="-L${libdir} -lopenblas" -DLAPACK_LIBRARIES="-L${libdir} -lopenblas")
+    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
 fi
 
 mkdir build
