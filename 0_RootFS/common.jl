@@ -3,7 +3,9 @@ using BinaryBuilder: TarballDependency, CompilerShard
 
 host_platform = Linux(:x86_64; libc=:musl)
 
-if !haskey(ENV, "GITHUB_TOKEN")
+const LOCAL = haskey(ENV, "YGGDRASIL_LOCAL")
+
+if !haskey(ENV, "GITHUB_TOKEN") && !LOCAL
     error("export GITHUB_TOKEN you dolt!")
 end
 
@@ -56,6 +58,7 @@ function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.
 end
 
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
+    LOCAL && return []
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = "$(name)-v$(BinaryBuilder.get_next_wrapper_version(name, version))"
     filename = BinaryBuilder.artifact_name(cs)
