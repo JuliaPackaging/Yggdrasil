@@ -7,17 +7,14 @@ version = v"0.5.7"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/peco/peco/archive/v0.5.7.tar.gz" =>
+    "https://github.com/peco/peco/archive/v$(version).tar.gz" =>
     "9bf4f10b3587270834380e1ea939625bd47eaa166bfabd050e66fad3ffd8f9b0",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/peco-*/
-make build
-go build cmd/peco/peco.go 
-mkdir -p ${bindir}
-cp peco ${bindir}
+go build -o ${bindir}/peco${exeext} cmd/peco/peco.go
 """
 
 # These are the platforms we will build for by default, unless further
@@ -31,7 +28,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
