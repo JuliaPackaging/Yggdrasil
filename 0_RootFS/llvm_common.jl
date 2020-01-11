@@ -87,7 +87,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
     # tell libcxx to use compiler-rt
-    CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
+    if [[ "${LLVM_MAJ_VER}" == "9" ]]; then
+        CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
+    fi
 
     # Tell compiler-rt to generate builtins for all the supported arches, and to use our unwinder
     CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
@@ -98,6 +100,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_SANITIZERS_TO_BUILD=none)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=OFF)
 
     # Build!
     cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
