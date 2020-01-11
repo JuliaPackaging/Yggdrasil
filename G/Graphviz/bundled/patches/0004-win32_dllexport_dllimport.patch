@@ -1,0 +1,265 @@
+--- a/lib/cdt/cdt.h
++++ b/lib/cdt/cdt.h
+@@ -15,7 +15,7 @@
+ #include <stddef.h>	/* size_t */
+ #include <string.h>
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #   ifdef EXPORT_CDT
+ #       define CDT_API __declspec(dllexport)
+ #   else
+--- a/lib/cgraph/cgraph.h
++++ b/lib/cgraph/cgraph.h
+@@ -21,7 +21,7 @@
+ extern "C" {
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #   ifdef EXPORT_CGRAPH
+ #       define CGRAPH_API __declspec(dllexport)
+ #   else
+--- a/lib/cgraph/cghdr.h
++++ b/lib/cgraph/cghdr.h
+@@ -19,7 +19,7 @@
+ #define EXTERN extern
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #   ifdef EXPORT_CGHDR
+ #       define CGHDR_API __declspec(dllexport)
+ #   else
+--- a/lib/cgraph/agxbuf.h
++++ b/lib/cgraph/agxbuf.h
+@@ -18,7 +18,7 @@
+ #ifndef         AGXBUF_H
+ #define         AGXBUF_H
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #   ifdef EXPORT_AGXBUF
+ #       define AGXBUF_API __declspec(dllexport)
+ #   else
+--- a/lib/gvc/gvc.h
++++ b/lib/gvc/gvc.h
+@@ -28,7 +28,7 @@
+ #endif
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #undef extern
+ #define extern __declspec(dllimport)
+--- a/lib/gvc/gvplugin_loadimage.h
++++ b/lib/gvc/gvplugin_loadimage.h
+@@ -27,7 +27,7 @@
+ #endif
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/gvc/gvio.h
++++ b/lib/gvc/gvio.h
+@@ -27,7 +27,7 @@
+ #endif
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #undef extern
+ #define extern __declspec(dllimport)
+--- a/lib/gvc/gvcext.h
++++ b/lib/gvc/gvcext.h
+@@ -64,7 +64,7 @@
+     typedef struct gvplugin_available_s gvplugin_available_t;
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ __declspec(dllimport) lt_symlist_t lt_preloaded_symbols[];
+ #else
+@@ -77,11 +77,11 @@
+ /*end visual studio*/
+ 
+ 
+-#ifndef _WIN32
++#ifndef _MSC_VER
++#if !defined(LTDL_H) && !defined(__cplusplus)
+ #if defined(GVDLL)
+ 	__declspec(dllexport) lt_symlist_t lt_preloaded_symbols[];
+ #else
+-#if !defined(LTDL_H)
+ 	extern lt_symlist_t lt_preloaded_symbols[];
+ #endif
+ #endif
+--- a/lib/common/geomprocs.h
++++ b/lib/common/geomprocs.h
+@@ -24,7 +24,7 @@
+ 
+ #include "geom.h"
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifdef GVDLL
+ #define extern __declspec(dllexport)
+ #else
+--- a/lib/common/globals.h
++++ b/lib/common/globals.h
+@@ -38,7 +38,7 @@
+ #endif
+ #endif
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/common/render.h
++++ b/lib/common/render.h
+@@ -57,7 +57,7 @@
+     } epsf_t;
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/xdot/xdot.h
++++ b/lib/xdot/xdot.h
+@@ -21,7 +21,7 @@
+ extern "C" {
+ #endif
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #   ifdef EXPORT_XDOT
+ #       define XDOT_API __declspec(dllexport)
+ #   else
+--- a/lib/pathplan/pathutil.h
++++ b/lib/pathplan/pathutil.h
+@@ -32,7 +32,7 @@
+ #endif
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef PATHPLAN_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/pathplan/vis.h
++++ b/lib/pathplan/vis.h
+@@ -46,7 +46,7 @@
+ 	/* this is computed from the above */
+ 	array2 vis;
+     };
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef PATHPLAN_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/pack/pack.h
++++ b/lib/pack/pack.h
+@@ -58,7 +58,7 @@
+     } pack_info;
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/common/utils.h
++++ b/lib/common/utils.h
+@@ -20,7 +20,7 @@
+ 
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/common/pointset.h
++++ b/lib/common/pointset.h
+@@ -30,7 +30,7 @@
+ #endif
+ 
+ /*visual studio*/
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #undef extern
+ #define extern __declspec(dllimport)
+--- a/lib/common/memory.h
++++ b/lib/common/memory.h
+@@ -45,7 +45,7 @@
+ #ifdef GVDLL
+ #define extern __declspec(dllexport)
+ #else
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #ifndef GVC_EXPORTS
+ #define extern __declspec(dllimport)
+ #endif
+--- a/lib/edgepaint/lab_gamut.h
++++ b/lib/edgepaint/lab_gamut.h
+@@ -20,7 +20,7 @@
+ } char_color_lab;
+ 
+ /*visual studio*/
+-#if defined(_WIN32) && !defined(LAB_GAMUT_EXPORTS)
++#if defined(_MSC_VER) && !defined(LAB_GAMUT_EXPORTS)
+ #define extern __declspec(dllimport)
+ #endif
+ /*end visual studio*/
+--- a/cmd/smyrna/smyrnadefs.h
++++ b/cmd/smyrna/smyrnadefs.h
+@@ -18,7 +18,7 @@
+ #include "windows.h"
+ #endif
+ #endif
+-#ifdef	_WIN32			//this  is needed on _WIN32 to get libglade see the callback
++#ifdef	_MSC_VER			//this  is needed with MS Visual Studio to get libglade see the callback
+ #define _BB  __declspec(dllexport)
+ #else
+ #define _BB
+@@ -39,7 +39,7 @@
+ extern "C" {
+ #endif
+ 
+-#ifdef	_WIN32			//this is needed on _WIN32 to get libglade see the callback
++#ifdef	_MSC_VER			//this is needed with MS Visual Code to get libglade see the callback
+ #define _BB  __declspec(dllexport)
+ #else
+ #define _BB
+--- a/cmd/smyrna/gui/toolboxcallbacks.h
++++ b/cmd/smyrna/gui/toolboxcallbacks.h
+@@ -15,7 +15,7 @@
+ #define TOOLBOXCALLBACKS_H
+ #include <gtk/gtk.h>
+ #include "gui.h"
+-#if defined(_WIN32)
++#if defined(_MSC_VER)
+ #define _BB  __declspec(dllexport)
+ #else
+ #define _BB /**/
+--- a/cmd/smyrna/gui/callbacks.h
++++ b/cmd/smyrna/gui/callbacks.h
+@@ -21,7 +21,7 @@
+ extern "C" {
+ #endif
+ 
+-#ifdef	_WIN32			//this shit is needed on _WIN32 to get libglade see the callback
++#ifdef	_MSC_VER			//this shit is needed with MS Visual Studio to get libglade see the callback
+ #define _BB  __declspec(dllexport)
+ #else
+ #define _BB

@@ -1,0 +1,11 @@
+--- a/lib/sfio/sfsetbuf.c
++++ b/lib/sfio/sfsetbuf.c
+@@ -154,7 +154,7 @@
+ 	if (fstat((int) f->file, &st) < 0)
+ 	    f->here = -1;
+ 	else {
+-#if defined(HAVE_SYS_STAT_H) && _stat_blksize	/* preferred io block size */
++#if defined(HAVE_SYS_STAT_H) && !defined(__MINGW32__) && _stat_blksize	/* preferred io block size */
+ 	    if ((blksize = (ssize_t) st.st_blksize) > 0)
+ 		while ((blksize + (ssize_t) st.st_blksize) <= SF_PAGE)
+ 		    blksize += (ssize_t) st.st_blksize;

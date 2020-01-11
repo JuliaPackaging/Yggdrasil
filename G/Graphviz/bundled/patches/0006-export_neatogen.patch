@@ -1,0 +1,38 @@
+--- a/lib/neatogen/neatoprocs.h
++++ b/lib/neatogen/neatoprocs.h
+@@ -19,6 +19,12 @@
+ #endif
+ #include "adjust.h"
+ 
++#ifdef _WIN32
++#   define NEATOGEN_API __declspec(dllexport)
++#else
++#   define NEATOGEN_API
++#endif
++
+     extern void avoid_cycling(graph_t *, Agnode_t *, double *);
+     extern int checkStart(graph_t * G, int nG, int);
+     extern Agnode_t *choose_node(graph_t *, int);
+@@ -41,11 +47,11 @@
+     extern void makeSpline(graph_t*, edge_t *, Ppoly_t **, int, boolean);
+     extern void make_spring(graph_t *, Agnode_t *, Agnode_t *, double);
+     extern void move_node(graph_t *, int, Agnode_t *);
+-    extern int init_nop(graph_t * g, int);
++    NEATOGEN_API extern int init_nop(graph_t * g, int);
+     extern void neato_cleanup(graph_t * g);
+     extern node_t *neato_dequeue(void);
+     extern void neato_enqueue(node_t *);
+-    extern void neato_init_node(node_t * n);
++    NEATOGEN_API extern void neato_init_node(node_t * n);
+     extern void neato_layout(Agraph_t * g);
+     extern int Plegal_arrangement(Ppoly_t ** polys, int n_polys);
+     extern void randompos(Agnode_t *, int);
+@@ -66,7 +72,7 @@
+     extern void neato_translate(Agraph_t * g);
+     extern boolean neato_set_aspect(graph_t * g);
+     extern void toggle(int);
+-    extern int user_pos(Agsym_t *, Agsym_t *, Agnode_t *, int);
++    NEATOGEN_API extern int user_pos(Agsym_t *, Agsym_t *, Agnode_t *, int);
+     extern double **new_array(int i, int j, double val);
+     extern void free_array(double **rv);
+     extern int matinv(double **A, double **Ainv, int n);

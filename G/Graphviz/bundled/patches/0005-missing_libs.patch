@@ -1,0 +1,51 @@
+--- a/plugin/dot_layout/Makefile.am
++++ b/plugin/dot_layout/Makefile.am
+@@ -22,7 +22,8 @@
+ 	gvplugin_dot_layout.c \
+ 	gvlayout_dot_layout.c
+ libgvplugin_dot_layout_C_la_LIBADD = \
+-	$(top_builddir)/lib/dotgen/libdotgen_C.la
++	$(top_builddir)/lib/dotgen/libdotgen_C.la \
++	$(top_builddir)/lib/ortho/libortho_C.la
+ 
+ libgvplugin_dot_layout_la_LDFLAGS = -version-info $(GVPLUGIN_VERSION_INFO)
+ libgvplugin_dot_layout_la_SOURCES = $(libgvplugin_dot_layout_C_la_SOURCES)
+--- a/plugin/neato_layout/Makefile.am
++++ b/plugin/neato_layout/Makefile.am
+@@ -27,6 +27,7 @@
+ 	$(top_builddir)/lib/patchwork/libpatchwork_C.la \
+ 	$(top_builddir)/lib/osage/libosage_C.la \
+ 	$(top_builddir)/lib/fdpgen/libfdpgen_C.la \
++	$(top_builddir)/lib/ortho/libortho_C.la \
+ 	$(top_builddir)/lib/sparse/libsparse_C.la \
+ 	$(top_builddir)/lib/rbtree/librbtree_C.la \
+ 	$(top_builddir)/lib/circogen/libcircogen_C.la
+--- a/cmd/gvmap/Makefile.am
++++ b/cmd/gvmap/Makefile.am
+@@ -42,6 +42,7 @@
+ 	$(top_builddir)/lib/common/libcommon_C.la \
+ 	$(top_builddir)/lib/edgepaint/liblab_gamut.la \
+ 	$(top_builddir)/lib/cgraph/libcgraph.la \
++	$(top_builddir)/lib/gvc/libgvc.la \
+ 	$(GTS_LIBS) -lm
+ 
+ cluster_LDADD = \
+@@ -54,6 +55,7 @@
+ 	$(top_builddir)/lib/common/libcommon_C.la \
+ 	$(top_builddir)/lib/edgepaint/liblab_gamut.la \
+ 	$(top_builddir)/lib/cgraph/libcgraph.la \
++	$(top_builddir)/lib/gvc/libgvc.la \
+ 	$(GTS_LIBS) -lm
+ 
+ gvmap.sh :
+--- a/cmd/gvmap/Makefile.in
++++ b/cmd/gvmap/Makefile.in
+@@ -722,7 +722,7 @@
+ 
+ gvmap$(EXEEXT): $(gvmap_OBJECTS) $(gvmap_DEPENDENCIES) $(EXTRA_gvmap_DEPENDENCIES) 
+ 	@rm -f gvmap$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(gvmap_OBJECTS) $(gvmap_LDADD) $(LIBS)
++	$(AM_V_CCLD)$(LINK) $(gvmap_OBJECTS) $(gvmap_LDADD) $(EXPAT_LIBS) $(LIBS)
+ install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
+ 	@$(NORMAL_INSTALL)
+ 	@list='$(dist_bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
