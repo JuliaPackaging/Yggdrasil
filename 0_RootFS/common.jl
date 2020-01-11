@@ -58,7 +58,7 @@ function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.
 end
 
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
-    LOCAL && return []
+    LOCAL && return nothing
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = "$(name)-v$(BinaryBuilder.get_next_wrapper_version(name, version))"
     filename = BinaryBuilder.artifact_name(cs)
@@ -119,5 +119,4 @@ function build_tarballs(project_path::String, args::String...; deploy=false, reg
         jrun("build_tarballs.jl", args...; deploy=deploy, register=register)
     end
 end
-
 
