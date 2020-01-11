@@ -1,0 +1,11 @@
+--- a/src/pcre2posix.h
++++ b/src/pcre2posix.h
+@@ -119,7 +119,7 @@
+ export settings are needed, and are set in pcre2posix.c before including this
+ file. */
+ 
+-#if defined(_WIN32) && !defined(PCRE2_STATIC) && !defined(PCRE2POSIX_EXP_DECL)
++#if defined(_MSC_VER) && !defined(PCRE2_STATIC) && !defined(PCRE2POSIX_EXP_DECL)
+ #  define PCRE2POSIX_EXP_DECL  extern __declspec(dllimport)
+ #  define PCRE2POSIX_EXP_DEFN  __declspec(dllimport)
+ #endif

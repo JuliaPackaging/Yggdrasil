@@ -7,11 +7,13 @@ version = v"8.42"
 sources = [
     "https://ftp.pcre.org/pub/pcre/pcre-$(version.major).$(version.minor).tar.bz2" =>
     "2cd04b7c887808be030254e8d77de11d3fe9d4505c39d4b15d2664ffe8bf9301",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pcre-*/
+atomic_patch -p1 ../patches/dllimport.patch
 ./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1

@@ -1,0 +1,11 @@
+--- a/pcreposix.h
++++ b/pcreposix.h
+@@ -114,7 +114,7 @@
+ export settings are needed, and are set in pcreposix.c before including this
+ file. */
+ 
+-#if defined(_WIN32) && !defined(PCRE_STATIC) && !defined(PCREPOSIX_EXP_DECL)
++#if defined(_MSC_VER) && !defined(PCRE_STATIC) && !defined(PCREPOSIX_EXP_DECL)
+ #  define PCREPOSIX_EXP_DECL  extern __declspec(dllimport)
+ #  define PCREPOSIX_EXP_DEFN  __declspec(dllimport)
+ #endif

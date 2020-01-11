@@ -7,6 +7,7 @@ version = v"10.31"
 sources = [
     "https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.bz2" =>
     "e07d538704aa65e477b6a392b32ff9fc5edf75ab9a40ddfc876186c4ff4d68ac",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,8 @@ update_configure_scripts
 
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
+
+atomic_patch -p1 ../patches/dllimport.patch
 
 ./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties --enable-jit
 make -j${nproc} V=1
@@ -35,7 +38,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpcre", :libpcre)
+    LibraryProduct(["libpcre2-8", "libpcre2"], :libpcre2)
 ]
 
 # Dependencies that must be installed before this package can be built
