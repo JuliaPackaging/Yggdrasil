@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
 update_configure_scripts
-./configure --enable-shared --enable-fast-install=no  --prefix=$prefix --host=$target --build=x86_64-linux-gnu
+./configure --enable-shared --enable-fast-install=no  --prefix=$prefix --host=$target --build=${MACHTYPE}
 make -j${nproc}
 make install module_ext=mod
 
