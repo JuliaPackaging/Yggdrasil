@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
 update_configure_scripts
 ./configure --enable-shared --enable-fast-install=no  --prefix=$prefix --host=$target --build=x86_64-linux-gnu
-make
-make install
+make -j${nproc}
+make install module_ext=mod
 
 install_license $WORKSPACE/srcdir/LBNL-BSD-License.docx
 """
