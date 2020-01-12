@@ -1,3 +1,7 @@
+# We need to disable ccache in this build, because ccache doesn't support
+# Fortran 90 and modules would not be built otherwise.
+ENV["BINARYBUILDER_USE_CCACHE"] = "false"
+
 using BinaryBuilder
 
 name = "QD"
@@ -14,8 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
 update_configure_scripts
-./configure --enable-shared --enable-fast-install=no  --prefix=$prefix --host=$target --build=${MACHTYPE}
-make -j${nproc}
+./configure --enable-shared --enable-fast-install=no --prefix=$prefix --host=$target --build=${MACHTYPE}
+make -j${nproc} module_ext=mod
 make install module_ext=mod
 
 install_license $WORKSPACE/srcdir/LBNL-BSD-License.docx
