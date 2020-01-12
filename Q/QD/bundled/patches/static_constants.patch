@@ -1,0 +1,48 @@
+diff --git a/include/qd/dd_real.h b/include/qd/dd_real.h
+index dda26ae..a968a0f 100644
+--- a/include/qd/dd_real.h
++++ b/include/qd/dd_real.h
+@@ -80,22 +80,22 @@ struct QD_API dd_real {
+   double _hi() const { return x[0]; }
+   double _lo() const { return x[1]; }
+ 
+-  const dd_real _2pi;
+-  const dd_real _pi;
+-  const dd_real _3pi4;
+-  const dd_real _pi2;
+-  const dd_real _pi4;
+-  const dd_real _e;
+-  const dd_real _log2;
+-  const dd_real _log10;
+-  const dd_real _nan;
+-  const dd_real _inf;
+-
+-  const double _eps;
+-  const double _min_normalized;
+-  const dd_real _max;
+-  const dd_real _safe_max;
+-  const int _ndigits;
++  static const dd_real _2pi;
++  static const dd_real _pi;
++  static const dd_real _3pi4;
++  static const dd_real _pi2;
++  static const dd_real _pi4;
++  static const dd_real _e;
++  static const dd_real _log2;
++  static const dd_real _log10;
++  static const dd_real _nan;
++  static const dd_real _inf;
++
++  static const double _eps;
++  static const double _min_normalized;
++  static const dd_real _max;
++  static const dd_real _safe_max;
++  static const int _ndigits;
+ 
+   bool isnan() const { return QD_ISNAN(x[0]) || QD_ISNAN(x[1]); }
+   bool isfinite() const { return QD_ISFINITE(x[0]); }
+@@ -287,3 +287,4 @@ QD_API std::istream& operator>>(std::istream &s, dd_real &a);
+ #endif
+ 
+ #endif /* _QD_DD_REAL_H */
++

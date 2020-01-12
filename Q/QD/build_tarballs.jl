@@ -13,6 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
+atomic_patch -p1 ../patches/static_constants.patch
+
 update_configure_scripts
 ./configure --enable-shared --enable-fast-install=no  --prefix=$prefix --host=$target --build=x86_64-linux-gnu
 make -j${nproc}
