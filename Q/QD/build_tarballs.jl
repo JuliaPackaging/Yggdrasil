@@ -18,6 +18,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
 update_configure_scripts
+
+if [[ "${target}" == *-freebsd* ]]; then
+    # Regenerate the configure to be able to build the shared libraries
+    autoreconf -vi
+fi
+
 ./configure --enable-shared --enable-fast-install=no --prefix=$prefix --host=$target --build=${MACHTYPE}
 make -j${nproc} module_ext=mod
 make install module_ext=mod
