@@ -1,0 +1,19 @@
+diff --git a/llvm/include/llvm/ADT/SCCIterator.h b/llvm/include/llvm/ADT/SCCIterator.h
+--- a/llvm/include/llvm/ADT/SCCIterator.h
++++ b/llvm/include/llvm/ADT/SCCIterator.h
+@@ -133,9 +133,11 @@
+   /// This informs the \c scc_iterator that the specified \c Old node
+   /// has been deleted, and \c New is to be used in its place.
+   void ReplaceNode(NodeRef Old, NodeRef New) {
+-    assert(nodeVisitNumbers.count(Old) && "Old not in scc_iterator?");
+-    nodeVisitNumbers[New] = nodeVisitNumbers[Old];
+-    nodeVisitNumbers.erase(Old);
++    auto it = nodeVisitNumbers.find(Old);
++    assert(it != nodeVisitNumbers.end() && "Old not in scc_iterator?");
++    unsigned OldVisitNumber = it->second;
++    nodeVisitNumbers.erase(it);
++    nodeVisitNumbers[New] = OldVisitNumber;
+   }
+ };
+ 
+
