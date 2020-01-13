@@ -18,8 +18,8 @@ rootfs_sources = Dict(
         "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
     ),
     v"3.7" => (
-        "https://github.com/gliderlabs/docker-alpine/raw/491dd665ca26a474277b266f2a2cc7e8fd8097bf/versions/library-3.7/x86_64/roootfs.tar.xz",
-        "d9a23a0cadcf6955846f072f16a8e36412f745227c357d0879dffc99a3dc0b72",
+        "https://github.com/gliderlabs/docker-alpine/raw/491dd665ca26a474277b266f2a2cc7e8fd8097bf/versions/library-3.7/x86_64/rootfs.tar.xz",
+        "332effbc32ad17b380955b7e513fbe5f188b104c00e602df02af038317b18d7f",
     ),
 )
 rootfs_url, rootfs_hash = rootfs_sources[v"3.9"]
@@ -93,8 +93,7 @@ Core.eval(BinaryBuilder, :(bootstrap_list = Symbol[:rootfs]))
 
 # Sources we build from
 sources = [
-    "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz" =>
-    "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
+    rootfs_url => rootfs_hash,
     # Objconv is very useful
     "https://github.com/staticfloat/objconv/archive/v2.49.tar.gz" =>
     "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f",
