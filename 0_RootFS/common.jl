@@ -55,9 +55,36 @@ function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.
     end
 end
 
+function get_next_shard_tag(cs)
+    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
+    meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.platform)
+    if meta === nothing
+        return "$(cs.name)-v$(cs.version)"
+    end
+
+    last_tag = basename(dirname(meta["download"][1]["url"]))
+    if !startswith(last_tag, "$(cs.name)-v")
+        error("Invalid last tag: $(last_tag)")
+    end
+
+    last_version = VersionNumber(last_tag[length(cs.name)+2:end])
+    build_number = 0
+    if isa(last_version.build, Tuple{<:UInt})
+        build_number = last_version.build[1] + 1
+    end
+    next_version = VersionNumber(
+        last_version.major,
+        last_version.minor,
+        last_version.patch,
+        (build_number,),
+    )
+    return "$(cs.name)-v$(next_version)"
+end
+
+
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
-    tag = "$(name)-v$(BinaryBuilder.get_next_wrapper_version(name, version))"
+    tag = get_next_shard_tag(cs)
     filename = BinaryBuilder.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
