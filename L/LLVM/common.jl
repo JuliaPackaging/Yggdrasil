@@ -46,6 +46,15 @@ for f in $WORKSPACE/srcdir/libcxx_patches/*.patch; do
 done
 fi
 
+# Patches from the monorepo
+if [ -d $WORKSPACE/srcdir/patches ]; then
+cd ${WORKSPACE}/srcdir/llvm-project
+for f in $WORKSPACE/srcdir/patches/*.patch; do
+    echo "Applying patch ${f}"
+    atomic_patch -p1 ${f}
+done
+fi
+
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
