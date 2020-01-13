@@ -40,7 +40,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libqd_f_main", :libqd_f_main),
-    LibraryProduct("libqdmod", :libqdmod),
+    LibraryProduct("libqdmod", :libqdmod, dont_dlopen = true),
     LibraryProduct("libqd", :libqd)
 ]
 
