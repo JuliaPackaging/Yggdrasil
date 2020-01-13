@@ -17,8 +17,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
-atomic_patch -p1 ../patches/static_constants.patch
-
 update_configure_scripts
 
 if [[ "${target}" == *-freebsd* ]]; then
