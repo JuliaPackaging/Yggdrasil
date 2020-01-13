@@ -43,6 +43,7 @@ dependencies = [
     "Libtiff_jll",
     "Zlib_jll",
     "Leptonica_jll",
+    "CompilerSupportLibraries_jll",
     # Optional dependencies
     # "ICU_jll",
     "Cairo_jll",
