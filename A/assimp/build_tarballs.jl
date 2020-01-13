@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "assimp"
-version = v"5.0.0"
+version = v"5.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/assimp/assimp/archive/v5.0.0.tar.gz" =>
-    "b0110a91650d6bb4000e3d5c2185bf77b0ff0a2e7a284bc2c4af81b33988b63c",
+    "https://github.com/assimp/assimp.git" =>
+    "8f0c6b04b2257a520aaab38421b2e090204b69df",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd assimp-5.0.0/
+cd assimp-5.0.1/
 mkdir build && cd build
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
 CMAKE_FLAGS="${CMAKE_FLAGS} -DASSIMP_BUILD_ASSIMP_TOOLS=false"
@@ -28,7 +28,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -41,4 +41,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
