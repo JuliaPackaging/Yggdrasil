@@ -28,17 +28,20 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     raw"""
     apk add build-base python-dev linux-headers musl-dev zlib-dev
 
-    # We need the XML2 and Zlib libraries in our LLVMBootstrap artifact,
+    # We need the XML2, iconv, Zlib libraries in our LLVMBootstrap artifact,
     # and we also need them in target-prefixed directories, so they stick
     # around in `/opt/${target}/${target}/lib64` when mounted.
     mkdir -p ${prefix}/${target}/lib64
     # First, copy in the real files:
-    cp -a $(realpath ${libdir}/libxml2.so) ${prefix}/${target}/lib64
-    cp -a $(realpath ${libdir}/libz.so) ${prefix}/${target}/lib64
+    cp -a $(realpath ${libdir}/libxml2.so)  ${prefix}/${target}/lib64
+    cp -a $(realpath ${libdir}/libiconv.so) ${prefix}/${target}/lib64
+    cp -a $(realpath ${libdir}/libz.so)     ${prefix}/${target}/lib64
 
     # Then create the symlinks
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
+    ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so
+    ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
@@ -87,7 +90,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
     # tell libcxx to use compiler-rt
-    CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
+    if [[ "${LLVM_MAJ_VER}" == "9" ]]; then
+        CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
+    fi
 
     # Tell compiler-rt to generate builtins for all the supported arches, and to use our unwinder
     CMAKE_FLAGS+=(-DCOMPILER_RT_DEFAULT_TARGET_ONLY=OFF)
@@ -98,6 +103,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_SANITIZERS_TO_BUILD=none)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=OFF)
 
     # Build!
     cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
@@ -126,6 +132,7 @@ function llvm_dependencies(; kwargs...)
     return [
         "Zlib_jll",
         "XML2_jll",
+	# transitive dependency libiconv
     ]
 end
 
