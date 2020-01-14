@@ -5,7 +5,7 @@ version = v"3.1.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    "https://github.com/mintty/mintty/archive/v$(version).tar.gz" =>
+    "https://github.com/mintty/mintty/archive/$(version).tar.gz" =>
     "3dcb536a40298d454652011bc829a905330ef93e740e096331473d443d858367",
 ]
 
