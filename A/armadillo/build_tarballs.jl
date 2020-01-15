@@ -16,8 +16,8 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_INSTALL_PREFIX=${prefix}
        -DBUILD_SHARED_LIBS=ON)
 
-# Slightly different handling is needed on different platforms.
-if [[ "${nbits}" == 64 ]]; then
+# Slightly different handling is needed on x64 Windows.
+if [[ "$target" == "x86_64*mingw*" ]]; then
     FLAGS+=(-Dopenblas_LIBRARY="${libdir}/libopenblas64_.${dlext}")
 fi
 
