@@ -9,30 +9,21 @@ sources = [
     ("http://sourceforge.net/projects/arma/files/armadillo-9.800.3.tar.xz" =>
         "a481e1dc880b7cb352f8a28b67fe005dc1117d4341277f12999a2355d40d7599")]
 script = raw"""
-    cd ${WORKSPACE}/srcdir/armadillo-*/
+cd ${WORKSPACE}/srcdir/armadillo-*/
+mkdir build && cd build
 
-    # Slightly different handling is needed on different platforms.
-    if [[ $target == i686*mingw* ]]
-    then
-        cmake \
-            -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/destdir/ \
-            .
-    elif [[ $target == x86_64*mingw* ]]
-    then
-        cmake \
-            -Dopenblas_LIBRARY=$prefix/lib/libopenblas64_.a \
-            -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/destdir/ \
-            .
-    else
-        cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/destdir/ \
-            .
-    fi
+FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_INSTALL_PREFIX=${prefix}
+       -DBUILD_SHARED_LIBS=ON)
 
-    make install
+# Slightly different handling is needed on different platforms.
+if [[ "${nbits}" == 64 ]]; then
+    FLAGS+=(-Dopenblas_LIBRARY="${libdir}/libopenblas64_.${dlext}")
+fi
+
+cmake .. "${FLAGS[@]}"
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
