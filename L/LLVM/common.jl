@@ -11,6 +11,8 @@ const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
+export SUPER_VERBOSE=1 
+
 cd ${WORKSPACE}/srcdir/llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
 
@@ -204,7 +206,7 @@ fi
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
-ninja -j${nproc} -v
+ninja -j${nproc} -vv
 
 # Install!
 ninja install -j${nproc}
