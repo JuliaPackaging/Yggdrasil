@@ -15,14 +15,12 @@ script = raw"""
     if [[ $target == i686*mingw* ]]
     then
         cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/destdir/ \
             .
     elif [[ $target == x86_64*mingw* ]]
     then
         cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
             -Dopenblas_LIBRARY=$prefix/lib/libopenblas64_.a \
             -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/destdir/ \
