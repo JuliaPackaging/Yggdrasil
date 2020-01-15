@@ -57,7 +57,7 @@ end
 
 function get_next_shard_tag(cs)
     artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
-    meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.platform)
+    meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.host)
     if meta === nothing
         return "$(cs.name)-v$(cs.version)"
     end
@@ -76,6 +76,7 @@ function get_next_shard_tag(cs)
         last_version.major,
         last_version.minor,
         last_version.patch,
+        (),
         (build_number,),
     )
     return "$(cs.name)-v$(next_version)"
