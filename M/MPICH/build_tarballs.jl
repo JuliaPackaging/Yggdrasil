@@ -21,7 +21,7 @@ make "${flags[@]}" install
 """
 
 # Windows and MUSL are not supported
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
+#platforms = filter(p -> !isa(p, Windows), supported_platforms())
 platforms = filter(p -> !(libc(p) == :musl), platforms)
 
 products = [
@@ -32,4 +32,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
