@@ -5,7 +5,7 @@ version = v"2019.0.117"
 
 sources_win32 = [
     "https://anaconda.org/intel/mkl/2019.1/download/win-32/mkl-2019.1-intel_144.tar.bz2" =>
-    "6a765f0243843d1fde02f0de3c10b0de7848467b66560d0bc0bb5c47fbebb976"
+    "6a765f0243843d1fde02f0de3c10b0de7848467b66560d0bc0bb5c47fbebb976",
 ]
 
 sources_win64 = [
