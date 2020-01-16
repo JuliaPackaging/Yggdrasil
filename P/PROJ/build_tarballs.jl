@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "PROJ"
-version = v"6.2.1"
+version = v"6.3.0"
 
 # Collection of sources required to build PROJ
 sources = [
     "https://download.osgeo.org/proj/proj-$version.tar.gz" =>
-    "7f2e0fe63312f1e766057cceb53dc9585c4a335ff6641de45696dbd40d17c340",
+    "68ce9ba0005d442c2c1d238a3b9bc6654c358159b4af467b91e8d5b407c79c77",
 ]
 
 # Bash recipe for building across all platforms
@@ -36,8 +36,7 @@ cmake --build .
 make install
 """
 
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
