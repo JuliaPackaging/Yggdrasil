@@ -250,10 +250,10 @@ function configure(version; assert=false)
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
-        ExecutableProduct("llvm-config", :llvm_config, "tools")
-        ExecutableProduct("clang", :clang, "tools")
-        ExecutableProduct("opt", :opt, "tools")
-        ExecutableProduct("llc", :llc, "tools")
+        ExecutableProduct("llvm-config", :llvm_config, "tools"),
+        ExecutableProduct("clang", :clang, "tools"),
+        ExecutableProduct("opt", :opt, "tools"),
+        ExecutableProduct("llc", :llc, "tools"),
     ]
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
