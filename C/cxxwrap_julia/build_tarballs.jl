@@ -34,7 +34,6 @@ platforms = [
     MacOS(:x86_64),
 ]
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcxxwrap_julia", :libcxxwrap_julia),
