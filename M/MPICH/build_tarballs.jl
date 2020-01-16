@@ -16,7 +16,7 @@ atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-
 pushd src/mpi/romio
 autoreconf -vi
 popd
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-dependency-tracking --disable-fortran --docdir=/tmp
+./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-dependency-tracking --disable-fortran --docdir=/tmp --enable-timer-type=gettimeofday
 
 # Build the library
 make "${flags[@]}" -j${nproc}
@@ -25,9 +25,7 @@ make "${flags[@]}" -j${nproc}
 make "${flags[@]}" install
 """
 
-# Windows and MUSL are not supported
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
-platforms = filter(p -> !(libc(p) == :musl), platforms)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libmpi", :libmpi)
