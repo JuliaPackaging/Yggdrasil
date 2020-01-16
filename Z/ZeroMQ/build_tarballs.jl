@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "ZeroMQ"
-version = v"4.3.1"
+version = v"4.3.2"
 
 # Collection of sources required to build ZMQ
 sources = [
     "https://github.com/zeromq/libzmq.git" =>
-    "2cb1240db64ce1ea299e00474c646a2453a8435b",
+    "a84ffa12b2eb3569ced199660bac5ad128bff1f0",
 ]
 
 # Bash recipe for building across all platforms
