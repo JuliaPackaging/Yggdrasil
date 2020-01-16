@@ -40,7 +40,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgeos_c", :libgeos),
-    LibraryProduct(["libgeos", "libgeos-3-8"], :libgeos_cpp)
+    LibraryProduct(["libgeos", "libgeos-$(version.major)-$(version.minor)"], :libgeos_cpp)
 ]
 
 # Dependencies that must be installed before this package can be built
