@@ -56,17 +56,17 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 
 if should_build_platform("i686-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_win32, script, [Windows(:i686)], products, dependencies)
+    build_tarballs(non_reg_ARGS, name, version, sources_win32, script, [Windows(:i686)], products, dependencies; lazy_artifacts = true)
 end
 if should_build_platform("x86_64-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_win64, script, [Windows(:x86_64)], products, dependencies)
+    build_tarballs(non_reg_ARGS, name, version, sources_win64, script, [Windows(:x86_64)], products, dependencies; lazy_artifacts = true)
 end
 if should_build_platform("x86_64-apple-darwin14")
-    build_tarballs(non_reg_ARGS, name, version, sources_macos, script, [MacOS(:x86_64)], products, dependencies)
+    build_tarballs(non_reg_ARGS, name, version, sources_macos, script, [MacOS(:x86_64)], products, dependencies; lazy_artifacts = true)
 end
 if should_build_platform("i686-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version, sources_linux32, script, [Linux(:i686)], products, dependencies)
+    build_tarballs(non_reg_ARGS, name, version, sources_linux32, script, [Linux(:i686)], products, dependencies; lazy_artifacts = true)
 end
 if should_build_platform("x86_64-linux-gnu")
-    build_tarballs(ARGS, name, version, sources_linux64, script, [Linux(:x86_64)], products, dependencies)
+    build_tarballs(ARGS, name, version, sources_linux64, script, [Linux(:x86_64)], products, dependencies; lazy_artifacts = true)
 end
