@@ -10,7 +10,7 @@ sources_win32 = [
 
 sources_win64 = [
     "https://anaconda.org/intel/mkl/2019.1/download/win-64/mkl-2019.1-intel_144.tar.bz2" =>
-    "b25cdece9ba297be8f28ac62fb9b2fd8b6432b2635094c21cd845f9dd24e5fae"
+    "b25cdece9ba297be8f28ac62fb9b2fd8b6432b2635094c21cd845f9dd24e5fae",
 ]
 
 sources_macos = [
