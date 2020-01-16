@@ -26,6 +26,7 @@ platforms = filter(p -> !(libc(p) == :musl), platforms)
 
 products = [
     LibraryProduct("libmpi", :libmpi)
+    ExecutableProduct("mpiexec", :mpiexec)
 ]
 
 dependencies = [
