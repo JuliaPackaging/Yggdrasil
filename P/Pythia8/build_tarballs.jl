@@ -23,8 +23,7 @@ make -j $nproc && make install
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64),
+    MacOS(:x86_64)
 ]
 
 
