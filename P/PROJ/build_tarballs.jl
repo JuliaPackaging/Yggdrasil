@@ -32,7 +32,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DHAVE_PTHREAD_MUTEX_RECURSIVE_DEFN=1 \
       -DBUILD_LIBPROJ_SHARED=ON \
       ..
-cmake --build .
+make -j${nproc}
 make install
 """
 
