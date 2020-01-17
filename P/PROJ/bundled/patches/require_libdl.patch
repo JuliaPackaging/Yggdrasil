@@ -1,0 +1,11 @@
+--- a/CMakeLists.txt	2019-12-28 11:15:27.000000000 +0100
++++ b/CMakeLists.txt	2020-01-17 20:48:34.553481054 +0100
+@@ -145,7 +145,7 @@
+ if(MSVC)
+   set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} /WX /W4")
+ else()
+-  set(CMAKE_REQUIRED_LIBRARIES m)
++  set(CMAKE_REQUIRED_LIBRARIES dl m)
+   set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
+ endif()
+ 
