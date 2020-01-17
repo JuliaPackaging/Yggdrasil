@@ -8,8 +8,6 @@ using BinaryBuilder
 name = "mlpack"
 version = v"3.3.0-a1"
 sources = [
-    ("http://sourceforge.net/projects/arma/files/armadillo-9.800.3.tar.xz" =>
-     "a481e1dc880b7cb352f8a28b67fe005dc1117d4341277f12999a2355d40d7599"),
     # Current git master branch as of 12/20/2019.
     # This will be replaced with the actual mlpack 3.3.0 release... but that
     # release is dependent on coherent Julia support, so this has to come
@@ -17,110 +15,47 @@ sources = [
     ("https://www.ratml.org/misc/mlpack-3.3.0-a1.tar.gz" =>
      "70b386c191465feff93d63ac299612e93eb943ea9144525108674ada037321cf")]
 script = raw"""
-    # Armadillo is already unpacked into srcdir/armadillo-*/.  We'll build it
-    # but we won't use the wrapper; i.e., it will be a header-only library from
-    # the perspective of mlpack.
-    cd ${WORKSPACE}/srcdir/armadillo-*/
-    sed --in-place 's/ARMA_USE_WRAPPER true/ARMA_USE_WRAPPER false/' CMakeLists.txt
-    if [[ $target == i686*mingw* ]]
-    then
-        cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DBUILD_SHARED_LIBS=ON \
-            .
-    elif [[ $target == x86_64*mingw* ]]
-    then
-        cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -Dopenblas_LIBRARY=$prefix/lib/libopenblas64_.a \
-            -DBUILD_SHARED_LIBS=ON \
-            .
-    else
-        cmake \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            .
-    fi
-    # Now the headers are in tmp/.
+    cd ${WORKSPACE}/srcdir/mlpack-*/
+    install_license LICENSE.txt
 
-    # If we're on Windows, we need to find the exact location of the OpenBLAS
-    # libraries.
-    if [[ $target == *mingw* ]]
-    then
-        openblas_lib=`grep openblas_LIBRARY CMakeCache.txt |\
-                      awk -F'=' '{ print $2 }' |\
-                      sed 's/;$//'`;
-    fi
-
-    # Copy license to the correct place.
-    cd ${WORKSPACE}/srcdir/mlpack-3.3.0-a1/
-    mkdir -p $prefix/share/licenses/mlpack/
-    cp LICENSE.txt $prefix/share/licenses/mlpack/
+    mkdir build && cd build
 
     # In order to convince mlpack to build Julia bindings, we have to use CMake
     # to specify the location of the Julia program.  But... it turns out that
     # all that CMake needs is some kind of executable program that prints the
     # version.  So we'll just create a crappy little script, since Julia may not
     # be available in the build environment...
-    mkdir build
-    cd build
     echo "#!/bin/bash" > julia
     echo "echo \"Fake Julia version 1.3.0\"" >> julia
     chmod +x julia
 
+    FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+           -DCMAKE_INSTALL_PREFIX=${prefix}
+           -DBUILD_SHARED_LIBS=ON
+           -DDEBUG=OFF
+           -DPROFILE=OFF
+           -DUSE_OPENMP=OFF
+           -DBoost_NO_BOOST_CMAKE=1
+           -DBUILD_JULIA_BINDINGS=ON
+           -DJULIA_EXECUTABLE=`pwd`/julia
+           -DBUILD_CLI_EXECUTABLES=OFF
+           -DBUILD_TESTS=OFF)
+
     if [[ $target == *apple* ]]
     then
-        cmake \
-            -DDEBUG=OFF \
-            -DPROFILE=OFF \
-            -DUSE_OPENMP=OFF \
-            -DCMAKE_SYSTEM_NAME="Darwin" \
-            -DBoost_NO_BOOST_CMAKE=1 \
-            -DBUILD_JULIA_BINDINGS=ON \
-            -DJULIA_EXECUTABLE=`pwd`/julia \
-            -DBUILD_CLI_EXECUTABLES=OFF \
-            -DBUILD_TESTS=OFF \
-            -DARMADILLO_INCLUDE_DIR=${WORKSPACE}/srcdir/armadillo-9.800.3/tmp/include/ \
-            -DCMAKE_INSTALL_PREFIX=$prefix \
-            ..
+        FLAGS+=(-DCMAKE_SYSTEM_NAME="Darwin")
     elif [[ $target == *mingw* ]]
     then
         # We need to remove bigobj support, but we also need to force the linker
         # to export all symbols because Windows DLLs have the concept of
         # "exported" and "not exported" functions.
         sed -i 's/-Wa,-mbig-obj/-Wl,--export-all-symbols/' ../CMakeLists.txt
-
-        cmake \
-            -DDEBUG=OFF \
-            -DPROFILE=OFF \
-            -DUSE_OPENMP=OFF \
-            -DBoost_NO_BOOST_CMAKE=1 \
-            -DBUILD_SHARED_LIBS=ON \
-            -DBUILD_JULIA_BINDINGS=ON \
-            -DJULIA_EXECUTABLE=`pwd`/julia \
-            -DBUILD_CLI_EXECUTABLES=OFF \
-            -DBUILD_TESTS=OFF \
-            -DARMADILLO_INCLUDE_DIR=${WORKSPACE}/srcdir/armadillo-9.800.3/tmp/include/ \
-            -DLAPACK_LIBRARY=$openblas_lib \
-            -DBLAS_LIBRARY=$openblas_lib \
-            -DCMAKE_INSTALL_PREFIX=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            ..
-    else
-        cmake \
-            -DDEBUG=OFF \
-            -DPROFILE=OFF \
-            -DUSE_OPENMP=OFF \
-            -DBoost_NO_BOOST_CMAKE=1 \
-            -DBUILD_JULIA_BINDINGS=ON \
-            -DJULIA_EXECUTABLE=`pwd`/julia \
-            -DBUILD_CLI_EXECUTABLES=OFF \
-            -DBUILD_TESTS=OFF \
-            -DARMADILLO_INCLUDE_DIR=${WORKSPACE}/srcdir/armadillo-9.800.3/tmp/include/ \
-            -DCMAKE_INSTALL_PREFIX=$prefix \
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            ..
+           # -DLAPACK_LIBRARY=$openblas_lib \
+           # -DBLAS_LIBRARY=$openblas_lib \
     fi
-    make -j2
+
+    cmake .. "${FLAGS[@]}"
+    make -j${nproc}
     make install
 
     libdir=`find $prefix -iname 'lib*' -type d -maxdepth 1 | head -1`;
@@ -134,9 +69,6 @@ script = raw"""
     else
         cp -v src/mlpack/bindings/julia/mlpack/src/*.so $libdir/
     fi
-
-    ls $prefix
-    ls $libdir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -211,7 +143,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "boost_jll",
-    "OpenBLAS_jll"
+    "armadillo_jll",
+    "OpenBLAS_jll" # Is this necessary?
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
