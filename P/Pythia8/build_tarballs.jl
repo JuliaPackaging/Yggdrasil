@@ -25,7 +25,6 @@ platforms = [
     Linux(:x86_64, libc=:glibc),
     Linux(:x86_64, libc=:musl),
     MacOS(:x86_64),
-    Windows(:x86_64)
 ]
 
 
