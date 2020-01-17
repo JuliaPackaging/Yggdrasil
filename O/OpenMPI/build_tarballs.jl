@@ -28,6 +28,7 @@ platforms = filter(p -> !isa(p, Windows), supported_platforms())
 
 products = [
     LibraryProduct("libmpi", :libmpi)
+    ExecutableProduct("mpiexec", :mpiexec)
 ]
 
 dependencies = [

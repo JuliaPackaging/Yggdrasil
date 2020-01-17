@@ -1,0 +1,38 @@
+From 6ac9e22aa777a48a3a4fe144f2ea8b9f023d66c7 Mon Sep 17 00:00:00 2001
+From: Michele Locati <michele@locati.it>
+Date: Tue, 11 Dec 2018 08:56:31 +0100
+Subject: [PATCH] Skip PDB handling if compiler is gcc
+
+---
+ cmake/install_plugins.cmake | 4 +++-
+ libmariadb/CMakeLists.txt   | 3 +--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/cmake/install_plugins.cmake b/cmake/install_plugins.cmake
+index cd5616cd..a7cb5855 100644
+--- a/cmake/install_plugins.cmake
++++ b/cmake/install_plugins.cmake
+@@ -11,6 +11,8 @@ MACRO(INSTALL_PLUGIN name binary_dir)
+   INSTALL(TARGETS ${name} COMPONENT ClientPlugins DESTINATION ${INSTALL_PLUGINDIR})
+   IF(WIN32)
+     FILE(APPEND ${CC_BINARY_DIR}/win/packaging/plugin.conf "<File Id=\"${name}.dll\" Name=\"${name}.dll\" DiskId=\"1\" Source=\"${binary_dir}/${CMAKE_BUILD_TYPE}/${name}.dll\"/>\n")
+-    FILE(APPEND ${CC_BINARY_DIR}/win/packaging/plugin.conf "<File Id=\"${name}.pdb\" Name=\"${name}.pdb\" DiskId=\"1\" Source=\"${binary_dir}/${CMAKE_BUILD_TYPE}/${name}.pdb\"/>\n")
++    IF(NOT CMAKE_COMPILER_IS_GNUCC)
++        FILE(APPEND ${CC_BINARY_DIR}/win/packaging/plugin.conf "<File Id=\"${name}.pdb\" Name=\"${name}.pdb\" DiskId=\"1\" Source=\"${binary_dir}/${CMAKE_BUILD_TYPE}/${name}.pdb\"/>\n")
++    ENDIF()
+   ENDIF()
+ ENDMACRO()
+diff --git a/libmariadb/CMakeLists.txt b/libmariadb/CMakeLists.txt
+index 9118cc55..4f5a8925 100644
+--- a/libmariadb/CMakeLists.txt
++++ b/libmariadb/CMakeLists.txt
+@@ -455,8 +455,7 @@ INSTALL(TARGETS libmariadb
+           COMPONENT SharedLibraries
+         DESTINATION ${INSTALL_LIBDIR})
+ 
+-
+-IF(WIN32)
++IF(WIN32 AND NOT CMAKE_COMPILER_IS_GNUCC)
+    # On Windows, install PDB
+    INSTALL(FILES $<TARGET_PDB_FILE:libmariadb> DESTINATION "${INSTALL_LIBDIR}"
+            COMPONENT Development)

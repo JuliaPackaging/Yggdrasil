@@ -135,6 +135,9 @@ ln -sf /workspace/destdir/lib64 ${sysroot}/usr/local/lib64
 """
 
 # Build the artifacts
-build_info = build_tarballs(ARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
+ndARGS = filter(x -> !occursin("--deploy", x), ARGS)
+build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
 
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
+if any(occursin.("--deploy", ARGS))
+    upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
+end

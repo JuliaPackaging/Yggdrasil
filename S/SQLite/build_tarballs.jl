@@ -1,11 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SQLite"
 version = v"3.30.1"
 
-# Collection of sources required to build SQLite
+# Collection of sources required to complete build
 sources = [
     "https://www.sqlite.org/2019/sqlite-autoconf-3300100.tar.gz" =>
     "8c5a50db089bd2a1b08dbc5b00d2027602ca7ff238ba7658fabca454d4298e60",

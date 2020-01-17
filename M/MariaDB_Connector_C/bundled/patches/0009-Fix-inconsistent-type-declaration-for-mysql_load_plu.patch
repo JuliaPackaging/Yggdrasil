@@ -1,0 +1,16 @@
+diff --git a/libmariadb/ma_client_plugin.c.in b/libmariadb/ma_client_plugin.c.in
+index 9fb74aa..4d7bca8 100644
+--- a/libmariadb/ma_client_plugin.c.in
++++ b/libmariadb/ma_client_plugin.c.in
+@@ -464,7 +464,7 @@ err:
+ 
+ 
+ /* see <mysql/client_plugin.h> for a full description */
+-struct st_mysql_client_plugin * STDCALL
++struct st_mysql_client_plugin *
+ mysql_load_plugin(MYSQL *mysql, const char *name, int type, int argc, ...)
+ {
+   struct st_mysql_client_plugin *p;
+-- 
+2.20.2
+
