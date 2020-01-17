@@ -23,6 +23,7 @@ mkdir build
 cd build
 cmake -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../libcxxwrap-julia/
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,6 +34,7 @@ platforms = [
     Windows(:i686),
     MacOS(:x86_64),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -46,7 +48,7 @@ end
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
