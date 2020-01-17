@@ -1,0 +1,15 @@
+diff --git a/libmariadb/secure/ma_schannel.c b/libmariadb/secure/ma_schannel.c
+index ffc307c..043af35 100644
+--- a/libmariadb/secure/ma_schannel.c
++++ b/libmariadb/secure/ma_schannel.c
+@@ -22,6 +22,7 @@
+ #include "ma_schannel.h"
+ #include "schannel_certs.h"
+ #include <assert.h>
++#include <schannel.h>
+ 
+ #define SC_IO_BUFFER_SIZE 0x4000
+ #define MAX_SSL_ERR_LEN 100
+-- 
+2.20.2
+

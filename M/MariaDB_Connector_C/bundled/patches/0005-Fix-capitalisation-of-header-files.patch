@@ -1,0 +1,16 @@
+diff --git a/libmariadb/mariadb_lib.c b/libmariadb/mariadb_lib.c
+index 4c1108b..c738e43 100644
+--- a/libmariadb/mariadb_lib.c
++++ b/libmariadb/mariadb_lib.c
+@@ -69,7 +69,7 @@
+ #endif
+ #include <mysql/client_plugin.h>
+ #ifdef _WIN32
+-#include "Shlwapi.h"
++#include "shlwapi.h"
+ #define strncasecmp _strnicmp
+ #endif
+ 
+-- 
+2.20.2
+
