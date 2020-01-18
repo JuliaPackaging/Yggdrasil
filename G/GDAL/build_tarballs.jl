@@ -19,7 +19,10 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_6_2"
+    export PROJ_LIBS="proj_6_3"
+elif [[ "${target}" == powerpc64le-* ]]; then
+    # Need to remember to link against libpthread and libdl
+    export LDFLAGS="-lpthread -ldl"
 fi
 
 # Clear out `.la` files since they're often wrong and screw us up
