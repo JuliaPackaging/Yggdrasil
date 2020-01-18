@@ -79,7 +79,6 @@ elif [[ ${target} == *apple* ]]; then
     done
 fi
 
-
 # We need to be able to access `libhdf5` and `libhdf5_hl` directly, so symlink it from the hashed filename from manylinux pypi
 if [[ ${target} == *86*linux* ]]; then
     libhdf5name=$(basename ${prefix}/lib/libhdf5-*.${dlext}*)
@@ -93,17 +92,19 @@ if [[ ${target} == *86*linux* ]]; then
     ln -s ${libhdf5_hlname} ${prefix}/lib/libhdf5_hl${ext}
 fi
 
-if [[ "${target}" == arm-linux-gnueabihf ]]; then
-    install_license ${prefix}/share/COPYING
-else
-    # Install headers using those from the ARM build
+if [[ "${target}" != arm-linux-gnueabihf ]]; then
+    # Install headers
     mkdir -p "${prefix}/include"
-    cp ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/include/* "${prefix}/include"
-
-    # Remove the hash from license file name and then install it
-    mv ${WORKSPACE}/srcdir/*-COPYING ${WORKSPACE}/srcdir/COPYING
-    install_license ${WORKSPACE}/srcdir/COPYING
+    if [[ "${target}" == *-mingw* ]]; then
+        # Use MinGW header files, which of course are different
+        # from those for the other operating systems.
+        cp -r mingw${nbits}/include/* "${prefix}/include"
+    else
+        # Use headers from the ARM build, with the hope that they'll be fine
+        cp ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/include/* "${prefix}/include"
+    fi
 fi
+install_license ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/share/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
