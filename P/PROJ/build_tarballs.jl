@@ -7,7 +7,6 @@ version = v"6.3.0"
 sources = [
     "https://download.osgeo.org/proj/proj-$version.tar.gz" =>
     "68ce9ba0005d442c2c1d238a3b9bc6654c358159b4af467b91e8d5b407c79c77",
-    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +23,10 @@ else
     SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
 fi
 
-atomic_patch -p1 "$WORKSPACE/srcdir/patches/require_libdl.patch"
+if [[ "${target}" == powerpc64le-* ]]; then
+    # Need to remember to link against libdl
+    export LDFLAGS="-ldl"
+fi
 
 mkdir build
 cd build
