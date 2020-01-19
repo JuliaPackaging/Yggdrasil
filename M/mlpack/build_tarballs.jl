@@ -42,6 +42,14 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_CLI_EXECUTABLES=OFF
        -DBUILD_TESTS=OFF)
 
+if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+    # We need to rename some functions for compatibility with Julia's OpenBLAS
+    SYMB_DEFS=()
+    for sym in cgemm cgemv cherk dasum ddot dgemm dgemv dnrm2 dsyrk sasum sdot sgemm sgemv snrm2 ssyrk zgemm zgemv zherk; do
+        SYMB_DEFS+=("-D${sym}=${sym}_64")
+    done
+    export CXXFLAGS="${SYMB_DEFS[@]}"
+fi
 if [[ $target == *apple* ]]; then
     FLAGS+=(-DCMAKE_SYSTEM_NAME="Darwin")
 elif [[ $target == *mingw* ]]; then
@@ -53,7 +61,7 @@ fi
 
 if [[ ${target} != *darwin* ]]; then
     # Needed to find libgfortran for OpenBLAS.
-    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64 ${CXXFLAGS}"
 fi
 
 cmake .. "${FLAGS[@]}"
