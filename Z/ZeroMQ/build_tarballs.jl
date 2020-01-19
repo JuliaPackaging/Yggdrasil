@@ -7,13 +7,18 @@ version = v"4.3.2"
 sources = [
     "https://github.com/zeromq/libzmq.git" =>
     "a84ffa12b2eb3569ced199660bac5ad128bff1f0",
+    "./bundled"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 cd $WORKSPACE/srcdir/libzmq
-
+if [[ "${target}" == *-mingw* ]]; then
+    # Apply patch from
+    # https://github.com/msys2/MINGW-packages/blob/350ace4617661a4df7b9474c573b08325fa716c3/mingw-w64-zeromq/001-mingw-__except-fixes.patch
+    atomic_patch -p1 ../patches/001-mingw-__except-fixes.patch
+fi
 sh autogen.sh
 ./configure --prefix=$prefix --host=${target} \
     --without-docs --disable-libunwind --disable-perf --disable-Werror \
@@ -25,7 +30,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
