@@ -57,7 +57,7 @@ cmake --build . --config Release --target install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-const platforms = supported_platforms()
+const platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 const products = [
     LibraryProduct("libCGAL", :libCGAL),
