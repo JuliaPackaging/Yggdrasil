@@ -12,70 +12,65 @@ sources = [
     # This will be replaced with the actual mlpack 3.3.0 release... but that
     # release is dependent on coherent Julia support, so this has to come
     # first...
-    ("https://www.ratml.org/misc/mlpack-3.3.0-a1.tar.gz" =>
-     "70b386c191465feff93d63ac299612e93eb943ea9144525108674ada037321cf")]
+    "https://www.ratml.org/misc/mlpack-3.3.0-a1.tar.gz" =>
+    "70b386c191465feff93d63ac299612e93eb943ea9144525108674ada037321cf"
+]
+
 script = raw"""
-    cd ${WORKSPACE}/srcdir/mlpack-*/
-    install_license LICENSE.txt
+cd ${WORKSPACE}/srcdir/mlpack-*/
 
-    mkdir build && cd build
+mkdir build && cd build
 
-    # In order to convince mlpack to build Julia bindings, we have to use CMake
-    # to specify the location of the Julia program.  But... it turns out that
-    # all that CMake needs is some kind of executable program that prints the
-    # version.  So we'll just create a crappy little script, since Julia may not
-    # be available in the build environment...
-    echo "#!/bin/bash" > julia
-    echo "echo \"Fake Julia version 1.3.0\"" >> julia
-    chmod +x julia
+# In order to convince mlpack to build Julia bindings, we have to use CMake
+# to specify the location of the Julia program.  But... it turns out that
+# all that CMake needs is some kind of executable program that prints the
+# version.  So we'll just create a crappy little script, since Julia may not
+# be available in the build environment...
+echo "#!/bin/bash" > julia
+echo "echo \"Fake Julia version 1.3.0\"" >> julia
+chmod +x julia
 
-    FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-           -DCMAKE_INSTALL_PREFIX=${prefix}
-           -DBUILD_SHARED_LIBS=ON
-           -DDEBUG=OFF
-           -DPROFILE=OFF
-           -DUSE_OPENMP=OFF
-           -DBoost_NO_BOOST_CMAKE=1
-           -DBUILD_JULIA_BINDINGS=ON
-           -DJULIA_EXECUTABLE=`pwd`/julia
-           -DBUILD_CLI_EXECUTABLES=OFF
-           -DBUILD_TESTS=OFF)
+FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_INSTALL_PREFIX=${prefix}
+       -DBUILD_SHARED_LIBS=ON
+       -DDEBUG=OFF
+       -DPROFILE=OFF
+       -DUSE_OPENMP=OFF
+       -DBoost_NO_BOOST_CMAKE=1
+       -DBUILD_JULIA_BINDINGS=ON
+       -DJULIA_EXECUTABLE="${PWD}/julia"
+       -DBUILD_CLI_EXECUTABLES=OFF
+       -DBUILD_TESTS=OFF)
 
-    if [[ $target == *apple* ]]
-    then
-        FLAGS+=(-DCMAKE_SYSTEM_NAME="Darwin")
-    elif [[ $target == *mingw* ]]
-    then
-        # We need to remove bigobj support, but we also need to force the linker
-        # to export all symbols because Windows DLLs have the concept of
-        # "exported" and "not exported" functions.
-        sed -i 's/-Wa,-mbig-obj/-Wl,--export-all-symbols/' ../CMakeLists.txt
-           # -DLAPACK_LIBRARY=$openblas_lib \
-           # -DBLAS_LIBRARY=$openblas_lib \
-    fi
+if [[ $target == *apple* ]]; then
+    FLAGS+=(-DCMAKE_SYSTEM_NAME="Darwin")
+elif [[ $target == *mingw* ]]; then
+    # We need to remove bigobj support, but we also need to force the linker
+    # to export all symbols because Windows DLLs have the concept of
+    # "exported" and "not exported" functions.
+    sed -i 's/-Wa,-mbig-obj/-Wl,--export-all-symbols/' ../CMakeLists.txt
+fi
 
-    cmake .. "${FLAGS[@]}"
-    make -j${nproc}
-    make install
+if [[ ${target} != *darwin* ]]; then
+    # Needed to find libgfortran for OpenBLAS.
+    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+fi
 
-    libdir=`find $prefix -iname 'lib*' -type d -maxdepth 1 | head -1`;
-    if [[ $target == *apple* ]]
-    then
-        cp -v src/mlpack/bindings/julia/mlpack/src/*.dylib $libdir/
-    elif [[ $target == *mingw* ]]
-    then
-        cp -v libmlpack_julia*.dll.a $libdir/
-        cp -v libmlpack_julia*.dll $prefix/bin/
-    else
-        cp -v src/mlpack/bindings/julia/mlpack/src/*.so $libdir/
-    fi
+cmake .. "${FLAGS[@]}"
+make -j${nproc}
+make install
+
+if [[" ${target}" == *mingw* ]]; then
+    cp -v libmlpack_julia*.dll.a "${prefix}/lib"
+    cp -v libmlpack_julia*.dll "${libdir}"
+else
+    cp -v src/mlpack/bindings/julia/mlpack/src/*.${dlext} "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
-# Seems like boost_jll doesn't exist for FreeBSD, so we have to remove it.
-filter!(e -> e != FreeBSD(:x86_64), platforms)
 
 # The products that we will ensure are always built.
 products = [
