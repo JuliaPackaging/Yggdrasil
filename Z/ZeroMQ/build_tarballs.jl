@@ -18,6 +18,12 @@ if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from
     # https://github.com/msys2/MINGW-packages/blob/350ace4617661a4df7b9474c573b08325fa716c3/mingw-w64-zeromq/001-mingw-__except-fixes.patch
     atomic_patch -p1 ../patches/001-mingw-__except-fixes.patch
+elif [[ "${target}" == *86*-linux-musl* ]]; then
+    pushd /opt/${target}/lib/gcc/${target}/*/include
+    # Fix bug in Musl C library, see
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
+    popd
 fi
 sh autogen.sh
 ./configure --prefix=$prefix --host=${target} \
@@ -42,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
