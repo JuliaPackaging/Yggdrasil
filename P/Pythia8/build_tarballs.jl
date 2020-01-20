@@ -24,7 +24,8 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    Linux(:powerpc64le, libc=:glibc)
+    Linux(:powerpc64le, libc=:glibc),
+    MacOS(:x86_64)
 ]
 
 
