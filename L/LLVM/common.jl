@@ -12,7 +12,7 @@ const buildscript = raw"""
 set -o errexit
 
 export SUPER_VERBOSE=1 
-export CCACHE_DEBUG=1
+export CCACHE_DEBUG=true
 
 cd ${WORKSPACE}/srcdir/llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
