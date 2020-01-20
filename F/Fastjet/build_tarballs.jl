@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Fastjet"
+name = "FastJet"
 version = v"3.3.3"
 
 # Collection of sources required to complete build
