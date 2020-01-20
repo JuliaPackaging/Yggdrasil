@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Pythia8"
+name = "PYTHIA"
 version = v"8.244.0"
 
 # Collection of sources required to complete build
