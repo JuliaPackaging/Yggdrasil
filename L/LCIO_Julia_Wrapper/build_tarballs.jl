@@ -7,20 +7,21 @@ version = v"0.7"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-    Dict("https://github.com/jstrube/LCIOWrapBuilder/archive/$(version).tar.gz" => "")
+    "https://github.com/jstrube/LCIOWrapBuilder/archive/$(version).tar.gz" => ""
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-	wget https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-${target}.tar.gz
-	tar xzf julia-1.3.0-${target}.tar.gz
-	export PATH=$(pwd)/juliabin/bin:${PATH}
-	ln -s ${WORKSPACE}/srcdir/juliabin/include/ /opt/${target}/${target}/sys-root/usr/local
-	cd ${WORKSPACE}/srcdir
-	mkdir build && cd build
-	cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-	#cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain -DCMAKE_FIND_ROOT_PATH=${prefix} -DJulia_PREFIX=${prefix} ..
-	VERBOSE=ON cmake --build . --config Release --target install
+wget https://github.com/JuliaPackaging/JuliaBuilder/releases/download/v1.0.0-2/julia-1.0.0-${target}.tar.gz
+mkdir julia
+cd julia
+tar xf ../julia-1.0.0-${target}.tar.gz
+export PATH=$(pwd)/bin:${PATH}
+ln -s ${WORKSPACE}/srcdir/julia/include/ /opt/${target}/${target}/sys-root/usr/local
+cd ${WORKSPACE}/srcdir
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=ON cmake --build . --config Release --target install
 """
 
 # These are the platforms we will build for by default, unless further
