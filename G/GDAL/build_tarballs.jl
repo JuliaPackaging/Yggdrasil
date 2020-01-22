@@ -37,6 +37,9 @@ rm -f ${prefix}/lib/*.la
     --with-python=no \
     --enable-shared \
     --disable-static
+# Make sure that some important libraries are found
+grep "HAVE_GEOS='yes'" config.log
+grep "HAVE_SQLITE='yes'" config.log
 
 make -j${nproc}
 make install
