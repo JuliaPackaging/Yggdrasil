@@ -1,31 +1,29 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"3.1.1"
+version = v"5.1.0"
 
 # Collection of sources required to build SundialsBuilder
 sources = [
     "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
     "d03fca24d7adbfe52e05bd4e61340251e1cf56927540cc77a1ca817716091166",
-    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sundials-*/
-patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
+# patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF)
 CMAKE_FLAGS+=(-DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir")
-CMAKE_FLAGS+=(-DBLAS_ENABLE=OFF -DLAPACK_ENABLE=OFF)
+CMAKE_FLAGS+=(-DLAPACK_ENABLE=ON)
 
-#if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-#    patch -p0 < $WORKSPACE/srcdir/patches/Sundials_ilp64.patch
-#    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas64_.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
-#else
-#    CMAKE_FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
-#fi
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+    CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
+else
+    CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
+fi
 
 mkdir build
 cd build
