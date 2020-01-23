@@ -47,7 +47,7 @@ index 9ad6151..5111f47 100644
 --- a/config/SundialsFortran.cmake
 +++ b/config/SundialsFortran.cmake
 @@ -291,42 +291,42 @@ if(NEED_FORTRAN_NAME_MANGLING)
- 
+
      # Symbols NO underscores
      if(${CMAKE_Fortran_SCHEME_NO_UNDERSCORES} MATCHES "mysub")
 -      set(F77_MANGLE_MACRO1 "#define SUNDIALS_F77_FUNC(name,NAME) name")
@@ -73,7 +73,7 @@ index 9ad6151..5111f47 100644
 -      set(F77_MANGLE_MACRO1 "#define SUNDIALS_F77_FUNC(name,NAME) NAME ## __")
 +      set(F77_MANGLE_MACRO1 "#define SUNDIALS_F77_FUNC(name,NAME) NAME ## _64__")
      endif()
- 
+
      # Symbols WITH underscores
      if(${CMAKE_Fortran_SCHEME_WITH_UNDERSCORES} MATCHES "my_sub")
 -      set(F77_MANGLE_MACRO2 "#define SUNDIALS_F77_FUNC_(name,NAME) name")
@@ -99,5 +99,5 @@ index 9ad6151..5111f47 100644
 -      set(F77_MANGLE_MACRO2 "#define SUNDIALS_F77_FUNC_(name,NAME) NAME ## __")
 +      set(F77_MANGLE_MACRO2 "#define SUNDIALS_F77_FUNC_(name,NAME) NAME ## _64__")
      endif()
- 
+
      # name-mangling scheme has been set
