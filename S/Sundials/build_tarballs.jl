@@ -7,6 +7,7 @@ version = v"5.1.0"
 sources = [
     "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
     "101be83221f9a0ab185ecce04d003ba38660cc71eb81b8a7cf96d1cc08b3d7f9",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +22,7 @@ CMAKE_FLAGS+=(-DLAPACK_ENABLE=ON)
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     # patch -p0 < $WORKSPACE/srcdir/patches/Sundials_fortran.patch
+    # export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64"
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
 else
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
