@@ -1,4 +1,12 @@
 #!/bin/bash
+
+for idx in $(seq 1 63); do \
+	if [ -e /dev/loop${idx} ]; then continue; fi; \
+	sudo mknod /dev/loop${idx} b 7 ${idx}; \
+	sudo chown --reference=/dev/loop0 /dev/loop${idx}; \
+	sudo chmod --reference=/dev/loop0 /dev/loop${idx}; \
+done
+
 set -e
 
 if [ -z "$AZP_URL" ]; then
@@ -6,27 +14,38 @@ if [ -z "$AZP_URL" ]; then
   exit 1
 fi
 
+if [ -z "$AZP_AGENT_NAME" ]; then
+  echo 1>&2 "error: missing AZP_AGENT_NAME environment variable"
+  exit 1
+fi
+
+if [ -z "$AZP_PREFIX" ]; then
+  echo 1>&2 "error: missing AZP_PREFIX environment variable"
+  exit 1
+fi
+cd "$AZP_PREFIX"
+
 if [ -z "$AZP_TOKEN_FILE" ]; then
   if [ -z "$AZP_TOKEN" ]; then
     echo 1>&2 "error: missing AZP_TOKEN environment variable"
     exit 1
   fi
 
-  AZP_TOKEN_FILE=/azp/.token
-  echo -n $AZP_TOKEN > "$AZP_TOKEN_FILE"
+  AZP_TOKEN_FILE="$(pwd)/.token"
+  echo -n "${AZP_TOKEN}" > "$AZP_TOKEN_FILE"
 fi
-
+# Hide the token from worker processes
 unset AZP_TOKEN
 
 if [ -n "$AZP_WORK" ]; then
   mkdir -p "$AZP_WORK"
 fi
 
-rm -rf /azp/agent
-mkdir /azp/agent
-cd /azp/agent
+rm -rf agent
+mkdir agent
+cd agent
 
-export AGENT_ALLOW_RUNASROOT="1"
+#export AGENT_ALLOW_RUNASROOT="1"
 
 cleanup() {
   if [ -e config.sh ]; then
@@ -76,7 +95,7 @@ trap 'cleanup; exit 143' TERM
 print_header "3. Configuring Azure Pipelines agent..."
 
 ./config.sh --unattended \
-  --agent "${HOST_HOSTNAME}.$(hostname)" \
+  --agent "$AZP_AGENT_NAME" \
   --url "$AZP_URL" \
   --auth PAT \
   --token $(cat "$AZP_TOKEN_FILE") \
