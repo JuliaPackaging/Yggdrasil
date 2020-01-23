@@ -6,7 +6,7 @@ version = v"5.1.0"
 # Collection of sources required to build SundialsBuilder
 sources = [
     "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
-    "d03fca24d7adbfe52e05bd4e61340251e1cf56927540cc77a1ca817716091166",
+    "101be83221f9a0ab185ecce04d003ba38660cc71eb81b8a7cf96d1cc08b3d7f9",
 ]
 
 # Bash recipe for building across all platforms
