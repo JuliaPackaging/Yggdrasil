@@ -43,7 +43,7 @@ fi
 # We attempt to build for all defined platforms
 platforms = supported_platforms()
 
-products = []
+products = Vector{LibraryProduct}()
 
 dependencies = [
     "OpenBLAS_jll",
