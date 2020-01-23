@@ -11,7 +11,9 @@ const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
-export SUPER_VERBOSE=1 
+if [[ ${target} == *mingw32* ]]; then
+    export CCACHE_DISABLE=true
+fi
 
 cd ${WORKSPACE}/srcdir/llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
