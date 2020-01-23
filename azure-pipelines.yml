@@ -7,12 +7,10 @@ pr:
 - master
 
 variables:
-  # We run off of the latest `master`
-  BINARYBUILDER_IMAGE_NAME: staticfloat/binarybuilder.jl:master
-  # Things we pretty much always want when running with Docker
-  BASE_DOCKER_OPTS: -t -v /data/staticfloat/yggstorage:/storage -e BINARYBUILDER_NPROC=10 -e GITHUB_TOKEN=$(GITHUB_TOKEN) -e TERM=xterm-16color
+    JULIA: julia --project=$(Build.SourcesDirectory)/.ci --color=yes
 
-pool: Default
+# TODO: remove this once we are certain we can replace the `docker` workers
+pool: Testing
 
 jobs:
 - job: generator
@@ -36,6 +34,7 @@ jobs:
       # 4. Unique the directories
       PROJECTS=$(git diff-tree --no-commit-id --name-only -r HEAD "${COMPARE_AGAINST}" | grep -E ".+/.+"| sed 's#/[^/]*$##' | sort -u)
 
+      # If there are scary projects we need to exclude, we list them here. (Used to contain `LLVM`)
       EXCLUDED_NAMES=" "
 
       # This is the dynamic mapping we're going to build up, if it's empty we don't do anything
@@ -71,38 +70,21 @@ jobs:
               exit 1
           fi
 
-          # Pull down the latest source BB image, since we're gonna do some building
-          docker pull $(BINARYBUILDER_IMAGE_NAME)
-
-          # Create a docker image that sucks in the current Yggdrasil tree
-          echo "FROM $(BINARYBUILDER_IMAGE_NAME)" > builder.Dockerfile
-          echo "ADD . /workspace" >> builder.Dockerfile
-
-          # Ignore 0_RootFS and .git to make things nice and fast:
-          echo "0_RootFS/*" >> .dockerignore
-          echo ".git/*" >> .dockerignore
-
-          # Build it, tag it with a unique tag name
-          docker build --rm -t bb_worker:$(Build.SourceVersion) -f builder.Dockerfile .
-          
-          # Next, for each project, download its sources
+          # Next, for each project, download its sources. We do this by generating meta.json
+          # files, then parsing them with `download_sources.jl`
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
-              DOCKER_OPTS="$(BASE_DOCKER_OPTS) -w /workspace/${PROJECT} bb_worker:$(Build.SourceVersion)"
 
-              # First, we get build metadata in the form of a JSON object:
-              CONTAINER_NAME=$(echo meta_json-${NAME}-$(Build.SourceVersion) | tr '[@]' '_')
-              docker run --name=${CONTAINER_NAME} ${DOCKER_OPTS} bash -c " \
-                  echo \"Generating meta.json...\"; \
-                  julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
-                  echo \"Downloading sources...\"; \
-                  julia --color=yes /workspace/.ci/download_sources.jl ./meta.json ./platforms.list; \
-              "
-              docker cp ${CONTAINER_NAME}:/workspace/${PROJECT}/platforms.list ${NAME}.platforms.list
-              docker cp ${CONTAINER_NAME}:/workspace/${PROJECT}/meta.json ${NAME}.meta.json
+              # We always invoke a `build_tarballs.jl` file from its own directory
+              pushd ${PROJECT} >/dev/null
+              echo "Generating meta.json..."
+              JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
+              $(JULIA) ./build_tarballs.jl --meta-json="${JSON_PATH}"
+              echo "Downloading sources..."
+              $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
 
-              # Remove that container, but do it silently!
-              docker rm ${CONTAINER_NAME} 2>/dev/null >/dev/null
+              # Pop back up to the overworld
+              popd >/dev/null
           done
 
           # Emit project variable declarations
@@ -119,7 +101,7 @@ jobs:
               NAME=$(basename ${PROJECT})
 
               # Load in the platforms
-              PLATFORMS=$(cat ${NAME}.platforms.list)
+              PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
               if [[ -n "${PLATFORMS}" ]]; then
                   for PLATFORM in ${PLATFORMS}; do
                       echo -n "'${NAME}-${PLATFORM}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORM':'${PLATFORM}'}, "
@@ -150,9 +132,8 @@ jobs:
           DEPLOY="--deploy-bin"
       fi
 
-      # Run inside of that just-built Yggdrasil image, mapping /storage in
-      DOCKER_OPTS="$(BASE_DOCKER_OPTS) --rm --privileged -w /workspace/$(PROJECT)"
-      docker run ${DOCKER_OPTS} bb_worker:$(Build.SourceVersion) julia --color=yes ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
+      cd $(PROJECT)
+      $(JULIA) ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
     displayName: "run build_tarballs.jl"
     condition: ne(variables['projplatforms'], '')
 
@@ -167,12 +148,11 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
-      docker run $(BASE_DOCKER_OPTS) --rm -w /workspace/$(PROJECT) bb_worker:$(Build.SourceVersion) bash -c " \
-          echo \"Generating meta.json...\"; \
-          julia --color=yes ./build_tarballs.jl --meta-json=./meta.json; \
-          echo \"Registering $(NAME)...\"; \
-          julia --color=yes /workspace/.ci/register_package.jl meta.json --verbose; \
-      "
+      cd $(PROJECT)
+      echo "Generating meta.json..."
+      $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
+      echo "Registering $(NAME)..."
+      $(JULIA) $(Build.SourcesDirectory)/.ci/register_package.jl $(Agent.TempDirectory)/$(NAME).meta.json --verbose
     displayName: "register JLL package"
     # We only register if this is on `master`; same as setting `${DEPLOY}` above.
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
