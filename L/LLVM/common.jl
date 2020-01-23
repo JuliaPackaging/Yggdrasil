@@ -201,11 +201,6 @@ if [[ "${target}" == *freebsd* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
 
-if [[ "${target}" == *mingw* ]]; then
-    # On LLVM9 clang dylib is only support on Unix
-    CMAKE_FLAGS+=(-DCLANG_LINK_CLANG_DYLIB=OFF)
-fi
-
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
 ninja -j${nproc} -vv
