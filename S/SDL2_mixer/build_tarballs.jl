@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/SDL2_mixer-*/
 export CPPFLAGS="-I${prefix}/include" 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic 
-make -j{nproc}
+make -j${nproc}
 make install
 if [[ "${target}" == *-freebsd* ]]; then
     # We need to manually build the shared library for FreeBSD
