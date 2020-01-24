@@ -16,13 +16,19 @@ script = raw"""
 cd $WORKSPACE/srcdir/SDL2_mixer-*/
 export CPPFLAGS="-I${prefix}/include" 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic 
-make
+make -j{nproc}
 make install
+if [[ "${target}" == *-freebsd* ]]; then
+    # We need to manually build the shared library for FreeBSD
+    cd "${libdir}"
+    ar x libSDL2_mixer.a
+    cc -shared -o libSDL2_mixer.${dlext} *.o
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms =  supported_platforms()
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
