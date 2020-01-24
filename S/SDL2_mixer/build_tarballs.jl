@@ -33,7 +33,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libSDL2_mixer", "SLD2_mixer"], :libsdl2_mixer)
+    LibraryProduct(["libSDL2_mixer", "SDL2_mixer"], :libsdl2_mixer)
 ]
 
 # Dependencies that must be installed before this package can be built
