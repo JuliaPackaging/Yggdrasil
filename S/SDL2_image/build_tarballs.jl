@@ -38,7 +38,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libSDL2_image", :libsdl2_image)
+    LibraryProduct(["libSDL2_image", "SDL2_image"], :libsdl2_image)
 ]
 
 # Dependencies that must be installed before this package can be built
