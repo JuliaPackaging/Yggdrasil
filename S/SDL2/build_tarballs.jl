@@ -26,11 +26,13 @@ if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
 fi
 
+export CPPFLAGS="-I${prefix}/include"
+export LDFLAGS="-L${libdir}"
+
 ./configure --prefix=${prefix} --host=${target} \
     --enable-shared \
     --disable-static \
-    "${FLAGS[@]}" \
-    CPPFLAGS="-I${prefix}/include"
+    "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
