@@ -9,11 +9,17 @@ version = v"2.0.10"
 sources = [
     "http://www.libsdl.org/release/SDL2-$(version).tar.gz" =>
     "b4656c13a1f0d0023ae2f4a9cf08ec92fffb464e0f24238337784159b8b91d57",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2-*/
+
+if [[ "${target}" == i686-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
+    # Apply patch suggested at http://forums.libsdl.org/viewtopic.php?p=38887#38887
+    atomic_patch -p1 ../patches/opengl_es2_conflicting_type.patch
+fi
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
