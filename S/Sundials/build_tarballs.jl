@@ -44,7 +44,30 @@ fi
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
-products = Vector{LibraryProduct}()
+products = [LibraryProduct("libsundials_sunlinsolspfgmr", :libsundials_sunlinsolspfgmr),
+            LibraryProduct("libsundials_ida", :libsundials_ida),
+            LibraryProduct("libsundials_cvode", :libsundials_cvode),
+            LibraryProduct("libsundials_cvodes", :libsundials_cvodes),
+            LibraryProduct("libsundials_sunmatrixdense", :libsundials_sunmatrixdense),
+            LibraryProduct("libsundials_sunlinsolspbcgs", :libsundials_sunlinsolspbcgs),
+            LibraryProduct("libsundials_idas", :libsundials_idas),
+            LibraryProduct("libsundials_nvecserial", :libsundials_nvecserial),
+            LibraryProduct("libsundials_sunlinsoldense", :libsundials_sunlinsoldense),
+            LibraryProduct("libsundials_sunlinsolspgmr", :libsundials_sunlinsolspgmr),
+            LibraryProduct("libsundials_sunlinsolpcg", :libsundials_sunlinsolpcg),
+            LibraryProduct("libsundials_sunlinsolsptfqmr", :libsundials_sunlinsolsptfqmr),
+            LibraryProduct("libsundials_sunlinsolklu", :libsundials_sunlinsolklu),
+            LibraryProduct("libsundials_sunmatrixsparse", :libsundials_sunmatrixsparse),
+            LibraryProduct("libsundials_sunlinsolband", :libsundials_sunlinsolband),
+            LibraryProduct("libsundials_sunmatrixband", :libsundials_sunmatrixband),
+            LibraryProduct("libsundials_kinsol", :libsundials_kinsol),
+            LibraryProduct("libsundials_arkode", :libsundials_arkode),
+            LibraryProduct("libsundials_sunlinsollapackdense", :libsundials_sunlinsollapackdense),
+            LibraryProduct("libsundials_sunlinsollapackband", :libsundials_sunlinsollapackband),
+            LibraryProduct("libsundials_sunnonlinsolfixedpoint", :libsundials_sunnonlinsolfixedpoint),
+            LibraryProduct("libsundials_sunnonlinsolnewton", :libsundials_sunnonlinsolnewton),
+            LibraryProduct("libsundials_nvecmanyvector", :libsundials_nvecmanyvector)
+]
 
 dependencies = [
     "OpenBLAS_jll",
