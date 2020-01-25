@@ -21,12 +21,12 @@ CMAKE_FLAGS+=(-DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_
 CMAKE_FLAGS+=(-DLAPACK_ENABLE=ON)
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    # patch -p0 < $WORKSPACE/srcdir/patches/Sundials_fortran.patch
-    # export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64"
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_fortran.patch
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
 else
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
 fi
+export CFLAGS="-lgfortran -lquadmat"
 
 mkdir build
 cd build
@@ -41,7 +41,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
 
 products = Vector{LibraryProduct}()
 
