@@ -21,12 +21,12 @@ CMAKE_FLAGS+=(-DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_
 CMAKE_FLAGS+=(-DLAPACK_ENABLE=ON)
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_fortran.patch
+    #atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_fortran.patch
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
 else
     CMAKE_FLAGS+=(-DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}")
 fi
-export CFLAGS="-lgfortran -lquadmat"
+export CFLAGS="-lgfortran -lquadmath"
 
 mkdir build
 cd build
