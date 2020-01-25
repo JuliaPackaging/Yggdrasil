@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index c813899..84ebfdd 100644
+
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -757,27 +757,27 @@ if(SUNDIALS_F77_FUNC_CASE AND SUNDIALS_F77_FUNC_UNDERSCORES)
