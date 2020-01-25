@@ -3,70 +3,48 @@
 using BinaryBuilder
 
 name = "Julia"
-version = v"1.0.3"
+version = v"1.3.1"
 
 sources = [
-    "https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz" =>
-    "bfe9df6c52164c90b752cf6f167f69dffb5a0332658d05b0a42bfe18dbdf5e6a",
+	"https://julialang-s3.julialang.org/bin/winnt/x86/1.3/julia-1.3.1-win32.exe" => "6f2255d7e1707af00549f06b334d7794c4cde5a1eb92776e31142fdf294768be", 
+   	"https://julialang-s3.julialang.org/bin/winnt/x64/1.3/julia-1.3.1-win64.exe" => "8350ca66f80484c5ca6f7341ffbdb9d5182f8d4231762d585e229567b227ef7f",
+	"https://julialang-s3.julialang.org/bin/linux/x86/1.3/julia-1.3.1-linux-i686.tar.gz" => "2cef14e892ac317707b39d2afd9ad57a39fb77445ffb7c461a341a4cdf34141a",
+	"https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz" => "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad",
+	"https://julialang-s3.julialang.org/bin/linux/armv7l/1.3/julia-1.3.1-linux-armv7l.tar.gz" => "965c8fab2214f8ce1b3d449d088561a6de61be42543b48c3bbadaed5b02bf824",
+	"https://julialang-s3.julialang.org/bin/linux/aarch64/1.3/julia-1.3.1-linux-aarch64.tar.gz" => "e028e64f29faa823557819cf4d5887c0b41c28b5225b60f5f2e5e2f38d453458",
+	"https://julialang-s3.julialang.org/bin/freebsd/x64/1.3/julia-1.3.1-freebsd-x86_64.tar.gz" => "a6fb3edbc4f892a9e3a9f3684b2dc47afb7f4c8d08133db437002432d8aa5fa4", 
+	"https://julialang-s3.julialang.org/bin/mac/x64/1.3/julia-1.3.1-mac64.dmg" => "b3df0bfde44c16688c140ac94358fcae8c3e4dcb14a68576054e667370cf86f1"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/julia*/
-
-BUILD_FLAGS=(USECCACHE=1)
-
-# Mount pts for Julia bootstrap
-mount -t devpts -o newinstance jrunpts /dev/pts
-mount -o bind /dev/pts/ptmx /dev/ptmx
-
-# Set prefix-related paths
-#BUILD_FLAGS+=("prefix=${prefix}")
-
-# Set arch-related flags
-case ${target} in
-    x86_64-*)
-        BUILD_FLAGS+=("MARCH=x86-64" "JULIA_CPU_TARGET=generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)")
-    ;;
-    i686-*)
-        BUILD_FLAGS+=("MARCH=pentium4" "JULIA_CPU_TARGET=pentium4;sandybridge,-xsaveopt,clone_all")
-    ;;
-    arm-*)
-        BUILD_FLAGS+=("MARCH=armv7-a" "JULIA_CPU_TARGET=armv7-a;armv7-a,neon;armv7-a,neon,vfp4")
-    ;;
-    ppc64le-*)
-        BUILD_FLAGS+=("JULIA_CPU_TARGET=pwr8")
-    ;;
-    aarch64-*)
-        BUILD_FLAGS+=("MARCH=armv8-a" "JULIA_CPU_TARGET=generic")
-    ;;
-esac
-
-# If we're compiling for Windows, then set XC_HOST
-if [[ ${target} == *mingw* ]]; then
-    BUILD_FLAGS+=("XC_HOST=${target}")
+if [[ ${target} == x86_64-*mingw* ]]; then
+	apk add p7zip
+	7z e julia-1.3.1-win64.exe
+	cd ${prefix}
+	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
+elif [[ ${target} == i686-*mingw* ]]; then
+	apk add p7zip
+	7z e julia-1.3.1-win32.exe
+	cd ${prefix}
+	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
+elif [[ ${target} == arm-linux-gnueabihf ]]; then
+	cd ${prefix}
+	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-aarch64.tar.gz
+elif [[ ${target} == x86_64-linux-gnu ]]; then
+	cd ${prefix}
+	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-x86_64.tar.gz
+elif [[ ${target} == i686-linux-gnu ]]; then
+	cd ${prefix}
+	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-i686.tar.gz
+elif [[ ${target} == x86_64-apple-darwin* ]]; then
+	cd ${prefix}
+	apk add p7zip
+	7z x ${WORKSPACE}/srcdir/julia-1.3.1-mac64.dmg
 else
-    export LDFLAGS="$LDFLAGS -Wl,-rpath,${prefix}/lib"
+	echo "ERROR: Unsupported platform ${target}" >&2
+        exit 1
 fi
-
-# Make use of many prebuilt things
-#for proj in BLAS LLVM PCRE MBEDTLS LIBSSH2 CURL LIBGIT2 GMP MPFR; do
-#    BUILD_FLAGS+=(USE_SYSTEM_${proj}=1)
-#done
-
-#if [[ ${nbits} == 64 ]]; then
-#    BUILD_FLAGS+=(LIBBLASNAME=libopenblas LIBBLAS=-lopenblas64_)
-#else
-#    BUILD_FLAGS+=(LIBBLASNAME=libopenblas LIBBLAS=-lopenblas)
-#fi
-
-#BUILD_FLAGS+=(LDFLAGS="$LDFLAGS")
-BUILD_FLAGS+=(LIBSSH2_ENABLE_TESTS=0)
-
-make ${BUILD_FLAGS[@]} -j${nproc} -C deps install-mbedtls
-make ${BUILD_FLAGS[@]} -j${nproc} -C deps install-libgit2
-make ${BUILD_FLAGS[@]} -j${nproc}
-make ${BUILD_FLAGS[@]} install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -76,6 +54,7 @@ platforms = [
     Linux(:i686; libc=:glibc),
     Windows(:x86_64;),
     Windows(:i686;),
+    MacOS(:x86_64)
 ]
 
 # The products that we will ensure are always built
@@ -86,9 +65,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
 
