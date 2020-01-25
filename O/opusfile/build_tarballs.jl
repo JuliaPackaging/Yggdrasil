@@ -9,13 +9,19 @@ version = v"0.11.0"
 sources = [
     "https://downloads.xiph.org/releases/opus/opusfile-0.11.tar.gz" =>
     "74ce9b6cf4da103133e7b5c95df810ceb7195471e1162ed57af415fabf5603bf",
+    "./bundled"
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd opusfile-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
+if [[ "${target}" == *mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-openssl-wincert.patch"
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
 make -j${nproc}
 make install
 """
@@ -26,8 +32,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libopusurl", :libopusfile),
-    LibraryProduct("libopusfile", :libopusurl)
+    LibraryProduct("libopusurl", :libopusurl),
+    LibraryProduct("libopusfile", :libopusfile)
 ]
 
 # Dependencies that must be installed before this package can be built
