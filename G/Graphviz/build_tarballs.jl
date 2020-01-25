@@ -35,10 +35,13 @@ if [[ "${target}" == *-mingw* ]]; then
 
     # Remove wrong libtool archives
     rm ${prefix}/lib/libharfbuzz*.la
-
-    # Rebuild the configure script
-    autoreconf -fiv
 fi
+
+# Do not build with -ffast-math
+atomic_patch -p1 ../patches/1001-no-ffast-math.patch
+
+# Rebuild the configure script
+autoreconf -fiv
 
 # Apply patch to build a native `mkdefs` utility that can be run within the
 # build environment.
