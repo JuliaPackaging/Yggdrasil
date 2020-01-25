@@ -41,6 +41,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 products = Vector{LibraryProduct}()
