@@ -31,6 +31,8 @@ fi
 export CFLAGS="-lgfortran"
 if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
     export CFLAGS="${CFLAGS} -lquadmath"
+elif [[ "${target}" == powerpc64le-* ]]; then
+    export CFLAGS="${CFLAGS} -lgomp -ldl -lm -lpthread -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
 mkdir build
@@ -81,4 +83,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
