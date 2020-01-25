@@ -36,11 +36,7 @@ fi
 mkdir build
 cd build
 cmake "${CMAKE_FLAGS[@]}" ..
-if [[ "${target}" == *-mingw* ]]; then
-    make
-else
-    make -j${nproc}
-fi
+make -j${nproc}
 make install
 
 # Move libraries to ${libdir} on Windows
