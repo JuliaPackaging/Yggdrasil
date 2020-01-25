@@ -44,5 +44,5 @@ dependencies = [
     PackageSpec(name="mpg123_jll", uuid="3205ef68-7822-558b-ad0d-1b4740f12437")
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
