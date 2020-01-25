@@ -20,27 +20,27 @@ sources = [
 script = raw"""
 if [[ ${target} == x86_64-*mingw* ]]; then
 	apk add p7zip
-	7z e julia-1.3.1-win64.exe
+	7z e /storage/downloads/*-julia-1.3.1-win64.exe
 	cd ${prefix}
 	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
 elif [[ ${target} == i686-*mingw* ]]; then
 	apk add p7zip
-	7z e julia-1.3.1-win32.exe
+	7z e /storage/downloads/*-julia-1.3.1-win32.exe
 	cd ${prefix}
 	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
 elif [[ ${target} == arm-linux-gnueabihf ]]; then
 	cd ${prefix}
-	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-aarch64.tar.gz
+	tar xzf /storage/downloads/*julia-1.3.1-linux-aarch64.tar.gz
 elif [[ ${target} == x86_64-linux-gnu ]]; then
 	cd ${prefix}
-	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-x86_64.tar.gz
+	tar xzf /storage/downloads/*julia-1.3.1-linux-x86_64.tar.gz
 elif [[ ${target} == i686-linux-gnu ]]; then
 	cd ${prefix}
-	tar xzf ${WORKSPACE}/srcdir/julia-1.3.1-linux-i686.tar.gz
+	tar xzf /storage/downloads/*julia-1.3.1-linux-i686.tar.gz
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
 	cd ${prefix}
 	apk add p7zip
-	7z x ${WORKSPACE}/srcdir/julia-1.3.1-mac64.dmg
+	7z x /storage/downloads/*julia-1.3.1-mac64.dmg
 else
 	echo "ERROR: Unsupported platform ${target}" >&2
         exit 1
