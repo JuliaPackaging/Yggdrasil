@@ -7,21 +7,24 @@ version = v"1.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.3.tar.gz" =>
+    "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-$(version).tar.gz" =>
     "a4066bd467c96469935a4b1fe472893393e7d74e45f95d59f69726784befd8f8",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd SDL2_gfx-*
+cd $WORKSPACE/srcdir/SDL2_gfx-*
 
-if [[ "${target}" == powerpc64le-* ]]; then
+FLAGS=()
+if [[ "${target}" != *86* ]]; then
+    FLAGS+=(--enable-mmx=no)
+fi
+if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
     autoreconf -vi
 fi
 
 update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
