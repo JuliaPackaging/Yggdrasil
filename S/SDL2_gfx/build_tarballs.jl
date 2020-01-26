@@ -15,6 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd SDL2_gfx-*
+
+if [[ "${target}" == powerpc64le-* ]]; then
+    autoreconf -vi
+fi
+
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -23,18 +28,12 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64)
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libSDL2_gfx", :libsdl2_gfx)
+    LibraryProduct(["libSDL2_gfx", "SDL2_gfx"] :libsdl2_gfx)
 ]
 
 # Dependencies that must be installed before this package can be built
