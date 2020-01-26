@@ -14,7 +14,8 @@ sources = Dict(
 # Bash recipe for building across all platforms
 script = raw"""
 echo ${target}
-cd julia-1.3.0
+find .
+cd ${WORKSPACE}/srcdir/juliabin
 rsync ./ ${prefix}
 """
 
