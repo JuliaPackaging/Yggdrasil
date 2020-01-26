@@ -33,7 +33,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libSDL2_gfx", "SDL2_gfx"] :libsdl2_gfx)
+    LibraryProduct(["libSDL2_gfx", "SDL2_gfx"], :libsdl2_gfx)
 ]
 
 # Dependencies that must be installed before this package can be built
