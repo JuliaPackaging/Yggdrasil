@@ -21,14 +21,14 @@ script = raw"""
 echo ${target}
 if [[ ${target} == x86_64-*mingw* ]]; then
 	apk add p7zip
-	7z e *-julia-1.3.1-win64.exe
+	7z e *julia-1.3.1-win64.exe
 	cd ${prefix}
-	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
+	7z x ${WORKRSPACE}/srcdir/julia-installer.exe
 elif [[ ${target} == i686-*mingw* ]]; then
 	apk add p7zip
-	7z e *-julia-1.3.1-win32.exe
+	7z e *julia-1.3.1-win32.exe
 	cd ${prefix}
-	7z e ${WORKRSPACE}/srcdir/julia-installer.exe
+	7z x ${WORKRSPACE}/srcdir/julia-installer.exe
 elif [[ ${target} == arm-linux-gnueabihf ]]; then
 	cd ${prefix}
 	rsync -a ${WORKSPACE}/srcdir/julia-1.3.1/ .
