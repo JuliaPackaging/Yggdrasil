@@ -20,9 +20,18 @@ if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
     export PROJ_LIBS="proj_6_3"
-elif [[ "${target}" == powerpc64le-* ]]; then
-    # Need to remember to link against libpthread and libdl
-    export LDFLAGS="-lpthread -ldl"
+elif [[ "${target}" == *-linux-* ]]; then
+    # Make sure GEOS is linked against libstdc++
+    atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
+    export EXTRA_GEOS_LIBS="-lstdc++"
+    if [[ "${target}" == powerpc64le-* ]]; then
+        atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
+        export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
+        export EXTRA_SQLITE3_LIBS="-lm"
+        # libpthread and libldl are needed for libgdal, so let's always use them
+        export LDFLAGS="-lpthread -ldl"
+    fi
+    autoreconf -vi
 fi
 
 # Clear out `.la` files since they're often wrong and screw us up
@@ -37,6 +46,9 @@ rm -f ${prefix}/lib/*.la
     --with-python=no \
     --enable-shared \
     --disable-static
+# Make sure that some important libraries are found
+grep "HAVE_GEOS='yes'" config.log
+grep "HAVE_SQLITE='yes'" config.log
 
 make -j${nproc}
 make install
