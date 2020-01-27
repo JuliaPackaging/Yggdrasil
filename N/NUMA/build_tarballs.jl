@@ -18,7 +18,7 @@ cd numactl-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc} numademo_CFLAGS="-O3 -funroll-loops"
 make install
-exit
+install_license LICENSE.*
 """
 
 # These are the platforms we will build for by default, unless further
