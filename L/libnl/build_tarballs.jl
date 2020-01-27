@@ -13,10 +13,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libnl-*/
+cd $WORKSPACE/srcdir
+cd libnl-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,16 +35,15 @@ platforms = [
     Linux(:armv7l, libc=:musl, call_abi=:eabihf)
 ]
 
+
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnl-3", :libnl)
+    LibraryProduct("libnl", :libnl)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
