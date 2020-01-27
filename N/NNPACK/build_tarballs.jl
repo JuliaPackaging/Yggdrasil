@@ -46,9 +46,9 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 
 # On ARM/AArch64, use `clang` instead of `gcc`.
-TOOLCHAIN="/opt/${target}/${target}.toolchain"
+TOOLCHAIN="/opt/${target}/${target}.cmake"
 if [[ "${target}" == arm-* ]] || [[ "${target}" == aarch64-* ]]; then
-    TOOLCHAIN="/opt/${target}/${target}_clang.toolchain"
+    TOOLCHAIN="/opt/${target}/${target}_clang.cmake"
 fi
 
 # NNPACK wants "armv7l", not just "arm", so GIVE IT WHAT IT WANTS
@@ -76,6 +76,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc} VERBOSE=1
 make install
+
+install_license ${WORKSPACE}/srcdir/NNPACK/LICENSE
 """
 
 # Build only Linux and MacOS
@@ -88,8 +90,8 @@ platforms = filter(p -> arch(p) in (:aarch64, :x86_64, :i686), platforms)
 platforms = filter(p -> !(arch(p) == :aarch64 && libc(p) == :musl), platforms)
 
 # The products that we will ensure are always built
-products = prefix -> Product[
-    LibraryProduct(prefix, "libnnpack", :libnnpack),
+products = Product[
+    LibraryProduct("libnnpack", :libnnpack),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -97,4 +99,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; allow_unsafe_flags=true)
