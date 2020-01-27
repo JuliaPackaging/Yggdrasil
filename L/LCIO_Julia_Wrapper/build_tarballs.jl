@@ -17,12 +17,12 @@ julia_sources = Dict(
 
 # Bash recipe for building across all platforms
 script = raw"""
-	rsync -a ${WORKSPACE}/srcdir/ ${prefix}
-	ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
-	cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper
-	mkdir build && cd build
-	cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_FIND_ROOT_PATH=${prefix} -DJulia_PREFIX=${prefix} ..
-	VERBOSE=ON cmake --build . --config Release --target install
+ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
+export PATH=$(pwd)/bin:${PATH}
+cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_FIND_ROOT_PATH=${prefix} -DJulia_PREFIX=${prefix} ..
+VERBOSE=ON cmake --build . --config Release --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,7 +48,7 @@ for p in platforms
 	if should_build_platform(triplet(p))
 		sources = copy(lcio_sources)
 		append!(sources, julia_sources[triplet(p)])
-		build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"8")
+		build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
 		
 	end
 end
