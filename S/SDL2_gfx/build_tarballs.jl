@@ -9,6 +9,7 @@ version = v"1.0.3"
 sources = [
     "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-$(version).tar.gz" =>
     "a4066bd467c96469935a4b1fe472893393e7d74e45f95d59f69726784befd8f8",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +21,9 @@ if [[ "${target}" != *86* ]]; then
     FLAGS+=(--enable-mmx=no)
 fi
 if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/configure_in_add_macro_dir.patch
     autoreconf -vi
+    ./autogen.sh
 fi
 
 update_configure_scripts
