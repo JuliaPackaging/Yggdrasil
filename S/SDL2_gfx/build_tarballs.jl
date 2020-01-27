@@ -30,6 +30,13 @@ update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # The shared library is not built for Windows, let's do it ourselves
+    cd "${prefix}/lib"
+    ar x libSDL2_gfx.a
+    cc -shared -o "${libdir}/SDL2_gfx.${dlext}" *.o -lSDL2
+    rm *.o
+fi
 """
 
 # These are the platforms we will build for by default, unless further
