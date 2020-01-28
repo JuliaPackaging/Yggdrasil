@@ -18,6 +18,7 @@ julia_sources = Dict(
 # Bash recipe for building across all platforms
 script = raw"""
 ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
+rsync -a ${WORKSPACE}/srcdir/include/ ${prefix}/include
 export PATH=$(pwd)/bin:${PATH}
 cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper
 mkdir build && cd build
