@@ -20,11 +20,10 @@ julia_sources = Dict(
 # Bash recipe for building across all platforms
 script = raw"""
 ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
-rsync -a ${WORKSPACE}/srcdir/include/ ${prefix}/include
-export PATH=$(pwd)/bin:${PATH}
+rsync -a ${WORKSPACE}/srcdir/ ${prefix}/
 cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DJulia_PREFIX=${WORKSPACE}/srcdir -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=ON cmake --build . --config Release --target install
 """
 
