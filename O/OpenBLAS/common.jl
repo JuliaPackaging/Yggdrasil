@@ -74,9 +74,9 @@ function openblas_script(;kwargs...)
     # libgfortran and other friends alongside, we need an RPATH of '$ORIGIN',
     # so set it here.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
-        LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
+        export LDFLAGS="${LDFLAGS} '-Wl,-rpath,\$\$ORIGIN' -Wl,-z,origin"
     elif [[ ${target} == *apple* ]]; then
-        LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
+        export LDFLAGS="${LDFLAGS} -Wl,-rpath,@loader_path/"
     fi
 
 

@@ -3,20 +3,18 @@
 using BinaryBuilder
 
 name = "librealsense"
-version = v"2.31.0"
+version = v"2.31.1"
 
 # Collection of sources required to build librealsense
 sources = [
     "https://github.com/IntelRealSense/librealsense.git" =>
-    "bdce5a4ebbd716e9d7372ad8831a929bccccd0b2",
-    "./bundled",
+    "83f952a4bd6b70d72459f66c7f67ddaba9d337a0",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd librealsense/
-atomic_patch -p1 $WORKSPACE/srcdir/patches/EVFILT_EXCEPT-is-not-defined.patch
 mkdir build
 cd build
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
@@ -61,6 +59,7 @@ platforms = [
     Linux(:armv7l, libc = :glibc, call_abi = :eabihf)
     MacOS(:x86_64)
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [

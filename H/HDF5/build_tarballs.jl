@@ -19,7 +19,10 @@ sources = [
     "http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz" => "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2",
 
      # We need some special compiler support libraries from mingw
-     "http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz" => "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17",
+    "http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz" => "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17",
+
+    # Native build for arm
+    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz" => "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7",
 
     # License file
     "https://support.hdfgroup.org/ftp/HDF5/releases/COPYING" => "1001425406c6f36ba30f7ac863c4b44a0355dfd5a0a0cf71e1f27201193a3f1e",
@@ -35,6 +38,15 @@ if [[ ${target} == x86_64-*mingw* ]]; then
     mv mingw64/bin/*.dll ${prefix}/bin
 elif [[ ${target} == i686-*mingw* ]]; then
     mv mingw32/bin/*.dll ${prefix}/bin
+elif [[ "${target}" == arm-linux-gnueabihf ]]; then
+    cd hdf5-arm-linux-gnueabihf-*
+    # Remove zlib headers that shouldn't be here
+    rm include/z*.h
+    for dir in bin include lib share; do
+        mkdir -p "${prefix}/${dir}"
+        cp -r ${dir}/* "${prefix}/${dir}"
+    done
+        chmod 755 ${bindir}/*
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
         WHL_FILE="*-h5py-*manylinux1_x86_64*.whl"
@@ -56,7 +68,7 @@ else
 fi
 
 # We want libhdf5 to use OUR libz, so we force it to:
-if [[ ${target} == *linux* ]]; then
+if [[ ${target} == *86*linux* ]]; then
     # We want libhdf5 to use OUR libz, so we force it to:
     for f in ${prefix}/lib/lib{sz,aec,hdf5}*; do
         patchelf --replace-needed $(basename h5py/${LIBSDIR}/libz*.${dlext}*) libz.${dlext}.1 ${f}
@@ -67,9 +79,8 @@ elif [[ ${target} == *apple* ]]; then
     done
 fi
 
-
 # We need to be able to access `libhdf5` and `libhdf5_hl` directly, so symlink it from the hashed filename from manylinux pypi
-if [[ ${target} == *linux* ]]; then
+if [[ ${target} == *86*linux* ]]; then
     libhdf5name=$(basename ${prefix}/lib/libhdf5-*.${dlext}*)
     base="${libhdf5name%%.*}"
     ext="${libhdf5name#$base}"
@@ -81,9 +92,19 @@ if [[ ${target} == *linux* ]]; then
     ln -s ${libhdf5_hlname} ${prefix}/lib/libhdf5_hl${ext}
 fi
 
-# Remove the hash from license file name and then install it
-mv ${WORKSPACE}/srcdir/*-COPYING ${WORKSPACE}/srcdir/COPYING
-install_license ${WORKSPACE}/srcdir/COPYING
+if [[ "${target}" != arm-linux-gnueabihf ]]; then
+    # Install headers
+    mkdir -p "${prefix}/include"
+    if [[ "${target}" == *-mingw* ]]; then
+        # Use MinGW header files, which of course are different
+        # from those for the other operating systems.
+        cp -r mingw${nbits}/include/* "${prefix}/include"
+    else
+        # Use headers from the ARM build, with the hope that they'll be fine
+        cp ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/include/* "${prefix}/include"
+    fi
+fi
+install_license ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/share/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -91,6 +112,7 @@ install_license ${WORKSPACE}/srcdir/COPYING
 platforms = [
     Linux(:x86_64),
     Linux(:i686),
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     MacOS(),
     Windows(:x86_64),
     Windows(:i686),

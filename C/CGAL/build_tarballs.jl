@@ -2,11 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-const name = "CGAL"
-const version = v"5"
-
-majorminor(v::VersionNumber) = "$(v.major).$(v.minor)"
-const sversion = majorminor(version)
+const name, version = "CGAL", v"5"
+const sversion = "$(version.major).$(version.minor)"
 
 # Collection of sources required to build CGAL
 const sources = [
@@ -19,6 +16,7 @@ const dependencies = [
     "boost_jll",
     "GMP_jll",
     "MPFR_jll",
+    "Zlib_jll",
 ]
 
 # Bash recipe for building across all platforms
@@ -26,11 +24,6 @@ const script = raw"""
 ## pre-build setup
 # exit on error
 set -eu
-
-# check c++ standard reported by the compiler
-# CGAL uses CMake's try_run to check if it needs to link with Boost.Thread
-# depending on the c++ standard supported by the compiler.
-__cplusplus=$($CXX -x c++ -dM -E - </dev/null | grep __cplusplus | grep -o '[0-9]*')
 
 ## configure build
 cd "$WORKSPACE/srcdir"/CGAL-*/
@@ -45,23 +38,22 @@ cmake .. \
   `# cgal specific` \
   -DCGAL_HEADER_ONLY=OFF \
   -DWITH_CGAL_Core=ON \
-  -DWITH_CGAL_ImageIO=OFF \
-  -DWITH_CGAL_Qt5=OFF \
-  `# 'try_run' won't run the produced executable in a cross-compilation` \
-  `# environment. Hence, this is required` \
-  -DCGAL_test_cpp_version_RUN_RES__TRYRUN_OUTPUT=$__cplusplus
+  -DWITH_CGAL_ImageIO=ON \
+  -DWITH_CGAL_Qt5=OFF
 
 ## and away we go..
-cmake --build . --config Release --target install
+cmake --build . --config Release --target install -- -j$nproc
+install_license ../LICENSE*
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-const platforms = supported_platforms()
+const platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 const products = [
     LibraryProduct("libCGAL", :libCGAL),
     LibraryProduct("libCGAL_Core", :libCGAL_Core),
+    LibraryProduct("libCGAL_ImageIO", :libCGAL_ImageIO),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

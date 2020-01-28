@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Fastjet"
+name = "FastJet"
 version = v"3.3.3"
 
 # Collection of sources required to complete build
@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/fastjet-*/
+export CXXFLAGS="-O3 -Wall"
+export CFLAGS="-O3 -Wall"
 if [[ "${target}" == *-freebsd* ]]; then
     # Needed to fix the following errors
     #   undefined reference to `backtrace_symbols'

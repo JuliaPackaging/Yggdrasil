@@ -11,6 +11,10 @@ const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
+if [[ ${target} == *mingw32* ]]; then
+    export CCACHE_DISABLE=true
+fi
+
 cd ${WORKSPACE}/srcdir/llvm-project/llvm
 LLVM_SRCDIR=$(pwd)
 
@@ -197,14 +201,9 @@ if [[ "${target}" == *freebsd* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
 
-if [[ "${target}" == *mingw* ]]; then
-    # On LLVM9 clang dylib is only support on Unix
-    CMAKE_FLAGS+=(-DCLANG_LINK_CLANG_DYLIB=OFF)
-fi
-
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
-ninja -j${nproc} -v
+ninja -j${nproc} -vv
 
 # Install!
 ninja install -j${nproc}
@@ -243,11 +242,25 @@ function configure(version; assert=false)
         "./bundled",
     ]
 
+
+    products = [
+        LibraryProduct("libclang", :libclang, dont_dlopen=true),
+        LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+        LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+        ExecutableProduct("llvm-config", :llvm_config, "tools"),
+        ExecutableProduct("clang", :clang, "tools"),
+        ExecutableProduct("opt", :opt, "tools"),
+        ExecutableProduct("llc", :llc, "tools"),
+    ]
+    if version >= v"8"
+        push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+    end
+
     config = "LLVM_MAJ_VER=$(version.major)\n"
     if assert
         config *= "ASSERTS=1\n"
     end
-    sources, config * buildscript
+    sources, config * buildscript, products
 end
 
 
@@ -256,10 +269,4 @@ end
 dependencies = [
 ]
 
-products = [
-    LibraryProduct("libclang", :libclang, dont_dlopen=true),
-    LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
-    LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
-    ExecutableProduct("llvm-config", :llvm_config, "tools")
-]
 
