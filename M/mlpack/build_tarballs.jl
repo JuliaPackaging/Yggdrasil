@@ -64,7 +64,7 @@ elif [[ $target == *mingw* ]]; then
         arch_ext="_64";
     else
         arch_ext="_";
-    end
+    fi
     FLAGS+=(-DLAPACK_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlext})
     FLAGS+=(-DBLAS_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlexit})
 fi
