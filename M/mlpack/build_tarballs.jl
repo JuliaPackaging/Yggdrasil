@@ -74,8 +74,9 @@ if [[ ${target} != *darwin* ]]; then
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64 ${CXXFLAGS}"
 fi
 
-# Reduce number of cores used for build in FreeBSD (it runs out of memory).
-if [[ $target == *freebsd* ]]; then
+# Reduce number of cores used for builds on FreeBSD or ARM (they run out of
+# memory).
+if [[ $target == *freebsd* ]] || [[ $target == *arm* ]]; then
   nproc=1;
 fi
 
