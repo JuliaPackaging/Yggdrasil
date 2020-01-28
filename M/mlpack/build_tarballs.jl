@@ -57,6 +57,16 @@ elif [[ $target == *mingw* ]]; then
     # to export all symbols because Windows DLLs have the concept of
     # "exported" and "not exported" functions.
     sed -i 's/-Wa,-mbig-obj/-Wl,--export-all-symbols/' ../CMakeLists.txt
+
+    # For Windows configuration, we need to manually specify the OpenBLAS
+    # libraries as CMake variables.
+    if [[ "${nbits}" == 64 ]]; then
+        arch_ext="_64";
+    else
+        arch_ext="_";
+    end
+    FLAGS+=(-DLAPACK_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlext})
+    FLAGS+=(-DBLAS_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlexit})
 fi
 
 if [[ ${target} != *darwin* ]]; then
