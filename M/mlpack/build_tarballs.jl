@@ -74,6 +74,11 @@ if [[ ${target} != *darwin* ]]; then
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64 ${CXXFLAGS}"
 fi
 
+# Reduce number of cores used for build in FreeBSD (it runs out of memory).
+if [[ $target == *freebsd* ]]; then
+  nproc=1;
+fi
+
 cmake .. "${FLAGS[@]}"
 make -j${nproc}
 make install
