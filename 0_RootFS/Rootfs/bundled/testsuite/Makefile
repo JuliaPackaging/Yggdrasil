@@ -5,7 +5,7 @@ cleanall:
 install:
 
 LANGUAGES=c cxx fortran go rust
-PROJECTS=hello_world dyn_link
+PROJECTS=hello_world dyn_link openmp
 
 define unesc
 $(subst -,/,$(subst install-,,$(subst build-,,$(subst clean-,,$(subst run-,,$1)))))

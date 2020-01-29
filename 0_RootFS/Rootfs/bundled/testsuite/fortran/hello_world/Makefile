@@ -12,4 +12,6 @@ endif
 $(PROJECT_BUILD)/$(PROJECT_NAME).o: $(PROJECT_NAME).f | $(PROJECT_BUILD)
 	$(call color,$(FC),-o $@ $(FFLAGS) -c $<)
 $(PROJECT_BUILD)/$(PROJECT_NAME)$(exeext): $(PROJECT_BUILD)/$(PROJECT_NAME).o
+	@# We want to compare linking with $(CC) as well as fully linking with $(FC)
 	$(call color,$(CC),-o $@ $(LDFLAGS) -lgfortran -lm $<)
+	$(call color,$(FC),-o $@ $(FFLAGS) $(LDFLAGS) -lgfortran -lm $(PROJECT_NAME).f)
