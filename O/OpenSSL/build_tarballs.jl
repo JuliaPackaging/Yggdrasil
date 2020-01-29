@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "OpenSSL"
-version = v"1.1.1+c"
+version = v"1.1.1"
 sources = [
     "https://www.openssl.org/source/openssl-1.1.1c.tar.gz" =>
     "f6fb3079ad15076154eda9413fed42877d668e7069d9b87396d0804fdb3f4c90",
