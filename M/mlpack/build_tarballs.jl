@@ -35,6 +35,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_SHARED_LIBS=ON
        -DDEBUG=OFF
        -DPROFILE=OFF
+       -DUSE_OPENMP=OFF
        -DBoost_NO_BOOST_CMAKE=1
        -DBUILD_JULIA_BINDINGS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
@@ -51,9 +52,7 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
 fi
 
 if [[ $target == *powerpc* ]]; then
-    FLAGS+=(-DUSE_OPENMP=ON)
-else
-    FLAGS+=(-DUSE_OPENMP=OFF)
+    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L/opt/${target}/${target}/lib${arch_ext}/ -lgomp")
 fi
 
 if [[ $target == *apple* ]]; then
@@ -101,6 +100,8 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
+print(platforms)
+platforms = Platform[Linux(:powerpc64le, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11))]
 
 # The products that we will ensure are always built.
 products = [
