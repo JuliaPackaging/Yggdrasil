@@ -35,7 +35,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [
+    Linux(:x86_64, libc=:glibc),
+    Linux(:x86_64, libc=:musl),
+    MacOS(:x86_64),
+    Windows(:x86_64)
+]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
