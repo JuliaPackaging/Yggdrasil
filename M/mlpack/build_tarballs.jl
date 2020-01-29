@@ -90,7 +90,6 @@ make -j${nproc}
 make install
 
 if [[ ${target} == *mingw* ]]; then
-    cp -v libmlpack_julia*.dll.a "${prefix}/lib"
     cp -v libmlpack_julia*.dll "${libdir}"
 else
     cp -v src/mlpack/bindings/julia/mlpack/src/*.${dlext} "${libdir}"
