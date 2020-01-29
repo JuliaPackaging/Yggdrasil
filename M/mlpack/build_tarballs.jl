@@ -50,7 +50,7 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
     export CXXFLAGS="${SYMB_DEFS[@]}"
 fi
 
-if [[ $target == *powerprc* ]]; then
+if [[ $target == *powerpc* ]]; then
     FLAGS+=(-DUSE_OPENMP=ON)
 else
     FLAGS+=(-DUSE_OPENMP=OFF)
@@ -90,7 +90,7 @@ cmake .. "${FLAGS[@]}"
 make -j${nproc}
 make install
 
-if [[" ${target}" == *mingw* ]]; then
+if [[ ${target} == *mingw* ]]; then
     cp -v libmlpack_julia*.dll.a "${prefix}/lib"
     cp -v libmlpack_julia*.dll "${libdir}"
 else
