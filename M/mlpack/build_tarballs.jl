@@ -35,7 +35,6 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_SHARED_LIBS=ON
        -DDEBUG=OFF
        -DPROFILE=OFF
-       -DUSE_OPENMP=OFF
        -DBoost_NO_BOOST_CMAKE=1
        -DBUILD_JULIA_BINDINGS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
@@ -50,6 +49,13 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
     done
     export CXXFLAGS="${SYMB_DEFS[@]}"
 fi
+
+if [[ $target == *powerprc* ]]; then
+    FLAGS+=(-DUSE_OPENMP=ON)
+else
+    FLAGS+=(-DUSE_OPENMP=OFF)
+fi
+
 if [[ $target == *apple* ]]; then
     FLAGS+=(-DCMAKE_SYSTEM_NAME="Darwin")
 elif [[ $target == *mingw* ]]; then
