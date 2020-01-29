@@ -71,8 +71,8 @@ elif [[ $target == *mingw* ]]; then
     else
         arch_ext="";
     fi
-    FLAGS+=(-DLAPACK_LIBRARY=${prefix}/bin/libopenblas${arch_ext}.${dlext})
-    FLAGS+=(-DBLAS_LIBRARY=${prefix}/bin/libopenblas${arch_ext}.${dlext})
+    FLAGS+=(-DLAPACK_LIBRARY=${libdir}/libopenblas${arch_ext}.${dlext})
+    FLAGS+=(-DBLAS_LIBRARY=${libdir}/libopenblas${arch_ext}.${dlext})
 fi
 
 if [[ ${target} != *darwin* ]]; then
