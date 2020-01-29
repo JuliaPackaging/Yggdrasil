@@ -6,7 +6,7 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.3.0-a1"
+version = v"3.3.0"
 sources = [
     # Current git master branch as of 12/20/2019.
     # This will be replaced with the actual mlpack 3.3.0 release... but that
