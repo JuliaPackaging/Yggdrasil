@@ -168,7 +168,7 @@ products = [
 dependencies = [
     "boost_jll",
     "armadillo_jll",
-    "OpenBLAS_jll" # Is this necessary?
+    "OpenBLAS_jll"
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
