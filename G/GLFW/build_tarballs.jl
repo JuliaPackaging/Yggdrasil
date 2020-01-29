@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = v"3.3"
+version = v"3.3.2"
 
 # Collection of sources required to build glfw
 sources = [
