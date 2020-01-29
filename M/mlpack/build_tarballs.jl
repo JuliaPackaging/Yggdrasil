@@ -81,7 +81,7 @@ fi
 
 # Reduce number of cores used for builds on FreeBSD or ARM (they run out of
 # memory).
-if [[ $target == *freebsd* ]] || [[ $target == *arm* ]]; then
+if [[ $target == *freebsd* ]] || [[ $target == *arm* ]] || [[ $target == *mingw* ]]; then
   nproc=1;
 fi
 
