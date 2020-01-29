@@ -63,7 +63,7 @@ elif [[ $target == *mingw* ]]; then
     if [[ "${nbits}" == 64 ]]; then
         arch_ext="_64";
     else
-        arch_ext="_";
+        arch_ext="";
     fi
     FLAGS+=(-DLAPACK_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlext})
     FLAGS+=(-DBLAS_LIBRARY=/opt/${target}/${target}/lib/libopenblas${arch_ext}.${dlext})
@@ -95,6 +95,8 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
+#print(platforms)
+platforms = Platform[Windows(:i686, compiler_abi=CompilerABI(cxxstring_abi=:cxx03))]
 
 # The products that we will ensure are always built.
 products = [
