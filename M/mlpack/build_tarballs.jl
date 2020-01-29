@@ -52,7 +52,7 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
 fi
 
 if [[ $target == *powerpc* ]]; then
-    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L/opt/${target}/${target}/lib${arch_ext}/ -lgomp")
+    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L/opt/${target}/${target}/lib${arch_ext}/ -lgomp -pthread")
 fi
 
 if [[ $target == *apple* ]]; then
