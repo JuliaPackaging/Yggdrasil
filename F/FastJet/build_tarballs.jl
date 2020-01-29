@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "FastJet"
-version = v"3.3.3"
+version = v"3.3.3.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -28,7 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     #   libtool: warning: undefined symbols not allowed in x86_64-w64-mingw32 shared libraries; building static only
     FLAGS+=(LDFLAGS="-no-undefined")
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-auto-ptr
 make -j ${nprocs} "${FLAGS[@]}"
 make install
 """
