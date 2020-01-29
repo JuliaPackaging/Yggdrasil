@@ -67,7 +67,7 @@ elif [[ $target == *mingw* ]]; then
     # For Windows configuration, we need to manually specify the OpenBLAS
     # libraries as CMake variables.
     if [[ "${nbits}" == 64 ]]; then
-        arch_ext="_64";
+        arch_ext="64_";
     else
         arch_ext="";
     fi
