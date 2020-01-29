@@ -5,8 +5,8 @@ version = v"3.3.2"
 
 # Collection of sources required to build glfw
 sources = [
-    "https://github.com/glfw/glfw/releases/download/$(version.major).$(version.minor)/glfw-$(version.major).$(version.minor).zip" =>
-    "36fda4cb173e3eb2928c976b0e9b5014e2e5d12b9b787efa0aa29ffc41c37c4a",
+    "https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip" =>
+    "08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7",
 ]
 
 # Bash recipe for building across all platforms
