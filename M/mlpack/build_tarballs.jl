@@ -100,8 +100,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
-print(platforms)
-platforms = Platform[Linux(:powerpc64le, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11))]
 
 # The products that we will ensure are always built.
 products = [
