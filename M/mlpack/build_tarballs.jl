@@ -101,8 +101,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
-#print(platforms)
-platforms = Platform[Windows(:i686, compiler_abi=CompilerABI(cxxstring_abi=:cxx03))]
 
 # The products that we will ensure are always built.
 products = [
