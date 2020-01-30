@@ -26,7 +26,7 @@ else
 fi
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DBUILD_SAIS64=$build64 ..
-make -j$nprocs
+make -j$nproc
 make install
 """
 
