@@ -7,7 +7,7 @@ version = v"0.7"
 
 # Collection of sources required to build LCIOWrapBuilder
 lcio_sources = [
-	"https://github.com/jstrube/LCIO_Julia_Wrapper.git" => "076b9b85095eb3a34eb1d7a2ae5aac39db771a0e",
+		"https://github.com/jstrube/LCIO_Julia_Wrapper/archive/v$(version).tar.gz" => "1e817bb196f9fdb0fe264c4e5e14744c3df0e9d8ebabae3a0c4be54e31470f74"
 ]
 julia_sources = Dict(
 	"x86_64-w64-mingw32" => ["https://github.com/JuliaPackaging/JuliaBuilder/releases/download/v1.0.0-2/julia-1.0.0-x86_64-w64-mingw32.tar.gz" => "9c58bc0873e52cf6c41108a7a2b100f68419478f10c6fe635197b1bf47eec64d"], 
@@ -20,10 +20,9 @@ julia_sources = Dict(
 # Bash recipe for building across all platforms
 script = raw"""
 ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
-rsync -a ${WORKSPACE}/srcdir/ ${prefix}/
-cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper
+cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper*
 mkdir build && cd build
-VERBOSE=ON cmake -DJulia_PREFIX=${WORKSPACE}/srcdir -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DJulia_PREFIX=${WORKSPACE}/srcdir -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=ON cmake --build . --config Release --target install
 """
 
