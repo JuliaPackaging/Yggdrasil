@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "FastJet"
-version = v"3.3.3.2"
+version = v"3.3.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -35,13 +35,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64),
-    Windows(:x86_64)
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
