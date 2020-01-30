@@ -58,7 +58,7 @@ end
 function get_next_shard_tag(cs)
     artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
     meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.host)
-    if meta === nothing
+    if meta === nothing || !haskey(meta, "download")
         return "$(cs.name)-v$(cs.version)"
     end
 
