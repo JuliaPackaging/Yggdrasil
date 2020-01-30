@@ -3,13 +3,18 @@ BINS = $(PROJECT_NAME)$(exeext)
 
 include ../../common.mk
 
-# On aarch64 and powerpc64le, libquadmath doesn't exist!
+# ppc64le sometimes requires -lm because it's bugged.  It doesn't hurt us to include it, so we do it everywhere
+CFLDFLAGS = -lgfortran -lm
+
+# On armv7l, aarch64 and powerpc64le, libquadmath doesn't exist!
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85440
-ifeq (,$(findstring aarch64,$(target)$(findstring powerpc64le,$(target))))
-LDFLAGS += -lquadmath
+ifeq (,$(findstring arm-,$(target))$(findstring aarch64,$(target))$(findstring powerpc64le,$(target)))
+CFLDFLAGS += -lquadmath
 endif
 
 $(PROJECT_BUILD)/$(PROJECT_NAME).o: $(PROJECT_NAME).f | $(PROJECT_BUILD)
 	$(call color,$(FC),-o $@ $(FFLAGS) -c $<)
 $(PROJECT_BUILD)/$(PROJECT_NAME)$(exeext): $(PROJECT_BUILD)/$(PROJECT_NAME).o
-	$(call color,$(CC),-o $@ $(LDFLAGS) -lgfortran -lm $<)
+	@# We want to compare linking with $(CC) as well as fully linking with $(FC)
+	$(call color,$(CC),-o $@ $(CFLAGS) $(LDFLAGS) $< $(CFLDFLAGS))
+	$(call color,$(FC),-o $@ $(FFLAGS) $(LDFLAGS) $(PROJECT_NAME).f)

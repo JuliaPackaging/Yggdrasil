@@ -21,7 +21,7 @@ make install -j${nproc} ${EXTRA_MAKE_FLAGS}
 install_license ../README
 """
 
-# Build for ALL THE PLATFORMS!
+# Build for all platforms
 platforms = supported_platforms()
 
 # The products that we will ensure are always built

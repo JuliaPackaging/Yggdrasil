@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libcxxwrap_julia"
-version = v"0.6.5"
+version = v"0.6.6"
 
 # Collection of sources required to complete build
 sources = [
     "https://github.com/JuliaInterop/libcxxwrap-julia.git" =>
-    "133a1370045b5786e7f176840c4c47be178377e9",
+    "c1c54414ed8875f963253c8b2e4c960f92e32908",
 ]
 
 # Bash recipe for building across all platforms
