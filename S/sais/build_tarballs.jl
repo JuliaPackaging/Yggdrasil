@@ -14,8 +14,18 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sais-2.4.1/
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_SHARED_LIBS=ON ..
+if [[ $nbits == 64 ]]; then
+  # modify the build to put sais and sais64 into the same library
+  build64=ON
+  sed -ri \
+    -e "s/sais sais.c/sais sais.c sais64.c/" \
+    -e "s/sais PROPERTIES/sais PROPERTIES\n  COMPILE_FLAGS \"-DSAIS_BUILD_64BIT\"/" \
+    lib/CMakeLists.txt
+else
+  build64=OFF
+fi
+mkdir build && cd build/
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DBUILD_SAIS64=$build64 ..
 make -j$nprocs
 make install
 """
