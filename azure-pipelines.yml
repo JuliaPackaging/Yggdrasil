@@ -66,6 +66,11 @@ jobs:
           PROJECTS_ACCEPTED="${PROJECTS_ACCEPTED} ${PROJECT}"
       done
       if [[ -n "${PROJECTS_ACCEPTED}" ]]; then
+          if [[ $(echo "${PROJECTS_ACCEPTED}" | awk '{print NF}') -gt 5 ]]; then
+              echo "Too many projects requested"
+              exit 1
+          fi
+
           # Pull down the latest source BB image, since we're gonna do some building
           docker pull $(BINARYBUILDER_IMAGE_NAME)
 
