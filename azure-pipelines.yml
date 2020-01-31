@@ -19,6 +19,9 @@ jobs:
     fetchDepth: 99999
     clean: true
   - bash: |
+      # Be fragile, like a beautiful porcelain doll
+      set -e
+
       # Normally we look at the last pushed commit
       COMPARE_AGAINST="HEAD~1"
 
