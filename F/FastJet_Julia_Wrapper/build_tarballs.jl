@@ -3,11 +3,7 @@
 using BinaryBuilder
 
 name = "FastJet_Julia_Wrapper"
-version_number = get(ENV, "TRAVIS_TAG", "")
-if version_number == ""
-    version_number = v"0.99"
-end
-version = VersionNumber(version_number)
+version = v"0.5"
 
 # Collection of sources required to build Fjwbuilder
 fastjet_sources = [
