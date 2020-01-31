@@ -14,9 +14,8 @@ sources = Dict(
 # Bash recipe for building across all platforms
 script = raw"""
 echo ${target}
-find .
 cd ${WORKSPACE}/srcdir/juliabin
-rsync ./ ${prefix}
+rsync -a ./ ${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,8 +38,13 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+# Use only one build_tarballs call to register. This will accumulate files into `products` and also wrappers into the JLL package.
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+
+last_platform = pop!(platforms)
 # Build the tarballs, and possibly a `build.jl` as well.
 for p in platforms
-	should_build_platform(triplet(p)) && build_tarballs(ARGS, name, version, sources[triplet(p)], script, [p], products, dependencies)
+	should_build_platform(triplet(p)) && build_tarballs(non_reg_ARGS, name, version, sources[triplet(p)], script, [p], products, dependencies)
 end
+build_tarballs(ARGS, name, version, sources[triplet(last_platform)], script, [last_platform], products, dependencies)
 
