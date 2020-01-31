@@ -22,7 +22,8 @@ if [[ ${target} == *mingw* ]]; then
     export PROJ_LIBS="proj_6_3"
 elif [[ "${target}" == *-linux-* ]]; then
     # Make sure GEOS is linked against libstdc++
-    atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
+     atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
+     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_curl_libs.patch"
     export EXTRA_GEOS_LIBS="-lstdc++"
     export EXTRA_CURL_LIBS="-lstdc++"
     if [[ "${target}" == powerpc64le-* ]]; then
