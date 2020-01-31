@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GDAL"
-version = v"3.0.3"
+version = v"3.0.4"
 
 # Collection of sources required to build GDAL
 sources = [
     "https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz" =>
-    "fe9bbe1cd4f74a4917dec9585a91d9018d3a3b61e379aa9a1b709e278dde11d6",
+    "fc15d2b9107b250305a1e0bd8421dd9ec1ba7ac73421e4509267052995af5e83",
     "./bundled",
 ]
 
@@ -24,6 +24,7 @@ elif [[ "${target}" == *-linux-* ]]; then
     # Make sure GEOS is linked against libstdc++
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
     export EXTRA_GEOS_LIBS="-lstdc++"
+    export EXTRA_CURL_LIBS="-lstdc++"
     if [[ "${target}" == powerpc64le-* ]]; then
         atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
         export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
@@ -49,6 +50,7 @@ rm -f ${prefix}/lib/*.la
 # Make sure that some important libraries are found
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
+grep "CURL_SETTING='yes'" config.log
 
 make -j${nproc}
 make install
