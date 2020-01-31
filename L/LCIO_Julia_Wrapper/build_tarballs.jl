@@ -50,6 +50,7 @@ include("../../fancy_toys.jl")
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 registered = false
 for p in platforms
+	global registered
 	if should_build_platform(triplet(p))
 		sources = copy(lcio_sources)
 		append!(sources, julia_sources[triplet(p)])
