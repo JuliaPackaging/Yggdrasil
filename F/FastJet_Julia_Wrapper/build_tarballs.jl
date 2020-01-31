@@ -5,13 +5,13 @@ using BinaryBuilder
 name = "FastJet_Julia_Wrapper"
 version_number = get(ENV, "TRAVIS_TAG", "")
 if version_number == ""
-    version_number = "v0.99"
+    version_number = v"0.99"
 end
 version = VersionNumber(version_number)
 
 # Collection of sources required to build Fjwbuilder
 fastjet_sources = [
-   "https://github.com/jstrube/FastJet_Julia_Wrapper.git" => "f558c8a156edfd00b66b68e544f9a202cb06a463"
+   "https://github.com/jstrube/FastJet_Julia_Wrapper.git" => "1ed483a0449a5a7330e0d899492b5c5d2247d47a"
 ]
 
 julia_sources = Dict(
@@ -30,7 +30,6 @@ export PATH=$(pwd)/bin:${PATH}
 ln -s ${WORKSPACE}/srcdir/include/ /opt/${target}/${target}/sys-root/usr/local
 cd ${WORKSPACE}/srcdir/FastJet_Julia_Wrapper
 mkdir build && cd build
-export JlCxx_DIR=${prefix}
 cmake -DJulia_PREFIX=${WORKSPACE}/srcdir -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=ON cmake --build . --config Release --target install
 """
@@ -56,10 +55,18 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+# Use only one build_tarballs call to register. This will accumulate files into `products` and also wrappers into the JLL package.
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+registered = false
 for p in platforms
     if should_build_platform(triplet(p))
 	sources = copy(fastjet_sources)
 	append!(sources, julia_sources[triplet(p)])
-	build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
+	if !registered
+		build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
+		registered = true
+	else
+		build_tarballs(non_reg_ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
+	end
     end
 end
