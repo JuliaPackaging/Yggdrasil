@@ -8,7 +8,7 @@ version = v"7.68.0"
 # Collection of sources required to build LibCURL
 sources = [
     "https://curl.haxx.se/download/curl-$(version).tar.bz2" =>
-    "6618234e0235c420a21f4cb4c2dd0badde76e6139668739085a70c4e2fe7a141",
+    "207f54917dd6a2dc733065ccf18d61bb5bebeaceb5df49cd9445483e8623eeb9",
 ]
 
 # Bash recipe for building across all platforms
