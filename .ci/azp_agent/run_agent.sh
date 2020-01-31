@@ -23,7 +23,6 @@ if [ -z "$AZP_PREFIX" ]; then
   echo 1>&2 "error: missing AZP_PREFIX environment variable"
   exit 1
 fi
-cd "$AZP_PREFIX"
 
 if [ -z "$AZP_TOKEN_FILE" ]; then
   if [ -z "$AZP_TOKEN" ]; then
@@ -31,21 +30,21 @@ if [ -z "$AZP_TOKEN_FILE" ]; then
     exit 1
   fi
 
-  AZP_TOKEN_FILE="$(pwd)/.token"
+  AZP_TOKEN_FILE="${AZP_PREFIX}/.token"
   echo -n "${AZP_TOKEN}" > "$AZP_TOKEN_FILE"
 fi
 # Hide the token from worker processes
 unset AZP_TOKEN
 
-if [ -n "$AZP_WORK" ]; then
-  mkdir -p "$AZP_WORK"
-fi
+rm -rf "${AZP_PREFIX}/agent"
+mkdir "${AZP_PREFIX}/agent"
+cd "${AZP_PREFIX}/agent"
 
-rm -rf agent
-mkdir agent
-cd agent
-
-#export AGENT_ALLOW_RUNASROOT="1"
+# Download/install a version of Julia for our agent
+JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.0-linux-x86_64.tar.gz"
+mkdir -p "${AZP_PREFIX}/julia"
+curl -# -L "$JULIA_URL" | tar --strip-components=1 -zxv -C "${AZP_PREFIX}/julia"
+export PATH="${AZP_PREFIX}/julia/bin:$PATH"
 
 cleanup() {
   if [ -e config.sh ]; then
@@ -100,7 +99,7 @@ print_header "3. Configuring Azure Pipelines agent..."
   --auth PAT \
   --token $(cat "$AZP_TOKEN_FILE") \
   --pool "${AZP_POOL:-Default}" \
-  --work "${AZP_WORK:-_work}" \
+  --work _work \
   --replace \
   --acceptTeeEula & wait $!
 
