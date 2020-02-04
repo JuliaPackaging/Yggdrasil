@@ -707,9 +707,11 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
   pid_t pid;
   int status;
 
-  // Enter chroot
+  // Use `pivot_root()` to avoid bad interaction between `chroot()` and `clone()`,
+  // where we get an EPERM on nested sandboxing.
   check(0 == chdir(root_dir));
-  check(0 == chroot("."));
+  check(0 == syscall(SYS_pivot_root, ".", "."));
+  check(0 == umount2(".", MNT_DETACH));
 
   // If we've got a directory to change to, do so, possibly creating it if we need to
   if (new_cd) {
@@ -861,13 +863,13 @@ int main(int sandbox_argc, char **sandbox_argv) {
   int cmdline_fd = -1;
 
   // First, determine our execution mode based on pid and euid (allowing for override)
-  const char * forced_mode = getenv("FORCE_INIT_MODE");
+  const char * forced_mode = getenv("FORCE_SANDBOX_MODE");
   if (forced_mode != NULL) {
     if (strcmp(forced_mode, "init") == 0) {
       execution_mode = INIT_MODE;
     } else if (strcmp(forced_mode, "privileged") == 0) {
       execution_mode = PRIVILEGED_CONTAINER_MODE;
-    } else if (strcmp(forced_mode, "unprivilged") == 0) {
+    } else if (strcmp(forced_mode, "unprivileged") == 0) {
       execution_mode = UNPRIVILEGED_CONTAINER_MODE;
     } else {
       fprintf(stderr, "ERROR: Unknown FORCE_SANDBOX_MODE argument \"%s\"\n", forced_mode);
@@ -881,6 +883,10 @@ int main(int sandbox_argc, char **sandbox_argv) {
     } else {
       execution_mode = UNPRIVILEGED_CONTAINER_MODE;
     }
+
+    // Once we're inside the sandbox, we can always use "unprivileged" mode, since
+    // we've got mad permissions inside; so just always do that.
+    setenv("FORCE_SANDBOX_MODE", "unprivileged", 0);
   }
 
   uid_t uid = getuid();
@@ -896,6 +902,11 @@ int main(int sandbox_argc, char **sandbox_argv) {
   if (SUDO_GID != NULL && SUDO_GID[0] != '\0') {
     gid = strtol(SUDO_GID, NULL, 10);
   }
+
+  // Hide these from children so that we don't carry the outside UID numbers into
+  // nested sandboxen; that would cause problems when we refer to UIDs that don't exist.
+  unsetenv("SUDO_UID");
+  unsetenv("SUDO_GID");
 
   // If we're running in init mode, we need to do some initial startup; we need to mount /proc,
   // and we need to read in our command line arguments over a virtual serial device, since we
@@ -1081,7 +1092,6 @@ int main(int sandbox_argc, char **sandbox_argv) {
   pipe(parent_block);
   pid_t pid;
 
-  // If we are running as a privileged container, we need to build our mount mappings now.
   if (execution_mode == PRIVILEGED_CONTAINER_MODE) {
     // We dissociate ourselves from the typical mount namespace.  This gives us the freedom
     // to start mounting things willy-nilly without mucking up the user's computer.
@@ -1093,7 +1103,8 @@ int main(int sandbox_argc, char **sandbox_argv) {
     // any subtrees of `/` (e.g. everything) from propagating back to the outside `/`.
     check(0 == mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL));
 
-    // Mount the rootfs, shards, and workspace.
+    // Mount the rootfs, shards, and workspace.  We do this here because, on this machine,
+    // we may not have permissions to mount overlayfs within user namespaces.
     mount_the_world(sandbox_root, sandbox_root, workspaces, maps, uid, gid);
   }
 
@@ -1126,14 +1137,11 @@ int main(int sandbox_argc, char **sandbox_argv) {
       // If we are in privileged container mode, let's go ahead and drop back
       // to the original calling user's UID and GID, which has been mapped to
       // zero within this container.
-
       check(0 == setuid(0));
       check(0 == setgid(0));
-    }
-
-    if (execution_mode == UNPRIVILEGED_CONTAINER_MODE) {
-      // If we're unprivileged, we now take advantage of our new root status
-      // to mount the world.
+    } else if (execution_mode == UNPRIVILEGED_CONTAINER_MODE) {
+      // If we're in unprivileged container mode, mount the world now that we
+      // have supreme cosmic power.
       mount_the_world(sandbox_root, sandbox_root, workspaces, maps, 0, 0);
     }
 
