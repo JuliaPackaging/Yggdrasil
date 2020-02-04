@@ -15,8 +15,17 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/abyss/
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-boost=${prefix}/include
-make
+# configure tries to run the tests `AC_FUNC_MALLOC` `AC_FUNC_REALLOC` which
+# automatically fails in cross-compilation environments.  However we have
+# verified that for all supported platforms `malloc` and `realloc` are
+# well-behaving and return non-null when given 0 as input, so we can cache the
+# value of the test.
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-boost=${prefix} \
+    --without-sparsehash \
+    ac_cv_func_malloc_0_nonnull=yes \
+    ac_cv_func_realloc_0_nonnull=yes
+make -j${nproc}
 make install
 """
 
@@ -25,7 +34,7 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [
+products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
