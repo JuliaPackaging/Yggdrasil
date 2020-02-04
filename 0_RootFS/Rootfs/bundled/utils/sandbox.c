@@ -268,11 +268,14 @@ static void mount_overlay(const char * src, const char * dest, const char * bnam
   snprintf(upper, sizeof(upper), "%s/upper/%s", work_dir, bname);
   snprintf(work, sizeof(work), "%s/work/%s", work_dir, bname);
 
-  // If `src` is "", we actually want it to be "/", so adapt here because this is the
-  // only place in the code base where we actually need the slash at the end of the
-  // directory name.
+  // If `src` or `dest` is "", we actually want it to be "/", so adapt here because
+  // this is the only place in the code base where we actually need the slash at the
+  // end of the directory name.
   if (src[0] == '\0') {
     src = "/";
+  }
+  if (dest[0] == '\0') {
+    dest = "/";
   }
 
   if (verbose) {
@@ -288,11 +291,11 @@ static void mount_overlay(const char * src, const char * dest, const char * bnam
   check(0 == mount("overlay", dest, "overlay", 0, opts));
 
   // Chown this directory to the desired UID/GID, so that it doesn't look like it's
-  // owned by "nobody" when we're inside the sandbox
+  // owned by "nobody" when we're inside the sandbox.
   check(0 == chown(dest, uid, gid));
 }
 
-static void mount_procfs(const char * root_dir) {
+static void mount_procfs(const char * root_dir, uid_t uid, gid_t gid) {
   char path[PATH_MAX];
 
   // Mount procfs at <root_dir>/proc
@@ -300,7 +303,13 @@ static void mount_procfs(const char * root_dir) {
   if (verbose) {
     fprintf(stderr, "--> Mounting procfs at %s\n", path);
   }
+  // Attempt to unmount a previous /proc if it exists
   check(0 == mount("proc", path, "proc", 0, ""));
+
+  // Chown this directory to the desired UID/GID, so that it doesn't look like it's
+  // owned by "nobody" when we're inside the sandbox.  We allow this to fail, as
+  // sometimes we're trying to chown() something we don't own.
+  chown(path, uid, gid);
 }
 
 /*
@@ -562,7 +571,7 @@ static void mount_the_world(const char * root_dir, const char * dest,
   mount_rootfs_and_shards(root_dir, dest, "/proc", shard_maps, uid, gid);
 
   // Mount /proc within the sandbox
-  mount_procfs(dest);
+  mount_procfs(dest, uid, gid);
 
   // Mount /dev stuff
   mount_dev(dest);
@@ -571,7 +580,7 @@ static void mount_the_world(const char * root_dir, const char * dest,
   mount_workspaces(workspaces, dest);
 
   // Once we're done with that, put /proc back in its place in the big world.
-  mount_procfs("");
+  mount_procfs("", uid, gid);
 }
 
 /****** 3: Networking ******
@@ -707,11 +716,19 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
   pid_t pid;
   int status;
 
+  // One of the few places where we need to not use `""`, but instead expand it to `"/"`
+  if (root_dir[0] == '\0') {
+    root_dir = "/";
+  }
+
   // Use `pivot_root()` to avoid bad interaction between `chroot()` and `clone()`,
   // where we get an EPERM on nested sandboxing.
   check(0 == chdir(root_dir));
-  check(0 == syscall(SYS_pivot_root, ".", "."));
-  check(0 == umount2(".", MNT_DETACH));
+  if (syscall(SYS_pivot_root, ".", ".") == 0) {
+    check(0 == umount2(".", MNT_DETACH));
+  } else {
+    check(0 == chroot(root_dir));
+  }
 
   // If we've got a directory to change to, do so, possibly creating it if we need to
   if (new_cd) {
@@ -1139,13 +1156,17 @@ int main(int sandbox_argc, char **sandbox_argv) {
       // zero within this container.
       check(0 == setuid(0));
       check(0 == setgid(0));
+
+      // The /proc mountpoint previously mounted is in the wrong PID namespace;
+      // mount a new procfs over it to to get better values:
+      mount_procfs(sandbox_root, 0, 0);
     } else if (execution_mode == UNPRIVILEGED_CONTAINER_MODE) {
       // If we're in unprivileged container mode, mount the world now that we
       // have supreme cosmic power.
       mount_the_world(sandbox_root, sandbox_root, workspaces, maps, 0, 0);
     }
 
-    // Finally, we begin invocation of the target program
+    // Finally, we begin invocation of the target program.
     return sandbox_main(sandbox_root, new_cd, sandbox_argc, sandbox_argv);
   }
 
