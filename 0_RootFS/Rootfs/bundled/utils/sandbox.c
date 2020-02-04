@@ -1088,8 +1088,8 @@ int main(int sandbox_argc, char **sandbox_argv) {
   // The regular SIGSTOP method does not work because container-inits don't receive STOP or KILL
   // signals from within their own pid namespace.
   int child_block[2], parent_block[2];
-  pipe(child_block);
-  pipe(parent_block);
+  check(0 == pipe(child_block));
+  check(0 == pipe(parent_block));
   pid_t pid;
 
   if (execution_mode == PRIVILEGED_CONTAINER_MODE) {
