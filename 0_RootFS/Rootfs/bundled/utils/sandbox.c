@@ -143,7 +143,7 @@ static const char * get_plan9_opts() {
 /* Like assert, but don't go away with optimizations */
 static void _check(int ok, int line) {
   if (!ok) {
-    fprintf(stderr, "At line %d, ABORTED (%s)!\n", line, strerror(errno));
+    fprintf(stderr, "At line %d, ABORTED (%d: %s)!\n", line, errno, strerror(errno));
     abort();
   }
 }
@@ -231,7 +231,7 @@ static void configure_user_namespace(uid_t uid, gid_t gid, pid_t pid) {
   int uidmap_fd = open_proc_file(pid, "uid_map", O_WRONLY);
   check(uidmap_fd != -1);
   char uidmap[100];
-  nbytes = snprintf(uidmap, sizeof(uidmap), "0\t%d\t1", uid);
+  nbytes = snprintf(uidmap, sizeof(uidmap), "0\t%d\t1\n", uid);
   check(nbytes > 0 && nbytes <= sizeof(uidmap));
   check(write(uidmap_fd, uidmap, nbytes) == nbytes);
   close(uidmap_fd);
