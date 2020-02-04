@@ -224,7 +224,7 @@ static void configure_user_namespace(uid_t uid, gid_t gid, pid_t pid) {
   int nbytes = 0;
 
   if (verbose) {
-    printf("--> Mapping %d:%d to root:root within container namespace\n", uid, gid);
+    fprintf(stderr, "--> Mapping %d:%d to root:root within container namespace\n", uid, gid);
   }
 
   // Setup uid map
@@ -276,7 +276,7 @@ static void mount_overlay(const char * src, const char * dest, const char * bnam
   }
 
   if (verbose) {
-    printf("--> Mounting overlay of %s at %s (modifications in %s, workspace in %s)\n", src, dest, upper, work);
+    fprintf(stderr, "--> Mounting overlay of %s at %s (modifications in %s, workspace in %s)\n", src, dest, upper, work);
   }
 
   // Make the upper and work directories
@@ -298,7 +298,7 @@ static void mount_procfs(const char * root_dir) {
   // Mount procfs at <root_dir>/proc
   snprintf(path, sizeof(path), "%s/proc", root_dir);
   if (verbose) {
-    printf("--> Mounting procfs at %s\n", path);
+    fprintf(stderr, "--> Mounting procfs at %s\n", path);
   }
   check(0 == mount("proc", path, "proc", 0, ""));
 }
@@ -315,7 +315,7 @@ static void mount_dev(const char * root_dir) {
   if (execution_mode == INIT_MODE) {
     snprintf(path, sizeof(path), "%s/dev", root_dir);
     if (verbose) {
-      printf("--> Mounting /dev at %s\n", path);
+      fprintf(stderr, "--> Mounting /dev at %s\n", path);
     }
     check(0 == mount("devtmpfs", path, "devtmpfs", 0, ""));
 
@@ -326,7 +326,7 @@ static void mount_dev(const char * root_dir) {
     // Bindmount /dev/null into our root_dir
     snprintf(path, sizeof(path), "%s/dev/null", root_dir);
     if (verbose) {
-      printf("--> Mounting /dev/null at %s\n", path);
+      fprintf(stderr, "--> Mounting /dev/null at %s\n", path);
     }
     touch(path);
     check(0 == mount("/dev/null", path, "", MS_BIND, NULL));
@@ -334,7 +334,7 @@ static void mount_dev(const char * root_dir) {
     // Bindmount /dev/tty into our root_dir
     snprintf(path, sizeof(path), "%s/dev/tty", root_dir);
     if (verbose) {
-      printf("--> Mounting /dev/tty at %s\n", path);
+      fprintf(stderr, "--> Mounting /dev/tty at %s\n", path);
     }
     touch(path);
     check(0 == mount("/dev/tty", path, "", MS_BIND, NULL));
@@ -345,7 +345,7 @@ static void mount_dev(const char * root_dir) {
       snprintf(path, sizeof(path), "%s/dev/urandom", root_dir);
 
       if (verbose) {
-        printf("--> Mounting /dev/urandom at %s\n", path);
+        fprintf(stderr, "--> Mounting /dev/urandom at %s\n", path);
       }
 
       // Bind-mount /dev/urandom to internal /dev/urandom (creating it if it doesn't already exist)
@@ -371,7 +371,7 @@ static void mount_workspaces(struct map_list * workspaces, const char * dest) {
 
     // map <inside> to the given outside path
     if (verbose) {
-      printf("--> workspacing %s to %s\n", current_entry->outside_path, path);
+      fprintf(stderr, "--> workspacing %s to %s\n", current_entry->outside_path, path);
     }
 
     // create the inside directory, not freaking out if it already exists.
@@ -454,7 +454,7 @@ static void mount_rootfs_and_shards(const char * root_dir, const char * dest,
 
     // map <inside> to the given outside path
     if (verbose) {
-      printf("--> mapping %s to %s\n", current_entry->outside_path, path);
+      fprintf(stderr, "--> mapping %s to %s\n", current_entry->outside_path, path);
     }
 
     // create all directories leading up to our `path`, not freaking out if any
@@ -554,7 +554,7 @@ static void mount_the_world(const char * root_dir, const char * dest,
                             uid_t uid, gid_t gid) {
   // Mount the place we'll put all our overlay work directories
   if (verbose) {
-    printf("--> Creating overlay workdir at /proc\n");
+    fprintf(stderr, "--> Creating overlay workdir at /proc\n");
   }
   check(0 == mount("tmpfs", "/proc", "tmpfs", 0, "size=1G"));
 
@@ -717,21 +717,17 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
     check(0 == chdir(new_cd));
   }
 
-  // fflush before forking
-  fflush(stdout);
-
   // When the main pid dies, we exit.
   pid_t main_pid;
   if ((main_pid = fork()) == 0) {
     if (verbose) {
-      printf("About to run `%s` ", sandbox_argv[0]);
+      fprintf(stderr, "About to run `%s` ", sandbox_argv[0]);
       int argc_i;
       for( argc_i=1; argc_i<sandbox_argc; ++argc_i) {
-        printf("`%s` ", sandbox_argv[argc_i]);
+        fprintf(stderr, "`%s` ", sandbox_argv[argc_i]);
       }
-      printf("\n");
+      fprintf(stderr, "\n");
     }
-    fflush(stdout);
     execve(sandbox_argv[0], sandbox_argv, environ);
     fprintf(stderr, "ERROR: Failed to run %s!\n", sandbox_argv[0]);
 
@@ -822,7 +818,7 @@ static void read_sandbox_env(int fd) {
   int num_env_mappings = 0;
   read_blocking(fd, (char *)&num_env_mappings, sizeof(int));
   if (verbose) {
-    printf("Reading %d environment mappings\n", num_env_mappings);
+    fprintf(stderr, "Reading %d environment mappings\n", num_env_mappings);
   }
 
   int env_buff_len = 1024;
@@ -874,7 +870,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
     } else if (strcmp(forced_mode, "unprivilged") == 0) {
       execution_mode = UNPRIVILEGED_CONTAINER_MODE;
     } else {
-      printf("ERROR: Unknown FORCE_INIT_MODE argument \"%s\"", forced_mode);
+      fprintf(stderr, "ERROR: Unknown FORCE_SANDBOX_MODE argument \"%s\"\n", forced_mode);
       _exit(1);
     }
   } else {
@@ -911,7 +907,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
     if( cmdline_fd == -1 ) {
       // This is a debugging escape hatch for us developers that aren't clever enough and
       // somehow screw up the Julia <---> qemu <---> sandbox communication channel.
-      printf("Running as init but couldn't open %s; entering debugging mode!\n", comm_dev);
+      fprintf(stderr, "Running as init but couldn't open %s; entering debugging mode!\n", comm_dev);
       sandbox_argc = 5;
       sandbox_argv = malloc(sizeof(char *)*(sandbox_argc + 1));
       sandbox_argv[0] = "/sandbox";
@@ -952,18 +948,18 @@ int main(int sandbox_argc, char **sandbox_argv) {
         return 0;
       case 'v':
         verbose = 1;
-        printf("verbose sandbox enabled (running in ");
+        fprintf(stderr, "verbose sandbox enabled (running in ");
         switch (execution_mode) {
           case INIT_MODE:
-            printf("init");
+            fprintf(stderr, "init");
             break;
           case UNPRIVILEGED_CONTAINER_MODE:
-            printf("un");
+            fprintf(stderr, "un");
           case PRIVILEGED_CONTAINER_MODE:
-            printf("privileged container");
+            fprintf(stderr, "privileged container");
             break;
         }
-        printf(" mode)\n");
+        fprintf(stderr, " mode)\n");
         break;
       case 'r': {
         sandbox_root = strdup(optarg);
@@ -972,13 +968,13 @@ int main(int sandbox_argc, char **sandbox_argv) {
             sandbox_root[sandbox_root_len-1] = '\0';
         }
         if (verbose) {
-          printf("Parsed --rootfs as \"%s\"\n", sandbox_root);
+          fprintf(stderr, "Parsed --rootfs as \"%s\"\n", sandbox_root);
         }
       } break;
       case 'c':
         new_cd = strdup(optarg);
         if (verbose) {
-          printf("Parsed --cd as \"%s\"\n", new_cd);
+          fprintf(stderr, "Parsed --cd as \"%s\"\n", new_cd);
         }
         break;
       case 'w':
@@ -991,7 +987,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
         char *from = strndup(optarg, (colon - optarg));
         char *to = strdup(colon + 1);
         if ((from[0] != '/') && (strncmp(from, "9p/", 3) != 0)) {
-          printf("ERROR: Outside path \"%s\" must be absolute or 9p!  Ignoring...\n", from);
+          fprintf(stderr, "ERROR: Outside path \"%s\" must be absolute or 9p!  Ignoring...\n", from);
           break;
         }
 
@@ -1009,8 +1005,8 @@ int main(int sandbox_argc, char **sandbox_argv) {
           workspaces = entry;
         }
         if (verbose) {
-          printf("Parsed --%s as \"%s\" -> \"%s\"\n", c == 'm' ? "map" : "workspace",
-                 entry->outside_path, entry->map_path);
+          fprintf(stderr, "Parsed --%s as \"%s\" -> \"%s\"\n", c == 'm' ? "map" : "workspace",
+                  entry->outside_path, entry->map_path);
         }
       } break;
       default:
@@ -1157,7 +1153,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
   // Wait until the child is ready to be configured.
   check(0 == read(parent_block[0], NULL, 1));
   if (verbose) {
-    printf("Child Process PID is %d\n", pid);
+    fprintf(stderr, "Child Process PID is %d\n", pid);
   }
 
   // Configure user namespace for the child PID.
@@ -1170,7 +1166,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
   check(pid == waitpid(pid, &status, 0));
   check(WIFEXITED(status));
   if (verbose) {
-    printf("Child Process exited, exit code %d\n", WEXITSTATUS(status));
+    fprintf(stderr, "Child Process exited, exit code %d\n", WEXITSTATUS(status));
   }
 
   // Give back the terminal to the parent
