@@ -11,7 +11,7 @@ source .env
 if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     echo "Setting up rootfs..."
     mkdir -p "${STORAGE_DIR}/rootfs"
-    #sudo debootstrap --variant=minbase --include=curl,libicu63 buster "${STORAGE_DIR}/rootfs"
+    sudo debootstrap --variant=minbase --include=curl,libicu63,git buster "${STORAGE_DIR}/rootfs"
 
     # Remove special `dev` files
     sudo rm -rf "${STORAGE_DIR}/rootfs/dev/*"
@@ -26,15 +26,6 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     # until 1.4-rc2 is out
     JULIA_URL="julialangnightlies-s3.julialang.org/assert_pretesting/linux/x64/1.4/julia-3a22e2fdcf-linux64.tar.gz"
     curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs"
-
-    # Install our Julia dependencies, that we bake into our depot
-    export JULIA_DEPOT_PATH="${STORAGE_DIR}/depot"
-    JULIA="${STORAGE_DIR}/rootfs/bin/julia"
-    ${JULIA} --color=yes -e 'using Pkg; Pkg.add([
-                             PackageSpec(name="BinaryProvider", rev="sf/sub_out_to_pkg"),
-                             PackageSpec(name="Registrator", rev="master"),
-                             PackageSpec(name="BinaryBuilder", rev="master")]);
-                             using BinaryBuilder'
 
     # Install `sandbox` and `run_agent.sh` into the rootfs
     echo "Installing sandbox..."
