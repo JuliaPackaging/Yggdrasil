@@ -13,7 +13,7 @@ merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
 
 # Download all sources
-BinaryBuilder.download_sources(merged["sources"]; verbose=true)
+BinaryBuilder.download_source.(merged["sources"]; verbose=true)
 
 # Then export platforms to file
 open(ARGS[2], "w") do io
