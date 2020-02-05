@@ -24,6 +24,9 @@ sources = [
     # Native build for arm
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz" => "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7",
 
+    # Conda build (no MPI) for aarch64
+    "https://anaconda.org/conda-forge/hdf5/1.10.5/download/linux-aarch64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2" => "46300770bb662aaefc92a9e21c5f78ebfaac5c00d4963844c3f730836400edb2",
+
     # License file
     "https://support.hdfgroup.org/ftp/HDF5/releases/COPYING" => "1001425406c6f36ba30f7ac863c4b44a0355dfd5a0a0cf71e1f27201193a3f1e",
 ]
@@ -42,6 +45,13 @@ elif [[ "${target}" == arm-linux-gnueabihf ]]; then
     cd hdf5-arm-linux-gnueabihf-*
     # Remove zlib headers that shouldn't be here
     rm include/z*.h
+    for dir in bin include lib share; do
+        mkdir -p "${prefix}/${dir}"
+        cp -r ${dir}/* "${prefix}/${dir}"
+    done
+        chmod 755 ${bindir}/*
+elif [[ "${target}" == aarch64-* ]]; then
+    cd hdf5-aarch64-linux-gnueabihf-*
     for dir in bin include lib share; do
         mkdir -p "${prefix}/${dir}"
         cp -r ${dir}/* "${prefix}/${dir}"
@@ -92,7 +102,7 @@ if [[ ${target} == *86*linux* ]]; then
     ln -s ${libhdf5_hlname} ${prefix}/lib/libhdf5_hl${ext}
 fi
 
-if [[ "${target}" != arm-linux-gnueabihf ]]; then
+if [[ "${target}" != arm-linux-gnueabihf && "${target}" != aarch64-linux-gnueabihf ]]; then
     # Install headers
     mkdir -p "${prefix}/include"
     if [[ "${target}" == *-mingw* ]]; then
@@ -113,6 +123,7 @@ platforms = [
     Linux(:x86_64),
     Linux(:i686),
     Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    Linux(:aarch64, libc=:glibc, call_abi=:eabihf),
     MacOS(),
     Windows(:x86_64),
     Windows(:i686),
