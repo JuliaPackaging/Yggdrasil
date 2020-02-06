@@ -2,7 +2,7 @@
 
 set -e
 
-NUM_AGENTS=4
+NUM_AGENTS=8
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir -p ${HOME}/.config/systemd/user
 source .env
@@ -29,7 +29,7 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
 
     # Install `sandbox` and `run_agent.sh` into the rootfs
     echo "Installing sandbox..."
-    SANDBOX_URL="https://github.com/JuliaPackaging/Yggdrasil/raw/020391c638b8b1036cb97ef4d7d1ef5620eec654/0_RootFS/Rootfs/bundled/utils/sandbox"
+    SANDBOX_URL="https://github.com/JuliaPackaging/Yggdrasil/raw/master/0_RootFS/Rootfs/bundled/utils/sandbox"
     curl -# -L "${SANDBOX_URL}" -o "${STORAGE_DIR}/rootfs/sandbox"
     chmod +x "${STORAGE_DIR}/rootfs/sandbox"
     cp -a "${SRC_DIR}/run_agent.sh" "${STORAGE_DIR}/rootfs/run_agent.sh"
