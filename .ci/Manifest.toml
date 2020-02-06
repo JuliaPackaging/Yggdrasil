@@ -15,8 +15,8 @@ version = "0.2.0"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
-deps = ["Base64", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "ghr_jll"]
-git-tree-sha1 = "c1f1aee4b16f63973d4efae1396f0a4442c03980"
+deps = ["Base64", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
+git-tree-sha1 = "1ea1f60480895c175e20f743adbf525be607d087"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -24,7 +24,7 @@ version = "0.2.2"
 
 [[BinaryProvider]]
 deps = ["Libdl", "Logging", "Pkg", "SHA"]
-git-tree-sha1 = "867371934c1498733a81229dc455d84bc37cdc96"
+git-tree-sha1 = "a4c58d55ef3ad4c00523510917934ad2fb0ba194"
 repo-rev = "sf/sub_out_to_pkg"
 repo-url = "https://github.com/JuliaPackaging/BinaryProvider.jl.git"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
@@ -166,9 +166,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Mustache]]
 deps = ["Printf", "Tables"]
-git-tree-sha1 = "f39de3a12232eb47bd0629b3a661054287780276"
+git-tree-sha1 = "e06eef2abee113c49695f5347668e15d4c02978a"
 uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
-version = "0.5.13"
+version = "1.0.0"
 
 [[Mux]]
 deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "Lazy", "Pkg", "Sockets", "WebSockets"]
@@ -236,7 +236,7 @@ version = "0.2.0"
 
 [[Registrator]]
 deps = ["AutoHashEquals", "Base64", "Dates", "Distributed", "FileWatching", "GitForge", "GitHub", "HTTP", "JSON", "LibGit2", "Logging", "MbedTLS", "Mustache", "Mux", "Pkg", "RegistryTools", "Serialization", "Sockets", "TimeToLive", "UUIDs", "ZMQ"]
-git-tree-sha1 = "bdc6b01896554420e9bcc355b2089c28d271a07b"
+git-tree-sha1 = "f1695e6ce1c51d955d36cbe10bb19bd34020da73"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaRegistries/Registrator.jl.git"
 uuid = "4418983a-e44d-11e8-3aec-9789530b3b3e"
@@ -280,10 +280,10 @@ deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TimeToLive]]
-deps = ["Dates", "Test"]
-git-tree-sha1 = "43defcaf72b89b047f11b778cd83b71ac3e418b0"
+deps = ["Dates"]
+git-tree-sha1 = "1f1389007d16385ec02e497bef6c2caffba99b65"
 uuid = "37f0c46e-897f-50ef-b453-b26c3eed3d6c"
-version = "0.2.0"
+version = "0.3.0"
 
 [[TranscodingStreams]]
 deps = ["Random", "Test"]

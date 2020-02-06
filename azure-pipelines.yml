@@ -74,7 +74,7 @@ jobs:
           fi
 
           # Next, we're going to ensure that our BB is up to date and precompiled
-          $(JULIA) -e "import Pkg; Pkg.instantiate(); Pkg.update(); using BinaryBuilder"
+          $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
 
           # Next, for each project, download its sources. We do this by generating meta.json
           # files, then parsing them with `download_sources.jl`
