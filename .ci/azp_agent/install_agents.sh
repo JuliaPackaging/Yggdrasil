@@ -2,7 +2,7 @@
 
 set -e
 
-NUM_AGENTS=1
+NUM_AGENTS=4
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir -p ${HOME}/.config/systemd/user
 source .env
