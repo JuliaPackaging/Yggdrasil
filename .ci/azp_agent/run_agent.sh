@@ -7,11 +7,6 @@ if [ -z "$AZP_URL" ]; then
   exit 1
 fi
 
-if [ -z "$AZP_AGENT_NAME" ]; then
-  echo 1>&2 "error: missing AZP_AGENT_NAME environment variable"
-  exit 1
-fi
-
 if [ -z "$AZP_TOKEN" ]; then
   echo 1>&2 "error: missing AZP_TOKEN environment variable"
   exit 1
@@ -25,7 +20,7 @@ apt install -y git || true
 
 cd /agent
 ./config.sh --unattended \
-  --agent "${AZP_AGENT_NAME}" \
+  --agent "${HOSTNAME}.${AGENT_IDX}" \
   --url "${AZP_URL}" \
   --auth PAT \
   --token "${AZP_TOKEN}" \
