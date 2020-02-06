@@ -102,7 +102,7 @@ if [[ ${target} == *86*linux* ]]; then
     ln -s ${libhdf5_hlname} ${prefix}/lib/libhdf5_hl${ext}
 fi
 
-if [[ "${target}" != arm-linux-gnueabihf && "${target}" != aarch64-linux-gnueabihf ]]; then
+if [[ "${target}" != arm-linux-gnueabihf ]] && [[ "${target}" != aarch64-linux-gnueabihf ]]; then
     # Install headers
     mkdir -p "${prefix}/include"
     if [[ "${target}" == *-mingw* ]]; then
