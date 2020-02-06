@@ -16,8 +16,6 @@ fi
 export VSO_AGENT_IGNORE=AZP_TOKEN
 export AGENT_ALLOW_RUNASROOT=1
 
-apt install -y git || true
-
 cd /agent
 ./config.sh --unattended \
   --agent "${HOSTNAME}.${AGENT_IDX}" \
