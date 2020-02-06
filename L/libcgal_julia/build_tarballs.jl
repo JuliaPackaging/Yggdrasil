@@ -4,12 +4,12 @@ using BinaryBuilder
 
 const name = "libcgal_julia"
 
-version = v"0.4.0"
+version = v"0.5.0"
 
 # Collection of sources required to build CGAL
 const sources = [
     "https://github.com/rgcv/libcgal-julia.git" =>
-        "8d97853ac3baf5fee431d005b23a45e0390a9f81"
+        "d5e3d823dd6b0f210736ef93e7bc62c7e1d5b414"
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -64,7 +64,8 @@ const platforms = [
 
 # The products that we will ensure are always built
 const products = [
-    LibraryProduct("libcgal_julia", :libcgal_julia),
+    LibraryProduct("libcgal_julia_exact", :libcgal_julia_exact),
+    LibraryProduct("libcgal_julia_inexact", :libcgal_julia_inexact),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
