@@ -119,6 +119,8 @@ jobs:
           done
           echo "}"
       fi
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
     name: mtrx
 
 - job: build
@@ -140,6 +142,8 @@ jobs:
 
       cd $(PROJECT)
       $(JULIA) ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
     displayName: "run build_tarballs.jl"
     condition: ne(variables['projplatforms'], '')
 
@@ -159,20 +163,9 @@ jobs:
       $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
       echo "Registering $(NAME)..."
       $(JULIA) $(Build.SourcesDirectory)/.ci/register_package.jl $(Agent.TempDirectory)/$(NAME).meta.json --verbose
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
     displayName: "register JLL package"
     # We only register if this is on `master`; same as setting `${DEPLOY}` above.
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
-- job: cleanup
-  dependsOn:
-  - build
-  - register
-  condition: always()
-  steps:
-  - script: |
-      docker rmi bb_worker:$(Build.SourceVersion) || true
-    displayName: "Cleanup docker image"
-    # Use always() so that we run regardless of whether previous steps were successful or not
-  - script: |
-      rm -f *.meta.json *.platform.list
-    displayName: "Cleanup meta files"
