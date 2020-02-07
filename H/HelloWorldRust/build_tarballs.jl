@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldRust"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # No sources, we're just building the testsuite
 sources = [
