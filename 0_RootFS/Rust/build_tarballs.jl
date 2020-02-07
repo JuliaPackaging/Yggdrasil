@@ -57,7 +57,8 @@ products = [
 dependencies = [
     "OpenSSL_jll",
 ]
-build_info = build_tarballs(ARGS, "MegaRust", version, sources, script, platforms, products, dependencies; skip_audit=true)
+ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
+build_info = build_tarballs(ndARGS, "MegaRust", version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # We don't actually need the .tar.gz it creates, so delete that to save space
 rm(joinpath("products", first(values(build_info))[1]))
@@ -75,6 +76,21 @@ for target_platform in supported_platforms()
         dstpath = joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "lib", "rustlib")
         mkpath(dstpath)
         cp(srcpath, joinpath(dstpath, rust_target_triplet))
+
+        # Our mingw rust shards need to have their crt2.o updated
+        # https://github.com/rust-lang/rust/issues/48272#issuecomment-429596397
+        if isa(target_platform, Windows)
+            # Find the corresponding mingw toolchain within a GCC shard
+            all_cs = BinaryBuilder.all_compiler_shards()
+            cs = first(filter(cs -> cs.name == "GCCBootstrap" && cs.target == target_platform && cs.archive_type == :unpacked, all_cs))
+            cs_path = BinaryBuilder.mount(cs, "")
+
+            # Locate our GCC's mingw's crt2.o
+            crt_src = joinpath(cs_path, triplet(target_platform), "sys-root", "lib", "crt2.o")
+            # Overwrite the one that rust ships with
+            crt_dst = joinpath(dstpath, rust_target_triplet, "lib", "crt2.o")
+            cp(crt_src, crt_dst; force=true)
+        end
     end
     squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustToolchain", version; platform=rust_host, target=target_platform)
 
