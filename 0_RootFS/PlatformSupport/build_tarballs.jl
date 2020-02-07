@@ -26,7 +26,7 @@ sources = [
     "./bundled",
 ]
 
-script = "COMPILER_TARGET=$(triplet(compiler_target))\n" * raw"""
+script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
 ## linux kernel arch like "arm64".
 target_to_linux_arch()
