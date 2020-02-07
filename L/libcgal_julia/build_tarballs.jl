@@ -8,14 +8,13 @@ version = v"0.5.0"
 
 # Collection of sources required to build CGAL
 const sources = [
-    "https://github.com/rgcv/libcgal-julia.git" =>
-        "d5e3d823dd6b0f210736ef93e7bc62c7e1d5b414"
+    GitSource("https://github.com/rgcv/libcgal-julia.git", "d5e3d823dd6b0f210736ef93e7bc62c7e1d5b414"),
 ]
 
 # Dependencies that must be installed before this package can be built
 const dependencies = [
-    "CGAL_jll",
-    "libcxxwrap_julia_jll",
+    Dependency("CGAL_jll"),
+    Dependency("libcxxwrap_julia_jll"),
 ]
 
 # Bash recipe for building across all platforms
