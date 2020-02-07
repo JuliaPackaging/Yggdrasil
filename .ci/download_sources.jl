@@ -1,4 +1,5 @@
 using BinaryBuilder
+using BinaryBuilder: download_source, sourcify
 
 # Read in input `.json` file
 json = String(read(ARGS[1]))
@@ -13,7 +14,7 @@ merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
 
 # Download all sources
-BinaryBuilder.download_source.(merged["sources"]; verbose=true)
+download_source.(sourcify.(merged["sources"]); verbose=true)
 
 # Then export platforms to file
 open(ARGS[2], "w") do io
