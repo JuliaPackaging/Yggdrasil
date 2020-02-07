@@ -6,11 +6,11 @@ trigger:
 pr:
 - master
 
+# By default, use the `Native` pool of agents
+pool: Native
+
 variables:
     JULIA: julia --project=$(Build.SourcesDirectory)/.ci --color=yes
-
-# TODO: remove this once we are certain we can replace the `docker` workers
-pool: Testing
 
 jobs:
 - job: generator
