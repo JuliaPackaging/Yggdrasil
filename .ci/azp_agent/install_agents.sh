@@ -34,6 +34,11 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     chmod +x "${STORAGE_DIR}/rootfs/sandbox"
     cp -a "${SRC_DIR}/run_agent.sh" "${STORAGE_DIR}/rootfs/run_agent.sh"
 
+    # Add `git` username
+    echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+
     # Install agent executable
     AZP_AGENTPACKAGE_URL=$(
         curl -LsS -u "user:${AZP_TOKEN}" \
