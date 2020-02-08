@@ -6,16 +6,16 @@ const name, version = "CGAL", v"5.0.1"
 
 # Collection of sources required to build CGAL
 const sources = [
-    "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz" =>
-        "66021111fe536268d044e5e01bd26e691d7b493c217a1ca4d9427284dd4b2a02",
+    FileSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
+               "66021111fe536268d044e5e01bd26e691d7b493c217a1ca4d9427284dd4b2a02"),
 ]
 
 # Dependencies that must be installed before this package can be built
 const dependencies = [
-    "boost_jll",
-    "GMP_jll",
-    "MPFR_jll",
-    "Zlib_jll",
+    Dependency("boost_jll"),
+    Dependency("GMP_jll"),
+    Dependency("MPFR_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Bash recipe for building across all platforms
