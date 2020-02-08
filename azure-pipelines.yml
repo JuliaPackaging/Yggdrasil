@@ -137,7 +137,7 @@ jobs:
         name = \"${NAME}\"; \
         BinaryBuilder.init_jll_package(name, \
             joinpath(Pkg.devdir(), string(name, \"_jll\")), \
-            string(\"JuliaBinaryWrappers/\", src_name, \"_jll.jl\") \
+            string(\"JuliaBinaryWrappers/\", name, \"_jll.jl\") \
         )"
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
