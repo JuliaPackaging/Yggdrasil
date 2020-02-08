@@ -7,8 +7,8 @@ version = v"1.5.2"
 
 # Collection of sources required to build libXrandr
 sources = [
-    "https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.bz2" =>
-    "8aea0ebe403d62330bb741ed595b53741acf45033d3bda1792f1d4cc3daee023",
+    FileSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.bz2",
+               "8aea0ebe403d62330bb741ed595b53741acf45033d3bda1792f1d4cc3daee023"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,10 +32,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libXext_jll",
-    "Xorg_libXrender_jll",
-    "Xorg_randrproto_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXrender_jll"),
+    BuildDependency("Xorg_randrproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

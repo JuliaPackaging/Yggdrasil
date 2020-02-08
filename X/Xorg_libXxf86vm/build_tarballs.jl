@@ -7,8 +7,8 @@ version = v"1.1.4"
 
 # Collection of sources required to build libXxf86vm
 sources = [
-    "https://www.x.org/archive/individual/lib/libXxf86vm-$(version).tar.bz2" =>
-    "afee27f93c5f31c0ad582852c0fb36d50e4de7cd585fcf655e278a633d85cd57",
+    FileSource("https://www.x.org/archive/individual/lib/libXxf86vm-$(version).tar.bz2",
+               "afee27f93c5f31c0ad582852c0fb36d50e4de7cd585fcf655e278a633d85cd57"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,9 +31,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libXext_jll",
-    "Xorg_xf86vidmodeproto_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libXext_jll"),
+    BuildDependency("Xorg_xf86vidmodeproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
