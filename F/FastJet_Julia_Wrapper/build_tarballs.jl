@@ -52,15 +52,10 @@ dependencies = [
 include("../../fancy_toys.jl")
 
 # Use only one build_tarballs call to register. This will accumulate files into `products` and also wrappers into the JLL package.
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-register_platform = pop!(platforms)
 for p in platforms
     if should_build_platform(triplet(p))
-	sources = copy(fastjet_sources)
-	append!(sources, julia_sources[triplet(p)])
-	build_tarballs(non_reg_ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
+	    sources = copy(fastjet_sources)
+    	append!(sources, julia_sources[triplet(p)])
+	    build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; preferred_gcc_version=v"7")
     end
 end
-sources = copy(fastjet_sources)
-append!(sources, julia_sources[triplet(register_platform)])
-build_tarballs(ARGS, name, version, sources, script, [register_platform], products, dependencies; preferred_gcc_version=v"7")
