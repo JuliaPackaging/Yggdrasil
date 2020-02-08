@@ -41,7 +41,7 @@ dependencies = [
     BuildDependency("Xorg_xextproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
     Dependency("Xorg_libxcb_jll"),
-    Dependency("Xorg_xtrans_jll"),
+    Dependency("Xorg_xtrans_jll")
 ]
 
 # Build the tarballs.
