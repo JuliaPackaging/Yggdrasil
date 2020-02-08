@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "FastJet_Julia_Wrapper"
-version = v"0.5"
+version = v"0.5.0"
 
 # Collection of sources required to build Fjwbuilder
 fastjet_sources = [
