@@ -14,7 +14,7 @@ merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
 
 # Download all sources
-download_source.(sourcify.(merged["sources"]); verbose=true)
+download_source.(merged["sources"]; verbose=true)
 
 # Also initialize JLL package directories
 src_name = merged["name"]

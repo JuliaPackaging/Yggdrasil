@@ -17,7 +17,7 @@ cd bsdiff-64ad986cb7bfa8b9145a2d48cd95986660b35d53/
 ./autogen.sh 
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
