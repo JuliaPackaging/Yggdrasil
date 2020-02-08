@@ -17,7 +17,7 @@ BinaryBuilder.cleanup_merged_object!(merged)
 # Determine build version
 name = merged["name"]
 version = merged["version"]
-dependencies = merged["dependencies"]
+dependencies = [dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
 lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 
