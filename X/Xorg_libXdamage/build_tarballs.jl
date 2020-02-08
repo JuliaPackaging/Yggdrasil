@@ -7,8 +7,8 @@ version = v"1.1.5"
 
 # Collection of sources required to build libXdamage
 sources = [
-    "https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2" =>
-    "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45",
+    FileSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2",
+               "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_damageproto_jll",
-    "Xorg_libXfixes_jll",
+    BuildDependency("Xorg_damageproto_jll"),
+    Dependency("Xorg_libXfixes_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
