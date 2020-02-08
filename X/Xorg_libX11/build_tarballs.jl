@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libX11"
-version = v"1.6.8"
+version = v"1.6.9"
 
 # Collection of sources required to build libX11
 sources = [
     FileSource("https://www.x.org/archive/individual/lib/libX11-$(version).tar.bz2",
-               "b289a845c189e251e0e884cc0f9269bbe97c238df3741e854ec4c17c21e473d5"),
+               "9cc7e8d000d6193fa5af580d50d689380b8287052270f5bb26a5fb6b58b2bed1"),
 ]
 
 # Bash recipe for building across all platforms
