@@ -7,14 +7,13 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/JuliaPolyhedra/lrslib.git" =>
-    "d8b723a2c315614979a8354f9e768d273d14a215",
+    GitSource("https://github.com/JuliaPolyhedra/lrslib.git",
+              "d8b723a2c315614979a8354f9e768d273d14a215"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd lrslib/
+cd $WORKSPACE/srcdir/lrslib/
 export C_INCLUDE_PATH=$C_INCLUDE_PATH:$prefix/include/
 make install
 """
@@ -38,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
