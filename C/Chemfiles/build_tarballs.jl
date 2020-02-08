@@ -7,8 +7,8 @@ version = v"0.9.3"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/chemfiles/chemfiles/archive/$version.tar.gz" =>
-    "541878d189886dd52a247be711ab897fc6062c3275c34ee2e76a99b04132c74d",
+    FileSource("https://github.com/chemfiles/chemfiles/archive/$version.tar.gz",
+               "541878d189886dd52a247be711ab897fc6062c3275c34ee2e76a99b04132c74d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
