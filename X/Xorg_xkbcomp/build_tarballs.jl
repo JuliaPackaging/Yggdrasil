@@ -7,8 +7,8 @@ version = v"1.4.2"
 
 # Collection of sources required to build xkbcomp
 sources = [
-    "https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.bz2" =>
-    "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424",
+    FileSource("https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.bz2",
+               "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,8 +29,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libxkbfile_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libxkbfile_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
