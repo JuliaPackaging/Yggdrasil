@@ -7,8 +7,8 @@ version = v"1.2.0"
 
 # Collection of sources required to build Libglvnd
 sources = [
-    "https://github.com/NVIDIA/libglvnd/releases/download/v$(version)/libglvnd-$(version).tar.gz" =>
-    "2dacbcfa47b7ffb722cbddc0a4f1bc3ecd71d2d7bb461bceb8e396dc6b81dc6d",
+    FileSource("https://github.com/NVIDIA/libglvnd/releases/download/v$(version)/libglvnd-$(version).tar.gz",
+               "2dacbcfa47b7ffb722cbddc0a4f1bc3ecd71d2d7bb461bceb8e396dc6b81dc6d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,9 +38,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libX11_jll",
-    "Xorg_libXext_jll",
-    "Xorg_glproto_jll",
+    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_libXext_jll"),
+    BuildDependency("Xorg_glproto_jll"),
 ]
 
 # Build the tarballs.
