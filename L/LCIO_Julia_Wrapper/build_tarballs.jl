@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.7"
+version = v"0.7.0"
 
 # Collection of sources required to build LCIOWrapBuilder
 lcio_sources = [
