@@ -7,8 +7,8 @@ version = v"1.0.9"
 
 # Collection of sources required to build libXau
 sources = [
-    "https://www.x.org/archive/individual/lib/libXau-$(version).tar.bz2" =>
-    "ccf8cbf0dbf676faa2ea0a6d64bcc3b6746064722b606c8c52917ed00dcb73ec",
+    FileSource("https://www.x.org/archive/individual/lib/libXau-$(version).tar.bz2",
+               "ccf8cbf0dbf676faa2ea0a6d64bcc3b6746064722b606c8c52917ed00dcb73ec"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_xproto_jll",
+    BuildDependency("Xorg_xproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
