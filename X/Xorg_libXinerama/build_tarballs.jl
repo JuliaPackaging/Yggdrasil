@@ -7,8 +7,8 @@ version = v"1.1.4"
 
 # Collection of sources required to build libXinerama
 sources = [
-    "https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2" =>
-    "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720",
+    FileSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2",
+               "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libXext_jll",
-    "Xorg_xineramaproto_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libXext_jll"),
+    BuildDependency("Xorg_xineramaproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
