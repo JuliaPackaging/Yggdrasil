@@ -123,8 +123,31 @@ jobs:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
     name: mtrx
 
-- job: build
+- job: jll_init
   dependsOn: generator
+  timeoutInMinutes: 10
+  cancelTimeoutInMinutes: 2
+  strategy:
+    matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  variables:
+    projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  steps:
+  - script: |
+      $(JULIA) -e "using BinaryBuilder, Pkg; \
+        name = \"${NAME}\"; \
+        BinaryBuilder.init_jll_package(name, \
+            joinpath(Pkg.devdir(), string(name, \"_jll\")), \
+            string(\"JuliaBinaryWrappers/\", src_name, \"_jll.jl\") \
+        )"
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+    displayName: "initialize JLL package"
+    condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
+
+- job: build
+  dependsOn:
+   - generator
+   - jll_init
   timeoutInMinutes: 240
   cancelTimeoutInMinutes: 2
   strategy:

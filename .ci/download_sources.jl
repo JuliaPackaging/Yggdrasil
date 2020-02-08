@@ -22,7 +22,6 @@ code_dir = joinpath(Pkg.devdir(), "$(src_name)_jll")
 deploy_repo = "JuliaBinaryWrappers/$(src_name)_jll.jl"
 # Always start from a clean slate
 rm(code_dir; recursive=true, force=true)
-init_jll_package(src_name, code_dir, deploy_repo)
 
 # Then export platforms to file
 open(ARGS[2], "w") do io
