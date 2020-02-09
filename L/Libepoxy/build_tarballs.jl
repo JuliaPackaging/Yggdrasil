@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libepoxy"
-version = v"1.5.3"
+version = v"1.5.4"
 
 # Collection of sources required to build Libepoxy
 sources = [
-    "https://github.com/anholt/libepoxy/releases/download/$(version)/libepoxy-$(version).tar.xz" =>
-    "002958c5528321edd53440235d3c44e71b5b1e09b9177e8daf677450b6c4433d"
+    FileSource("https://github.com/anholt/libepoxy/releases/download/$(version)/libepoxy-$(version).tar.xz",
+               "0bd2cc681dfeffdef739cb29913f8c3caa47a88a451fd2bc6e606c02997289d2")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,8 +36,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libglvnd_jll",
-    "Xorg_libX11_jll",
+    Dependency("Libglvnd_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
