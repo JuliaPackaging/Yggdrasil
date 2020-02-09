@@ -133,12 +133,7 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
-      $(JULIA) -e "using BinaryBuilder, Pkg; \
-        name = \"${NAME}\"; \
-        BinaryBuilder.init_jll_package(name, \
-            joinpath(Pkg.devdir(), string(name, \"_jll\")), \
-            string(\"JuliaBinaryWrappers/\", name, \"_jll.jl\") \
-        )"
+      $(JULIA) $(Build.SourcesDirectory)/.ci/jll_init.jl "$(Agent.TempDirectory)/${NAME}.meta.json"
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
     displayName: "initialize JLL package"
