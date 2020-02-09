@@ -48,7 +48,7 @@ dependencies = [
 # Build 'em!
 build_tarballs(
     ARGS,
-    "libhelicsSharedLib",
+    "HELICS",
     HELICS_VERSION,
     sources,
     script,
