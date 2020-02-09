@@ -19,7 +19,7 @@ name = merged["name"]
 version = merged["version"]
 # Filter out build-time dependencies that will not go into the dependencies of
 # the JLL packages.
-dependencies = [dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
+dependencies = Dependency[dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
 lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 
@@ -33,7 +33,7 @@ BinaryBuilder.init_jll_package(
 for obj in objs
     BinaryBuilder.cleanup_merged_object!(obj)
     # Filter out build-time dependencies also here
-    obj["dependencies"] = [dep for dep in obj["dependencies"] if !isa(dep, BuildDependency)]
+    obj["dependencies"] = Dependency[dep for dep in obj["dependencies"] if !isa(dep, BuildDependency)]
     BinaryBuilder.rebuild_jll_packages(obj; verbose=verbose, lazy_artifacts=lazy_artifacts)
 end
 BinaryBuilder.push_jll_package(name, build_version)
