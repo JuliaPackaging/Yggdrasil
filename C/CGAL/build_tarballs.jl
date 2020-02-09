@@ -2,7 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-const name, version = "CGAL", v"5.0.1"
+const name    = "CGAL"
+const version = v"5.0.1"
 
 # Collection of sources required to build CGAL
 const sources = [
