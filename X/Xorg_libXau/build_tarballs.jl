@@ -32,7 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_xproto_jll")
+    BuildDependency("Xorg_xproto_jll"),
 ]
 
 # Build the tarballs.

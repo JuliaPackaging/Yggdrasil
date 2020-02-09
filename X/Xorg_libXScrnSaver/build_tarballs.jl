@@ -34,7 +34,7 @@ products = [
 dependencies = [
     BuildDependency("Xorg_scrnsaverproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
-    Dependency("Xorg_libXext_jll")
+    Dependency("Xorg_libXext_jll"),
 ]
 
 # Build the tarballs.
