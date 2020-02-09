@@ -1,7 +1,3 @@
-# We need to disable ccache in this build, because ccache doesn't support
-# Fortran 90 and modules would not be built otherwise.
-ENV["BINARYBUILDER_USE_CCACHE"] = "false"
-
 using BinaryBuilder
 
 name = "QD"
@@ -9,9 +5,8 @@ version = v"2.3.22"
 
 # Collection of sources required to build SDPA-QD
 sources = [
-    "https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz" =>
-    "30c1ffe46b95a0e9fa91085949ee5fca85f97ff7b41cd5fe79f79bab730206d3",
-    "./bundled",
+    FileSource("https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz",
+               "30c1ffe46b95a0e9fa91085949ee5fca85f97ff7b41cd5fe79f79bab730206d3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,11 +19,11 @@ if [[ "${target}" == *-freebsd* ]]; then
     autoreconf -vi
 fi
 
-./configure --enable-shared --enable-fast-install=no --prefix=$prefix --host=$target --build=${MACHTYPE}
+./configure --enable-shared --enable-fast-install=no --disable-fma --prefix=$prefix --host=$target --build=${MACHTYPE}
 make -j${nproc} module_ext=mod
 make install module_ext=mod
 
-install_license $WORKSPACE/srcdir/LBNL-BSD-License.docx
+install_license BSD-LBNL-License.doc
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
