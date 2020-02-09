@@ -7,8 +7,8 @@ version = v"5.0.3"
 
 # Collection of sources required to build libXfixes
 sources = [
-    "https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.bz2" =>
-    "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6",
+    FileSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.bz2",
+               "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_fixesproto_jll",
-    "Xorg_libX11_jll",
-    "Xorg_util_macros_jll",
+    BuildDependency("Xorg_fixesproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

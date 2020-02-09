@@ -7,8 +7,8 @@ version = v"1.3.4"
 
 # Collection of sources required to build libXext
 sources = [
-    "https://www.x.org/archive/individual/lib/libXext-$(version).tar.bz2" =>
-    "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b",
+    FileSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.bz2",
+               "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libX11_jll",
-    "Xorg_xextproto_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_xextproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
