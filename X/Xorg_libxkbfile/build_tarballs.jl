@@ -7,8 +7,8 @@ version = v"1.1.0"
 
 # Collection of sources required to build libxkbfile
 sources = [
-    "https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.bz2" =>
-    "758dbdaa20add2db4902df0b1b7c936564b7376c02a0acd1f2a331bd334b38c7",
+    FileSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.bz2",
+               "758dbdaa20add2db4902df0b1b7c936564b7376c02a0acd1f2a331bd334b38c7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libX11_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
