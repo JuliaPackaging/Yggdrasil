@@ -19,7 +19,8 @@ name = merged["name"]
 version = merged["version"]
 # Filter out build-time dependencies that will not go into the dependencies of
 # the JLL packages.
-dependencies = [dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
+merged["dependencies"] = [dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
+dependencies = merged["dependencies"]
 lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 
@@ -29,9 +30,6 @@ BinaryBuilder.init_jll_package(
     joinpath(Pkg.devdir(), "$(name)_jll"),
     "JuliaBinaryWrappers/$(name)_jll.jl",
 )
-
-@show typeof(dependencies)
-@show dependencies
 
 for obj in objs
     BinaryBuilder.cleanup_merged_object!(obj)
