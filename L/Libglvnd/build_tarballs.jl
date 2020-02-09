@@ -41,7 +41,7 @@ products = Product[
 dependencies = [
     Dependency("Xorg_libX11_jll"),
     Dependency("Xorg_libXext_jll"),
-    BuildDependency("Xorg_glproto_jll"),
+    BuildDependency("Xorg_glproto_jll")
 ]
 
 # Build the tarballs.
