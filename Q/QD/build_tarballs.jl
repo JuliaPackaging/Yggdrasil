@@ -14,7 +14,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/qd-2.3.22
 update_configure_scripts
 
-if [[ "${target}" == *-freebsd* ]]; then
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == powerpc64le-* ]]; then
     # Regenerate the configure to be able to build the shared libraries
     autoreconf -vi
 fi
@@ -28,7 +28,7 @@ install_license BSD-LBNL-License.doc
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
