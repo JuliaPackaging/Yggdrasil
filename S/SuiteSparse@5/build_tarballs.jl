@@ -5,9 +5,9 @@ version = v"5.4.0"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz" =>
-    "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770",
-    "./bundled",
+    FileSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
+               "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -95,8 +95,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenBLAS_jll",
-    "METIS_jll",
+    Dependency("OpenBLAS_jll"),
+    Dependency("METIS_jll"),
 ]
 
 # Build the tarballs.
