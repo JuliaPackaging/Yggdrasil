@@ -24,7 +24,7 @@ if [[ ${target} == x86_64-linux-* || ${target} == aarch64-linux-* || ${target} =
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
-if [[ ${target} == i686-linux-* || ${target} == armv7l-linux-* ]]; then
+if [[ ${target} == i686-linux-* || ${target} == arm-linux-* ]]; then
     export CXXFLAGS="-lrt"
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
