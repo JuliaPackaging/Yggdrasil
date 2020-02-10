@@ -29,9 +29,9 @@ if [[ ${target} == i686-linux-* || ${target} == arm-linux-* ]]; then
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
 
-# Build complains that C++ 2011 support is required for Windows build
+# Enable C++ 2011 support for MinGW
 if [[ ${target} == *-w64-* ]]; then
-    export CXXFLAGS="-std=c++11"
+    export CXXFLAGS="-std=c++11 -lwinmm -lws2_32"
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 -DLSL_UNITTESTS=1 ../
