@@ -7,18 +7,19 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/findmyway/open_spiel.git" => "2f9aa73e9c2fa8278209354b5b21bab8a93d35a0",
-    "https://github.com/jblespiau/dds.git" => "06c1b31795ca2db2f268ea81a1029b03c8c37872",
-    "https://github.com/abseil/abseil-cpp.git" => "0f86336b6939ea673cc1cbe29189286cae67d63a",
+    "https://github.com/findmyway/open_spiel/archive/v0.1.0.tar.gz" => "aa7bdff1fffb6dc0db580b2825cbc81b2a4a23ddf8aad6ce46dc397284444c09",
+    "https://github.com/findmyway/dds/archive/v0.1.0.tar.gz" => "81070b8e96779b5b2303185642753013aa874bffbd58b9cc599204aee064292d",
+    "https://github.com/findmyway/abseil-cpp/archive/v0.1.0.tar.gz" => "7b612c1fed278250b5d1a4e29ddb410145b26a0e7c781c1ca4ac03d092179202",
     "https://github.com/JuliaPackaging/JuliaBuilder/releases/download/v1.0.0-2/julia-1.0.0-x86_64-linux-gnu.tar.gz" => "34b6e59acf8970a3327cf1603a8f90fa4da8e5ebf09e6624509ac39684a1835d",
-    "https://github.com/deepmind/hanabi-learning-environment.git" => "b31c973e3930804b9e27d1a20874e08d8643e533",
+    "https://github.com/findmyway/hanabi-learning-environment/archive/v0.1.0.tar.gz" => "6126936fd13a95f8cadeacaa69dfb38a960eaf3bd588aacc8893a6e07e4791a3",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv abseil-cpp/ open_spiel/open_spiel/
-mv dds open_spiel/open_spiel/games/bridge/double_dummy_solver
-mv hanabi-learning-environment open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
+mv open_spiel-0.1.0 open_spiel
+mv abseil-cpp-0.1.0/ open_spiel/open_spiel/abseil-cpp
+mv dds-0.1.0 open_spiel/open_spiel/games/bridge/double_dummy_solver
+mv hanabi-learning-environment-0.1.0 open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
 mkdir julia
 mv bin etc include lib share julia
 cd julia
