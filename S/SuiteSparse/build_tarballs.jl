@@ -5,9 +5,9 @@ version = v"5.4.0"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    "https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz" =>
-    "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770",
-    "./bundled",
+    FileSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
+               "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -61,6 +61,14 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     done
 fi
 
+# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${libdir}/lib*.*.${dlext}
+    rm -f ${libdir}/lib*.*.*.${dlext}
+fi
+
+install_license LICENSE.txt
+
 # Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
@@ -89,8 +97,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenBLAS_jll",
-    "METIS_jll",
+    Dependency("OpenBLAS_jll"),
+    Dependency("METIS_jll"),
 ]
 
 # Build the tarballs.
