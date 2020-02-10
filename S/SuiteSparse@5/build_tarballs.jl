@@ -61,6 +61,12 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     done
 fi
 
+# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${libdir}/lib*.*.${dlext}
+    rm -f ${libdir}/lib*.*.*.${dlext}
+fi
+
 # Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
