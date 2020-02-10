@@ -30,12 +30,12 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:musl),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc)
-]
-
+#platforms = [
+#    Linux(:x86_64, libc=:musl),
+#    Linux(:x86_64, libc=:glibc),
+#    Linux(:aarch64, libc=:glibc)
+#]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
