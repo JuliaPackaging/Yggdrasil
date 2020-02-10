@@ -9,6 +9,7 @@ version = v"1.13.0"
 sources = [
     "https://github.com/sccn/liblsl/archive/1.13.0.tar.gz" =>
     "5b304a5365eba33852da96badfbd9d66556caf4a00c87947a59df2942680a617",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +32,8 @@ fi
 
 # Enable C++ 2011 support for MinGW
 if [[ ${target} == *-w64-* ]]; then
-    export CXXFLAGS="-std=c++11 -lwinmm -lws2_32"
+    atomic_patch -p1 $WORKSPACE/srcdir/lsl_mingw.diff
+    export CXXFLAGS="-std=c++11"
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 -DLSL_UNITTESTS=1 ../
