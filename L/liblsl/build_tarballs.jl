@@ -18,19 +18,18 @@ cd liblsl-1.13.0
 mkdir build
 cd build
 
-# Link against real time and correct C->C++ library paths on 64-bit linux
+# Link against real time and correct C->C++ library paths on linux
 if [[ ${target} == x86_64-linux-* || ${target} == aarch64-linux-* || ${target} == powerpc64le-linux-* ]]; then
     export CXXFLAGS="-lrt"
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
-# This doesn't work
-if [[ ${target} == i686-linux-* ]]; then
+if [[ ${target} == i686-linux-* || ${target} == armv7l-linux-* ]]; then
     export CXXFLAGS="-lrt"
-    export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
 
-# Ensure C++ 2011 support for Windows build
+# Build complains that C++ 2011 support is required for Windows build
 if [[ ${target} == *-w64-* ]]; then
     export CXXFLAGS="-std=c++11"
 fi
