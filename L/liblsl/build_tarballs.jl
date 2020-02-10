@@ -18,14 +18,14 @@ cd liblsl-1.13.0
 mkdir build
 cd build
 
-if [[ ${target} == x86_64-linux-* ]]; then
+if [[ ${target} == x86_64-linux-* || ${target} == aarch64-linux-* ]]; then
     export CXXFLAGS="-lrt"
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
 if [[ ${target} == i686-linux-* ]]; then
     export CXXFLAGS="-lrt"
-    export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib"
+    export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
 
