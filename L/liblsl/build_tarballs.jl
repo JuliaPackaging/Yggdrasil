@@ -17,8 +17,14 @@ cd $WORKSPACE/srcdir
 cd liblsl-1.13.0
 mkdir build
 cd build
-export CXXFLAGS="-lrt"
-export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+
+if [[ ${target} == x86_64-linux-* ]]; then
+    export CXXFLAGS="-lrt"
+    export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+else
+    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 -DLSL_UNITTESTS=1 ../
 make
 ./lslver
