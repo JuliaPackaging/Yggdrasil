@@ -16,8 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd liblsl-1.13.0
-mkdir build
-cd build
 
 # Link against real time and correct C->C++ library paths on linux
 if [[ ${target} == x86_64-linux-* || ${target} == aarch64-linux-* || ${target} == powerpc64le-linux-* ]]; then
@@ -30,11 +28,14 @@ if [[ ${target} == i686-linux-* || ${target} == arm-linux-* ]]; then
     export CFLAGS="-lrt -Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
 
-# Enable C++ 2011 support for MinGW
+# Enable C++ 2011 support and patch for MinGW
 if [[ ${target} == *-w64-* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/lsl_mingw.diff
     export CXXFLAGS="-std=c++11"
 fi
+
+mkdir build
+cd build
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 -DLSL_UNITTESTS=1 ../
 make
