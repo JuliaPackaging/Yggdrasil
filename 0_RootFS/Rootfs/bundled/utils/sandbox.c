@@ -312,10 +312,18 @@ static void mount_procfs(const char * root_dir, uid_t uid, gid_t gid) {
   chown(path, uid, gid);
 }
 
+static void bind_mount(const char * dest, const char *src) {
+    if (verbose) {
+      fprintf(stderr, "--> Bind-mounting %s over %s\n", src, dest);
+    }
+    touch(dest);
+    check(0 == mount(src, dest, "", MS_BIND, NULL));
+}
+
 /*
  * We use this method to get /dev in shape.  If we're running as init, we need to
  * mount full-blown devtmpfs at /dev.  If we're just a sandbox, we only bindmount
- * /dev/{tty,null,urandom} into our root_dir.
+ * /dev/{tty,null,urandom,pts,ptmx} into our root_dir.
  */
 static void mount_dev(const char * root_dir) {
   char path[PATH_MAX];
@@ -334,33 +342,29 @@ static void mount_dev(const char * root_dir) {
   } else {
     // Bindmount /dev/null into our root_dir
     snprintf(path, sizeof(path), "%s/dev/null", root_dir);
-    if (verbose) {
-      fprintf(stderr, "--> Mounting /dev/null at %s\n", path);
-    }
-    touch(path);
-    check(0 == mount("/dev/null", path, "", MS_BIND, NULL));
+    bind_mount(path, "/dev/null");
 
     // Bindmount /dev/tty into our root_dir
     snprintf(path, sizeof(path), "%s/dev/tty", root_dir);
-    if (verbose) {
-      fprintf(stderr, "--> Mounting /dev/tty at %s\n", path);
-    }
-    touch(path);
-    check(0 == mount("/dev/tty", path, "", MS_BIND, NULL));
-
+    bind_mount(path, "/dev/tty");
 
     // If the host has a /dev/urandom, expose that to the sandboxed process as well.
     if (access("/dev/urandom", F_OK) == 0) {
       snprintf(path, sizeof(path), "%s/dev/urandom", root_dir);
-
-      if (verbose) {
-        fprintf(stderr, "--> Mounting /dev/urandom at %s\n", path);
-      }
-
-      // Bind-mount /dev/urandom to internal /dev/urandom (creating it if it doesn't already exist)
-      touch(path);
-      check(0 == mount("/dev/urandom", path, "", MS_BIND, NULL));
+      bind_mount(path, "/dev/urandom");
     }
+
+    // Do the same for /dev/pts and /dev/ptmx
+    snprintf(path, sizeof(path), "%s/dev/pts", root_dir);
+    check(0 == mount("devpts", path, "devpts", 0, "ptmxmode=0666"));
+
+    snprintf(path, sizeof(path), "ls -la %s/dev/pts/ptmx", root_dir);
+    system(path);
+
+    snprintf(path, sizeof(path), "%s/dev/pts/ptmx", root_dir);
+    char ptmx_dst[PATH_MAX];
+    snprintf(ptmx_dst, sizeof(ptmx_dst), "%s/dev/ptmx", root_dir);
+    bind_mount(ptmx_dst, path);
   }
 }
 
@@ -726,6 +730,7 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
   check(0 == chdir(root_dir));
   if (syscall(SYS_pivot_root, ".", ".") == 0) {
     check(0 == umount2(".", MNT_DETACH));
+    check(0 == chdir("/"));
   } else {
     check(0 == chroot(root_dir));
   }
