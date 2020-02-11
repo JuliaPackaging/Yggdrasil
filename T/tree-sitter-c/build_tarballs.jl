@@ -7,8 +7,8 @@ version = v"0.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://github.com/tree-sitter/tree-sitter.git", "d8c3f472d23ad79f519651d5cf715b56467d35d0")
-    FileSource("https://github.com/tree-sitter/tree-sitter-c.git", "6002fcd5e86bb1e8670157bb008b97dbaf656d95")
+    GitSource("https://github.com/tree-sitter/tree-sitter.git", "d8c3f472d23ad79f519651d5cf715b56467d35d0")
+    GitSource("https://github.com/tree-sitter/tree-sitter-c.git", "6002fcd5e86bb1e8670157bb008b97dbaf656d95")
 ]
 
 # Bash recipe for building across all platforms
