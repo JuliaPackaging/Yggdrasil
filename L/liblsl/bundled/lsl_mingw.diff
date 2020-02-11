@@ -2,15 +2,15 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 4abd0cf1..09ec151c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -190,6 +190,11 @@ else()
+@@ -190,6 +190,13 @@ else()
  		PUBLIC lslobj
  		PRIVATE lslboost)
  endif()
 +
 +if (MINGW)
 +    target_link_libraries(lsl
-                           PUBLIC winmm
-                           PUBLIC bcrypt)
++                          PUBLIC winmm
++                          PUBLIC bcrypt)
 +endif()
 +
  target_include_directories(lsl
