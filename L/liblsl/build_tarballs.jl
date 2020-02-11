@@ -7,9 +7,9 @@ version = v"1.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/sccn/liblsl/archive/1.13.0.tar.gz" =>
-    "5b304a5365eba33852da96badfbd9d66556caf4a00c87947a59df2942680a617",
-    DirectorySource("./patches"),
+    FileSource("https://github.com/sccn/liblsl/archive/1.13.0.tar.gz",
+    "5b304a5365eba33852da96badfbd9d66556caf4a00c87947a59df2942680a617"),
+    DirectorySource("./bundled/patches"),
 ]
 
 # Bash recipe for building across all platforms
@@ -61,6 +61,7 @@ exit
 #    Linux(:aarch64, libc=:glibc)
 #]
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -69,7 +70,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
     
 ]
 
