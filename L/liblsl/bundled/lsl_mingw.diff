@@ -11,7 +11,8 @@ index 4abd0cf1..09ec151c 100644
 +    target_link_libraries(lsl
 +                          PUBLIC winmm
 +                          PUBLIC bcrypt
-+                          PUBLIC ws2_32)
++                          PUBLIC ws2_32
++                          PUBLIC mswsock)
 +endif()
 +
  target_include_directories(lsl
