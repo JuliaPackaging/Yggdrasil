@@ -18,8 +18,7 @@ cd $WORKSPACE/srcdir
 cd liblsl-1.13.0
 
 # Add license file
-mkdir  ${prefix}/share/licenses/liblsl
-cp LICENSE ${prefix}/share/licenses/liblsl/
+install_license LICENSE
 
 # Link against real time and correct C->C++ library paths on linux
 if [[ ${target} == x86_64-linux-* || ${target} == aarch64-linux-* || ${target} == powerpc64le-linux-* ]]; then
