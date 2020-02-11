@@ -7,7 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://www.ftdichip.com/Drivers/CDM/CDM%20v2.12.28%20WHQL%20Certified.zip" =>
+    "https://www.ftdichip.com/Drivers/CDM/CDM v2.12.28 WHQL Certified.zip" =>
     "82db36f089d391f194c8ad6494b0bf44c508b176f9d3302777c041dad1ef7fe6",
 
     "https://www.ftdichip.com/Drivers/D2XX/Linux/libftd2xx-i386-1.4.8.gz" =>
