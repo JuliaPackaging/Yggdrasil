@@ -10,7 +10,7 @@ pr:
 pool: Native
 
 variables:
-    JULIA: julia --project=$(Build.SourcesDirectory)/.ci --color=yes
+    JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
 
 jobs:
 - job: generator
