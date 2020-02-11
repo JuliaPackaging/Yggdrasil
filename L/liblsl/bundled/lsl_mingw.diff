@@ -10,8 +10,8 @@ index 4abd0cf1..09ec151c 100644
 +if (MINGW)
 +    target_link_libraries(lsl
 +                          PUBLIC winmm
-+                          PUBLIC bcrypt)
-+                          PUBLIC ws2_32
++                          PUBLIC bcrypt
++                          PUBLIC ws2_32)
 +endif()
 +
  target_include_directories(lsl
