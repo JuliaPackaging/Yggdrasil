@@ -133,6 +133,10 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
+      cd $(PROJECT)
+      echo "Generating meta.json..."
+      $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
+      echo "Initializing JLL package..."
       $(JULIA) $(Build.SourcesDirectory)/.ci/jll_init.jl "$(Agent.TempDirectory)/${NAME}.meta.json"
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
