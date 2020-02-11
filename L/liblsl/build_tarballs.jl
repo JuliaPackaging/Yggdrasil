@@ -45,7 +45,7 @@ cd build
 # Unit tests disabled due to problem patching lsl_test_internal
 # cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 -DLSL_UNITTESTS=1 ../
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLSL_UNIXFOLDERS=1 -DLSL_NO_FANCY_LIBNAME=1 ../
-make
+make -j${nproc}
 
 # We can't run unit-tests as we are cross-compiling
 #./lslver
@@ -53,16 +53,10 @@ make
 #./testing/lsl_test_exported 
 
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = [
-#    Linux(:x86_64, libc=:musl),
-#    Linux(:x86_64, libc=:glibc),
-#    Linux(:aarch64, libc=:glibc)
-#]
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
@@ -74,8 +68,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
