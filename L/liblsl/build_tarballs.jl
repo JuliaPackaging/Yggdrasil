@@ -31,6 +31,7 @@ fi
 # Enable C++ 2011 support and patch for MinGW
 if [[ ${target} == *-w64-* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/lsl_mingw.diff
+    atomic_patch -p1 $WORKSPACE/srcdir/lsl_test_internal_mingw.diff
     export CXXFLAGS="-std=c++11"
 fi
 
