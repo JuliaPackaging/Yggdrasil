@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tree-sitter-c"
+name = "tree_sitter_c"
 version = v"0.16.0"
 
 # Collection of sources required to complete build
@@ -34,6 +34,7 @@ make -j${nproc}
 make install
 mkdir ${prefix}/include
 cp ../tree-sitter/lib/include/tree_sitter/api.h ${prefix}/include/
+install_license ../tree-sitter/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
