@@ -30,40 +30,40 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir
-mkdir $prefix/lib
+mkdir ${libdir}
 
 if [[ ${target} == x86_64-linux-* ]]; then
     tar zxvf libftd2xx-x86_64-1.4.8.gz;
-    cp release/build/*.so* $prefix/lib;
+    cp release/build/*.so* ${libdir};
 fi
 
 if [[ ${target} == i686-linux-* ]]; then
     tar zxvf libftd2xx-i386-1.4.8.gz;
-    cp release/build/*.so* $prefix/lib;
+    cp release/build/*.so* ${libdir};
 fi
 
 if [[ ${target} == aarch64-linux-* ]]; then
     tar zxvf libftd2xx-arm-v8-1.4.8.gz;
-    cp release/build/*.so* $prefix/lib;
+    cp release/build/*.so* ${libdir};
 fi
 
 if [[ ${target} == arm-linux-* ]]; then
     tar zxvf libftd2xx-arm-v7-hf-1.4.8.gz;
-    cp release/build/*.so* $prefix/lib;
+    cp release/build/*.so* ${libdir};
 fi
 
 if [[ %{target} == x86_64-apple-darwin* ]]; then
     apk add p7zip;
     7z x D2XX1.4.16.dmg;
-    cp release/D2XX/*.dylib* $prefix/lib;
+    cp release/D2XX/*.dylib* ${libdir};
 fi
 
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cp amd64/*.dll $prefix/lib;
+    cp amd64/*.dll ${libdir};
 fi
 
 if [[ ${target} == i686-w64-ming32 ]]; then
-    cp i386/*.dll $prefix/lib;
+    cp i386/*.dll ${libdir};
 fi
 
 exit
@@ -84,7 +84,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libftd2xx", :libftd2xx)
+    LibraryProduct(["libftd2xx", "ftd2xx", "ftd2xx64.dll"], :libftd2xx)
 ]
 
 # Dependencies that must be installed before this package can be built
