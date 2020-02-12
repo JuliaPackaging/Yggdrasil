@@ -20,6 +20,7 @@ mkdir build && cd build
 cmake -DJulia_PREFIX=${WORKSPACE}/srcdir/${target} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
+install_license $WORKSPACE/srcdir/LCIO_Julia_Wrapper/LCIO_Julia_Wrapper-*/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
