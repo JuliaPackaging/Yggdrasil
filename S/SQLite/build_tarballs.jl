@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.30.1"
+version = v"3.31.1"
 
 # Collection of sources required to complete build
 sources = [
-    "https://www.sqlite.org/2019/sqlite-autoconf-3300100.tar.gz" =>
-    "8c5a50db089bd2a1b08dbc5b00d2027602ca7ff238ba7658fabca454d4298e60",
+    FileSource("https://sqlite.org/2020/sqlite-autoconf-3310100.tar.gz", "62284efebc05a76f909c580ffa5c008a7d22a1287285d68b7825a2b6b51949ae"),
+    FileSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
+               "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +18,9 @@ cd $WORKSPACE/srcdir/sqlite-autoconf-*/
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
 make install
+# Manually install the license with a super funky name
+mkdir -p "${prefix}/share/licenses/${SRC_NAME}"
+cp $WORKSPACE/srcdir/*id=* "${prefix}/share/licenses/${SRC_NAME}/LICENSE"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -29,7 +33,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
