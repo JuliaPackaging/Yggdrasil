@@ -29,7 +29,6 @@ fi
     --disable-dependency-tracking \
     --disable-fortran \
     --docdir=/tmp \
-    --enable-timer-type=gettimeofday \
     "${EXTRA_FLAGS[@]}"
 
 # Build the library
