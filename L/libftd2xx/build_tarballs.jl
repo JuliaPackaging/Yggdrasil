@@ -31,38 +31,40 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir ${libdir}
 
+ls
+
 if [[ ${target} == x86_64-linux-* ]]; then
     tar zxvf libftd2xx-x86_64-1.4.8.gz;
-    cp release/build/*.${dlext}* ${libdir};
+    cp -v release/build/*.${dlext}* ${libdir};
 fi
 
 if [[ ${target} == i686-linux-* ]]; then
     tar zxvf libftd2xx-i386-1.4.8.gz;
-    cp release/build/*.${dlext}* ${libdir};
+    cp -v release/build/*.${dlext}* ${libdir};
 fi
 
 if [[ ${target} == aarch64-linux-* ]]; then
     tar zxvf libftd2xx-arm-v8-1.4.8.gz;
-    cp release/build/*.${dlext}* ${libdir};
+    cp -v release/build/*.${dlext}* ${libdir};
 fi
 
 if [[ ${target} == arm-linux-* ]]; then
     tar zxvf libftd2xx-arm-v7-hf-1.4.8.gz;
-    cp release/build/*.${dlext}* ${libdir};
+    cp -v release/build/*.${dlext}* ${libdir};
 fi
 
 if [[ %{target} == x86_64-apple-darwin* ]]; then
     apk add p7zip;
     7z x D2XX1.4.16.dmg;
-    cp release/D2XX/*.${dlext}* ${libdir};
+    cp -v release/D2XX/*.${dlext}* ${libdir};
 fi
 
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cp windows/amd64/*.${dlext} ${libdir};
+    cp -v windows/amd64/*.${dlext} ${libdir};
 fi
 
-if [[ ${target} == i686-w64-ming32 ]]; then
-    cp windows/i386/*.${dlext} ${libdir};
+if [[ ${target} == i686-w64-mingw32 ]]; then
+    cp -v windows/i386/*.${dlext} ${libdir};
 fi
 """
 
