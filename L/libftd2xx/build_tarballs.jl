@@ -10,7 +10,7 @@ sources = [
     FileSource("https://www.ftdichip.com/Drivers/CDM/CDM v2.12.28 WHQL Certified.zip",
     "82db36f089d391f194c8ad6494b0bf44c508b176f9d3302777c041dad1ef7fe6", unpack_target="windows"),
 
-    FileSource(https://www.ftdichip.com/Drivers/D2XX/Linux/libftd2xx-i386-1.4.8.gz",
+    FileSource("https://www.ftdichip.com/Drivers/D2XX/Linux/libftd2xx-i386-1.4.8.gz",
     "84c9aaf7288a154faf0e2814ba590ec965141c698b2a00bffc94d8e0c7ebeb4c"),
 
     FileSource("https://www.ftdichip.com/Drivers/D2XX/Linux/libftd2xx-x86_64-1.4.8.gz",
