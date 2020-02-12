@@ -73,6 +73,10 @@ install_license LICENSE.txt
 # Compile SuiteSparse_wrapper shim
 cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
+
+# Generate Julia file of constants
+"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -lgfortran
+./SuiteSparse_genconsts > ${prefix}/SuiteSparse_consts.jl
 """
 
 # These are the platforms we will build for by default, unless further
@@ -94,6 +98,7 @@ products = [
     LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
     LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
+    FileProduct("SuiteSparse_consts.jl", :SuiteSparse_consts_jl)
 ]
 
 # Dependencies that must be installed before this package can be built
