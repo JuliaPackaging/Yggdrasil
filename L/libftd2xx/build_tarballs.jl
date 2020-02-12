@@ -31,8 +31,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir ${libdir}
 
-ls
-
 if [[ ${target} == x86_64-linux-* ]]; then
     tar zxvf 815d880c5ec40904f062373e52de07b2acaa428e54fece98b31e6573f5d261a0-libftd2xx-x86_64-1.4.8.gz;
     cp -v release/build/*.${dlext}* ${libdir};
@@ -53,7 +51,7 @@ if [[ ${target} == arm-linux-* ]]; then
     cp -v release/build/*.${dlext}* ${libdir};
 fi
 
-if [[ %{target} == x86_64-apple-darwin* ]]; then
+if [[ ${target} == x86_64-apple-darwin* ]]; then
     apk add p7zip;
     7z x 757ef22c3e48c2022974c2110d25ee45dd09bff8f397c8432018c50fb4b2d785-D2XX1.4.16.dmg;
     cp -v release/D2XX/*.${dlext}* ${libdir};
