@@ -37,8 +37,6 @@ platforms = [
     Linux(:x86_64, libc=:glibc),
 ]
 
-platforms = expand_cxxstring_abis(platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libspieljl", :libspieljl),
