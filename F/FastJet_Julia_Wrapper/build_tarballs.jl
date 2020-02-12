@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CXXFLAGS="-I${WORKSPACE}/srcdir/${target}/include"
+ln -s ${WORKSPACE}/srcdir/${target}/include/ /opt/${target}/${target}/sys-root/usr/local
 cd ${WORKSPACE}/srcdir/FastJet_Julia_Wrapper/FastJet_Julia_Wrapper*
 mkdir build && cd build
 cmake -DJulia_PREFIX=${WORKSPACE}/srcdir/${target} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
