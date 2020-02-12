@@ -39,7 +39,7 @@ make -j${nproc}
 make install
 """
 
-platforms = supported_platforms()
+platforms = filter(p -> !isa(p, Windows), supported_platforms())
 
 products = [
     LibraryProduct("libmpi", :libmpi)
