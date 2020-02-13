@@ -20,13 +20,14 @@ set(CMAKE_C_STANDARD 99)
 
 include_directories(tree-sitter/lib/include tree-sitter/lib/src)
 
-add_library(treesitter tree-sitter/lib/src/lib.c)
+add_library(treesitter SHARED tree-sitter/lib/src/lib.c)
 
 include_directories(tree-sitter-c/src)
 add_library(treesitter_c SHARED tree-sitter-c/src/parser.c)
-target_link_libraries(treesitter_c treesitter)
 
-install(TARGETS treesitter_c DESTINATION lib CONFIGURATIONS Release)' > CMakeLists.txt
+install(TARGETS treesitter_c DESTINATION lib CONFIGURATIONS Release)
+install(TARGETS treesitter DESTINATION lib CONFIGURATIONS Release)' > CMakeLists.txt
+
 BUILD_FLAGS=(-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 mkdir build && cd build
 cmake .. "${BUILD_FLAGS[@]}"
@@ -43,7 +44,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtreesitter_c", :libtreesitter_c)
+    LibraryProduct("libtreesitter_c", :libtreesitter_c),
+    LibraryProduct("libtreesitter", :libtreesitter)
 ]
 
 # Dependencies that must be installed before this package can be built
