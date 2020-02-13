@@ -24,11 +24,18 @@ sources = [
 
     FileSource("https://www.ftdichip.com/Drivers/D2XX/MacOSX/D2XX1.4.16.dmg",
     "757ef22c3e48c2022974c2110d25ee45dd09bff8f397c8432018c50fb4b2d785"),
+
+    DirectorySource("./bundled"),
+
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Add license file
+install_license LICENSE
+
 mkdir ${libdir}
 
 if [[ ${target} == x86_64-linux-* ]]; then
