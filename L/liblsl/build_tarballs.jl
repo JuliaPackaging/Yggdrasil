@@ -34,8 +34,9 @@ fi
 # Enable C++ 2011 support and patch for MinGW
 if [[ ${target} == *-w64-* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/liblsl_mingw.diff
-    # Patch required for unit tests but fails, thus unit tests currently disabled
-    # atomic_patch -p1 $WORKSPACE/srcdir/lsl_test_internal_mingw.diff
+    # Line endings are confused on the test internal CMakeLists, fix them before patch
+    dos2unix testing/CMakeLists.txt
+    atomic_patch -p1 $WORKSPACE/srcdir/lsl_test_internal_mingw.diff
     export CXXFLAGS="-std=c++11"
 fi
 
