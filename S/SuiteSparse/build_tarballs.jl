@@ -75,7 +75,7 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 
 # Generate Julia file of constants
-"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -lgfortran
+"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -lgfortran -lopenblas
 ./SuiteSparse_genconsts > ${prefix}/SuiteSparse_consts.jl
 """
 
