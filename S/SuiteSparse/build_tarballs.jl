@@ -32,11 +32,11 @@ fi
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
-    OPENBLAS=openblas64_
+    OPENBLAS="openblas64_"
     FLAGS+=(BLAS="-l${OPENBLAS}" LAPACK="-l${OPENBLAS}")
     FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN" SPQR_CONFIG="$SUN")
 else
-    OPENBLAS=openblas
+    OPENBLAS="openblas"
     FLAGS+=(BLAS="-lopenblas" LAPACK="-l${OPENBLAS}")
 fi
 
@@ -77,7 +77,10 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 
 # Generate Julia file of constants
-"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -l${OPENBLAS} -lgfortran -lquadmath
+if [[ "${target}" == x86_64-* ]] || [[ "${target}" == i686-* ]]; then
+    EXTRA_LIBS="-lquadmath"
+fi
+"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -l${OPENBLAS} -lgfortran ${EXTRA_LIBS}
 ./SuiteSparse_genconsts > ${prefix}/SuiteSparse_consts.jl
 """
 
