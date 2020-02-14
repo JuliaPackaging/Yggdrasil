@@ -32,10 +32,12 @@ fi
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
-    FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
+    OPENBLAS=openblas64_
+    FLAGS+=(BLAS="-l${OPENBLAS}" LAPACK="-l${OPENBLAS}")
     FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN" SPQR_CONFIG="$SUN")
 else
-    FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
+    OPENBLAS=openblas
+    FLAGS+=(BLAS="-lopenblas" LAPACK="-l${OPENBLAS}")
 fi
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
@@ -53,11 +55,11 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
         if [[ ${target} == *-apple-* ]]; then
-            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
-            install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
+            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${OPENBLAS} | awk '{ print $1 }')
+            install_name_tool -change ${OPENBLAS_LINK} @rpath/lib${OPENBLAS}.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
-            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep libopenblas64_ | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${OPENBLAS_LINK} libopenblas64_.so ${libdir}/${nm}.so
+            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${OPENBLAS} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${OPENBLAS_LINK} lib${OPENBLAS}.so ${libdir}/${nm}.so
         fi
     done
 fi
@@ -75,7 +77,7 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 
 # Generate Julia file of constants
-"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -lgfortran -lopenblas
+"${CC}" -O2 -I${prefix}/include SuiteSparse_genconsts.c -o SuiteSparse_genconsts -L${libdir} -lcholmod -l${OPENBLAS} -lgfortran -lquadmath
 ./SuiteSparse_genconsts > ${prefix}/SuiteSparse_consts.jl
 """
 
