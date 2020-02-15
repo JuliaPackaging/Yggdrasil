@@ -1,0 +1,11 @@
+--- a/configure
++++ b/configure
+@@ -6652,7 +6652,7 @@
+           LD="${LD-ld} -m elf_x86_64"
+           ;;
+         ppc*-*linux*|powerpc*-*linux*)
+-          LD="${LD-ld} -m elf64ppc"
++          LD="${LD-ld} -m elf64lppc"
+           ;;
+         s390*-*linux*)
+           LD="${LD-ld} -m elf64_s390"
