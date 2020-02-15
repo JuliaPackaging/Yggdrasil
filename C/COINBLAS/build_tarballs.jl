@@ -7,13 +7,13 @@ version = v"1.4.8"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://github.com/coin-or-tools/ThirdParty-Blas/archive/releases/1.4.8.tar.gz", "781283ede62fc58e4eabcd0da00e8853e7001246a0fc4d7dd63207681ef1afff"),
+    GitSource("https://github.com/coin-or-tools/ThirdParty-Blas.git", "d229cc63c8780dfd69285a2e2fe1ef688b982d8d"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ThirdParty-Blas-*/
+cd $WORKSPACE/srcdir/ThirdParty-Blas/
 update_configure_scripts
 
 if [[ "${target}" == powerpc64le-linux-gnu ]]; then
