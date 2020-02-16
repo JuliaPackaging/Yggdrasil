@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "CImGui"
-version = v"1.74.0"
+version = v"1.75.0"
 
 # Collection of sources required to build CImGui
 sources = [
     "https://github.com/ocornut/imgui.git" =>
-    "bdce8336364595d1a446957a6164c97363349a53",
+    "58b3e02b95b4c7c5bb9128a28c6d55546501bf93",
 
     "https://github.com/cimgui/cimgui.git" =>
-    "d9e1d9a80d621cd96d9900ac340092853100416f",
+    "c5eea0b2dbfb2fc763292c410aba69a72eccfc4f",
 
     "./bundled",
 ]
