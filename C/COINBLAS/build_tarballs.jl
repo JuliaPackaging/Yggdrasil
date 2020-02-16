@@ -8,6 +8,7 @@ version = v"1.4.8"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or-tools/ThirdParty-Blas.git", "d229cc63c8780dfd69285a2e2fe1ef688b982d8d"),
+    FileSource("https://github.com/coin-or-tools/BuildTools/archive/releases/0.8.10.tar.gz", "6b149acb304bf6fa0d8c468a03b1f67baaf981916b016bc32db018fa512e4f88"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,9 +17,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/ThirdParty-Blas/
 update_configure_scripts
 
-if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    # Patch configure to be able to build shared library for PowerPC
-    atomic_patch -p1 ../patches/configure_shared_library_powerpc.patch
+if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]] ; then
+    # It looks like the directory with the definition of the M4 macros *must* be
+    # called `BuildTools` and stay under the current directory.
+    mv ../BuildTools-releases-0.8.10/ BuildTools
+    # Patch `configure.ac` to look for this directory
+    atomic_patch -p1 ../patches/configure_add_config_macro_dir.patch
+    # Run autoreconf to be able to build the shared libraries for PowerPC and FreeBSD
+    autoreconf -vi
 fi
 
 ./get.Blas
@@ -35,7 +41,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(filter!(p -> !isa(p, FreeBSD), supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
