@@ -3,9 +3,9 @@ using BinaryBuilder
 name = "MPICH"
 version = v"3.3.2"
 sources = [
-    "https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz" =>
-    "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9",
-    "./bundled",
+    FileSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+               "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -16,25 +16,36 @@ atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-
 pushd src/mpi/romio
 autoreconf -vi
 popd
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-dependency-tracking --disable-fortran --docdir=/tmp
+
+EXTRA_FLAGS=()
+if [[ "${target}" == i686-linux-musl ]]; then
+    # For a bug in our Musl library, we can't run C++ programs on this platform,
+    # thus we need to pass a cached value for this test
+    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
+fi
+./configure --prefix=$prefix --host=$target \
+    --enable-shared=yes \
+    --enable-static=no \
+    --disable-dependency-tracking \
+    --disable-fortran \
+    --docdir=/tmp \
+    "${EXTRA_FLAGS[@]}"
 
 # Build the library
-make "${flags[@]}" -j${nproc}
+make -j${nproc}
 
 # Install the library
-make "${flags[@]}" install
+make install
 """
 
-# Windows and MUSL are not supported
 platforms = filter(p -> !isa(p, Windows), supported_platforms())
-platforms = filter(p -> !(libc(p) == :musl), platforms)
 
 products = [
     LibraryProduct("libmpi", :libmpi)
     ExecutableProduct("mpiexec", :mpiexec)
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
