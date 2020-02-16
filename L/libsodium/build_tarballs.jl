@@ -12,12 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libsodium
+cd $WORKSPACE/srcdir/libsodium
 
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
