@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Minuit2"
-version = v"6.15.1"
+version = v"6.18.04"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jstrube/Minuit2.git", "32b4337fab6aca8cde5a0e18dfd9e05130eb7184"),
+    FileSource("https://github.com/root-project/root/archive/v6-18-04.tar.gz", "82421a5f0486a2c66170300285dce49a961e3459cb5290f6fa579ef617dc8b0a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Minuit2/
+cd $WORKSPACE/srcdir/root-*/math/minuit2
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j ${nproc}
