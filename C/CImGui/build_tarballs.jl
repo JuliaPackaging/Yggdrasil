@@ -7,13 +7,13 @@ version = v"1.75.0"
 
 # Collection of sources required to build CImGui
 sources = [
-    "https://github.com/ocornut/imgui.git" =>
-    "58b3e02b95b4c7c5bb9128a28c6d55546501bf93",
+    GitSource("https://github.com/ocornut/imgui.git",
+              "58b3e02b95b4c7c5bb9128a28c6d55546501bf93"),
 
-    "https://github.com/cimgui/cimgui.git" =>
-    "c5eea0b2dbfb2fc763292c410aba69a72eccfc4f",
+    GitSource("https://github.com/cimgui/cimgui.git",
+              "c5eea0b2dbfb2fc763292c410aba69a72eccfc4f"),
 
-    "./bundled",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
