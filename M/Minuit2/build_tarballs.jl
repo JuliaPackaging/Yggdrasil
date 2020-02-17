@@ -7,7 +7,7 @@ version = v"6.18.04"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://github.com/root-project/root/archive/v6-18-04.tar.gz", "82421a5f0486a2c66170300285dce49a961e3459cb5290f6fa579ef617dc8b0a"),
+    ArchiveSource("https://github.com/root-project/root/archive/v6-18-04.tar.gz", "82421a5f0486a2c66170300285dce49a961e3459cb5290f6fa579ef617dc8b0a"),
 ]
 
 # Bash recipe for building across all platforms
