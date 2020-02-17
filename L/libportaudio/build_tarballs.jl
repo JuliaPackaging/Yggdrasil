@@ -34,19 +34,13 @@ fi
 # apply the patch
 patch -dportaudio -p1 < portaudio_alsa_epipe_v3.diff
 
-# explicitly set the alsa env variables - for some reason
-# CMAKE_PREFIX_PATH wasn't working...
-if [ -f ${libdir}/libasound.${dlext} ]; then
-    export ALSA_INCLUDE_DIR=${prefix}/include
-    export ALSA_LIBRARY=${libdir}/libasound.${dlext}
-fi
-
 # First, build libportaudio
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
     ../portaudio/
 make
 make install
