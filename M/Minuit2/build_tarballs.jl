@@ -13,11 +13,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/root-*/math/minuit2
-
+cd $WORKSPACE/srcdir/root-*
 # Apply patch to add `project` command to CMake file
 atomic_patch -p3 $WORKSPACE/srcdir/patches/cmake-add-project.patch
-
+cd math/minuit2
 sed -i '/^add_library(Minuit2$/a SHARED' src/CMakeLists.txt
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-DMATHCORE_STANDALONE=1 ..
