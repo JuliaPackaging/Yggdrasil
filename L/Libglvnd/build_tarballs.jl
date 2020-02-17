@@ -18,7 +18,7 @@ export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc}
 make install
-# The license is embedded in the README file.
+# The license is embedded in the README file
 install_license README.md
 """
 
