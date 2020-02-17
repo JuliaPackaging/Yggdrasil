@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldFortran"
-version = v"1.0.1"
+version = v"1.0.2"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -11,6 +11,7 @@ sources = [
 script = raw"""
 mkdir -p ${prefix}/bin
 f77 -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/fortran/hello_world/hello_world.f
+install_license /usr/share/licenses/MIT
 """
 
 # These are the platforms we will build for by default, unless further
