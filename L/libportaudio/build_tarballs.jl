@@ -36,9 +36,9 @@ patch -dportaudio -p1 < portaudio_alsa_epipe_v3.diff
 
 # explicitly set the alsa env variables - for some reason
 # CMAKE_PREFIX_PATH wasn't working...
-if [ -f ${WORKSPACE}/destdir/lib/libasound.so]; then
-    export ALSA_INCLUDE_DIR=${WORKSPACE}/destdir/include
-    export ALSA_LIBRARY=${WORKSPACE}/destdir/lib/libasound.so
+if [ -f ${libdir}/libasound.${dlext} ]; then
+    export ALSA_INCLUDE_DIR=${prefix}/include
+    export ALSA_LIBRARY=${libdir}/libasound.${dlext}
 fi
 
 # First, build libportaudio
