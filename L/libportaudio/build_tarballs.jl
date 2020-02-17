@@ -40,8 +40,7 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
-    -DALSA_INCLUDE_DIR=${WORKSPACE}/destdir/include \
-    -DALSA_LIBRARY=${WORKSPACE}/destdir/lib/libasound.so \
+    -DCMAKE_PREFIX_PATH=${WORKSPACE}/destdir \
     ../portaudio/
 make
 make install
