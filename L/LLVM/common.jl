@@ -235,7 +235,13 @@ cp -r ${LLVM_SRCDIR}/utils/lit ${prefix}/tools/
 install_license ${WORKSPACE}/srcdir/llvm-project/llvm/LICENSE.TXT
 """
 
-function configure(version; assert=false)
+function configure(ARGS, version)
+    # Parse out some args
+    assert = false
+    if "--assert" in ARGS
+        assert = true
+        deleteat!(ARGS, findfirst(ARGS .== "--assert"))
+    end
     sources = [
         "https://github.com/llvm/llvm-project.git" =>
         llvm_tags[version],
@@ -256,11 +262,13 @@ function configure(version; assert=false)
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
 
+    name = "LLVM"
     config = "LLVM_MAJ_VER=$(version.major)\n"
     if assert
         config *= "ASSERTS=1\n"
+        name = "$(name)_assert"
     end
-    sources, config * buildscript, products
+    return name, sources, config * buildscript, products
 end
 
 
