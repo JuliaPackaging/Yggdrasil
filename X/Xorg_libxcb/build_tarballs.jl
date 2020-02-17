@@ -7,8 +7,8 @@ version = v"1.13"
 
 # Collection of sources required to build libxcb
 sources = [
-    FileSource("https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.bz2",
-               "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa"),
+    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.bz2",
+                  "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa"),
 ]
 
 # Bash recipe for building across all platforms

@@ -8,7 +8,7 @@ version = v"1.4.8"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or-tools/ThirdParty-Blas.git", "d229cc63c8780dfd69285a2e2fe1ef688b982d8d"),
-    FileSource("https://github.com/coin-or-tools/BuildTools/archive/releases/0.8.10.tar.gz", "6b149acb304bf6fa0d8c468a03b1f67baaf981916b016bc32db018fa512e4f88"),
+    ArchiveSource("https://github.com/coin-or-tools/BuildTools/archive/releases/0.8.10.tar.gz", "6b149acb304bf6fa0d8c468a03b1f67baaf981916b016bc32db018fa512e4f88"),
     DirectorySource("./bundled"),
 ]
 

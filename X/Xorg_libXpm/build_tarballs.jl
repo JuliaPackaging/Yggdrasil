@@ -7,8 +7,8 @@ version = v"3.5.13"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXpm-$(version).tar.bz2",
-               "9cd1da57588b6cb71450eff2273ef6b657537a9ac4d02d0014228845b935ac25"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXpm-$(version).tar.bz2",
+                  "9cd1da57588b6cb71450eff2273ef6b657537a9ac4d02d0014228845b935ac25"),
 ]
 
 # Bash recipe for building across all platforms

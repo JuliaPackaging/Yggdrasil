@@ -7,8 +7,8 @@ version = v"5.0.3"
 
 # Collection of sources required to build libXfixes
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.bz2",
-               "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.bz2",
+                  "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"),
 ]
 
 # Bash recipe for building across all platforms

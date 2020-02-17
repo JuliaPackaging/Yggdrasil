@@ -7,8 +7,8 @@ version = v"1.1.4"
 
 # Collection of sources required to build libXinerama
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2",
-               "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2",
+                  "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720"),
 ]
 
 # Bash recipe for building across all platforms

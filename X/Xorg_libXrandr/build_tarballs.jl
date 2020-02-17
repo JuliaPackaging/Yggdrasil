@@ -7,8 +7,8 @@ version = v"1.5.2"
 
 # Collection of sources required to build libXrandr
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.bz2",
-               "8aea0ebe403d62330bb741ed595b53741acf45033d3bda1792f1d4cc3daee023"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXrandr-$(version).tar.bz2",
+                  "8aea0ebe403d62330bb741ed595b53741acf45033d3bda1792f1d4cc3daee023"),
 ]
 
 # Bash recipe for building across all platforms

@@ -7,8 +7,8 @@ version = v"1.2.3"
 
 # Collection of sources required to build libXtst
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.bz2",
-               "4655498a1b8e844e3d6f21f3b2c4e2b571effb5fd83199d428a6ba7ea4bf5204"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.bz2",
+                  "4655498a1b8e844e3d6f21f3b2c4e2b571effb5fd83199d428a6ba7ea4bf5204"),
 ]
 
 # Bash recipe for building across all platforms

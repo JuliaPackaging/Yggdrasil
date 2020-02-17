@@ -7,8 +7,8 @@ version = v"1.3.4"
 
 # Collection of sources required to build libXext
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.bz2",
-               "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.bz2",
+                  "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b"),
 ]
 
 # Bash recipe for building across all platforms

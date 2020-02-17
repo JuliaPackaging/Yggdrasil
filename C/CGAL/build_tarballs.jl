@@ -7,8 +7,8 @@ const version = v"5.0.1"
 
 # Collection of sources required to build CGAL
 const sources = [
-    FileSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
-               "66021111fe536268d044e5e01bd26e691d7b493c217a1ca4d9427284dd4b2a02"),
+    ArchiveSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
+                  "66021111fe536268d044e5e01bd26e691d7b493c217a1ca4d9427284dd4b2a02"),
 ]
 
 # Dependencies that must be installed before this package can be built

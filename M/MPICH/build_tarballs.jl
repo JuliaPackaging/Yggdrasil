@@ -3,8 +3,8 @@ using BinaryBuilder
 name = "MPICH"
 version = v"3.3.2"
 sources = [
-    FileSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-               "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+                  "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
     DirectorySource("./bundled"),
 ]
 

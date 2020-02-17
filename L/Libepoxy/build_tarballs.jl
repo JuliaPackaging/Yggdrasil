@@ -7,8 +7,8 @@ version = v"1.5.4"
 
 # Collection of sources required to build Libepoxy
 sources = [
-    FileSource("https://github.com/anholt/libepoxy/releases/download/$(version)/libepoxy-$(version).tar.xz",
-               "0bd2cc681dfeffdef739cb29913f8c3caa47a88a451fd2bc6e606c02997289d2")
+    ArchiveSource("https://github.com/anholt/libepoxy/releases/download/$(version)/libepoxy-$(version).tar.xz",
+                  "0bd2cc681dfeffdef739cb29913f8c3caa47a88a451fd2bc6e606c02997289d2")
 ]
 
 # Bash recipe for building across all platforms

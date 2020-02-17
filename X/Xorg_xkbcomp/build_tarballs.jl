@@ -7,8 +7,8 @@ version = v"1.4.2"
 
 # Collection of sources required to build xkbcomp
 sources = [
-    FileSource("https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.bz2",
-               "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"),
+    ArchiveSource("https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.bz2",
+                  "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"),
 ]
 
 # Bash recipe for building across all platforms

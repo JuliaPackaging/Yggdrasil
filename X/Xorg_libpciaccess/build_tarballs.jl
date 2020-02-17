@@ -7,8 +7,8 @@ version = v"0.16"
 
 # Collection of sources required to build Libpciaccess
 sources = [
-    FileSource("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-$(version.major).$(version.minor).tar.bz2",
-               "214c9d0d884fdd7375ec8da8dcb91a8d3169f263294c9a90c575bf1938b9f489"),
+    ArchiveSource("https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-$(version.major).$(version.minor).tar.bz2",
+                  "214c9d0d884fdd7375ec8da8dcb91a8d3169f263294c9a90c575bf1938b9f489"),
 ]
 
 # Bash recipe for building across all platforms
