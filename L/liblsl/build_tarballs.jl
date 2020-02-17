@@ -7,7 +7,7 @@ version = v"1.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://github.com/sccn/liblsl/archive/1.13.0.tar.gz",
+    ArchiveSource("https://github.com/sccn/liblsl/archive/1.13.0.tar.gz",
     "5b304a5365eba33852da96badfbd9d66556caf4a00c87947a59df2942680a617"),
     DirectorySource("./bundled/patches"),
 ]
