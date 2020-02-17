@@ -8,11 +8,16 @@ version = v"6.18.04"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/root-project/root/archive/v6-18-04.tar.gz", "82421a5f0486a2c66170300285dce49a961e3459cb5290f6fa579ef617dc8b0a"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/root-*/math/minuit2
+
+# Apply patch to add `project` command to CMake file
+atomic_patch -p3 $WORKSPACE/srcdir/patches/cmake-add-project.patch
+
 sed -i '/^add_library(Minuit2$/a SHARED' src/CMakeLists.txt
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-DMATHCORE_STANDALONE=1 ..
