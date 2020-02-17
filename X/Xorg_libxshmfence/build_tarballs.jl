@@ -7,8 +7,8 @@ version = v"1.3"
 
 # Collection of sources required to build libxshmfence
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libxshmfence-$(version.major).$(version.minor).tar.bz2",
-               "b884300d26a14961a076fbebc762a39831cb75f92bed5ccf9836345b459220c7"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libxshmfence-$(version.major).$(version.minor).tar.bz2",
+                  "b884300d26a14961a076fbebc762a39831cb75f92bed5ccf9836345b459220c7"),
 ]
 
 # Bash recipe for building across all platforms

@@ -7,8 +7,8 @@ version = v"1.1.0"
 
 # Collection of sources required to build libxkbfile
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.bz2",
-               "758dbdaa20add2db4902df0b1b7c936564b7376c02a0acd1f2a331bd334b38c7"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libxkbfile-$(version).tar.bz2",
+                  "758dbdaa20add2db4902df0b1b7c936564b7376c02a0acd1f2a331bd334b38c7"),
 ]
 
 # Bash recipe for building across all platforms

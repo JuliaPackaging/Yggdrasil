@@ -7,8 +7,8 @@ version = v"1.6.9"
 
 # Collection of sources required to build libX11
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libX11-$(version).tar.bz2",
-               "9cc7e8d000d6193fa5af580d50d689380b8287052270f5bb26a5fb6b58b2bed1"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libX11-$(version).tar.bz2",
+                  "9cc7e8d000d6193fa5af580d50d689380b8287052270f5bb26a5fb6b58b2bed1"),
 ]
 
 # Bash recipe for building across all platforms

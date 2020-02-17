@@ -7,8 +7,8 @@ version = v"1.1.4"
 
 # Collection of sources required to build libXxf86vm
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXxf86vm-$(version).tar.bz2",
-               "afee27f93c5f31c0ad582852c0fb36d50e4de7cd585fcf655e278a633d85cd57"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXxf86vm-$(version).tar.bz2",
+                  "afee27f93c5f31c0ad582852c0fb36d50e4de7cd585fcf655e278a633d85cd57"),
 ]
 
 # Bash recipe for building across all platforms

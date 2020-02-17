@@ -7,8 +7,8 @@ version = v"1.7.10"
 
 # Collection of sources required to build libXi
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.bz2",
-               "36a30d8f6383a72e7ce060298b4b181fd298bc3a135c8e201b7ca847f5f81061"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.bz2",
+                  "36a30d8f6383a72e7ce060298b4b181fd298bc3a135c8e201b7ca847f5f81061"),
 ]
 
 # Bash recipe for building across all platforms

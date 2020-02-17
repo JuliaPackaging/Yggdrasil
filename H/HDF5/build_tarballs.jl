@@ -11,22 +11,22 @@ sources = [
     FileSource("https://files.pythonhosted.org/packages/3a/9b/5b68a27110d459704550cfc0c765a1ae6ee98981cbbbf0ca92983c87046a/h5py-2.10.0-cp27-cp27m-manylinux1_x86_64.whl", "aac4b57097ac29089f179bbc2a6e14102dd210618e94d77ee4831c65f82f17c0"),
 
     # Take advantage of msys2 mingw builds of HDF5 for Windows
-    FileSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.10.5-1-any.pkg.tar.xz", "d29a56297219e1981f393e266ee515605237323fc20b0a69a45961c4bfe5e9da"),
-    FileSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-szip-2.1.1-2-any.pkg.tar.xz", "58b5efe1420a2bfd6e92cf94112d29b03ec588f54f4a995a1b26034076f0d369"),
-    FileSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-zlib-1.2.11-7-any.pkg.tar.xz", "addf6c52134027407640f1cbdf4efc5b64430f3a286cb4e4c4f5dbb44ce55a42"),
-    FileSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-szip-2.1.1-2-any.pkg.tar.xz", "ec8fe26370b0673c4b91f5ccf3404907dc7c24cb9d75c7b8830aa93a7c13ace7"),
-    FileSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.10.5-1-any.pkg.tar.xz", "e01196dd53711304aa4026932c153171606efc4d6938dd3c172b6b40d9e7cdd9"),
-    FileSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz", "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2"),
+    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.10.5-1-any.pkg.tar.xz", "d29a56297219e1981f393e266ee515605237323fc20b0a69a45961c4bfe5e9da"),
+    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-szip-2.1.1-2-any.pkg.tar.xz", "58b5efe1420a2bfd6e92cf94112d29b03ec588f54f4a995a1b26034076f0d369"),
+    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-zlib-1.2.11-7-any.pkg.tar.xz", "addf6c52134027407640f1cbdf4efc5b64430f3a286cb4e4c4f5dbb44ce55a42"),
+    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-szip-2.1.1-2-any.pkg.tar.xz", "ec8fe26370b0673c4b91f5ccf3404907dc7c24cb9d75c7b8830aa93a7c13ace7"),
+    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.10.5-1-any.pkg.tar.xz", "e01196dd53711304aa4026932c153171606efc4d6938dd3c172b6b40d9e7cdd9"),
+    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz", "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2"),
 
      # We need some special compiler support libraries from mingw
-    FileSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz", "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17"),
+    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.1.0-3-any.pkg.tar.xz", "416819d44528e856fb1f142b41fd3b201615d19ddaed8faa5d71296676d6fa17"),
 
     # Native build for arm
-    FileSource("https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz", "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7"),
+    ArchiveSource("https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz", "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7"),
 
     # Conda build (no MPI) for aarch64
-    FileSource("https://anaconda.org/conda-forge/hdf5/1.10.5/download/linux-aarch64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2", "46300770bb662aaefc92a9e21c5f78ebfaac5c00d4963844c3f730836400edb2";
-               unpack_target = "hdf5-aarch64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.10.5/download/linux-aarch64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2", "46300770bb662aaefc92a9e21c5f78ebfaac5c00d4963844c3f730836400edb2";
+                  unpack_target = "hdf5-aarch64-linux-gnu"),
 ]
 
 # Bash recipe for building across all platforms

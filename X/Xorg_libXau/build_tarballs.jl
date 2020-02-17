@@ -7,8 +7,8 @@ version = v"1.0.9"
 
 # Collection of sources required to build libXau
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXau-$(version).tar.bz2",
-               "ccf8cbf0dbf676faa2ea0a6d64bcc3b6746064722b606c8c52917ed00dcb73ec"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXau-$(version).tar.bz2",
+                  "ccf8cbf0dbf676faa2ea0a6d64bcc3b6746064722b606c8c52917ed00dcb73ec"),
 ]
 
 # Bash recipe for building across all platforms

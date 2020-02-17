@@ -7,8 +7,8 @@ version = v"1.1.3"
 
 # Collection of sources required to build libXdmcp
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.bz2",
-               "20523b44aaa513e17c009e873ad7bbc301507a3224c232610ce2e099011c6529"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.bz2",
+                  "20523b44aaa513e17c009e873ad7bbc301507a3224c232610ce2e099011c6529"),
 ]
 
 # Bash recipe for building across all platforms

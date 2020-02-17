@@ -5,8 +5,8 @@ version = v"5.4.0"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    FileSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
-               "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
+    ArchiveSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
+                  "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
     DirectorySource("./bundled"),
 ]
 

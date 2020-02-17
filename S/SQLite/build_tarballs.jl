@@ -7,9 +7,9 @@ version = v"3.31.1"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://sqlite.org/2020/sqlite-autoconf-3310100.tar.gz", "62284efebc05a76f909c580ffa5c008a7d22a1287285d68b7825a2b6b51949ae"),
-    FileSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
-               "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"),
+    ArchiveSource("https://sqlite.org/2020/sqlite-autoconf-3310100.tar.gz", "62284efebc05a76f909c580ffa5c008a7d22a1287285d68b7825a2b6b51949ae"),
+    ArchiveSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
+                  "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"),
 ]
 
 # Bash recipe for building across all platforms

@@ -7,8 +7,8 @@ version = v"0.4.5"
 
 # Collection of sources required to build libXcomposite
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.bz2",
-               "b3218a2c15bab8035d16810df5b8251ffc7132ff3aa70651a1fba0bfe9634e8f"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.bz2",
+                  "b3218a2c15bab8035d16810df5b8251ffc7132ff3aa70651a1fba0bfe9634e8f"),
 ]
 
 # Bash recipe for building across all platforms

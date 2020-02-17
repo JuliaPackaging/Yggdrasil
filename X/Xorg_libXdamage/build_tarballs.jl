@@ -7,8 +7,8 @@ version = v"1.1.5"
 
 # Collection of sources required to build libXdamage
 sources = [
-    FileSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2",
-               "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2",
+                  "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45"),
 ]
 
 # Bash recipe for building across all platforms
