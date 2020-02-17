@@ -1,0 +1,52 @@
+# This patch came from Alan Horstmann, I (ssfrr) downloaded it from
+# https://lists.columbia.edu/pipermail/portaudio/2018-November/001634.html
+
+--- a/src/hostapi/alsa/pa_linux_alsa.c (spv:repo)
++++ b/src/hostapi/alsa/pa_linux_alsa.c (local)
+@@ -3628,16 +3628,17 @@
+ 
+ /** Fill in pollfd objects.
+  */
+-static PaError PaAlsaStreamComponent_BeginPolling( PaAlsaStreamComponent* self, struct pollfd* pfds )
++static int PaAlsaStreamComponent_BeginPolling( PaAlsaStreamComponent* self, struct pollfd* pfds )
+ {
+-    PaError result = paNoError;
+     int ret = alsa_snd_pcm_poll_descriptors( self->pcm, pfds, self->nfds );
+-    (void)ret;  /* Prevent unused variable warning if asserts are turned off */
++    /* snd_pcm_poll_descriptors() may return a negative error code (eg some plugins give EPIPE for XRUN) */
++    if( ret < 0 )
++        return ret;
+     assert( ret == self->nfds );
+ 
+     self->ready = 0;
+ 
+-    return result;
++    return 0;
+ }
+ 
+ /** Examine results from poll().
+@@ -3794,14 +3795,22 @@
+         if( pollCapture )
+         {
+             capturePfds = self->pfds;
+-            PA_ENSURE( PaAlsaStreamComponent_BeginPolling( &self->capture, capturePfds ) );
++            if( PaAlsaStreamComponent_BeginPolling( &self->capture, capturePfds ) < 0 )
++            {   /* An error in the Alsa system, often EPIPE; treat as XRUN & recover, don't error */
++                xrun = 1;
++                goto end;
++            }
+             totalFds += self->capture.nfds;
+         }
+         if( pollPlayback )
+         {
+             /* self->pfds is in effect an array of fds; if necessary, index past the capture fds */
+             playbackPfds = self->pfds + (pollCapture ? self->capture.nfds : 0);
+-            PA_ENSURE( PaAlsaStreamComponent_BeginPolling( &self->playback, playbackPfds ) );
++            if( PaAlsaStreamComponent_BeginPolling( &self->playback, playbackPfds ) < 0 )
++            {   /* An error in the Alsa system, often EPIPE; treat as XRUN & recover, don't error */
++                xrun = 1;
++                goto end;
++            }
+             totalFds += self->playback.nfds;
+         }
+ 
