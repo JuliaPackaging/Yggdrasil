@@ -8,7 +8,7 @@ version = v"19.6.0"
 # Collection of sources required to build libportaudio. Not all of these
 # are used for all platforms.
 sources = [
-    FileSource("http://portaudio.com/archives/pa_stable_v190600_20161030.tgz",
+    ArchiveSource("http://portaudio.com/archives/pa_stable_v190600_20161030.tgz",
                "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513"),
 
     # This includes a patch
