@@ -7,7 +7,7 @@ version = v"3.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://ftp.gnu.org/gnu/bison/bison-3.5.2.tar.xz", "24e273db9eb6da8bbb6f0648284d0724a5cbd6268a163db402f961350a4e50dd"),
+    ArchiveSource("https://ftp.gnu.org/gnu/bison/bison-3.5.2.tar.xz", "24e273db9eb6da8bbb6f0648284d0724a5cbd6268a163db402f961350a4e50dd"),
 ]
 
 # Bash recipe for building across all platforms
