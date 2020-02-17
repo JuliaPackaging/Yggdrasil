@@ -4,12 +4,12 @@ using BinaryBuilder
 
 const name = "libcgal_julia"
 
-version = v"0.6.1"
+version = v"0.6.2"
 
 # Collection of sources required to build CGAL
 const sources = [
     GitSource("https://github.com/rgcv/libcgal-julia.git",
-              "019daea1373e91fb8c2e95b29db26751a4917df8"),
+              "cd5cd8c3ff79afef72f2f282fe5ab6dc1b912fd1"),
 ]
 
 # Dependencies that must be installed before this package can be built
