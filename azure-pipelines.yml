@@ -162,6 +162,10 @@ jobs:
           DEPLOY="--deploy-bin"
       fi
 
+      # Cleanup temporary things that might have been left-over
+      ./clean_builds.sh
+      ./clean_products.sh
+
       cd $(PROJECT)
       $(JULIA) ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
     env:
