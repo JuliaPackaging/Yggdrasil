@@ -81,7 +81,6 @@ platforms = [
     Linux(:aarch64, libc=:glibc),
     Linux(:i686, libc=:glibc),
     MacOS(:x86_64),
-    Windows(:i686),
     Windows(:x86_64),
 ]
 
