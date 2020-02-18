@@ -8,7 +8,7 @@ version = v"1.9.9"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://fmv.jku.at/aiger/aiger-1.9.9.tar.gz", "1e50d3db36f5dc5ed0e57aa4c448b9bcf82865f01736dde1f32f390b780350c7"),
-    "./bundled"
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,6 @@ platforms = [
     Linux(:x86_64, libc=:musl),
     Linux(:aarch64, libc=:musl),
     Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
     FreeBSD(:x86_64)
 ]
 
