@@ -9,7 +9,7 @@ version = v"0.6.3"
 # Collection of sources required to build CGAL
 const sources = [
     GitSource("https://github.com/rgcv/libcgal-julia.git",
-              "aac9f84518bcb34cb3554fddc31fa7a4929da5e9"),
+              "d66dd1616cfe2b35f4027f77e94dc7b04e109e18"),
 ]
 
 # Dependencies that must be installed before this package can be built
