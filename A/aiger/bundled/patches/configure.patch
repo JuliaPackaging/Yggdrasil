@@ -1,0 +1,32 @@
+diff --git srcdir_lower/aiger-1.9.9/configure.sh srcdir/aiger-1.9.9/configure.sh
+index 3e7de47..cbaf785 100755
+--- srcdir_lower/aiger-1.9.9/configure.sh
++++ srcdir/aiger-1.9.9/configure.sh
+@@ -134,8 +134,8 @@ fi
+ msg "compiling with: $CC $CFLAGS"
+ rm -f makefile
+ sed \
+-  -e "s/@CC@/$CC/" \
+-  -e "s/@CFLAGS@/$CFLAGS/" \
++  -e "s,@CC@,$CC," \
++  -e "s,@CFLAGS@,$CFLAGS," \
+   -e "s/@AIGBMCTARGET@/$AIGBMCTARGET/" \
+   -e "s/@AIGBMCTARGET@/$AIGBMCTARGET/" \
+   -e "s,@AIGBMCHDEPS@,$AIGBMCHDEPS," \
+diff --git srcdir_lower/aiger-1.9.9/makefile.in srcdir/aiger-1.9.9/makefile.in
+index 0a5d750..99aa30b 100644
+--- srcdir_lower/aiger-1.9.9/makefile.in
++++ srcdir/aiger-1.9.9/makefile.in
+@@ -44,10 +44,8 @@ TARGETS=$(OBJS) $(BINS)
+ all: $(TARGETS)
+ 
+ install: install-bins # install-objs
+-	test -d /usr
+-	test -d /usr/local
+-	test -d /usr/local/bin
+-	install -m 755 -s $(BINS) /usr/łocal/bin/
++	test -d $(PREFIX)/bin
++	install -m 755 -s $(BINS) $(PREFIX)/bin/
+ 
+ install-bins: $(BINS)
+ 	
