@@ -1,0 +1,12 @@
+--- metis-4.0.3/Lib/ccgraph.c	2019-02-07 18:21:15.424298005 +0100
++++ metis-4.0.3/Lib/ccgraph.c	2019-02-07 18:22:47.296662334 +0100
+@@ -159,7 +159,8 @@
+             break;
+         }
+       }
+-      if (jj >= 0 && cadjncy[jj] == cnvtxs) { /* This 2nd check is needed for non-adjacent matchings */
++      /* added condition jj < nedges as suggested in https://github.com/coin-or/Ipopt/issues/208#issuecomment-460986757 */
++      if (jj >= 0 && jj < nedges && cadjncy[jj] == cnvtxs) { /* This 2nd check is needed for non-adjacent matchings */
+         cadjwgtsum[cnvtxs] -= cadjwgt[jj];
+         cadjncy[jj] = cadjncy[--nedges];
+         cadjwgt[jj] = cadjwgt[nedges];
