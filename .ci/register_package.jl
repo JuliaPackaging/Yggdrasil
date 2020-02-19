@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, Pkg.PlatformEngines
 
 verbose = "--verbose" in ARGS
 
@@ -30,11 +30,36 @@ BinaryBuilder.init_jll_package(
     "JuliaBinaryWrappers/$(name)_jll.jl",
 )
 
+function download_cached_binaries(download_dir, platforms)
+    # Grab things out of the aether for maximum consistency
+    bb_hash = get(ENV, "BB_HASH")
+    proj_hash = get(ENV, "PROJ_HASH")
+    probe_platform_engines!(;verbose=verbose)
+
+    for platform in platforms
+        url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
+        filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
+        PlatformEngines.download(url, joinpath(download_dir, filename); verbose=verbose)
+    end
+end
+
 for obj in objs
     BinaryBuilder.cleanup_merged_object!(obj)
     # Filter out build-time dependencies also here
     obj["dependencies"] = Dependency[dep for dep in obj["dependencies"] if !isa(dep, BuildDependency)]
-    BinaryBuilder.rebuild_jll_packages(obj; verbose=verbose, lazy_artifacts=lazy_artifacts)
+    mktempdir() do download_dir
+        # Grab the binaries for our package
+        download_cached_binaries(download_dir, obj["platforms"])
+        
+        # Push up the JLL package (pointing to as-of-yet missing tarballs)
+        repo = "JuliaBinaryWrappers/$(name)_jll.jl"
+        tag = "$(name)-v$(build_version)"
+        upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+        BinaryBuilder.rebuild_jll_package(obj; download_dir=download_dir, upload_prefix=upload_prefix verbose=verbose, lazy_artifacts=lazy_artifacts)
+        
+        # Upload them to GitHub releases
+        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
+    end
 end
 BinaryBuilder.push_jll_package(name, build_version)
 BinaryBuilder.register_jll(name, build_version, dependencies)

@@ -76,6 +76,9 @@ jobs:
           # Next, we're going to ensure that our BB is up to date and precompiled
           $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
 
+          # We're going to snarf out the BB tree hash, to be used later in our build cache
+          BB_HASH=$($(JULIA) -e "using Pkg; print(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\")].tree_hash)")
+
           # Next, for each project, download its sources. We do this by generating meta.json
           # files, then parsing them with `download_sources.jl`
           for PROJECT in ${PROJECTS_ACCEPTED}; do
@@ -97,7 +100,8 @@ jobs:
           echo -n "##vso[task.setVariable variable=projects;isOutput=true]{"
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
-              echo -n "'${NAME}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}'}, "
+              PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
+              echo -n "'${NAME}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORMS':'${PLATFORMS}'}, "
           done
           echo "}"
 
@@ -106,16 +110,35 @@ jobs:
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
 
+              # "project source hash" is a combination of meta.json (to absorb
+              # changes from include()'ing a `common.jl`) as well as the entire
+              # tree the project lives in (to absorb changes from patches)
+              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${PROJECT}\")))")
+              META_HASH=$(shasum -a 256 "$(Agent.TempDirectory)/${NAME}.meta.json" | cut -d' ' -f1)
+              PROJ_HASH=$(echo -n ${TREE_HASH}${META_HASH} | shasum -a 256 | cut -d' ' -f1)
+
               # Load in the platforms
               PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
-              if [[ -n "${PLATFORMS}" ]]; then
-                  for PLATFORM in ${PLATFORMS}; do
-                      echo -n "'${NAME}-${PLATFORM}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORM':'${PLATFORM}'}, "
-                  done
-              else
-                  # If we were unable to determine the proper platforms, then create a single output with empty platform
-                  echo -n "'${NAME}-${PLATFORM}':{'NAME': '${NAME}', 'PROJECT':'${PROJECT}', 'PLATFORM':''}, "
+              if [[ -z "${PLATFORMS}" ]]; then
+                  echo "Unable to determine the proper platforms for ${NAME}" >&2
+                  continue
               fi
+              for PLATFORM in ${PLATFORMS}; do
+                  # Here, we hit the build cache to see if we can skip this particular combo
+                  CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
+                  if curl --output /dev/null --silent --fail --HEAD "${CACHE_URL}"; then
+                      continue;
+                  fi
+
+                  # Otherwise, emit the build
+                  echo -n "'${NAME}-${PLATFORM}':{ \
+                      'NAME': '${NAME}', \
+                      'PROJECT':'${PROJECT}', \
+                      'PLATFORM':'${PLATFORM}', \
+                      'PROJ_HASH':'${PROJ_HASH}', \
+                      'BB_HASH':'${BB_HASH}' \
+                  }, "
+              done
           done
           echo "}"
       fi
@@ -155,23 +178,41 @@ jobs:
     projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   steps:
   - script: |
-      # If we're on master and this is not a pull request, then DEPLOY.  NOTE: A
-      # manual rebuild of a PR in Azure web interface is not a `PullRequest`
-      DEPLOY=""
-      if [[ "$(Build.Reason)" != "PullRequest" ]] && [[ "$(Build.SourceBranch)" == "refs/heads/master" ]] ; then
-          DEPLOY="--deploy-bin"
-      fi
-
       # Cleanup temporary things that might have been left-over
       ./clean_builds.sh
       ./clean_products.sh
 
       cd $(PROJECT)
-      $(JULIA) ./build_tarballs.jl --verbose ${DEPLOY} $(PLATFORM)
+      $(JULIA) ./build_tarballs.jl --verbose $(PLATFORM)
+
+      # After building, we take the single tarball produced with the proper NAME, and upload it:
+      TARBALLS=( ./products/${NAME}*${PLATFORM}*.tar.gz )
+      if [[ "${#TARBALLS[@]}" != 1 ]]; then
+          echo "Multiple tarballs?  This isn't right!" >&2
+          exit 1
+      fi
+
+      # Upload with curl
+      ACL="x-amz-acl:public-read"
+      CONTENT_TYPE="application/x-gtar"
+      BUCKET="julia-bb-buildcache"
+      BUCKET_PATH="${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
+      S3SIGNATURE=$(echo -en "PUT\n\n${CONTENT_TYPE}\n$(date -R)\n${ACL}\n/${BUCKET}/${BUCKET_PATH}" | openssl sha1 -hmac "${S3SECRET}" -binary | base64)
+      HOST="${BUCKET}.s3.amazonaws.com"
+      curl -X PUT -T "${TARBALLS[0]}" \
+          -H "Host: ${HOST}" \
+          -H "Date: $(date -R)" \
+          -H "Content-Type: ${CONTENT_TYPE}" \
+          -H "${ACL}" \
+          -H "Authorization: AWS ${S3KEY}:${S3SIGNATURE}" \
+          "https://${HOST}/${BUCKET_PATH}"
+
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
+      S3KEY: $(S3KEY)
+      S3SECRET: $(S3SECRET)
     displayName: "run build_tarballs.jl"
-    condition: ne(variables['projplatforms'], '')
+    condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{}'))
 
 - job: register
   dependsOn:
