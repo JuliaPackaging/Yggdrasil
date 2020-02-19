@@ -11,7 +11,7 @@ source .env
 if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     echo "Setting up rootfs..."
     mkdir -p "${STORAGE_DIR}/rootfs"
-    sudo debootstrap --variant=minbase --include=curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,expect buster "${STORAGE_DIR}/rootfs"
+    sudo debootstrap --variant=minbase --include=curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,expect,locales buster "${STORAGE_DIR}/rootfs"
 
     # Remove special `dev` files
     sudo rm -rf "${STORAGE_DIR}/rootfs/dev/*"
