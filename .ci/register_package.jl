@@ -32,8 +32,8 @@ BinaryBuilder.init_jll_package(
 
 function download_cached_binaries(download_dir, platforms)
     # Grab things out of the aether for maximum consistency
-    bb_hash = get(ENV, "BB_HASH")
-    proj_hash = get(ENV, "PROJ_HASH")
+    bb_hash = ENV["BB_HASH"]
+    proj_hash = ENV["PROJ_HASH"]
     probe_platform_engines!(;verbose=verbose)
 
     for platform in platforms
@@ -55,7 +55,7 @@ for obj in objs
         repo = "JuliaBinaryWrappers/$(name)_jll.jl"
         tag = "$(name)-v$(build_version)"
         upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
-        BinaryBuilder.rebuild_jll_package(obj; download_dir=download_dir, upload_prefix=upload_prefix verbose=verbose, lazy_artifacts=lazy_artifacts)
+        BinaryBuilder.rebuild_jll_package(obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
         
         # Upload them to GitHub releases
         BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
