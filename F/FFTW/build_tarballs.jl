@@ -2,8 +2,9 @@ using BinaryBuilder
 
 # Collection of sources required to build ZMQ
 sources = [
-    "http://fftw.org/~stevenj/fftw-3.3.9.tar.gz" => # prerelease tarball
-    "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042",
+   # prerelease tarball
+    ArchiveSource("http://fftw.org/~stevenj/fftw-3.3.9.tar.gz",
+                  "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042"),
 ]
 
 name = "FFTW"
@@ -43,10 +44,6 @@ if [[ "${target}" == aarch64-* ]]; then FLAGS+=( --enable-neon ); fi
 if [[ "${target}" == *-w64-* ]]; then FLAGS+=( --with-our-malloc ); fi
 if [[ "${target}" == i686-w64-* ]]; then FLAGS+=( --with-incoming-stack-boundary=2 ); fi
 
-# On win64, we need this to avoid "Assembler Error: invalid register for .seh_savexmm",
-# see https://sourceforge.net/p/mingw-w64/mailman/message/36287627/ for more info
-# if [[ "${target}" == x86_64-w64-* ]]; then export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"; fi
-
 # On ppc64le, enable VSX
 if [[ "${target}" == powerpc64le-*  ]]; then FLAGS+=( --enable-vsx ); fi
 
@@ -66,6 +63,10 @@ build_fftw()
 build_fftw double
 
 build_fftw single --enable-single
+
+# Install both COPYING and COPYRIGHT in the license directory
+cd ${WORKSPACE}/srcdir/fftw-*
+install_license COPYING COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
