@@ -26,7 +26,6 @@ sources = [
     "757ef22c3e48c2022974c2110d25ee45dd09bff8f397c8432018c50fb4b2d785"),
 
     DirectorySource("./bundled"),
-
 ]
 
 # Bash recipe for building across all platforms
