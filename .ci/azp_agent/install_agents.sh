@@ -20,6 +20,9 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     # Remove `_apt` user so that `apt` doesn't try to `setgroups()`
     sed '/_apt:/d' -i "${STORAGE_DIR}/rootfs/etc/passwd"
 
+    # Set up the one true locale
+    echo "en_US.UTF-8 UTF-8" >> ${STORAGE_DIR}/rootfs/etc/locale.gen
+
     # Install Julia into the rootfs
     echo "Installing Julia..."
     #JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.0-linux-x86_64.tar.gz"
