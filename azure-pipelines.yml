@@ -186,7 +186,7 @@ jobs:
       $(JULIA) ./build_tarballs.jl --verbose $(PLATFORM)
 
       # After building, we take the single tarball produced with the proper NAME, and upload it:
-      TARBALLS=( ./products/${NAME}*${PLATFORM}*.tar.gz )
+      TARBALLS=( ./products/${NAME%@*}*${PLATFORM}*.tar.gz )
       if [[ "${#TARBALLS[@]}" != 1 ]]; then
           echo "Multiple tarballs?  This isn't right!" >&2
           exit 1
