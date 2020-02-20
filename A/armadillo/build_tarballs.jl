@@ -34,6 +34,13 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
 fi
 
 cmake .. "${FLAGS[@]}"
+
+# Armadillo doesn't trust that OpenBLAS has LAPACK symbols in it (apparently
+# some distributions don't include them), so we have to manually enable
+# ARMA_USE_LAPACK in the configuration.
+sed -i 's/\/\* #undef ARMA_USE_LAPACK \*\//#define ARMA_USE_LAPACK/' \
+    tmp/include/armadillo_bits/config.hpp
+
 make -j${nproc}
 make install
 
