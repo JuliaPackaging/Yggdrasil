@@ -4,10 +4,10 @@
 using BinaryBuilder
 
 name = "armadillo"
-version = v"9.800.3"
+version = v"9.850.1"
 sources = [
-    ("http://sourceforge.net/projects/arma/files/armadillo-9.800.3.tar.xz" =>
-        "a481e1dc880b7cb352f8a28b67fe005dc1117d4341277f12999a2355d40d7599")]
+    ("http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz" =>
+        "d4c389b9597a5731500ad7a2656c11a6031757aaaadbcafdea5cc8ac0fd2c01f")]
 script = raw"""
 cd ${WORKSPACE}/srcdir/armadillo-*/
 mkdir build && cd build
