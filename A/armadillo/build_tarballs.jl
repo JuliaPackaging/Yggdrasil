@@ -19,6 +19,9 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 
 if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
     FLAGS+=(-Dopenblas_LIBRARY="${libdir}/libopenblas64_.${dlext}")
+    # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
+    # replacement.
+    FLAGS+=(-DLAPACK_LIBRARY="${libdir}/libopenblas64_.${dlext}")
 
     SYMB_DEFS=()
     for sym in sasum dasum snrm2 dnrm2 sdot ddot sgemv dgemv cgemv zgemv sgemm dgemm cgemm zgemm ssyrk dsyrk cherk zherk; do
@@ -31,16 +34,13 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
         done
     fi
     export CXXFLAGS="${SYMB_DEFS[@]}"
+else
+    # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
+    # replacement.
+    FLAGS+=(-DLAPACK_LIBRARY="${libdir}/libopenblas.${dlext}")
 fi
 
 cmake .. "${FLAGS[@]}"
-
-# Armadillo doesn't trust that OpenBLAS has LAPACK symbols in it (apparently
-# some distributions don't include them), so we have to manually enable
-# ARMA_USE_LAPACK in the configuration.
-sed -i 's/\/\* #undef ARMA_USE_LAPACK \*\//#define ARMA_USE_LAPACK/' \
-    tmp/include/armadillo_bits/config.hpp
-
 make -j${nproc}
 make install
 
