@@ -199,6 +199,7 @@ jobs:
       BUCKET_PATH="${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
       S3SIGNATURE=$(echo -en "PUT\n\n${CONTENT_TYPE}\n$(date -R)\n${ACL}\n/${BUCKET}/${BUCKET_PATH}" | openssl sha1 -hmac "${S3SECRET}" -binary | base64)
       HOST="${BUCKET}.s3.amazonaws.com"
+      echo "Uploading artifact to https://${HOST}/${BUCKET_PATH}"
       curl -X PUT -T "${TARBALLS[0]}" \
           -H "Host: ${HOST}" \
           -H "Date: $(date -R)" \
