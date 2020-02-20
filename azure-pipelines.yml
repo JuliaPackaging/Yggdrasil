@@ -230,6 +230,7 @@ jobs:
       echo "Generating meta.json..."
       $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
       echo "Registering $(NAME)..."
+      export BB_HASH PROJ_HASH
       $(JULIA) $(Build.SourcesDirectory)/.ci/register_package.jl $(Agent.TempDirectory)/$(NAME).meta.json --verbose
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
