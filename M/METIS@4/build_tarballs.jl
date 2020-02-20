@@ -45,7 +45,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmetis", :libmetis)
+    LibraryProduct("libmetis", :libmetis),
 ]
 
 # Dependencies that must be installed before this package can be built
