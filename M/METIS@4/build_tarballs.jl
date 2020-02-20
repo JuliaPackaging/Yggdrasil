@@ -5,9 +5,9 @@ version = v"4.0.3"
 
 # Collection of sources required to build METIS
 sources = [
-  ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz",
-                "5efa35de80703c1b2c4d0de080fafbcf4e0d363a21149a1ad2f96e0144841a55"),
-  DirectorySource("./bundled"),
+    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz",
+                  "5efa35de80703c1b2c4d0de080fafbcf4e0d363a21149a1ad2f96e0144841a55"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
