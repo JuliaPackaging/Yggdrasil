@@ -227,7 +227,7 @@ jobs:
       S3KEY: $(S3KEY)
       S3SECRET: $(S3SECRET)
     displayName: "run build_tarballs.jl"
-    condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{}'))
+    condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
 
 - job: register
   dependsOn:
