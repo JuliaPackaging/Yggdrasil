@@ -5,28 +5,17 @@ using BinaryBuilder
 name = "XZ"
 version = v"5.2.4"
 
-# Collection of sources required to build XzBuilder
+# Collection of sources required to complete build
 sources = [
-    "https://tukaani.org/xz/xz-$(version).tar.xz" =>
-    "9717ae363760dedf573dad241420c5fea86256b65bc21d2cf71b2b12f0544f4b",
-    "https://tukaani.org/xz/xz-$(version)-windows.zip" =>
-    "9a5163623f435b6fa0844b6b884babd6bf4f8d876ae2d8134deeb296afd49c61",
+    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.gz", "b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [ ${target} = "x86_64-w64-mingw32" ]; then
-    mkdir -p ${WORKSPACE}/destdir/bin/
-    cp bin_x86-64/liblzma.dll ${WORKSPACE}/destdir/bin/
-elif [ ${target} = "i686-w64-mingw32" ]; then
-    mkdir -p ${WORKSPACE}/destdir/bin/
-    cp bin_i686/liblzma.dll ${WORKSPACE}/destdir/bin/
-else
-    cd $WORKSPACE/srcdir/xz-*
-    ./configure --prefix=${prefix} --host=${target} --with-pic CFLAGS="${CFLAGS} -fPIC" CXXFLAGS="${CXXFLAGS} -fPIC"
-    make -j${nproc}
-    make install
-fi
+cd $WORKSPACE/srcdir/xz-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,11 +24,16 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblzma", :liblzma)
+    ExecutableProduct("xzdec", :xzdec),
+    ExecutableProduct("lzmainfo", :lzmainfo),
+    ExecutableProduct("xz", :xz),
+    LibraryProduct("liblzma", :liblzma),
+    ExecutableProduct("lzmadec", :lzmadec)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
