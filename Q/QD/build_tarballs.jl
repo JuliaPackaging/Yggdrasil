@@ -5,8 +5,8 @@ version = v"2.3.22"
 
 # Collection of sources required to build SDPA-QD
 sources = [
-    FileSource("https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz",
-               "30c1ffe46b95a0e9fa91085949ee5fca85f97ff7b41cd5fe79f79bab730206d3"),
+    ArchiveSource("https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz",
+                  "30c1ffe46b95a0e9fa91085949ee5fca85f97ff7b41cd5fe79f79bab730206d3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,17 @@ make -j${nproc} module_ext=mod
 make install module_ext=mod
 
 install_license BSD-LBNL-License.doc
+
+if [[ "${target}" == *-ming* ]]; then
+    # We have to manually build all shared libraries for Windows one by one
+    cd "${prefix}/lib"
+    ar x libqd.a
+    c++ -shared -o "${libdir}/libqd.${dlext}" *.o
+    rm *.o
+    ar x libqdmod.a
+    c++ -shared -o "${libdir}/libqdmod.${dlext}" *.o "${libdir}/libqd.${dlext}" -lgfortran
+    rm *.o
+fi
 """
 
 # These are the platforms we will build for by default, unless further
