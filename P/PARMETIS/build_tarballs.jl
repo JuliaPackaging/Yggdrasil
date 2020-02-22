@@ -36,10 +36,7 @@ make install
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-# platforms = filter(p -> !isa(p, Windows), supported_platforms())
-platforms = [
-  MacOS(:x86_64),
-]
+platforms = filter!(p -> !isa(p, Windows), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
