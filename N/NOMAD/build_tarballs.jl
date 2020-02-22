@@ -35,9 +35,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
