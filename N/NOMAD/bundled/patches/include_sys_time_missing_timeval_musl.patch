@@ -1,0 +1,10 @@
+--- a/ext/sgtelib/src/Surrogate_Utils.hpp
++++ b/ext/sgtelib/src/Surrogate_Utils.hpp
+@@ -76,6 +76,7 @@
+ #include "Exception.hpp"
+ #include "Matrix.hpp"
+ #include <sys/stat.h>
++#include <sys/time.h>
+ 
+ // CASE Visual Studio C++ compiler
+ #ifdef _MSC_VER
