@@ -14,19 +14,18 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/htslib-*
-./configure \
-    CFLAGS=-I${prefix}/include CPPFLAGS=-I${prefix}/include LDFLAGS=-L${prefix}/lib \
-    --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+export CPPFLAGS="-I${prefix}/include"
+export CFLAGS="-I${prefix}/include"
+export LDFLAGS=-L${libdir}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 
 # On Windows, product files are renamed so that BB can find them.
 if [[ ${target} == *-mingw32 ]]; then
-    # Rename a versioned DLL file.
-    mv ${prefix}/bin/hts-*.dll ${prefix}/bin/libhts.dll
     # Add .exe extension to executables.
     for exefile in bgzip tabix htsfile; do
-        mv ${prefix}/bin/${exefile} ${prefix}/bin/${exefile}.exe
+        mv "${bindir}/${exefile}" "${bindir}/${exefile}${exeext}"
     done
 fi
 """
@@ -39,7 +38,7 @@ platforms = [p for p in supported_platforms() if p != Windows(:i686)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libhts", :libhts),
+    LibraryProduct(["libhts", "hts"], :libhts),
     ExecutableProduct("bgzip", :bgzip),
     ExecutableProduct("tabix", :tabix),
     ExecutableProduct("htsfile", :htsfile),
