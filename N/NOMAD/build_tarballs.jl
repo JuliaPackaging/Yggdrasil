@@ -5,7 +5,7 @@ version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gist.github.com/amontoison/06dac8b63424854f754264597af6b09e/raw/8ab9aa6cb54b5491bc4f46977b086ff17bdd2ba8/NOMAD.zip", "84c0f2a01928b8d2c68303709e74173a296d39b014810c658b43662a6a3f93a1"),
+    ArchiveSource("https://gist.github.com/amontoison/06dac8b63424854f754264597af6b09e/raw/942aba554a82800d0c7438288d3da1a827ef2974/NOMAD.zip", "a6653af375be8006e742239af3914ba48034015d57a2be7a07fc14c6ff245d1b"),
     DirectorySource("./bundled"),
 ]
 
@@ -25,7 +25,6 @@ make install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libnomadInterface", :libnomadInterface),
@@ -33,7 +32,6 @@ products = [
     LibraryProduct("libnomadEval", :libnomadEval),
     LibraryProduct("libnomadUtils", :libnomadUtils),
     LibraryProduct("libsgtelib", :libsgtelib)
-
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -42,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
