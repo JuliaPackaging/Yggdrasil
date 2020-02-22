@@ -7,8 +7,8 @@ version = v"1.10.2"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/samtools/htslib/releases/download/$(version)/htslib-$(version).tar.bz2" =>
-        "e3b543de2f71723830a1e0472cf5489ec27d0fbeb46b1103e14a11b7177d1939",
+    ArchiveSource("https://github.com/samtools/htslib/releases/download/$(version)/htslib-$(version).tar.bz2",
+                  "e3b543de2f71723830a1e0472cf5489ec27d0fbeb46b1103e14a11b7177d1939")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,11 +47,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "Bzip2_jll",
-    "XZ_jll",
-    "LibCURL_jll",
-    "OpenSSL_jll",
+    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("XZ_jll"),
+    Dependency("LibCURL_jll"),
+    Dependency("OpenSSL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
