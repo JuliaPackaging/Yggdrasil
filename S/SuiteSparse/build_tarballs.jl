@@ -39,6 +39,9 @@ else
     FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
 fi
 
+# Disable METIS in CHOLMOD
+FLAGS+=(CHOLMOD_CONFIG="-DNPARTITION")
+
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
