@@ -27,12 +27,13 @@ fi
     --enable-shared=yes \
     --enable-static=no \
     --disable-dependency-tracking \
-    --disable-fortran \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
 
 # Build the library
 make -j${nproc}
+
+make check
 
 # Install the library
 make install
