@@ -18,10 +18,6 @@ cd $WORKSPACE/srcdir/SuiteSparse-*
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-CHOLMOD_CONFIG="-DNPARTITION"
-
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
@@ -37,10 +33,13 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
     FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
-    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN" SPQR_CONFIG="$SUN")
 else
     FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
 fi
+
+# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
