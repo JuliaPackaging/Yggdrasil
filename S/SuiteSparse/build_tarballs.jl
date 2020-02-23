@@ -19,7 +19,8 @@ cd $WORKSPACE/srcdir/SuiteSparse-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
-FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include" CFOPENMP=)
+#FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP="" MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include" )
+FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
@@ -99,7 +100,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    Dependency("METIS_jll"),
+#    Dependency("METIS_jll"),
 ]
 
 # Build the tarballs.
