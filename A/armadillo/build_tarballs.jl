@@ -6,8 +6,8 @@ using BinaryBuilder
 name = "armadillo"
 version = v"9.850.1"
 sources = [
-    "http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz" =>
-                  "d4c389b9597a5731500ad7a2656c11a6031757aaaadbcafdea5cc8ac0fd2c01f"
+    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz",
+                  "d4c389b9597a5731500ad7a2656c11a6031757aaaadbcafdea5cc8ac0fd2c01f")
 ]
 
 script = raw"""
@@ -60,7 +60,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
-platforms = [Linux(:x86_64)]
 
 # The products that we will ensure are always built.
 products = [
