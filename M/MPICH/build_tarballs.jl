@@ -12,6 +12,10 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich-*
 
+# Remove wrong libtool files
+rm -f /opt/${target}/${target}/lib64/*.la
+rm -f /opt/${target}/${target}/lib/*.la
+
 atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
 pushd src/mpi/romio
 autoreconf -vi
@@ -32,8 +36,6 @@ fi
 
 # Build the library
 make -j${nproc}
-
-make check
 
 # Install the library
 make install
