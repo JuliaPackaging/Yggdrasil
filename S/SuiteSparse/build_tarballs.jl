@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/SuiteSparse-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
-FLAGS=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include" CFOPENMP=)
+FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
@@ -33,10 +33,13 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 
     FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
-    FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG="$SUN" SPQR_CONFIG="$SUN")
 else
     FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
 fi
+
+# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
@@ -99,7 +102,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    Dependency("METIS_jll"),
+#    Dependency("METIS_jll"),
 ]
 
 # Build the tarballs.
