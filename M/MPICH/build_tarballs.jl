@@ -27,6 +27,9 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # thus we need to pass a cached value for this test
     EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
+if [[ "${target}" == *-apple* ]]; then
+    export CROSS_F77_SIZEOF_INTEGER=4
+fi
 ./configure --prefix=$prefix --host=$target \
     --enable-shared=yes \
     --enable-static=no \
