@@ -16,6 +16,22 @@ cd ${WORKSPACE}/srcdir/mpich-*
 rm -f /opt/${target}/${target}/lib64/*.la
 rm -f /opt/${target}/${target}/lib/*.la
 
+if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-gnu ]] || [[ "${target}" != x86_64-linux-musl ]]; then
+    # Define some obscure undocumented variables needed for cross compilation of
+    # the Fortran bindings.  See for example
+    # * https://stackoverflow.com/q/56759636/2442087
+    # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+    export CROSS_F77_SIZEOF_INTEGER=4
+    export CROSS_F77_TRUE_VALUE=1
+    export CROSS_F77_FALSE_VALUE=0
+
+    export CROSS_F90_ADDRESS_KIND=8
+    export CROSS_F90_OFFSET_KIND=8
+    export CROSS_F90_INTEGER_KIND=4
+    export CROSS_F90_DOUBLE_MODEL=15,307
+    export CROSS_F90_REAL_MODEL=6,37
+fi
+
 atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
 pushd src/mpi/romio
 autoreconf -vi
@@ -26,9 +42,6 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # For a bug in our Musl library, we can't run C++ programs on this platform,
     # thus we need to pass a cached value for this test
     EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-fi
-if [[ "${target}" == *-apple* ]]; then
-    export CROSS_F77_SIZEOF_INTEGER=4
 fi
 ./configure --prefix=$prefix --host=$target \
     --enable-shared=yes \
@@ -44,7 +57,7 @@ make -j${nproc}
 make install
 """
 
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
+platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
 
 products = [
     LibraryProduct("libmpi", :libmpi)
