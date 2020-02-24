@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "L_BFGS_B"
-version = v"3.0.1"
+version = v"3.0.0"
 
 # Collection of sources required to build LBFGSB
 sources = [
