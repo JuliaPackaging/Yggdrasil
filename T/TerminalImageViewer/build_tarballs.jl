@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tiv"
+name = "TerminalImageViewer"
 version = v"1.0.0"
 
 # Collection of sources required to complete build
