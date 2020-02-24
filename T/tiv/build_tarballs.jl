@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/TerminalImageViewer/src/main/cpp/
 make
 make prefix=${prefix} install
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
