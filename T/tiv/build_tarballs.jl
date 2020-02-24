@@ -13,10 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/TerminalImageViewer/src/main/cpp/
+# We need to compile with GCC everywhere
+export CXX=g++
 make
 make prefix=${prefix} install
-cd $WORKSPACE/srcdir/TerminalImageViewer
-install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
