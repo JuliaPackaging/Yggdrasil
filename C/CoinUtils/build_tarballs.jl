@@ -8,6 +8,7 @@ version = v"2.11.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or/CoinUtils.git", "d4f2b7f1897b67da6929ab42aa6b1962a388c5b9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,29 +18,22 @@ cd $WORKSPACE/srcdir/CoinUtils/
 # Remove wrong libtool files
 rm -f /opt/${target}/${target}/lib*/*.la
 
-if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64-* ]]; then
-    OPENBLAS=openblas64_
-else
-    OPENBLAS=openblas
+if [[ "${target}" == *-musl* ]]; then
+    # This is to fix the following error:
+    #    node_heap.cpp:11:22: fatal error: execinfo.h: No such file or directory
+    #     #include <execinfo.h>
+    # `execinfo.h` is GlibC-specific, not Linux-specific
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/glibc_specific.patch"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-blas-lib="-l${OPENBLAS}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Manually build the shared library
-    cd "${prefix}/lib"
-    ar x libCoinUtils.a
-    c++ -shared -o "${libdir}/libCoinUtils.${dlext}" *.o -l${OPENBLAS}
-    rm *.o
-fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -47,8 +41,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
