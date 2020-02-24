@@ -2,18 +2,20 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "LBFGSB"
-version = v"3.0.0"
+name = "L_BFGS_B"
+version = v"3.0.1"
 
 # Collection of sources required to build LBFGSB
 sources = [
-    "http://users.iems.northwestern.edu/~nocedal/Software/Lbfgsb.3.0.tar.gz" =>
-    "f5b9a1c8c30ff6bcc8df9b5d5738145f4cbe4c7eadec629220e808dcf0e54720",
+    ArchiveSource("http://users.iems.northwestern.edu/~nocedal/Software/Lbfgsb.3.0.tar.gz",
+                  "f5b9a1c8c30ff6bcc8df9b5d5738145f4cbe4c7eadec629220e808dcf0e54720"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Lbfgsb.*/
+patch -p0 < $WORKSPACE/srcdir/patches/lbfgsb.patch
 mkdir -p "${libdir}"
 FFLAGS="-O3 -fPIC -shared -Wall -fbounds-check -Wno-uninitialized"
 ${FC} ${LDFLAGS} ${FFLAGS} lbfgsb.f linpack.f blas.f timer.f -o "${libdir}/liblbfgsb.${dlext}"
