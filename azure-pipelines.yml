@@ -170,6 +170,9 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
+      # Fail on error
+      set -e
+
       cd $(PROJECT)
       echo "Generating meta.json..."
       $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
@@ -192,6 +195,9 @@ jobs:
     projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
   steps:
   - script: |
+      # Fail on error
+      set -e
+
       # Cleanup temporary things that might have been left-over
       ./clean_builds.sh
       ./clean_products.sh
@@ -240,6 +246,9 @@ jobs:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
   - script: |
+      # Fail on error
+      set -e
+
       cd $(PROJECT)
       echo "Generating meta.json..."
       $(JULIA) ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
