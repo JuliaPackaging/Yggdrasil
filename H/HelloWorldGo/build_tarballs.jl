@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldGo"
-version = v"1.0.3"
+version = v"1.0.4"
 
 # No sources, we're just building the testsuite
 sources = [
