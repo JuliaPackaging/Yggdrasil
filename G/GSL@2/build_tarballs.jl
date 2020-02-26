@@ -7,8 +7,8 @@ version = v"2.6"
 
 # Collection of sources required to build GSL
 sources = [
-    "http://ftp.gnu.org/gnu/gsl/gsl-$(version.major).$(version.minor).tar.gz" =>
-    "b782339fc7a38fe17689cb39966c4d821236c28018b6593ddb6fd59ee40786a8",
+    ArchiveSource("http://ftp.gnu.org/gnu/gsl/gsl-$(version.major).$(version.minor).tar.gz",
+                  "b782339fc7a38fe17689cb39966c4d821236c28018b6593ddb6fd59ee40786a8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,11 +33,14 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgsl", :libgsl)
+    LibraryProduct("libgslcblas", :libgslcblas),
+    LibraryProduct("libgsl", :libgsl),
+    ExecutableProduct("gsl-histogram", :gsl_histogram),
+    ExecutableProduct("gsl-randist", :gsl_randist),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
