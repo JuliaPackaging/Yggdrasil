@@ -5,19 +5,17 @@ version = v"0.5.3"
 
 # Collection of sources required to build openspecfun
 sources = [
-    "https://github.com/JuliaMath/openspecfun/archive/v0.5.3.tar.gz" =>
-    "1505c7a45f9f39ffe18be36f7a985cb427873948281dbcd376a11c2cd15e41e7",
+    ArchiveSource("https://github.com/JuliaMath/openspecfun/archive/v0.5.3.tar.gz",
+                  "1505c7a45f9f39ffe18be36f7a985cb427873948281dbcd376a11c2cd15e41e7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd openspecfun-*/
+cd $WORKSPACE/srcdir/openspecfun-*/
 
 # It needs to be told it's on Windows
 if [[ ${target} == *mingw* ]]; then
     OS=WINNT
-    libdir=$prefix/bin
 elif [[ ${target} == *darwin* ]]; then
     OS=Darwin
 fi
@@ -42,6 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
