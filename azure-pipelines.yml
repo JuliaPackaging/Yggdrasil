@@ -104,6 +104,7 @@ jobs:
           # Emit project/platform joint variable declarations
           VAR_PROJECTS="##vso[task.setVariable variable=projects;isOutput=true]{"
           VAR_PROJPLATFORMS="##vso[task.setVariable variable=projplatforms;isOutput=true]{"
+          echo "Determining builds to queue..."
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
 
@@ -113,7 +114,7 @@ jobs:
               TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${PROJECT}\")))")
               META_HASH=$(shasum -a 256 "$(Agent.TempDirectory)/${NAME}.meta.json" | cut -d' ' -f1)
               PROJ_HASH=$(echo -n ${TREE_HASH}${META_HASH} | shasum -a 256 | cut -d' ' -f1)
-              
+
               # Load in the platforms
               PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
               if [[ -z "${PLATFORMS}" ]]; then
@@ -130,13 +131,18 @@ jobs:
                                 'PROJ_HASH':'${PROJ_HASH}'\
                             }, "
 
+              # Some debugging info
+              echo " ---> ${NAME}: ${BB_HASH}/${PROJ_HASH}"
+
               # For $(PROJPLATFORMS)`, we need to know more...
               for PLATFORM in ${PLATFORMS}; do
                   # Here, we hit the build cache to see if we can skip this particular combo
                   CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
                   if curl --output /dev/null --silent --fail --HEAD "${CACHE_URL}"; then
+                      echo "    ${PLATFORM}: skipping, existant"
                       continue;
                   fi
+                  echo "    ${PLATFORM}: building"
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
