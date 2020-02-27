@@ -1,0 +1,56 @@
+commit 23804352b978428106254d94654f9a0f53ed6ce4
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Wed Feb 26 17:27:00 2020 -0800
+
+    Add compat header for aarch64 with glibc < 2.20
+
+diff --git a/src/client/linux/dump_writer_common/thread_info.h b/src/client/linux/dump_writer_common/thread_info.h
+index fb216fa6..b6bcd63a 100644
+--- a/src/client/linux/dump_writer_common/thread_info.h
++++ b/src/client/linux/dump_writer_common/thread_info.h
+@@ -35,6 +35,7 @@
+ 
+ #include "client/linux/dump_writer_common/raw_context_cpu.h"
+ #include "common/memory_allocator.h"
++#include "common/glibc_compat.h"
+ #include "google_breakpad/common/minidump_format.h"
+ 
+ namespace google_breakpad {
+diff --git a/src/common/glibc_compat.h b/src/common/glibc_compat.h
+new file mode 100644
+index 00000000..249508a8
+--- /dev/null
++++ b/src/common/glibc_compat.h
+@@ -0,0 +1,20 @@
++#include <sys/user.h>
++
++// Glibc < 2.20 lacks these important structures
++#if defined(__aarch64__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 20
++struct user_regs_struct
++{
++  unsigned long long regs[31];
++  unsigned long long sp;
++  unsigned long long pc;
++  unsigned long long pstate;
++};
++
++struct user_fpsimd_struct
++{
++  __uint128_t  vregs[32];
++  unsigned int fpsr;
++  unsigned int fpcr;
++};
++#endif
++
+diff --git a/src/tools/linux/md2core/minidump-2-core.cc b/src/tools/linux/md2core/minidump-2-core.cc
+index 941586e9..045c09ca 100644
+--- a/src/tools/linux/md2core/minidump-2-core.cc
++++ b/src/tools/linux/md2core/minidump-2-core.cc
+@@ -49,6 +49,7 @@
+ #include "common/path_helper.h"
+ #include "common/scoped_ptr.h"
+ #include "common/using_std_string.h"
++#include "common/glibc_compat.h"
+ #include "google_breakpad/common/breakpad_types.h"
+ #include "google_breakpad/common/minidump_format.h"
+ #include "third_party/lss/linux_syscall_support.h"
