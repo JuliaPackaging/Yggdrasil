@@ -132,7 +132,7 @@ jobs:
                             }, "
 
               # Some debugging info
-              echo " ---> ${NAME}: ${BB_HASH}/${PROJ_HASH}"
+              echo " ---> ${NAME}: ${BB_HASH}/${PROJ_HASH} (${TREE_HASH} + ${META_HASH})"
 
               # For $(PROJPLATFORMS)`, we need to know more...
               for PLATFORM in ${PLATFORMS}; do
