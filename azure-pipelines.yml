@@ -46,8 +46,12 @@ jobs:
           NAME=$(basename "${PROJECT}")
           echo "Considering ${PROJECT}"
           # Only accept things that contain a `build_tarballs.jl`
-          if [[ ! -f "${PROJECT}/build_tarballs.jl" ]]; then
-              echo " --> Skipping as it does not have a build_tarballs.jl"
+          while [[ ! -f "${PROJECT}/build_tarballs.jl" ]] && [[ "${PROJECT}" == */* ]]; do
+              echo " --> ${PROJECT} does not contain a build_tarballs.jl, moving up a directory"
+              PROJECT="$(dirname "${PROJECT}")"
+          done
+          if [[ "${PROJECT}" != */* ]]; then
+              echo " --> Skipping as we could not find a build_tarballs.jl"
               continue
           fi
 
