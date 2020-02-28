@@ -6,12 +6,19 @@ version = v"2.1.0"
 sources = [
   ArchiveSource("http://www.netlib.org/scalapack/scalapack-2.1.0.tgz",
                 "61d9216cf81d246944720cfce96255878a3f85dec13b9351f1fa0fd6768220a6"),
+  DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack-2.1.0
+
+# the patch prevents running foreign executables, which fails on most platforms
+# we instead set CDEFS manually below
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
              -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -40,6 +47,7 @@ CMAKE_FLAGS+=(-DBLAS_LIBRARIES=${OPENBLAS} \
               -DLAPACK_LIBRARIES=${OPENBLAS})
 
 mkdir build && cd build
+export CDEFS="Add_"
 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
