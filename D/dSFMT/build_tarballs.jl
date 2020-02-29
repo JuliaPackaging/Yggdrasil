@@ -23,17 +23,11 @@ FLAGS=(
     --param max-inline-insns-single=1800 -Wmissing-prototypes -Wall -std=c99 -shared
 )
 
-if [[ ${target} == *mingw* ]]; then
-    TARGET=${prefix}/bin/libdSFMT.${dlext}
-else
-    TARGET=${prefix}/lib/libdSFMT.${dlext}
-fi
-
 if [[ ${target} == x86_64* ]]; then
     FLAGS+=(-msse2 -DHAVE_SSE2)
 fi
 
-${CC} ${FLAGS[@]} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o ${TARGET} dSFMT.c
+${CC} ${FLAGS[@]} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o "${libdir}/libdSFMT.${dlext}" dSFMT.c
 """
 
 # These are the platforms we will build for by default, unless further
