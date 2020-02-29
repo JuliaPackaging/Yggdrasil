@@ -27,6 +27,7 @@ if [[ ${target} == x86_64* ]]; then
     FLAGS+=(-msse2 -DHAVE_SSE2)
 fi
 
+mkdir -p "${libdir}"
 ${CC} ${FLAGS[@]} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o "${libdir}/libdSFMT.${dlext}" dSFMT.c
 """
 
