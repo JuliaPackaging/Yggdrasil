@@ -55,7 +55,24 @@ make install
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-platforms = filter!(p -> !isa(p, Windows), supported_platforms())
+# libquadmath is not available on aarch64 or armv7l unless we use gcc8
+# MPI Fortran can't be found on powerpc64le
+platforms = [
+  Linux(:i686, libc=:glibc)
+  Linux(:x86_64, libc=:glibc)
+  # Linux(:aarch64, libc=:glibc)
+  # Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
+  # Linux(:powerpc64le, libc=:glibc)
+  Linux(:i686, libc=:musl)
+  Linux(:x86_64, libc=:musl)
+  # Linux(:aarch64, libc=:musl)
+  # Linux(:armv7l, libc=:musl, call_abi=:eabihf)
+  MacOS(:x86_64)
+  FreeBSD(:x86_64)
+  # Windows(:i686)
+  # Windows(:x86_64)
+]
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
