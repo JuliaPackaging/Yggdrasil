@@ -12,8 +12,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/utf8proc-*
-make -j${nproc}
-make install prefix=${prefix} libdir=${libdir}
+make -j${nproc} libutf8proc.a
+
+mkdir -p ${prefix}/lib ${prefix}/include
+cp libutf8proc.a ${prefix}/lib/
+cp utf8proc.h ${prefix}/include/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -22,7 +25,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libutf8proc", :libutf8proc),
+    FileProduct("lib/libutf8proc.a", :libutf8proc),
 ]
 
 # Dependencies that must be installed before this package can be built
