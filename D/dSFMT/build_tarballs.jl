@@ -5,9 +5,9 @@ version = v"2.2.3"
 
 # Collection of sources required to build Ogg
 sources = [
-   "http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-src-$(version).tar.gz" =>
-   "82344874522f363bf93c960044b0a6b87b651c9565b6312cf8719bb8e4c26a0e",
-   "./bundled",
+    ArchiveSource("http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-src-$(version).tar.gz",
+                  "82344874522f363bf93c960044b0a6b87b651c9565b6312cf8719bb8e4c26a0e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,9 +47,6 @@ products = prefix -> [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaWeb/MbedTLSBuilder/releases/download/v0.16.0/build_MbedTLS.v2.13.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibSSH2-v1.9.0+0/build_LibSSH2.v1.9.0.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/LibCURL-v7.61.0-1/build_LibCURL.v7.61.0.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
