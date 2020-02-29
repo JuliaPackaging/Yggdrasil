@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "LibUV"
-version = v"2+1.29.1-julia"
+version = v"2"
 
 # Collection of sources required to build libuv
 sources = [
