@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "dSFMT"
 version = v"2.2.3"
 
-# Collection of sources required to build Ogg
+# Collection of sources required to build dSFMT
 sources = [
     ArchiveSource("http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-src-$(version).tar.gz",
                   "82344874522f363bf93c960044b0a6b87b651c9565b6312cf8719bb8e4c26a0e"),
