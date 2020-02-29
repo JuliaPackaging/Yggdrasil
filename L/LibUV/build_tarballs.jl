@@ -3,10 +3,10 @@ using BinaryBuilder
 name = "LibUV"
 version = v"2+1.29.1-julia"
 
-# Collection of sources required to build libffi
+# Collection of sources required to build libuv
 sources = [
-    "https://github.com/JuliaLang/libuv.git" =>
-    "35b1504507a7a4168caae3d78db54d1121b121e1",
+    GitSource("https://github.com/JuliaLang/libuv.git",
+              "35b1504507a7a4168caae3d78db54d1121b121e1"),
 ]
 
 # Bash recipe for building across all platforms
