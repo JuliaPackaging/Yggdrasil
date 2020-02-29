@@ -8,15 +8,30 @@ version = v"2.2.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://p4est.github.io/release/p4est-2.2.tar.gz", "1549cbeba29bee2c35e7cc50a90a04961da5f23b6eada9c8047f511b90a8e438"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Enter source directory
 cd $WORKSPACE/srcdir
 cd p4est-2.2/
+
+# Apply patches and add libraries necessary for MinGW builds
+if [[ "${target}" == *-mingw* ]]; then
+  pushd sc
+  atomic_patch -p1 ../../patches/enable-mingw-compilation.patch
+  popd
+
+  export LIBS="-lws2_32"
+fi
+
+# Add required libraries for FreeBSD builds
 if [[ "${target}" == *-freebsd* ]]; then
   export LIBS="-lm"
 fi
+
+# Configure, make, install
 CFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-blas
 make -j${nproc}
 make install
@@ -24,19 +39,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

@@ -1,0 +1,70 @@
+From 1b599c673446390b2f83aec3c1b6848941dce65a Mon Sep 17 00:00:00 2001
+From: Michael Schlottke-Lakemper <michael@sloede.com>
+Date: Sat, 22 Feb 2020 09:42:16 +0100
+Subject: [PATCH] Disable SIGUSR2 signal for MINGW platforms since it is not
+ supported there
+
+---
+ src/sc.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/src/sc.c b/src/sc.c
+index 63d47bc7..08e54807 100644
+--- a/src/sc.c
++++ b/src/sc.c
+@@ -27,6 +27,11 @@
+ #include <signal.h>
+ #endif
+ 
++/* disable unsupported signals on MINGW (SIGUSR is not defined) */
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#define SC_DISABLE_SIGUSR
++#endif
++
+ typedef void        (*sc_sig_t) (int);
+ 
+ #ifdef SC_HAVE_BACKTRACE
+@@ -112,7 +117,9 @@ static sc_abort_handler_t sc_default_abort_handler = sc_abort_handler;
+ static int          sc_signals_caught = 0;
+ static sc_sig_t     system_int_handler = NULL;
+ static sc_sig_t     system_segv_handler = NULL;
++#ifndef SC_DISABLE_SIGUSR
+ static sc_sig_t     system_usr2_handler = NULL;
++#endif
+ 
+ static int          sc_print_backtrace = 0;
+ 
+@@ -216,9 +223,11 @@ sc_signal_handler (int sig)
+   case SIGSEGV:
+     sigstr = "SEGV";
+     break;
++#ifndef SC_DISABLE_SIGUSR
+   case SIGUSR2:
+     sigstr = "USR2";
+     break;
++#endif
+   default:
+     sigstr = "<unknown>";
+     break;
+@@ -240,8 +249,10 @@ sc_set_signal_handler (int catch_signals)
+     SC_CHECK_ABORT (system_int_handler != SIG_ERR, "catching INT");
+     system_segv_handler = signal (SIGSEGV, sc_signal_handler);
+     SC_CHECK_ABORT (system_segv_handler != SIG_ERR, "catching SEGV");
++#ifndef SC_DISABLE_SIGUSR
+     system_usr2_handler = signal (SIGUSR2, sc_signal_handler);
+     SC_CHECK_ABORT (system_usr2_handler != SIG_ERR, "catching USR2");
++#endif
+     sc_signals_caught = 1;
+   }
+   else if (!catch_signals && sc_signals_caught) {
+@@ -249,8 +260,10 @@ sc_set_signal_handler (int catch_signals)
+     system_int_handler = NULL;
+     (void) signal (SIGSEGV, system_segv_handler);
+     system_segv_handler = NULL;
++#ifndef SC_DISABLE_SIGUSR
+     (void) signal (SIGUSR2, system_usr2_handler);
+     system_usr2_handler = NULL;
++#endif
+     sc_signals_caught = 0;
+   }
+ }
