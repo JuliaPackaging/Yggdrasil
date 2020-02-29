@@ -20,11 +20,16 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-             -DCMAKE_BUILD_TYPE=Release \
-             -DBUILD_SHARED_LIBS=ON \
-             -DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+             -DCMAKE_BUILD_TYPE=Release
+             -DBUILD_SHARED_LIBS=ON)
+
+if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
+else
+    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
+fi
 
 OPENBLAS="-lopenblas"
 FFLAGS=(-cpp -ffixed-line-length-none)
@@ -46,8 +51,9 @@ fi
 CMAKE_FLAGS+=(-DBLAS_LIBRARIES=${OPENBLAS} \
               -DLAPACK_LIBRARIES=${OPENBLAS})
 
-mkdir build && cd build
 export CDEFS="Add_"
+
+mkdir build && cd build
 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
@@ -57,32 +63,18 @@ make install
 # OpenMPI and MPICH are not precompiled for Windows
 # libquadmath is not available on aarch64 or armv7l unless we use gcc8
 # MPI Fortran can't be found on powerpc64le
-platforms = [
-  Linux(:i686, libc=:glibc)
-  Linux(:x86_64, libc=:glibc)
-  # Linux(:aarch64, libc=:glibc)
-  # Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
-  # Linux(:powerpc64le, libc=:glibc)
-  Linux(:i686, libc=:musl)
-  Linux(:x86_64, libc=:musl)
-  # Linux(:aarch64, libc=:musl)
-  # Linux(:armv7l, libc=:musl, call_abi=:eabihf)
-  MacOS(:x86_64)
-  FreeBSD(:x86_64)
-  # Windows(:i686)
-  # Windows(:x86_64)
-]
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
-  LibraryProduct("libscalapack", :libscalapack),
+    LibraryProduct("libscalapack", :libscalapack),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-  Dependency("MPICH_jll"),
-  Dependency("OpenBLAS_jll"),
+    Dependency("MPICH_jll"),
+    Dependency("OpenBLAS_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs.
