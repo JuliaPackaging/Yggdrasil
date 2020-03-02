@@ -38,6 +38,12 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
     done
 
     export CXXFLAGS="${SYMB_DEFS[@]}"
+
+    # Force the configuration parameter ARMA_BLAS_LONG to be true, as in our
+    # setting 64-bit systems are going to need a 64-bit integer to be used for
+    # Armadillo's `blas_int` type.
+    sed -i 's|// #define ARMA_BLAS_LONG$|#define ARMA_BLAS_LONG|' ../include/armadillo_bits/config.hpp.cmake
+    cat ../include/armadillo_bits/config.hpp.cmake
 else
     # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
     # replacement.
