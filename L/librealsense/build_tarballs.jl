@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "librealsense"
-version = v"2.32.1"
+version = v"2.33.1"
 
 # Collection of sources required to build librealsense
 sources = [
     GitSource("https://github.com/IntelRealSense/librealsense.git",
-              "83f952a4bd6b70d72459f66c7f67ddaba9d337a0"),
+              "842ee1e1e5c4bb96d63582a7fde061dbc1bebf69"),
 ]
 
 # Bash recipe for building across all platforms
