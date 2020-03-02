@@ -71,9 +71,8 @@ make install
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-# libquadmath is not available on aarch64 or armv7l unless we use gcc8
-# MPI Fortran can't be found on powerpc64le
-platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
+# Can't get the code to build for PowerPC with libgfortran3
+platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows) && arch(p) != :powerpc64le, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -89,4 +88,5 @@ dependencies = [
 
 # Build the tarballs.
 # set preferred gcc version because libopenblas requires libgomp
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# ; preferred_gcc_version=v"5")
