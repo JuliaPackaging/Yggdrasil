@@ -7,13 +7,14 @@ version = v"5.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.gz", "b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145"),
+    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.gz",
+                  "b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xz-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-fpic
 make -j${nproc}
 make install
 """
