@@ -25,7 +25,7 @@ mkdir build && cd build
 # to specify the location of the Julia program.  But... it turns out that
 # all that CMake needs is some kind of executable program that prints the
 # version.  So we'll just create a crappy little script, since Julia may not
-# be available in the build environment...
+# be available in the build environment.
 echo "#!/bin/bash" > julia
 echo "echo \"Fake Julia version 1.3.0\"" >> julia
 chmod +x julia
