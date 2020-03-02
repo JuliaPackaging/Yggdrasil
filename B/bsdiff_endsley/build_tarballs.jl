@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "bsdiff"
+name = "bsdiff_endsley"
 version = v"4.3.0"
 
 # Collection of sources required to complete build
@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd bsdiff-64ad986cb7bfa8b9145a2d48cd95986660b35d53/
+cd $WORKSPACE/srcdir/bsdiff-64ad986cb7bfa8b9145a2d48cd95986660b35d53
 ./autogen.sh 
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
