@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xz-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-fpic
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
 make -j${nproc}
 make install
 """
