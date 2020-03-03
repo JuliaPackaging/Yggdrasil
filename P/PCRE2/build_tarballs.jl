@@ -5,8 +5,8 @@ version = v"10.31"
 
 # Collection of sources required to build Pcre
 sources = [
-    "https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.bz2" =>
-    "e07d538704aa65e477b6a392b32ff9fc5edf75ab9a40ddfc876186c4ff4d68ac",
+    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.bz2",
+                  "e07d538704aa65e477b6a392b32ff9fc5edf75ab9a40ddfc876186c4ff4d68ac"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,7 +35,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpcre", :libpcre)
+    LibraryProduct("libpcre2-8", :libpcre)
 ]
 
 # Dependencies that must be installed before this package can be built

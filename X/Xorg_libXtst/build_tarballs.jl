@@ -7,8 +7,8 @@ version = v"1.2.3"
 
 # Collection of sources required to build libXtst
 sources = [
-    "https://www.x.org/archive/individual/lib/libXtst-$(version).tar.bz2" =>
-    "4655498a1b8e844e3d6f21f3b2c4e2b571effb5fd83199d428a6ba7ea4bf5204",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXtst-$(version).tar.bz2",
+                  "4655498a1b8e844e3d6f21f3b2c4e2b571effb5fd83199d428a6ba7ea4bf5204"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,12 +32,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_inputproto_jll",
-    "Xorg_libXext_jll",
-    "Xorg_libXfixes_jll",
-    "Xorg_libXi_jll",
-    "Xorg_recordproto_jll",
-    "Xorg_util_macros_jll",
+    BuildDependency("Xorg_inputproto_jll"),
+    BuildDependency("Xorg_recordproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXfixes_jll"),
+    Dependency("Xorg_libXi_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

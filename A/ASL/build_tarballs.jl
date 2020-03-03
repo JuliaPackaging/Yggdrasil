@@ -7,15 +7,17 @@ version = v"0.1.1"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    "http://netlib.org/ampl/solvers.tgz" =>
-    "775b92cadaf95af73fdeec3effba6b9c6ffdc518e5f628b575140fb170885903",
-    "./bundled"
+    ArchiveSource("http://netlib.org/ampl/solvers.tgz",
+                  "775b92cadaf95af73fdeec3effba6b9c6ffdc518e5f628b575140fb170885903"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/solvers/
 mkdir -p ${libdir}
+incdir=${prefix}/include
+mkdir -p ${incdir}
 
 all_load="--whole-archive"
 noall_load="--no-whole-archive"
@@ -45,6 +47,7 @@ fi
 make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
 c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
 mv libasl.${dlext} ${libdir}
+cp *.h ${incdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -57,8 +60,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

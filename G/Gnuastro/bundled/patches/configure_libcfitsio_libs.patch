@@ -1,0 +1,11 @@
+--- a/configure
++++ b/configure
+@@ -23835,7 +23835,7 @@
+ 
+     ac_save_LIBS="$LIBS"
+                                 case " $LIBCFITSIO" in
+-      *" -l"*) LIBS="$LIBS $LIBCFITSIO" ;;
++      *" -l"*) LIBS="$LIBCFITSIO $LIBS" ;;
+       *)       LIBS="$LIBCFITSIO $LIBS" ;;
+     esac
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext

@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldCxx"
-version = v"1.0.0"
+version = v"1.0.2"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -11,6 +11,7 @@ sources = [
 script = raw"""
 mkdir -p ${prefix}/bin
 c++ -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/cxx/hello_world/hello_world.cc
+install_license /usr/share/licenses/MIT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,5 +27,5 @@ products = [
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

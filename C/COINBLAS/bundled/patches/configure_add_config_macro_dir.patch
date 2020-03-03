@@ -1,0 +1,11 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -24,6 +24,8 @@
+ # whether the package is actually there
+ AC_CONFIG_SRCDIR(dgemm.f)
+ 
++AC_CONFIG_MACRO_DIRS([BuildTools])
++
+ # Where should everything be installed by default?  Here, we want it
+ # to be installed directly in 'bin', 'lib', 'include' subdirectories
+ # of the directory where configure is run.  The default would be

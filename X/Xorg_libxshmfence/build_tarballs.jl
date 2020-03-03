@@ -7,8 +7,8 @@ version = v"1.3"
 
 # Collection of sources required to build libxshmfence
 sources = [
-    "https://www.x.org/archive/individual/lib/libxshmfence-$(version.major).$(version.minor).tar.bz2" =>
-    "b884300d26a14961a076fbebc762a39831cb75f92bed5ccf9836345b459220c7",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libxshmfence-$(version.major).$(version.minor).tar.bz2",
+                  "b884300d26a14961a076fbebc762a39831cb75f92bed5ccf9836345b459220c7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_util_macros_jll",
-    "Xorg_xproto_jll",
+    BuildDependency("Xorg_util_macros_jll"),
+    BuildDependency("Xorg_xproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

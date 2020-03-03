@@ -7,8 +7,8 @@ version = v"1.2.3"
 
 # Collection of sources required to build libXScrnSaver
 sources = [
-    "https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.bz2" =>
-    "f917075a1b7b5a38d67a8b0238eaab14acd2557679835b154cf2bca576e89bf8",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXScrnSaver-$(version).tar.bz2",
+                  "f917075a1b7b5a38d67a8b0238eaab14acd2557679835b154cf2bca576e89bf8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,10 +32,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_scrnsaverproto_jll",
-    "Xorg_libXext_jll",
-    "Xorg_util_macros_jll",
+    BuildDependency("Xorg_scrnsaverproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
+    Dependency("Xorg_libXext_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

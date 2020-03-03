@@ -7,8 +7,8 @@ version = v"1.1.3"
 
 # Collection of sources required to build libXdmcp
 sources = [
-    "https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.bz2" =>
-    "20523b44aaa513e17c009e873ad7bbc301507a3224c232610ce2e099011c6529",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.bz2",
+                  "20523b44aaa513e17c009e873ad7bbc301507a3224c232610ce2e099011c6529"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_xproto_jll",
-    "Xorg_util_macros_jll",
+    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

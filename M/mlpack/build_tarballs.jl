@@ -25,7 +25,7 @@ mkdir build && cd build
 # to specify the location of the Julia program.  But... it turns out that
 # all that CMake needs is some kind of executable program that prints the
 # version.  So we'll just create a crappy little script, since Julia may not
-# be available in the build environment...
+# be available in the build environment.
 echo "#!/bin/bash" > julia
 echo "echo \"Fake Julia version 1.3.0\"" >> julia
 chmod +x julia
@@ -121,7 +121,7 @@ products = [
     LibraryProduct("libmlpack_julia_gmm_generate",
         :libmlpack_julia_gmm_generate),
     LibraryProduct("libmlpack_julia_gmm_probability",
-        :libmlpack_gmm_probability),
+        :libmlpack_julia_gmm_probability),
     LibraryProduct("libmlpack_julia_gmm_train", :libmlpack_julia_gmm_train),
     LibraryProduct("libmlpack_julia_hmm_generate",
         :libmlpack_julia_hmm_generate),
@@ -141,6 +141,8 @@ products = [
     LibraryProduct("libmlpack_julia_lmnn", :libmlpack_julia_lmnn),
     LibraryProduct("libmlpack_julia_local_coordinate_coding",
         :libmlpack_julia_local_coordinate_coding),
+    LibraryProduct("libmlpack_julia_logistic_regression",
+        :libmlpack_julia_logistic_regression),
     LibraryProduct("libmlpack_julia_lsh", :libmlpack_julia_lsh),
     LibraryProduct("libmlpack_julia_mean_shift", :libmlpack_julia_mean_shift),
     LibraryProduct("libmlpack_julia_nbc", :libmlpack_julia_nbc),

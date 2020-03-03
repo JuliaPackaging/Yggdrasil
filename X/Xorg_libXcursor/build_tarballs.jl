@@ -7,8 +7,8 @@ version = v"1.2.0"
 
 # Collection of sources required to build libXcursor
 sources = [
-    "https://www.x.org/archive/individual/lib/libXcursor-$(version).tar.bz2" =>
-    "3ad3e9f8251094af6fe8cb4afcf63e28df504d46bfa5a5529db74a505d628782",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXcursor-$(version).tar.bz2",
+                  "3ad3e9f8251094af6fe8cb4afcf63e28df504d46bfa5a5529db74a505d628782"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libXfixes_jll",
-    "Xorg_libXrender_jll",
-    "Xorg_util_macros_jll",
+    Dependency("Xorg_libXfixes_jll"),
+    Dependency("Xorg_libXrender_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

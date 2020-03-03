@@ -28,6 +28,10 @@ exeext ?=
 CPPFLAGS ?=
 CFLAGS ?= -g -O2
 
+# Do not, under any circumstances, allow USE_CCACHE when testing the compiler suite
+override USE_CCACHE=0
+export USE_CCACHE
+
 # Set up rpath flags for the different targets
 ifneq (,$(findstring mingw,$(target)))
 define rpath

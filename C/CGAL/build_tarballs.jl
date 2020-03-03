@@ -2,21 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-const name, version = "CGAL", v"5"
-const sversion = "$(version.major).$(version.minor)"
+const name    = "CGAL"
+const version = v"5.0.1"
 
 # Collection of sources required to build CGAL
 const sources = [
-    "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$sversion/CGAL-$sversion.tar.xz" =>
-        "e1e7e932988c5d149aa471c1afd69915b7603b5b31b9b317a0debb20ecd42dcc",
+    ArchiveSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
+                  "66021111fe536268d044e5e01bd26e691d7b493c217a1ca4d9427284dd4b2a02"),
 ]
 
 # Dependencies that must be installed before this package can be built
 const dependencies = [
-    "boost_jll",
-    "GMP_jll",
-    "MPFR_jll",
-    "Zlib_jll",
+    Dependency("boost_jll"),
+    Dependency("GMP_jll"),
+    Dependency("MPFR_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,5 +56,5 @@ const products = [
     LibraryProduct("libCGAL_ImageIO", :libCGAL_ImageIO),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")

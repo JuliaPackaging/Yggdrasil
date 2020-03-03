@@ -7,8 +7,8 @@ version = v"1.13"
 
 # Collection of sources required to build libxcb
 sources = [
-    "https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.bz2" =>
-    "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa",
+    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.bz2",
+                  "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -55,12 +55,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libXau_jll",
-    "Xorg_libXdmcp_jll",
-    "Xorg_xcb_proto_jll",
-    "XSLT_jll",
-    "Xorg_util_macros_jll",
-    "Xorg_libpthread_stubs_jll",
+    BuildDependency("Xorg_util_macros_jll"),
+    BuildDependency("Xorg_xcb_proto_jll"),
+    Dependency("XSLT_jll"),
+    Dependency("Xorg_libXau_jll"),
+    Dependency("Xorg_libXdmcp_jll"),
+    Dependency("Xorg_libpthread_stubs_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

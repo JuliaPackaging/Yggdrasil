@@ -7,8 +7,8 @@ version = v"0.4.5"
 
 # Collection of sources required to build libXcomposite
 sources = [
-    "https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.bz2" =>
-    "b3218a2c15bab8035d16810df5b8251ffc7132ff3aa70651a1fba0bfe9634e8f",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXcomposite-$(version).tar.bz2",
+                  "b3218a2c15bab8035d16810df5b8251ffc7132ff3aa70651a1fba0bfe9634e8f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_compositeproto_jll",
-    "Xorg_libXfixes_jll",
-    "Xorg_util_macros_jll",
+    BuildDependency("Xorg_compositeproto_jll"),
+    BuildDependency("Xorg_util_macros_jll"),
+    Dependency("Xorg_libXfixes_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

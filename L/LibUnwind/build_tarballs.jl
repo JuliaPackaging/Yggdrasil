@@ -5,9 +5,9 @@ version = v"1.3.1"
 
 # Collection of sources required to build libffi
 sources = [
-    "https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz" =>
-    "43997a3939b6ccdf2f669b50fdb8a4d3205374728c2923ddc2354c65260214f8",
-    "./bundled",
+    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
+                  "43997a3939b6ccdf2f669b50fdb8a4d3205374728c2923ddc2354c65260214f8"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 
-./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include" --libdir=${prefix}/lib --enable-minidebuginfo --disable-tests
+CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include"
+./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS}" --libdir=${libdir} --enable-minidebuginfo --disable-tests
 make -j${nproc}
 make install
 
@@ -44,14 +45,13 @@ platforms = [p for p in supported_platforms() if isa(p, Linux) || isa(p, FreeBSD
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libunwind", :libunwind)
+    LibraryProduct("libunwind", :libunwind),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "XZ_jll",
+    BuildDependency("XZ_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-

@@ -1,4 +1,5 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilder: download_source, sourcify, init_jll_package
 
 # Read in input `.json` file
 json = String(read(ARGS[1]))
@@ -13,7 +14,14 @@ merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
 
 # Download all sources
-BinaryBuilder.download_sources(merged["sources"]; verbose=true)
+download_source.(merged["sources"]; verbose=true)
+
+# Also initialize JLL package directories
+src_name = merged["name"]
+code_dir = joinpath(Pkg.devdir(), "$(src_name)_jll")
+deploy_repo = "JuliaBinaryWrappers/$(src_name)_jll.jl"
+# Always start from a clean slate
+rm(code_dir; recursive=true, force=true)
 
 # Then export platforms to file
 open(ARGS[2], "w") do io

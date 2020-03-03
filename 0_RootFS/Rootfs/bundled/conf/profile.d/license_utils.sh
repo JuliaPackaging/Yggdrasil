@@ -9,8 +9,8 @@ auto_install_license () {
         DIR="${WORKSPACE}/srcdir"
         # Build the list of known names for license files
         LICENSE_FILENAMES=()
-        for bname in COPYING COPYRIGHT LICENCE LICENSE ; do
-            for extension in "" .md .rtf .txt; do
+        for bname in COPYING COPYRIGHT LICENCE LICENSE NOTICE; do
+            for extension in "" .md .rtf .txt .MIT .BSD .GPL .GPLv2 .GPLv3; do
                 # These are actually going to be options for `find`
                 LICENSE_FILENAMES+=(-iname "${bname}${extension}" -o)
             done
