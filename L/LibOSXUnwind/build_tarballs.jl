@@ -5,8 +5,8 @@ version = v"0.0.5"
 
 # Collection of sources required to build libffi
 sources = [
-    "https://github.com/JuliaLang/libosxunwind/archive/v$(version).tar.gz" =>
-    "4ba7b3e24988053870d811afdff58ff103929e7531f156e663f3cf25416c9f46",
+    ArchiveSource("https://github.com/JuliaLang/libosxunwind/archive/v$(version).tar.gz",
+                  "4ba7b3e24988053870d811afdff58ff103929e7531f156e663f3cf25416c9f46"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,17 +41,16 @@ cp -aR include ${prefix}/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if isa(p, MacOS)]
+platforms = filter(p -> isa(p, MacOS), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libosxunwind", :libosxunwind)
+    LibraryProduct("libosxunwind", :libosxunwind),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
