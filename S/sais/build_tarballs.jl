@@ -7,8 +7,8 @@ version = v"2.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    "https://sites.google.com/site/yuta256/sais-2.4.1.zip" =>
-    "467b7b0b6ec025535c25e72174d3cc7e29795643e19a3f8a18af9ff28eca034a",
+    ArchiveSource("https://sites.google.com/site/yuta256/sais-2.4.1.zip",
+                  "467b7b0b6ec025535c25e72174d3cc7e29795643e19a3f8a18af9ff28eca034a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,18 +29,26 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-
 # The products that we will ensure are always built
 libsais = LibraryProduct("libsais", :libsais)
 libsais64 = LibraryProduct("libsais64", :libsais64)
-products = [libsais]
-products64 = [libsais, libsais64]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
+# This will accumulate files into `products` and also wrappers into the JLL package.
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+
+include("../../fancy_toys.jl")
+
+platforms_32 = filter(p -> wordsize(p) != 64, platforms)
+platforms_64 = filter(p -> wordsize(p) == 64, platforms)
+if !isempty(platforms_32)
+    build_tarballs(non_reg_ARGS, name, version, sources, script, platforms_32, [libsais], dependencies)
+end
+
 # Build the tarballs, and possibly a `build.jl` as well.
-for p in platforms
-    build_tarballs(ARGS, name, version, sources, script, [p], wordsize(p)==64 ? products64 : products, dependencies)
+if !isempty(platforms_64)
+    build_tarballs(ARGS, name, version, sources, script, platforms_64, [libsais, libsais64], dependencies)
 end
