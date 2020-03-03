@@ -15,12 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sais-2.4.1/
 if [[ $nbits == 64 ]]; then
-  # modify the build to put sais and sais64 into the same library
   build64=ON
-  sed -ri \
-    -e "s/sais sais.c/sais sais.c sais64.c/" \
-    -e "s/sais PROPERTIES/sais PROPERTIES\n  COMPILE_FLAGS \"-DSAIS_BUILD_64BIT\"/" \
-    lib/CMakeLists.txt
 else
   build64=OFF
 fi
@@ -33,16 +28,20 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = filter!(p->!isa(p,MacOS), platforms)
 
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libsais", :libsais)
-]
+libsais = LibraryProduct("libsais", :libsais)
+libsais64 = LibraryProduct("libsais64", :libsais64)
+products = [libsais]
+products64 = [libsais, libsais64]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+for p in platforms
+    build_tarballs(ARGS, name, version, sources, script, [p], wordsize(p)==64 ? products64 : products, dependencies)
+end
