@@ -25,9 +25,9 @@ if [[ ${target} == *mingw* ]]; then
     mkdir ${prefix}/bin
     cd ${prefix}/bin
     if [[ ${target} == i686* ]]; then
-        7z x -y ${WORKSPACE}/srcdir/*-7z1900.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z1900.exe 7z.exe 7z.dll
     else
-        7z x -y ${WORKSPACE}/srcdir/*-7z1900-x64.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z1900-x64.exe 7z.exe 7z.dll
     fi
     chmod +x 7z.exe 7z.dll
 else
