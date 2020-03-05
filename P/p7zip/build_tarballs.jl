@@ -5,13 +5,13 @@ version = v"16.02"
 
 # Collection of sources required to build p7zip
 sources = [
-    "https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2" =>
-    "5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f",
-    "https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900.exe" =>
-    "759aa04d5b03ebeee13ba01df554e8c962ca339c74f56627c8bed6984bb7ef80",
-    "https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900-x64.exe" =>
-    "0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e",
-    "./bundled",
+    ArchiveSource("https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2",
+                  "5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900.exe",
+               "759aa04d5b03ebeee13ba01df554e8c962ca339c74f56627c8bed6984bb7ef80"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900-x64.exe",
+               "0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,9 +25,9 @@ if [[ ${target} == *mingw* ]]; then
     mkdir ${prefix}/bin
     cd ${prefix}/bin
     if [[ ${target} == i686* ]]; then
-        7z x -y ${WORKSPACE}/srcdir/*-7z1900.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z1900.exe 7z.exe 7z.dll
     else
-        7z x -y ${WORKSPACE}/srcdir/*-7z1900-x64.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z1900-x64.exe 7z.exe 7z.dll
     fi
     chmod +x 7z.exe 7z.dll
 else
