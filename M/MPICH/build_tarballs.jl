@@ -67,8 +67,10 @@ make install
 platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
 
 products = [
-    LibraryProduct("libmpi", :libmpi)
-    ExecutableProduct("mpiexec", :mpiexec)
+    LibraryProduct("libmpicxx", :libmpicxx),
+    LibraryProduct("libmpifort", :libmpifort),
+    LibraryProduct("libmpi", :libmpi),
+    ExecutableProduct("mpiexec", :mpiexec),
 ]
 
 dependencies = [
