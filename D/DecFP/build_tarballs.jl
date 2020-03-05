@@ -23,13 +23,11 @@ fi
 if [[ $target == *-w64-* ]]; then
     _HOST_OS="Windows_NT"
     objext="obj"
-elif [[ $target == *-darwin* ]]; then
-    _HOST_OS="Darwin"
-    objext="o"
 elif [[ $target == *-freebsd* ]]; then
     _HOST_OS="FreeBSD"
     objext="o"
 else
+    # Linux and macOS/Darwin
     _HOST_OS="Linux"
     objext="o"
 fi
