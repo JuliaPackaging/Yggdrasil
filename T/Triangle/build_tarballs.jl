@@ -19,20 +19,18 @@ sources = [
     GitSource("https://github.com/JuliaGeometry/Triangulate.jl.git","b2ffb23ca7d89c567fd31367882bd216757cdb9c")
 ]
 
-
-
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Triangulate.jl/deps/src
-if [[ ${target} == *-mingw32 ]]; then     libdir="bin"; else     libdir="lib"; fi
-mkdir ${prefix}/${libdir}
+cd $WORKSPACE/srcdir/Triangulate.jl/deps/src
+mkdir -p "${libdir}"
 sed -e "s/  exit/extern void error_exit(int); error_exit/g" triangle/triangle.c > triangle_patched.c
-$CC -Itriangle -DREAL=double -DTRILIBRARY -O3 -fPIC -DNDEBUG -DNO_TIMER -DEXTERNAL_TEST $LDFLAGS --shared -o ${prefix}/${libdir}/libtriangle.${dlext} triangle_patched.c triwrap.c
+$CC -Itriangle -DREAL=double -DTRILIBRARY -O3 -fPIC -DNDEBUG -DNO_TIMER -DEXTERNAL_TEST $LDFLAGS --shared -o "${libdir}/libtriangle.${dlext}" triangle_patched.c triwrap.c
 """
 
+platforms = supported_platforms()
+products = [
+    LibraryProduct("libtriangle", :libtriangle)
+]
+dependencies = Dependency[]
 
-platforms = BinaryBuilder.supported_platforms()
-products = [  LibraryProduct("libtriangle", :libtriangle) ]
-dependencies = []
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
 
