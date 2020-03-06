@@ -1,85 +1,90 @@
-commit a55a3ab4dc5c66c153b2988fc4fa46b39bfc92fc
-Author: Keno Fischer <keno@juliacomputing.com>
-Date:   Mon Feb 24 14:18:22 2020 -0500
+From f11f45a45ce8b90c798dd939d2782205e4291360 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Fri, 6 Mar 2020 10:29:20 -0500
+Subject: [PATCH] [SCEV] Record NI types in add exprs
 
-    [SCEV] Record NI types in add exprs
-    
-    Summary:
-    This fixes a case where loop-reduce introduces ptrtoint/inttoptr for
-    non-integral address space pointers. Over the past several years, we
-    have gradually improved the SCEVExpander to actually do something
-    sensible for non-integral pointer types. However, that obviously
-    relies on the expander knowing what the type of the SCEV expression is.
-    That is usually the case, but there is one important case where it's
-    not: The type of an add expression is just the type of the last operand,
-    so if the non-integral pointer is not the last operand, later uses of
-    that SCEV may not realize that the given add expression contains
-    non-integral pointers and may try to expand it as integers.
-    
-    One interesting observation is that we do get away with this scheme in
-    shockingly many cases. The reason for this is that SCEV expressions
-    often have an `scUnknown` pointer base, which our sort order on the
-    operands of add expressions sort behind basically everything else,
-    so it usually ends up as the last operand.
-    
-    One situation where this fails is included as a test case. This test
-    case was bugpoint-reduced from the issue reported at
-    https://github.com/JuliaLang/julia/issues/31156. What happens here
-    is that the pointer base is an scAddRec from an outer loop, plus an
-    scUnknown integer offset. By our sort order, the scUnknown gets sorted
-    after the scAddRec pointer base, thus making an add expression of these
-    two operands have integer type. This then confuses the expander, into
-    attempting to expand the whole thing as integers, which will obviously
-    fail when reaching the non-integral pointer.
-    
-    I considered a few options to solve this, but here's what I ended up
-    settling on: The AddExpr class gains a new subclass that explicitly
-    stores the type of the expression. This subclass is used whenever one
-    of the operands is a non-integral pointer. To reduce the impact for the
-    regular case (where the SCEV expression contains no non-integral
-    pointers), a bit flag is kept in each flag expression to indicate
-    whether it is of non-integral pointer type (this should give the same
-    answer as asking if getType() is non-integral, but performing that
-    query may involve a pointer chase and requires the DataLayout). For
-    add expressions that flag is also used to indicate whether we're using
-    the subclass or not. This is slightly inefficient, because it uses
-    the subclass even in the (not uncommon) case where the last operand
-    does actually accurately reflect the non-integral pointer type. However,
-    it didn't seem worth the extra flag bit and complexity to do this
-    micro-optimization.
-    
-    I had hoped that we could additionally restrict mul exprs from
-    containing any non-integral pointers, and also require add exprs to
-    only have one operand containg such pointers (but not more), but this
-    turned out not to work. The reason for this is that SCEV wants to
-    form differences between pointers, which it represents as `A + B*-1`,
-    so we need to allow both multiplication by `-1` and addition with
-    multiple non-integral pointer arguments. I'm not super happy with
-    that situation, but I think it exposes a more general problem with
-    non-integral pointers in LLVM. We don't actually have a way to express
-    the difference between two non-integral pointers at the IR level.
-    In theory this is a problem for SCEV, because it means that we can't
-    materialize such SCEV expression. However, in practice, these
-    expressions generally have the same base pointer, so SCEV will
-    appropriately simplify them to just the integer components.
-    Nevertheless it is a bit unsatisfying. Perhaps we could have an
-    intrinsic that takes the byte difference between two pointers to the
-    same allocated object (in the same sense as is used in getelementptr),
-    which should be a sensible operation even for non-integral pointers.
-    However, given the practical considerations above, that's a project
-    for another time. For now, simply allowing the existing pointer-diff
-    pattern for non-integral pointers seems to work ok.
-    
-    Reviewers: sanjoy, reames, vtjnash, vchuravy
-    
-    Subscribers: hiraditya, javed.absar, llvm-commits
-    
-    Tags: #llvm
-    
-    Differential Revision: https://reviews.llvm.org/D75072
+Summary:
+This fixes a case where loop-reduce introduces ptrtoint/inttoptr for
+non-integral address space pointers. Over the past several years, we
+have gradually improved the SCEVExpander to actually do something
+sensible for non-integral pointer types. However, that obviously
+relies on the expander knowing what the type of the SCEV expression is.
+That is usually the case, but there is one important case where it's
+not: The type of an add expression is just the type of the last operand,
+so if the non-integral pointer is not the last operand, later uses of
+that SCEV may not realize that the given add expression contains
+non-integral pointers and may try to expand it as integers.
+
+One interesting observation is that we do get away with this scheme in
+shockingly many cases. The reason for this is that SCEV expressions
+often have an `scUnknown` pointer base, which our sort order on the
+operands of add expressions sort behind basically everything else,
+so it usually ends up as the last operand.
+
+One situation where this fails is included as a test case. This test
+case was bugpoint-reduced from the issue reported at
+https://github.com/JuliaLang/julia/issues/31156. What happens here
+is that the pointer base is an scAddRec from an outer loop, plus an
+scUnknown integer offset. By our sort order, the scUnknown gets sorted
+after the scAddRec pointer base, thus making an add expression of these
+two operands have integer type. This then confuses the expander, into
+attempting to expand the whole thing as integers, which will obviously
+fail when reaching the non-integral pointer.
+
+I considered a few options to solve this, but here's what I ended up
+settling on: The AddExpr class gains a new subclass that explicitly
+stores the type of the expression. This subclass is used whenever one
+of the operands is a non-integral pointer. To reduce the impact for the
+regular case (where the SCEV expression contains no non-integral
+pointers), a bit flag is kept in each flag expression to indicate
+whether it is of non-integral pointer type (this should give the same
+answer as asking if getType() is non-integral, but performing that
+query may involve a pointer chase and requires the DataLayout). For
+add expressions that flag is also used to indicate whether we're using
+the subclass or not. This is slightly inefficient, because it uses
+the subclass even in the (not uncommon) case where the last operand
+does actually accurately reflect the non-integral pointer type. However,
+it didn't seem worth the extra flag bit and complexity to do this
+micro-optimization.
+
+I had hoped that we could additionally restrict mul exprs from
+containing any non-integral pointers, and also require add exprs to
+only have one operand containg such pointers (but not more), but this
+turned out not to work. The reason for this is that SCEV wants to
+form differences between pointers, which it represents as `A + B*-1`,
+so we need to allow both multiplication by `-1` and addition with
+multiple non-integral pointer arguments. I'm not super happy with
+that situation, but I think it exposes a more general problem with
+non-integral pointers in LLVM. We don't actually have a way to express
+the difference between two non-integral pointers at the IR level.
+In theory this is a problem for SCEV, because it means that we can't
+materialize such SCEV expression. However, in practice, these
+expressions generally have the same base pointer, so SCEV will
+appropriately simplify them to just the integer components.
+Nevertheless it is a bit unsatisfying. Perhaps we could have an
+intrinsic that takes the byte difference between two pointers to the
+same allocated object (in the same sense as is used in getelementptr),
+which should be a sensible operation even for non-integral pointers.
+However, given the practical considerations above, that's a project
+for another time. For now, simply allowing the existing pointer-diff
+pattern for non-integral pointers seems to work ok.
+
+Reviewers: sanjoy, reames, vtjnash, vchuravy
+
+Subscribers: hiraditya, javed.absar, llvm-commits
+
+Tags: #llvm, #julialang
+
+Differential Revision: https://reviews.llvm.org/D75072
+---
+ llvm/include/llvm/Analysis/ScalarEvolution.h  | 26 +++++--
+ .../Analysis/ScalarEvolutionExpressions.h     | 70 ++++++++++++++++---
+ llvm/lib/Analysis/ScalarEvolution.cpp         | 44 +++++++++---
+ .../LoopStrengthReduce/nonintegral.ll         | 35 +++++++++-
+ 4 files changed, 150 insertions(+), 25 deletions(-)
 
 diff --git llvm/include/llvm/Analysis/ScalarEvolution.h llvm/include/llvm/Analysis/ScalarEvolution.h
-index 0bd98ef37e7..317bdeac3f0 100644
+index 5286f6a220e..f27fceb70d2 100644
 --- llvm/include/llvm/Analysis/ScalarEvolution.h
 +++ llvm/include/llvm/Analysis/ScalarEvolution.h
 @@ -118,6 +118,19 @@ public:
@@ -113,8 +118,19 @@ index 0bd98ef37e7..317bdeac3f0 100644
    /// Print out the internal representation of this scalar to the specified
    /// stream.  This should really only be used for debugging purposes.
    void print(raw_ostream &OS) const;
-@@ -747,7 +764,7 @@ public:
+@@ -719,9 +736,8 @@ public:
+   unsigned getSmallConstantTripMultiple(const Loop *L,
                                          BasicBlock *ExitingBlock);
+ 
+-
+   /// The terms "backedge taken count" and "exit count" are used
+-  /// interchangeably to refer to the number of times the backedge of a loop 
++  /// interchangeably to refer to the number of times the backedge of a loop
+   /// has executed before the loop is exited.
+   enum ExitCountKind {
+     /// An expression exactly describing the number of times the backedge has
+@@ -732,11 +748,11 @@ public:
+   };
  
    /// Return the number of times the backedge executes before the given exit
 -  /// would be taken; if not exactly computable, return SCEVCouldNotCompute. 
@@ -122,8 +138,22 @@ index 0bd98ef37e7..317bdeac3f0 100644
    /// For a single exit loop, this value is equivelent to the result of
    /// getBackedgeTakenCount.  The loop is guaranteed to exit (via *some* exit)
    /// before the backedge is executed (ExitCount + 1) times.  Note that there
+-  /// is no guarantee about *which* exit is taken on the exiting iteration.  
++  /// is no guarantee about *which* exit is taken on the exiting iteration.
+   const SCEV *getExitCount(const Loop *L, BasicBlock *ExitingBlock,
+                            ExitCountKind Kind = Exact);
+ 
+@@ -765,7 +781,7 @@ public:
+   /// SCEVCouldNotCompute object.
+   const SCEV *getConstantMaxBackedgeTakenCount(const Loop *L) {
+     return getBackedgeTakenCount(L, ConstantMaximum);
+-  } 
++  }
+ 
+   /// Return true if the backedge taken count is either the value returned by
+   /// getConstantMaxBackedgeTakenCount or zero.
 diff --git llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
-index d008af7b7e6..39ab35a8b8c 100644
+index 876d68438ef..b9ea23c0086 100644
 --- llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
 +++ llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
 @@ -188,6 +188,13 @@ class Type;
@@ -237,10 +267,10 @@ index d008af7b7e6..39ab35a8b8c 100644
      // Implement CallbackVH.
      void deleted() override;
 diff --git llvm/lib/Analysis/ScalarEvolution.cpp llvm/lib/Analysis/ScalarEvolution.cpp
-index bc2cfd6fcc4..2f8eb665c5d 100644
+index cd74815a895..09e98345d0f 100644
 --- llvm/lib/Analysis/ScalarEvolution.cpp
 +++ llvm/lib/Analysis/ScalarEvolution.cpp
-@@ -358,12 +358,13 @@ Type *SCEV::getType() const {
+@@ -369,12 +369,13 @@ Type *SCEV::getType() const {
    case scSignExtend:
      return cast<SCEVCastExpr>(this)->getType();
    case scAddRecExpr:
@@ -255,7 +285,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
    case scAddExpr:
      return cast<SCEVAddExpr>(this)->getType();
    case scUDivExpr:
-@@ -2441,8 +2442,9 @@ const SCEV *ScalarEvolution::getAddExpr(SmallVectorImpl<const SCEV *> &Ops,
+@@ -2449,8 +2450,9 @@ const SCEV *ScalarEvolution::getAddExpr(SmallVectorImpl<const SCEV *> &Ops,
    }
  
    // Limit recursion calls depth.
@@ -266,7 +296,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
  
    // Okay, check to see if the same value occurs in the operand list more than
    // once.  If so, merge them together into an multiply expression.  Since we
-@@ -2783,16 +2785,27 @@ ScalarEvolution::getOrCreateAddExpr(ArrayRef<const SCEV *> Ops,
+@@ -2791,16 +2793,27 @@ ScalarEvolution::getOrCreateAddExpr(ArrayRef<const SCEV *> Ops,
                                      SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scAddExpr);
@@ -298,7 +328,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
      UniqueSCEVs.InsertNode(S, IP);
      addToLoopUseLists(S);
    }
-@@ -2805,8 +2818,10 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
+@@ -2813,8 +2826,10 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
                                         const Loop *L, SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scAddRecExpr);
@@ -310,7 +340,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
    ID.AddPointer(L);
    void *IP = nullptr;
    SCEVAddRecExpr *S =
-@@ -2820,6 +2835,7 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
+@@ -2828,6 +2843,7 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
      addToLoopUseLists(S);
    }
    S->setNoWrapFlags(Flags);
@@ -318,7 +348,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
    return S;
  }
  
-@@ -2828,8 +2844,11 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
+@@ -2836,8 +2852,11 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
                                      SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scMulExpr);
@@ -331,7 +361,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
    void *IP = nullptr;
    SCEVMulExpr *S =
      static_cast<SCEVMulExpr *>(UniqueSCEVs.FindNodeOrInsertPos(ID, IP));
-@@ -2842,6 +2861,7 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
+@@ -2850,6 +2869,7 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
      addToLoopUseLists(S);
    }
    S->setNoWrapFlags(Flags);
@@ -339,7 +369,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
    return S;
  }
  
-@@ -3666,8 +3686,11 @@ const SCEV *ScalarEvolution::getMinMaxExpr(unsigned Kind,
+@@ -3673,8 +3693,11 @@ const SCEV *ScalarEvolution::getMinMaxExpr(unsigned Kind,
      return ExistingSCEV;
    const SCEV **O = SCEVAllocator.Allocate<const SCEV *>(Ops.size());
    std::uninitialized_copy(Ops.begin(), Ops.end(), O);
@@ -352,7 +382,7 @@ index bc2cfd6fcc4..2f8eb665c5d 100644
  
    UniqueSCEVs.InsertNode(S, IP);
    addToLoopUseLists(S);
-@@ -3744,8 +3767,9 @@ const SCEV *ScalarEvolution::getUnknown(Value *V) {
+@@ -3751,8 +3774,9 @@ const SCEV *ScalarEvolution::getUnknown(Value *V) {
             "Stale SCEVUnknown in uniquing map!");
      return S;
    }
@@ -413,3 +443,6 @@ index 5648e3aa74a..6936521f3a6 100644
 +
 +!1 = distinct !{!1, !2}
 +!2 = !{!"llvm.loop.isvectorized", i32 1}
+-- 
+2.25.1
+
