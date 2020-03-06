@@ -7,7 +7,7 @@ version = v"0.7.3"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://github.com/Cyan4973/xxHash/archive/v0.7.3.tar.gz", "952ebbf5b11fbf59ae5d760a562d1e9112278f244340ad7714e8556cbe54f7f7"),
+    ArchiveSource("https://github.com/Cyan4973/xxHash/archive/v0.7.3.tar.gz", "952ebbf5b11fbf59ae5d760a562d1e9112278f244340ad7714e8556cbe54f7f7"),
 ]
 
 # Bash recipe for building across all platforms
