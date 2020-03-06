@@ -12,13 +12,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd xxHash-0.7.3/
+cd $WORKSPACE/srcdir/xxHash-*/
 mkdir build
-cd build 
+cd build
 cmake ../cmake_unofficial -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-cmake --build .
-cmake --build . --target install
+make -j${nproc}
+make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    cd "${prefix}/lib"
+    ar x libxxhash.dll.a
+    cc -shared -o "${libdir}/libxxhash.dll" *.o
+    rm *.o
+fi
 """
 
 # These are the platforms we will build for by default, unless further
