@@ -327,3 +327,20 @@ index 534d6d9f..f5cba6a0 100644
  }
  #endif
  
+diff --git a/exports/dllinit.c b/exports/dllinit.c
+index 4a05c0e1..88f9af65 100644
+--- a/exports/dllinit.c
++++ b/exports/dllinit.c
+@@ -50,7 +50,10 @@ BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved) {
+         gotoblas_init();
+         break;
+       case DLL_PROCESS_DETACH:
+-        gotoblas_quit();
++        // If the process is about to exit, don't bother releasing any resources
++        // The kernel is much better at bulk releasing then.
++        if (!reserved)
++          gotoblas_quit();
+         break;
+       case DLL_THREAD_ATTACH:
+         break;
+
