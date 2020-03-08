@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "coordgenlibs"
-version = v"1.3.2+sha.82b4fe9"
+version = v"1.3.2"
 
 # Collection of sources required to complete build
 sources = [
