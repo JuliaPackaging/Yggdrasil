@@ -7,8 +7,8 @@ version = v"2.2.4"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    "https://github.com/bcgsc/abyss.git" =>
-    "ffd5e372b94b26d1e302271c5fb8f92b85381f0a"
+    GitSource("https://github.com/bcgsc/abyss.git",
+              "ffd5e372b94b26d1e302271c5fb8f92b85381f0a")
 ]
 
 # Bash recipe for building across all platforms
@@ -95,8 +95,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "boost_jll",
-    "OpenMPI_jll"
+    BuildDependency("boost_jll"),
+    Dependency("OpenMPI_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
