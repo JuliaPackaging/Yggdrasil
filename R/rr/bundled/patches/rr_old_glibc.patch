@@ -1,0 +1,183 @@
+diff --git a/src/Task.cc b/src/Task.cc
+index 20005dba..c4f840ac 100644
+--- a/src/Task.cc
++++ b/src/Task.cc
+@@ -56,6 +56,10 @@
+ #include "seccomp-bpf.h"
+ #include "util.h"
+ 
++
++// Manually inline definition
++#define O_PATH          010000000
++
+ using namespace std;
+ 
+ namespace rr {
+@@ -2756,11 +2760,11 @@ static void run_initial_child(Session& session, const ScopedFd& error_fd,
+   }
+ 
+   ret =
+-      ptrace(PTRACE_SEIZE, tid, nullptr, (void*)(options | PTRACE_O_EXITKILL));
++      ptrace((__ptrace_request)PTRACE_SEIZE, tid, nullptr, (void*)(options | PTRACE_O_EXITKILL));
+   if (ret < 0 && errno == EINVAL) {
+     // PTRACE_O_EXITKILL was added in kernel 3.8, and we only need
+     // it for more robust cleanup, so tolerate not having it.
+-    ret = ptrace(PTRACE_SEIZE, tid, nullptr, (void*)options);
++    ret = ptrace((__ptrace_request)PTRACE_SEIZE, tid, nullptr, (void*)options);
+   }
+   if (ret) {
+     // Note that although the tracee may have died due to some fatal error,
+diff --git a/src/ftrace/ftrace_helper.c b/src/ftrace/ftrace_helper.c
+index c4e783ff..3d0c5261 100644
+--- a/src/ftrace/ftrace_helper.c
++++ b/src/ftrace/ftrace_helper.c
+@@ -4,6 +4,11 @@
+ 
+ #include <dirent.h>
+ #include <errno.h>
++
++// Manually inline newer constants that we need
++#define F_LINUX_SPECIFIC_BASE   1024
++#define F_GETPIPE_SZ  (F_LINUX_SPECIFIC_BASE + 8)
++
+ #include <fcntl.h>
+ #include <limits.h>
+ #include <pthread.h>
+diff --git a/src/kernel_metadata.cc b/src/kernel_metadata.cc
+index 16102306..4c2b4520 100644
+--- a/src/kernel_metadata.cc
++++ b/src/kernel_metadata.cc
+@@ -6,6 +6,7 @@
+ #include <linux/shm.h>
+ #include <signal.h>
+ #include <sys/ptrace.h>
++#include <linux/ptrace.h>
+ #include <syscall.h>
+ 
+ #include "kernel_abi.h"
+diff --git a/src/kernel_supplement.h b/src/kernel_supplement.h
+index 6fc75d19..5c02931c 100644
+--- a/src/kernel_supplement.h
++++ b/src/kernel_supplement.h
+@@ -10,7 +10,9 @@
+ #include <signal.h>
+ #include <stdint.h>
+ #include <sys/ioctl.h>
++#include <linux/ioctl.h>
+ #include <sys/ptrace.h>
++#include <linux/ptrace.h>
+ 
+ namespace rr {
+ 
+@@ -60,9 +62,9 @@ namespace rr {
+ 
+ #ifndef PTRACE_O_TRACESECCOMP
+ #define PTRACE_O_TRACESECCOMP 0x00000080
+-#define PTRACE_EVENT_SECCOMP_OBSOLETE 8 // ubuntu 12.04
+ #define PTRACE_EVENT_SECCOMP 7          // ubuntu 12.10 and future kernels
+ #endif
++#define PTRACE_EVENT_SECCOMP_OBSOLETE 8 // ubuntu 12.04
+ 
+ #ifndef PTRACE_O_EXITKILL
+ #define PTRACE_O_EXITKILL (1 << 20)
+diff --git a/src/preload/syscallbuf.c b/src/preload/syscallbuf.c
+index 3e22c05f..05d1052a 100644
+--- a/src/preload/syscallbuf.c
++++ b/src/preload/syscallbuf.c
+@@ -62,7 +62,7 @@
+ #include <sys/epoll.h>
+ #include <sys/file.h>
+ #include <sys/ioctl.h>
+-#include <sys/mman.h>
++#include <linux/mman.h>
+ #include <sys/ptrace.h>
+ #include <sys/quota.h>
+ #include <sys/resource.h>
+diff --git a/src/record_signal.cc b/src/record_signal.cc
+index 12223d8d..99816c51 100644
+--- a/src/record_signal.cc
++++ b/src/record_signal.cc
+@@ -47,6 +47,60 @@ static void restore_sighandler_if_not_default(RecordTask* t, int sig) {
+   }
+ }
+ 
++
++// Manually include `prlimit`, since our glibc is too old but our kernel isn't
++static int
++prlimit (__pid_t pid, enum __rlimit_resource resource,
++         const struct rlimit *new_rlimit, struct rlimit *old_rlimit)
++{
++  struct rlimit64 new_rlimit64_mem;
++  struct rlimit64 *new_rlimit64 = NULL;
++  struct rlimit64 old_rlimit64_mem;
++  struct rlimit64 *old_rlimit64 = (old_rlimit != NULL
++                                   ? &old_rlimit64_mem : NULL);
++  if (new_rlimit != NULL)
++    {
++      if (new_rlimit->rlim_cur == RLIM_INFINITY)
++        new_rlimit64_mem.rlim_cur = RLIM64_INFINITY;
++      else
++        new_rlimit64_mem.rlim_cur = new_rlimit->rlim_cur;
++      if (new_rlimit->rlim_max == RLIM_INFINITY)
++        new_rlimit64_mem.rlim_max = RLIM64_INFINITY;
++      else
++        new_rlimit64_mem.rlim_max = new_rlimit->rlim_max;
++      new_rlimit64 = &new_rlimit64_mem;
++    }
++  int res = syscall(SYS_prlimit64, pid, resource, new_rlimit64,
++                            old_rlimit64);
++  if (res == 0 && old_rlimit != NULL)
++    {
++      /* The prlimit64 syscall is ill-designed for 32-bit machines.
++         We have to provide a 32-bit variant since otherwise the LFS
++         system would not work.  The infinity value can be translated,
++         but otherwise what shall we do if the syscall succeeds but the
++         old values do not fit into a rlimit structure?  We cannot return
++         an error because the operation itself worked.  Best is perhaps
++         to return RLIM_INFINITY.  */
++      old_rlimit->rlim_cur = old_rlimit64_mem.rlim_cur;
++      if (old_rlimit->rlim_cur != old_rlimit64_mem.rlim_cur)
++        {
++          if ((new_rlimit == NULL)
++              && (old_rlimit64_mem.rlim_cur != RLIM64_INFINITY))
++            return EOVERFLOW;
++          old_rlimit->rlim_cur = RLIM_INFINITY;
++        }
++      old_rlimit->rlim_max = old_rlimit64_mem.rlim_max;
++      if (old_rlimit->rlim_max != old_rlimit64_mem.rlim_max)
++        {
++          if ((new_rlimit == NULL)
++              && (old_rlimit64_mem.rlim_max != RLIM64_INFINITY))
++            return EOVERFLOW;
++          old_rlimit->rlim_max = RLIM_INFINITY;
++        }
++    }
++  return res;
++}
++
+ /**
+  * Restore the blocked-ness and sigaction for |sig| from |t|'s local
+  * copy.
+diff --git a/src/record_syscall.cc b/src/record_syscall.cc
+index 47fb7e16..e186d575 100644
+--- a/src/record_syscall.cc
++++ b/src/record_syscall.cc
+@@ -80,6 +80,18 @@
+ #include "log.h"
+ #include "util.h"
+ 
++// inline definitions
++#define MAX_HANDLE_SZ 128
++
++/* File handle structure.  */
++struct file_handle
++{
++    unsigned int handle_bytes;
++    int handle_type;
++    /* File identifier.  */
++    unsigned char f_handle[0];
++};
++
+ using namespace std;
+ 
+ namespace rr {
