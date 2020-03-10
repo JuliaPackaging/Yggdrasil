@@ -28,11 +28,15 @@ cd $WORKSPACE/srcdir
 
 mkdir build
 cd build
-CMAKE_ARGS="-DCMAKE_FIND_ROOT_PATH="$prefix" -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release"
+CMAKE_ARGS="-DCMAKE_FIND_ROOT_PATH="${prefix}" -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release"
 HELICS_ARGS="-DHELICS_BUILD_TESTS=OFF"
 cmake ${CMAKE_ARGS} ${HELICS_ARGS} ..
 make -j${nproc}
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # Remove a broken link that we don't need anyway
+    rm ${prefix}/bin/libzmq.dll.a
+fi
 """
 
 products = [
