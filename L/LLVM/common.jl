@@ -124,6 +124,8 @@ CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 # We want a shared library
 CMAKE_FLAGS+=(-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON)
 CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
+# set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
+CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
 
 # Install things into $prefix, and make sure it knows we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
