@@ -141,11 +141,11 @@ CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 
 # Include perf/oprofile/vtune markers
 if [[ ${target} == *linux* ]]; then
-    CMAKE_FLAGS+=(-DUSE_PERF=1)
-    CMAKE_FLAGS+=(-DUSE_OPROFILE=1)
+    CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
+    CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
 if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-    CMAKE_FLAGS+=(-DUSE_INTEL_JITEVENTS=1)
+    CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
 # Tell LLVM where our pre-built tblgen tools are
