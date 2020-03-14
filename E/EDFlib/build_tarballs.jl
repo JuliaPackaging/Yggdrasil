@@ -13,6 +13,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/edflib
 mkdir ${libdir}
 ${CC} edflib.c -shared -fPIC -o ${libdir}/libedflib.${dlext}
+# No separate license file, it just lives in the README and in the source files
+install_license README.md
 """
 
 platforms = supported_platforms()
