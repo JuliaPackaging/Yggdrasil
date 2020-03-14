@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/edflib
 mkdir ${libdir}
-${CC} edflib.c -shared -fPIC -o ${libdir}/libedflib.${dlext}
+${CC} edflib.c -shared -fPIC -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE -o ${libdir}/libedflib.${dlext}
 # No separate license file, it just lives in the README and in the source files
 install_license README.md
 """
