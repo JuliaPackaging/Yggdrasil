@@ -4,6 +4,7 @@ Date: Fri, 6 Mar 2020 10:29:20 -0500
 Subject: [PATCH] [SCEV] Record NI types in add exprs
 
 Summary:
+(Rebased to LLVM 8 from the original LLVM 9 patch)
 This fixes a case where loop-reduce introduces ptrtoint/inttoptr for
 non-integral address space pointers. Over the past several years, we
 have gradually improved the SCEVExpander to actually do something
