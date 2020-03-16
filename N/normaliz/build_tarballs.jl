@@ -16,6 +16,8 @@ script = raw"""
 cd normaliz-*
 # avoid libtool problems
 rm /workspace/destdir/lib/libgmpxx.la
+# workaround for #624: remove too old libstdc++ from CompilerSupportLibraries
+rm -f /workspace/destdir/lib/libstdc++*
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --with-gmp=$prefix CPPFLAGS=-I$prefix/include LDFLAGS=-L$prefix/lib
 make -j
 make install
