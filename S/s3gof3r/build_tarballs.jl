@@ -11,6 +11,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/s3g/gof3r
+export GO15VENDOREXPERIMENT=1
+go get github.com/jessevdk/go-flags
+go get github.com/rlmcpherson/s3gof3r/gof3r
 mkdir -p ${bindir}
 go build -o ${bindir}
 """
@@ -21,7 +24,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("s3gof3r", :s3gof3r),
+    ExecutableProduct("gof3r", :gof3r),
 ]
 
 # Dependencies that must be installed before this package can be built
