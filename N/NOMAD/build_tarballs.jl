@@ -34,7 +34,8 @@ products = [
     LibraryProduct("libnomadAlgos", :libnomadAlgos),
     LibraryProduct("libnomadEval", :libnomadEval),
     LibraryProduct("libnomadUtils", :libnomadUtils),
-    LibraryProduct("libsgtelib", :libsgtelib)
+    LibraryProduct("libsgtelib", :libsgtelib),
+    ExecutableProduct("nomad", :nomad),
 ]
 
 # Dependencies that must be installed before this package can be built
