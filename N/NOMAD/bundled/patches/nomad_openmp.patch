@@ -6,14 +6,14 @@
  
 +if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
 +    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
-+    set(OpenMP_C_LIB_NAMES "omp")
-+    set(OpenMP_omp_LIBRARY omp)
++    set(OpenMP_C_LIB_NAMES "gomp")
++    set(OpenMP_omp_LIBRARY gomp)
 +endif()
 +
 +if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
 +    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
-+    set(OpenMP_CXX_LIB_NAMES "omp")
-+    set(OpenMP_omp_LIBRARY omp)
++    set(OpenMP_CXX_LIB_NAMES "gomp")
++    set(OpenMP_omp_LIBRARY gomp)
 +endif()
 +    
  # require openMP package

@@ -17,6 +17,8 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sgtelib_openmp.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cache_corrections.patch"
 if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/include_sys_time_missing_timeval_musl.patch"
+elif [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    export CXXFLAGS="-I/opt/${target}/lib/gcc/${target}/8.1.0/include"
 fi
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
