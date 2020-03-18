@@ -8,18 +8,18 @@ version = v"3.8.4"
 # Collection of sources required to build normaliz
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$version/normaliz-$version.tar.gz",
-    "80d21ebaf1a2d472ccdc1e1b2e42b4d71f45f3b8df4d7195ff83edf38f8945c8")
+                  "80d21ebaf1a2d472ccdc1e1b2e42b4d71f45f3b8df4d7195ff83edf38f8945c8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd normaliz-*
 # avoid libtool problems
-rm /workspace/destdir/lib/libgmpxx.la
+rm "${prefix}/lib/libgmpxx.la"
 # workaround for #624: remove too old libstdc++ from CompilerSupportLibraries
-rm -f /workspace/destdir/lib/libstdc++*
-./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --with-gmp=$prefix CPPFLAGS=-I$prefix/include LDFLAGS=-L$prefix/lib
-make -j
+rm "${libdir}"/libstdc++*
+./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --with-gmp=$prefix CPPFLAGS=-I$prefix/include LDFLAGS=-L${libdir}
+make -j${nproc}
 make install
 """
 
