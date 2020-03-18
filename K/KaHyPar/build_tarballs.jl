@@ -8,27 +8,23 @@ version = v"1.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/arbenson/kahypar.git", "d64498068ab745a09a94391e746d35853fc3eef3"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd kahypar/
+cd $WORKSPACE/srcdir/kahypar/
 git submodule update --init --recursive
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
+atomic_patch -p1 ../patches/disable-tests.patch
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:musl),
-    Linux(:x86_64, libc=:glibc)
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
