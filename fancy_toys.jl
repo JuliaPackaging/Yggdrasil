@@ -106,7 +106,7 @@ function get_addable_spec(name::AbstractString, version::VersionNumber)
     return Pkg.Types.PackageSpec(
         name=name,
         uuid=uuid,
-        #version=version,
+        version=version,
         tree_hash=tree_hash_sha1,
         repo=Pkg.Types.GitRepo(rev=git_commit_sha, url=url),
     )
