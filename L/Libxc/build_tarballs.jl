@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd libxc-4.3.4/
 autoreconf -i
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
 make install
 """
 
