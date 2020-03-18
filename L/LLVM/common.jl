@@ -294,9 +294,8 @@ function configure_build(ARGS, version)
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     end
     sources = [
-        "https://github.com/llvm/llvm-project.git" =>
-        llvm_tags[version],
-        "./bundled",
+        GitSource("https://github.com/llvm/llvm-project.git", llvm_tags[version]),
+        DirectorySource("./bundled"),
     ]
 
     products = [
@@ -320,7 +319,7 @@ function configure_build(ARGS, version)
     end
     # Dependencies that must be installed before this package can be built
     # TODO: Zlib, LibXML2
-    dependencies = []
+    dependencies = Dependency[]
     return name, version, sources, config * buildscript, products, dependencies
 end
 
