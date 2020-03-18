@@ -7,16 +7,16 @@ version = v"4.3.4"
 
 # Collection of sources required to complete build
 sources = [
-    "https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz" =>
-    "2d5878dd69f0fb68c5e97f46426581eed2226d1d86e3080f9aa99af604c65647",
+    ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz",
+                  "2d5878dd69f0fb68c5e97f46426581eed2226d1d86e3080f9aa99af604c65647"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libxc-4.3.4/
-autoreconf -i
+cd $WORKSPACE/srcdir/libxc-*/
+autoreconf -vi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
+make -j${nproc}
 make install
 """
 
@@ -41,7 +41,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
