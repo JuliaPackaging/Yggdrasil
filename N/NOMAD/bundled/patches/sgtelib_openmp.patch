@@ -1,0 +1,47 @@
+--- a/ext/sgtelib/CMakeLists.txt
++++ b/ext/sgtelib/CMakeLists.txt
+@@ -36,6 +36,18 @@
+ # require c++11
+ set(CXX_STANDARD_REQUIRED 14)
+ 
++if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
++    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
++    set(OpenMP_C_LIB_NAMES "omp")
++    set(OpenMP_omp_LIBRARY omp)
++endif()
++
++if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
++    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
++    set(OpenMP_CXX_LIB_NAMES "omp")
++    set(OpenMP_omp_LIBRARY omp)
++endif()
++    
+ find_package(OpenMP)
+ 
+ # header files
+@@ -98,9 +110,9 @@
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sgtelib>
+     )
+-#if(OpenMP_CXX_FOUND)
+-#    target_link_libraries(sgtelib PRIVATE OpenMP::OpenMP_CXX)
+-#endif()
++if(OpenMP_CXX_FOUND)
++    target_link_libraries(sgtelib PRIVATE OpenMP::OpenMP_CXX)
++endif()
+ 
+ # build executable sgtelib_main
+ add_executable(sgtelib_main ${SGTELIB_SOURCES})
+@@ -108,9 +120,9 @@
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sgtelib>
+     )
+-#if(OpenMP_CXX_FOUND)
+-#    target_link_libraries(sgtelib_main PRIVATE OpenMP::OpenMP_CXX)
+-#endif()
++if(OpenMP_CXX_FOUND)
++    target_link_libraries(sgtelib_main PRIVATE OpenMP::OpenMP_CXX)
++endif()
+ 
+ # installing executables and libraries
+ install(TARGETS sgtelib_main sgtelib 

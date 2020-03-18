@@ -12,9 +12,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/NOMAD"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad_openmp.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sgtelib_openmp.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cache_corrections.patch"
 if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/include_sys_time_missing_timeval_musl.patch"
+elif [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    export CXXFLAGS="-I/opt/${target}/lib/gcc/${target}/8.1.0/include"
 fi
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
@@ -32,11 +36,14 @@ products = [
     LibraryProduct("libnomadAlgos", :libnomadAlgos),
     LibraryProduct("libnomadEval", :libnomadEval),
     LibraryProduct("libnomadUtils", :libnomadUtils),
-    LibraryProduct("libsgtelib", :libsgtelib)
+    LibraryProduct("libsgtelib", :libsgtelib),
+    ExecutableProduct("nomad", :nomad),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
