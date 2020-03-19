@@ -1,5 +1,10 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
-using BinaryBuilder
+using BinaryBuilder, Pkg, LibGit2
+
+include("../../fancy_toys.jl")
+
+# Everybody is just going to use the same set of platforms
+platforms = expand_cxxstring_abis(supported_platforms())
 
 const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
@@ -237,7 +242,53 @@ cp -r ${LLVM_SRCDIR}/utils/lit ${prefix}/tools/
 install_license ${WORKSPACE}/srcdir/llvm-project/llvm/LICENSE.TXT
 """
 
-function configure(ARGS, version)
+# Also define some scripts for extraction:
+const libllvmscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}
+
+# Copy over `llvm-config`, `libLLVM` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir}
+mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full/*
+"""
+
+const clangscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}
+
+# Copy over `clang`, `libclang` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir}
+mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full/*
+"""
+
+const llvmscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include/{clang*,llvm*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config}
+rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLVM*.${dlext}*
+"""
+
+function configure_build(ARGS, version)
     # Parse out some args
     assert = false
     if "--assert" in ARGS
@@ -245,11 +296,9 @@ function configure(ARGS, version)
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     end
     sources = [
-        "https://github.com/llvm/llvm-project.git" =>
-        llvm_tags[version],
-        "./bundled",
+        GitSource("https://github.com/llvm/llvm-project.git", llvm_tags[version]),
+        DirectorySource("./bundled"),
     ]
-
 
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
@@ -264,19 +313,60 @@ function configure(ARGS, version)
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
 
-    name = "LLVM"
+    name = "LLVM_full"
     config = "LLVM_MAJ_VER=$(version.major)\n"
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
     end
-    return name, sources, config * buildscript, products
+    # Dependencies that must be installed before this package can be built
+    # TODO: Zlib, LibXML2
+    dependencies = Dependency[]
+    return name, version, sources, config * buildscript, products, dependencies
 end
 
+function configure_extraction(ARGS, version_with_build, name)
+    if name != "libLLVM" && isempty(version_with_build.build)
+        error("You must lock an extracted LLVM build to a particular libLLVM build number!")
+    end
+    version = VersionNumber(version_with_build.major, version_with_build.minor, version_with_build.patch)
+    if name == "libLLVM"
+        script = libllvmscript
+        products = [
+            LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+            ExecutableProduct("llvm-config", :llvm_config, "tools"),
+        ]
+    elseif name == "Clang"
+        script = clangscript
+        products = [
+            LibraryProduct("libclang", :libclang, dont_dlopen=true),
+            ExecutableProduct("clang", :clang, "tools"),
+        ]
+    elseif name == "LLVM"
+        script = llvmscript
+        products = [
+            LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+            ExecutableProduct("opt", :opt, "tools"),
+            ExecutableProduct("llc", :llc, "tools"),
+        ]
+    end
 
-# Dependencies that must be installed before this package can be built
-# TODO: Zlib, LibXML2
-dependencies = [
-]
+    dependencies = BinaryBuilder.AbstractDependency[]
+    if "--assert" in ARGS
+        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_assert_jll", version=version)))
+        if name in ("Clang", "LLVM")
+            push!(dependencies, Dependency(get_addable_spec("libLLVM_assert_jll", version_with_build)))
+        end
+        name = "$(name)_assert"
+        deleteat!(ARGS, findfirst(ARGS .== "--assert"))
+    else
+        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_jll", version=version)))
+        if name in ("Clang", "LLVM")
+            push!(dependencies, Dependency(get_addable_spec("libLLVM_jll", version_with_build)))
+        end
+    end
+
+    return name, version, [], script, platforms, products, dependencies
+end
 
 
