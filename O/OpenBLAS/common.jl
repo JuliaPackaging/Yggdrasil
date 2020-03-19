@@ -110,7 +110,7 @@ function openblas_script(;kwargs...)
                 ln -vsf ${name} ${l}
             fi
         done
-    end
+    done
 
     # Next, we set the SONAME of the library to a non-versioned name,
     # so that other projects (such as SuiteSparse) can link against us
