@@ -322,7 +322,7 @@ function configure_build(ARGS, version)
     # Dependencies that must be installed before this package can be built
     # TODO: Zlib, LibXML2
     dependencies = Dependency[]
-    return name, version, sources, config * buildscript, products, dependencies
+    return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
 function configure_extraction(ARGS, version_with_build, name)
