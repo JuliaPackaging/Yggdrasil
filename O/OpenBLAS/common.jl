@@ -100,7 +100,8 @@ function openblas_script(;kwargs...)
     for f in ${prefix}/lib/libopenblas*p-r0*; do
         name=${LIBPREFIX}.0.${f#*.}
 
-        # Move this file to a julia-compatible name
+        # Move this file to a julia-compatible name, that is to say,
+        # from `libopenblas64_p-r0.3.7.a` to `libopenblas64_.0.3.7.a`
         mv -v ${f} ${prefix}/lib/${name}
 
         # If there were links that are now broken, fix 'em up
@@ -109,16 +110,16 @@ function openblas_script(;kwargs...)
                 ln -vsf ${name} ${l}
             fi
         done
+    end
 
-        # If this file was a .so or .dylib, set its SONAME/install name
-        if [[ ${f} == *.so.* ]] || [[ ${f} == *.dylib ]]; then 
-            if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
-                patchelf --set-soname ${name} ${prefix}/lib/${name}
-            elif [[ ${target} == *apple* ]]; then
-                install_name_tool -id ${name} ${prefix}/lib/${name}
-            fi
-        fi
-    done
+    # Next, we set the SONAME of the library to a non-versioned name,
+    # so that other projects (such as SuiteSparse) can link against us
+    # without needing to be built against a particular version.
+    if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+        patchelf --set-soname ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
+    elif [[ ${target} == *apple* ]]; then
+        install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
+    fi
     """
 end
 
