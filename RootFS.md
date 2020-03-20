@@ -39,7 +39,7 @@ The version of `glibc` we can compile against varies by system; we attempt to us
 |     i686     | v2.12.2 |
 |    aarch64   | v2.19   |
 |     armv7l   | v2.19   |
-|  powerpc64le | v2.25   |
+|  powerpc64le | v2.17   |
 
 
 Compiler Shards
@@ -60,7 +60,7 @@ To deal with the above sources of incompatibility, we compile the following shar
 
 Our GCC version selection is informed by two requirements: the `libgfortran` and `cxx11` incompatibilities.  First off, we must select compiler versions that span the three `libgfortran` SONAMEs we support, and we choose the oldest possible compilers within each SONAME bucket, yielding GCC `4.8.5`, `7.1.0` and `8.1.0`.  We choose the oldest possible GCC version so as to maximize the chance that C++ code compiled via this shard will be portable on other user's systems even without Julia's bundled `libstdc++.so`.  Next, we must provide a way for a user that is on a system with cxx11-defaulted strings but still using `libgfortran.so.3` (this would be the case if they were using GCC 5.3.1, for example, as Ubuntu 16.04 does) to link against our C++ code, so we add `5.2.0` in as the oldest 5.X.0 version that compiles on all our platforms, links against `libgfortran.so.3`, and defaults to `cxx11` string ABI.
 
-We also compile `GCC 6.1.0` because we have had a report of at least one piece of software that refuses to build with anything older, but also contains Fortran code, and so we needed something that would work on `libgfortran.so.3` systems.  We include it here as part of the build, but it is somewhat "hidden" from the user, and will never be used to compile automatically, it must be manually selected.
+We also compile `GCC 6.1.0` because we have had a report of at least one piece of software that refuses to build with anything older, but also contains Fortran code, and so we needed something that would work on `libgfortran.so.3` systems.  We include it here as part of the build, but it is somewhat "hidden" from the user, and will never be used to compile automatically, it must be manually selected.  This is done by providing the `preferred_gcc_version` keyword argument to `build_tarballs.jl`.  Note that you cannot select an "illegal" version of `gcc` using this parameter; setting a libgfortran requirement will lock you to certain valid versions, and the true version of GCC chosen will merely be the closest possible to the "preferred" version.
 
 Expanded triplet naming convention
 ==================================
