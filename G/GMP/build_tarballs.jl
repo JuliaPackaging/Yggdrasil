@@ -45,6 +45,7 @@ make install
 # On Windows, we need to make sure that the non-versioned dll names exist too
 if [[ ${target} == *mingw* ]]; then
     cp -v ${prefix}/bin/libgmp-*.dll ${prefix}/bin/libgmp.dll
+    cp -v ${prefix}/bin/libgmpxx-*.dll ${prefix}/bin/libgmpxx.dll
 fi
 
 # GMP is dual-licensed, install all license files
@@ -58,6 +59,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgmp", :libgmp),
+    LibraryProduct("libgmpxx", :libgmpxx),
 ]
 
 # Dependencies that must be installed before this package can be built
