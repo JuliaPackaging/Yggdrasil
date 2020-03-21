@@ -12,7 +12,7 @@ index 5a56fad..042b531 100644
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..49eae7f 100644
+index d7269b1..6d64ee2 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
 @@ -11,9 +11,7 @@ ARCH=LINUX
@@ -35,8 +35,14 @@ index d7269b1..49eae7f 100644
  endif
  
  CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
-@@ -68,7 +66,7 @@ LD = g++
- LDFLAGS = $(DEP_LIB)
+@@ -64,11 +62,11 @@ CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+ ## Linker flags
+ ##
+ 
+-LD = g++ 
+-LDFLAGS = $(DEP_LIB)
++LD = $(CXX)
++LDFLAGS += $(DEP_LIB)
  
  ifndef WINDOWS
 -LDFLAGS += -L/usr/local/lib
