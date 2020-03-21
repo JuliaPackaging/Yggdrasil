@@ -22,12 +22,11 @@ else
     suspicious_arch="LINUX"
 fi
 make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir}
-cp luna ${bindir}/
-cp libluna* ${libdir}/
-install_license LICENSE.txt
+cp "luna" "${bindir}/luna${exeext}"
+cp "libluna.${dlext}" "${libdir}/"
 """
 
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("luna", :luna),
@@ -35,8 +34,8 @@ products = [
 ]
 
 dependencies = [
-    "FFTW_jll",
-    "Zlib_jll",
+    Dependency("FFTW_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

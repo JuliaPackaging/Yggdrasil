@@ -33,15 +33,3 @@ index d7269b1..0da8cd7 100644
  endif
  
  
-@@ -103,11 +103,7 @@ export CFLAGS
- export LD
- export LDFLAGS
- 
--AR = ar
--ARFLAGS =
--RANLIB= ranlib
- RM = rm -f
- ECHO = echo
--SHELL = /bin/sh
- 
- .SILENT :
