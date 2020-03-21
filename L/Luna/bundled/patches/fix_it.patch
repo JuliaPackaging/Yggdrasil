@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 5a56fad..3366a07 100644
+index 5a56fad..042b531 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -31,7 +31,7 @@ luna : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
@@ -7,12 +7,12 @@ index 5a56fad..3366a07 100644
  
  static : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
 -	g++ -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
-+	$(CXX) -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
++	$(CXX) -static -static-libgcc -static-libstdc++ -L$(LIBDIR)	\
  	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..d405fdd 100644
+index d7269b1..49eae7f 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
 @@ -11,9 +11,7 @@ ARCH=LINUX
@@ -26,6 +26,24 @@ index d7269b1..d405fdd 100644
  
  
  ##
+@@ -54,7 +52,7 @@ endif
+ CXXFLAGS += $(DEP_INCLUDES) 
+ 
+ ifeq ($(ARCH),MAC)
+-CXXFLAGS += -I/usr/local/include
++CXXFLAGS += -I$(PREFIX)/include
+ endif
+ 
+ CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+@@ -68,7 +66,7 @@ LD = g++
+ LDFLAGS = $(DEP_LIB)
+ 
+ ifndef WINDOWS
+-LDFLAGS += -L/usr/local/lib
++LDFLAGS += -L$(LIBDIR)
+ endif
+ 
+ 
 diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
 index d5cde2e..d462bc5 100644
 --- a/dsp/firWindowing/Makefile
@@ -44,6 +62,46 @@ index 44504f2..6b7da26 100644
  CFLAGS	+= -Wall
  LIBRARY	= -lm -lfftw3
  
+diff --git a/dsp/mtm/sigstuff.cpp b/dsp/mtm/sigstuff.cpp
+index 6123b52..a0fd1c6 100644
+--- a/dsp/mtm/sigstuff.cpp
++++ b/dsp/mtm/sigstuff.cpp
+@@ -34,11 +34,7 @@
+ 
+ #include <string>
+ 
+-#if defined(__MACH__)
+ #include <stdlib.h>
+-#else 
+-#include <malloc.h>
+-#endif
+ 
+ #define PI 3.141592654
+ #define ABS(a) ((a) < (0) ? -(a) : (a))
+diff --git a/ica/libICA/src/Makefile b/ica/libICA/src/Makefile
+index 009fe95..18d4c1c 100644
+--- a/ica/libICA/src/Makefile
++++ b/ica/libICA/src/Makefile
+@@ -1,6 +1,6 @@
+ CC = gcc
+ CFLAGS = -O3 -fPIC
+-INSTALL_PREFIX = /usr/local
++INSTALL_PREFIX = $(PREFIX)
+ 
+ ICA: fastICA.c libICA.so
+ 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
+diff --git a/ica/libICA/src/Makefile~ b/ica/libICA/src/Makefile~
+index 50ceb8a..b8c4b2d 100644
+--- a/ica/libICA/src/Makefile~
++++ b/ica/libICA/src/Makefile~
+@@ -1,6 +1,6 @@
+ CC = gcc
+ CFLAGS = -O3 -fPIC
+-INSTALL_PREFIX = /usr/local
++INSTALL_PREFIX = $(PREFIX)
+ 
+ ICA: fastICA.c libICA.so
+ 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
 diff --git a/sstore/make.sh b/sstore/make.sh
 index 4d9147c..fce6e60 100644
 --- a/sstore/make.sh
