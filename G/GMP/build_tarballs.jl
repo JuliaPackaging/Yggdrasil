@@ -7,9 +7,9 @@ name = "GMP"
 version = v"6.1.2"
 
 sources = [
-    "https://gmplib.org/download/gmp/gmp-$(version).tar.bz2" =>
-    "5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2",
-    "./bundled",
+    ArchiveSource("https://gmplib.org/download/gmp/gmp-$(version).tar.bz2",
+                  "5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,8 +44,8 @@ make install
 
 # On Windows, we need to make sure that the non-versioned dll names exist too
 if [[ ${target} == *mingw* ]]; then
-    cp -v ${prefix}/bin/libgmp-*.dll ${prefix}/bin/libgmp.dll
-    cp -v ${prefix}/bin/libgmpxx-*.dll ${prefix}/bin/libgmpxx.dll
+    cp -v ${libdir}/libgmp-*.dll "${libdir}/libgmp.dll"
+    cp -v ${libdir}/libgmpxx-*.dll "${libdir}/libgmpxx.dll"
 fi
 
 # GMP is dual-licensed, install all license files
@@ -54,7 +54,7 @@ install_license COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
