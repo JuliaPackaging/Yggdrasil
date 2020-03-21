@@ -12,6 +12,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/luna-base
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make_locations.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/malloc_stdlib.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no_cxx_override.patch
 mkdir -p ${libdir}
 mkdir -p ${bindir}
 if [[ ${target} == *-apple-* ]]; then

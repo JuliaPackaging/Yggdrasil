@@ -1,0 +1,16 @@
+diff --git a/dsp/mtm/sigstuff.cpp b/dsp/mtm/sigstuff.cpp
+index 6123b52..a0fd1c6 100644
+--- a/dsp/mtm/sigstuff.cpp
++++ b/dsp/mtm/sigstuff.cpp
+@@ -34,11 +34,7 @@
+ 
+ #include <string>
+ 
+-#if defined(__MACH__)
+ #include <stdlib.h>
+-#else 
+-#include <malloc.h>
+-#endif
+ 
+ #define PI 3.141592654
+ #define ABS(a) ((a) < (0) ? -(a) : (a))
