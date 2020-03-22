@@ -24,7 +24,7 @@ else
     suspicious_arch="LINUX"
 fi
 make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir} ${def_windows}
-cp "luna" "${bindir}/luna${exeext}"
+cp "luna${exeext}" "${bindir}/"
 cp "libluna.${dlext}" "${libdir}/"
 """
 
