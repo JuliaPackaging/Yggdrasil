@@ -28,7 +28,8 @@ cp "luna" "${bindir}/luna${exeext}"
 cp "libluna.${dlext}" "${libdir}/"
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+# TODO: Get Windows working, should be possible
+platforms = expand_cxxstring_abis(filter(p -> !isa(p, Windows), supported_platforms()))
 
 products = [
     ExecutableProduct("luna", :luna),
