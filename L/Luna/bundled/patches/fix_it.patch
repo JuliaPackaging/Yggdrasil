@@ -12,10 +12,18 @@ index 5a56fad..042b531 100644
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..6d64ee2 100644
+index d7269b1..2e10686 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
-@@ -11,9 +11,7 @@ ARCH=LINUX
+@@ -5,15 +5,14 @@
+ 
+ ARCH=LINUX
+ 
+-
++CFLAGS += -D$(ARCH)
++CXXFLAGS += -D$(ARCH)
+ 
+ ##
  ## Basic C/C++ compilation flags
  ## 
  
@@ -26,7 +34,7 @@ index d7269b1..6d64ee2 100644
  
  
  ##
-@@ -54,7 +52,7 @@ endif
+@@ -54,21 +53,21 @@ endif
  CXXFLAGS += $(DEP_INCLUDES) 
  
  ifeq ($(ARCH),MAC)
@@ -34,8 +42,11 @@ index d7269b1..6d64ee2 100644
 +CXXFLAGS += -I$(PREFIX)/include
  endif
  
- CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
-@@ -64,11 +62,11 @@ CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+-CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
++CFLAGS += -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+ 
+ 
+ ##
  ## Linker flags
  ##
  
