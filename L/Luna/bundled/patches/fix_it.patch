@@ -12,13 +12,15 @@ index 5a56fad..042b531 100644
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..2e10686 100644
+index d7269b1..9703611 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
-@@ -5,15 +5,14 @@
+@@ -3,17 +3,14 @@
+ ## ARCH is LINUX, MAC or WINDOWS
+ ##
  
- ARCH=LINUX
- 
+-ARCH=LINUX
+-
 -
 +CFLAGS += -D$(ARCH)
 +CXXFLAGS += -D$(ARCH)
@@ -34,7 +36,7 @@ index d7269b1..2e10686 100644
  
  
  ##
-@@ -54,21 +53,21 @@ endif
+@@ -54,21 +51,21 @@ endif
  CXXFLAGS += $(DEP_INCLUDES) 
  
  ifeq ($(ARCH),MAC)
