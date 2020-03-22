@@ -16,7 +16,7 @@ mkdir -p ${libdir}
 mkdir -p ${bindir}
 def_windows=""
 if [[ ${target} == *-apple-* ]]; then
-    supicious_arch="MAC"
+    suspicious_arch="MAC"
 elif [[ ${target} == *-mingw* ]]; then
     suspicious_arch="WINDOWS"
     def_windows="WINDOWS=1"
