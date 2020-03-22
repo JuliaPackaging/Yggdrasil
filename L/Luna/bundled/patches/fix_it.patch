@@ -1,9 +1,25 @@
 diff --git a/Makefile b/Makefile
-index 5a56fad..042b531 100644
+index 5a56fad..311fafd 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -31,7 +31,7 @@ luna : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
- 	$(LD) $(LDFLAGS) -o luna $(OBJS) $(LIBS)
+@@ -4,7 +4,7 @@ DIRS = edf tinyxml helper timeline annot dsp miscmath spindles	\
+ artifacts intervals fftw cwt defs stats graphics staging 	\
+ db ica clocs pdc sstore dsp/mtm dsp/libsamplerate
+ 
+-EXE    = luna
++EXE    = luna$(exeext)
+ OBJS   = main.o globals.o eval.o cmddefs.o
+ 
+ OBJLIBS = libdefs.a libedf.a libtinyxml.a libhelper.a libtimeline.a	\
+@@ -26,12 +26,12 @@ ifdef STATIC
+ all : static utils
+ endif
+ 
+-luna : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
++$(EXE) : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
+ 	$(ECHO) $(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+-	$(LD) $(LDFLAGS) -o luna $(OBJS) $(LIBS)
++	$(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
  
  static : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
 -	g++ -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
@@ -11,6 +27,19 @@ index 5a56fad..042b531 100644
  	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
+@@ -43,10 +43,10 @@ sharedlib : globals.o eval.o cmddefs.o $(OBJLIBS)
+ ifeq ($(ARCH),MAC)
+ 	$(ECHO) "building libluna.dylib..."
+ 
+-	$(LD) -dynamiclib $(LDFLAGS) -o libluna.dylib eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
++	$(LD) -dynamiclib $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
+ else
+ 	$(ECHO) "building libluna.so..."
+-	$(LD) -shared      $(LDFLAGS) -o libluna.so eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive
++	$(LD) -shared      $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive -lfftw3 -lz
+ endif
+ 
+ libedf.a : force_look
 diff --git a/Makefile.inc b/Makefile.inc
 index d7269b1..ddf5140 100644
 --- a/Makefile.inc
