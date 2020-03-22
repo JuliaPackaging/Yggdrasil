@@ -12,18 +12,20 @@ index 5a56fad..042b531 100644
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..9703611 100644
+index d7269b1..68b56b7 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
-@@ -3,17 +3,14 @@
+@@ -3,17 +3,16 @@
  ## ARCH is LINUX, MAC or WINDOWS
  ##
  
 -ARCH=LINUX
 -
 -
++ifneq (,$(ARCH))
 +CFLAGS += -D$(ARCH)
 +CXXFLAGS += -D$(ARCH)
++endif
  
  ##
  ## Basic C/C++ compilation flags
@@ -36,7 +38,7 @@ index d7269b1..9703611 100644
  
  
  ##
-@@ -54,21 +51,21 @@ endif
+@@ -54,21 +53,21 @@ endif
  CXXFLAGS += $(DEP_INCLUDES) 
  
  ifeq ($(ARCH),MAC)
@@ -62,19 +64,6 @@ index d7269b1..9703611 100644
 +LDFLAGS += -L$(LIBDIR)
  endif
  
- 
-diff --git a/artifacts/Makefile b/artifacts/Makefile
-index e35b02a..71a152d 100644
---- a/artifacts/Makefile
-+++ b/artifacts/Makefile
-@@ -1,7 +1,7 @@
- include ../Makefile.inc
- 
- OBJLIBS	 = ../libartifacts.a
--OBJS	 = artifacts.o
-+OBJS	 = artifacts.o fftwrap.o
- 
- all : $(OBJLIBS)
  
 diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
 index d5cde2e..d462bc5 100644

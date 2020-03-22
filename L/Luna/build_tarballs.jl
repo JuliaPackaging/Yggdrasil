@@ -14,14 +14,16 @@ cd ${WORKSPACE}/srcdir/luna-base
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_it.patch
 mkdir -p ${libdir}
 mkdir -p ${bindir}
+def_windows=""
 if [[ ${target} == *-apple-* ]]; then
     supicious_arch="MAC"
 elif [[ ${target} == *-mingw* ]]; then
     suspicious_arch="WINDOWS"
+    def_windows="WINDOWS=1"
 else
     suspicious_arch="LINUX"
 fi
-make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir}
+make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir} ${def_windows}
 cp "luna" "${bindir}/luna${exeext}"
 cp "libluna.${dlext}" "${libdir}/"
 """
