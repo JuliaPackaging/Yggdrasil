@@ -1,0 +1,241 @@
+diff --git a/Makefile b/Makefile
+index 5a56fad..e0ac001 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,7 +4,7 @@ DIRS = edf tinyxml helper timeline annot dsp miscmath spindles	\
+ artifacts intervals fftw cwt defs stats graphics staging 	\
+ db ica clocs pdc sstore dsp/mtm dsp/libsamplerate
+ 
+-EXE    = luna
++EXE    = luna$(exeext)
+ OBJS   = main.o globals.o eval.o cmddefs.o
+ 
+ OBJLIBS = libdefs.a libedf.a libtinyxml.a libhelper.a libtimeline.a	\
+@@ -19,20 +19,20 @@ LIBS = -L. -lspindles -llwprep -lannot -ldefs -lartifacts -ledf -ledfz -lhelper
+ -lsrate -lfftw3 -lz
+ 
+ ifndef STATIC
+-all : luna sharedlib utils
++all : $(EXE) sharedlib utils
+ endif
+ 
+ ifdef STATIC
+ all : static utils
+ endif
+ 
+-luna : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
++$(EXE) : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
+ 	$(ECHO) $(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+-	$(LD) $(LDFLAGS) -o luna $(OBJS) $(LIBS)
++	$(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+ 
+ static : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
+-	g++ -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
+-	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
++	$(CXX) -static -static-libgcc -static-libstdc++ -L$(LIBDIR)	\
++	-o $(EXE) main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
+ 	libartifacts.a libtimeline.a libannot.a libedf.a		\
+ 	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
+ 	libpdc.a libmtm.a libdefs.a libhelper.a		\
+@@ -43,10 +43,10 @@ sharedlib : globals.o eval.o cmddefs.o $(OBJLIBS)
+ ifeq ($(ARCH),MAC)
+ 	$(ECHO) "building libluna.dylib..."
+ 
+-	$(LD) -dynamiclib $(LDFLAGS) -o libluna.dylib eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
++	$(LD) -dynamiclib $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
+ else
+ 	$(ECHO) "building libluna.so..."
+-	$(LD) -shared      $(LDFLAGS) -o libluna.so eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive
++	$(LD) -shared      $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive -lfftw3 -lz
+ endif
+ 
+ libedf.a : force_look
+diff --git a/Makefile.inc b/Makefile.inc
+index d7269b1..ddf5140 100644
+--- a/Makefile.inc
++++ b/Makefile.inc
+@@ -3,17 +3,14 @@
+ ## ARCH is LINUX, MAC or WINDOWS
+ ##
+ 
+-ARCH=LINUX
+-
+-
++CFLAGS += -D$(ARCH)
++CXXFLAGS += -D$(ARCH)
+ 
+ ##
+ ## Basic C/C++ compilation flags
+ ## 
+ 
+-CXX = g++
+-
+-CXXFLAGS = -O2 -I. -I.. -Wno-logical-op-parentheses -Wno-deprecated-register
++CXXFLAGS += -O2 -I. -I.. -Wno-logical-op-parentheses -Wno-deprecated-register
+ 
+ 
+ ##
+@@ -53,23 +50,19 @@ endif
+ 
+ CXXFLAGS += $(DEP_INCLUDES) 
+ 
+-ifeq ($(ARCH),MAC)
+-CXXFLAGS += -I/usr/local/include
+-endif
++CXXFLAGS += -I$(PREFIX)/include
+ 
+-CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
++CFLAGS += -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+ 
+ 
+ ##
+ ## Linker flags
+ ##
+ 
+-LD = g++ 
+-LDFLAGS = $(DEP_LIB)
++LD = $(CXX)
++LDFLAGS += $(DEP_LIB)
+ 
+-ifndef WINDOWS
+-LDFLAGS += -L/usr/local/lib
+-endif
++LDFLAGS += -L$(LIBDIR)
+ 
+ 
+ ##
+diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
+index d5cde2e..d462bc5 100644
+--- a/dsp/firWindowing/Makefile
++++ b/dsp/firWindowing/Makefile
+@@ -1,4 +1,3 @@
+-CC			= g++
+ CFLAGS	+= -Wall -O2
+ LIBRARY	= -lm -lfftw3
+ 
+diff --git a/dsp/firWindowing/Makefile~ b/dsp/firWindowing/Makefile~
+index 44504f2..6b7da26 100644
+--- a/dsp/firWindowing/Makefile~
++++ b/dsp/firWindowing/Makefile~
+@@ -1,4 +1,3 @@
+-CC			= g++
+ CFLAGS	+= -Wall
+ LIBRARY	= -lm -lfftw3
+ 
+diff --git a/dsp/mtm/sigstuff.cpp b/dsp/mtm/sigstuff.cpp
+index 6123b52..a0fd1c6 100644
+--- a/dsp/mtm/sigstuff.cpp
++++ b/dsp/mtm/sigstuff.cpp
+@@ -34,11 +34,7 @@
+ 
+ #include <string>
+ 
+-#if defined(__MACH__)
+ #include <stdlib.h>
+-#else 
+-#include <malloc.h>
+-#endif
+ 
+ #define PI 3.141592654
+ #define ABS(a) ((a) < (0) ? -(a) : (a))
+diff --git a/ica/libICA/src/Makefile b/ica/libICA/src/Makefile
+index 009fe95..18d4c1c 100644
+--- a/ica/libICA/src/Makefile
++++ b/ica/libICA/src/Makefile
+@@ -1,6 +1,6 @@
+ CC = gcc
+ CFLAGS = -O3 -fPIC
+-INSTALL_PREFIX = /usr/local
++INSTALL_PREFIX = $(PREFIX)
+ 
+ ICA: fastICA.c libICA.so
+ 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
+diff --git a/ica/libICA/src/Makefile~ b/ica/libICA/src/Makefile~
+index 50ceb8a..b8c4b2d 100644
+--- a/ica/libICA/src/Makefile~
++++ b/ica/libICA/src/Makefile~
+@@ -1,6 +1,6 @@
+ CC = gcc
+ CFLAGS = -O3 -fPIC
+-INSTALL_PREFIX = /usr/local
++INSTALL_PREFIX = $(PREFIX)
+ 
+ ICA: fastICA.c libICA.so
+ 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
+diff --git a/sstore/make.sh b/sstore/make.sh
+index 4d9147c..fce6e60 100644
+--- a/sstore/make.sh
++++ b/sstore/make.sh
+@@ -1,11 +1,11 @@
+ 
+ make
+-g++ -O2 -c loadss.cpp
+-g++ -O2 -o loadss loadss.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
++${CXX} -O2 -c loadss.cpp
++${CXX} -O2 -o loadss loadss.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
+ 
+ # simple interval loader :  loadints name < {ints}  
+-g++ -O2 -c loadints.cpp
+-g++ -O2 -o loadints loadints.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
++${CXX} -O2 -c loadints.cpp
++${CXX} -O2 -o loadints loadints.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
+ 
+-g++ -O2 -c tabless.cpp
+-g++ -O2 -o tabless tabless.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
++${CXX} -O2 -c tabless.cpp
++${CXX} -O2 -o tabless tabless.o sstore.o ../db/sqlwrap.o ../db/sqlite3.o ../helper/helper.o ../defs/defs.o ../miscmath/crandom.o
+diff --git a/tinyxml/Makefile.orginal b/tinyxml/Makefile.orginal
+index 5ffb952..011cc95 100644
+--- a/tinyxml/Makefile.orginal
++++ b/tinyxml/Makefile.orginal
+@@ -19,9 +19,7 @@ TINYXML_USE_STL := NO
+ 
+ #****************************************************************************
+ 
+-CC     := gcc
+-CXX    := g++
+-LD     := g++
++LD     := $(CXX)
+ AR     := ar rc
+ RANLIB := ranlib
+ 
+@@ -37,19 +35,19 @@ DEBUG_LDFLAGS    := -g
+ RELEASE_LDFLAGS  :=
+ 
+ ifeq (YES, ${DEBUG})
+-   CFLAGS       := ${DEBUG_CFLAGS}
+-   CXXFLAGS     := ${DEBUG_CXXFLAGS}
+-   LDFLAGS      := ${DEBUG_LDFLAGS}
++   CFLAGS       += ${DEBUG_CFLAGS}
++   CXXFLAGS     += ${DEBUG_CXXFLAGS}
++   LDFLAGS      += ${DEBUG_LDFLAGS}
+ else
+-   CFLAGS       := ${RELEASE_CFLAGS}
+-   CXXFLAGS     := ${RELEASE_CXXFLAGS}
+-   LDFLAGS      := ${RELEASE_LDFLAGS}
++   CFLAGS       += ${RELEASE_CFLAGS}
++   CXXFLAGS     += ${RELEASE_CXXFLAGS}
++   LDFLAGS      += ${RELEASE_LDFLAGS}
+ endif
+ 
+ ifeq (YES, ${PROFILE})
+-   CFLAGS   := ${CFLAGS} -pg -O3
+-   CXXFLAGS := ${CXXFLAGS} -pg -O3
+-   LDFLAGS  := ${LDFLAGS} -pg
++   CFLAGS   += ${CFLAGS} -pg -O3
++   CXXFLAGS += ${CXXFLAGS} -pg -O3
++   LDFLAGS  += ${LDFLAGS} -pg
+ endif
+ 
+ #****************************************************************************
+@@ -74,8 +72,8 @@ INCS :=
+ # Makefile code common to all platforms
+ #****************************************************************************
+ 
+-CFLAGS   := ${CFLAGS}   ${DEFS}
+-CXXFLAGS := ${CXXFLAGS} ${DEFS}
++CFLAGS   += ${DEFS}
++CXXFLAGS += ${DEFS}
+ 
+ #****************************************************************************
+ # Targets of the build
