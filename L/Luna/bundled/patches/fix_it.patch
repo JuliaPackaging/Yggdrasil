@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 5a56fad..311fafd 100644
+index 5a56fad..e0ac001 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,7 +4,7 @@ DIRS = edf tinyxml helper timeline annot dsp miscmath spindles	\
@@ -11,7 +11,15 @@ index 5a56fad..311fafd 100644
  OBJS   = main.o globals.o eval.o cmddefs.o
  
  OBJLIBS = libdefs.a libedf.a libtinyxml.a libhelper.a libtimeline.a	\
-@@ -26,12 +26,12 @@ ifdef STATIC
+@@ -19,20 +19,20 @@ LIBS = -L. -lspindles -llwprep -lannot -ldefs -lartifacts -ledf -ledfz -lhelper
+ -lsrate -lfftw3 -lz
+ 
+ ifndef STATIC
+-all : luna sharedlib utils
++all : $(EXE) sharedlib utils
+ endif
+ 
+ ifdef STATIC
  all : static utils
  endif
  
@@ -23,10 +31,12 @@ index 5a56fad..311fafd 100644
  
  static : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
 -	g++ -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
+-	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
 +	$(CXX) -static -static-libgcc -static-libstdc++ -L$(LIBDIR)	\
- 	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
++	-o $(EXE) main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
+ 	libpdc.a libmtm.a libdefs.a libhelper.a		\
 @@ -43,10 +43,10 @@ sharedlib : globals.o eval.o cmddefs.o $(OBJLIBS)
  ifeq ($(ARCH),MAC)
  	$(ECHO) "building libluna.dylib..."
