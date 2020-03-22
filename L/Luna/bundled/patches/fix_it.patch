@@ -12,7 +12,7 @@ index 5a56fad..042b531 100644
  	libartifacts.a libtimeline.a libannot.a libedf.a		\
  	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..9703611 100644
+index d7269b1..ddf5140 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
 @@ -3,17 +3,14 @@
@@ -36,13 +36,14 @@ index d7269b1..9703611 100644
  
  
  ##
-@@ -54,21 +51,21 @@ endif
+@@ -53,23 +50,19 @@ endif
+ 
  CXXFLAGS += $(DEP_INCLUDES) 
  
- ifeq ($(ARCH),MAC)
+-ifeq ($(ARCH),MAC)
 -CXXFLAGS += -I/usr/local/include
+-endif
 +CXXFLAGS += -I$(PREFIX)/include
- endif
  
 -CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
 +CFLAGS += -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
@@ -57,12 +58,13 @@ index d7269b1..9703611 100644
 +LD = $(CXX)
 +LDFLAGS += $(DEP_LIB)
  
- ifndef WINDOWS
+-ifndef WINDOWS
 -LDFLAGS += -L/usr/local/lib
+-endif
 +LDFLAGS += -L$(LIBDIR)
- endif
  
  
+ ##
 diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
 index d5cde2e..d462bc5 100644
 --- a/dsp/firWindowing/Makefile
