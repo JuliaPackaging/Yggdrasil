@@ -63,6 +63,19 @@ index d7269b1..9703611 100644
  endif
  
  
+diff --git a/artifacts/Makefile b/artifacts/Makefile
+index e35b02a..71a152d 100644
+--- a/artifacts/Makefile
++++ b/artifacts/Makefile
+@@ -1,7 +1,7 @@
+ include ../Makefile.inc
+ 
+ OBJLIBS	 = ../libartifacts.a
+-OBJS	 = artifacts.o
++OBJS	 = artifacts.o fftwrap.o
+ 
+ all : $(OBJLIBS)
+ 
 diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
 index d5cde2e..d462bc5 100644
 --- a/dsp/firWindowing/Makefile
