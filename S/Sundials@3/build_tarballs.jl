@@ -6,7 +6,7 @@ version = v"3.1.2"
 # Collection of sources required to build SundialsBuilder
 sources = [
     "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
-    "a8985bb1e851d90e24260450667b134bc13d71f5c6effc9e1d7183bd874fe116",
+    "e18cb7d1cc4a10889efa8dfed36fde5d8502e10f89e0f0c6415db210131b8385",
     "./bundled",
 ]
 
