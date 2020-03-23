@@ -1,0 +1,19 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(libstemmer)
+
+FILE(GLOB SNOWBALL_SOURCES
+  src_c/*.c
+  runtime/api.c
+  runtime/utilities.c
+  libstemmer/libstemmer.c
+)
+
+INCLUDE_DIRECTORIES(include)
+ADD_LIBRARY(stemmer SHARED ${SNOWBALL_SOURCES})
+ADD_EXECUTABLE(stemwords ${SNOWBALL_SOURCES} examples/stemwords.c)
+
+INSTALL(TARGETS stemmer RUNTIME DESTINATION bin LIBRARY DESTINATION lib)
+INSTALL(TARGETS stemwords RUNTIME DESTINATION bin LIBRARY DESTINATION lib)
+INSTALL(FILES include/libstemmer.h DESTINATION include)
+INSTALL(FILES COPYING DESTINATION share/licences/Snowball)

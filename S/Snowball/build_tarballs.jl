@@ -15,7 +15,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libstemmer_c/
-cp ../Makefile .
+cp ../CMakeLists.txt .
+rm Makefile
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.cmake
 make -j${nproc}
 make install
 """
