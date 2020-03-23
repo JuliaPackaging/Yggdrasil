@@ -20,6 +20,7 @@ rm Makefile
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.cmake
 make -j${nproc}
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
