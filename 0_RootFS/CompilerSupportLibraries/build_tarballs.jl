@@ -1,11 +1,9 @@
 using BinaryBuilder
 
 name = "CompilerSupportLibraries"
-version = v"0.2.0"
+version = v"0.3.1"
 
-# We don't actually have any sources, so just fake it out
 sources = [
-    ".",
 ]
 
 # Bash recipe for building across all platforms
@@ -40,6 +38,15 @@ for d in /opt/${target}/${target}/lib*; do
         fi
     done
 done
+
+# libwinpthread is a special snowflake and is only within `bin` for some reason
+if [[ ${target} == *mingw* ]]; then
+    for l in /opt/${target}/${target}/sys-root/bin/*.${dlext}*; do
+        if file_valid "${l}"; then
+            cp -av "${l}" ${libdir}
+        fi
+    done
+fi
 
 # change permissions so that rpath succeeds
 for l in ${libdir}/*; do
