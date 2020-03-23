@@ -7,9 +7,8 @@ version = v"2.0.0"
 
 # Collection of sources required to build SDL2
 sources = [
-    "https://snowballstem.org/dist/libstemmer_c.tgz" =>
-    "054e76f2a05478632f2185025bff0b98952a2b7aed7c4e0960d72ba565de5dfc",
-    "./bundled",
+    ArchiveSource("https://snowballstem.org/dist/libstemmer_c.tgz", "054e76f2a05478632f2185025bff0b98952a2b7aed7c4e0960d72ba565de5dfc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
