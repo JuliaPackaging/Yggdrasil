@@ -251,10 +251,11 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}
 
 # Copy over `llvm-config`, `libLLVM` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/tools ${libdir}
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full/*
 """
 
@@ -266,10 +267,11 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}
 
 # Copy over `clang`, `libclang` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/tools ${libdir}
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full/*
 """
 
@@ -286,6 +288,8 @@ rm -vrf ${prefix}/include/{clang*,llvm*}
 rm -vrf ${prefix}/tools/{clang*,llvm-config}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${prefix}/lib/*LLVM*.a
+rm -vrf ${prefix}/lib/libclang*.a
 """
 
 function configure_build(ARGS, version)
