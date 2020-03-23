@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"0.28.5"
+version = v"0.99.0"
 
 # Collection of sources required to build libgit2
 sources = [
    "https://github.com/libgit2/libgit2.git" =>
-   "7a2b969d559b83798d93728f24d1729ffc97b717",
+   "172239021f7ba04fe7327647b213799853a9eb89",
    "./bundled",
 ]
 
@@ -15,7 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-case-sensitive.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -56,7 +55,6 @@ products = [
 dependencies = [
     "MbedTLS_jll",
     "LibSSH2_jll",
-    "LibCURL_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
