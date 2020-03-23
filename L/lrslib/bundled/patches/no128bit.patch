@@ -1,0 +1,29 @@
+diff --git a/makefile b/makefile
+index 48b54d8..ab26ee0 100644
+--- a/makefile
++++ b/makefile
+@@ -197,7 +197,7 @@ SOMINOR ?=.0.0
+ SHLIB ?=$(SONAME)$(SOMINOR)
+ SHLINK ?=liblrs.so
+ 
+-SHLIBOBJ=lrslong1-shr.o lrslong2-shr.o lrslib1-shr.o lrslib2-shr.o \
++SHLIBOBJ=lrslong1-shr.o lrslib1-shr.o \
+ 	lrslibgmp-shr.o lrsgmp-shr.o lrsdriver-shr.o
+ 
+ SHLIBBIN=lrs-shared redund-shared lrsnash-shared
+@@ -217,11 +217,11 @@ ${SHLINK}: ${SONAME}
+ 
+ all-shared: ${SHLIBBIN}
+ 
+-lrs-shared: ${SHLINK} lrs.o
+-	$(CC) lrs.o -o $@ -L . -llrs
++lrs-shared: ${SHLINK} lrs64.o
++	$(CC) lrs64.o -o $@ -L . -llrs
+ 
+-redund-shared: ${SHLINK}  redund.o
+-	$(CC) redund.o -o $@ -L . -llrs
++redund-shared: ${SHLINK}  redund64.o
++	$(CC) redund64.o -o $@ -L . -llrs
+ 
+ lrsnash-shared: ${SHLINK}  lrsnash.c
+ 	$(CC) -DGMP -DMA lrsnash.c  lrsnashlib.c -I${INCLUDEDIR} -o $@ -L . -llrs -lgmp
