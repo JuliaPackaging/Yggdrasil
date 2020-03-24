@@ -3,16 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "zrl"
-version = v"1.0.1"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/StefanKarpinski/zrl/archive/v1.0.1.tar.gz", "b696ca1e4dffe7c87b739cf96e0a2378091cb2631a6509499b6e4cc2d9ed9994"),
+    GitSource("https://github.com/StefanKarpinski/zrl.git", "b4d4db4d3ecd866929e3312d29ac4760d0c7d84a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/zrl-1.0.1
+cd $WORKSPACE/srcdir/zrl
+if [[ "${target}" == *-mingw* ]]; then
+    export CPP_DEFINES="-DIO_NOLOCK"
+else
+    export CPP_DEFINES="-DIO_UNLOCKED"
+fi
 make
 mkdir -p "${bindir}"
 cp zrle "${bindir}/zrle${exeext}"
