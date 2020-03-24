@@ -104,6 +104,10 @@ function openblas_script(;kwargs...)
     # Force the library to be named the same as in Julia-land.
     # Move things around, fix symlinks, and update install names/SONAMEs.
     ls -la ${prefix}/lib
+
+    # Ensure empty loop when no files match
+    shopt -s nullglob
+
     for f in ${prefix}/lib/libopenblas*p-r0*; do
         name=${LIBPREFIX}.0.${f#*.}
 
