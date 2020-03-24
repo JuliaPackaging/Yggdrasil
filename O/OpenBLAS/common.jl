@@ -34,6 +34,9 @@ function openblas_script(;kwargs...)
     # We need to use our basic objconv, not a prefixed one:
     flags+=(OBJCONV=objconv)
 
+    # Slim the binaries by not shipping static libs
+    flags+=(NO_STATIC=1)
+
     if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
         # If we're building for a 64-bit platform (that is not aarch64), engage ILP64
         LIBPREFIX=libopenblas64_
