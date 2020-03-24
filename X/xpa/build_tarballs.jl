@@ -16,8 +16,8 @@ cd $WORKSPACE/srcdir/xpa
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
-    # Target Windows specifically
-    make EXEEXT='' install -j$(nproc)
+    # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
+    make EXE='' install -j$(nproc)
 else
     make install
 fi
