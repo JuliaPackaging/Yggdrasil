@@ -1,0 +1,22 @@
+--- a/src/OR_Matrix_inlines.hh	2017-11-22 11:18:46.131288269 +0100
++++ b/src/OR_Matrix_inlines.hh	2017-11-22 11:26:34.863784313 +0100
+@@ -97,7 +97,7 @@
+ 
+ template <typename T>
+ template <typename U>
+-inline OR_Matrix<T>::Pseudo_Row<U>&
++inline typename OR_Matrix<T>::template Pseudo_Row<U>&
+ OR_Matrix<T>::Pseudo_Row<U>::operator=(const Pseudo_Row& y) {
+   first = y.first;
+ #if PPL_OR_MATRIX_EXTRA_DEBUG
+--- a/src/Determinate_inlines.hh	2017-11-22 11:18:46.131288269 +0100
++++ b/src/Determinate_inlines.hh	2017-11-22 11:26:34.863784313 +0100
+@@ -290,7 +290,7 @@
+ template <typename PSET>
+ template <typename Binary_Operator_Assign>
+ inline
+-Determinate<PSET>::Binary_Operator_Assign_Lifter<Binary_Operator_Assign>
++typename Determinate<PSET>::template Binary_Operator_Assign_Lifter<Binary_Operator_Assign>
+ Determinate<PSET>::lift_op_assign(Binary_Operator_Assign op_assign) {
+   return Binary_Operator_Assign_Lifter<Binary_Operator_Assign>(op_assign);
+ }
