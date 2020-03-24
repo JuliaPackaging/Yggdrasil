@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "cddlib"
-version = v"0.94j-6d980f22"
+# upstream 0.94j mapped to semantic versioning
+version = v"0.94.10"
 
 # Collection of sources required to build cddlib
 sources = [
