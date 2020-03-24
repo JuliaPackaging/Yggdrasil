@@ -7,7 +7,7 @@ sources = [
     ArchiveSource("http://www.bugseng.com/products/ppl/download/ftp/releases/1.2/ppl-1.2.tar.bz2", "2d470b0c262904f190a19eac57fb5c2387b1bfc3510de25a08f3c958df62fdf1"),
     DirectorySource("./bundled")
 ]
-name = "ppl"
+name = "PPL"
 version = v"1.2"
 
 # Bash recipe for building across all platforms
@@ -29,9 +29,11 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("ppl-config", :ppl_config)
     ExecutableProduct("ppl_lcdd", :ppl_lcdd)
     ExecutableProduct("ppl_pips", :ppl_pips)
     LibraryProduct("libppl", :libppl)
+    LibraryProduct("libppl_c", :libppl_c)
 ]
 
 # Dependencies that must be installed before this package can be built
