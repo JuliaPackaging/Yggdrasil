@@ -17,10 +17,10 @@ cd $WORKSPACE/srcdir/xpa
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
     # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
-    make EXE='' install -j$(nproc)
-else
-    make install
+    # absolutely filthy hack edits generated Makefile manually
+    sed -i 's/$(INSTALL_PROGRAM) $$i$(EXE)/$(INSTALL_PROGRAM) $$i/' Makefile
 fi
+make install
 """
 
 # These are the platforms we will build for by default, unless further
