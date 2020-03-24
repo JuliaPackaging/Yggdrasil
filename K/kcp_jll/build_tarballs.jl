@@ -14,10 +14,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd kcp/
-gcc -O4 -fPIC -c ikcp.c 
-gcc -shared ikcp.o -o libkcp.so
-cd $WORKSPACE/srcdir
-mv kcp/libkcp.so ../destdir/
+cat CMakeLists.txt | sed 's/STATIC/SHARED/' | sed 's/ARCHIVE/LIBRARY/' > CMakeLists.txt.new
+mv CMakeLists.txt.new CMakeLists.txt
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+make
+make install
 """
 
 # These are the platforms we will build for by default, unless further
