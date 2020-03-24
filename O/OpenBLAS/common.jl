@@ -131,6 +131,9 @@ function openblas_script(;kwargs...)
     elif [[ ${target} == *apple* ]]; then
         install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     fi
+
+    # With MinGW static libs are still installed despite NO_STATIC=1
+    rm -f ${prefix}/lib/*.dll.a
     """
 end
 
