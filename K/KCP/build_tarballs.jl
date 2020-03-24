@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "kcp_jll"
+name = "KCP"
 version = v"1.5.0"
 
 # Collection of sources required to complete build
@@ -12,14 +12,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd kcp/
-cat CMakeLists.txt | sed 's/STATIC/SHARED/' | sed 's/ARCHIVE/LIBRARY/' > CMakeLists.txt.new
-mv CMakeLists.txt.new CMakeLists.txt
+cd $WORKSPACE/srcdir/kcp/
+sed -i -e 's/STATIC/SHARED/' -e 's/ARCHIVE //' CMakeLists.txt
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF
+make -j${nproc}
 make install
 """
 
