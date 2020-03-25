@@ -1,12 +1,11 @@
 using BinaryBuilder, Pkg
 
-# Collection of sources required to build Nettle
+# Collection of sources required to build XGBoost
 name = "XGBoost"
-version = v"0.82"
+version = v"1.0.2"
 sources = [
-    "https://github.com/dmlc/xgboost.git"=>
-    "3f83dcd50286d7c8d22e552942bd6572547c32b9",
-    "./bundled",
+    GitSource("https://github.com/dmlc/xgboost.git", "3f83dcd50286d7c8d22e552942bd6572547c32b9")
+#    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,10 +31,10 @@ else
         # Target Windows specifically
         EXTRA_FLAGS=(UNAME=Windows)
     fi
-    
+
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
+    make -j ${nproc} USE_OPENMP=0 ${EXTRA_FLAGS[@]}
 fi
 
 # Install
@@ -71,9 +70,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
