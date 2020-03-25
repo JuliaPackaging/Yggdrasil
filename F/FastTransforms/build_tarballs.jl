@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "FastTransforms"
 version = v"0.2.13"
 sources = [
-    "https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz" =>
-    "d1145aaf8a22e861697a57f23998e862eecf2e5e2e0bc15fabd6e521fb469cea",
+    ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
+                  "d1145aaf8a22e861697a57f23998e862eecf2e5e2e0bc15fabd6e521fb469cea"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,10 +41,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "CompilerSupportLibraries_jll";
-    "FFTW_jll";
-    "MPFR_jll";
-    "OpenBLAS_jll"
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FFTW_jll"),
+    Dependency("MPFR_jll"),
+    Dependency("OpenBLAS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
