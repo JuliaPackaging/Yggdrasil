@@ -20,7 +20,7 @@ git submodule update
 #fi
 
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix}) -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
 make -j ${nproc} USE_OPENMP=0 USE_HDFS=0 USE_S3=0 USE_AZURE=0 LIB_RABIT=librabit_empty.a ${EXTRA_FLAGS[@]}
 make install
 
