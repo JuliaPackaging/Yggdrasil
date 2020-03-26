@@ -17,5 +17,12 @@ for parent in *; do
             echo "Removing ${project}/build"
             rm -rf "${project}/build"
         fi
+
+        for subproject in ${project}/*; do
+            if [[ -d "${subproject}/build" ]]; then
+                echo "Removing ${subproject}/build"
+                rm -rf "${subproject}/build"
+            fi
+        done
     done
 done

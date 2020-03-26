@@ -11,5 +11,11 @@ for parent in *; do
             echo "Cleaning ${project}/products"
             rm -rf "${project}/products"
         fi
+        for subproject in ${project}/*; do
+            if [[ -d "${subproject}/products" ]]; then
+                echo "Cleaning ${subproject}/products"
+                rm -rf "${subproject}/products"
+            fi
+        done
     done
 done
