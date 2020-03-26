@@ -11,6 +11,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 
+git submodule init
+git submodule update
+
 # Because we're using OpenMP, we must use `gcc`
 #export CC=gcc
 #export CXX=g++
