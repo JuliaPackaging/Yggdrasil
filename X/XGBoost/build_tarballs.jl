@@ -14,29 +14,20 @@ cd ${WORKSPACE}/srcdir/xgboost
 git submodule init
 git submodule update
 
-# Because we're using OpenMP, we must use `gcc`
-#export CC=gcc
-#export CXX=g++
+#if [[ ${target} == *mingw* ]]; then
+    # Target Windows specifically
+    #EXTRA_FLAGS=(UNAME=Windows)
+#fi
 
-# For Linux, build using CMake
-if [[ ${target} == *linux* ]]; then
-    (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix})
-    make -C build -j ${nproc}
-else
-    if [[ ${target} == *mingw* ]]; then
-        # Target Windows specifically
-        EXTRA_FLAGS=(UNAME=Windows)
-    fi
-
-    # Otherwise, build with `make`, and do a minimal build
-    cp make/minimum.mk config.mk
-    make -j ${nproc} USE_OPENMP=0 ${EXTRA_FLAGS[@]}
-fi
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix}) -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+make -j ${nproc} USE_OPENMP=0 USE_HDFS=0 USE_S3=0 USE_AZURE=0 LIB_RABIT=librabit_empty.a ${EXTRA_FLAGS[@]}
+make install
 
 # Install
-mkdir -p ${prefix}/{bin,include,lib}
-cp -ra include/xgboost ${prefix}/include/
-cp -a xgboost ${prefix}/bin/xgboost${exeext}
+#mkdir -p ${prefix}/{bin,include,lib}
+#cp -ra include/xgboost ${prefix}/include/
+#cp -a xgboost ${prefix}/bin/xgboost${exeext}
 
 # Not every platform has a libxgboost.a
 #cp -a lib/libxgboost.a ${prefix}/lib || true
@@ -56,9 +47,10 @@ fi
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Disable FreeBSD for now, because freebsd doesn't have backtrace()
+# Disable various platforms that do not build
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
+platforms = [p for p in platforms if !(libc(p) == :musl)]
 
 # The products that we will ensure are always built
 products = [
