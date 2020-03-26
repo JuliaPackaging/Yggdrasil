@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 name = "XGBoost"
 version = v"1.0.2"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git", "3f83dcd50286d7c8d22e552942bd6572547c32b9")
+    GitSource("https://github.com/dmlc/xgboost.git", "917b0a7b46954e9be36cbc430a1727bb093234bb")
 #    DirectorySource("./bundled"),
 ]
 
@@ -47,13 +47,13 @@ cp -a lib/libxgboost.a ${prefix}/lib || true
 
 # We also need to bundle `libgomp`, so snarf it from the
 # compiler support directory while we copy our main bundle of joy
-if [[ ${target} == *mingw* ]]; then
-    cp -a lib/xgboost.dll ${prefix}/bin
-    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
-else
-    cp -a lib/libxgboost.${dlext} ${prefix}/lib
-    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
-fi
+#if [[ ${target} == *mingw* ]]; then
+#    cp -a lib/xgboost.dll ${prefix}/bin
+#    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
+#else
+#    cp -a lib/libxgboost.${dlext} ${prefix}/lib
+#    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
+#fi
 """
 
 # These are the platforms we will build for by default, unless further
