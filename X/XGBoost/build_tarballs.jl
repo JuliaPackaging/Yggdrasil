@@ -4,9 +4,8 @@ using BinaryBuilder, Pkg
 name = "XGBoost"
 version = v"0.82"
 sources = [
-    "https://github.com/dmlc/xgboost.git"=>
-    "3f83dcd50286d7c8d22e552942bd6572547c32b9",
-    "./bundled",
+    GitSource("https://github.com/dmlc/xgboost.git","bf3241368256ddd010d30d98ffc8a0a005f166e9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +31,7 @@ else
         # Target Windows specifically
         EXTRA_FLAGS=(UNAME=Windows)
     fi
-    
+
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
     make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
@@ -42,9 +41,6 @@ fi
 mkdir -p ${prefix}/{bin,include,lib}
 cp -ra include/xgboost ${prefix}/include/
 cp -a xgboost ${prefix}/bin/xgboost${exeext}
-
-# Not every platform has a libxgboost.a
-cp -a lib/libxgboost.a ${prefix}/lib || true
 
 # We also need to bundle `libgomp`, so snarf it from the
 # compiler support directory while we copy our main bundle of joy
@@ -71,9 +67,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
