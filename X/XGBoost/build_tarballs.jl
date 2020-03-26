@@ -36,10 +36,6 @@ make install
 # compiler support directory while we copy our main bundle of joy
 if [[ ${target} == *mingw* ]]; then
     cp -a lib/xgboost.dll ${prefix}/bin
-#    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
-else
-    cp -a lib/libxgboost.${dlext} ${prefix}/lib
-#    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
 fi
 """
 
