@@ -5,22 +5,15 @@ name = "XGBoost"
 version = v"1.0.2"
 sources = [
     GitSource("https://github.com/dmlc/xgboost.git", "917b0a7b46954e9be36cbc430a1727bb093234bb")
-#    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 
-git submodule init
-git submodule update
-
-# Patch dmlc-core to use case-sensitive windows.h includes
-(cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows_h.patch")
-
 # Because we're using OpenMP, we must use `gcc`
-export CC=gcc
-export CXX=g++
+#export CC=gcc
+#export CXX=g++
 
 # For Linux, build using CMake
 if [[ ${target} == *linux* ]]; then
@@ -43,17 +36,17 @@ cp -ra include/xgboost ${prefix}/include/
 cp -a xgboost ${prefix}/bin/xgboost${exeext}
 
 # Not every platform has a libxgboost.a
-cp -a lib/libxgboost.a ${prefix}/lib || true
+#cp -a lib/libxgboost.a ${prefix}/lib || true
 
 # We also need to bundle `libgomp`, so snarf it from the
 # compiler support directory while we copy our main bundle of joy
-#if [[ ${target} == *mingw* ]]; then
-#    cp -a lib/xgboost.dll ${prefix}/bin
+if [[ ${target} == *mingw* ]]; then
+    cp -a lib/xgboost.dll ${prefix}/bin
 #    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
-#else
-#    cp -a lib/libxgboost.${dlext} ${prefix}/lib
+else
+    cp -a lib/libxgboost.${dlext} ${prefix}/lib
 #    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
-#fi
+fi
 """
 
 # These are the platforms we will build for by default, unless further
