@@ -1,0 +1,101 @@
+--- bliss-0.73/bliss.cc.orig	2020-03-27 12:29:37.465995119 +0100
++++ bliss-0.73/bliss.cc	2020-03-27 12:30:50.740471947 +0100
+@@ -4,7 +4,7 @@
+ #include <cassert>
+ #include "defs.hh"
+ #include "graph.hh"
+-#include "timer.hh"
++//#include "timer.hh"
+ #include "utils.hh"
+ 
+ /*
+@@ -183,7 +183,7 @@
+ int
+ main(const int argc, const char** argv)
+ {
+-  bliss::Timer timer;
++//  bliss::Timer timer;
+   bliss::AbstractGraph* g = 0;
+ 
+   parse_options(argc, argv);
+@@ -253,11 +253,11 @@
+   if(!g)
+     _fatal("Failed to read the graph, aborting");
+   
+-  if(verbose_level >= 2)
+-    {
+-      fprintf(verbstr, "Graph read in %.2f seconds\n", timer.get_duration());
+-      fflush(verbstr);
+-    }
++//  if(verbose_level >= 2)
++//    {
++//      fprintf(verbstr, "Graph read in %.2f seconds\n", timer.get_duration());
++//      fflush(verbstr);
++//    }
+ 
+ 
+   bliss::Stats stats;
+@@ -303,11 +303,11 @@
+   if(verbose_level > 0 and verbstr)
+     stats.print(verbstr);
+ 
+-  if(verbose_level > 0)
+-    {
+-      fprintf(verbstr, "Total time:\t%.2f seconds\n", timer.get_duration());
+-      fflush(verbstr);
+-    }
++//  if(verbose_level > 0)
++//    {
++//      fprintf(verbstr, "Total time:\t%.2f seconds\n", timer.get_duration());
++//      fflush(verbstr);
++//    }
+ 
+ 
+   delete g; g = 0;
+--- bliss-0.73/Makefile.orig	2020-03-27 12:29:48.116047010 +0100
++++ bliss-0.73/Makefile	2020-03-27 12:30:07.439326780 +0100
+@@ -8,7 +8,7 @@
+ CFLAGS += -fPIC
+ 
+ SRCS = defs.cc graph.cc partition.cc orbit.cc uintseqhash.cc heap.cc
+-SRCS += timer.cc utils.cc bliss_C.cc
++SRCS += utils.cc bliss_C.cc
+ 
+ OBJS = $(addsuffix .o, $(basename $(SRCS)))
+ 
+--- bliss-0.73/graph.cc.orig	2020-03-27 12:37:03.597278824 +0100
++++ bliss-0.73/graph.cc	2020-03-27 12:37:20.162804098 +0100
+@@ -6,7 +6,7 @@
+ #include <algorithm>
+ 
+ #include "defs.hh"
+-#include "timer.hh"
++//#include "timer.hh"
+ #include "graph.hh"
+ #include "partition.hh"
+ #include "utils.hh"
+@@ -677,17 +677,17 @@
+    * This saves some cycles. */
+   compute_eqref_hash = false;
+ 
+-  Timer timer1;
++//  Timer timer1;
+ 
+   make_initial_equitable_partition();
+ 
+ 
+-  if(verbstr and verbose_level >= 2)
+-    {
+-      fprintf(verbstr, "Initial partition computed in %.2f seconds\n",
+-	      timer1.get_duration());
+-      fflush(verbstr);
+-    }
++//  if(verbstr and verbose_level >= 2)
++//    {
++//      fprintf(verbstr, "Initial partition computed in %.2f seconds\n",
++//	      timer1.get_duration());
++//      fflush(verbstr);
++//    }
+   
+ 
+ 
