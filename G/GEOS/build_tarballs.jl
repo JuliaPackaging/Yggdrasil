@@ -16,11 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/geos-*/
 
-# ppc64le doesn't think it can create shared libraries, because `./configure`
-# passes in `-m elf64ppc` when it should be passing `-m elf64lppc`, because this
-# is ppc64le not ppc64.  Teach it the difference.
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure_ppc64le.patch"
-
 # arm complains about duplicate symbols unless we disable inlining
 EXTRA_CONFIGURE_FLAGS=()
 if [[ ${target} == arm* ]]; then
