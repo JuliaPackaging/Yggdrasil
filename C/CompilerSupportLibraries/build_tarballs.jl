@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, SHA
 
 name = "CompilerSupportLibraries"
 version = v"0.3.2"
