@@ -43,23 +43,20 @@ function download_cached_binaries(download_dir, platforms)
     end
 end
 
-for obj in objs
-    BinaryBuilder.cleanup_merged_object!(obj)
-    # Filter out build-time dependencies also here
-    obj["dependencies"] = Dependency[dep for dep in obj["dependencies"] if !isa(dep, BuildDependency)]
-    mktempdir() do download_dir
-        # Grab the binaries for our package
-        download_cached_binaries(download_dir, obj["platforms"])
-        
-        # Push up the JLL package (pointing to as-of-yet missing tarballs)
-        repo = "JuliaBinaryWrappers/$(name)_jll.jl"
-        tag = "$(name)-v$(build_version)"
-        upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
-        BinaryBuilder.rebuild_jll_package(obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
-        
-        # Upload them to GitHub releases
-        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
-    end
+# Filter out build-time dependencies also here
+merged["dependencies"] = Dependency[dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
+mktempdir() do download_dir
+    # Grab the binaries for our package
+    download_cached_binaries(download_dir, merged["platforms"])
+    
+    # Push up the JLL package (pointing to as-of-yet missing tarballs)
+    repo = "JuliaBinaryWrappers/$(name)_jll.jl"
+    tag = "$(name)-v$(build_version)"
+    upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    BinaryBuilder.rebuild_jll_package(merged; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
+    
+    # Upload them to GitHub releases
+    BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
 end
 BinaryBuilder.push_jll_package(name, build_version)
 BinaryBuilder.register_jll(name, build_version, dependencies)
