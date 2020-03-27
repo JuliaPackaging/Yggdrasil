@@ -23,6 +23,8 @@ if [[ ${target} == *musl* ]]; then
    # and properly define _GNU_SOURCE here as well to avoid many warnings
    sed -i -e 's/#define _GNU_SOURCE$/#define _GNU_SOURCE 1/' thread_pool.h configure
 elif [[ ${target} == *mingw* ]]; then
+   # fix arch detection:
+   sed -i -e 's/$(ARCH)/$ARCH/g' configure
    extraflags=--reentrant
    libsubdir=bin
 fi
