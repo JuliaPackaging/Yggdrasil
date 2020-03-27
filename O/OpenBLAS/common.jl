@@ -3,6 +3,10 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.9" => [
+            "https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz" =>
+            "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380",
+        ],
         v"0.3.7" => [
             "https://github.com/xianyi/OpenBLAS/archive/v0.3.7.tar.gz" =>
             "bde136122cef3dd6efe2de1c6f65c10955bbb0cc01a520c2342f5287c28f9379",
@@ -29,6 +33,9 @@ function openblas_script(;kwargs...)
 
     # We need to use our basic objconv, not a prefixed one:
     flags+=(OBJCONV=objconv)
+
+    # Slim the binaries by not shipping static libs
+    flags+=(NO_STATIC=1)
 
     if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
         # If we're building for a 64-bit platform (that is not aarch64), engage ILP64
@@ -97,6 +104,10 @@ function openblas_script(;kwargs...)
     # Force the library to be named the same as in Julia-land.
     # Move things around, fix symlinks, and update install names/SONAMEs.
     ls -la ${prefix}/lib
+
+    # Ensure empty loop when no files match
+    shopt -s nullglob
+
     for f in ${prefix}/lib/libopenblas*p-r0*; do
         name=${LIBPREFIX}.0.${f#*.}
 
