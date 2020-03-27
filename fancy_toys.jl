@@ -23,7 +23,7 @@ function should_build_platform(platform)
     if isone(length(requested_platforms))
         # `requested_platforms` has only one element: the comma-separated list
         # of platform.  We'll run the platform only if it's in the list
-        return platform in split(requested_platforms[1], ",")
+        return any(platforms_match.(Ref(platform), split(requested_platforms[1], ",")))
     else
         # `requested_platforms` doesn't have only one element: if its length is
         # zero, no platform has been explicitely passed from the command line
