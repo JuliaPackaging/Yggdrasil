@@ -24,7 +24,7 @@ export CXX=g++
 
 # For Linux, build using CMake
 if [[ ${target} == *linux* ]]; then
-    (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix})
+    (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix}) -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
     make -C build -j ${nproc}
 else
     if [[ ${target} == *mingw* ]]; then
@@ -34,7 +34,7 @@ else
 
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
+    make -j ${nproc} USE_OPENMP=0 ${EXTRA_FLAGS[@]}
 fi
 
 # Install
@@ -63,7 +63,8 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
+    LibraryProduct("libxgboost", :libxgboost),
+    ExecutableProduct("xgboost", :xgboost)
 ]
 
 # Dependencies that must be installed before this package can be built
