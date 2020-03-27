@@ -50,6 +50,7 @@ end
 ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
 script = raw"""
 mkdir -p ${libdir}
+shopt -s nullglob
 
 # copy out all the libraries we can find
 for d in /opt/${target}/${target}/lib*; do
@@ -63,6 +64,13 @@ fi
 
 # Delete .a and .py files, we don't want those.
 rm -f ${libdir}/*.a ${libdir}/*.py
+
+# Delete any `.so` files that are not ELF files, since they're mostly likely linker scripts
+for f in ${libdir}/*.so; do
+    if [[ "$(file -b "$f")" != ELF* ]]; then
+        rm -f "$f"
+    fi
+done
 
 # change permissions so that rpath succeeds
 for l in ${libdir}/*; do
