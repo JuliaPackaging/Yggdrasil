@@ -13,8 +13,7 @@ for d in /opt/${target}/${target}/lib*; do
     cp -av ${d}/libstdc++*.${dlext}* ${libdir} || true
     cp -av ${d}/libgomp*.${dlext}* ${libdir} || true
     # Don't copy `.a` or `.py` files.  >:[
-    rm -f ${libdir}/*.a
-    rm -f ${libdir}/*.py
+    rm -f ${libdir}/*.a ${libdir}/*.py
 done
 """
 
@@ -36,7 +35,8 @@ else
         version,
         FileSource[],
         extraction_script,
-        extraction_platforms,
+        # Only extract for platforms we're actually going to use
+        filter(should_build_platform, extraction_platforms),
         extraction_products,
         Dependency[];
         skip_audit=true,
@@ -54,14 +54,15 @@ mkdir -p ${libdir}
 # copy out all the libraries we can find
 for d in /opt/${target}/${target}/lib*; do
     cp -av ${d}/*.${dlext}* ${libdir}/ || true
-    # Delete .a and .py files
-    rm -f ${libdir}/*.a ${libdir}/*.py
 done
 
 # libwinpthread is a special snowflake and is only within `bin` for some reason
 if [[ ${target} == *mingw* ]]; then
 	cp -av /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
 fi
+
+# Delete .a and .py files, we don't want those.
+rm -f ${libdir}/*.a ${libdir}/*.py
 
 # change permissions so that rpath succeeds
 for l in ${libdir}/*; do
@@ -87,10 +88,6 @@ products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgfortran", :libgfortran),
     LibraryProduct("libgomp", :libgomp),
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
 ]
 
 for platform in platforms
