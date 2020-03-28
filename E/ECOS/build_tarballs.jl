@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "ECOSBuilder"
+name = "ECOS"
 version = v"2.0.7"
 
 # Collection of sources required to build ECOSBuilder
