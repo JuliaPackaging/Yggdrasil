@@ -32,10 +32,6 @@ else
         EXTRA_FLAGS=(UNAME=Windows)
     fi
 
-    if [[ "${target}" == *-freebsd* ]]; then
-        export LDFLAGS="-lexecinfo"
-    fi
-
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
     make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
@@ -60,7 +56,7 @@ fi
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # Disable FreeBSD for now, because freebsd doesn't have backtrace()
-#platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
