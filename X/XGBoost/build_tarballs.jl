@@ -61,7 +61,7 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libxgboost", :libxgboost),
+    LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
     ExecutableProduct("xgboost", :xgboost)
 ]
 
