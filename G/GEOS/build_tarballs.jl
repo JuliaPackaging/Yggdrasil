@@ -9,8 +9,8 @@ version = v"3.8.1"
 sources = [
     "http://download.osgeo.org/geos/geos-$version.tar.bz2" =>
     "4258af4308deb9dbb5047379026b4cd9838513627cb943a44e16c40e42ae17f7",
-    "./bundled",
 ]
+
 
 # Bash recipe for building across all platforms
 script = raw"""
