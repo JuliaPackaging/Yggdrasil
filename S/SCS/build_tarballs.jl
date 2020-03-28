@@ -44,16 +44,13 @@ cd ..
 
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsdir.${dlext}
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
-mv out/libscs* ${prefix}/lib/
 
-# Copied from https://github.com/JuliaLinearAlgebra/ArpackBuilder/blob/ed55085cd647b39fefb923c3dd95b03591522760/build_tarballs.jl#L72-L77
-# Also see https://github.com/JuliaLang/julia/issues/27610
-# For now, we'll have to adjust the name of the OpenBLAS library on macOS.
-# Eventually, this should be fixed upstream
-if [[ ${target} == "x86_64-apple-darwin14" ]]; then
-    echo "-- Modifying library name for OpenBLAS"
-    install_name_tool -change @rpath/libopenblas64_.0.3.5.dylib @rpath/libopenblas64_.dylib ${prefix}/lib/libscsindir.dylib
-    install_name_tool -change @rpath/libopenblas64_.0.3.5.dylib @rpath/libopenblas64_.dylib ${prefix}/lib/libscsdir.dylib
+if [[ ${target} == *mingw* ]]; then
+    mkdir -p ${prefix}/bin
+    cp out/libscs.dll ${prefix}/bin
+else
+    mkdir -p ${prefix}/lib
+    cp out/libscs.${dlext} ${prefix}/lib
 fi
 """
 
