@@ -17,7 +17,7 @@ if [[ ${target} == *mingw* ]]; then
 else
     export CPPFLAGS="-I${prefix}/include";
 fi
-./configure --prefix=${prefix} --host=${target} --with-gmp
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --with-gmp
 make -j${nproc}
 make install
 """
@@ -37,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
