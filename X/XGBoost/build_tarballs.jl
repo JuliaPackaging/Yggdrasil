@@ -34,7 +34,7 @@ else
 
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc} USE_OPENMP=0 ${EXTRA_FLAGS[@]}
+    make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
 fi
 
 # Install
@@ -46,10 +46,8 @@ cp -a xgboost ${prefix}/bin/xgboost${exeext}
 # compiler support directory while we copy our main bundle of joy
 if [[ ${target} == *mingw* ]]; then
     cp -a lib/xgboost.dll ${prefix}/bin
-    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/bin
 else
     cp -a lib/libxgboost.${dlext} ${prefix}/lib
-    cp -a /opt/${target}/${target}/lib*/libgomp*.${dlext} ${prefix}/lib
 fi
 """
 
@@ -68,7 +66,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
