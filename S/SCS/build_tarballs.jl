@@ -47,10 +47,10 @@ make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
 
 if [[ ${target} == *mingw* ]]; then
     mkdir -p ${prefix}/bin
-    cp out/libscs.dll ${prefix}/bin
+    cp out/libscs*.dll ${prefix}/bin
 else
     mkdir -p ${prefix}/lib
-    cp out/libscs.${dlext} ${prefix}/lib
+    cp out/libscs*.${dlext} ${prefix}/lib
 fi
 """
 
