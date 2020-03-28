@@ -60,8 +60,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libscsindir", :indirect),
-    LibraryProduct("libscsdir", :direct)
+    LibraryProduct("libscsindir", :libscsindir),
+    LibraryProduct("libscsdir", :libscsdir)
 ]
 
 # Dependencies that must be installed before this package can be built
