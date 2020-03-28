@@ -14,7 +14,7 @@ cd $WORKSPACE/srcdir/ecos*
 make shared
 
 mkdir -p ${libdir}
-cp out/libscs*.${dlext} ${libdir}
+cp libecos.${dlext} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
