@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/scs-*
+cd $WORKSPACE/srcdir/scs*
 flags="DLONG=1 USE_OPENMP=0"
 blasldflags="-L${prefix}/lib"
 # see https://github.com/JuliaPackaging/Yggdrasil/blob/0bc1abd56fa176e3d2cc2e48e7bf85a26c948c40/OpenBLAS/build_tarballs.jl#L23
