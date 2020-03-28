@@ -4,27 +4,31 @@ using BinaryBuilder
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
         v"0.3.9" => [
-            "https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz" =>
-            "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz",
+                          "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380"),
         ],
         v"0.3.7" => [
-            "https://github.com/xianyi/OpenBLAS/archive/v0.3.7.tar.gz" =>
-            "bde136122cef3dd6efe2de1c6f65c10955bbb0cc01a520c2342f5287c28f9379",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.7.tar.gz",
+                          "bde136122cef3dd6efe2de1c6f65c10955bbb0cc01a520c2342f5287c28f9379"),
         ],
         v"0.3.5" => [
-            "https://github.com/xianyi/OpenBLAS/archive/v0.3.5.tar.gz" =>
-            "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85"
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.5.tar.gz",
+                          "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85"),
         ],
     )
     return [
         openblas_version_sources[version]...,
-        "./bundled",
+        DirectorySource("./bundled"),
     ]
 end
 
-function openblas_script(;kwargs...)
+function openblas_script(;num_64bit_threads=32, kwargs...)
+    # Allow some basic configuration
+    script = """
+    NUM_64BIT_THREADS=$(num_64bit_threads)
+    """
     # Bash recipe for building across all platforms
-    script = raw"""
+    script *= raw"""
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=50 NO_AFFINITY=1)
 
@@ -51,7 +55,8 @@ function openblas_script(;kwargs...)
         flags+=(BINARY=32)
         flags+=(NUM_THREADS=8)
     else
-        flags+=(NUM_THREADS=32)
+        # We parameterize this for the OpenBLASHighThreadCount package
+        flags+=(NUM_THREADS=${NUM_64BIT_THREADS})
     fi
 
     # Set BINARY=64 on x86_64 platforms (but not AArch64 or powerpc64le)
@@ -132,6 +137,7 @@ function openblas_script(;kwargs...)
         install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     fi
     """
+
 end
 
 # Nothing complicated here; we build for everywhere
