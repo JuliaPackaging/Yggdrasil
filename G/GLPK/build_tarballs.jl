@@ -5,15 +5,12 @@ version = v"4.64"
 
 # Collection of sources required to build GLPKBuilder
 sources = [
-    ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(version).tar.gz",  "4281e29b628864dfe48d393a7bedd781e5b475387c20d8b0158f329994721a10"),
+    ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(version.major).$(version.minor).tar.gz",  "4281e29b628864dfe48d393a7bedd781e5b475387c20d8b0158f329994721a10"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd glpk-4.64/
-cd $WORKSPACE/srcdir
-cd glpk-4.64/
+cd $WORKSPACE/srcdir/glpk-*
 export LDFLAGS="-L${prefix}/lib"
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     export CPPFLAGS="-I${prefix}/include -D__WOE__=1";
