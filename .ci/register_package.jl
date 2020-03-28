@@ -45,7 +45,6 @@ end
 
 # Filter out build-time dependencies also here
 merged["dependencies"] = Dependency[dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
-BinaryBuilder.push_jll_package(name, build_version)
 mktempdir() do download_dir
     # Grab the binaries for our package
     download_cached_binaries(download_dir, merged["platforms"])
@@ -59,4 +58,5 @@ mktempdir() do download_dir
     # Upload them to GitHub releases
     BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
 end
+BinaryBuilder.push_jll_package(name, build_version)
 BinaryBuilder.register_jll(name, build_version, dependencies)
