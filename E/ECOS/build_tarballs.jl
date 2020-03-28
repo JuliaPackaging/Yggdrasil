@@ -13,13 +13,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/ecos*
 make shared
 
-if [[ $target = *mingw* ]]; then
-    mkdir $prefix/bin
-    cp libecos.dll $prefix/bin
-else
-    mkdir $prefix/lib
-    cp libecos.${dlext} $prefix/lib;
-fi
+mkdir -p ${libdir}
+cp out/libscs*.${dlext} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
