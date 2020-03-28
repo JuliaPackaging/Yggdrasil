@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glpk*
-if [ $target = *mingw* ]; then
+if [[ ${target} == *mingw* ]]; then
     export CPPFLAGS="-I${prefix}/include -D__WOE__=1";
 else
     export CPPFLAGS="-I${prefix}/include";
