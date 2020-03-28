@@ -11,14 +11,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glpk-*
-export LDFLAGS="-L${prefix}/lib"
-if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
+cd $WORKSPACE/srcdir/glpk*
+if [ $target = *mingw* ]; then
     export CPPFLAGS="-I${prefix}/include -D__WOE__=1";
 else
     export CPPFLAGS="-I${prefix}/include";
 fi
-./configure --prefix=$prefix --host=${target} --with-gmp
+./configure --prefix=${prefix} --host=${target} --with-gmp
 make -j${nproc}
 make install
 """
@@ -38,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
