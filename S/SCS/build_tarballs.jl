@@ -45,13 +45,8 @@ cd ..
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsdir.${dlext}
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
 
-if [[ ${target} == *mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    cp out/libscs*.dll ${prefix}/bin
-else
-    mkdir -p ${prefix}/lib
-    cp out/libscs*.${dlext} ${prefix}/lib
-fi
+mkdir -p ${libdir}
+cp out/libscs*.${dlext} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
