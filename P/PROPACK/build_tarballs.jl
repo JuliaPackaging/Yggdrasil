@@ -4,8 +4,8 @@ name = "PROPACK"
 version = v"0.1"
 
 sources = [
-    "https://github.com/optimizers/PROPACK/archive/v1.0.tar.gz" =>
-    "0d029a4c2cdcdb9b18a4fae77593a562f79406c3f79839ee948782b37974a10e",
+    ArchiveSource("https://github.com/optimizers/PROPACK/archive/v1.0.tar.gz",
+                  "0d029a4c2cdcdb9b18a4fae77593a562f79406c3f79839ee948782b37974a10e")
 ]
 
 # Bash recipe for building across all platforms
@@ -42,7 +42,7 @@ products = [
 ]
 
 dependencies = [
-    "OpenBLAS_jll",
+    Dependency("OpenBLAS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
