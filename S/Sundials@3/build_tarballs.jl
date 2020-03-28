@@ -5,15 +5,14 @@ version = v"3.1.2"
 
 # Collection of sources required to build SundialsBuilder
 sources = [
-    "https://github.com/LLNL/sundials/archive/v$(version).tar.gz" =>
-    "e18cb7d1cc4a10889efa8dfed36fde5d8502e10f89e0f0c6415db210131b8385",
-    "./bundled",
+    GitSource("https://github.com/LLNL/sundials.git", "3bea69fccb5d5dc35ad030a1c05f27f316461530",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sundials-*/
-patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
+cd $WORKSPACE/srcdir/sundials*
+atomic_patch -p0 < $WORKSPACE/srcdir/patches/Sundials_windows.patch
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release -DEXAMPLES_ENABLE_C=OFF)
@@ -70,8 +69,8 @@ products = [
 ]
 
 dependencies = [
-    "OpenBLAS_jll",
-    "SuiteSparse_jll",
+    Dependency("OpenBLAS_jll"),
+    Dependency("SuiteSparse_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
