@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "QuantRegBuilder"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fogarty-ben/QuantReg.jl-Builder.git", "486b3d9ce5f5a0b3c1172c77a47166c57f1cd501")
+    GitSource("https://github.com/fogarty-ben/QuantReg.jl-Builder.git", "7800e5d4e4c2dfd89e8d9076d764b11a51f55081")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,9 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd QuantReg.jl-Builder/
 mkdir -p ${libdir}
-gfortran -fPIC -shared -std=legacy rqbr.f -o ${libdir}/rqbr.${dlext} 
-gfortran -fPIC -shared -std=legacy rqfnb.f -o ${libdir}/rqfnb.${dlext} 
-install_license /usr/share/licenses/GPL3
+gfortran -fPIC -shared -std=legacy rqbr.f -o ${libdir}/librqbr.${dlext} 
+gfortran -fPIC -shared -std=legacy rqfnb.f -o ${libdir}/librqfnb.${dlext} 
+install_license LICENSE
 exit
 """
 
@@ -28,8 +28,8 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("rqfnb", :rqfnb),
-    LibraryProduct("rqbr", :rqbr)
+    LibraryProduct("librqfnb", :librqfnb),
+    LibraryProduct("librqbr", :librqbr)
 ]
 
 # Dependencies that must be installed before this package can be built
