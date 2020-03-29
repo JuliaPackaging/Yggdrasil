@@ -58,7 +58,7 @@ fi
 # We attempt to build for all defined platforms
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
+#platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
@@ -89,6 +89,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS_jll"),
     Dependency("SuiteSparse_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs.
