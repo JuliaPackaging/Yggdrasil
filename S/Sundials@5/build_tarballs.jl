@@ -3,16 +3,16 @@ using BinaryBuilder
 name = "Sundials"
 version = v"5.1.0"
 
-# Collection of sources required to build SundialsBuilder
+# Collection of sources required to build Sundials
 sources = [
-    ArchiveSource("https://github.com/LLNL/sundials/archive/v$(version).tar.gz",
-                  "101be83221f9a0ab185ecce04d003ba38660cc71eb81b8a7cf96d1cc08b3d7f9"),
+    GitSource("https://github.com/LLNL/sundials.git",
+              "b78e575639babe99aea9a0558d0f64732d6d729e"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sundials-*/
+cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
@@ -58,6 +58,7 @@ fi
 # We attempt to build for all defined platforms
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
@@ -88,6 +89,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS_jll"),
     Dependency("SuiteSparse_jll"),
+#    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs.
