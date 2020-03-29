@@ -2,7 +2,6 @@ using BinaryBuilder
 
 # Collection of sources required to build ZMQ
 sources = [
-   # prerelease tarball
     ArchiveSource("http://fftw.org/~stevenj/fftw-3.3.9.tar.gz",
                   "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042"),
 ]
