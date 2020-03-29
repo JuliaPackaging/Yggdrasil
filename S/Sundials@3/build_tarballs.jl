@@ -3,9 +3,9 @@ using BinaryBuilder
 name = "Sundials"
 version = v"3.1.2"
 
-# Collection of sources required to build SundialsBuilder
+# Collection of sources required to build Sundials
 sources = [
-    GitSource("https://github.com/LLNL/sundials.git", "3bea69fccb5d5dc35ad030a1c05f27f316461530",
+    GitSource("https://github.com/LLNL/sundials.git", "3bea69fccb5d5dc35ad030a1c05f27f316461530"),
     DirectorySource("./bundled"),
 ]
 
