@@ -1,25 +1,6 @@
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -322,6 +322,18 @@
- Algos/SgtelibModel/SgtelibModelUpdate.cpp
- )
- 
-+if(CMAKE_C_COMPILER_ID MATCHES "Clang\$")
-+    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
-+    set(OpenMP_C_LIB_NAMES "gomp")
-+    set(OpenMP_omp_LIBRARY gomp)
-+endif()
-+
-+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang\$")
-+    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
-+    set(OpenMP_CXX_LIB_NAMES "gomp")
-+    set(OpenMP_omp_LIBRARY gomp)
-+endif()
-+    
- # require openMP package
- find_package(OpenMP)
- 
-@@ -334,9 +346,9 @@
+@@ -334,9 +334,9 @@
      ${CMAKE_CURRENT_SOURCE_DIR}/Param ${CMAKE_CURRENT_SOURCE_DIR}/Type ${CMAKE_CURRENT_SOURCE_DIR}/Util>
      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nomadUtils>
  )
@@ -32,7 +13,7 @@
  
  # Evals
  add_library (nomadEval SHARED ${CACHE_SOURCES} ${EVAL_SOURCES}) 
-@@ -344,11 +356,11 @@
+@@ -344,11 +344,11 @@
      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Cache ${CMAKE_CURRENT_SOURCE_DIR}/Eval>
      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nomadEval>
  )
@@ -48,7 +29,7 @@
  
  # Algos
  add_library (nomadAlgos SHARED ${ALGOS_SOURCES} ${MADS_SOURCES} ${LH_SOURCES} ${NM_SOURCES} ${PHASEONE_SOURCES} ${SGTELIBMODEL_SOURCES}) 
-@@ -361,12 +373,11 @@
+@@ -361,12 +361,11 @@
      ${CMAKE_CURRENT_SOURCE_DIR}/Algos/SgtelibModel>
      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nomadAlgos>
  )
@@ -65,7 +46,7 @@
  
  # build executables
  
-@@ -376,9 +387,9 @@
+@@ -376,9 +375,9 @@
      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Attribute>
      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Attribute>
  )
@@ -78,7 +59,7 @@
  
  add_executable (nomad ${NOMAD_SOURCES}) 
  target_include_directories(nomad PUBLIC
-@@ -386,11 +397,11 @@
+@@ -386,11 +385,11 @@
      ${CMAKE_CURRENT_SOURCE_DIR}/Nomad>
      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Nomad>
  )
