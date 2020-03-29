@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "OpenSSL"
 version = v"1.1.1"
 sources = [
-    "https://www.openssl.org/source/openssl-1.1.1c.tar.gz" =>
-    "f6fb3079ad15076154eda9413fed42877d668e7069d9b87396d0804fdb3f4c90",
+    "https://www.openssl.org/source/openssl-1.1.1e.tar.gz" =>
+    "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe",
 ]
 
 # Bash recipe for building across all platforms
@@ -49,7 +49,7 @@ function translate_target()
 
 ./Configure shared --prefix=$prefix $(translate_target)
 make -j${nproc}
-make install
+make install_sw
 """
 
 # These are the platforms we will build for by default, unless further
