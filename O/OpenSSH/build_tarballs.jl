@@ -28,7 +28,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("ssh", :ssh),
-    ExecutableProduct("scp", :scp)
+    ExecutableProduct("scp", :scp),
     ExecutableProduct("ssh-agent", :ssh_agent),
     ExecutableProduct("ssh-add", :ssh_add),
     ExecutableProduct("ssh-keygen", :ssh_keygen),
