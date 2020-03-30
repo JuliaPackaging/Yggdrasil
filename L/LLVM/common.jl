@@ -104,7 +104,7 @@ fi
 # build for our host arch and our GPU targets NVidia and AMD
 TARGETS=(host NVPTX AMDGPU)
 # Add WASM for LLVM 8
-if [[ "${LLVM_MAJ_VER}" == "8" ]]; then
+if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
     TARGETS+=(WebAssembly)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
