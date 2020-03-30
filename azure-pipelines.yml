@@ -30,6 +30,8 @@ jobs:
           COMPARE_AGAINST="remotes/origin/$(System.PullRequest.TargetBranch)"
       fi
 
+      $(JULIA) -e "using InteractiveUtils; versioninfo()"
+
       # Get the directories holding changed files
       # 1. All changed files
       # 2. Only files in directories
