@@ -70,7 +70,12 @@ function get_addable_spec(name::AbstractString, version::VersionNumber)
 
     # Next, determine the tree hash from the registry
     tree_hashes = Base.SHA1[]
-    for path in Pkg.Operations.registered_paths(ctx.env, uuid)
+    @static if VERSION >= v"1.4"
+        paths = Pkg.Operations.registered_paths(ctx, uuid)
+    else
+        paths = Pkg.Operations.registered_paths(ctx.env, uuid)
+    end
+    for path in paths
         vers = Pkg.Operations.load_versions(path; include_yanked = true)
         tree_hash = get(vers, version, nothing)
         tree_hash !== nothing && push!(tree_hashes, tree_hash)
@@ -103,11 +108,16 @@ function get_addable_spec(name::AbstractString, version::VersionNumber)
         error("Unable to find corresponding revision in $(name) v$(version) for tree hash $(bytes2hex(tree_hash_bytes))")
     end
 
+    @static if VERSION >= v"1.4"
+        repo=Pkg.Types.GitRepo(rev=git_commit_sha, source=url)
+    else
+        repo=Pkg.Types.GitRepo(rev=git_commit_sha, url=url)
+    end
     return Pkg.Types.PackageSpec(
         name=name,
         uuid=uuid,
         version=version,
         tree_hash=tree_hash_sha1,
-        repo=Pkg.Types.GitRepo(rev=git_commit_sha, url=url),
+        repo=repo,
     )
 end
