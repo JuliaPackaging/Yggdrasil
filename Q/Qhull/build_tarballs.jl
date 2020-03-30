@@ -74,27 +74,13 @@ products = [
     ExecutableProduct("qdelaunay", :qdelaunay),
     ExecutableProduct("qvoronoi", :qvoronoi),
     ExecutableProduct("qhalf", :qhalf),
-    LibraryProduct()
+    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic),
+    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),
+    LibraryProduct(["liblibqhull_r", "qhull_r"], :libqhull_r),
 ]
 
 # Dependencies that must be installed before this package can be built
-# TODO: Theora once it's available
-dependencies = [
-    "libass_jll",
-    "libfdk_aac_jll",
-    "FriBidi_jll",
-    "FreeType2_jll",
-    "LAME_jll",
-    "libvorbis_jll",
-    "Ogg_jll",
-    "LibVPX_jll",
-    "x264_jll",
-    "x265_jll",
-    "Bzip2_jll",
-    "Zlib_jll",
-    "OpenSSL_jll",
-    "Opus_jll",
-]
+dependencies = String[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
