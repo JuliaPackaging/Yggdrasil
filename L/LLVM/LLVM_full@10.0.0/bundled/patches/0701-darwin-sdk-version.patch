@@ -1,0 +1,44 @@
+From 57db6696ea28665596acb27bc3fe38bfd63f58e8 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Sun, 29 Mar 2020 21:15:51 -0400
+Subject: [PATCH] Add caching to darwin SDK version lookup
+
+Summary:
+When doing cross-compilation from Linux to MacOS we don't have
+access to have access to `xcodebuild` and therefore need a way
+to set the SDK version from the outside.
+
+Fixes https://reviews.llvm.org/D68292#1853594 for me.
+
+Reviewers: delcypher, yln
+
+Subscribers: mgorny, #sanitizers
+
+Tags: #sanitizers
+
+Differential Revision: https://reviews.llvm.org/D77026
+---
+ compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake b/compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake
+index 9f501a61c4b..657d2c97eac 100644
+--- a/compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake
++++ b/compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake
+@@ -44,8 +44,11 @@ function(find_darwin_sdk_dir var sdk_name)
+ endfunction()
+ 
+ function(find_darwin_sdk_version var sdk_name)
+-  # We deliberately don't cache the result here because
+-  # CMake's caching causes too many problems.
++  if (DARWIN_${sdk_name}_OVERRIDE_SDK_VERSION)
++    message(WARNING "Overriding ${sdk_name} SDK version to ${DARWIN_${sdk_name}_OVERRIDE_SDK_VERSION}")
++    set(${var} "${DARWIN_${sdk_name}_OVERRIDE_SDK_VERSION}" PARENT_SCOPE)
++    return()
++  endif()
+   set(result_process 1)
+   if(NOT DARWIN_PREFER_PUBLIC_SDK)
+     # Let's first try the internal SDK, otherwise use the public SDK.
+-- 
+2.25.2
+

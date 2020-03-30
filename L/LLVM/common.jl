@@ -10,6 +10,7 @@ const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
     v"8.0.1" => "19a71f6bdf2dddb10764939e7f0ec2b98dba76c9",
     v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
+    v"10.0.0" => "d32170dbd5b0d54436537b6b75beaf44324e0c28",
 )
 
 const buildscript = raw"""
@@ -103,7 +104,7 @@ fi
 # build for our host arch and our GPU targets NVidia and AMD
 TARGETS=(host NVPTX AMDGPU)
 # Add WASM for LLVM 8
-if [[ "${LLVM_MAJ_VER}" == "8" ]]; then
+if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
     TARGETS+=(WebAssembly)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
@@ -173,6 +174,7 @@ CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${target})
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
+    CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
 
     # LLVM actually won't build against 10.8, so we bump ourselves up slightly to 10.9
     export MACOSX_DEPLOYMENT_TARGET=10.9
