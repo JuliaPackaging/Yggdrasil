@@ -4,7 +4,7 @@ parameters:
   default: []
 
 jobs:
-- ${{ each job in parameters.jobs }};
+- ${{ each job in parameters.jobs }}:
     dependsOn:
       - generator
       - jll_init
