@@ -43,7 +43,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     flags+=(NO_STATIC=1)
 
     if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-        if [[ ${OPENBLAS32} == 1 ]]; then
+        if [[ "${OPENBLAS32}" == "true" ]]; then
             # We're building an LP64 BLAS with 32-bit BlasInt on a 64-bit platform
             LIBPREFIX=libopenblas
         else
