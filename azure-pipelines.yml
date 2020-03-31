@@ -156,7 +156,7 @@ jobs:
                   echo "    ${PLATFORM}: building"
 
               if [[ "${NAME}" == "bmon" ]]; then
-                DEPENDS="NUMA-${PLATFORM}"
+                DEPENDS="build NUMA-${PLATFORM}"
               else
                 DEPENDS=""
               fi
@@ -168,7 +168,7 @@ jobs:
                       'PLATFORM':'${PLATFORM}', \
                       'PROJ_HASH':'${PROJ_HASH}', \
                       'BB_HASH':'${BB_HASH}', \
-                      'dependsOn': '${DEPENDS}'
+                      'dependsOn': '${DEPENDS}' \
                   }, "
               done
           done
