@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"5.1.0"
+version = v"5.2.0"
 
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "b78e575639babe99aea9a0558d0f64732d6d729e"),
+              "b16d3d3995668c9a13c9f4bee8b0113ff6a9cf6d"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    # atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
 elif [[ "${target}" == powerpc64le-* ]]; then
