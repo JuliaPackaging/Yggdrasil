@@ -132,6 +132,11 @@ jobs:
                   continue
               fi
 
+              if [[ "${NAME}" == "bmon" ]]; then
+                DEPENDS="jll_init NUMA"
+              else
+                DEPENDS=""
+              fi
 
               # That's everything we need to know for `$(PROJECTS)` later on down
               VAR_PROJECTS="${VAR_PROJECTS} '${NAME}':{ \
@@ -139,7 +144,8 @@ jobs:
                                 'PROJECT':'${PROJECT}', \
                                 'PLATFORMS':'${PLATFORMS}', \
                                 'BB_HASH':'${BB_HASH}', \
-                                'PROJ_HASH':'${PROJ_HASH}'\
+                                'PROJ_HASH':'${PROJ_HASH}',\
+                                'dependsOn':'${DEPENDS}'\
                             }, "
 
               # Some debugging info
@@ -155,11 +161,11 @@ jobs:
                   fi
                   echo "    ${PLATFORM}: building"
 
-              if [[ "${NAME}" == "bmon" ]]; then
-                DEPENDS="build NUMA-${PLATFORM}"
-              else
-                DEPENDS=""
-              fi
+                  if [[ "${NAME}" == "bmon" ]]; then
+                    DEPENDS="build NUMA-${PLATFORM}"
+                  else
+                    DEPENDS=""
+                  fi
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
