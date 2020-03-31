@@ -2,7 +2,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.2"
+version = v"0.3.3"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -49,17 +49,26 @@ end
 ## Now that we've got those tarballs, we're going to use them as sources to overwrite
 ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
 script = raw"""
-mkdir -p ${libdir}
+# Start by extracting LatestLibraries
+tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
+
+echo ***********************************************************
+echo LatestLibraries logs, reproduced here for debuggability:
+cat ${prefix}/logs/LatestLibraries.log
+echo ***********************************************************
+rm -f ${prefix}/logs/LatestLibraries.log
+
+# Make sure expansions aren't empty
 shopt -s nullglob
 
-# copy out all the libraries we can find
+# copy out all the libraries we can find, not clobbering stuff from LL
 for d in /opt/${target}/${target}/lib*; do
-    cp -av ${d}/*.${dlext}* ${libdir}/ || true
+    cp -uav ${d}/*.${dlext}* ${libdir}/ || true
 done
 
 # libwinpthread is a special snowflake and is only within `bin` for some reason
 if [[ ${target} == *mingw* ]]; then
-	cp -av /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
+	cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
 fi
 
 # Delete .a and .py files, we don't want those.
