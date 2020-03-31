@@ -68,7 +68,7 @@ jobs:
           fi
 
           if [[ -f "${PROJECT}/RDEPENDENCIES" ]]; then
-              RPROJECTS="$(./rdependencies.sh) ${PROJECT}"
+              RPROJECTS="$(./rdependencies.sh ${PROJECT})"
               echo " --> Found RDEPENDENCIES: ${RPROJECTS}"
           fi
 
