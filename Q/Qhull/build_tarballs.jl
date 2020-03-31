@@ -15,8 +15,7 @@ sources = [
 # TODO: Theora once it's available
 script = raw"""
 # initial setup
-cd $WORKSPACE/srcdir
-cd Qhull/
+cd $WORKSPACE/srcdir/qhull-*
 apk add coreutils yasm
 
 if [[ "${target}" == *-linux-* ]]; then
