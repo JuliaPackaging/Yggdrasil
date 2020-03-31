@@ -57,7 +57,7 @@ cmake -G "Unix Makefiles" .. && cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_T
 # Ensure the config is correct
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 # Run the build script
-make
+make -j${nproc}
 # Install Qhull
 make install
 """
