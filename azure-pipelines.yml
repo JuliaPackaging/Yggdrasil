@@ -67,6 +67,11 @@ jobs:
               continue
           fi
 
+          if [[ -f "${PROJECT}/RDEPENDENCIES" ]]; then
+              RPROJECTS="$(./rdependencies.sh) ${PROJECT}"
+              echo " --> Found RDEPENDENCIES: ${RPROJECTS}"
+          fi
+
           # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
           echo " --> Accepted!"
           PROJECTS_ACCEPTED="${PROJECTS_ACCEPTED} ${PROJECT}"
