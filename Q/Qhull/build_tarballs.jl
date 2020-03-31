@@ -44,7 +44,7 @@ products = [
     ExecutableProduct("qhalf", :qhalf),
     LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic),
     LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),
-    LibraryProduct(["liblibqhull_r", "qhull_r"], :libqhull_r),
+    LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
 ]
 
 # Dependencies that must be installed before this package can be built
