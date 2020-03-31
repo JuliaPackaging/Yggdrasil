@@ -154,7 +154,8 @@ jobs:
                       'PROJECT':'${PROJECT}', \
                       'PLATFORM':'${PLATFORM}', \
                       'PROJ_HASH':'${PROJ_HASH}', \
-                      'BB_HASH':'${BB_HASH}' \
+                      'BB_HASH':'${BB_HASH}', \
+                      'dependsOn': 'jll_init' \
                   }, "
               done
           done
@@ -194,9 +195,7 @@ jobs:
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
 - job: build
-  dependsOn:
-   - generator
-   - jll_init
+  dependsOn: generator
   timeoutInMinutes: 240
   cancelTimeoutInMinutes: 2
   strategy:
