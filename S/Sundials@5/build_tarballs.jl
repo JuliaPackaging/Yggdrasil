@@ -16,9 +16,9 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    # atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
-    export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
+    # export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
 elif [[ "${target}" == powerpc64le-* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
