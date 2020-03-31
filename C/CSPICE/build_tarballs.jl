@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir
 cp cmake/CMakeLists.txt .
 cp -r cspice/src/cspice/ .
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dskx02.patch"
-atomic_patch -p0 "${WORKSPACE}/srcdir/patches/subpnt.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/subpnt.patch"
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
