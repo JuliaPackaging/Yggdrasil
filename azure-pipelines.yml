@@ -70,6 +70,7 @@ jobs:
           if [[ -f "${PROJECT}/RDEPENDENCIES" ]]; then
               RPROJECTS="$(./rdependencies.sh ${PROJECT})"
               echo " --> Found RDEPENDENCIES: ${RPROJECTS}"
+              PROJECTS_ACCEPTED="${PROJECTS_ACCEPTED} ${RPROJECTS}"
           fi
 
           # Otherwise, emit a build with `PROJECT` set to `${PROJECT}`
@@ -200,7 +201,9 @@ jobs:
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
 - job: build
-  dependsOn: generator
+  dependsOn:
+    - generator
+    - jll_init
   timeoutInMinutes: 240
   cancelTimeoutInMinutes: 2
   strategy:
