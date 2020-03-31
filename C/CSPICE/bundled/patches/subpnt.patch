@@ -1,0 +1,27 @@
+--- a/cspice/subpnt.c
++++ b/cspice/subpnt.c
+@@ -2095,6 +2095,13 @@
+ 
+ /* $ Version */
+ 
++/* -    SPICELIB Version 2.1.0, 25-OCT-2017 (NJB) */
++
++/*        Bug fix: TRGEPC is now initialized prior to first use. */
++/*        Previously the lack of initialization could cause this routine */
++/*        to fail to find DSK data within the time bounds of a DSK */
++/*        segment. */
++
+ /* -    SPICELIB Version 2.0.0, 04-APR-2017 (NJB) */
+ 
+ /*        Added FAILED tests. */
+@@ -2504,6 +2511,10 @@
+ 
+     vminus_(tpos, obspos);
+ 
++/*     Make a first estimate of the target epoch. */
++
++    *trgepc = *et + s * lt;
++
+ /*     Find the sub-observer point given the target epoch, */
+ /*     observer-target position, and target body orientation we've */
+ /*     already computed. If we're not using light time correction, this */
