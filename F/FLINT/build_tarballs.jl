@@ -15,8 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd flint2/
 
-libsubdir=lib
-
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE=1
@@ -26,12 +24,11 @@ elif [[ ${target} == *mingw* ]]; then
    # fix arch detection:
    sed -i -e 's/$(ARCH)/$ARCH/g' configure
    extraflags=--reentrant
-   libsubdir=bin
 fi
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
 make -j${nproc}
-make install LIBDIR=$libsubdir
+make install LIBDIR=$(basename ${libdir})
 """
 
 # These are the platforms we will build for by default, unless further
