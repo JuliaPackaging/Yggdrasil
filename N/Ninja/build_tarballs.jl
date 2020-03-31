@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "ninja"
+name = "Ninja"
 version = v"1.10.0"
 
 # Collection of sources required to build ninja
@@ -19,12 +19,7 @@ shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
 mkdir -p ${bindir}
-if [[ $target == *mingw* ]]; then
-    install ninja.exe ${bindir}
-else
-    install ninja ${bindir}
-fi
-
+install ninja${exeext} ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
