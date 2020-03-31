@@ -8,7 +8,7 @@ version = v"2019.1"
 # Collection of sources required to build FFMPEG
 sources = [
     "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz" =>
-    "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5",
+    "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f",
 ]
 
 # Bash recipe for building across all platforms
