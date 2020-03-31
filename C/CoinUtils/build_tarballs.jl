@@ -36,7 +36,7 @@ else
   OPENBLAS=(-lopenblas)
 fi
 
-CPPFLAGS="${CPPFLAGS[@]}" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-glpk --with-glpk-lib="-lglpk" --with-blas-lib="${OPENBLAS[@]}" --with-lapack --with-lapack-lib="${OPENBLAS[@]}"
+CPPFLAGS="${CPPFLAGS[@]}" ./configure --prefix=${prefix} --host=${target} --with-glpk --with-glpk-lib="-lglpk" --with-blas-lib="${OPENBLAS[@]}" --with-lapack --with-lapack-lib="${OPENBLAS[@]}"
 make -j${nproc}
 make install
 """
