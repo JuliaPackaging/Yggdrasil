@@ -3,11 +3,8 @@ parameters:
   type: jobList
   default: []
 
-- jobs: build
+jobs:
 - ${{ each job in parameters.jobs }};
-  - ${{ each pair in job }}:
-      ${{ if ne(pair.key, 'dependsOn') }}:
-        ${{ pair.key }}: ${{ pair.value }}
     dependsOn:
       - generator
       - jll_init
