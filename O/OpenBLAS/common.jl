@@ -22,7 +22,7 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads=32, openblas32=0, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
@@ -47,7 +47,7 @@ function openblas_script(;num_64bit_threads=32, openblas32=0, kwargs...)
             # We're building an LP64 BLAS with 32-bit BlasInt on a 64-bit platform
             LIBPREFIX=libopenblas
         else
-            # If we're building for a 64-bit platform (that is not aarch64), engage ILP64
+            # We're building an ILP64 BLAS with 64-bit BlasInt
             LIBPREFIX=libopenblas64_
             flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
         fi

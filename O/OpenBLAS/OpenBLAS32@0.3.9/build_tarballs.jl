@@ -8,9 +8,13 @@ name = "OpenBLAS32"
 version = v"0.3.9"
 
 sources = openblas_sources(version)
-script = openblas_script(openblas32=1)
+script = openblas_script(openblas32=true)
 platforms = openblas_platforms()
-products = openblas_products()
+
+products = [
+    LibraryProduct("libopenblas", :libopenblas)
+]
+
 dependencies = Dependency[]
 
 # Build the tarballs
