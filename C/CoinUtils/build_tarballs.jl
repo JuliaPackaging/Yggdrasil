@@ -26,7 +26,7 @@ fi
 
 CPPFLAGS="-I${prefix}/include"
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target} --with-glpk --with-glpk-lib="-lglpk" --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+./configure --prefix=${prefix} --host=${target} --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
 make -j${nproc}
 make install
 """
@@ -43,8 +43,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("OpenBLAS_jll"),
-    Dependency("GLPK_jll"),
+    Dependency("OpenBLAS32_jll"),
+#    Dependency("GLPK_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
