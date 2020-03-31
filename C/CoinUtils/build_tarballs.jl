@@ -24,7 +24,9 @@ if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/glibc_specific.patch"
 fi
 
-CPPFLAGS="${CPPFLAGS[@]}" ./configure --prefix=${prefix} --host=${target} --with-glpk --with-glpk-lib="-lglpk" --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+CPPFLAGS="-I${prefix}/include"
+update_configure_scripts
+./configure --prefix=${prefix} --host=${target} --with-glpk --with-glpk-lib="-lglpk" --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
 make -j${nproc}
 make install
 """
