@@ -22,7 +22,7 @@ autoreconf -fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-fortran=no --enable-python=no --disable-static
 make -j${nproc}
 make install
-install_license ${WORKSPACE}/srcdir/COPYING_CECILL_B.LIB
+install_license ${WORKSPACE}/srcdir/calceph-3.4.2/COPYING_CECILL_B.LIB
 """
 
 # These are the platforms we will build for by default, unless further
