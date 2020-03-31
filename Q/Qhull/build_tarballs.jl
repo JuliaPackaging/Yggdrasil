@@ -16,37 +16,6 @@ sources = [
 script = raw"""
 # initial setup
 cd $WORKSPACE/srcdir/qhull-*
-apk add coreutils yasm
-
-if [[ "${target}" == *-linux-* ]]; then
-    export ccOS="linux"
-elif [[ "${target}" == *-apple-* ]]; then
-    export ccOS="darwin"
-elif [[ "${target}" == *-w32-* ]]; then
-    export ccOS="mingw32"
-elif [[ "${target}" == *-w64-* ]]; then
-    export ccOS="mingw64"
-elif [[ "${target}" == *-unknown-freebsd* ]]; then
-    export ccOS="freebsd"
-else
-    export ccOS="linux"
-fi
-
-if [[ "${target}" == x86_64-* ]]; then
-    export ccARCH="x86_64"
-elif [[ "${target}" == i686-* ]]; then
-    export ccARCH="i686"
-elif [[ "${target}" == arm-* ]]; then
-    export ccARCH="arm"
-elif [[ "${target}" == aarch64-* ]]; then
-    export ccARCH="aarch64"
-elif [[ "${target}" == powerpc64le-* ]]; then
-    export ccARCH="powerpc64le"
-else
-    export ccARCH="x86_64"
-fi
-
-pkg-config --list-all
 
 # begin the build process
 
