@@ -211,13 +211,8 @@ jobs:
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
 - template: build.yml
-  dependsOn:
-    - generator
-    - jll_init
   parameters:
       jobs: $[ dependencies.generator.outputs['mtrx.projplatformsjobs'] ]
-      variables:
-        projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
 
 - job: register
   dependsOn:
