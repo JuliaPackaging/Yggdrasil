@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
-./configure --prefix=$prefix --host=$target --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl
+./configure --prefix=$prefix --host=$target --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl --disable-docs --disable-static
 make -j${nproc}
 make install
 """
