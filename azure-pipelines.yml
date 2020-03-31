@@ -114,6 +114,7 @@ jobs:
           # Emit project/platform joint variable declarations
           VAR_PROJECTS="##vso[task.setVariable variable=projects;isOutput=true]{"
           VAR_PROJPLATFORMS="##vso[task.setVariable variable=projplatforms;isOutput=true]{"
+          VAR_PROJPLATFORMSJOBS="##vso[task.setVariable variable=projplatformsjobs;isOutput=true]{"
           echo "Determining builds to queue..."
           for PROJECT in ${PROJECTS_ACCEPTED}; do
               NAME=$(basename ${PROJECT})
@@ -132,20 +133,13 @@ jobs:
                   continue
               fi
 
-              if [[ "${NAME}" == "bmon" ]]; then
-                DEPENDS="jll_init NUMA"
-              else
-                DEPENDS=""
-              fi
-
               # That's everything we need to know for `$(PROJECTS)` later on down
               VAR_PROJECTS="${VAR_PROJECTS} '${NAME}':{ \
                                 'NAME': '${NAME}', \
                                 'PROJECT':'${PROJECT}', \
                                 'PLATFORMS':'${PLATFORMS}', \
                                 'BB_HASH':'${BB_HASH}', \
-                                'PROJ_HASH':'${PROJ_HASH}',\
-                                'dependsOn':'${DEPENDS}'\
+                                'PROJ_HASH':'${PROJ_HASH}'\
                             }, "
 
               # Some debugging info
@@ -173,14 +167,17 @@ jobs:
                       'PROJECT':'${PROJECT}', \
                       'PLATFORM':'${PLATFORM}', \
                       'PROJ_HASH':'${PROJ_HASH}', \
-                      'BB_HASH':'${BB_HASH}', \
-                      'dependsOn': '${DEPENDS}' \
+                      'BB_HASH':'${BB_HASH}' \
+                  }, "
+
+                  VAR_PROJPLATFORMSJOBS="${VAR_PROJPLATFORMSJOBS} '${NAME}-${PLATFORM}':{ \
                   }, "
               done
           done
           # Add closing parens
           VAR_PROJECTS="${VAR_PROJECTS} }"
           VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} }"
+          VAR_PROJPLATFORMSJOBS="${VAR_PROJPLATFORMSJOBS} }"
           
           # Actually output the variables
           echo "${VAR_PROJECTS}"
@@ -213,62 +210,14 @@ jobs:
     displayName: "initialize JLL package"
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
 
-- job: build
+- template: build.yml
   dependsOn:
     - generator
     - jll_init
-  timeoutInMinutes: 240
-  cancelTimeoutInMinutes: 2
-  strategy:
-    matrix: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
-  variables:
-    projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
-  steps:
-  - script: |
-      # Fail on error
-      set -e
-
-      # Cleanup temporary things that might have been left-over
-      ./clean_builds.sh
-      ./clean_products.sh
-
-      cd $(PROJECT)
-      $(JULIA) ./build_tarballs.jl --verbose $(PLATFORM)
-
-      # After building, we take the single tarball produced with the proper NAME, and upload it:
-      TARBALLS=( ./products/${NAME%@*}*${PLATFORM}*.tar.gz )
-      if [[ "${#TARBALLS[@]}" != 1 ]]; then
-          echo "Multiple tarballs?  This isn't right!" >&2
-          exit 1
-      fi
-
-      # Upload with curl
-      ACL="x-amz-acl:public-read"
-      CONTENT_TYPE="application/x-gtar"
-      BUCKET="julia-bb-buildcache"
-      BUCKET_PATH="${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
-      DATE="$(date -R)"
-      S3SIGNATURE=$(echo -en "PUT\n\n${CONTENT_TYPE}\n${DATE}\n${ACL}\n/${BUCKET}/${BUCKET_PATH}" | openssl sha1 -hmac "${S3SECRET}" -binary | base64)
-      HOST="${BUCKET}.s3.amazonaws.com"
-      echo "Uploading artifact to https://${HOST}/${BUCKET_PATH}"
-      curl -X PUT -T "${TARBALLS[0]}" \
-          -H "Host: ${HOST}" \
-          -H "Date: ${DATE}" \
-          -H "Content-Type: ${CONTENT_TYPE}" \
-          -H "${ACL}" \
-          -H "Authorization: AWS ${S3KEY}:${S3SIGNATURE}" \
-          "https://${HOST}/${BUCKET_PATH}"
-
-      if [[ "$?" != 0 ]]; then
-          echo "Failed to upload artifact!" >&2
-          exit 1
-      fi
-    env:
-      GITHUB_TOKEN: $(GITHUB_TOKEN)
-      S3KEY: $(S3KEY)
-      S3SECRET: $(S3SECRET)
-    displayName: "run build_tarballs.jl"
-    condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
+  parameters:
+      jobs: $[ dependencies.generator.outputs['mtrx.projplatformsjobs'] ]
+      variables:
+        projplatforms: $[ dependencies.generator.outputs['mtrx.projplatforms'] ]
 
 - job: register
   dependsOn:
