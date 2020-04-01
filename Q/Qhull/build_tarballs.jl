@@ -7,25 +7,29 @@ version = v"2019.1"
 
 # Collection of sources required to build
 sources = [
-    "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz" =>
-    "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f",
+    GitSource(
+        "https://github.com/qhull/qhull",           # project URL
+        "b94cff0799f36068dee5d800d5cef3b9b911c400"  # commit hash corresponding to the version
+    ),
 ]
 
 # Bash recipe for building across all platforms
-# TODO: Theora once it's available
 script = raw"""
 # initial setup
 cd $WORKSPACE/srcdir/qhull-*
 
 # begin the build process
-
 cd build
+
 # Generate makefiles
 cmake -G "Unix Makefiles" .. && cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+
 # Ensure the config is correct
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+
 # Run the build script
 make -j${nproc}
+
 # Install Qhull
 make install
 """
@@ -42,8 +46,6 @@ products = [
     ExecutableProduct("qdelaunay", :qdelaunay),
     ExecutableProduct("qvoronoi", :qvoronoi),
     ExecutableProduct("qhalf", :qhalf),
-#    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic),
-#    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
 ]
 
