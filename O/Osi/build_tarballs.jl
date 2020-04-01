@@ -34,7 +34,7 @@ platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
-products(prefix) = [
+products = [
     LibraryProduct("libOsi", :libOsi),
     LibraryProduct("libOsiCommonTests", :libOsiCommonTests)
 ]
