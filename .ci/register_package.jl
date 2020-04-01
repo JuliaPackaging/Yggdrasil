@@ -1,6 +1,7 @@
 using BinaryBuilder, Pkg, Pkg.PlatformEngines
 
 verbose = "--verbose" in ARGS
+should_upload = !("--local" in ARGS) 
 
 # Read in input `.json` file
 json = String(read(ARGS[1]))
@@ -56,7 +57,9 @@ mktempdir() do download_dir
     BinaryBuilder.rebuild_jll_package(merged; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
     
     # Upload them to GitHub releases
-    BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
+    should_upload && BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
 end
-BinaryBuilder.push_jll_package(name, build_version)
-BinaryBuilder.register_jll(name, build_version, dependencies)
+if should_upload
+    BinaryBuilder.push_jll_package(name, build_version)
+    BinaryBuilder.register_jll(name, build_version, dependencies)
+end
