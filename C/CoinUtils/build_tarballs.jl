@@ -18,7 +18,8 @@ rm -f /opt/${target}/${target}/lib*/*.la
 
 CPPFLAGS="-I${prefix}/include"
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target} --enable-shared --with-pic --disable-pkg-config --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
+--with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
 make -j${nproc}
 make install
 """
