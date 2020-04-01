@@ -54,11 +54,7 @@ products = [
 
     # Libraries
     # reentrant Qhull
-    LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),             
-    # static Qhull
-    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic), 
-    # C++ API
-    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),          
+    LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
 ]
 
 # Dependencies that must be installed before this package can be built
