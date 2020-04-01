@@ -7,20 +7,15 @@ version = v"1.0.0"
 
 # Collection of sources required to build Clipper
 sources = [
-    "https://github.com/SimonDanisch/ClipperBuilder.git" =>
-    "9ea1878235d518d5e14bce35a94924a34bab8b68",
+    GitSource("https://github.com/SimonDanisch/ClipperBuilder.git",
+              "9ea1878235d518d5e14bce35a94924a34bab8b68"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ClipperBuilder/
-${CXX} -c -fPIC -std=c++11 clipper.cpp cclipper.cpp
-libdir="lib"
-if [[ ${target} == *-mingw32 ]]; then     libdir="bin"; else     libdir="lib"; fi
-mkdir ${prefix}/${libdir}
-${CXX} -shared -o ${prefix}/${libdir}/cclipper.${dlext} clipper.o cclipper.o;
-exit
+cd $WORKSPACE/srcdir/ClipperBuilder/
+mkdir "${libdir}"
+${CXX} -fPIC -std=c++11 -shared -o "${libdir}/libcclipper.${dlext}" clipper.cpp cclipper.cpp
 """
 
 # These are the platforms we will build for by default, unless further
@@ -28,13 +23,12 @@ exit
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "cclipper", :cclipper)
+products = [
+    LibraryProduct("libcclipper", :cclipper)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
