@@ -24,9 +24,6 @@ CMAKE_ARGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARG
 # Generate makefiles
 cmake $CMAKE_ARGS -G "Unix Makefiles" .. && cmake $CMAKE_ARGS ..
 
-# Ensure the config is correct
-cmake $CMAKE_ARGS ..
-
 # Run the build script
 make -j${nproc}
 
