@@ -42,7 +42,7 @@ products(prefix) = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CoinUtils_jll"),
-    Dependency("OpenBLAS32_jll")
+    Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
