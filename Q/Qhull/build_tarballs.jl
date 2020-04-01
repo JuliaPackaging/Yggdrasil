@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "Qhull"
 version = v"2019.1"
 
-# Collection of sources required to build FFMPEG
+# Collection of sources required to build
 sources = [
     "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz" =>
     "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f",
