@@ -38,13 +38,27 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    # Executables
+    # compute convex hulls and related structures
     ExecutableProduct("qhull", :qhull),
+    # generate various point distributions
     ExecutableProduct("rbox", :rbox),
+    # compute the convex hull
     ExecutableProduct("qconvex", :qconvex),
+    # compute the Delaunay triangulation
     ExecutableProduct("qdelaunay", :qdelaunay),
+    # compute the Voronoi diagram
     ExecutableProduct("qvoronoi", :qvoronoi),
+    # compute the halfspace intersection about a point
     ExecutableProduct("qhalf", :qhalf),
-    LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
+
+    # Libraries
+    # reentrant Qhull
+    LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),             
+    # static Qhull
+    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic), 
+    # C++ API
+    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),          
 ]
 
 # Dependencies that must be installed before this package can be built
