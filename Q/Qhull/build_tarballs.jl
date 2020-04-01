@@ -42,8 +42,8 @@ products = [
     ExecutableProduct("qdelaunay", :qdelaunay),
     ExecutableProduct("qvoronoi", :qvoronoi),
     ExecutableProduct("qhalf", :qhalf),
-    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic),
-    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),
+#    LibraryProduct(["libqhullstatic", "qhullstatic"], :libqhullstatic),
+#    LibraryProduct(["libqhullcpp", "qhullcpp"], :libqhullcpp),
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
 ]
 
