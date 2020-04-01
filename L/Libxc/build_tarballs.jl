@@ -33,7 +33,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# Disable armv7l because the build seems to fill /tmp.
+platforms = [p for p in supported_platforms() if arch(p) != :armv7l]
 
 
 # The products that we will ensure are always built
