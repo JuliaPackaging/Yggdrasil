@@ -5,6 +5,8 @@ using BinaryBuilder, Pkg
 name = "NUMA"
 version = v"2.0.13"
 
+# bump
+
 # Collection of sources required to complete build
 sources = [
     "https://github.com/numactl/numactl/releases/download/v2.0.13/numactl-2.0.13.tar.gz" =>
