@@ -6,7 +6,7 @@ version = v"2.10.14"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or/CoinUtils.git", "f01efb018b4c8300634f268e8029f5414208f05c"),
-    DirectorySource("./bundled"),
+#    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,14 +15,6 @@ cd $WORKSPACE/srcdir/CoinUtils*
 
 # Remove wrong libtool files
 rm -f /opt/${target}/${target}/lib*/*.la
-
-if [[ "${target}" == *-musl* ]]; then
-    # This is to fix the following error:
-    #    node_heap.cpp:11:22: fatal error: execinfo.h: No such file or directory
-    #     #include <execinfo.h>
-    # `execinfo.h` is GlibC-specific, not Linux-specific
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/glibc_specific.patch"
-fi
 
 CPPFLAGS="-I${prefix}/include"
 update_configure_scripts
