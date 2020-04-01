@@ -18,7 +18,7 @@ rm -f /opt/${target}/${target}/lib*/*.la
 
 CPPFLAGS="-I${prefix}/include"
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target} --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+./configure --prefix=${prefix} --host=${target} --enable-shared --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
 make -j${nproc}
 make install
 """
