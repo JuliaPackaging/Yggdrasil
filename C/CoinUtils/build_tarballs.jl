@@ -6,7 +6,6 @@ version = v"2.10.14"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or/CoinUtils.git", "f01efb018b4c8300634f268e8029f5414208f05c"),
-#    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,8 +25,9 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = expand_cxxstring_abis(supported_platforms())
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
@@ -38,7 +38,6 @@ products = [
 dependencies = Dependency[
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-#    Dependency("GLPK_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
