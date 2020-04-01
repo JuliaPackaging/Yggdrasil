@@ -16,6 +16,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # initial setup
+ls $WORKSPACE/srcdir/
+ls $WORKSPACE/srcdir/qhull-*
 cd $WORKSPACE/srcdir/qhull
 
 # begin the build process
