@@ -53,7 +53,11 @@ mktempdir() do download_dir
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
     repo = "JuliaBinaryWrappers/$(name)_jll.jl"
     tag = "$(name)-v$(build_version)"
-    upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    if should_upload
+        upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    else
+        upload_prefix = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/"
+    end
     BinaryBuilder.rebuild_jll_package(merged; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
     
     # Upload them to GitHub releases
