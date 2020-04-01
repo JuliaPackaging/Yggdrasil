@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8.0)
 project(cimgui)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_library(cimgui SHARED)
 
 target_sources(cimgui PRIVATE cimgui.cpp)
