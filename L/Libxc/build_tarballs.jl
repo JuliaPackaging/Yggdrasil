@@ -12,10 +12,21 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# Note: Autotools fully supported upstream, but Windows builds only work with CMake
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
-autoreconf -vi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
+
+if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
+    mkdir libxc_build
+    cd libxc_build
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release -DENABLE_FORTRAN=OFF -DBUILD_SHARED_LIBS=ON \
+        -DENABLE_XHOST=OFF ..
+else
+    autoreconf -vi
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
+fi
+
 make -j${nproc}
 make install
 """
@@ -32,6 +43,8 @@ platforms = [
     Linux(:aarch64, libc=:musl),
     MacOS(:x86_64),
     FreeBSD(:x86_64)
+    Windows(:i686),
+    Windows(:x86_64)
 ]
 
 
