@@ -116,6 +116,10 @@ int asl_nlnc(ASL *asl) {
   return asl->i.nlnc_;
 }
 
+int asl_n_cc(ASL *asl) {
+  return asl->i.n_cc_;
+}
+
 int asl_nnzj(ASL *asl) {
   return asl->i.nzc_;
 }
@@ -150,6 +154,10 @@ double *asl_lcon(ASL *asl) {
 
 double *asl_ucon(ASL *asl) {
   return asl->i.Urhsx_;
+}
+
+int *asl_cvar(ASL *asl) {
+  return asl->i.cvar_;
 }
 
 // Objective.

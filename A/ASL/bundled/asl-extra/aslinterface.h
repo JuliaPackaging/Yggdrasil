@@ -45,6 +45,7 @@ int asl_nlnc(   ASL *asl);
 int asl_nnzj(   ASL *asl);
 int asl_nnzh(   ASL *asl);
 int asl_islp(   ASL *asl);
+int asl_n_cc(   ASL *asl);
 
 double *asl_x0(  ASL *asl);
 double *asl_y0(  ASL *asl);
@@ -52,6 +53,7 @@ double *asl_lvar(ASL *asl);
 double *asl_uvar(ASL *asl);
 double *asl_lcon(ASL *asl);
 double *asl_ucon(ASL *asl);
+int    *asl_cvar(ASL *asl);
 
 void asl_varscale(ASL *asl, double *s, int *err);
 void asl_lagscale(ASL *asl, double  s, int *err);
