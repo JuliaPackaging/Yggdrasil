@@ -12,27 +12,29 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# Note: Autotools fully supported upstream, but Windows builds only work with CMake
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
-autoreconf -vi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
+
+if [[ "${target}" = *-mingw* ]]; then
+    mkdir libxc_build
+    cd libxc_build
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release -DENABLE_FORTRAN=OFF -DBUILD_SHARED_LIBS=ON \
+        -DENABLE_XHOST=OFF ..
+else
+    autoreconf -vi
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran
+fi
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
+# Disable armv7l because the build seems to fill /tmp.
+platforms = [p for p in supported_platforms() if arch(p) != :armv7l]
 
 
 # The products that we will ensure are always built
