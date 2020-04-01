@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Osi-releases-*
+cd $WORKSPACE/srcdir/Osi*
 update_configure_scripts
 
 mkdir build
