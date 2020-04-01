@@ -7,16 +7,14 @@ version = v"2019.1"
 
 # Collection of sources required to build
 sources = [
-    GitSource(
-        "https://github.com/qhull/qhull",           # project URL
-        "b94cff0799f36068dee5d800d5cef3b9b911c400"  # commit hash corresponding to the version
-    ),
+    "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz" =>
+    "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # initial setup
-cd $WORKSPACE/srcdir/qhull*
+cd $WORKSPACE/srcdir/qhull*/
 
 # begin the build process
 cd build
