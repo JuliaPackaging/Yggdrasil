@@ -9,9 +9,9 @@ version = v"2.13.1"
 
 # Collection of sources required to build FriBidi
 sources = [
-    "https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.bz2" =>
-    "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741",
-    "./bundled"
+    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.bz2",
+                  "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
