@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "Gettext"
 version = v"0.20.1"
 sources = [
-    "https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version).tar.xz" =>
-    "53f02fbbec9e798b0faaf7c73272f83608e835c6288dd58be6c9bb54624a3800",
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version).tar.xz",
+                  "53f02fbbec9e798b0faaf7c73272f83608e835c6288dd58be6c9bb54624a3800"),
 ]
 
 # Bash recipe for building across all platforms

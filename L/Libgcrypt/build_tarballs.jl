@@ -7,8 +7,8 @@ version = v"1.8.5"
 
 # Collection of sources required to build libgcrypt
 sources = [
-    "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2" =>
-    "3b4a2a94cb637eff5bdebbcaf46f4d95c4f25206f459809339cdada0eb577ac3",
+    ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
+                  "3b4a2a94cb637eff5bdebbcaf46f4d95c4f25206f459809339cdada0eb577ac3"),
 ]
 
 # Bash recipe for building across all platforms

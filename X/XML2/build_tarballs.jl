@@ -7,8 +7,8 @@ version = v"2.9.9"
 
 # Collection of sources required to build XML2Builder
 sources = [
-    "https://github.com/GNOME/libxml2/archive/v$(version).tar.gz" =>
-    "d673f0284cec867ee00872a8152e0c3c09852f17fd9aa93f07579a37534f0bfe",
+    ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
+                  "d673f0284cec867ee00872a8152e0c3c09852f17fd9aa93f07579a37534f0bfe"),
 ]
 
 # Bash recipe for building across all platforms
