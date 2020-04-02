@@ -1,0 +1,576 @@
+From cbc78036d1a5bd0a889acdc87c2fb902d5ace159 Mon Sep 17 00:00:00 2001
+From: lgotszal <lukasz.gotszald@intel.com>
+Date: Thu, 6 Feb 2020 06:46:06 -0800
+Subject: [PATCH] remove static assert macros: __CODEGEN_C_ASSERT,
+ __CODEGEN_ASSERT, C_ASSERT, STATIC_ASSERT
+
+Change-Id: I06b0eb99ce2f6c0318bb093d666de3a726a01293
+---
+ IGC/AdaptorOCL/OCL/Platform/cmd_3d_def_g8.h   |  2 +-
+ .../OCL/Platform/cmd_media_def_g8.h           | 12 ++---
+ IGC/AdaptorOCL/OCL/Platform/cmd_mi_def_g8.h   | 50 +++++++++----------
+ .../OCL/Platform/cmd_shared_def_g8.h          | 18 +++----
+ IGC/AdaptorOCL/OCL/sp/sp_convert_g8.h         | 28 +++++------
+ IGC/AdaptorOCL/OCL/sp/sp_types.h              | 10 ----
+ IGC/OCLFE/igd_fcl_mcl/headers/IGILContext.h   |  4 --
+ IGC/common/MemStats.h                         |  2 +-
+ IGC/common/contextTypes.h                     |  4 +-
+ 9 files changed, 58 insertions(+), 72 deletions(-)
+
+diff --git a/IGC/AdaptorOCL/OCL/Platform/cmd_3d_def_g8.h b/IGC/AdaptorOCL/OCL/Platform/cmd_3d_def_g8.h
+index a5db16eb..964eb766 100644
+--- a/IGC/AdaptorOCL/OCL/Platform/cmd_3d_def_g8.h
++++ b/IGC/AdaptorOCL/OCL/Platform/cmd_3d_def_g8.h
+@@ -157,7 +157,7 @@ struct S3DPipeControl
+ 
+ };
+ 
+-C_ASSERT( SIZE32(S3DPipeControl) == 6 );
++static_assert(SIZE32(S3DPipeControl) == 6);
+ 
+ }  // namespace G6HWC
+ 
+diff --git a/IGC/AdaptorOCL/OCL/Platform/cmd_media_def_g8.h b/IGC/AdaptorOCL/OCL/Platform/cmd_media_def_g8.h
+index 1e22ca44..ef8974fd 100644
+--- a/IGC/AdaptorOCL/OCL/Platform/cmd_media_def_g8.h
++++ b/IGC/AdaptorOCL/OCL/Platform/cmd_media_def_g8.h
+@@ -209,7 +209,7 @@ struct SMediaStateInterfaceDescriptorData
+     } DW7;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateInterfaceDescriptorData ) == 8 );
++static_assert(SIZE32(SMediaStateInterfaceDescriptorData) == 8);
+ 
+ /*****************************************************************************\
+ STRUCT: SMediaStateMediaInterfaceDescriptorLoad (MEDIA_INTERFACE_DESCRIPTOR_LOAD)
+@@ -260,7 +260,7 @@ struct SMediaStateMediaInterfaceDescriptorLoad
+     } DW3;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateMediaInterfaceDescriptorLoad ) == 4 );
++static_assert(SIZE32(SMediaStateMediaInterfaceDescriptorLoad) == 4);
+ 
+ /*****************************************************************************\
+ STRUCT: SMediaStateMediaVFEState (MEDIA_VFE_STATE)
+@@ -497,7 +497,7 @@ struct SMediaStateMediaVFEState
+     } DW8;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateMediaVFEState ) == 9 );
++static_assert(SIZE32(SMediaStateMediaVFEState) == 9);
+ 
+ /*****************************************************************************\
+ STRUCT: SMediaStateMediaCURBELoad (MEDIA_CURBE_LOAD)
+@@ -549,7 +549,7 @@ struct SMediaStateMediaCURBELoad
+     } DW3;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateMediaCURBELoad ) == 4 );
++static_assert(SIZE32(SMediaStateMediaCURBELoad) == 4);
+ 
+ /*****************************************************************************\
+ STRUCT: SMediaStateMediaStateFlush (MEDIA_STATE_FLUSH)
+@@ -592,7 +592,7 @@ struct SMediaStateMediaStateFlush
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateMediaStateFlush ) == 2 );
++static_assert(SIZE32(SMediaStateMediaStateFlush) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMediaStateGPGPUWalker (GPGPU_WALKER)
+@@ -833,7 +833,7 @@ struct SMediaStateGPGPUWalker
+     } DW14;
+ };
+ 
+-C_ASSERT( SIZE32( SMediaStateGPGPUWalker ) == 15 );
++static_assert(SIZE32(SMediaStateGPGPUWalker) == 15);
+ 
+ }  // namespace G6HWC
+ 
+diff --git a/IGC/AdaptorOCL/OCL/Platform/cmd_mi_def_g8.h b/IGC/AdaptorOCL/OCL/Platform/cmd_mi_def_g8.h
+index c99e030d..fd68cd9a 100644
+--- a/IGC/AdaptorOCL/OCL/Platform/cmd_mi_def_g8.h
++++ b/IGC/AdaptorOCL/OCL/Platform/cmd_mi_def_g8.h
+@@ -48,7 +48,7 @@ struct SMIARBCheck
+         DWORD       Value;
+     } DW0;
+ };
+-C_ASSERT( SIZE32(SMIARBCheck) == 1 );
++static_assert(SIZE32(SMIARBCheck) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIARBOnOff (MI_ARB_ON_OFF)
+@@ -68,7 +68,7 @@ struct SMIARBOnOff
+         DWORD       Value;
+     } DW0;
+ };
+-C_ASSERT( SIZE32(SMIARBOnOff) == 1 );
++static_assert(SIZE32(SMIARBOnOff) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIBatchBufferEnd (MI_BATCH_BUFFER_END)
+@@ -88,7 +88,7 @@ struct SMIBatchBufferEnd
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIBatchBufferEnd) == 1 );
++static_assert(SIZE32(SMIBatchBufferEnd) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIBatchBufferStart (MI_BATCH_BUFFER_START)
+@@ -125,7 +125,7 @@ struct SMIBatchBufferStart
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMIBatchBufferStart) == 2 );
++static_assert(SIZE32(SMIBatchBufferStart) == 2);
+ 
+ 
+ /*****************************************************************************\
+@@ -190,7 +190,7 @@ struct SMIDisplayFlip
+     } DW3;
+ };
+ 
+-C_ASSERT( SIZE32(SMIDisplayFlip) == 4 );
++static_assert(SIZE32(SMIDisplayFlip) == 4);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIFlush (MI_FLUSH)
+@@ -217,7 +217,7 @@ struct SMIFlush
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIFlush) == 1 );
++static_assert(SIZE32(SMIFlush) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMILoadRegisterImmediate (MI_LOAD_REGISTER_IMM)
+@@ -264,7 +264,7 @@ struct SMILoadRegisterImmediate
+     } DW2;
+ };
+ 
+-C_ASSERT( SIZE32(SMILoadRegisterImmediate) == 3 );
++static_assert(SIZE32(SMILoadRegisterImmediate) == 3);
+ 
+ /*****************************************************************************\
+ STRUCT: SMILoadScanLinesExclusive (MI_LOAD_SCAN_LINES_EXCL)
+@@ -298,7 +298,7 @@ struct SMILoadScanLinesExclusive
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMILoadScanLinesExclusive) == 2 );
++static_assert(SIZE32(SMILoadScanLinesExclusive) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMILoadScanLinesInclusive (MI_LOAD_SCAN_LINES_INCL)
+@@ -332,7 +332,7 @@ struct SMILoadScanLinesInclusive
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMILoadScanLinesInclusive) == 2 );
++static_assert(SIZE32(SMILoadScanLinesInclusive) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMINoop (MI_NOOP)
+@@ -353,7 +353,7 @@ struct SMINoop
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMINoop) == 1 );
++static_assert(SIZE32(SMINoop) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIOverlayFlip (MI_OVERLAY_FLIP)
+@@ -387,7 +387,7 @@ struct SMIOverlayFlip
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMIOverlayFlip) == 2 );
++static_assert(SIZE32(SMIOverlayFlip) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIProbeHeader (MI_PROBE)
+@@ -407,7 +407,7 @@ struct SMIProbeHeader
+         DWORD       Value;
+     } DW0;
+ };
+-C_ASSERT( SIZE32(SMIProbeHeader) == 1 );
++static_assert(SIZE32(SMIProbeHeader) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIProbeState (MI_PROBE)
+@@ -426,7 +426,7 @@ struct SMIProbeState
+         DWORD       Value;
+     } DW0;
+ };
+-C_ASSERT( SIZE32(SMIProbeState) == 1 );
++static_assert(SIZE32(SMIProbeState) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIProbe (MI_PROBE)
+@@ -455,7 +455,7 @@ struct SMIReportHead
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIReportHead) == 1 );
++static_assert(SIZE32(SMIReportHead) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIReportNonCE (MI_REPORT_NONCE)
+@@ -486,7 +486,7 @@ struct SMIReportNonCE
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMIReportNonCE) == 2 );
++static_assert(SIZE32(SMIReportNonCE) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMISemaphoreMBox (MI_SEMAPHORE_MBOX)
+@@ -532,7 +532,7 @@ struct SMISemaphoreMBox
+     } DW2;
+ };
+ 
+-C_ASSERT( SIZE32(SMISemaphoreMBox) == 3 );
++static_assert(SIZE32(SMISemaphoreMBox) == 3);
+ 
+ /*****************************************************************************\
+ STRUCT: SMISetContext (MI_SET_CONTEXT)
+@@ -571,7 +571,7 @@ struct SMISetContext
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMISetContext) == 2 );
++static_assert(SIZE32(SMISetContext) == 2);
+ 
+ 
+ /*****************************************************************************\
+@@ -647,7 +647,7 @@ struct SMIStoreDataImmediate
+     } QW2;
+ };
+ 
+-C_ASSERT( SIZE32(SMIStoreDataImmediate) == 5 );
++static_assert(SIZE32(SMIStoreDataImmediate) == 5);
+ 
+ 
+ /*****************************************************************************\
+@@ -704,7 +704,7 @@ struct SMIStoreDataIndexed
+     } QW2;
+ };
+ 
+-C_ASSERT( SIZE32(SMIStoreDataIndexed) == 4 );
++static_assert(SIZE32(SMIStoreDataIndexed) == 4);
+ 
+ 
+ /*****************************************************************************\
+@@ -750,7 +750,7 @@ struct SMIStoreRegisterMemory
+     } DW2;
+ };
+ 
+-C_ASSERT( SIZE32(SMIStoreRegisterMemory) == 3 );
++static_assert(SIZE32(SMIStoreRegisterMemory) == 3);
+ 
+ 
+ /*****************************************************************************\
+@@ -784,7 +784,7 @@ struct SMIUpdateGTTHeader
+     } DW1;
+ };
+ 
+-C_ASSERT( SIZE32(SMIUpdateGTTHeader) == 2 );
++static_assert(SIZE32(SMIUpdateGTTHeader) == 2);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIUpdateGTTState (MI_UPDATE_GTT)
+@@ -802,7 +802,7 @@ struct SMIUpdateGTTState
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIUpdateGTTState) == 1 );
++static_assert(SIZE32(SMIUpdateGTTState) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIUpdateGTT (MI_UPDATE_GTT)
+@@ -831,7 +831,7 @@ struct SMIUnProbe
+         DWORD       Value;
+     } DW0;
+ };
+-C_ASSERT( SIZE32(SMIUnProbe) == 1 );
++static_assert(SIZE32(SMIUnProbe) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIUserInterrupt (MI_USER_INTERRUPT)
+@@ -851,7 +851,7 @@ struct SMIUserInterrupt
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIUserInterrupt) == 1 );
++static_assert(SIZE32(SMIUserInterrupt) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SMIWaitForEvent (MI_WAIT_FOR_EVENT)
+@@ -887,7 +887,7 @@ struct SMIWaitForEvent
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SMIWaitForEvent) == 1 );
++static_assert(SIZE32(SMIWaitForEvent) == 1);
+ 
+ } //namespace G6HWC
+ 
+diff --git a/IGC/AdaptorOCL/OCL/Platform/cmd_shared_def_g8.h b/IGC/AdaptorOCL/OCL/Platform/cmd_shared_def_g8.h
+index 559a3ce4..15574495 100644
+--- a/IGC/AdaptorOCL/OCL/Platform/cmd_shared_def_g8.h
++++ b/IGC/AdaptorOCL/OCL/Platform/cmd_shared_def_g8.h
+@@ -50,7 +50,7 @@ struct SSharedStateBindingTableState
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateBindingTableState) == 1 );
++static_assert(SIZE32(SSharedStateBindingTableState) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SGfxSamplerIndirectState (SAMPLER_INDIRECT_STATE)
+@@ -79,7 +79,7 @@ struct SGfxSamplerIndirectState
+     DWORD   _Unused7;
+     DWORD   _Unused8;
+ };
+-C_ASSERT(SIZE32(SGfxSamplerIndirectState) == 12);
++static_assert(SIZE32(SGfxSamplerIndirectState) == 12);
+ 
+ /*****************************************************************************\
+ STRUCT: SSharedStateSamplerState ( SAMPLER_STATE )
+@@ -333,7 +333,7 @@ struct SSharedStateSamplerState
+     } DW3;
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateSamplerState) == 4 );
++static_assert(SIZE32(SSharedStateSamplerState) == 4);
+ 
+ /*****************************************************************************\
+ STRUCT: SSharedStateSearchPathLUTState
+@@ -367,7 +367,7 @@ struct SSharedStateSearchPathLUTState
+     } DW0;
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateSearchPathLUTState) == 1 );
++static_assert(SIZE32(SSharedStateSearchPathLUTState) == 1);
+ 
+ /*****************************************************************************\
+ STRUCT: SSharedStateRDLUTSet
+@@ -431,7 +431,7 @@ struct SSharedStateRDLUTSet
+     } DW3;
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateRDLUTSet) == 4 );
++static_assert(SIZE32(SSharedStateRDLUTSet) == 4);
+ 
+ /*****************************************************************************\
+ STRUCT: SSharedStateVmeState ( VME_STATE )
+@@ -473,7 +473,7 @@ struct SSharedStateVmeState
+     struct SSharedStateRDLUTSet   RdLutSet[ g_cNumMBModeSetsGen6 ];
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateVmeState) == 32 );
++static_assert(SIZE32(SSharedStateVmeState) == 32);
+ 
+ /*****************************************************************************\
+ STRUCT: SSamplerStateErodeDilateMinMaxFilter ( SAMPLER_STATE Erode/Dilate/MinMaxFilter )
+@@ -490,7 +490,7 @@ struct SSamplerStateErodeDilateMinMaxFilter
+     DWORD DW7;
+ };
+ 
+-C_ASSERT( SIZE32(SSamplerStateErodeDilateMinMaxFilter) == 8 );
++static_assert(SIZE32(SSamplerStateErodeDilateMinMaxFilter) == 8);
+ 
+ /*****************************************************************************\
+ STRUCT: SSharedStateSurfaceState ( SURFACE_STATE )
+@@ -1242,7 +1242,7 @@ struct SSharedStateSurfaceState
+     } DW15;
+ };
+ 
+-C_ASSERT( SIZE32(SSharedStateSurfaceState) == 16 );
++static_assert(SIZE32(SSharedStateSurfaceState) == 16);
+ 
+ /*****************************************************************************\
+ UNION: SSurfaceStateBufferLength
+@@ -1260,7 +1260,7 @@ union SSurfaceStateBufferLength
+     DWORD Length;
+ };
+ 
+-C_ASSERT( SIZE32(SSurfaceStateBufferLength) == 1 );
++static_assert(SIZE32(SSurfaceStateBufferLength) == 1);
+ 
+ }  // namespace G6HWC
+ 
+diff --git a/IGC/AdaptorOCL/OCL/sp/sp_convert_g8.h b/IGC/AdaptorOCL/OCL/sp/sp_convert_g8.h
+index 6cacea1f..26c45d68 100644
+--- a/IGC/AdaptorOCL/OCL/sp/sp_convert_g8.h
++++ b/IGC/AdaptorOCL/OCL/sp/sp_convert_g8.h
+@@ -48,8 +48,8 @@ static const G6HWC::GFXSHAREDSTATE_TEXCOORDMODE g_cConvertSamplerTextureAddressM
+     G6HWC::GFXSHAREDSTATE_TEXCOORDMODE_MIRROR_101      // SAMPLER_TEXTURE_ADDRESS_MODE_MIRROR101
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertSamplerTextureAddressMode) ==
+-    sizeof(G6HWC::GFXSHAREDSTATE_TEXCOORDMODE) * NUM_SAMPLER_TEXTURE_ADDRESS_MODES );
++static_assert(sizeof(g_cConvertSamplerTextureAddressMode) ==
++    sizeof(G6HWC::GFXSHAREDSTATE_TEXCOORDMODE) * NUM_SAMPLER_TEXTURE_ADDRESS_MODES);
+ 
+ /*****************************************************************************\
+ CONST: g_cConvertSamplerMapFilter
+@@ -64,8 +64,8 @@ static const G6HWC::GFXSHAREDSTATE_MAPFILTER g_cConvertSamplerMapFilter[] =
+     G6HWC::GFXSHAREDSTATE_MAPFILTER_MONO            // SAMPLER_MAPFILTER_MONO
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertSamplerMapFilter) ==
+-    sizeof(G6HWC::GFXSHAREDSTATE_MAPFILTER) * NUM_SAMPLER_MAPFILTER_TYPES );
++static_assert(sizeof(g_cConvertSamplerMapFilter) ==
++    sizeof(G6HWC::GFXSHAREDSTATE_MAPFILTER) * NUM_SAMPLER_MAPFILTER_TYPES);
+ 
+ /*****************************************************************************\
+ CONST: g_cConvertSamplerMipFilter
+@@ -77,7 +77,7 @@ static const G6HWC::GFXSHAREDSTATE_MIPFILTER g_cConvertSamplerMipFilter[] =
+     G6HWC::GFXSHAREDSTATE_MIPFILTER_NONE            // SAMPLER_MIPFILTER_NONE
+ };
+ 
+-C_ASSERT(sizeof(g_cConvertSamplerMipFilter) ==
++static_assert(sizeof(g_cConvertSamplerMipFilter) ==
+     sizeof(G6HWC::GFXSHAREDSTATE_MAPFILTER) * NUM_SAMPLER_MIPFILTER_TYPES);
+ 
+ /*****************************************************************************\
+@@ -95,7 +95,7 @@ static const G6HWC::GFXSHAREDSTATE_PREFILTER_OPERATION g_cConvertCompareFunc[] =
+     G6HWC::GFXSHAREDSTATE_PREFILTER_GREATER    // SAMPLER_COMPARE_FUNC_GREATER_EQUAL
+ };
+ 
+-C_ASSERT(sizeof(g_cConvertCompareFunc) ==
++static_assert(sizeof(g_cConvertCompareFunc) ==
+     sizeof(G6HWC::GFXSHAREDSTATE_PREFILTER_OPERATION) * NUM_SAMPLER_COMPARE_FUNC_TYPES);
+ 
+ /*****************************************************************************\
+@@ -303,8 +303,8 @@ static const G6HWC::GFXSHAREDSTATE_SURFACEFORMAT g_cConvertSurfaceFormat[] =
+     G6HWC::GFXSHAREDSTATE_SURFACEFORMAT_RAW,                        // IGC::SURFACE_FORMAT_RAW
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertSurfaceFormat) ==
+-    sizeof(G6HWC::GFXSHAREDSTATE_SURFACEFORMAT) * IGC::NUM_SURFACE_FORMATS );
++static_assert(sizeof(g_cConvertSurfaceFormat) ==
++    sizeof(G6HWC::GFXSHAREDSTATE_SURFACEFORMAT) * IGC::NUM_SURFACE_FORMATS);
+ 
+ /*****************************************************************************\
+ CONST: g_cConvertSurfaceMipMapLayout
+@@ -315,8 +315,8 @@ static const G6HWC::GFXSHAREDSTATE_SURFACE_MIPMAPLAYOUT g_cConvertSurfaceMipMapL
+     G6HWC::GFXSHAREDSTATE_SURFACE_MIPMAPLAYOUT_RIGHT,   // RESOURCE_MIPMAP_LAYOUT_RIGHT
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertSurfaceMipMapLayout) ==
+-    sizeof(G6HWC::GFXSHAREDSTATE_SURFACE_MIPMAPLAYOUT) * NUM_RESOURCE_MIPMAP_LAYOUT_MODES );
++static_assert(sizeof(g_cConvertSurfaceMipMapLayout) ==
++    sizeof(G6HWC::GFXSHAREDSTATE_SURFACE_MIPMAPLAYOUT) * NUM_RESOURCE_MIPMAP_LAYOUT_MODES);
+ 
+ /*****************************************************************************\
+ CONST: g_cConvertSurfaceType
+@@ -338,8 +338,8 @@ static const G6HWC::GFXSHAREDSTATE_SURFACETYPE g_cConvertSurfaceType[] =
+     G6HWC::GFXSHAREDSTATE_SURFACETYPE_2D        // SURFACE_2D_MEDIA_BLOCK
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertSurfaceType) ==
+-    sizeof(G6HWC::GFXSHAREDSTATE_SURFACETYPE) * NUM_SURFACE_TYPES );
++static_assert(sizeof(g_cConvertSurfaceType) ==
++    sizeof(G6HWC::GFXSHAREDSTATE_SURFACETYPE) * NUM_SURFACE_TYPES);
+ 
+ #if 0
+ /*****************************************************************************\
+@@ -359,8 +359,8 @@ static const iOpenCL::IMAGE_MEMORY_OBJECT_TYPE g_cConvertResourceType[] =
+     iOpenCL::IMAGE_MEMORY_OBJECT_2D_MEDIA,  // SHADER_RESOURCE_2D_MEDIA
+ };
+ 
+-C_ASSERT( sizeof(g_cConvertResourceType) ==
+-    sizeof(iOpenCL::IMAGE_MEMORY_OBJECT_TYPE) * USC::NUM_SHADER_RESOURCE_TYPES );
++static_assert(sizeof(g_cConvertResourceType) ==
++    sizeof(iOpenCL::IMAGE_MEMORY_OBJECT_TYPE) * USC::NUM_SHADER_RESOURCE_TYPES);
+ #endif
+ 
+ } // namespace iOpenCL
+diff --git a/IGC/AdaptorOCL/OCL/sp/sp_types.h b/IGC/AdaptorOCL/OCL/sp/sp_types.h
+index 1fa2d560..358434ad 100644
+--- a/IGC/AdaptorOCL/OCL/sp/sp_types.h
++++ b/IGC/AdaptorOCL/OCL/sp/sp_types.h
+@@ -35,8 +35,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+     typedef unsigned __int64    UINT64;         //  64-bits,    8-bytes
+     typedef unsigned long       ULONG;          //  32-bits,    4-bytes
+ 
+-    #define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]
+-
+ #else // if !defined(_WIN32)
+ 
+     typedef std::uint64_t            QWORD;          //  64-bits,    8-bytes
+@@ -45,14 +43,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+     typedef std::uint64_t            UINT64;         //  64-bits,    8-bytes
+     typedef unsigned int        ULONG;
+ 
+-    #ifndef C_ASSERT
+-        #define __UNIQUENAME( a1, a2 )  __CONCAT( a1, a2 )
+-            #define UNIQUENAME( __text )    __UNIQUENAME( __text, __COUNTER__ )
+-
+-        #define STATIC_ASSERT(e)  typedef char UNIQUENAME(STATIC_ASSERT_)[(e)?1:-1]
+-
+-        #define C_ASSERT(e) STATIC_ASSERT(e)
+-     #endif
+ #endif
+ 
+ typedef unsigned int            UINT32;         //  32-bits,    4-bytes
+diff --git a/IGC/OCLFE/igd_fcl_mcl/headers/IGILContext.h b/IGC/OCLFE/igd_fcl_mcl/headers/IGILContext.h
+index 436fa53d..fc92b51d 100644
+--- a/IGC/OCLFE/igd_fcl_mcl/headers/IGILContext.h
++++ b/IGC/OCLFE/igd_fcl_mcl/headers/IGILContext.h
+@@ -68,8 +68,6 @@ typedef int INT; */
+ 
+ #define HANDLE void*
+ 
+-#define C_ASSERT(e)
+-
+ #include "GlobalData.h"
+ 
+ #ifdef VER_H
+@@ -85,8 +83,6 @@ typedef int INT; */
+ #undef UINT
+ #undef HANDLE
+ 
+-#undef C_ASSERT
+-
+ class IGILContext : public llvm::LLVMContext
+ {
+ public:
+diff --git a/IGC/common/MemStats.h b/IGC/common/MemStats.h
+index d22b3b3f..9798a92f 100644
+--- a/IGC/common/MemStats.h
++++ b/IGC/common/MemStats.h
+@@ -101,6 +101,6 @@ static const SShaderMemorySnapshotInfo g_cShaderMemorySnapshot[] =
+     { "COMPILE_END", true },
+ };
+ 
+-C_ASSERT( ( sizeof( g_cShaderMemorySnapshot ) / sizeof( *g_cShaderMemorySnapshot ) ) == MAX_SHADER_MEMORY_SNAPSHOT );
++static_assert((sizeof(g_cShaderMemorySnapshot) / sizeof(*g_cShaderMemorySnapshot)) == MAX_SHADER_MEMORY_SNAPSHOT);
+ 
+ }
+diff --git a/IGC/common/contextTypes.h b/IGC/common/contextTypes.h
+index 30414619..ff8b84d8 100644
+--- a/IGC/common/contextTypes.h
++++ b/IGC/common/contextTypes.h
+@@ -82,7 +82,7 @@ struct RETVAL
+     operator ErrorCode();                   // convertion operator to ErrorCode API type
+ };
+ 
+-C_ASSERT( sizeof( RETVAL ) == sizeof( ErrorCode ) );
++static_assert(sizeof(RETVAL) == sizeof(ErrorCode));
+ 
+ 
+ inline RETVAL& RETVAL::operator = (const ErrorCode& errorCode)
+@@ -111,7 +111,7 @@ const RETVAL g_cInitRetVal =
+     false,  // Busy
+ };
+ 
+-C_ASSERT(sizeof(g_cInitRetVal) == sizeof(g_cInitErrorCode));
++static_assert(sizeof(g_cInitRetVal) == sizeof(g_cInitErrorCode));
+ 
+ #endif
+ 
