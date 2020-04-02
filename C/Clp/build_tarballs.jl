@@ -19,6 +19,11 @@ update_configure_scripts
 mkdir build
 cd build/
 
+export CPPFLAGS="-I${prefix}/include"
+if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+    export LDFLAGS="-ldl -lrt"
+fi
+
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} --enable-shared \
 --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-asl-lib="-lasl -ldl" --with-asl-incdir="$prefix/include" \
