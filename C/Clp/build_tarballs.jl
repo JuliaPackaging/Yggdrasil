@@ -16,6 +16,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/Clp*
 update_configure_scripts
 
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
+
 mkdir build
 cd build/
 
