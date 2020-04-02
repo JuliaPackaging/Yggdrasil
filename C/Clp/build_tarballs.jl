@@ -29,7 +29,7 @@ cd build/
 
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} --enable-shared \
 --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
---with-asl-lib="-lasl" --with-asl-incdir="$prefix/include" \
+--with-asl-lib="-lasl -ldl" --with-asl-incdir="$prefix/include" \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-metis-lib="-lmetis" --with-metis-incdir="$prefix/include" \
 --without-mumps \
@@ -49,8 +49,8 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOsiClp", :libOsiClp),
     LibraryProduct("libClp", :libClp),
+    LibraryProduct("libOsiClp", :libOsiClp),
     LibraryProduct("libClpSolver", :libClpSolver)
 ]
 
