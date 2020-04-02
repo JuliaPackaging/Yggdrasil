@@ -1,4 +1,4 @@
-using BinaryBuilderA
+using BinaryBuilder
 
 name = "ClpBuilder"
 version = v"1.16.11"
