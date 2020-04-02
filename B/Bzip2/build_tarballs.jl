@@ -3,6 +3,7 @@ using BinaryBuilder
 name = "Bzip2"
 version = v"1.0.6"
 
+
 # Collection of sources required to build bzip2
 sources = [
     "https://github.com/enthought/bzip2-1.0.6.git" =>

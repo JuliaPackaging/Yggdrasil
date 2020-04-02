@@ -4,6 +4,7 @@ using BinaryBuilder
 name = "Zlib"
 version = v"1.2.11"
 
+
 # Collection of sources required to build zlib
 sources = [
     "https://zlib.net/zlib-$(version).tar.gz" =>
