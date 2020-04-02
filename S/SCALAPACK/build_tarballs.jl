@@ -87,6 +87,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-# set preferred gcc version because libopenblas requires libgomp
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-# ; preferred_gcc_version=v"5")
