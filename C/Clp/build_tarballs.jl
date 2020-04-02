@@ -14,6 +14,16 @@ script = raw"""
 cd $WORKSPACE/srcdir/Clp*
 update_configure_scripts
 
+# Fix some paths
+for path in ${LD_LIBRARY_PATH//:/ }; do
+    for file in $(ls $path/*.la); do
+        echo "$file"
+        baddir=$(sed -n "s|libdir=||p" $file)
+        sed -i~ -e "s|$baddir|'$path'|g" $file
+    done
+done
+
+
 mkdir build
 cd build/
 
@@ -34,6 +44,8 @@ make install
 # platforms are passed in on the command line
 
 platforms = supported_platforms()
+platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
