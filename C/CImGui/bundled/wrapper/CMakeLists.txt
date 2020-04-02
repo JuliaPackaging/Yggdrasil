@@ -43,4 +43,4 @@ install(TARGETS cimgui_helper
         INCLUDES DESTINATION include
         PUBLIC_HEADER DESTINATION include)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION lib)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION share)
