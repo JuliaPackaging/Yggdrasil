@@ -26,9 +26,9 @@ export CXXFLAGS="-std=c++11"
 make -j${nproc}
 make install
 
-if [[ ${target} == "*mingw* ]]; then
+if [[ ${target} == "*mingw*" ]]; then
     cd $prefix/bin && mv libOsi-1.dll libOsi.dll && mv libOsiCommonTests-1.dll libOsiCommonTests.dll
-end
+fi
 """
 
 # These are the platforms we will build for by default, unless further
