@@ -56,6 +56,8 @@ mktempdir() do download_dir
     if should_upload
         upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
     else
+        bb_hash = ENV["BB_HASH"]
+        proj_hash = ENV["PROJ_HASH"]
         upload_prefix = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/"
     end
     BinaryBuilder.rebuild_jll_package(merged; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
