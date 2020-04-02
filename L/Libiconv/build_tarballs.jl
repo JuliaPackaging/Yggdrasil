@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "Libiconv"
 version = v"1.16"
 sources = [
-    "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz" =>
-    "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04",
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz",
+               "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04"),
 ]
 
 # Bash recipe for building across all platforms

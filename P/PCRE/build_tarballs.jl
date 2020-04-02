@@ -5,8 +5,8 @@ version = v"8.42"
 
 # Collection of sources required to build Pcre
 sources = [
-    "https://ftp.pcre.org/pub/pcre/pcre-$(version.major).$(version.minor).tar.bz2" =>
-    "2cd04b7c887808be030254e8d77de11d3fe9d4505c39d4b15d2664ffe8bf9301",
+    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre-$(version.major).$(version.minor).tar.bz2",
+               "2cd04b7c887808be030254e8d77de11d3fe9d4505c39d4b15d2664ffe8bf9301")
 ]
 
 # Bash recipe for building across all platforms

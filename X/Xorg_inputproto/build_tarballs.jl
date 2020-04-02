@@ -7,8 +7,8 @@ version = v"2.3.2"
 
 # Collection of sources required to build inputproto
 sources = [
-    "https://www.x.org/archive/individual/proto/inputproto-$(version).tar.bz2" =>
-    "893a6af55733262058a27b38eeb1edc733669f01d404e8581b167f03c03ef31d",
+    ArchiveSource("https://www.x.org/archive/individual/proto/inputproto-$(version).tar.bz2",
+               "893a6af55733262058a27b38eeb1edc733669f01d404e8581b167f03c03ef31d")
 ]
 
 # Bash recipe for building across all platforms

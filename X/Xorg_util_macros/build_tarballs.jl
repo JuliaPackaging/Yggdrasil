@@ -7,8 +7,8 @@ version = v"1.19.2"
 
 # Collection of sources required to build xorg-util-macros
 sources = [
-    "https://www.x.org/archive/individual/util/util-macros-$(version).tar.bz2" =>
-    "d7e43376ad220411499a79735020f9d145fdc159284867e99467e0d771f3e712",
+    ArchiveSource("https://www.x.org/archive/individual/util/util-macros-$(version).tar.bz2",
+               "d7e43376ad220411499a79735020f9d145fdc159284867e99467e0d771f3e712")
 ]
 
 # Bash recipe for building across all platforms

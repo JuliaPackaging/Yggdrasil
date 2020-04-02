@@ -7,8 +7,8 @@ version = v"1.0.7"
 
 # Collection of sources required to build kbproto
 sources = [
-    "https://www.x.org/archive/individual/proto/kbproto-$(version).tar.bz2" =>
-    "f882210b76376e3fa006b11dbd890e56ec0942bc56e65d1249ff4af86f90b857",
+    ArchiveSource("https://www.x.org/archive/individual/proto/kbproto-$(version).tar.bz2",
+               "f882210b76376e3fa006b11dbd890e56ec0942bc56e65d1249ff4af86f90b857")
 ]
 
 # Bash recipe for building across all platforms
