@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "ClpBuilder"
-#version = v"1.16.11"
-version = v"1.17.5"
+version = v"1.16.11"
+#version = v"1.17.5"
 
 # Collection of sources required to build ClpBuilder
 sources = [
     GitSource("https://github.com/coin-or/Clp.git", 
-    "29a3d29d94f102e9029eb4be72cde2bfd378d752"),  # 1.17.5
-#    "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"), # 1.16.11
+#    "29a3d29d94f102e9029eb4be72cde2bfd378d752"),  # 1.17.5
+    "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"), # 1.16.11
 ]
 
 # Bash recipe for building across all platforms
