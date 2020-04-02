@@ -7,8 +7,8 @@ version = v"0.1"
 
 # Collection of sources required to build libpthread-stubs
 sources = [
-    "https://www.x.org/archive/individual/lib/libpthread-stubs-$(version.major).$(version.minor).tar.bz2" =>
-    "004dae11e11598584939d66d26a5ab9b48d08a00ca2d00ae8d38ee3ac7a15d65",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libpthread-stubs-$(version.major).$(version.minor).tar.bz2",
+                  "004dae11e11598584939d66d26a5ab9b48d08a00ca2d00ae8d38ee3ac7a15d65"),
 ]
 
 # Bash recipe for building across all platforms

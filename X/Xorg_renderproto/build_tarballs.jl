@@ -7,8 +7,8 @@ version = v"0.11.1"
 
 # Collection of sources required to build renderproto
 sources = [
-    "https://www.x.org/archive/individual/proto/renderproto-$(version).tar.bz2" =>
-    "06735a5b92b20759204e4751ecd6064a2ad8a6246bb65b3078b862a00def2537",
+    ArchiveSource("https://www.x.org/archive/individual/proto/renderproto-$(version).tar.bz2",
+               "06735a5b92b20759204e4751ecd6064a2ad8a6246bb65b3078b862a00def2537")
 ]
 
 # Bash recipe for building across all platforms

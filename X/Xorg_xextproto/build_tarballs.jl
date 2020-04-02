@@ -7,8 +7,8 @@ version = v"7.3.0"
 
 # Collection of sources required to build xextproto
 sources = [
-    "https://www.x.org/archive/individual/proto/xextproto-$(version).tar.bz2" =>
-    "f3f4b23ac8db9c3a9e0d8edb591713f3d70ef9c3b175970dd8823dfc92aa5bb0",
+    ArchiveSource("https://www.x.org/archive/individual/proto/xextproto-$(version).tar.bz2",
+               "f3f4b23ac8db9c3a9e0d8edb591713f3d70ef9c3b175970dd8823dfc92aa5bb0"),
 ]
 
 # Bash recipe for building across all platforms

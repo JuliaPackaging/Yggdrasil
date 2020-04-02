@@ -7,8 +7,8 @@ version = v"1.13"
 
 # Collection of sources required to build xcb-proto
 sources = [
-    "https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).tar.bz2" =>
-    "7b98721e669be80284e9bbfeab02d2d0d54cd11172b72271e47a2fe875e2bde1",
+    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).tar.bz2",
+               "7b98721e669be80284e9bbfeab02d2d0d54cd11172b72271e47a2fe875e2bde1"),
 ]
 
 # Bash recipe for building across all platforms

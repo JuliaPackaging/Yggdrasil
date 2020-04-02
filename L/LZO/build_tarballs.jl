@@ -7,8 +7,8 @@ version = v"2.10"
 
 # Collection of sources required to build LZO
 sources = [
-    "https://www.oberhumer.com/opensource/lzo/download/lzo-$(version.major).$(version.minor).tar.gz" =>
-    "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072",
+    ArchiveSource("https://www.oberhumer.com/opensource/lzo/download/lzo-$(version.major).$(version.minor).tar.gz",
+               "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072")
 ]
 
 # Bash recipe for building across all platforms

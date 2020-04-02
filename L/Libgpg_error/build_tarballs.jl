@@ -7,9 +7,9 @@ version = v"1.36"
 
 # Collection of sources required to build Libgpg-Error
 sources = [
-    "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version.major).$(version.minor).tar.bz2" =>
-    "babd98437208c163175c29453f8681094bcaf92968a15cafb1a276076b33c97c",
-    "./bundled",
+    ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version.major).$(version.minor).tar.bz2",
+                  "babd98437208c163175c29453f8681094bcaf92968a15cafb1a276076b33c97c"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms

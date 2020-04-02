@@ -7,8 +7,8 @@ version = v"1.4.0"
 
 # Collection of sources required to build xtrans
 sources = [
-    "https://www.x.org/archive/individual/lib/xtrans-$(version).tar.bz2" =>
-    "377c4491593c417946efcd2c7600d1e62639f7a8bbca391887e2c4679807d773",
+    ArchiveSource("https://www.x.org/archive/individual/lib/xtrans-$(version).tar.bz2",
+               "377c4491593c417946efcd2c7600d1e62639f7a8bbca391887e2c4679807d773"),
 ]
 
 # Bash recipe for building across all platforms

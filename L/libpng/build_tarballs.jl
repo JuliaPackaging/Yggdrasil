@@ -7,8 +7,8 @@ version = v"1.6.37"
 
 # Collection of sources required to build libpng
 sources = [
-    "https://downloads.sourceforge.net/libpng/libpng-$(version).tar.gz" =>
-    "daeb2620d829575513e35fecc83f0d3791a620b9b93d800b763542ece9390fb4",
+    ArchiveSource("https://downloads.sourceforge.net/libpng/libpng-$(version).tar.gz",
+               "daeb2620d829575513e35fecc83f0d3791a620b9b93d800b763542ece9390fb4"),
 ]
 
 # Bash recipe for building across all platforms
