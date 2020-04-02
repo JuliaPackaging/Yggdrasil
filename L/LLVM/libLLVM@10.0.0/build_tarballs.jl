@@ -1,5 +1,5 @@
 name = "libLLVM"
-version = v"9.0.1"
+version = v"10.0.0"
 
 
 # Include common tools
