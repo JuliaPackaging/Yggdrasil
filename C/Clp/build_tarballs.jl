@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "ClpBuilder"
 version = v"1.16.11"
@@ -59,7 +59,7 @@ dependencies = [
     Dependency("CoinUtils_jll"),
     Dependency("Osi_jll"),
     Dependency("ASL_jll"),
-    Dependency("METIS_jll@4"),
+    Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
