@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "OsiBuilder"
+name = "Osi"
 version = v"0.107.9"
 
 # Collection of sources required to build OsiBuilder
