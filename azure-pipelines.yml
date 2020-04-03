@@ -27,7 +27,8 @@ jobs:
 
       # If we're on a PR though, we look at the entire branch at once
       if [[ $(Build.Reason) == "PullRequest" ]]; then
-          COMPARE_AGAINST="remotes/origin/$(System.PullRequest.TargetBranch)"
+          TARGET_BRANCH="remotes/origin/$(System.PullRequest.TargetBranch)"
+          COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
       fi
 
       $(JULIA) -e "using InteractiveUtils; versioninfo()"
