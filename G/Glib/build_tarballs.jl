@@ -12,14 +12,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
-mkdir build_glib && cd build_glib
 
-# Make it possible to find `iconv.h` in the prefix
-sed -i "s?c_args = \[\]?c_args = [\'-I${prefix}/include\']?" "${MESON_TARGET_TOOLCHAIN}"
-meson .. -Dman=false -Diconv=gnu --cross-file="${MESON_TARGET_TOOLCHAIN}"
+# Get a local gettext for msgfmt cross-building
+apk add gettext
 
-ninja -j${nproc}
-ninja install
+# Provide answers to a few configure questions automatically
+cat > glib.cache <<END
+glib_cv_stack_grows=no
+glib_cv_uscore=no
+END
+
+./autogen.sh LDFLAGS="${LDFLAGS} -L$prefix/lib" CPPFLAGS=-I$prefix/include --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
+find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
+
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
