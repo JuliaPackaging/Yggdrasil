@@ -20,7 +20,10 @@ rm -f ${prefix}/lib/*.la
 mkdir build
 cd build/
 
-if [[ ${target} == *linux* ]]; then
+export CPPFLAGS="-I${prefix}/include"
+if [[ ${target} == *mingw* ]]; then	
+    export LDFLAGS="-L$prefix/bin"
+elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
