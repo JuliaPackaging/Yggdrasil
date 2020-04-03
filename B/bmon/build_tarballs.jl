@@ -7,8 +7,8 @@ version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/tgraf/bmon/releases/download/v4.0/bmon-4.0.tar.gz" =>
-    "02fdc312b8ceeb5786b28bf905f54328f414040ff42f45c83007f24b76cc9f7a",
+           ArchiveSource("https://github.com/tgraf/bmon/releases/download/v4.0/bmon-4.0.tar.gz",
+                         "02fdc312b8ceeb5786b28bf905f54328f414040ff42f45c83007f24b76cc9f7a"),
 
 ]
 
