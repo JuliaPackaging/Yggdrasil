@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8.0)
 project(cimgui)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_library(cimgui SHARED)
 
 target_sources(cimgui PRIVATE cimgui.cpp)
@@ -40,3 +42,5 @@ install(TARGETS cimgui_helper
         ARCHIVE DESTINATION lib/static
         INCLUDES DESTINATION include
         PUBLIC_HEADER DESTINATION include)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION share)

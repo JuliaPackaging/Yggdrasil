@@ -36,6 +36,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libcimgui", :libcimgui),
     LibraryProduct("libcimgui_helper", :libcimgui_helper),
+    FileProduct("share/compile_commands.json", :compile_commands)
 ]
 
 # Dependencies that must be installed before this package can be built
