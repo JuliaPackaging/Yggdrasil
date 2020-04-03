@@ -54,9 +54,19 @@ cd intel-graphics-compiler-*
 install_license LICENSE.md
 
 # Work around compilation failures
-sed -i '1 i\#define __STDC_FORMAT_MACROS 1' IGC/AdaptorOCL/Upgrader/llvm9/BitcodeReader.cpp
+atomic_patch -p1 ../patches/format_macros.patch
 # https://github.com/intel/intel-graphics-compiler/issues/125
-atomic_patch -p1 -R ../patches/cbc78036d1a5bd0a889acdc87c2fb902d5ace159.patch
+atomic_patch -p1 -R ../patches/static_assert.patch
+if [[ "${target}" == *86*-linux-musl* ]]; then
+    atomic_patch -p1 ../patches/musl-concat.patch
+    atomic_patch -p1 ../patches/musl-inttypes.patch
+    # https://github.com/JuliaPackaging/Yggdrasil/issues/739
+    sed -i '/-fstack-protector/d' IGC/CMakeLists.txt
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
+    pushd /opt/${target}/lib/gcc/${target}/*/include
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/musl-malloc.patch
+    popd
+fi
 
 # the build system uses git
 export HOME=$(pwd)
@@ -94,7 +104,8 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc)
+    Linux(:x86_64, libc=:glibc),
+    Linux(:x86_64, libc=:musl),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
