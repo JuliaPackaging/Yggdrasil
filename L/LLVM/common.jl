@@ -139,10 +139,11 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR=${prefix}/tools)
+CMAKE_FLAGS+=(-DLLVM_TOOLS_BINARY_DIR="\${LLVM_INSTALL_PREFIX}/tools")
+CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="\${LLVM_INSTALL_PREFIX}/tools")
 
 # Also build and install utils, since we want FileCheck, and lit
-CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR=${prefix}/tools)
+CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="\${LLVM_INSTALL_PREFIX}/tools")
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 
 # Include perf/oprofile/vtune markers
