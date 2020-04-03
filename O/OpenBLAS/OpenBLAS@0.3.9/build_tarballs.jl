@@ -2,7 +2,6 @@ using BinaryBuilder
 
 include("../common.jl")
 
-
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
 version = v"0.3.9"
