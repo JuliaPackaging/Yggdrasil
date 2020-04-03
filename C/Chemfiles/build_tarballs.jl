@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 name = "Chemfiles"
 version = v"0.9.3"
 
+
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/chemfiles/chemfiles/archive/$version.tar.gz",
