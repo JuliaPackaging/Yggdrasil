@@ -20,10 +20,7 @@ rm -f ${prefix}/lib/*.la
 mkdir build
 cd build/
 
-export CPPFLAGS="-I${prefix}/include"
-if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
-else
+if [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
@@ -41,16 +38,15 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libClp", :libClp),
-    LibraryProduct("libOsiClp", :libOsiClp),
-    LibraryProduct("libClpSolver", :libClpSolver)
+    LibraryProduct(["libClp", "libClp-1"], :libClp),
+    LibraryProduct(["libOsiClp", "libOsiClp-1"], :libOsiClp),
+    LibraryProduct(["libClpSolver", "libClpSolver-1"], :libClpSolver)
 ]
 
 # Dependencies that must be installed before this package can be built
