@@ -32,9 +32,8 @@ fi
 --with-asl-lib="-lasl" --with-asl-incdir="$prefix/include" \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-metis-lib="-lmetis" --with-metis-incdir="$prefix/include" \
---without-mumps \
 --with-coinutils-lib="-lCoinUtils" --with-coinutils-incdir="$prefix/include/coin" \
---with-osi-lib="-lOsi" --with-osi-incdir="$prefix/include/coin"
+--with-osi-lib="-lOsi -lCoinUtils" --with-osi-incdir="$prefix/include/coin"
 
 make -j${nproc}
 make install
