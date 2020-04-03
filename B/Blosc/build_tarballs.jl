@@ -5,8 +5,7 @@ version = v"1.18.1"
 
 # Collection of sources required to build Blosc
 sources = [
-    "https://github.com/Blosc/c-blosc/archive/v1.18.1.tar.gz" =>
-    "18730e3d1139aadf4002759ef83c8327509a9fca140661deb1d050aebba35afb",
+    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v1.18.1.tar.gz", "18730e3d1139aadf4002759ef83c8327509a9fca140661deb1d050aebba35afb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,10 +37,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-	"Zlib_jll",
-	"Zstd_jll",
-	"Lz4_jll",
-#	"Snappy_jll",
+	Dependency("Zlib_jll"),
+	Dependency("Zstd_jll"),
+	Dependency("Lz4_jll"),
+#	Dependency("Snappy_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
