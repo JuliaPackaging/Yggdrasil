@@ -13,7 +13,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
 mkdir build_glib && cd build_glib
-meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+
+# Make it possible to find `iconv.h` in the prefix
+sed -i "s?c_args = \[\]?c_args = [\'-I${prefix}/include\']?" "${MESON_TARGET_TOOLCHAIN}"
+meson .. -Dman=false -Diconv=gnu --cross-file="${MESON_TARGET_TOOLCHAIN}"
 
 ninja -j${nproc}
 ninja install
@@ -34,12 +37,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libiconv_jll",
-    "Libffi_jll",
-    "Gettext_jll",
-    "PCRE_jll",
-    "Zlib_jll",
-    "Libmount_jll",
+    Dependency("Libiconv_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("Gettext_jll"),
+    Dependency("PCRE_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Libmount_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
