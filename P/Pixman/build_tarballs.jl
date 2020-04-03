@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "Pixman"
 version = v"0.38.4"
 sources = [
-    "https://www.cairographics.org/releases/pixman-$(version).tar.gz" =>
-    "da66d6fd6e40aee70f7bd02e4f8f76fc3f006ec879d346bae6a723025cfbdde7",
+    ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
+                  "da66d6fd6e40aee70f7bd02e4f8f76fc3f006ec879d346bae6a723025cfbdde7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpixman", :libpixman)
+    LibraryProduct("libpixman-1", :libpixman)
 ]
 
 # Dependencies that must be installed before this package can be built
