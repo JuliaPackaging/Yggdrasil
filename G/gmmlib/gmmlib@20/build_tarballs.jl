@@ -5,15 +5,15 @@ using BinaryBuilder
 name = "gmmlib"
 version = v"20.1.1"
 
-# Collection of sources required to build gmmlib
+# Collection of sources required to build this package
 sources = [
-    ArchiveSource("https://github.com/intel/gmmlib/archive/intel-gmmlib-$(version).tar.gz",
-                  "821755657cf51f59d8f3f443c99e3ec9f28d897ff65c219c6a119e4acb5a2ac7"),
+    GitSource("https://github.com/intel/gmmlib.git",
+              "09324e1fe8129b66bdf6b16ed533d56ce654eaa4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd gmmlib-*
+cd gmmlib
 install_license LICENSE.md
 
 mkdir build && cd build
