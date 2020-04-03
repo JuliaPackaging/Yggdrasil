@@ -7,8 +7,8 @@ version = v"0.1.0"
 
 # Collection of sources required to build
 sources = [
-    "https://github.com/Geant4/geant4/archive/v10.5.1.tar.gz" =>
-    "443efb0d16e8a5fd195176573d21d2e12415ae7853dd39cc0517171aea243227",
+    ArchiveSource("https://github.com/Geant4/geant4/archive/v10.5.1.tar.gz",
+                  "443efb0d16e8a5fd195176573d21d2e12415ae7853dd39cc0517171aea243227"),
 ]
 
 # Bash recipe for building across all platforms
