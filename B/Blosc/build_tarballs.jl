@@ -24,6 +24,14 @@ CMAKE_FLAGS+=(-DPREFER_EXTERNAL_LZ4=ON)
 cmake ${CMAKE_FLAGS} ..
 make -j${nproc}
 make install
+
+install_license ${WORKSPACE}/srcdir/LICENSES/BITSHUFFLE.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/BLOSC.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/FASTLZ.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/LZ4.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/SNAPPY.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/STDINT.txt
+install_license ${WORKSPACE}/srcdir/LICENSES/ZLIB.txt
 """
 
 # These are the platforms we will build for by default, unless further
