@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "ClpBuilder"
+name = "Clp"
 version = v"1.16.11"
 
 # Collection of sources required to build ClpBuilder
