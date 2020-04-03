@@ -22,7 +22,22 @@ glib_cv_stack_grows=no
 glib_cv_uscore=no
 END
 
-./autogen.sh LDFLAGS="${LDFLAGS} -L$prefix/lib" CPPFLAGS=-I$prefix/include --cache-file=glib.cache --with-libiconv=gnu --prefix=$prefix --host=$target
+export NOCONFIGURE=true
+export LDFLAGS="${LDFLAGS} -L${libdir}"
+export CPPFLAGS="-I${prefix}/include"
+
+./autogen.sh
+
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
+    # bugged and it can run only a few programs, with the result that the
+    # configure test to check whether we're cross-compiling returns that we're
+    # doing a native build, but then it fails to run a bunch of programs during
+    # other tests.
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+fi
+
+./configure --cache-file=glib.cache --with-libiconv=gnu --prefix=${prefix} --host=${target}
 find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
 
 make -j${nproc}
