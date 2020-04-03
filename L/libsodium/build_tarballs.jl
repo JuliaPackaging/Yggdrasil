@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 name = "libsodium"
 version = v"1.0.18"
 
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/jedisct1/libsodium.git", "5b2ea7d73d3ffef2fb93b82b9f112f009d54c6e6"),

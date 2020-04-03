@@ -7,8 +7,8 @@ version = v"8.6.9"
 
 # Collection of sources required to build Tcl
 sources = [
-    "https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz" =>
-    "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e",
+    ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
+                  "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"),
 ]
 
 # Bash recipe for building across all platforms

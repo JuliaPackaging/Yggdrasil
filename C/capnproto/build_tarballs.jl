@@ -7,9 +7,9 @@ version = v"0.7.0"
 
 # Collection of sources required to build capnproto
 sources = [
-    "https://capnproto.org/capnproto-c++-$(version).tar.gz" =>
-    "c9a4c0bd88123064d483ab46ecee777f14d933359e23bff6fb4f4dbd28b4cd41",
-    "./bundled"
+    ArchiveSource("https://capnproto.org/capnproto-c++-$(version).tar.gz",
+                  "c9a4c0bd88123064d483ab46ecee777f14d933359e23bff6fb4f4dbd28b4cd41"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms

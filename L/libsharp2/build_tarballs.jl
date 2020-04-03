@@ -5,6 +5,7 @@ using BinaryBuilder, Pkg
 name = "libsharp2"
 version = v"1.0.0"
 
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.mpcdf.mpg.de/mtr/libsharp.git", "54856313a5fcfb6a33817b7dfa28c4b1965ffbd1"),

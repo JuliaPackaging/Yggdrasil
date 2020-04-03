@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "Arpack"
 version = v"3.5.0"
 sources = [
-    "https://github.com/opencollab/arpack-ng/archive/$(version).tar.gz" =>
-    "50f7a3e3aec2e08e732a487919262238f8504c3ef927246ec3495617dde81239",
+    ArchiveSource("https://github.com/opencollab/arpack-ng/archive/$(version).tar.gz",
+                  "50f7a3e3aec2e08e732a487919262238f8504c3ef927246ec3495617dde81239"),
 ]
 
 # Bash recipe for building across all platforms

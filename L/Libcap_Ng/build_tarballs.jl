@@ -7,8 +7,8 @@ version = v"0.7.10"
 
 # Collection of sources required to build libcap-ng
 sources = [
-    "http://people.redhat.com/sgrubb/libcap-ng/libcap-ng-$(version).tar.gz" =>
-    "a84ca7b4e0444283ed269b7a29f5b6187f647c82e2b876636b49b9a744f0ffbf",
+    ArchiveSource("http://people.redhat.com/sgrubb/libcap-ng/libcap-ng-$(version).tar.gz",
+                  "a84ca7b4e0444283ed269b7a29f5b6187f647c82e2b876636b49b9a744f0ffbf"),
 ]
 
 # Bash recipe for building across all platforms
