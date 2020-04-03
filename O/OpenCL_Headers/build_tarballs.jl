@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "OpenCL-Headers"
+name = "OpenCL_Headers"
 version = v"2020.03.13"
 
 # Collection of sources required to build this package
