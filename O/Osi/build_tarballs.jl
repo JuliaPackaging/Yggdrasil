@@ -25,10 +25,6 @@ export CXXFLAGS="-std=c++11"
 
 make -j${nproc}
 make install
-
-if [[ ${target} == "*mingw*" ]]; then
-    cd $prefix/bin && mv libOsi-1.dll libOsi.dll && mv libOsiCommonTests-1.dll libOsiCommonTests.dll
-fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,8 +35,8 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOsi", :libOsi),
-    LibraryProduct("libOsiCommonTests", :libOsiCommonTests)
+    LibraryProduct(["libOsi", "libOsi-1"], :libOsi), 
+    LibraryProduct(["libOsiCommonTests", "libOsiCommonTests-1"], :libOsiCommonTests),
 ]
 
 # Dependencies that must be installed before this package can be built
