@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "Clp"
 version = v"1.16.11"
 
-# Collection of sources required to build ClpBuilder
+# Collection of sources required to build Clp
 sources = [
     GitSource("https://github.com/coin-or/Clp.git", 
     "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"), # 1.16.11
@@ -20,7 +20,8 @@ rm -f ${prefix}/lib/*.la
 mkdir build
 cd build/
 
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${prefix}/include -I$prefix/include/coin"
+export CXXFLAGS="-std=c++11"
 if [[ ${target} == *mingw* ]]; then	
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
@@ -31,9 +32,9 @@ fi
 --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-asl-lib="-lasl" --with-asl-incdir="$prefix/include" \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
---with-metis-lib="-lmetis" --with-metis-incdir="$prefix/include" \
---with-coinutils-lib="-lCoinUtils" --with-coinutils-incdir="$prefix/include/coin" \
---with-osi-lib="-lOsi -lCoinUtils" --with-osi-incdir="$prefix/include/coin"
+--with-metis-lib="-lmetis" \
+--with-coinutils-lib="-lCoinUtils" \
+--with-osi-lib="-lOsi -lCoinUtils" 
 
 make -j${nproc}
 make install
