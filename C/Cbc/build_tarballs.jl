@@ -25,6 +25,7 @@ mkdir build
 cd build/
 
 export CPPFLAGS="-I${prefix}/include -I${prefix}/include/coin"
+export CXXFLAGS="-std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
