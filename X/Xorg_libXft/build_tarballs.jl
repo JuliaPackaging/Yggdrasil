@@ -32,8 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Fontconfig_jll",
-    "Xorg_libXrender_jll",
+    BuildDependency("Xorg_kbproto_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("Xorg_libXrender_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
