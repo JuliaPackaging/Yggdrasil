@@ -50,16 +50,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "Pixman_jll",
-    "libpng_jll",
-    "Fontconfig_jll",
-    "FreeType2_jll",
-    "Bzip2_jll",
-    "Xorg_libXext_jll",
-    "Xorg_libXrender_jll",
-    "LZO_jll",
-    "Zlib_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Glib_jll"),
+    Dependency("Pixman_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXrender_jll"),
+    Dependency("LZO_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 
