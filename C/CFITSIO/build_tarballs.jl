@@ -7,9 +7,9 @@ version = v"3.47.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
-    "http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz" =>
-    "418516f10ee1e0f1b520926eeca6b77ce639bed88804c7c545e74f26b3edf4ef",
-    "./bundled",
+    ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz",
+                  "418516f10ee1e0f1b520926eeca6b77ce639bed88804c7c545e74f26b3edf4ef"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms

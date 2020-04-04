@@ -7,8 +7,8 @@ version = v"2.3.3"
 
 # Collection of sources required to build libXft
 sources = [
-    "https://www.x.org/archive/individual/lib/libXft-$(version).tar.bz2" =>
-    "225c68e616dd29dbb27809e45e9eadf18e4d74c50be43020ef20015274529216",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXft-$(version).tar.bz2",
+                  "225c68e616dd29dbb27809e45e9eadf18e4d74c50be43020ef20015274529216"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,8 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Fontconfig_jll",
-    "Xorg_libXrender_jll",
+    BuildDependency("Xorg_kbproto_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("Xorg_libXrender_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

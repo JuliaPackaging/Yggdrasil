@@ -7,9 +7,9 @@ version = v"1.17.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    "https://wayland.freedesktop.org/releases/wayland-$(version).tar.xz" =>
-    "72aa11b8ac6e22f4777302c9251e8fec7655dc22f9d94ee676c6b276f95f91a4",
-    "./bundled",
+    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-$(version).tar.xz",
+                  "72aa11b8ac6e22f4777302c9251e8fec7655dc22f9d94ee676c6b276f95f91a4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms

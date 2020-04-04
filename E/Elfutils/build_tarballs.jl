@@ -7,8 +7,8 @@ version = v"0.177"
 
 # Collection of sources required to build Elfutils
 sources = [
-    "https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2" =>
-    "fa489deccbcae7d8c920f60d85906124c1989c591196d90e0fd668e3dc05042e",
+    ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
+                  "fa489deccbcae7d8c920f60d85906124c1989c591196d90e0fd668e3dc05042e"),
 ]
 
 # Bash recipe for building across all platforms

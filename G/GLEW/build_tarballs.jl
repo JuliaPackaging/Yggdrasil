@@ -7,8 +7,8 @@ version = v"2.1.0"
 
 # Collection of sources required to build GLEW
 sources = [
-    "https://github.com/nigels-com/glew/releases/download/glew-$(version)/glew-$(version).tgz" =>
-    "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95"
+    ArchiveSource("https://github.com/nigels-com/glew/releases/download/glew-$(version)/glew-$(version).tgz",
+                  "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95")
 ]
 
 # Bash recipe for building across all platforms
