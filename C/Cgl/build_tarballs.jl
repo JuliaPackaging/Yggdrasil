@@ -32,7 +32,7 @@ fi
 --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
---with-osiclp-lib="-lOsiClp -lOsi -lCoinUtils"
+--with-osiclp-lib="-lOsiClp -lClp -lOsi -lCoinUtils"
 
 make -j${nproc}
 make install
