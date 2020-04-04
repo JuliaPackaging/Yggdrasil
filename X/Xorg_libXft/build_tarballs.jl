@@ -7,8 +7,8 @@ version = v"2.3.3"
 
 # Collection of sources required to build libXft
 sources = [
-    "https://www.x.org/archive/individual/lib/libXft-$(version).tar.bz2" =>
-    "225c68e616dd29dbb27809e45e9eadf18e4d74c50be43020ef20015274529216",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXft-$(version).tar.bz2",
+                  "225c68e616dd29dbb27809e45e9eadf18e4d74c50be43020ef20015274529216"),
 ]
 
 # Bash recipe for building across all platforms

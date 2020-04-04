@@ -6,8 +6,8 @@ version = v"0.14.0"
 
 # Collection of sources required to build libass
 sources = [
-    "https://github.com/libass/libass/releases/download/$(version)/libass-$(version).tar.xz" =>
-    "881f2382af48aead75b7a0e02e65d88c5ebd369fe46bc77d9270a94aa8fd38a2",
+    ArchiveSource("https://github.com/libass/libass/releases/download/$(version)/libass-$(version).tar.xz",
+                  "881f2382af48aead75b7a0e02e65d88c5ebd369fe46bc77d9270a94aa8fd38a2"),
 ]
 
 # Bash recipe for building across all platforms

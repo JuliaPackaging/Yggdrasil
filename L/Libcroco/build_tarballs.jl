@@ -7,8 +7,8 @@ version = v"0.6.13"
 
 # Collection of sources required to build Libcroco
 sources = [
-    "https://download.gnome.org/sources/libcroco/$(version.major).$(version.minor)/libcroco-$(version).tar.xz" =>
-    "767ec234ae7aa684695b3a735548224888132e063f92db585759b422570621d4"
+    ArchiveSource("https://download.gnome.org/sources/libcroco/$(version.major).$(version.minor)/libcroco-$(version).tar.xz",
+                  "767ec234ae7aa684695b3a735548224888132e063f92db585759b422570621d4")
 ]
 
 # Bash recipe for building across all platforms

@@ -7,8 +7,8 @@ version = v"1.10.0"
 
 # Collection of sources required to build Graphene
 sources = [
-    "https://github.com/ebassi/graphene/releases/download/$(version)/graphene-$(version).tar.xz" =>
-    "406d97f51dd4ca61e91f84666a00c3e976d3e667cd248b76d92fdb35ce876499"
+    ArchiveSource("https://github.com/ebassi/graphene/releases/download/$(version)/graphene-$(version).tar.xz",
+                  "406d97f51dd4ca61e91f84666a00c3e976d3e667cd248b76d92fdb35ce876499")
 ]
 
 # Bash recipe for building across all platforms
