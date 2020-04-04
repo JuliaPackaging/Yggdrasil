@@ -1,0 +1,13 @@
+diff --git a/IGC/AdaptorOCL/Upgrader/llvm9/BitcodeReader.cpp b/IGC/AdaptorOCL/Upgrader/llvm9/BitcodeReader.cpp
+index 406fd86c..ebc601f1 100644
+--- a/IGC/AdaptorOCL/Upgrader/llvm9/BitcodeReader.cpp
++++ b/IGC/AdaptorOCL/Upgrader/llvm9/BitcodeReader.cpp
+@@ -38,6 +38,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ #pragma warning(disable:4624)
+ #pragma warning(disable:4800)
+ 
++#define __STDC_FORMAT_MACROS 1
++
+ #include "common/LLVMWarningsPush.hpp"
+ 
+ #include "llvm/Bitcode/BitcodeReader.h"
