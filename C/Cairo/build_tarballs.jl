@@ -5,8 +5,8 @@ name = "Cairo"
 version = v"1.16.0"
 
 sources = [
-    "https://www.cairographics.org/releases/cairo-$(version).tar.xz" =>
-    "5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331",
+    ArchiveSource("https://www.cairographics.org/releases/cairo-$(version).tar.xz",
+                  "5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,16 +50,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "Pixman_jll",
-    "libpng_jll",
-    "Fontconfig_jll",
-    "FreeType2_jll",
-    "Bzip2_jll",
-    "Xorg_libXext_jll",
-    "Xorg_libXrender_jll",
-    "LZO_jll",
-    "Zlib_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Glib_jll"),
+    Dependency("Pixman_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXrender_jll"),
+    Dependency("LZO_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 
