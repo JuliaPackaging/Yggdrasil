@@ -7,8 +7,8 @@ version = v"1.78.0"
 
 # Collection of sources required to build Leptonica
 sources = [
-    "http://www.leptonica.org/source/leptonica-$(version).tar.gz" =>
-    "e2ed2e81e7a22ddf45d2c05f0bc8b9ae7450545d995bfe28517ba408d14a5a88",
+    ArchiveSource("http://www.leptonica.org/source/leptonica-$(version).tar.gz",
+                  "e2ed2e81e7a22ddf45d2c05f0bc8b9ae7450545d995bfe28517ba408d14a5a88"),
 ]
 
 # Bash recipe for building across all platforms
