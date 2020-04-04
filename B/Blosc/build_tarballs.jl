@@ -5,13 +5,12 @@ version = v"1.18.1"
 
 # Collection of sources required to build Blosc
 sources = [
-    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v1.18.1.tar.gz", "18730e3d1139aadf4002759ef83c8327509a9fca140661deb1d050aebba35afb"),
+    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "18730e3d1139aadf4002759ef83c8327509a9fca140661deb1d050aebba35afb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd c-blosc-1.18.1
+cd $WORKSPACE/srcdir/c-blosc-*
 mkdir build
 cd build
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
@@ -23,7 +22,7 @@ CMAKE_FLAGS+=(-DPREFER_EXTERNAL_ZLIB=ON)
 CMAKE_FLAGS+=(-DPREFER_EXTERNAL_ZSTD=ON)
 CMAKE_FLAGS+=(-DPREFER_EXTERNAL_LZ4=ON)
 #CMAKE_FLAGS+=(-DPREFER_EXTERNAL_SNAPPY=ON)
-cmake ${CMAKE_FLAGS} ..
+cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
 make install
 
@@ -32,7 +31,7 @@ install_license ../LICENSES/*.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
