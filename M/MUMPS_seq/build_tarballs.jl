@@ -83,7 +83,9 @@ done
 cp *.${dlext} ${libdir}
 cd ..
 
-cp include/* ${prefix}/include
+mkdir -p ${prefix}/include/mumps_seq
+cp include/* ${prefix}/include/mumps_seq
+cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
