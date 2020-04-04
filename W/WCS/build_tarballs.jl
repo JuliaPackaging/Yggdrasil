@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wcslib-*/
 if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure-mingw.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/bundled/configure-mingw.patch"
     autoconf -vi
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
 fi
