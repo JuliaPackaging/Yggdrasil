@@ -3,6 +3,7 @@ using BinaryBuilder
 name = "QD"
 version = v"2.3.22"
 
+
 # Collection of sources required to build SDPA-QD
 sources = [
     ArchiveSource("https://www.davidhbailey.com/dhbsoftware/qd-2.3.22.tar.gz",
