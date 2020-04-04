@@ -7,9 +7,9 @@ version = v"3.8.1"
 
 # Collection of sources required to build Python
 sources = [
-    "https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz" =>
-    "75894117f6db7051c1b34f37410168844bbb357c139a8a10a352e9bf8be594e8",
-    "./bundled",
+    ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
+                  "75894117f6db7051c1b34f37410168844bbb357c139a8a10a352e9bf8be594e8"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
