@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "Nettle"
 version = v"3.4.1"
 sources = [
-    "https://ftp.gnu.org/gnu/nettle/nettle-$(version).tar.gz" =>
-    "f941cf1535cd5d1819be5ccae5babef01f6db611f9b5a777bae9c7604b8a92ad",
+    ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version).tar.gz",
+                  "f941cf1535cd5d1819be5ccae5babef01f6db611f9b5a777bae9c7604b8a92ad"),
 ]
 
 # Bash recipe for building across all platforms
