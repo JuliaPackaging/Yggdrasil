@@ -7,8 +7,8 @@ version = v"2.0.13"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/numactl/numactl/releases/download/v2.0.13/numactl-2.0.13.tar.gz" =>
-    "991e254b867eb5951a44d2ae0bf1996a8ef0209e026911ef6c3ef4caf6f58c9a",
+    ArchiveSource("https://github.com/numactl/numactl/releases/download/v2.0.13/numactl-2.0.13.tar.gz",
+                  "991e254b867eb5951a44d2ae0bf1996a8ef0209e026911ef6c3ef4caf6f58c9a"),
 ]
 
 # Bash recipe for building across all platforms

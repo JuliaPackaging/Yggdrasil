@@ -7,8 +7,8 @@ version = v"1.2.1-1"
 
 # Collection of sources required to complete build
 sources = [
-    "ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.2.1.1.tar.bz2" =>
-    "c95ac63c0aad43a6ac457d960569096b0b2ef72dc4e3737e77e3e2de87022cec",
+    ArchiveSource("ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.2.1.1.tar.bz2",
+                  "c95ac63c0aad43a6ac457d960569096b0b2ef72dc4e3737e77e3e2de87022cec"),
 ]
 
 # Bash recipe for building across all platforms

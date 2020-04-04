@@ -6,8 +6,8 @@ using BinaryBuilder
 name = "SymEngine"
 version = v"0.6.0"
 sources = [
-    "https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz" =>
-    "4d2caa86c03eaaa8ed004084d02f87b5c51b6229f8ba70d161227e22d6302f0a",
+    ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
+                  "4d2caa86c03eaaa8ed004084d02f87b5c51b6229f8ba70d161227e22d6302f0a"),
 ]
 
 # Bash recipe for building across all platforms

@@ -5,6 +5,7 @@ using BinaryBuilder
 name = "htslib"
 version = v"1.10.2"
 
+
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/samtools/htslib/releases/download/$(version)/htslib-$(version).tar.bz2",
