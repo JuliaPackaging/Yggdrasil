@@ -22,6 +22,7 @@ mkdir build
 cd build/
 
 export CPPFLAGS="-I${prefix}/include -I${prefix}/include/coin"
+export CXXFLAGS="-std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
@@ -40,13 +41,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-   LibraryProduct("libCgl", :libCgl),
+   LibraryProduct(["libCgl", "libCgl-1"], :libCgl),
 ]
 
 # Dependencies that must be installed before this package can be built
