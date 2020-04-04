@@ -60,7 +60,7 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libCbc", :libCbc)
+    LibraryProduct("libCbc", :libCbc),
     LibraryProduct("libCbcSolver", :libcbcsolver),
 ]
 
