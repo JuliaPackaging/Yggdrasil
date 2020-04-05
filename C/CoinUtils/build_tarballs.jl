@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "CoinUtils"
-version = v"2.10.14"
+version = v"2.11.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/coin-or/CoinUtils.git", "f01efb018b4c8300634f268e8029f5414208f05c"),
+    GitSource("https://github.com/coin-or/CoinUtils.git", "f709081c9b57cc2dd32579d804b30689ca789982"),
 ]
 
 # Bash recipe for building across all platforms
