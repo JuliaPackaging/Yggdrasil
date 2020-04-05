@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Cbc"
-version = v"2.10.3"
+version = v"2.10.5"
 
 # Collection of sources required to build CbcBuilder
 sources = [
     GitSource("https://github.com/coin-or/Cbc.git",
-               "6fe3addaa76436d479d4431add67b371e11d3e83"),
+               "7b5ccc016f035f56614c8018b20d700978144e9f"),
     DirectorySource("./bundled"),
 ]
 
