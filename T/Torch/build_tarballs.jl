@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Torch"
-version = v"0.1.0"
+version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
