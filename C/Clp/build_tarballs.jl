@@ -6,7 +6,7 @@ version = v"1.16.11"
 # Collection of sources required to build Clp
 sources = [
     GitSource("https://github.com/coin-or/Clp.git", 
-    "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"), # 1.16.11
+    "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"), 
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +20,8 @@ rm -f ${prefix}/lib/*.la
 mkdir build
 cd build/
 
-export CPPFLAGS="-I${prefix}/include -I$prefix/include/coin"
-export CXXFLAGS="-std=c++11"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then	
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
