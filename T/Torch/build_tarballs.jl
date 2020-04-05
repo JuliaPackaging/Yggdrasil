@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mv libtorch/ $WORKSPACE/destdir/
+mv libtorch/ ${prefix}
 cd /usr/local/
 mkdir cuda
 cd cuda
