@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Blosc"
-version = v"1.18.1"
+version = v"1.14.3"
 
 # Collection of sources required to build Blosc
 sources = [
-    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "18730e3d1139aadf4002759ef83c8327509a9fca140661deb1d050aebba35afb"),
+    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "7217659d8ef383999d90207a98c9a2555f7b46e10fa7d21ab5a1f92c861d18f7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,11 @@ CMAKE_FLAGS+=(-DPREFER_EXTERNAL_LZ4=ON)
 cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Manually move dlls from lib/ to bin/
+    mv ${prefix}/lib/*.${dlext} ${libdir}
+fi
 
 install_license ../LICENSES/*.txt
 """
