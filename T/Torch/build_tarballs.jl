@@ -20,8 +20,8 @@ mkdir cuda
 cd cuda
 mkdir lib64
 cd lib64/
-ln -s $WORKSPACE/artifacts/ce02776dfe49896031bc14077df1e002f26396d4/lib64/libcudart.so libcudart.so
-ln -s $WORKSPACE/artifacts/ce02776dfe49896031bc14077df1e002f26396d4/lib64/libnvToolsExt.so libnvToolsExt.so
+ln -s ${prefix}/lib64/libcudart.so libcudart.so
+ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
 cd $WORKSPACE/destdir/
 mkdir cudnn && cd cudnn
 wget https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz
