@@ -31,13 +31,9 @@ cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$WORKSPACE/destdir/libtorch -DCUDA_TOOLKIT_ROOT_DIR=$WORKSPACE/artifacts/ce02776dfe49896031bc14077df1e002f26396d4 -DCUDNN_LIBRARY_PATH=/workspace/destdir/cudnn/lib/libcudnn.so -DCUDNN_INCLUDE_DIR=/workspace/destdir/cudnn/include ..
 cmake --build .
-cd $WORKSPACE/destdir/
-mkdir lib && cd lib
-cp -r $WORKSPACE/srcdir/Torch.jl/build/build/* .
-cd ..
-cd include
-cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h .
-exit
+mkdir -p "${libdir}"
+cp -r $WORKSPACE/srcdir/Torch.jl/build/build/* "${libdir}"
+cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "${prefix}/include"
 """
 
 # These are the platforms we will build for by default, unless further
