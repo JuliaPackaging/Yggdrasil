@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Clp"
-version = v"1.16.11"
+version = v"1.17.5"
 
 # Collection of sources required to build Clp
 sources = [
@@ -48,17 +48,17 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libClp", "libClp-1"], :libClp),
-    LibraryProduct(["libOsiClp", "libOsiClp-1"], :libOsiClp),
-    LibraryProduct(["libClpSolver", "libClpSolver-1"], :libClpSolver)
+    LibraryProduct("libClp", :libClp),
+    LibraryProduct("libOsiClp", :libOsiClp),
+    LibraryProduct("libClpSolver", :libClpSolver)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CoinUtils_jll"),
-    Dependency("Osi_jll"),
-    Dependency("ASL_jll"),
+    Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.4")),
+    Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.6")),
     Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
+    Dependency("ASL_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
