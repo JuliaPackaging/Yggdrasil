@@ -1,15 +1,14 @@
 using BinaryBuilder
 
 name = "Osi"
-version = v"0.107.9"
+version = v"0.108.6"
 
 # Collection of sources required to build OsiBuilder
 sources = [
     GitSource("https://github.com/coin-or/Osi.git",
-              "60255835a0930e9a15247bd6ae496c930c2d3878")
+              "dfa6449d6756fdd96912cf96e168d0be07b1d37c")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Osi*
 update_configure_scripts
@@ -48,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CoinUtils_jll"),
+    Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.4")),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
