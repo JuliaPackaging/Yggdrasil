@@ -22,14 +22,14 @@ mkdir lib64
 cd lib64/
 ln -s ${prefix}/lib64/libcudart.so libcudart.so
 ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
-cd $WORKSPACE/destdir/
+cd ${prefix}
 mkdir cudnn && cd cudnn
 wget https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz
 tar -xvf CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz 
 rm CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz 
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=$WORKSPACE/destdir/libtorch -DCUDA_TOOLKIT_ROOT_DIR=$WORKSPACE/artifacts/ce02776dfe49896031bc14077df1e002f26396d4 -DCUDNN_LIBRARY_PATH=/workspace/destdir/cudnn/lib/libcudnn.so -DCUDNN_INCLUDE_DIR=/workspace/destdir/cudnn/include ..
+cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/libtorch/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix -DCUDNN_LIBRARY_PATH=$prefix/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$prefix/cudnn/include ..
 cmake --build .
 mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/* "${libdir}"
@@ -50,7 +50,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243", uuid="4f82f1eb-248c-5f56-a42e-99106d144614"))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243", uuid="4f82f1eb-248c-5f56-a42e-99106d144614"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
