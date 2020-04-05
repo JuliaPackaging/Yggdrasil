@@ -8,7 +8,7 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "985c4280c17fd9b0af978760be66761456a0113b"),
-    FileSource("https://download.pytorch.org/libtorch/cu101/libtorch-cxx11-abi-shared-with-deps-1.4.0.zip", "f214bfde532877aa5d4e0803e51a28fa8edd97b6a44b6615f75a70352b6b542e"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu101/libtorch-cxx11-abi-shared-with-deps-1.4.0.zip", "f214bfde532877aa5d4e0803e51a28fa8edd97b6a44b6615f75a70352b6b542e"),
 ]
 
 # Bash recipe for building across all platforms
