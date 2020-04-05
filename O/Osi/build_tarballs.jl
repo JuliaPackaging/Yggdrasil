@@ -17,11 +17,18 @@ update_configure_scripts
 mkdir build
 cd build/
 
-export CXXFLAGS="-std=c++11"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
+if [[ ${target} == *mingw* ]]; then	
+    export LDFLAGS="-L$prefix/bin"
+elif [[ ${target} == *linux* ]]; then
+    export LDFLAGS="-ldl -lrt"
+fi
 
-../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} --enable-shared --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
+../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} --enable-shared \
+--enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-coinutils-lib="-lCoinUtils" --with-coinutils-incdir="$prefix/include/coin" \
---with-blas-lib="-lopenblass" --with-lapack-lib="-lopenblas"
+--with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas"
 
 make -j${nproc}
 make install
