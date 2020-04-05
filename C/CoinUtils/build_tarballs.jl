@@ -14,11 +14,20 @@ cd $WORKSPACE/srcdir/CoinUtils*
 
 # Remove wrong libtool files
 rm -f /opt/${target}/${target}/lib*/*.la
-
-CPPFLAGS="-I${prefix}/include"
 update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
+
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
+if [[ ${target} == *mingw* ]]; then	
+    export LDFLAGS="-L$prefix/bin"
+elif [[ ${target} == *linux* ]]; then
+    export LDFLAGS="-ldl -lrt"
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config \
+--enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+
 make -j${nproc}
 make install
 """
