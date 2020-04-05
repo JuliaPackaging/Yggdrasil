@@ -1,13 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Cgl"
-version = v"0.59.10"
+version = v"0.60.3"
 
 # Collection of sources required to build Cgl
 sources = [
    GitSource("https://github.com/coin-or/Cgl.git",
-             "8152008bfe6bc84e9d46a43472734d40dd79dbb2"),
-
+             "31797b2997219934db02a40d501c4b6d8efa7398"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,14 +46,12 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-   LibraryProduct(["libCgl", "libCgl-1"], :libCgl),
+   LibraryProduct("libCgl", :libCgl),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Clp_jll"),
-    Dependency("Osi_jll"),
-    Dependency("CoinUtils_jll"),
+    Dependency(PackageSpec(; name = "Clp_jll", uuid = "e2554f3b-3117-50c0-817c-e040a3ddf72d", version = v"1.17.5")),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
