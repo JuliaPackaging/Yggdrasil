@@ -51,7 +51,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(; name = "Clp_jll", uuid = "e2554f3b-3117-50c0-817c-e040a3ddf72d", version = v"1.17.5")),
+    Dependency(PackageSpec(; name = "Clp_jll", uuid = "06985876-5285-5a41-9fcb-8948a742cc53", version = v"1.17.5")),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
