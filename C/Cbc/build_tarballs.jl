@@ -62,20 +62,14 @@ platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libCbc", "libCbc-1"], :libCbc),
-    LibraryProduct(["libCbcSolver", "libCbcSolver-1"], :libcbcsolver),
+    LibraryProduct("libCbc", :libCbc),
+    LibraryProduct("libCbcSolver", :libcbcsolver),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Clp_jll"),
-    Dependency("Cgl_jll"),
-    Dependency("Osi_jll"),
-    Dependency("CoinUtils_jll"),
-    Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
-    Dependency("OpenBLAS32_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
-
+    Dependency(PackageSpec(; name = "Clp_jll", uuid = "06985876-5285-5a41-9fcb-8948a742cc53", version = v"1.17.5")),
+    Dependency(PackageSpec(; name = "Cgl_jll", uuid = "06985876-5285-5a41-9fcb-8948a742cc53", version = v"0.60.3")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
