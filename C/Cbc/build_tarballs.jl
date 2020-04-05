@@ -33,7 +33,7 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-../configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} --enable-shared --disable-static \
+../configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} --enable-shared \
 --enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
 --with-asl-lib="-lasl" --with-asl-incdir="$prefix/include/asl" \
 --with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas" \
@@ -41,9 +41,7 @@ fi
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
 --with-clp-lib="-lClp -lOsiClp -lCoinUtils" \
---with-cgl-lib="-lCgl -lClp -lOsiClp -lOsic -lCoinUtils" \
---with-coindepend-lib="-lCgl -lOsi -lClp -lOsiClp -lmetis -lCoinUtils" \
---enable-cbc-parallel
+--with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" 
 
 make -j${nproc}
 
