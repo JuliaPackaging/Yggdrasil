@@ -1,0 +1,121 @@
+--- Cbc_C_Interface.cpp.orig
++++ Cbc_C_Interface.cpp
+@@ -840,43 +840,27 @@
+ }
+
+ COINLIBAPI int COINLINKAGE
+-Cbc_solve(Cbc_Model *model)
++Cbc_solve(Cbc_Model * model)
+ {
+-  Cbc_flush( model );
+-
+-  OsiSolverInterface *solver = model->solver_;
+-  if (solver->getNumIntegers() == 0 || model->relax_ == 1) {
+-    if (solver->basisIsAvailable()) {
+-      solver->resolve();
+-    } else {
+-      solver->initialSolve();
++    const char prefix[] = "Cbc_C_Interface::Cbc_solve(): ";
++    int result = 0;
++    std::vector<const char*> argv;
++    argv.push_back("Cbc_C_Interface");
++    for (size_t i = 0; i < model->cmdargs_.size(); i++) {
++        argv.push_back(model->cmdargs_[i].c_str());
+     }
++    argv.push_back("-solve");
++    argv.push_back("-quit");
++    try {
++
++        CbcMain1((int)argv.size(), &argv[0], *model->model_);
++    } catch (CoinError e) {
++        printf("%s ERROR: %s::%s, %s\n", prefix,
++               e.className().c_str(), e.methodName().c_str(), e.message().c_str());
++    }
++    result = model->model_->status();
+
+-    if (solver->isProvenOptimal())
+-      return 0;
+-
+-    return 1;
+-  }
+-
+-  const char prefix[] = "Cbc_C_Interface::Cbc_solve(): ";
+-  int result = 0;
+-  std::vector< const char * > argv;
+-  argv.push_back("Cbc_C_Interface");
+-  for (size_t i = 0; i < model->cmdargs_.size(); i++) {
+-    argv.push_back(model->cmdargs_[i].c_str());
+-  }
+-  argv.push_back("-solve");
+-  argv.push_back("-quit");
+-  try {
+-
+-    CbcMain1((int)argv.size(), &argv[0], *model->model_, NULL, *model->cbcData);
+-  } catch (CoinError e) {
+-    printf("%s ERROR: %s::%s, %s\n", prefix,
+-      e.className().c_str(), e.methodName().c_str(), e.message().c_str());
+-  }
+-  result = model->model_->status();
+-
+-  return result;
++    return result;
+ }
+
+ COINLIBAPI void COINLINKAGE Cbc_addCutCallback(
+@@ -1039,9 +1023,6 @@
+ COINLIBAPI int COINLINKAGE
+ Cbc_isAbandoned(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return model->solver_->isAbandoned();
+-  else
+     return model->model_->isAbandoned();
+ }
+
+@@ -1049,36 +1030,24 @@
+ COINLIBAPI int COINLINKAGE
+ Cbc_isProvenOptimal(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return model->solver_->isProvenOptimal();
+-  else
+     return model->model_->isProvenOptimal();
+ }
+
+ COINLIBAPI int COINLINKAGE
+ Cbc_isProvenInfeasible(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return (model->solver_->isProvenDualInfeasible() || model->solver_->isProvenPrimalInfeasible());
+-  else
+     return model->model_->isProvenInfeasible();
+ }
+
+ COINLIBAPI double COINLINKAGE
+ Cbc_getObjValue(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return (model->solver_->getObjValue());
+-
+   return model->model_->getObjValue();
+ }
+
+ COINLIBAPI const double *COINLINKAGE
+ Cbc_getReducedCost(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return (model->solver_->getReducedCost());
+-
+   return model->model_->getReducedCost();
+ }
+
+@@ -1103,9 +1072,6 @@
+ COINLIBAPI const double *COINLINKAGE
+ Cbc_getColSolution(Cbc_Model *model)
+ {
+-  if (Cbc_getNumIntegers(model) == 0 || model->relax_ == 1)
+-    return (model->solver_->getColSolution());
+-
+   return model->model_->getColSolution();
+ }
+
