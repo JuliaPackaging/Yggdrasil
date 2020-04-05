@@ -17,6 +17,7 @@ update_configure_scripts
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
+rm -f /opt/${target}/${target}/lib*/*.la
 
 # Apply patch related to https://github.com/JuliaOpt/Cbc.jl/issues/117 and https://github.com/coin-or/Cbc/issues/267
 (cd Cbc/src && atomic_patch -p0 $WORKSPACE/srcdir/patches/no_lp.patch)
