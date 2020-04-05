@@ -69,6 +69,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(; name = "Clp_jll", uuid = "06985876-5285-5a41-9fcb-8948a742cc53", version = v"1.17.5")),
     Dependency(PackageSpec(; name = "Cgl_jll", uuid = "3830e938-1dd0-5f3e-8b8e-b3ee43226782", version = v"0.60.3")),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
