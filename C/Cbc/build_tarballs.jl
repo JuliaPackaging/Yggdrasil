@@ -41,7 +41,9 @@ fi
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
 --with-clp-lib="-lClp -lOsiClp -lCoinUtils" \
---with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" 
+--with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
+--with-coindepend-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
+--enable-cbc-parallel
 
 make -j${nproc}
 
