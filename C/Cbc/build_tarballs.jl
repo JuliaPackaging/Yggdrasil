@@ -46,11 +46,6 @@ fi
 --enable-cbc-parallel
 
 make -j${nproc}
-
-# Clean-up bin directory before installing
-rm -f ${prefix}/bin/*
-
-# Install
 make install
 """
 
