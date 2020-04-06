@@ -162,3 +162,9 @@ function openblas_products(;kwargs...)
         LibraryProduct(["libopenblas", "libopenblas64_"], :libopenblas)
     ]
 end
+
+function openblas_dependencies(;kwargs...)
+    return [
+        Dependency("CompilerSupportLibraries_jll")
+    ]
+end
