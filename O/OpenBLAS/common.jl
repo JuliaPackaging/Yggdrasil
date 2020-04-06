@@ -134,11 +134,18 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         done
     done
 
+    PATCHELF_FLAGS=()
+
+    # ppc64le and aarch64 have 64KB page sizes, don't muck up the ELF section load alignment
+    if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+        PATCHELF_FLAGS+=(--page-size 65536)
+    fi
+
     # Next, we set the SONAME of the library to a non-versioned name,
     # so that other projects (such as SuiteSparse) can link against us
     # without needing to be built against a particular version.
     if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
-        patchelf --set-soname ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
+        patchelf ${PATCHELF_FLAGS[@]} --set-soname ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     elif [[ ${target} == *apple* ]]; then
         install_name_tool -id ${LIBPREFIX}.${dlext} ${prefix}/lib/${LIBPREFIX}.${dlext}
     fi
