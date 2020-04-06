@@ -22,9 +22,6 @@ jobs:
       # Be fragile, like a beautiful porcelain doll
       set -e
 
-      # DEBUG
-      set
-
       # Normally we look at the last pushed commit
       COMPARE_AGAINST="HEAD~1"
 
