@@ -29,7 +29,7 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-if [[ ${target} == "*aarch64" ]] || [[ ${target} == "*arm*" ]]; then
+if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
    export CPPFLAGS="${CPPFLAGS} -D__arm__"
 fi
 
