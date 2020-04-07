@@ -31,7 +31,6 @@ fi
 
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
---with-asl-lib="-lasl" \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-metis-lib="-lmetis" \
 --with-coinutils-lib="-lCoinUtils" \
@@ -59,7 +58,6 @@ dependencies = [
     Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.3")),
     Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.5")),
     Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
-    Dependency("ASL_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
