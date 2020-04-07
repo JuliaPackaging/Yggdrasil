@@ -39,13 +39,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Graphite2_jll",
-    "Libffi_jll",
-    "Gettext_jll",
-    "Glib_jll",
-    "FreeType2_jll",
-    "Fontconfig_jll",
-    "Cairo_jll",
+    Dependency("Glib_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Graphite2_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("Gettext_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("Cairo_jll"),
+    BuildDependency("Xorg_kbproto_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
