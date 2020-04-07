@@ -7,9 +7,9 @@ version = v"8.6.9" # current version number is actually 8.6.9.1
 
 # Collection of sources required to build Tk
 sources = [
-    "https://downloads.sourceforge.net/sourceforge/tcl/tk$(version).1-src.tar.gz" =>
-    "8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4",
-    "./bundled",
+    ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tk$(version).1-src.tar.gz",
+                  "8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
