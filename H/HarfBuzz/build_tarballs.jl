@@ -46,7 +46,7 @@ dependencies = [
     Dependency("Gettext_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
-    BuildDependency("Xorg_kbproto_jll")
+    BuildDependency("Xorg_xorgproto_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
