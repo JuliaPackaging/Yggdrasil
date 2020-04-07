@@ -8,7 +8,7 @@ version = v"6.4.0"
 # Collection of sources required to build Clipper
 sources = [
     GitSource("https://github.com/SimonDanisch/ClipperBuilder.git",
-              "9ea1878235d518d5e14bce35a94924a34bab8b68"),
+              "d9e011161e5f4e161137af19d0f5da6dc5764520"),
 ]
 
 # Bash recipe for building across all platforms
