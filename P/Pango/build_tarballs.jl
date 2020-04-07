@@ -47,12 +47,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FriBidi_jll",
-    "FreeType2_jll",
-    "Glib_jll",
-    "Fontconfig_jll",
-    "HarfBuzz_jll",
-    "Cairo_jll",
+    Dependency("FriBidi_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Glib_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("HarfBuzz_jll"),
+    Dependency("Cairo_jll"),
+    BuildDependency("Xorg_xorgproto_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
