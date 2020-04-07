@@ -29,6 +29,10 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
+if [[ ${target} == "*aarch64" ]] || [[ ${target} == "*arm*" ]]; then
+   export CPPFLAGS="${CPPFLAGS} -D__arm__"
+fi
+
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
