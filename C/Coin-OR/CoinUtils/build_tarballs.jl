@@ -17,7 +17,7 @@ rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
@@ -25,8 +25,8 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config \
-lt_cv_deplibs_check_method=pass_all \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic --disable-pkg-config \
+--enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas --with-blas-lib="-lopenblas" \
 --with-lapack --with-lapack-lib="-lopenblas"
 
