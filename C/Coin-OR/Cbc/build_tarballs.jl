@@ -66,7 +66,6 @@ dependencies = [
     Dependency(PackageSpec(; name = "Cgl_jll", uuid = "3830e938-1dd0-5f3e-8b8e-b3ee43226782", version = v"0.60.2")),
     Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.5")),
     Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.3")),
-#    Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
