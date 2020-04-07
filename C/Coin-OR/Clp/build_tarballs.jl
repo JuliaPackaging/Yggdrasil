@@ -21,7 +21,7 @@ update_configure_scripts
 mkdir build
 cd build/
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin -I$prefix/include/mumps_seq"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then	
     export LDFLAGS="-L$prefix/bin"
@@ -33,7 +33,6 @@ fi
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-asl-lib="-lasl" \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
---with-mumps-lib="-L${libdir} -ldmumps -lmpiseq -lmumps_common -lopenblas -lpord" \
 --with-metis-lib="-lmetis" \
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" 
@@ -61,7 +60,6 @@ dependencies = [
     Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.5")),
     Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
     Dependency("ASL_jll"),
-    Dependency("MUMPS_seq_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
