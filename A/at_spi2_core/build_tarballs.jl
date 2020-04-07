@@ -7,8 +7,8 @@ version = v"2.34.0"
 
 # Collection of sources required to build at-spi2-core
 sources = [
-    "http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz" =>
-    "d629cdbd674e539f8912028512af583990938c7b49e25184c126b00121ef11c6",
+    ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/$(version.major).$(version.minor)/at-spi2-core-$(version).tar.xz",
+                  "d629cdbd674e539f8912028512af583990938c7b49e25184c126b00121ef11c6"),
 ]
 
 # Bash recipe for building across all platforms

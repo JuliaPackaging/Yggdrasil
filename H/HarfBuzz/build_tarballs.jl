@@ -7,8 +7,8 @@ version = v"2.6.1"
 
 # Collection of sources required to build Harfbuzz
 sources = [
-    "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$(version).tar.xz" =>
-    "c651fb3faaa338aeb280726837c2384064cdc17ef40539228d88a1260960844f",
+    ArchiveSource("https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$(version).tar.xz",
+                  "c651fb3faaa338aeb280726837c2384064cdc17ef40539228d88a1260960844f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,13 +39,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Graphite2_jll",
-    "Libffi_jll",
-    "Gettext_jll",
-    "Glib_jll",
-    "FreeType2_jll",
-    "Fontconfig_jll",
-    "Cairo_jll",
+    Dependency("Glib_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Graphite2_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("Gettext_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("Cairo_jll"),
+    BuildDependency("Xorg_xorgproto_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
