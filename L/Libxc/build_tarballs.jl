@@ -23,10 +23,11 @@ if [[ "${target}" = *-mingw* ]]; then
     cd libxc_build
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release -DENABLE_FORTRAN=OFF -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-        -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=NO -DDISABLE_LXC=NO ..
+        -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
 else
     autoreconf -vi
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-fortran \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran \
+        --disable-static --enable-shared \
         --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
 fi
 
