@@ -1,32 +1,34 @@
 using BinaryBuilder
 
 name = "CoinUtils"
-version = v"2.11.4"
+version = v"2.11.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/coin-or/CoinUtils.git", "f709081c9b57cc2dd32579d804b30689ca789982"),
+    GitSource("https://github.com/coin-or/CoinUtils.git", "ea66474879246f299e977802c94a0e45334e7afb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/CoinUtils*
 
-# Remove wrong libtool files
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
-if [[ ${target} == *mingw* ]]; then	
+if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config \
---enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
---with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic --disable-pkg-config \
+--enable-shared lt_cv_deplibs_check_method=pass_all \
+--with-blas --with-blas-lib="-lopenblas" \
+--with-lapack --with-lapack-lib="-lopenblas"
 
 make -j${nproc}
 make install
