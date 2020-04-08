@@ -16,7 +16,12 @@ cd $WORKSPACE/srcdir/Csdp-releases-6.2.0/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 make -j${nproc}
 make install
+mkdir ${bindir}
 cp /usr/local/bin/csdp ${bindir}/csdp
+
+if [[ "${target}" == *-mingw* ]]; then
+    mv "${bindir}/csdp" "${bindir}/csdp${exeext}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
