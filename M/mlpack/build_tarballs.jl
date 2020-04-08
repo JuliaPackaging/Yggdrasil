@@ -8,12 +8,8 @@ using BinaryBuilder
 name = "mlpack"
 version = v"3.3.0"
 sources = [
-    # Current git master branch as of 12/20/2019.
-    # This will be replaced with the actual mlpack 3.3.0 release... but that
-    # release is dependent on coherent Julia support, so this has to come
-    # first...
-    "https://www.ratml.org/misc/mlpack-3.3.0-a1.tar.gz" =>
-    "70b386c191465feff93d63ac299612e93eb943ea9144525108674ada037321cf"
+    "https://www.mlpack.org/files/mlpack-3.3.0.tar.gz" =>
+    "63cdc3569f2e929899cc30c2e808a42709723c2ea56f8c2953edc7188eab5559"
 ]
 
 script = raw"""
@@ -106,7 +102,8 @@ products = [
     LibraryProduct("libmlpack", :libmlpack),
     # Utility library with functionality to call the mlpack::CLI singleton.
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
-    # Each of these contains a mlpackMain() implementation for the given binding.
+    # Each of these contains a mlpackMain() implementation for the given
+    # binding.
     LibraryProduct("libmlpack_julia_adaboost", :libmlpack_julia_adaboost),
     LibraryProduct("libmlpack_julia_approx_kfn", :libmlpack_julia_approx_kfn),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
@@ -130,6 +127,8 @@ products = [
     LibraryProduct("libmlpack_julia_hmm_viterbi", :libmlpack_julia_hmm_viterbi),
     LibraryProduct("libmlpack_julia_hoeffding_tree",
         :libmlpack_julia_hoeffding_tree),
+    LibraryProduct("libmlpack_julia_image_converter",
+        :libmlpack_julia_image_converter),
     LibraryProduct("libmlpack_julia_kernel_pca", :libmlpack_julia_kernel_pca),
     LibraryProduct("libmlpack_julia_kfn", :libmlpack_julia_kfn),
     LibraryProduct("libmlpack_julia_kmeans", :libmlpack_julia_kmeans),
@@ -154,6 +153,8 @@ products = [
         :libmlpack_julia_preprocess_binarize),
     LibraryProduct("libmlpack_julia_preprocess_describe",
         :libmlpack_julia_preprocess_describe),
+    LibraryProduct("libmlpack_julia_preprocess_scale",
+        :libmlpack_julia_preprocess_scale),
     LibraryProduct("libmlpack_julia_preprocess_split",
         :libmlpack_julia_preprocess_split),
     LibraryProduct("libmlpack_julia_radical", :libmlpack_julia_radical),
