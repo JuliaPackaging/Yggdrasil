@@ -32,7 +32,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-products = []
+products = Product[]
 
 dependencies = Dependency[
     Dependency("Libtiff_jll")
