@@ -1,21 +1,21 @@
-using BinaryBuilder, Pkg
+include("../coin-or-common.jl")
 
 name = "Clp"
-version = v"1.17.3"
+version = Clp_version
 
 # Collection of sources required to build Clp
 sources = [
-    GitSource("https://github.com/coin-or/Clp.git", 
-    "27f61df3a85e327b8f7f15f8f40b0f415f4cc4e9"), 
+    GitSource("https://github.com/coin-or/Clp.git",
+              Clp_gitsha),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Clp*
 
-# Remove misleading libtool files                                                                                            
-rm -f ${prefix}/lib/*.la                                                                                                     
-rm -f /opt/${target}/${target}/lib*/*.la                                                                                     
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
+rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
 mkdir build
@@ -23,7 +23,7 @@ cd build/
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
-if [[ ${target} == *mingw* ]]; then	
+if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
@@ -37,17 +37,11 @@ fi
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-coinutils-lib="-lCoinUtils" \
---with-osi-lib="-lOsi -lCoinUtils" 
+--with-osi-lib="-lOsi -lCoinUtils"
 
 make -j${nproc}
 make install
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
@@ -58,11 +52,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.3")),
-    Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.5")),
+    Dependency(CoinUtils_packagespec),
+    Dependency(Osi_packagespec),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=gcc_version)
