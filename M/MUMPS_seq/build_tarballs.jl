@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/MUMPS_5.2.1
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
 
-make_args+=(OPTF=-O
+make_args+=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
             IMETIS=-I${prefix}/include
