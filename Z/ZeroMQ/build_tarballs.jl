@@ -5,9 +5,8 @@ version = v"4.3.2"
 
 # Collection of sources required to build ZMQ
 sources = [
-    "https://github.com/zeromq/libzmq.git" =>
-    "a84ffa12b2eb3569ced199660bac5ad128bff1f0",
-    "./bundled"
+    GitSource("https://github.com/zeromq/libzmq.git", "a84ffa12b2eb3569ced199660bac5ad128bff1f0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
