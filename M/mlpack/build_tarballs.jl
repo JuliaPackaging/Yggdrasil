@@ -8,8 +8,8 @@ using BinaryBuilder
 name = "mlpack"
 version = v"3.3.0"
 sources = [
-    "https://www.mlpack.org/files/mlpack-3.3.0.tar.gz" =>
-    "63cdc3569f2e929899cc30c2e808a42709723c2ea56f8c2953edc7188eab5559"
+    ArchiveSource("https://www.mlpack.org/files/mlpack-3.3.0.tar.gz",
+                  "63cdc3569f2e929899cc30c2e808a42709723c2ea56f8c2953edc7188eab5559")
 ]
 
 script = raw"""
