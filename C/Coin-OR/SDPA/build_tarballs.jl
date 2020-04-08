@@ -1,6 +1,6 @@
 include("../coin-or-common.jl")
 
-name = "SDPABuilder"
+name = "SDPA"
 version = v"7.3.8"
 
 # Collection of sources required to build SDPABuilder
