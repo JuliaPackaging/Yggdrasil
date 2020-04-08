@@ -52,9 +52,15 @@ else
     export processor=x86-64
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.toolchain -DSDPA_DIR=$prefix -DMUMPS_INCLUDE_DIR="$prefix/include/coin/ThirdParty" \
--DCMAKE_FIND_ROOT_PATH=$prefix -DJulia_PREFIX=$prefix  -DSDPA_LIBRARY="-lsdpa" -DCMAKE_CXX_FLAGS="-march=$processor" \
--D_GLIBCXX_USE_CXX11_ABI=1 ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DSDPA_DIR=$prefix -DMUMPS_INCLUDE_DIR="$prefix/include/coin/ThirdParty" \
+	  -DCMAKE_FIND_ROOT_PATH=${prefix} \
+	  -DJulia_PREFIX=${prefix} \
+	  -DSDPA_LIBRARY="-lsdpa" \
+	  -DCMAKE_CXX_FLAGS="-march=$processor" \
+	  -D_GLIBCXX_USE_CXX11_ABI=1
+	  ..
 cmake --build . --config Release --target install
 
 if [[ $target == *w64-mingw32* ]] ; then
