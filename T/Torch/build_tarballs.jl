@@ -23,7 +23,8 @@ mkdir lib64
 cd lib64/
 ln -s ${prefix}/lib64/libcudart.so libcudart.so
 ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
-cd ${prefix}
+cd $WORKSPACE/srcdir
+mv cudnn $prefix
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/libtorch/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix -DCUDNN_LIBRARY_PATH=$prefix/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$prefix/cudnn/include ..
