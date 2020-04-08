@@ -25,7 +25,7 @@ make_args+=(OPTF=-O
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS=-lopenblas)
+            LIBBLAS="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
@@ -49,7 +49,7 @@ gfortran -fPIC -shared -Wl,${all_load} libmpiseq.a ${libs[@]} -Wl,${noall_load} 
 cp libmpiseq.${dlext} ${libdir}
 
 cd ../lib
-libs=(-L${libdir} -lmetis ${OPENBLAS} -lmpiseq)
+libs=(-L${libdir} -lmetis -lopenblas -lmpiseq)
 gfortran -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
