@@ -4,8 +4,8 @@ using Pkg
 using BinaryBuilder
 
 name = "Libtask"
-version = v"0.3.0"
-commit_id = "4e201c561cd73c2fc22ccff854f5865ef4b06cc9"
+version = v"0.3.1"
+commit_id = "fbe338053f402d76524d0a01f3796dd7da90b781"
 
 # see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/336
 # ENV["CI_COMMIT_TAG"] = ENV["TRAVIS_TAG"] = "v" * string(version)
@@ -15,7 +15,11 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = read(joinpath(dirname(@__FILE__), "build_dylib.sh"), String)
+script_file = joinpath(@__DIR__, "build_dylib.sh")
+if !isfile(script_file) # when run generate_buildjl.jl
+    script_file = joinpath(@__DIR__, "L/Libtask/build_dylib.sh")
+end
+script = read(script_file, String)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
