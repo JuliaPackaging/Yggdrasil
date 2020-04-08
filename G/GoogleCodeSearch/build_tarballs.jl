@@ -18,10 +18,9 @@ mkdir gsc
 cd gsc
 go mod init github.com/m
 go get -d -v github.com/google/codesearch@v1.2.0
-mkdir -p $prefix/bin
-go build -o $prefix/bin/csearch github.com/google/codesearch/cmd/csearch
-go build -o $prefix/bin/cindex github.com/google/codesearch/cmd/cindex
-exit
+mkdir -p "${bindir}"
+go build -o "${bindir}/csearch${exeext}" github.com/google/codesearch/cmd/csearch
+go build -o "${bindir}/cindex${exeext}" github.com/google/codesearch/cmd/cindex
 """
 
 # These are the platforms we will build for by default, unless further
