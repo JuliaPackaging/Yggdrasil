@@ -19,7 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/ghostpdl*
 
 # configure the Makefiles
-./configure --prefix=$prefix --host=${target}
+./autogen.sh --prefix=${prefix} --host=${target}
 
 # create the binaries
 make -j${nproc}
