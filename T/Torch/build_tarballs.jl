@@ -45,7 +45,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdoeye_caml", :libdoeye_caml)
+    LibraryProduct("libdoeye_caml", :libdoeye_caml, dont_dlopen = true)
 ]
 
 # Dependencies that must be installed before this package can be built
