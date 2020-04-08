@@ -46,6 +46,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> !(p isa Windows), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -57,7 +58,6 @@ products = [
 dependencies = [
     Dependency("METIS_jll"),
     Dependency("MPICH_jll"),
-    Dependency("MicrosoftMPI_jll"),
     Dependency("OpenBLAS_jll"),
 ]
 
