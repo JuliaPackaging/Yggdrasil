@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Csdp-releases*
+cd $WORKSPACE/srcdir/Csdp*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 
