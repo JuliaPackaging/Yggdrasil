@@ -28,7 +28,7 @@ if [[ "${target}" == arm* ]] || [[ "${target}" == powerpc* ]]; then
 fi
 
 if [[ "${target}" == aarch* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/m64_aarch.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aarch.patch"
 fi
 
 make -j${nproc}

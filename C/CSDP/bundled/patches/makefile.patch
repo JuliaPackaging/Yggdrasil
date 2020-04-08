@@ -10,7 +10,7 @@
  # LIBS settings for 64 bit Linux/unix systems.
  #
 -export LIBS=-static -L../lib -lsdp -llapack -lblas -lm
-+export LIBS=-L../lib -lsdp -lopenblas -lm
++export LIBS=-L../lib -lsdp -lopenblas -lgomp -lm
  #
  #
  # On most systems, this should handle everything.
