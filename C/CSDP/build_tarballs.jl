@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/Csdp-releases-6.2.0/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 make -j${nproc}
 make install
-cp /usr/local/bin/csdp $WORKSPACE/destdir/csdp
+cp /usr/local/bin/csdp ${bindir}/csdp
 """
 
 # These are the platforms we will build for by default, unless further
