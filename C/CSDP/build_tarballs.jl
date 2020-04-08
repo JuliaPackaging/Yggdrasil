@@ -19,6 +19,10 @@ if [[ ${nbits} == 32 ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/32bits_platforms.patch"
 fi
 
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/gcc_mac_freebsd.patch"
+fi
+
 make -j${nproc}
 make install
 mkdir ${bindir}
