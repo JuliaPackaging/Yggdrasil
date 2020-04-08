@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Csdp-releases-6.2.0/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
+
+if [[ ${nbits} == 32 ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/32bits_platforms.patch"
+fi
+
 make -j${nproc}
 make install
 mkdir ${bindir}
