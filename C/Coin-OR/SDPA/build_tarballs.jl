@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sdpa*
+cd $WORKSPACE/srcdir/sdpa-$(version)
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
