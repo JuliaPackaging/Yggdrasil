@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.0.9"
+version = v"1.0.10"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -17,8 +17,6 @@ cc -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/c/hello_wor
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make
-
-install_license /usr/share/licenses/MIT
 """
 
 # These are the platforms we will build for by default, unless further
