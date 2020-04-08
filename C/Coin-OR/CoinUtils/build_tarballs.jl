@@ -1,11 +1,12 @@
-using BinaryBuilder
+include("../coin-or-common.jl")
 
 name = "CoinUtils"
-version = v"2.11.3"
+version = CoinUtils_version
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/coin-or/CoinUtils.git", "ea66474879246f299e977802c94a0e45334e7afb"),
+    GitSource("https://github.com/coin-or/CoinUtils.git",
+              CoinUtils_gitsha),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +18,9 @@ rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
+mkdir build
+cd build/
+
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
@@ -25,7 +29,7 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic --disable-pkg-config \
+../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas --with-blas-lib="-lopenblas" \
 --with-lapack --with-lapack-lib="-lopenblas"
@@ -33,12 +37,6 @@ fi
 make -j${nproc}
 make install
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
@@ -52,4 +50,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=gcc_version)

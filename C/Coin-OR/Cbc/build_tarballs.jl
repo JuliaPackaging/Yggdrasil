@@ -1,12 +1,12 @@
-using BinaryBuilder, Pkg
+include("../coin-or-common.jl")
 
 name = "Cbc"
-version = v"2.10.3"
+version = Cbc_version
 
 # Collection of sources required to build CbcBuilder
 sources = [
     GitSource("https://github.com/coin-or/Cbc.git",
-               "6fe3addaa76436d479d4431add67b371e11d3e83"),
+              Cbc_gitsha),
     DirectorySource("./bundled"),
 ]
 
@@ -14,9 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Cbc*
 
-# Remove misleading libtool files                                                                                            
-rm -f ${prefix}/lib/*.la                                                                                                     
-rm -f /opt/${target}/${target}/lib*/*.la                                                                                     
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
+rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
 # Apply patch related to https://github.com/JuliaOpt/Cbc.jl/issues/117 and https://github.com/coin-or/Cbc/issues/267
@@ -48,12 +48,6 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libCbc", :libCbc),
@@ -62,10 +56,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(; name = "Clp_jll", uuid = "06985876-5285-5a41-9fcb-8948a742cc53", version = v"1.17.3")),
-    Dependency(PackageSpec(; name = "Cgl_jll", uuid = "3830e938-1dd0-5f3e-8b8e-b3ee43226782", version = v"0.60.2")),
-    Dependency(PackageSpec(; name = "Osi_jll", uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd", version = v"0.108.5")),
-    Dependency(PackageSpec(; name = "CoinUtils_jll", uuid = "be027038-0da8-5614-b30d-e42594cb92df", version = v"2.11.3")),
+    Dependency(Clp_packagespec),
+    Dependency(Cgl_packagespec),
+    Dependency(Osi_packagespec),
+    Dependency(CoinUtils_packagespec),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
