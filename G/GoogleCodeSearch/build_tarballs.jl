@@ -13,8 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p ${prefix}/share/licenses
-cp codesearch/LICENSE $prefix/share/licenses/
+install_license codesearch/LICENSE
 mkdir gsc
 cd gsc
 go mod init github.com/m
