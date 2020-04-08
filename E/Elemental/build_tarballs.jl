@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ $nbits == 64 ]]; then
+if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
   BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
   BLAS_LAPACK_SUFFIX="_64_"
 else
@@ -57,6 +57,7 @@ products = [
 dependencies = [
     Dependency("METIS_jll"),
     Dependency("MPICH_jll"),
+    Dependency("MicrosoftMPI_jll"),
     Dependency("OpenBLAS_jll"),
 ]
 
