@@ -41,7 +41,7 @@ platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libipopt", :libipopt),
-    ExecutableProduct("ipopt", :amplexe)
+    ExecutableProduct("ipopt", :amplexe),
 ]
 
 # Dependencies that must be installed before this package can be built
