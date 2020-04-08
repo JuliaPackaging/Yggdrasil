@@ -35,7 +35,7 @@ fi
 
 ./configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas" \
+--with-blas="-lopenblas" --with-lapack="-lopenblas" \
 
 make -j${nproc}
 make install
