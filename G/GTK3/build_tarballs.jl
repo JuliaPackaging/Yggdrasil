@@ -7,9 +7,9 @@ version = v"3.24.11"
 
 # Collection of sources required to build GTK
 sources = [
-    "http://ftp.gnome.org/pub/gnome/sources/gtk+/$(version.major).$(version.minor)/gtk+-$(version).tar.xz" =>
-    "dba7658d0a2e1bfad8260f5210ca02988f233d1d86edacb95eceed7eca982895",
-    "./bundled",
+    ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/gtk+/$(version.major).$(version.minor)/gtk+-$(version).tar.xz",
+                  "dba7658d0a2e1bfad8260f5210ca02988f233d1d86edacb95eceed7eca982895"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
