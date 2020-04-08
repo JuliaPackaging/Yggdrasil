@@ -1,18 +1,19 @@
-using BinaryBuilder
+include("../coin-or-common.jl")
 
 name = "CSDP"
 version = v"6.2.0"
 
 # Collection of sources required to build Clp
 sources = [
-    ArchiveSource("https://github.com/coin-or/Csdp/archive/releases/6.2.0.tar.gz",
-    "3d341974af1f8ed70e1a37cc896e7ae4a513375875e5b46db8e8f38b7680b32f"),
+    GitSource("https://github.com/coin-or/Csdp.git",
+    "e1586e0413ef236b19abe5202f7e8392f3dd4614"),
     DirectorySource("./bundled"), 
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Csdp-releases-6.2.0/
+cd $WORKSPACE/srcdir/Csdp-releases*
+
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 
 if [[ ${nbits} == 32 ]]; then
@@ -39,7 +40,7 @@ make -j${nproc}
 make install
 
 if [[ ! -d "${bindir}" ]]; then
-  mkdir ${bindir}
+  mkdir -p ${bindir}
 fi
 
 cp /usr/local/bin/csdp ${bindir}/csdp
@@ -52,6 +53,7 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
@@ -65,4 +67,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               preferred_gcc_version=gcc_version)
