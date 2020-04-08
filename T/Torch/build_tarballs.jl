@@ -39,7 +39,7 @@ cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "
 platforms = [
     Linux(:x86_64, libc=:glibc)
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -48,7 +48,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243", uuid="4f82f1eb-248c-5f56-a42e-99106d144614"))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243", uuid="4f82f1eb-248c-5f56-a42e-99106d144614")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
