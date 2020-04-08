@@ -9,7 +9,7 @@ version = v"1.4.0"
 sources = [
     GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "985c4280c17fd9b0af978760be66761456a0113b"),
     ArchiveSource("https://download.pytorch.org/libtorch/cu101/libtorch-cxx11-abi-shared-with-deps-1.4.0.zip", "f214bfde532877aa5d4e0803e51a28fa8edd97b6a44b6615f75a70352b6b542e"),
-    ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = false),
+    ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = "cudnn"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,10 +24,6 @@ cd lib64/
 ln -s ${prefix}/lib64/libcudart.so libcudart.so
 ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
 cd ${prefix}
-mkdir cudnn && cd cuda
-mv $WORKSPACE/srcdir/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz .
-tar -xvf CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz 
-rm CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz 
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/libtorch/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix -DCUDNN_LIBRARY_PATH=$prefix/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$prefix/cudnn/include ..
