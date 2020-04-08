@@ -2,9 +2,9 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Nettle
 name = "XGBoost"
-version = v"0.82"
+version = v"1.0.2"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","bf3241368256ddd010d30d98ffc8a0a005f166e9"),
+    GitSource("https://github.com/dmlc/xgboost.git","917b0a7b46954e9be36cbc430a1727bb093234bb"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,14 +17,15 @@ git submodule update
 
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows_h.patch")
+(cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_musl_build_config_default_h.patch")
 
-# Because we're using OpenMP, we must use `gcc`
-export CC=gcc
-export CXX=g++
 
 # For Linux, build using CMake
 if [[ ${target} == *linux* ]]; then
     (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
+    make -C build -j ${nproc}
+elif [[ ${target} == *darwin* ]] ||  [[ ${target} == *freebsd* ]]; then
+    (mkdir build; cd build; cmake .. -DUSE_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
     make -C build -j ${nproc}
 else
     if [[ ${target} == *mingw* ]]; then
@@ -34,7 +35,7 @@ else
 
     # Otherwise, build with `make`, and do a minimal build
     cp make/minimum.mk config.mk
-    make -j ${nproc} USE_OPENMP=1 ${EXTRA_FLAGS[@]}
+    make -j ${nproc} ${EXTRA_FLAGS[@]}
 fi
 
 # Install
@@ -58,7 +59,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # Disable FreeBSD for now, because freebsd doesn't have backtrace()
 platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
-
+platforms = [p for p in platforms if !(libc(p) == :musl)]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
@@ -71,4 +72,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
