@@ -23,8 +23,12 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/gcc_mac_freebsd.patch"
 fi
 
-if [[ "${target}" == *-arm* ]] || [[ "${target}" == *-powerpc* ]]; then
+if [[ "${target}" == arm* ]] || [[ "${target}" == powerpc* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/native_arm_powerpc.patch"
+fi
+
+if [[ "${target}" == aarch* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/m64_aarch.patch"
 fi
 
 make -j${nproc}
