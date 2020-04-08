@@ -23,9 +23,17 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/gcc_mac_freebsd.patch"
 fi
 
+if [[ "${target}" == *-arm* ]] || [[ "${target}" == *-powerpc* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/native_arm_powerpc.patch"
+fi
+
 make -j${nproc}
 make install
-mkdir ${bindir}
+
+if [[ ! -d "${bindir}" ]]; then
+  mkdir ${bindir}
+fi
+
 cp /usr/local/bin/csdp ${bindir}/csdp
 
 if [[ "${target}" == *-mingw* ]]; then
