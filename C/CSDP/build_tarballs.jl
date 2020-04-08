@@ -20,11 +20,15 @@ if [[ ${nbits} == 32 ]]; then
 fi
 
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/gcc_mac_freebsd.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mac_freebsd.patch"
 fi
 
-if [[ "${target}" == arm* ]] || [[ "${target}" == powerpc* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/native_arm_powerpc.patch"
+if [[ "${target}" == powerpc* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/powerpc.patch"
+fi
+
+if [[ "${target}" == arm* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/arm.patch"
 fi
 
 if [[ "${target}" == aarch* ]]; then
