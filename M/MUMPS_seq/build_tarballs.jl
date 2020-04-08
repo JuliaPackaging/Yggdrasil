@@ -13,28 +13,10 @@ script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS_5.2.1
 
-OPENBLAS=(-lopenblas)
-FFLAGS=()
-CFLAGS=()
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-  FFLAGS+=(-ffixed-line-length-none)  # replacing symbols below sometimes makes lines > 72 chars
-  OPENBLAS=(-lopenblas64_)
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    OPENBLAS+=(-lgomp)
-  fi
-
-  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
-  for sym in ${syms[@]}
-  do
-    FFLAGS+=("-D${sym}=${sym}_64")
-    CFLAGS+=("-D${sym}=${sym}_64")
-  done
-fi
-
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
 
-make_args+=(OPTF=-O
+make_args+=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
             IMETIS=-I${prefix}/include
@@ -43,7 +25,7 @@ make_args+=(OPTF=-O
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS=${OPENBLAS})
+            LIBBLAS="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
@@ -67,7 +49,7 @@ gfortran -fPIC -shared -Wl,${all_load} libmpiseq.a ${libs[@]} -Wl,${noall_load} 
 cp libmpiseq.${dlext} ${libdir}
 
 cd ../lib
-libs=(-L${libdir} -lmetis ${OPENBLAS} -lmpiseq)
+libs=(-L${libdir} -lmetis -lopenblas -lmpiseq)
 gfortran -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
@@ -100,8 +82,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
     Dependency("METIS_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs.
