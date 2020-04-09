@@ -66,6 +66,17 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
         cp -a ${project}/* ${prefix}
     done
 
+    # NVIDIA Tools Extension Library
+    7z x "CUDAVisualStudioIntegration/NVIDIA NVTX Installer.x86_64".*.msi -o${temp}/nvtx_installer
+    find nvtx_installer
+    for file in nvtx_installer/*.*_*; do
+        mv $file $(echo $file | sed 's/\.\(\w*\)_.*/.\1/')
+    done
+    mv nvtx_installer/*.dll ${prefix}/bin
+    mv nvtx_installer/*64_*.lib ${prefix}/lib/x64
+    mv nvtx_installer/*32_*.lib ${prefix}/lib/Win32
+    mv nvtx_installer/*.h ${prefix}/include
+
     install_license EULA.txt
 
     # fixup
