@@ -4,7 +4,7 @@ name = "Ipopt"
 version = v"3.13.1"
 
 sources = [
-    ArchiveSource("https://github.com/coin-or/Ipopt/archive/releases/3.13.1.tar.gz",
+    ArchiveSource("https://github.com/coin-or/Ipopt/archive/releases/$(version).tar.gz",
                   "64fc63a3fe27cf5efaf17ebee861f7db5bf70aacf9c316c0d37e4beb4eb72e11"),
 ]
 
@@ -41,7 +41,7 @@ platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libipopt", :libipopt),
-    ExecutableProduct("ipopt", :amplexe)
+    ExecutableProduct("ipopt", :amplexe),
 ]
 
 # Dependencies that must be installed before this package can be built
