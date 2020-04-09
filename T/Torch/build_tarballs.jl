@@ -28,7 +28,7 @@ mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$WORKSPACE/srcdir/libtorch/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix -DCUDNN_LIBRARY_PATH=$WORKSPACE/srcdir/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$WORKSPACE/srcdir/cudnn/include ..
 cmake --build .
 mkdir -p "${libdir}"
-cp -r $WORKSPACE/srcdir/Torch.jl/build/build/* "${libdir}"
+cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
 cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "${prefix}/include"
 """
 
