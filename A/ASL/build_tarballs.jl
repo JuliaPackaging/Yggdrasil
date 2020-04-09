@@ -15,6 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/solvers/
+head -17 asl.h > LICENSE.txt
 mkdir -p ${libdir}
 incdir=${prefix}/include
 mkdir -p ${incdir}
@@ -48,6 +49,7 @@ make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
 c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
 mv libasl.${dlext} ${libdir}
 cp *.h ${incdir}
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
