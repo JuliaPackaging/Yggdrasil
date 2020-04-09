@@ -37,9 +37,8 @@ cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc)
+    Linux(:x86_64, libc=:glibc, compiler_abi = CompilerABI(cxxstring_abi = :cxx11))
 ]
-platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
