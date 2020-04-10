@@ -6,7 +6,7 @@ version = v"6.2.0"
 # Collection of sources required to build Clp
 sources = [
     GitSource("https://github.com/coin-or/Csdp.git",
-    "e1586e0413ef236b19abe5202f7e8392f3dd4614"),
+    "0dcf187a159c365b6d4e4e0ed5849f7b706da408"),
     DirectorySource("./bundled"), 
 ]
 
@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Csdp*
 
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/blegat.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 
 if [[ ${nbits} == 32 ]]; then
