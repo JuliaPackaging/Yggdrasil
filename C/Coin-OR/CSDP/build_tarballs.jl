@@ -48,9 +48,8 @@ fi
 
 cd lib
 ar x libsdp.a
-cc -shared -o "libcsdp.${dlext}" *.o
+cc -shared -o "${libdir}/libcsdp.${dlext}" *.o
 rm *.o
-cp libcsdp.${dlext} ${libdir}/libcsdp.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
