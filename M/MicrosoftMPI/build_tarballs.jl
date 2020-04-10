@@ -13,7 +13,14 @@ script = raw"""
 apk add p7zip
 
 cd ${WORKSPACE}/srcdir/
-7z x msmpisetup.exe -o$prefix
+7z x -t# msmpisetup.exe -otmp
+if [[ ${target} == i686-w64-* ]]; then
+    # 32-bit files
+    7z x tmp/2.msi -o$prefix
+else
+    # 64-bit files
+    7z x tmp/4.msi -o$prefix
+fi
 7z x msmpisdk.msi -o$prefix
 
 cd ${WORKSPACE}/destdir/
@@ -35,7 +42,7 @@ mv *.txt *.rtf share/licenses/MicrosoftMPI
 platforms = filter!(p -> isa(p, Windows), supported_platforms())
 
 products = [
-    LibraryProduct("msmpi", :libmpi),
+    LibraryProduct(["msmpi64","msmpi"], :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
