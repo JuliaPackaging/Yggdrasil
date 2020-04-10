@@ -3,17 +3,16 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.13.01"
+version = v"02.13.03"
 
 # Collection of sources required to build LCIO
 sources = [
-    "https://github.com/iLCSoft/LCIO/archive/v02-13-01.tar.gz" =>
-    "aa572e2ba38c0cadd6a92fa933c3ed97e21d016c7982578d3f293901169f4ec0",
+    GitSource("https://github.com/iLCSoft/LCIO.git", "0ac5c384661ed4804c2bde99e774cab96e65740b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/LCIO-*/
+cd $WORKSPACE/srcdir/LCIO*/
 mkdir build && cd build
 
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -38,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
