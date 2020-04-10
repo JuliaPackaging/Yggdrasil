@@ -45,6 +45,12 @@ cp /usr/local/bin/csdp ${bindir}/csdp
 if [[ "${target}" == *-mingw* ]]; then
     mv "${bindir}/csdp" "${bindir}/csdp${exeext}"
 fi
+
+cd lib
+ar x libsdp.a
+cc -shared -o "libcsdp.${dlext}" *.o
+rm *.o
+cp libcsdp.${dlext} ${libdir}/libcsdp.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -54,6 +60,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("csdp", :csdp),
+    LibraryProduct("libcsdp", :libcsdp),
 ]
 
 # Dependencies that must be installed before this package can be built
