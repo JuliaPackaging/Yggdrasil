@@ -20,6 +20,8 @@ if [[ ${target} == i686-w64-* ]]; then
 else
     # 64-bit files
     7z x tmp/4.msi -o$prefix
+    mv -f $prefix/msmpi64.dll $prefix/msmpi.dll
+    mv -f $prefix/msmpires64.dll $prefix/msmpires.dll
 fi
 7z x msmpisdk.msi -o$prefix
 
@@ -42,7 +44,7 @@ mv *.txt *.rtf share/licenses/MicrosoftMPI
 platforms = filter!(p -> isa(p, Windows), supported_platforms())
 
 products = [
-    LibraryProduct(["msmpi64","msmpi"], :libmpi),
+    LibraryProduct("msmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
