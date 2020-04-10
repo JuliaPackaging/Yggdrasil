@@ -9,17 +9,26 @@ version = v"2.1.0"
 sources = [
     GitSource("https://github.com/lloyd/yajl.git",
               "a0ecdde0c042b9256170f2f8890dd9451a4240aa"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir "$WORKSPACE/srcdir/yajl/build"
-cd "$WORKSPACE/srcdir/yajl/build"
+cd yajl
+
+if [[ "$target" == *-w64-* ]]; then
+  atomic_patch -p1 "$WORKSPACE/srcdir/patches/01-fix-windows-compiler.patch"
+fi
+
+mkdir build
+cd build
+
 cmake \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
   -DCMAKE_BUILD_TYPE="Release" \
-  "$WORKSPACE/srcdir/yajl"
+  ..
+
 make "-j$nproc"
 make install
 """
@@ -27,7 +36,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(p isa Windows), platforms)
 
 # The products that we will ensure are always built
 products = [
