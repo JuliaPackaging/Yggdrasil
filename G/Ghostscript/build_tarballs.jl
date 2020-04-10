@@ -18,6 +18,9 @@ script = raw"""
 # initial setup
 cd $WORKSPACE/srcdir/ghostscript*
 
+# Specify the native compiler for the programs that need to be run on the host
+export CCAUX=${CC_BUILD}
+
 # configure the Makefiles
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 
@@ -59,7 +62,7 @@ products = [
     ExecutableProduct("ps2ps2", :ps2ps2),
 ]
 
-dependencies = Dependency[
+dependencies = [
     Dependency("Libtiff_jll")
 ]
 
