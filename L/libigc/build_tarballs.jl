@@ -24,22 +24,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# don't have opencl-clang generate headers,
-# working around https://github.com/intel/opencl-clang/issues/91
-sed -i '/cl_headers/d' opencl-clang/CMakeLists.txt
-
-# build certain LLVM tools for the host system,
-# working around LLVM and IGC's inability to cross-compile
-CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
-CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-cmake -B ${WORKSPACE}/bootstrap -S ${WORKSPACE}/srcdir/llvm-project-*/llvm -GNinja ${CMAKE_FLAGS[@]}
-ninja -C ${WORKSPACE}/bootstrap llvm-config llvm-tblgen clang-tblgen clang
-
 # move everything in places where it will get detected by the IGC build system
 mv llvm-project-* llvm-project
 mv llvm-project/clang llvm-project/llvm/tools/
@@ -77,18 +61,13 @@ CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
-# Install things into $prefix, and make sure it knows we're cross-compiling
+# Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
-# Tell LLVM where our pre-built tools are
-CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
-CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TOOL=${WORKSPACE}/bootstrap/bin/clang)
-
-# Don't have IGC use target Clang
-sed -i 's/add_executable(clang-tool ALIAS clang)/add_executable(clang-tool IMPORTED GLOBAL)\n  set_property(TARGET clang-tool PROPERTY "IMPORTED_LOCATION" "${CLANG_TOOL}")/' IGC/BiFModule/CMakeLists.txt
+# NOTE: igc currently can't cross compile due to a variety of issues:
+# - https://github.com/intel/intel-graphics-compiler/issues/131
+# - https://github.com/intel/opencl-clang/issues/91
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
