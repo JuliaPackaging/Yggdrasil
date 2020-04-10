@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MUMPS_seq"
 version = v"4.10.0"
