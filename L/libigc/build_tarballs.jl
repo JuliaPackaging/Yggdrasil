@@ -24,25 +24,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# don't have opencl-clang generate headers,
-# working around https://github.com/intel/opencl-clang/issues/91
-sed -i '/cl_headers/d' opencl-clang/CMakeLists.txt
-
-# build certain LLVM tools for the host system,
-# working around LLVM and IGC's inability to cross-compile
-mkdir ${WORKSPACE}/bootstrap
-pushd ${WORKSPACE}/bootstrap
-CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
-CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-cmake -GNinja ${WORKSPACE}/srcdir/llvm-project-*/llvm ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-config llvm-tblgen clang-tblgen clang
-popd
-
 # move everything in places where it will get detected by the IGC build system
 mv llvm-project-* llvm-project
 mv llvm-project/clang llvm-project/llvm/tools/
@@ -55,6 +36,8 @@ install_license LICENSE.md
 
 # Work around compilation failures
 atomic_patch -p1 ../patches/format_macros.patch
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+atomic_patch -p1 ../patches/gcc-constexpr_assert_bug.patch
 # https://github.com/intel/intel-graphics-compiler/issues/125
 atomic_patch -p1 -R ../patches/static_assert.patch
 if [[ "${target}" == *86*-linux-musl* ]]; then
@@ -78,26 +61,22 @@ CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
-# Install things into $prefix, and make sure it knows we're cross-compiling
+# Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
-# Tell LLVM where our pre-built tools are
-CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
-CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TOOL=${WORKSPACE}/bootstrap/bin/clang)
-
-# Don't have IGC use target Clang
-sed -i 's/add_executable(clang-tool ALIAS clang)/add_executable(clang-tool IMPORTED GLOBAL)\n  set_property(TARGET clang-tool PROPERTY "IMPORTED_LOCATION" "${CLANG_TOOL}")/' IGC/BiFModule/CMakeLists.txt
+# NOTE: igc currently can't cross compile due to a variety of issues:
+# - https://github.com/intel/intel-graphics-compiler/issues/131
+# - https://github.com/intel/opencl-clang/issues/91
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
-mkdir build && cd build
-cmake ${CMAKE_FLAGS[@]} ..
-make -j${nproc}
-make install
+# Silence developer warnings
+CMAKE_FLAGS+=(-Wno-dev)
+
+cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+ninja -C build install
 """
 
 # These are the platforms we will build for by default, unless further
