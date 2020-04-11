@@ -8,8 +8,7 @@ version = v"5.3.1"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/mozilla/rr.git",
-              "c979313cf04ce78b09e5517b22f95ac068bb7c2d"),
-    DirectorySource("./bundled"),
+              "c979313cf04ce78b09e5517b22f95ac068bb7c2d")
 ]
 
 # Bash recipe for building across all platforms
