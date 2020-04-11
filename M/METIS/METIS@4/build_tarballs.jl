@@ -12,13 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-all_load="--whole-archive"
-noall_load="--no-whole-archive"
-COPTIONS="-fPIC"
-if [[ "${target}" == *-apple-* ]]; then
-  all_load="-all_load"
-  noall_load="-noall_load"
-fi
 if [[ "${target}" == *-mingw* ]]; then
   COPTIONS="${COPTIONS} -D__VC__"  # to resolve missing srand48/drand48 symbols
 fi
@@ -32,11 +25,8 @@ cd Lib
 make -j${nproc} COPTIONS="${COPTIONS}"
 cd ..
 
-# make a shared lib
-cc -fPIC -shared -Wl,${all_load} libmetis.a -Wl,${noall_load} -o libmetis.${dlext}
-
 mkdir -p ${libdir}
-mv libmetis.${dlext} ${libdir}
+cp libmetis.a ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,13 +34,10 @@ mv libmetis.${dlext} ${libdir}
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libmetis", :libmetis),
-]
+products = []
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
