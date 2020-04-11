@@ -6,6 +6,7 @@ version = v"4.10.0"
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_4.10.0.tar.gz",
                 "d0f86f91a74c51a17a2ff1be9c9cee2338976f13a6d00896ba5b43a5ca05d933"),
+  DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
