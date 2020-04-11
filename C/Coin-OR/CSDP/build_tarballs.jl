@@ -46,7 +46,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 mkdir -p ${libdir}
-${CC} -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext}
+${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm
 """
 
 # These are the platforms we will build for by default, unless further
