@@ -26,7 +26,7 @@ make -j${nproc} COPTIONS="${COPTIONS}"
 cd ..
 
 mkdir -p ${libdir}
-cp libmetis.a ${libdir}
+mv libmetis.a ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
