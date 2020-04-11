@@ -14,7 +14,7 @@ script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS_4.10.0
 
-(cd src && atomic_patch -p0 $WORKSPACE/srcdir/patches/mumps.patch)
+#(cd src && atomic_patch -p0 $WORKSPACE/srcdir/patches/mumps.patch)
 cp Make.inc/Makefile.gfortran.SEQ Makefile.inc
 
 make_args+=(OPTF=-O3
