@@ -37,7 +37,6 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 cd lib
-ar x libsdp.a
 
 all_load="--whole-archive"
 noall_load="--no-whole-archive"
