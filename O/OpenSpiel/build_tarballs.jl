@@ -47,7 +47,6 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(;cxxstring_abi=:cxx11)),
-    MacOS(:x86_64),
 ]
 
 # The products that we will ensure are always built
