@@ -4,20 +4,15 @@ using BinaryBuilder
 
 # Collection of sources required to build Cuba
 name = "Cuba"
-version = v"4.2a"
+version = v"4.2"
 sources = [
-    "https://github.com/giordano/cuba/archive/7f3613d28881cf984830e04282a483e7fe64e91a.tar.gz" =>
-    "606fa27858bf93ce78af3c139d0c450555bff6244758faae6b542df3a04faf95",
-    "./bundled",
+    GitSource("https://github.com/giordano/cuba.git",
+              "9ec75f3ce2b881d5a34713462cf1cee9be1f90df"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cuba-*/
-
-#if [[ ${target} != *darwin* ]]; then
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cuba_whole_archive.patch"
-#fi
+cd $WORKSPACE/srcdir/cuba/
 
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc} shared
@@ -34,7 +29,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
