@@ -17,24 +17,12 @@ cd $WORKSPACE/srcdir/Csdp*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/blegat.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile.patch"
 
-if [[ ${nbits} == 32 ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/32bits_platforms.patch"
+if [[ ${nbits} == 32 ]] || [[ "${target}" == arm* ]] || [[ "${target}" == aarch* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/32bits_aarch_arm.patch"
 fi
 
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mac_freebsd.patch"
-fi
-
-if [[ "${target}" == powerpc* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/powerpc.patch"
-fi
-
-if [[ "${target}" == arm* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/arm.patch"
-fi
-
-if [[ "${target}" == aarch* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aarch.patch"
 fi
 
 make
