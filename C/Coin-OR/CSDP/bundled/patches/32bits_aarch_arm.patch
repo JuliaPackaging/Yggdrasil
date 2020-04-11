@@ -1,0 +1,11 @@
+--- a/Makefile
++++ b/Makefile
+@@ -11,7 +11,7 @@
+ #
+ # CFLAGS settings for 64 bit Linux/unix systems.
+ #
+-export CFLAGS=-m64 -O2 -fPIC -fopenmp -ansi -Wall -DBIT64 -DUSEOPENMP -DSETNUMTHREADS -DUSEGETTIME -I../include
++export CFLAGS=-O2 -fPIC -fopenmp -ansi -Wall -DUSEOPENMP -DSETNUMTHREADS -DUSEGETTIME -I../include
+ #
+ # LIBS settings for 64 bit Linux/unix systems.
+ #
