@@ -20,7 +20,7 @@ done
 mkdir -p HiGHS/build
 cd HiGHS/build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j${nproc}
 make install
 """
 
