@@ -37,7 +37,7 @@ if [[ "${target}" == aarch* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aarch.patch"
 fi
 
-make -j${nproc}
+make -j${nproc} CFLAGS="${CFLAGS} -fPIC"
 make install
 mkdir -p ${bindir}
 cp /usr/local/bin/csdp ${bindir}/csdp
@@ -48,7 +48,7 @@ fi
 
 cd lib
 ar x libsdp.a
-cc -shared -o "${libdir}/libcsdp.${dlext}" *.o
+${CC} -shared -o "${libdir}/libcsdp.${dlext}" libsdp.a
 rm *.o
 """
 
