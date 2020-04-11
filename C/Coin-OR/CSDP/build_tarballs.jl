@@ -37,7 +37,7 @@ if [[ "${target}" == aarch* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aarch.patch"
 fi
 
-make -j${nproc} CFLAGS="${CFLAGS} -fPIC"
+make
 make install
 mkdir -p ${bindir}
 cp /usr/local/bin/csdp ${bindir}/csdp
@@ -45,6 +45,8 @@ cp /usr/local/bin/csdp ${bindir}/csdp
 if [[ "${target}" == *-mingw* ]]; then
     mv "${bindir}/csdp" "${bindir}/csdp${exeext}"
 fi
+
+mkdir -p ${libdir}
 
 cd lib
 ar x libsdp.a
