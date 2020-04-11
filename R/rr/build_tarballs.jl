@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.3.0"
+version = v"5.3.1"
 
 # Collection of sources required to build rr
 sources = [
-    ArchiveSource("https://github.com/mozilla/rr/archive/$(version).tar.gz",
-                  "440e90a68557a8111f483fc40ab5ed65d21d6b11426b3245e4221b930a86ca69"),
+    GitSource("https://github.com/mozilla/rr.git",
+              "c979313cf04ce78b09e5517b22f95ac068bb7c2d"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,10 +16,7 @@ sources = [
 script = raw"""
 pip3 install pexpect
 
-cd $WORKSPACE/srcdir/rr-*/
-
-# Patches for very old glibc
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rr_old_glibc.patch
+cd $WORKSPACE/srcdir/rr/
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
