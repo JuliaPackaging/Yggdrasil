@@ -27,7 +27,7 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
 fi
 
-make CFLAGS=$CFLAGS LIBS=$LIBS CC=$CC
+make CFLAGS="$CFLAGS" LIBS="$LIBS" CC="$CC"
 make install
 mkdir -p ${bindir}
 cp /usr/local/bin/csdp ${bindir}/csdp
