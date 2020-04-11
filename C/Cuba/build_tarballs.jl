@@ -7,7 +7,7 @@ name = "Cuba"
 version = v"4.2"
 sources = [
     GitSource("https://github.com/giordano/cuba.git",
-              "9ec75f3ce2b881d5a34713462cf1cee9be1f90df"),
+              "6a1b2d4e38908370f190077657215715c23ae138"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/cuba/
 
 ./configure --prefix=${prefix} --host=${target}
-make -j${nproc} shared
+make shared
 make install
 """
 
