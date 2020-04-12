@@ -29,6 +29,8 @@ cd ..
 # Specifically this is in a separate location than the typical location for libraries on Windows.
 mkdir -p ${prefix}/lib
 mv libmetis.a ${prefix}/lib
+mkdir -p ${prefix}/include
+cp Lib/metis.h ${prefix}/include
 """
 
 # These are the platforms we will build for by default, unless further
