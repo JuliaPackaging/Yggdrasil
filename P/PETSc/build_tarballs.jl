@@ -5,7 +5,8 @@ version = v"3.13.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    ArchiveSource("http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.0.tar.gz"),
+    ArchiveSource("http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.0.tar.gz",
+    "df2ff7cb0341bb534a18c7dbea37aa2e2c543a440bf63c24977a605d9b5f8324"),
     DirectorySource("./bundled"),
 ]
 
