@@ -6,7 +6,7 @@ version = Clp_version
 # Collection of sources required to build Clp
 sources = [
     GitSource("https://github.com/coin-or/Clp.git",
-              Clp_gitsha),
+              Clp_gitsha)
 ]
 
 # Bash recipe for building across all platforms
