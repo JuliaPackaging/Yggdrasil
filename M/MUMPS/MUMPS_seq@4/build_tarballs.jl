@@ -11,10 +11,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS_4.10.0
 
-#(cd src && atomic_patch -p0 $WORKSPACE/srcdir/patches/mumps.patch)
+# Patch from Coin-OR ThirdPartyMUMPS
+(cd src && atomic_patch -p2 $WORKSPACE/srcdir/patches/mumps.patch)
+# Patch from CoinMumpsBuilder
+(cd src && atomic_patch -p3 $WORKSPACE/srcdir/patches/quiet.diff)
+
 cp Make.inc/Makefile.gfortran.SEQ Makefile.inc
 
 make_args+=(OPTF=-O3
@@ -35,11 +38,13 @@ fi
 # NB: parallel build fails
 make alllib "${make_args[@]}"
 
+mkdir -p ${libdir}
+
 cd libseq
-cp libmpiseq.a ${libdir}
+mv libmpiseq.a ${libdir}
 
 cd ../lib
-cp *.a ${libdir}
+mv *.a ${libdir}
 
 cd ..
 mkdir -p ${prefix}/include/mumps_seq
@@ -50,14 +55,22 @@ cp libseq/*.h ${prefix}/include/mumps_seq
 platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
-products = Product[]
+products = Product[
+    FileProduct("lib/libsmumps.a", :libsmumps_a),
+    FileProduct("lib/libdmumps.a", :libdmumps_a),
+    FileProduct("lib/libcmumps.a", :libcmumps_a),
+    FileProduct("lib/libzmumps.a", :libzmumps_a),
+]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(; name = "METIS_jll", uuid = "d00139f3-1899-568f-a2f0-47f597d42d70", version = v"4.0.3")),
-    Dependency("OpenBLAS32_jll"),
+dependencies = [.
+    BuildDependency(PackageSpec(; name = "METIS_jll",
+                                uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
+                                version = v"4.0.3")),
+    BuildDependency("OpenBLAS32_jll"),
+    BuildDependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"6")
