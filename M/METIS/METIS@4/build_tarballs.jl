@@ -36,7 +36,7 @@ mv libmetis.a ${prefix}/lib
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     Product("lib/libmetis.a", :libmetis_a)
 ]
 

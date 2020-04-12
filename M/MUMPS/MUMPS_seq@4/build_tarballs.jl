@@ -55,7 +55,7 @@ cp libseq/*.h ${prefix}/include/mumps_seq
 platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     FileProduct("lib/libsmumps.a", :libsmumps_a),
     FileProduct("lib/libdmumps.a", :libdmumps_a),
     FileProduct("lib/libcmumps.a", :libcmumps_a),
