@@ -26,12 +26,13 @@ else
   blas_64=0
 fi
 
-./configure CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$BUILD_AR  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0
+opt_flags="--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' -CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native"
+./configure $opt_flags CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$BUILD_AR  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
-make all test
+make PETSC_DIR=$(pwd()) PETSC_ARCH=$BUILD_AR
 
 # Move libraries to ${libdir} on Windows
 if [[ "${target}" == *-mingw* ]]; then
