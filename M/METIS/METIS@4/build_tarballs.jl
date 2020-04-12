@@ -1,11 +1,11 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "METIS"
 version = v"4.0.3"
 
 # Collection of sources required to build METIS
 sources = [
-    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz",
+    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-$(version).tar.gz",
                   "5efa35de80703c1b2c4d0de080fafbcf4e0d363a21149a1ad2f96e0144841a55"),
     DirectorySource("./bundled"),
 ]
@@ -17,7 +17,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 # build libmetis.a
-cd $WORKSPACE/srcdir/metis-4.0.3
+cd $WORKSPACE/srcdir/metis-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
@@ -36,10 +36,13 @@ mv libmetis.a ${prefix}/lib
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[]
+products = Product[
+    Product("lib/libmetis.a", :libmetis_a)
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"6")

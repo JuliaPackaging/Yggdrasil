@@ -15,21 +15,21 @@ cd $WORKSPACE/srcdir/MUMPS_4.10.0
 
 # Patch from Coin-OR ThirdPartyMUMPS
 (cd src && atomic_patch -p2 $WORKSPACE/srcdir/patches/mumps.patch)
-# Patch from CoinMumpsBuilder
+# Patch from JuliaOpt CoinMumpsBuilder
 (cd src && atomic_patch -p3 $WORKSPACE/srcdir/patches/quiet.diff)
 
 cp Make.inc/Makefile.gfortran.SEQ Makefile.inc
 
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
-            LMETISDIR=${libdir}
+            LMETISDIR=${prefix}/lib
             IMETIS=-I${prefix}/include
             LMETIS='-L$(LMETISDIR) -lmetis'
             ORDERINGSF="-Dpord -Dmetis"
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBBLAS="-L${prefix}/lib -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
@@ -38,13 +38,13 @@ fi
 # NB: parallel build fails
 make alllib "${make_args[@]}"
 
-mkdir -p ${libdir}
+mkdir -p ${prefix}/lib
 
 cd libseq
-mv libmpiseq.a ${libdir}
+mv libmpiseq.a ${prefix}/lib
 
 cd ../lib
-mv *.a ${libdir}
+mv *.a ${prefix}/lib
 
 cd ..
 mkdir -p ${prefix}/include/mumps_seq
