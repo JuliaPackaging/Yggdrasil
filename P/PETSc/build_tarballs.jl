@@ -5,8 +5,7 @@ version = v"3.13.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    GitSource("https://gitlab.com/petsc/petsc.git",
-              "a826417c4d3aef8d40f916498c49a8f0d4fade93"),
+    ArchiveSource("http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.0.tar.gz"),
     DirectorySource("./bundled"),
 ]
 
@@ -27,7 +26,7 @@ else
 fi
 
 opt_flags="--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' -CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native"
-./configure --prefix=$prefix $opt_flags CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$target  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0 --download-sowing-configure-arguments="CC=$CC CXX=$CXX --host=${target}"
+./configure --prefix=$prefix $opt_flags CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$target  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0 --with-sowing=0"
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
