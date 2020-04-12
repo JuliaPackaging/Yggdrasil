@@ -14,9 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 libinclude="/workspace/destdir/include"
+atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
-  atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
   BLAS_LAPACK_LIB="${libdir}/libopenblas64_.${dlext}"
   BLAS_LAPACK_SUFFIX="_64_"
   blas_64=1
