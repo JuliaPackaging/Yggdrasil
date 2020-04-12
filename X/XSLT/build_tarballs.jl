@@ -13,9 +13,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libxslt-*/
 
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --host=${target} --disable-static
 make -j${nproc}
 make install
+
+# Remove heavy doc directoriy
+rm -rf ${prefix}/share/doc/libxslt-*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,8 +33,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libgcrypt_jll",
-    "XML2_jll",
+    Dependency("Libgcrypt_jll"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
