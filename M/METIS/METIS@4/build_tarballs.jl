@@ -25,8 +25,10 @@ cd Lib
 make -j${nproc} COPTIONS="${COPTIONS}"
 cd ..
 
-mkdir -p ${libdir}
-mv libmetis.a ${libdir}
+# We copy the .a files into ${prefix}/lib since the main purpose is to link them in other builds.
+# Specifically this is in a separate location than the typical location for libraries on Windows.
+mkdir -p ${prefix}/lib
+mv libmetis.a ${prefix}/lib
 """
 
 # These are the platforms we will build for by default, unless further
