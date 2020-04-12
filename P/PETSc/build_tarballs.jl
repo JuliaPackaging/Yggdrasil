@@ -32,7 +32,8 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' -CXXOP
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
-make PETSC_ARCH=$target
+make PETSC_DIR=$PWD PETSC_ARCH=$target all
+make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
 # Move libraries to ${libdir} on Windows
 if [[ "${target}" == *-mingw* ]]; then
