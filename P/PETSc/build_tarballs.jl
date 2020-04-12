@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
-libinclude="/workspace/destdir/include"
+libinclude="${prefix}/include"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
@@ -27,12 +27,12 @@ else
 fi
 
 opt_flags="--with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' -CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native"
-./configure $opt_flags CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$BUILD_AR  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0
+./configure --prefix=$prefix $opt_flags CC=$CC FC=$FC CXX=$CXX --with-batch --PETSC_ARCH=$BUILD_AR  --with-blaslapack-lib=$BLAS_LAPACK_LIB --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX --known-64-bit-blas-indices=$blas_64 --with-mpi=0
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
-make PETSC_DIR=$(pwd()) PETSC_ARCH=$BUILD_AR
+make PETSC_DIR=$prefix PETSC_ARCH=$BUILD_AR
 
 # Move libraries to ${libdir} on Windows
 if [[ "${target}" == *-mingw* ]]; then
@@ -49,7 +49,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    Dependency("MPICH_jll"),
+    #Dependency("MPICH_jll"),
+    #Dependency("MicrosoftMPI_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
