@@ -27,6 +27,7 @@ mkdir ${temp}
 
 apk add p7zip
 
+mkdir ${prefix}/cuda
 if [[ ${target} == x86_64-linux-gnu ]]; then
     sh installer.run --tmpdir="${temp}" --extract="${temp}"
     cd ${temp}
@@ -37,10 +38,7 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # clean-up
     rm -r libnsight libnvvp nsightee_plugins jre NsightCompute-1.0 doc
 
-    mv * ${prefix}
-    cd ${prefix}
-
-    install_license EULA.txt
+    mv * ${prefix}/cuda
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     7z x installer.dmg 5.hfs -o${temp}
     cd ${temp}
@@ -52,19 +50,18 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # clean-up
     rm -r libnsight libnvvp nsightee_plugins jre NsightCompute-1.0 doc
 
-    mv * ${prefix}
-    cd ${prefix}
-
-    install_license EULA.txt
+    mv * ${prefix}/cuda
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     7z x installer.exe -o${temp}
     cd ${temp}
     find .
 
+    mv EULA.txt ${prefix}/cuda
+
     for project in cuobjdump memcheck nvcc cupti nvdisasm curand cusparse npp cufft \
                    cublas cudart cusolver nvrtc nvgraph nvprof nvprune; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
-        cp -a ${project}/* ${prefix}
+        cp -a ${project}/* ${prefix}/cuda
     done
 
     # NVIDIA Tools Extension Library
@@ -73,19 +70,20 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     for file in nvtx_installer/*.*_*; do
         mv $file $(echo $file | sed 's/\.\(\w*\)_.*/.\1/')
     done
-    mv nvtx_installer/*.dll ${prefix}/bin
-    mv nvtx_installer/*64_*.lib ${prefix}/lib/x64
-    mv nvtx_installer/*32_*.lib ${prefix}/lib/Win32
-    mv nvtx_installer/*.h ${prefix}/include
-
-    install_license EULA.txt
+    mv nvtx_installer/*.dll ${prefix}/cuda/bin
+    mv nvtx_installer/*64_*.lib ${prefix}/cuda/lib/x64
+    mv nvtx_installer/*32_*.lib ${prefix}/cuda/lib/Win32
+    mv nvtx_installer/*.h ${prefix}/cuda/include
 
     # fixup
-    chmod +x ${prefix}/bin/*.exe
+    chmod +x ${prefix}/cuda/bin/*.exe
 
     # clean-up
-    rm ${prefix}/*.nvi
+    rm ${prefix}/cuda/*.nvi
 fi
+
+cd ${prefix}/cuda
+install_license EULA.txt
 """
 
 products = Product[
