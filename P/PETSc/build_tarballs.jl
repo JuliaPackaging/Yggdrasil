@@ -60,7 +60,7 @@ fi
 platforms = expand_gfortran_versions(supported_platforms())
 
 products = [
-    LibraryProduct("libpetsc", :libsundials_arkode),
+    LibraryProduct("libpetsc", :libpetsc),
 ]
 
 dependencies = [
@@ -71,4 +71,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
