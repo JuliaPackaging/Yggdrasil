@@ -1,0 +1,16 @@
+diff --git a/shared/source/os_interface/linux/os_library_linux.cpp b/shared/source/os_interface/linux/os_library_linux.cpp
+index 7e308d8b8..a7e5791cd 100644
+--- a/shared/source/os_interface/linux/os_library_linux.cpp
++++ b/shared/source/os_interface/linux/os_library_linux.cpp
+@@ -29,11 +29,7 @@ OsLibrary::OsLibrary(const std::string &name) {
+     if (name.empty()) {
+         this->handle = dlopen(0, RTLD_LAZY);
+     } else {
+-#ifdef SANITIZER_BUILD
+         constexpr auto dlopenFlag = RTLD_LAZY;
+-#else
+-        constexpr auto dlopenFlag = RTLD_LAZY | RTLD_DEEPBIND;
+-#endif
+         this->handle = dlopen(name.c_str(), dlopenFlag);
+     }
+ }
