@@ -144,7 +144,9 @@ static const char * get_plan9_opts() {
 static void _check(int ok, int line) {
   if (!ok) {
     fprintf(stderr, "At line %d, ABORTED (%d: %s)!\n", line, errno, strerror(errno));
-    abort();
+    fflush(stdout);
+    fflush(stderr);
+    _exit(1);
   }
 }
 #define check(ok) _check(ok, __LINE__)
