@@ -19,7 +19,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
   BLAS_LAPACK_LIB="${libdir}/libopenblas64_.${dlext}"
-  BLAS_LAPACK_SUFFIX="_64_"
+  BLAS_LAPACK_SUFFIX="_64"
   blas_64=1
 else
   BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
