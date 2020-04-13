@@ -4,44 +4,47 @@ using BinaryBuilder, Pkg
 
 name = "PCRE2"
 version = v"10.34.0"
+flags = "--enable-utf --enable-unicode-properties --enable-jit --enable-pcre2-16 --enable-pcre2-32"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-10.34.tar.gz", "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
+    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
+                  "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd pcre2-10.34
-./configure --prefix=$prefix --host=$target --enable-jit --enable-pcre2-16 --enable-pcre2-32
-make
-make install
+cd $WORKSPACE/srcdir/pcre2-*/
+
+# Update configure scripts
+update_configure_scripts
+
+# Force optimization
+export CFLAGS="${CFLAGS} -O3"
+
+./configure --prefix=$prefix --host=$target $flags
+
+make -j${nproc} V=1
+make install V=1
+
+# On windows we need libcpre2-8.dll as well
+if [[ ${target} == *mingw* ]]; then
+    ln -s libpcre2-8-0.dll  ${prefix}/bin/libpcre2-8.dll
+    ln -s libpcre2-16-0.dll ${prefix}/bin/libpcre2-16.dll
+    ln -s libpcre2-32-0.dll ${prefix}/bin/libpcre2-32.dll
+fi
 exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpcre2", :libpcre2_32),
-    LibraryProduct("libpcre2", :libpcre2_16),
-    LibraryProduct("libpcre2", :libpcre2_8)
+    LibraryProduct("libpcre2-8", :libpcre2_8)
+    LibraryProduct("libpcre2-16", :libpcre2_16),
+    LibraryProduct("libpcre2-32", :libpcre2_32),
 ]
 
 # Dependencies that must be installed before this package can be built
