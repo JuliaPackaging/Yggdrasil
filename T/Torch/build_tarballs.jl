@@ -15,12 +15,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
 mv libtorch cudnn $prefix
-cd /usr/local/
-mkdir cuda
-cd cuda
-mkdir lib64
-cd lib64/
+mkdir -p /usr/local/cuda/lib64
+mkdir /usr/local/cuda/lib64
 ln -s ${prefix}/lib64/libcudart.so libcudart.so
 ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
 
