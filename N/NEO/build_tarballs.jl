@@ -9,7 +9,6 @@ version = v"20.12.16259"
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
               "43016c65591bd125a9590ea05ca83d094a628f79"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,10 +17,6 @@ cd compute-runtime
 install_license LICENSE
 
 # work around compilation failures
-if [[ "${target}" == *86*-linux-musl* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-deepbind.patch
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-execinfo.patch
-fi
 ## already defined in gmmlib
 sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
 ## build systems shouldn't touch LD_LIBRARY_PATH...
@@ -56,8 +51,8 @@ ninja -C build install
 # platforms are passed in on the command line
 platforms = [
     # NEO is 64-bit only: https://github.com/intel/compute-runtime/issues/179
+    # and does not support musl: https://github.com/intel/compute-runtime/issues/265
     Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
