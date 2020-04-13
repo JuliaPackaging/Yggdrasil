@@ -12,11 +12,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+MKL_SHARED_LIB_DIR=$libdir
 cd $WORKSPACE/srcdir
-cd osqp-0.6.0/
+cd osqp-*/
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DENABLE_MKL_PARDISO=ON -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make
 make install
 """
