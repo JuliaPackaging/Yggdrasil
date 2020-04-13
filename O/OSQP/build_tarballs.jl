@@ -13,11 +13,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 MKL_SHARED_LIB_DIR=$libdir
+use_mkl=ON
+if [[ "${target}" == *arm* ]]; then
+   use_mkl=OFF
+fi
 cd $WORKSPACE/srcdir
 cd osqp-*/
 mkdir build
 cd build/
-cmake -DENABLE_MKL_PARDISO=ON -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DENABLE_MKL_PARDISO=$use_mkl -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make
 make install
 """
