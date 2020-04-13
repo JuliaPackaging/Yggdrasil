@@ -37,10 +37,16 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 cd lib
-ar x libsdp.a
+
+all_load="--whole-archive"
+noall_load="--no-whole-archive"
+if [[ "${target}" == *-apple-* ]]; then
+  all_load="-all_load"
+  noall_load="-noall_load"
+fi
 
 mkdir -p ${libdir}
-${CC} -shared -o "${libdir}/libcsdp.${dlext}" libsdp.a
+${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm
 """
 
 # These are the platforms we will build for by default, unless further
