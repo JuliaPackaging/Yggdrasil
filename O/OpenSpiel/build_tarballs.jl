@@ -41,6 +41,7 @@ cd open_spiel/build
 BUILD_WITH_PYTHON=OFF BUILD_WITH_JULIA=ON BUILD_WITH_HANABI=ON BUILD_WITH_ACPC=OFF cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_PREFIX_PATH=$prefix/destdir/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=${prefix} ../open_spiel/
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
