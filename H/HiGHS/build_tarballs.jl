@@ -8,6 +8,7 @@ version = v"0.1.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ERGO-Code/HiGHS.git", "0dc437abd75ba9a56d24e4f4f5a60bd89a2839a5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
