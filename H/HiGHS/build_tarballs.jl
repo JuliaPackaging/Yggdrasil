@@ -3,20 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "30de0e3c2c977bd3c5bfd95e502c2ee041aa6525"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "0dc437abd75ba9a56d24e4f4f5a60bd89a2839a5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 mkdir -p HiGHS/build
 cd HiGHS/build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
