@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir
 
 mv libtorch cudnn $prefix
 mkdir -p /usr/local/cuda/lib64
-mkdir /usr/local/cuda/lib64
+cd /usr/local/cuda/lib64
 ln -s ${prefix}/lib64/libcudart.so libcudart.so
 ln -s ${prefix}/lib64/libnvToolsExt.so libnvToolsExt.so
 
