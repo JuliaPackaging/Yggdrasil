@@ -33,10 +33,15 @@ make install highs
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(
-    p -> !isa(p, Windows) && (arch(p) != :powerpc64le || libgfortran_version(p) >= v"5"),
-    supported_platforms()
-)
+platforms = filter!(supported_platforms() do p
+    powerpc_filter = if arch(p) == :powerpc64le
+        fversion = libgfortran_version(p)
+        fversion !== nothing && fversion >= v"5"
+    else
+        true
+    end
+    !isa(p, Windows) && powerpc_filter
+end
 platforms = expand_gfortran_versions(expand_cxxstring_abis(platforms))
 
 # The products that we will ensure are always built
