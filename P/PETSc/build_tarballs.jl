@@ -27,13 +27,8 @@ else
   blas_64=0
 fi
 
-if [[ ${target} != *darwin* ]]; then
-    # Needed to find libgfortran for OpenBLAS.
-    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64"
-fi
-
 windows_flags=""
-if [[ ${target} != *-mingw* ]]; then
+if [[ ${target} == *-mingw* ]]; then
     windows_flags="--with-shared-libraries=0"
 fi
 
