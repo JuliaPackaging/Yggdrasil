@@ -32,6 +32,11 @@ if [[ ${target} != *darwin* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
+windows_flags="
+if [[ ${target} != *-mingw* ]]; then
+    windows_flags="--with-shared-libraries=0"
+fi
+
 opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'"
 ./configure --prefix=${prefix} $opt_flags \
     CC=$CC \
@@ -42,13 +47,14 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi=0 --with-sowing=0
+    --with-mpi=0 --with-sowing=0 \
+    $windows_flags
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
 make PETSC_DIR=$PWD PETSC_ARCH=$target all
-make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
+make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
 # Move libraries to ${libdir} on Windows
 if [[ "${target}" == *-mingw* ]]; then
