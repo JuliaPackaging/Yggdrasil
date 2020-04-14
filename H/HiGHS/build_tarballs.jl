@@ -21,17 +21,20 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
     atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
     popd
 fi
+if [[ ${target} == powerpc64le* ]]; then
+    export FFLAGS="${FFLAGS} -Wl,-rpath-link,${prefix}/lib64"
+fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
+make -j${nproc} highs
+make install highs
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(
-    p -> !isa(p, Windows) && (arch(p) != :powerpc64le),
+    p -> !isa(p, Windows) && (arch(p) != :powerpc64le || libgfortran_version(p) >= v"5"),
     supported_platforms()
 )
 platforms = expand_gfortran_versions(expand_cxxstring_abis(platforms))
