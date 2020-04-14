@@ -32,7 +32,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libfakechroot", :libfakechroot, ["lib/fakeroot"])
+    LibraryProduct("libfakechroot", :libfakechroot, ["lib/fakechroot"])
 ]
 
 # Dependencies that must be installed before this package can be built
