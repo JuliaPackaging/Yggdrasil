@@ -32,7 +32,7 @@ if [[ ${target} != *darwin* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
-windows_flags="
+windows_flags=""
 if [[ ${target} != *-mingw* ]]; then
     windows_flags="--with-shared-libraries=0"
 fi
