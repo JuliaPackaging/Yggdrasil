@@ -23,7 +23,7 @@ make -j${nproc}
 make install
 
 # Remove heavy doc directories
-rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc/libxml2}
+rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 """
 
 # These are the platforms we will build for by default, unless further
