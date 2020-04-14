@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "PCRE2"
 version = v"10.34.0"
-flags = "--enable-utf --enable-unicode-properties --enable-jit --enable-pcre2-16 --enable-pcre2-32"
 
 # Collection of sources required to complete build
 sources = [
@@ -22,7 +21,7 @@ update_configure_scripts
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
-./configure --prefix=$prefix --host=$target $flags
+./configure --prefix=$prefix --host=$target --enable-utf --enable-unicode-properties --enable-jit --enable-pcre2-16 --enable-pcre2-32
 
 make -j${nproc} V=1
 make install V=1
