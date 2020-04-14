@@ -21,18 +21,23 @@ update_configure_scripts
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
-./configure --prefix=$prefix --host=$target --enable-utf --enable-unicode-properties --enable-jit --enable-pcre2-16 --enable-pcre2-32
+./configure --prefix=${prefix} --host=${target} \
+    --disable-static \
+    --enable-utf \
+    --enable-unicode-properties \
+    --enable-jit \
+    --enable-pcre2-16 \
+    --enable-pcre2-32
 
-make -j${nproc} V=1
-make install V=1
+make -j${nproc}
+make install
 
 # On windows we need libcpre2-8.dll as well
 if [[ ${target} == *mingw* ]]; then
-    ln -s libpcre2-8-0.dll  ${prefix}/bin/libpcre2-8.dll
-    ln -s libpcre2-16-0.dll ${prefix}/bin/libpcre2-16.dll
-    ln -s libpcre2-32-0.dll ${prefix}/bin/libpcre2-32.dll
+    ln -s libpcre2-8-0.dll  ${libdir}/libpcre2-8.dll
+    ln -s libpcre2-16-0.dll ${libdir}/libpcre2-16.dll
+    ln -s libpcre2-32-0.dll ${libdir}/libpcre2-32.dll
 fi
-exit
 """
 
 # These are the platforms we will build for by default, unless further
