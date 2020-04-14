@@ -42,9 +42,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpcre2-8", :libpcre2_8)
+    LibraryProduct("libpcre2-8", :libpcre2_8),
     LibraryProduct("libpcre2-16", :libpcre2_16),
-    LibraryProduct("libpcre2-32", :libpcre2_32),
+    LibraryProduct("libpcre2-32", :libpcre2_32)
 ]
 
 # Dependencies that must be installed before this package can be built
