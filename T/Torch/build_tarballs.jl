@@ -29,6 +29,7 @@ cmake --build .
 mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
 # cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "${prefix}/include"
+install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
