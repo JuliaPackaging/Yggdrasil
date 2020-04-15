@@ -7,9 +7,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-// XXX: This is very bad style for a general server, but here
-// we know it will be used only for this limited purpose - do not use it
-// elsewhere.
+// XXX: This is very bad style for a general server, in particular,
+// we are not buffering things correctly, we use raw syscalls rather
+// than put any effort into portability, we use large on-stack
+// buffers, and we elide the polite shutdown() so as to work around
+// a Julia 1.4- bug.  We can do this because we know precisely what
+// environment this will be running in, as well as precisely what
+// server this client will be communicating with.
 
 int main(int argc, char *argv[]) {
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
