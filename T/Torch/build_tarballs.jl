@@ -7,7 +7,7 @@ version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "985c4280c17fd9b0af978760be66761456a0113b"),
+    GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "c5bd02f021a46fd1cff4bb683a54136c6c8705bd"),
     ArchiveSource("https://download.pytorch.org/libtorch/cu101/libtorch-cxx11-abi-shared-with-deps-1.4.0.zip", "f214bfde532877aa5d4e0803e51a28fa8edd97b6a44b6615f75a70352b6b542e"),
     ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = "cudnn"),
 ]
