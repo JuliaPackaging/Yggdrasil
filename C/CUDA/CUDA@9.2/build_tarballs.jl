@@ -1,6 +1,4 @@
-using BinaryBuilder
-
-include("../../../fancy_toys.jl")
+using BinaryBuilder, Pkg
 
 name = "CUDA"
 version = v"9.2.148"
