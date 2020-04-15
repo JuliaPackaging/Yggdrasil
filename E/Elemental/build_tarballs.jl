@@ -17,6 +17,11 @@ script = raw"""
 cd Elemental
 
 atomic_patch -p1 ../patches/01-fix-suffix.patch
+if [[ "$target" == *86*-linux-musl* ]]; then
+    pushd /opt/$target/lib/gcc/$target/*/include
+    atomic_patch -p0 "$WORKSPACE/srcdir/patches/02-fix-musl.patch"
+    popd
+fi
 
 mkdir build
 cd build
