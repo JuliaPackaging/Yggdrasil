@@ -27,6 +27,10 @@ else
   blas_64=0
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-direct-h.patch
+fi
+
 opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'"
 ./configure --prefix=${prefix} $opt_flags \
     CC=$CC \
