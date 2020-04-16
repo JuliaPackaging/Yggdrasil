@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "CUTEst"
-version = v"0.2.0"
+version = v"2.0.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    "https://github.com/ralna/ARCHDefs/archive/v2.0.3x.tar.gz" =>
-    "6583e27f84338447767bbdf4335514c8836ae4ad54f5e66280307e8b57189cff",
-    "https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz" =>
-    "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2",
-    "https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz" =>
-    "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55",
+    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.3x.tar.gz",
+                  "6583e27f84338447767bbdf4335514c8836ae4ad54f5e66280307e8b57189cff"),
+    ArchiveSource("https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz",
+                  "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2"),
+    ArchiveSource("https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz",
+                  "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55"),
 ]
 
 # Bash recipe for building across all platforms
@@ -98,23 +98,8 @@ install_license $CUTEST/lgpl-3.0.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
- Linux(:i686, libc=:glibc),
- Linux(:x86_64, libc=:glibc),
- Linux(:aarch64, libc=:glibc),
- Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
- Linux(:powerpc64le, libc=:glibc),
- Linux(:i686, libc=:musl),
- Linux(:x86_64, libc=:musl),
- Linux(:aarch64, libc=:musl),
- Linux(:armv7l, libc=:musl, call_abi=:eabihf),
- MacOS(:x86_64),
- FreeBSD(:x86_64),
- # Windows(:i686),  # can't build shared libs because Windows imposes all symbols to be defined
- # Windows(:x86_64)
-]
-
-platforms = expand_gfortran_versions(platforms)
+# can't build shared libs on Windows, which imposes all symbols to be defined
+platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -124,6 +109,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
