@@ -60,7 +60,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency(MUMPS_seq_packagespec),
-    BuildDependency(METIS_seq_packagespec),
+    BuildDependency(METIS_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
