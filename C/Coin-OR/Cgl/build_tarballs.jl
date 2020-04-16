@@ -41,7 +41,7 @@ make install
 
 # The products that we will ensure are always built
 products = [
-   LibraryProduct("libCgl", :libCgl),
+   LibraryProduct("libCgl", :libCgl)
 ]
 
 # Dependencies that must be installed before this package can be built
