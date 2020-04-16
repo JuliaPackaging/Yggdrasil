@@ -22,7 +22,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 cd Lib
-make -j${nproc} COPTIONS="${COPTIONS}"
+make -j${nproc} COPTIONS="${COPTIONS} -fPIC"
 cd ..
 
 # We copy the .a files into ${prefix}/lib since the main purpose is to link them in other builds.
