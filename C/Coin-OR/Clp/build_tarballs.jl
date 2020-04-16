@@ -39,8 +39,8 @@ fi
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
 --with-mumps-lib="-L${prefix}/lib -lmumps_common -ldmumps -lzmumps -lmpiseq -lpord -lgfortran" \
---with-mumps-incdir="-I${prefix}/include/mumps_seq" \
---with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="-I${prefix}/include"
+--with-mumps-incdir="${prefix}/include/mumps_seq" \
+--with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include"
 
 make -j${nproc}
 make install
