@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CUTEst"
-version = v"0.2.0"
+version = v"2.0.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
@@ -98,23 +98,8 @@ install_license $CUTEST/lgpl-3.0.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
- Linux(:i686, libc=:glibc),
- Linux(:x86_64, libc=:glibc),
- Linux(:aarch64, libc=:glibc),
- Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
- Linux(:powerpc64le, libc=:glibc),
- Linux(:i686, libc=:musl),
- Linux(:x86_64, libc=:musl),
- Linux(:aarch64, libc=:musl),
- Linux(:armv7l, libc=:musl, call_abi=:eabihf),
- MacOS(:x86_64),
- FreeBSD(:x86_64),
- # Windows(:i686),  # can't build shared libs because Windows imposes all symbols to be defined
- # Windows(:x86_64)
-]
-
-platforms = expand_gfortran_versions(platforms)
+# can't build shared libs on Windows, which imposes all symbols to be defined
+platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -124,6 +109,7 @@ products = [
 ]
 
 dependencies = [
+    BuildDependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
