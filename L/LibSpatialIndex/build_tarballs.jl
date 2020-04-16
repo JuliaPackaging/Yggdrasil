@@ -30,7 +30,7 @@ automake --add-missing --foreign
 # Show options in the log
 ./configure --help
 
-./configure --host=$target --enable-static=no
+./configure --prefix=${prefix} --host=$target --build=${MACHTYPE} --enable-static=no
 make
 make install
 install_license ../COPYING
