@@ -46,7 +46,7 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
-make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install all
+make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix all
 
 make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
