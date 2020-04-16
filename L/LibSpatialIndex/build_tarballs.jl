@@ -33,7 +33,7 @@ automake --add-missing --foreign
 ./configure --prefix=${prefix} --host=$target --build=${MACHTYPE} --enable-static=no
 make
 make install
-install_license ../COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
