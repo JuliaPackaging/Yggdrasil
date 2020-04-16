@@ -7,12 +7,12 @@ version = v"2.0.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    "https://github.com/ralna/ARCHDefs/archive/v2.0.3x.tar.gz" =>
-    "6583e27f84338447767bbdf4335514c8836ae4ad54f5e66280307e8b57189cff",
-    "https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz" =>
-    "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2",
-    "https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz" =>
-    "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55",
+    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.3x.tar.gz",
+                  "6583e27f84338447767bbdf4335514c8836ae4ad54f5e66280307e8b57189cff"),
+    ArchiveSource("https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz",
+                  "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2"),
+    ArchiveSource("https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz",
+                  "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55"),
 ]
 
 # Bash recipe for building across all platforms
@@ -109,7 +109,7 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
