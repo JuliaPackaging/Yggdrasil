@@ -1,6 +1,4 @@
-using BinaryBuilder
-
-include("../../../fancy_toys.jl")
+using BinaryBuilder, Pkg
 
 name = "CUDA"
 version = v"9.2.148"
@@ -9,14 +7,14 @@ dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=versio
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
-CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${bindir}/ptxas${exeext})))
+CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext})))
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
 rm -rf ${prefix}
 
 # license
-install_license share/licenses/CUDA_full/*
+install_license EULA.txt
 
 # headers
 mkdir -p ${prefix}/include
