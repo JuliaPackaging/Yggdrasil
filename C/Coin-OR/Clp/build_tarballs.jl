@@ -38,7 +38,7 @@ fi
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
---with-mumps-lib="-L${prefix}/lib -lmumps_common -ldmumps -lzmumps -lmpiseq -lpord -lgfortran" \
+--with-mumps-lib="-L${prefix}/lib -lmumps_common -ldmumps -lzmumps -lmpiseq -lpord -lmetis -lgfortran" \
 --with-mumps-incdir="${prefix}/include/mumps_seq" \
 --with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include"
 
