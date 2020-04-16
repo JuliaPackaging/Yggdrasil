@@ -15,10 +15,11 @@ cd $WORKSPACE/srcdir/utf8proc-*
 
 if [[ "${target}" == *-mingw* ]]; then
     make -j${nproc} libutf8proc.a
-    mkdir -p ${libdir} ${prefix}/include
+    mkdir -p ${libdir} ${prefix}/lib ${prefix}/include
     cp utf8proc.h ${prefix}/include/
     ar x libutf8proc.a
     cc -shared -o "${libdir}/libutf8proc.${dlext}" *.o
+    cp libutf8proc.a ${prefix}/lib
 else
     make -j${nproc}
     make install prefix=${prefix} libdir=${libdir}
