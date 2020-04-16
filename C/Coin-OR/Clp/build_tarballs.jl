@@ -37,7 +37,10 @@ fi
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-coinutils-lib="-lCoinUtils" \
---with-osi-lib="-lOsi -lCoinUtils"
+--with-osi-lib="-lOsi -lCoinUtils" \
+--with-mumps-lib="-L${prefix}/lib -lmumps_common -ldmumps -lzmumps -lmpiseq -lpord -lgfortran" \
+--with-mumps-incdir="-I${prefix}/include/mumps_seq" \
+--with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="-I${prefix}/include"
 
 make -j${nproc}
 make install
@@ -56,6 +59,8 @@ dependencies = [
     Dependency(Osi_packagespec),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    BuildDependency(MUMPS_seq_packagespec),
+    BuildDependency(METIS_seq_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
