@@ -41,6 +41,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("OpenCL_Headers_jll"),
+    Dependency("NEO_jll"), # FIXME: OptionalDependency
+    # oneL0 doesn't depend on NEO, it just needs _a_ implementation to be available.
+    # it does so by looking for (dlopening) known drivers at module load time,
+    # so this package's JLL should put any implementation on the library search path
+    # without actually depending on it. For now, use a regular dependency.
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
