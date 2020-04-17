@@ -28,7 +28,6 @@ cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/libtorch/share/cmake/Torch
 cmake --build .
 mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
-# cp $WORKSPACE/srcdir/Torch.jl/build/*.cpp $WORKSPACE/srcdir/Torch.jl/build/*.h "${prefix}/include"
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
 
@@ -45,8 +44,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243", uuid="4f82f1eb-248c-5f56-a42e-99106d144614")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
