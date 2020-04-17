@@ -37,7 +37,7 @@ $FC $FFLAGS \
     doubleshift/src/balance.f90 \
     doubleshift/src/init_random_seed.f90 \
     doubleshift/src/turnovers/DGTO2.f90 \
-    -o $prefix/$LIBDIR/libamvwdouble.$SLIB $LBLAS
+    -o ${libdir}/libamvwdouble.${dlext} ${LBLAS}
 
 $FC $FFLAGS \
     singleshift/src/balance.f90 \
