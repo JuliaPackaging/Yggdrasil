@@ -25,7 +25,7 @@ update_configure_scripts
 mkdir build
 cd build/
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
+export CPPFLAGS="${CPPFLAGS} -DNDEBUG -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
@@ -65,5 +65,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, expand_gfortran_versions(platforms), products, dependencies;
                preferred_gcc_version=gcc_version)
