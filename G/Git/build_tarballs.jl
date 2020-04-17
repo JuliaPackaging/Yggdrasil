@@ -6,23 +6,25 @@ name = "Git"
 version = v"2.26.1"
 
 # Collection of sources required to build Git
-sources_unix = [
+sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-    "888228408f254634330234df3cece734d190ef6381063821f31ec020538f0368")
-]
-
-sources_w32 = [
+                  "888228408f254634330234df3cece734d190ef6381063821f31ec020538f0368"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-    "7c9bf2b200d1f65ae0d038c6801efa410760da880eb1f5e683ea8e1efd288c38")
-]
-
-sources_w64 = [
+                  "7c9bf2b200d1f65ae0d038c6801efa410760da880eb1f5e683ea8e1efd288c38"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-    "066c2e88c32d942e32d78aa888559b76ec1785e642b498c6710900026dc05310")
+                  "066c2e88c32d942e32d78aa888559b76ec1785e642b498c6710900026dc05310"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
-# Bash recipe for building across all Unices
-script_unix = raw"""
+# Bash recipe for building across all platforms
+script = raw"""
+install_license ${WORKSPACE}/srcdir/git-*/COPYING
+
+if [[ "${target}" == *-ming* ]]; then
+    # Fast path for Windows: just copy the content of the tarball to the prefix
+    cp -r ${WORKSPACE}/srcdir/${target}/mingw${nbits}/* ${prefix}
+    exit
+fi
+
 cd $WORKSPACE/srcdir/git-*/
 
 # We need a native "msgfmt" to cross-compile
@@ -51,11 +53,7 @@ make -j${nproc}
 make install INSTALL_SYMLINKS="yes, please"
 """
 
-# Bash recipe for installing on Windows
-script_win = raw"""
-cd $WORKSPACE/srcdir/mingw*/
-cp -r * ${prefix}
-"""
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -73,21 +71,4 @@ dependencies = [
     Dependency("Zlib_jll"),
 ]
 
-# Install first for win32, then win64.  This will accumulate files into `products` and also wrappers into the JLL package.
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-
-include("../../fancy_toys.jl")
-
-if should_build_platform("i686-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_w32, script_win, [Windows(:i686)], products, [])
-end
-if should_build_platform("x86_64-w64-mingw32")
-    build_tarballs(non_reg_ARGS, name, version, sources_w64, script_win, [Windows(:x86_64)], products, [])
-end
-# Then for everything else.  This is the only one that we try to register, and this is the step that will open a PR against General
-platforms = filter!(p -> !isa(p, Windows), supported_platforms())
-# Get the non-Windows platforms that have been actually requested
-filter!(p -> should_build_platform(triplet(p)), platforms)
-if !isempty(platforms)
-    build_tarballs(ARGS, name, version, sources_unix, script_unix, platforms, products, dependencies)
-end
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
