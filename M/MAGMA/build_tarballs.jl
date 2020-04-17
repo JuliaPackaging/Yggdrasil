@@ -30,7 +30,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmagma", :libmagma)
+    LibraryProduct("libmagma.so", :libmagma)
 ]
 
 # Dependencies that must be installed before this package can be built
