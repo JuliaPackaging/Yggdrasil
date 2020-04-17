@@ -13,8 +13,8 @@ Cgl_packagespec = PackageSpec(; name = "Cgl_jll",
                               uuid = "3830e938-1dd0-5f3e-8b8e-b3ee43226782",
                               version = Cgl_version)
 
-Clp_version = v"1.16.11"
-Clp_gitsha = "aae123d7a3c633a382b7cb9c1f4f78ed6559a10b"
+Clp_version = v"1.17.6"
+Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
 Clp_packagespec = PackageSpec(; name = "Clp_jll",
                               uuid = "06985876-5285-5a41-9fcb-8948a742cc53",
                               version = Clp_version)
