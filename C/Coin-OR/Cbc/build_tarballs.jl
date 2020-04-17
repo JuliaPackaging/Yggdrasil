@@ -61,7 +61,7 @@ dependencies = [
     Dependency(Osi_packagespec),
     Dependency(CoinUtils_packagespec),
     Dependency("OpenBLAS32_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
