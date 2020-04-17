@@ -38,6 +38,7 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-curses
 make -j${nproc} SHLIB_LIBS="-lncurses${NCURSES_ABI_VER}"
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
