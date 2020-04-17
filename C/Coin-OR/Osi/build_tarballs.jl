@@ -21,14 +21,14 @@ mkdir build
 cd build/
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
+../configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
+--with-pic --disable-pkg-config --disable-debug \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-coinutils-lib="-lCoinUtils" \
 --with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas"
