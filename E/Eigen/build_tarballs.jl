@@ -20,10 +20,7 @@ make -j${nproc}
 make install
 cd ..
 cp cmake/FindEigen3.cmake ${prefix}/share/eigen3/cmake/
-for lic in $(ls COPYING.*)  # different licences apply to different parts of Eigen
-do
-  install_license ${lic}
-done
+install_license COPYING.*
 """
 
 # These are the platforms we will build for by default, unless further
