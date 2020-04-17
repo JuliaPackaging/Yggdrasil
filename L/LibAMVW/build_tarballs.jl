@@ -13,16 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-if [[ ${target} == *"mingw"* ]]; then
-    SLIB=dll
-    LIBDIR=bin
-elif [[ ${target} == *"darwin"* ]]; then
-    SLIB=dylib
-    LIBDIR=lib
-else
-    SLIB=so
-    LIBDIR=lib
-fi
 FC=gfortran
 LBLAS="-lopenblas"
 FFLAGS="-shared -fPIC -O3"
