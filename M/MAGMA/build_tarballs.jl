@@ -37,6 +37,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CUDA_full_jll", uuid="4f82f1eb-248c-5f56-a42e-99106d144614"))
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
