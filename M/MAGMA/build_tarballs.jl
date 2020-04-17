@@ -18,6 +18,7 @@ export PATH=${PATH}:${WORKSPACE}/destdir/cuda/bin
 cd ${WORKSPACE}/srcdir/MAGMA-2.5.2/
 make lib -j${nproc}
 make install -j${nproc}
+mv ${WORKSPACE}/srcdir/MAGMA-2.5.2/lib/libmagma.so ${prefix}/lib/libmagma.so
 exit
 """
 
