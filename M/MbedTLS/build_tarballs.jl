@@ -5,8 +5,8 @@ version = v"2.16.0"
 
 # Collection of sources required to build MbedTLS
 sources = [
-    "https://github.com/ARMmbed/mbedtls.git" =>
-    "fb1972db23da39bd11d4f9c9ea6266eee665605b",
+    GitSource("https://github.com/ARMmbed/mbedtls.git",
+              "fb1972db23da39bd11d4f9c9ea6266eee665605b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
