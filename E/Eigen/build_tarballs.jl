@@ -15,7 +15,7 @@ cd $WORKSPACE/srcdir/eigen-eigen-323c052e1731
 mkdir build
 cd build/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.toolchain ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix ..
 make -j${nproc}
 make install
 cd ..
