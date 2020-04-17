@@ -42,9 +42,6 @@ fi
 --with-clp-lib="-lClp -lOsiClp -lCoinUtils" \
 --with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
 --with-coindepend-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
---with-mumps-lib="-L${prefix}/lib -lmumps_common -ldmumps -lzmumps -lmpiseq -lpord -lmetis -lgfortran" \
---with-mumps-incdir="${prefix}/include/mumps_seq" \
---with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include" \
 --enable-cbc-parallel
 
 make -j${nproc}
@@ -65,8 +62,6 @@ dependencies = [
     Dependency(CoinUtils_packagespec),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(MUMPS_seq_packagespec),
-    BuildDependency(METIS_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
