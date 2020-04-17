@@ -14,7 +14,8 @@ This is useful when the builder has different platform-dependent elements
 """
 function should_build_platform(platform)
     # If you need inspiration for how to use this function, look at the builder
-    # for Git.
+    # for Git:
+    # https://github.com/JuliaPackaging/Yggdrasil/blob/c3e3c4a96c723306b4da23fc6d05f12995b21ed8/G/Git/build_tarballs.jl#L76-L93
 
     # Get the list of platforms requested from the command line.  This should be
     # the only argument not prefixed with "--".
