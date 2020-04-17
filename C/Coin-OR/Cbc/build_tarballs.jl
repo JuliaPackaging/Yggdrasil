@@ -32,7 +32,8 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-../configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} \
+../configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
+--with-pic --disable-pkg-config --disable-debug \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas" \
 --with-metis-lib="-lmetis" \
