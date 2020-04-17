@@ -57,7 +57,7 @@ $FC $FFLAGS \
     singleshift/src/zamvw.f90 \
     singleshift/src/zamvw2.f90 \
     singleshift/src/turnovers/dto4.f90 \
-    -o $prefix/$LIBDIR/libamvwsingle.$SLIB $LBLAS
+    -o ${libdir}/libamvwsingle.${dlext} $LBLAS
 """
 
 # These are the platforms we will build for by default, unless further
