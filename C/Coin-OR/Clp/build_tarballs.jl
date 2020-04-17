@@ -34,6 +34,7 @@ if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
 fi
 
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
+--disable-debug --disable-dependency-tracking \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-openblas" \
 --with-coinutils-lib="-lCoinUtils" \
