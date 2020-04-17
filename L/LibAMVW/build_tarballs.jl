@@ -7,7 +7,8 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://people.cs.kuleuven.be/~raf.vandebril/homepage/software/AMVW.tar", "37000a9a5a83677fc18203bc6ae81657d74103b11eeb2257d3e68802731a85ae")
+    ArchiveSource("https://people.cs.kuleuven.be/~raf.vandebril/homepage/software/AMVW.tar", "37000a9a5a83677fc18203bc6ae81657d74103b11eeb2257d3e68802731a85ae"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
