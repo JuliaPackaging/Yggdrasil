@@ -3,22 +3,22 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.23.0"
+version = v"2.26.1"
 
 # Collection of sources required to build Git
 sources_unix = [
-    "https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz" =>
-    "234fa05b6839e92dc300b2dd78c92ec9c0c8d439f65e1d430a7034f60af16067"
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
+    "888228408f254634330234df3cece734d190ef6381063821f31ec020538f0368")
 ]
 
 sources_w32 = [
-    "https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2" =>
-    "c2e95e31b633c66845aae7ffd4cff8a8e3202137ae5954199551c09b164cd266"
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
+    "7c9bf2b200d1f65ae0d038c6801efa410760da880eb1f5e683ea8e1efd288c38")
 ]
 
 sources_w64 = [
-    "https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2" =>
-    "88076579c843edd1d048635b552ff4899818f9bdbeedf5e1e3cf8b5dc93129f5"
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
+    "066c2e88c32d942e32d78aa888559b76ec1785e642b498c6710900026dc05310")
 ]
 
 # Bash recipe for building across all Unices
@@ -64,13 +64,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "LibCURL_jll",
-    "Expat_jll",
-    "OpenSSL_jll",
-    "Gettext_jll",
-    "Libiconv_jll",
-    "PCRE2_jll",
-    "Zlib_jll",
+    Dependency("LibCURL_jll"),
+    Dependency("Expat_jll"),
+    Dependency("OpenSSL_jll"),
+    Dependency("Gettext_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("PCRE2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Install first for win32, then win64.  This will accumulate files into `products` and also wrappers into the JLL package.
