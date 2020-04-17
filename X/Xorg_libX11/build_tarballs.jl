@@ -35,10 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_kbproto_jll"),
-    BuildDependency("Xorg_xproto_jll"),
-    BuildDependency("Xorg_inputproto_jll"),
-    BuildDependency("Xorg_xextproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
     Dependency("Xorg_libxcb_jll"),
     Dependency("Xorg_xtrans_jll"),

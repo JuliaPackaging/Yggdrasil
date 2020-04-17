@@ -32,8 +32,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

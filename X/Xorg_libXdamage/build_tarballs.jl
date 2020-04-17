@@ -32,7 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_damageproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Xorg_libXfixes_jll"),
 ]
 

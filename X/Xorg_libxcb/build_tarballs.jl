@@ -63,5 +63,5 @@ dependencies = [
     Dependency("Xorg_libpthread_stubs_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

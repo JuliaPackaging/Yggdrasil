@@ -32,8 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_inputproto_jll"),
-    BuildDependency("Xorg_recordproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
     Dependency("Xorg_libXext_jll"),
     Dependency("Xorg_libXfixes_jll"),
