@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/eigen-eigen-*
+cd $WORKSPACE/srcdir/eigen-*
 
 mkdir build
 cd build/
