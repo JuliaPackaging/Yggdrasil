@@ -29,12 +29,6 @@ fi
 
 make CFLAGS="$CFLAGS" LIBS="$LIBS" CC="$CC"
 make install
-mkdir -p ${bindir}
-cp /usr/local/bin/csdp ${bindir}/csdp
-
-if [[ "${target}" == *-mingw* ]]; then
-    mv "${bindir}/csdp" "${bindir}/csdp${exeext}"
-fi
 
 cd lib
 
@@ -55,7 +49,6 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("csdp", :csdp),
     LibraryProduct("libcsdp", :libcsdp),
 ]
 
@@ -66,5 +59,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, expand_gfortran_versions(platforms), products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=gcc_version)
