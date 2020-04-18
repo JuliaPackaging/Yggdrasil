@@ -22,7 +22,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 cd ..
-cp cmake/FindEigen3.cmake ${prefix}/share/eigen3/cmake/
 install_license COPYING.*
 """
 
