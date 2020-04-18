@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/Csdp*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blegat.patch
 
 CFLAGS="-O2 -fPIC -fopenmp -ansi -Wall -DUSEOPENMP -DSETNUMTHREADS -DUSEGETTIME -I../include"
-LIBS="-L../lib -lsdp -lopenblas -lm"
+LIBS="-L../lib -lsdp -lopenblas -lm -lgfortran"
 
 if [[ "${nbits}" == 64 ]] && [[ "${target}" != *aarch64* ]]; then
     CFLAGS="$CFLAGS -m64 -DBIT64"
@@ -46,7 +46,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 mkdir -p ${libdir}
-${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm
+${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm -lgfortran
 """
 
 # These are the platforms we will build for by default, unless further
@@ -66,5 +66,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, expand_gfortran_versions(platforms), products, dependencies;
                preferred_gcc_version=gcc_version)
