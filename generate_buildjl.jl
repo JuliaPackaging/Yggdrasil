@@ -194,7 +194,7 @@ Core.eval(m, quote
 	# it just saves the inputs so that we can mess around with them:
 	_name = nothing
 	_version = nothing
-	_producs = nothing
+	_products = nothing
     function build_tarballs(A, name, version, sources, script, platforms, products, dependencies; kwargs...)
 		global _name = name
 		global _version = version
