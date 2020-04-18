@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibAMVW"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -18,9 +18,8 @@ FC=gfortran
 LBLAS="-lopenblas"
 FFLAGS="-shared -fPIC -O3"
 
-echo ${target}
-echo $SLIB
-echo $LIBDIR
+patch doubleshift/src/DAMVW.f90 < damvw.patch
+patch singleshift/src/zamvw.f90 < zamvw.patch
 
 $FC $FFLAGS \
     doubleshift/src/DAMVW.f90 \
