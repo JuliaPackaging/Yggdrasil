@@ -4,8 +4,8 @@ name = "Eigen"
 version = v"3.3.7"
 
 sources = [
-    ArchiveSource("https://bitbucket.org/eigen/eigen/get/$(version).tar.bz2",
-                  "9f13cf90dedbe3e52a19f43000d71fdf72e986beb9a5436dddcd61ff9d77a3ce")
+    ArchiveSource("https://gitlab.com/libeigen/eigen/-/archive/$(version)/eigen-$(version).tar.bz2",
+                  "685adf14bd8e9c015b78097c1dc22f2f01343756f196acdc76a678e1ae352e11")
 ]
 
 # Bash recipe for building across all platforms
