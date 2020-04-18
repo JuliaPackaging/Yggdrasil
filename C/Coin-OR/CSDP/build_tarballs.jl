@@ -29,12 +29,6 @@ fi
 
 make CFLAGS="$CFLAGS" LIBS="$LIBS" CC="$CC"
 make install
-mkdir -p ${bindir}
-cp /usr/local/bin/csdp ${bindir}/csdp
-
-if [[ "${target}" == *-mingw* ]]; then
-    mv "${bindir}/csdp" "${bindir}/csdp${exeext}"
-fi
 
 cd lib
 
@@ -55,7 +49,6 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("csdp", :csdp),
     LibraryProduct("libcsdp", :libcsdp),
 ]
 
