@@ -44,7 +44,7 @@ CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build install
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further

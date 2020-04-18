@@ -31,7 +31,7 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build llvm-spirv install
+ninja -C build -j ${nproc} llvm-spirv install
 install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
 """
 
