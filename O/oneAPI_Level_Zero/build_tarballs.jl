@@ -8,7 +8,7 @@ version = v"0.91.10"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/oneapi-src/level-zero.git",
-              "ebb363e938a279cf866cb93d28e31aaf0791ea19")
+              "ebb363e938a279cf866cb93d28e31aaf0791ea19"),
 ]
 
 # Bash recipe for building across all platforms
