@@ -81,6 +81,12 @@ function product_hashes_from_github_release(repo_name::AbstractString, tag_name:
     return product_hashes
 end
 
+# `repr` calls `BinaryBuilder.repr` which does not print the `prefix, `
+# first argument that is needed by `BinaryProvider`.
+function _repr(p::Product)
+    return replace(repr(p), "(" => "(prefix, ")
+end
+
 function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
                        bin_path::AbstractString)
     print(io, """
@@ -94,7 +100,7 @@ function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
     # Print out products
     print(io, "products = [\n")
     for prod in products
-        print(io, "    $(repr(prod)),\n")
+        print(io, "    $(_repr(prod)),\n")
     end
     print(io, "]\n\n")
 
