@@ -28,7 +28,7 @@ make install
 # See https://github.com/google/glog/pull/239 and #483, not released
 mkdir ${prefix}/lib/pkgconfig
 cat >${prefix}/lib/libglog.pc <<EOS
-  prefix=#{prefix}
+  prefix=${prefix}
   exec_prefix=${prefix}
   libdir=${libdir}
   includedir=${prefix}/include
