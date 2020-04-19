@@ -83,10 +83,7 @@ end
 
 # `repr` calls `BinaryBuilder.repr` which does not print the `prefix, `
 # first argument that is needed by `BinaryProvider`.
-# TODO: determine whether this first argument also need to be added for
-#       `ExecutableProduct` and `FileProduct`.
-_repr(p) = repr(p)
-function _repr(p::LibraryProduct)
+function _repr(p::Product)
     return replace(repr(p), "(" => "(prefix, ")
 end
 
