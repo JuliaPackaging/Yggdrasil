@@ -27,7 +27,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 CMAKE_FLAGS+=(-DRUN_TEST_SUITE:Bool=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build install
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further

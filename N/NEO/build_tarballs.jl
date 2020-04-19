@@ -20,7 +20,7 @@ install_license LICENSE
 ## already defined in gmmlib
 sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
 ## build systems shouldn't touch LD_LIBRARY_PATH...
-find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec sed -i 's/LD_LIBRARY_PATH=[^ ]* //g' {} \;
+find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec sed -i 's/LD_LIBRARY_PATH=[^ ]* //g' '{}' \;
 
 CMAKE_FLAGS=()
 
@@ -44,7 +44,7 @@ CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build install
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
