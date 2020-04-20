@@ -48,9 +48,19 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
 
 if [[ "${target}" == *-mingw* ]]; then
     export CPPFLAGS="-Dpetsc_EXPORTS"
+elif [[ "${target}" == powerpc64le-* ]]; then
+    export CFLAGS="-fPIC"
+    export FFLAGS="-fPIC"
 fi
 
-make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target CPPFLAGS="${CPPFLAGS}" DEST_DIR=$prefix all
+make -j${nproc} \
+    PETSC_DIR="${PWD}" \
+    PETSC_ARCH="${target}" \
+    CPPFLAGS="${CPPFLAGS}" \
+    CFLAGS="${CFLAGS}" \
+    FFLAGS="${FFLAGS}" \
+    DEST_DIR="${prefix}" \
+    all
 
 make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
