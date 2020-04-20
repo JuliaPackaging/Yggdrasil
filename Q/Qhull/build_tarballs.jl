@@ -55,6 +55,20 @@ products = [
     # Libraries
     # reentrant Qhull
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
+    
+    # Files
+    # Reentrant Qhull header files
+    FileProduct("include/libqhull_r/geom_r.h", :geom_r_h),
+    FileProduct("include/libqhull_r/io_r.h", :io_r_h),
+    FileProduct("include/libqhull_r/libqhull_r.h", :libqhull_r_h),
+    FileProduct("include/libqhull_r/mem_r.h", :mem_r_h),
+    FileProduct("include/libqhull_r/merge_r.h", :merge_r_h),
+    FileProduct("include/libqhull_r/poly_r.h", :poly_r_h),
+    FileProduct("include/libqhull_r/qhull_ra.h", :qhull_ra_h),
+    FileProduct("include/libqhull_r/qset_r.h", :qset_r_h),
+    FileProduct("include/libqhull_r/random_r.h", :random_r_h),
+    FileProduct("include/libqhull_r/stat_r.h", :stat_r_h),
+    FileProduct("include/libqhull_r/user_r.h", :user_r_h),
 ]
 
 # Dependencies that must be installed before this package can be built
