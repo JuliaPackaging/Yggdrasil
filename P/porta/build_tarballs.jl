@@ -13,21 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir ../destdir/bin
-
-if [[ $target == x86_64-w64-mingw32 ]]; then
-    make -C julia-porta/gnu-make/ CC=x86_64-w64-mingw32-gcc;
-    cp julia-porta/gnu-make/bin/xporta.exe ../destdir/bin/xporta.exe;
-    cp julia-porta/gnu-make/bin/valid.exe ../destdir/bin/valid.exe;
-elif [[ $target == i686-w64-mingw32 ]]; then
-    make -C julia-porta/gnu-make/ CC=i686-w64-mingw32-gcc;
-    cp julia-porta/gnu-make/bin/xporta.exe ../destdir/bin/xporta.exe;
-    cp julia-porta/gnu-make/bin/valid.exe ../destdir/bin/valid.exe;
-else
-    make -C julia-porta/gnu-make/;
-    cp julia-porta/gnu-make/bin/xporta ../destdir/bin/xporta;
-    cp julia-porta/gnu-make/bin/valid ../destdir/bin/valid;
-fi
+mkdir -p ${bindir}
+make -C julia-porta/gnu-make/ CC=${CC}
+cp julia-porta/gnu-make/bin/xporta${exeext} ${bindir}
+cp julia-porta/gnu-make/bin/valid${exeext} ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
