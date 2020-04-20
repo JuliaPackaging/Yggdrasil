@@ -16,7 +16,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-mv libtorch cudnn $prefix
+mv cudnn $prefix
+mv libtorch/share/* $prefix/share/
+mv libtorch/lib/* $prefix/lib/
+rm -r libtorch/lib
+rm -r libtorch/share
+mv libtorch/* $prefix
+rm -r libtorch
+
 mkdir -p /usr/local/cuda/lib64
 cd /usr/local/cuda/lib64
 ln -s ${prefix}/cuda/lib64/libcudart.so libcudart.so
@@ -24,7 +31,7 @@ ln -s ${prefix}/cuda/lib64/libnvToolsExt.so libnvToolsExt.so
 
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/libtorch/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda -DCUDNN_LIBRARY_PATH=$prefix/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$prefix/cudnn/include ..
+cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda -DCUDNN_LIBRARY_PATH=$prefix/cudnn/lib/libcudnn.so  -DCUDNN_INCLUDE_DIR=$prefix/cudnn/include ..
 cmake --build .
 mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
@@ -39,7 +46,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdoeye_caml", :libdoeye_caml, dont_dlopen = true)
+    LibraryProduct("libdoeye_caml", :libdoeye_caml, dont_dlopen = true),
+    LibraryProduct("libtorch", :libtorch, dont_dlopen = true),
 ]
 
 # Dependencies that must be installed before this package can be built
