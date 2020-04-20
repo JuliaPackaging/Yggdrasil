@@ -14,7 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
-libinclude="${prefix}/include"
+includedir="${prefix}/include"
+bindir="${prefix}/include"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
@@ -41,7 +42,10 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi-dir=${libdir} --with-sowing=0
+    --with-mpi-lib=${libdir} \
+    --with-mpi-include=${includedir} \
+    --with-mpiexec=${bindir} \
+    --with-sowing=0
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
