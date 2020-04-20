@@ -86,8 +86,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    Dependency("OpenMPI_jll"),
-    #Dependency("MicrosoftMPI_jll"),
+    Dependency("MPICH_jll"),
+    Dependency("MicrosoftMPI_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
