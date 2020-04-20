@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 includedir="${prefix}/include"
-bindir="${prefix}/include"
+bindir="${prefix}/bin"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
