@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 includedir="${prefix}/include"
-bindir="${prefix}/bin"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
@@ -30,19 +29,28 @@ fi
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
+    MPI_LIBS="${libdir}/msmpi.${dlext}"
+    # Rename mpifptr.h header.  We should probably fix directly in
+    # the MicrosoftMPI JLL package.
+    mv "${prefix}/include/mpifptr${nbits}.h" "${prefix}/include/mpifptr.h"
+else
+    MPI_LIBS="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]"
 fi
 
-opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'"
-./configure --prefix=${prefix} $opt_flags \
-    CC=$CC \
-    FC=$FC \
-    CXX=$CXX \
+./configure --prefix=${prefix} \
+    CC=${CC} \
+    FC=${FC} \
+    CXX=${CXX} \
+    COPTFLAGS='-O3' \
+    CXXOPTFLAGS='-O3' \
+    FOPTFLAGS='-O3' \
+    --with-debugging=0 \
     --with-batch \
     --PETSC_ARCH=$target \
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi-lib="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]" \
+    --with-mpi-lib="${MPI_LIBS}" \
     --with-mpi-include="${includedir}" \
     --with-sowing=0
 
