@@ -28,7 +28,7 @@ else
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-direct-h.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
 fi
 
 opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'"
@@ -41,12 +41,16 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi=0 --with-sowing=0 \
+    --with-mpi=0 --with-sowing=0
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
 
-make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix all
+if [[ "${target}" == *-mingw* ]]; then
+    export CPPFLAGS="-Dpetsc_EXPORTS"
+fi
+
+make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target CPPFLAGS="${CPPFLAGS}" DEST_DIR=$prefix all
 
 make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
