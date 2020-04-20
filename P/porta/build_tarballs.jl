@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "porta"
+name = "PORTA"
 version = v"1.4.1"
 
 # Collection of sources required to complete build
