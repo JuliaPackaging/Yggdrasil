@@ -41,7 +41,7 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi=0 --with-sowing=0
+    --with-mpi-dir=${libdir} --with-sowing=0
 
 # Generates some errors when mpi is included. These flags detect it properly
 # --with-mpi-lib="${libdir}/libmpi.${dlext}" --with-mpi-include="$includedir"
@@ -82,7 +82,7 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    #Dependency("MPICH_jll"),
+    Dependency("OpenMPI_jll"),
     #Dependency("MicrosoftMPI_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
