@@ -8,7 +8,7 @@ version = v"3.13.0"
 sources = [
     ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-3.13.0.tar.gz",
     "df2ff7cb0341bb534a18c7dbea37aa2e2c543a440bf63c24977a605d9b5f8324"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath("/Users/jdlara/cache/Yggdrasil/P/PETSc/","bundled")),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,7 +44,6 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --known-64-bit-blas-indices=$blas_64 \
     --with-mpi-lib="${libdir}/libmpi.${dlext}" \
     --with-mpi-include="${includedir}" \
-    --with-mpiexec="${bindir}/mpiexec" \
     --with-sowing=0
 
 if [[ "${target}" == *-mingw* ]]; then
