@@ -87,6 +87,19 @@ function _repr(p::Product)
     return replace(repr(p), "(" => "(prefix, ")
 end
 
+# `Pkg.CompilerABI` has diverged from `BinaryProvider.CompilerABI`.
+# This function fixes common differences.
+function _pkey(platform)
+    pkey = string(platform_key_abi(platform))
+    for (i, j) in [(3, 4), (4, 7), (5, 8)]
+        pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\")" => "CompilerABI(:gcc$j)")
+    end
+    for i in ["03", "11"]
+        pkey = replace(pkey, "CompilerABI(cxxstring_abi=:cxx$i)" => "CompilerABI(:gcc_any, :cxx$i)")
+    end
+    return pkey
+end
+
 function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
                        bin_path::AbstractString)
     print(io, """
@@ -115,7 +128,7 @@ function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
     println(io, "download_info = Dict(")
     for platform in sort(collect(keys(product_hashes)))
         fname, hash = product_hashes[platform]
-        pkey = platform_key_abi(platform)
+        pkey = _pkey(platform)
         println(io, "    $(pkey) => (\"\$bin_prefix/$(fname)\", \"$(hash)\"),")
     end
     println(io, ")\n")
