@@ -42,7 +42,7 @@ opt_flags="--with-debugging=0 COPTFLAGS='-O3' -CXXOPTFLAGS='-O3' FOPTFLAGS='-O3'
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
     --known-64-bit-blas-indices=$blas_64 \
-    --with-mpi-lib="${libdir}/libmpi.${dlext}" \
+    --with-mpi-lib="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]" \
     --with-mpi-include="${includedir}" \
     --with-sowing=0
 
