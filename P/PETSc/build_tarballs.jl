@@ -54,9 +54,12 @@ make -j${nproc} PETSC_DIR=$PWD PETSC_ARCH=$target CPPFLAGS="${CPPFLAGS}" DEST_DI
 
 make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
 
-# Move libraries to ${libdir} on Windows
 if [[ "${target}" == *-mingw* ]]; then
-    mv ${prefix}/lib/libpetsc*.${dlext} "${libdir}"
+    # Move library to ${libdir} on Windows,
+    # changing the extension from so to dll.
+    mv ${prefix}/lib/libpetsc.so.*.*.* "${libdir}/libpetsc.${dlext}"
+    # Remove useless links
+    rm ${prefix}/lib/libpetsc.*
 fi
 """
 
