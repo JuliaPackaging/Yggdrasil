@@ -35,6 +35,7 @@ cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_T
 cmake --build .
 mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
+rm -rf $prefix/cuda
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
 
