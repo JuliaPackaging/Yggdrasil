@@ -24,8 +24,8 @@ ${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${exeext} 
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    ExecutableProduct(prefix, "objconv", :objconv),
+products = [
+    ExecutableProduct("objconv", :objconv),
 ]
 
 # Dependencies that must be installed before this package can be built
