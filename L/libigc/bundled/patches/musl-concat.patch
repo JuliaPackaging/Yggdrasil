@@ -1,17 +1,3 @@
-diff --git a/IGC/AdaptorOCL/OCL/sp/sp_types.h b/IGC/AdaptorOCL/OCL/sp/sp_types.h
-index 1fa2d560..3df6b5bd 100644
---- a/IGC/AdaptorOCL/OCL/sp/sp_types.h
-+++ b/IGC/AdaptorOCL/OCL/sp/sp_types.h
-@@ -46,7 +46,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-     typedef unsigned int        ULONG;
- 
-     #ifndef C_ASSERT
--        #define __UNIQUENAME( a1, a2 )  __CONCAT( a1, a2 )
-+        #define __CONCATING( a1, a2 )   a1 ## a2
-+        #define __UNIQUENAME( a1, a2 )  __CONCATING( a1, a2 )
-             #define UNIQUENAME( __text )    __UNIQUENAME( __text, __COUNTER__ )
- 
-         #define STATIC_ASSERT(e)  typedef char UNIQUENAME(STATIC_ASSERT_)[(e)?1:-1]
 diff --git a/inc/common/UFO/portable_compiler.h b/inc/common/UFO/portable_compiler.h
 index 81777765..d03fc69c 100644
 --- a/inc/common/UFO/portable_compiler.h
