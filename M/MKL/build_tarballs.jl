@@ -44,4 +44,7 @@ dependencies = [
     Dependency("IntelOpenMP_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts = true)
+# Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
+# macOS causes runtime issues:
+# https://github.com/JuliaPackaging/Yggdrasil/issues/915.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts = true, autofix = false)
