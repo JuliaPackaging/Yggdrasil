@@ -14,9 +14,9 @@ version = v"1.0.3771"
 sources = [
     GitSource("https://github.com/intel/intel-graphics-compiler.git", "577887bf74c51a6084058836720fe58f8c35ca58"),
     # use LLVM 9 as suggested in https://github.com/intel/intel-graphics-compiler/blob/master/documentation/build_ubuntu.md
-    GitSource("https://github.com/llvm/llvm-project.git", "c1a0a213378a458fbea1a5c77b315c7dce08fd05"), # v9.0.1
-    GitSource("https://github.com/intel/opencl-clang.git", "6c384160d03b7b8eb9c0a5e5eff265aa2b0084fd"), # ocl-open-90
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "cc7eff18ad99019adb3730437ffd577116fc116b"), # llvm_release_90
+    GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
+    GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "7743482f2053582be990e93ca46d15239c509c9d"), # v10.0.0
     # patches
     GitSource("https://github.com/intel/llvm-patches.git", "4023a728d4c113c08fd881c182b43ef871151c4f"),
     DirectorySource("./bundled"),
@@ -30,18 +30,22 @@ git config --global user.name "Binary Builder"
 git config --global user.email "your@email.com"
 
 # apply opencl-clang's patches ourself, which is more robust than letting the build system do it
-pushd llvm-project
-for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
-    atomic_patch -p1 $patch
-    rm $patch
-done
-popd
-pushd SPIRV-LLVM-Translator
-for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
-    atomic_patch -p1 $patch
-    rm $patch
-done
-popd
+if [[ -d opencl-clang/patches/clang ]]; then
+    pushd llvm-project
+    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
+        atomic_patch -p1 $patch
+        rm $patch
+    done
+    popd
+fi
+if [[ -d opencl-clang/patches/spirv ]]; then
+    pushd SPIRV-LLVM-Translator
+    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
+        atomic_patch -p1 $patch
+        rm $patch
+    done
+    popd
+fi
 
 # move everything in places where it will get detected by the IGC build system
 mv llvm-project/clang llvm-project/llvm/tools/
@@ -87,7 +91,7 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-Wno-dev)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build install
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
