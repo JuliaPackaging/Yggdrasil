@@ -36,7 +36,6 @@ install_license ${WORKSPACE}/srcdir/connect4/LICENSE
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    MacOS(:x86_64),
 ]
 
 platforms = expand_cxxstring_abis(platforms)
