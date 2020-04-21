@@ -1,0 +1,1735 @@
+--- a/include/declarations.h
++++ b/include/declarations.h
+@@ -206,6 +206,11 @@ int sdp(int n, int k, struct blockmatrix C, double *a, double constant_offset,
+ 	double *dy, double *dy1, double *Fp, int printlevel, 
+ 	struct paramstruc parameters);
+ 
++int parametrized_sdp(int n, int k, struct blockmatrix C, double *a, 
++	     struct constraintmatrix *constraints, double constant_offset,
++	     struct blockmatrix *pX, double **py, struct blockmatrix *pZ,
++	     double *ppobj, double *pdobj, int printlevel, struct paramstruc params);
++
+ int easy_sdp(int n, int k, struct blockmatrix C, double *a, 
+ 	     struct constraintmatrix *constraints, double constant_offset,
+ 	     struct blockmatrix *pX, double **py, struct blockmatrix *pZ,
+--- /dev/null
++++ b/lib/debug-mat.c
+@@ -0,0 +1,122 @@
++#include <stdio.h>
++#include "blockmat.h"
++
++
++void printb(struct blockrec b) {
++  int i;
++  int size;
++  printf("blockrec:\n");
++  printf(" blockcategory: %d\n", (int) b.blockcategory);
++  printf(" blocksize:     %d\n", b.blocksize);
++  printf(" data.vec:      %p\n", b.data.vec);
++  if (b.blocksize <= 16) {
++    switch (b.blockcategory) {
++    case MATRIX:
++      size = b.blocksize * b.blocksize;
++      for (i = 0; i < size; i++)
++        printf("  %f\n", b.data.vec[i]);
++      break;
++    case DIAG:
++      for (i = 1; i <= b.blocksize; i++)
++        printf("  %f\n", b.data.vec[i]);
++      break;
++    default:
++      fprintf(stderr, "UNKNOWN blockcat: %d",
++              (int) b.blockcategory);
++    }
++  }
++}
++
++
++void printb_(struct blockrec *b) {
++  printb(*b);
++}
++
++
++void print_sizeof() {
++  printf("sizeof(void*)                 %d\n",
++         (int) sizeof(void*));
++  printf("sizeof(int)                   %d\n",
++         (int) sizeof(int));
++  printf("sizeof(enum blockcat)         %d\n",
++         (int) sizeof(enum blockcat));
++  printf("sizeof(struct blockrec)       %d\n",
++         (int) sizeof(struct blockrec));
++  printf("sizeof(struct blockmatrix)    %d\n",
++         (int) sizeof(struct blockmatrix));
++  printf("sizeof(struct sparseblock)    %d\n",
++         (int) sizeof(struct sparseblock));
++}
++
++
++
++void printm(struct blockmatrix A) {
++  int blk;
++  printf("A.nblocks = %d\n", A.nblocks);
++  printf("A.blocks  = %p\n", A.blocks);
++  for (blk=1; blk <= A.nblocks; blk++) {
++    printf("block[%d]: %p\n", blk, &A.blocks[blk]);
++    printb(A.blocks[blk]);
++  }
++
++}
++
++FILE *fid;
++
++void print_sparse_block(struct sparseblock *b) {
++  int i;
++  fid = stdout;
++  fprintf(fid, "\n* Printing block: %p\n", b);
++  if (b == NULL)
++    return;
++  fprintf(fid, " next: %p\n", b->next);
++  fprintf(fid, " nextbyblock: %p\n", b->nextbyblock);
++  fprintf(fid, " constraintnum: %d\n", b->constraintnum);
++  fprintf(fid, " blocknum: %d\n", b->blocknum);
++  fprintf(fid, " blocksize: %d\n", b->blocksize);
++  fprintf(fid, " numentries: %d\n", b->numentries);
++  if (b->blocksize <= 30) {
++    for (i = 1; i <= b->numentries; i++) {
++      fprintf(fid, "  block[%d, %d] = %f\n",
++              b->iindices[i],
++              b->jindices[i],
++              b->entries[i]);
++    }
++  } else {
++    fprintf(fid, " TOO LARGE\n");
++  }
++  print_sparse_block(b->next);
++}
++
++void  print_constraints(int k,
++                        struct constraintmatrix *constraints)
++{
++  int i, j;
++  fid = stdout;
++  struct sparseblock *p;
++
++  fprintf(fid, "constraints == %p\n", constraints);
++
++  for (i=1; i<=k; i++)
++    {
++      fprintf(fid, "\n\nprinting constraints[%d].blocks\n", i);
++      p=constraints[i].blocks;
++      while (p != NULL)
++        {
++          fprintf(fid, "p == %p\n\n", p);
++          print_sparse_block(p);
++          fprintf(fid, "\n");
++          for (j=1; j<=p->numentries; j++)
++            {
++              fprintf(fid, "i=%d, j=%d\n", i, j);
++              fprintf(fid,"%d %d %d %d %f \n",
++                      i,
++                      p->blocknum,
++                      p->iindices[j],
++                      p->jindices[j],
++                      p->entries[j]);
++            };
++          p=p->next;
++        };
++    };
++}
+--- a/lib/easysdp.c
++++ b/lib/easysdp.c
+@@ -24,10 +24,33 @@ int easy_sdp(n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj)
+      struct blockmatrix *pZ;
+      double *ppobj;
+      double *pdobj;
++{
++   struct paramstruc params;
++   int printlevel;
++   /*
++    *  Initialize the parameters.
++    */
++   initparams(&params,&printlevel);
++   return parametrized_sdp(n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj,printlevel,params);
++}
++
++int parametrized_sdp(n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj,printlevel,params)
++     int n;
++     int k;
++     struct blockmatrix C;
++     double *a;
++     struct constraintmatrix *constraints;
++     double constant_offset;
++     struct blockmatrix *pX;
++     double **py;
++     struct blockmatrix *pZ;
++     double *ppobj;
++     double *pdobj;
++     int printlevel;
++     struct paramstruc params;
+ {
+   int ret;
+   struct constraintmatrix fill;
+-  struct paramstruc params;
+   struct blockmatrix work1;
+   struct blockmatrix work2;
+   struct blockmatrix work3;
+@@ -53,7 +76,6 @@ int easy_sdp(n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj)
+   double *dy1;
+   double *rhs;
+   double *besty;
+-  int printlevel;
+   int ldam;
+   struct sparseblock **byblocks;
+   struct sparseblock *ptr;
+@@ -68,13 +90,6 @@ int easy_sdp(n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj)
+   int denseblocks;
+   int numblocks;
+ 
+-   /*
+-    *  Initialize the parameters.
+-    */
+-
+-   initparams(&params,&printlevel);
+-
+-
+   /*
+    *  Allocate working storage
+    */
+--- /dev/null
++++ b/lib/julia.c
+@@ -0,0 +1,271 @@
++/*
++  API used by the Julia wrapper at https://github.com/JuliaOpt/CSDP.jl
++*/
++
++double getindex(block,i,j)
++     struct blockrec block;
++     int i;
++     int j;
++{
++  if (i < 1 || i > block.blocksize)
++    {
++      printf("Invalid row index %d, it should be between 1 and %d\n", i, block.blocksize);
++      exit(1);
++    }
++  if (j < 1 || j > block.blocksize)
++    {
++      printf("Invalid row index %d, it should be between 1 and %d\n", j, block.blocksize);
++      exit(1);
++    }
++  switch (block.blockcategory)
++	{
++	  case DIAG:
++        if (i == j)
++          return block.data.vec[i];
++        else
++          return 0.0;
++        break;
++	  case MATRIX:
++        return block.data.mat[ijtok(i,j,block.blocksize)];
++        break;
++	  default:
++	    printf("getindex illegal block type %d\n", block.blockcategory);
++	    exit(206);
++	};
++
++}
++
++struct blockrec getblockrec(blockmat, blk)
++     struct blockmatrix blockmat;
++     int blk;
++{
++  if (blk < 1 || blk > blockmat.nblocks)
++    {
++      printf("Invalid block %d, it should be between 1 and %d\n", blk, blockmat.nblocks);
++      exit(1);
++    }
++  return blockmat.blocks[blk];
++}
++
++/*
++ * Structure used to look problem with a O(1) lookup from block number
++ * too the pointer of the corresponding block.
++ */
++struct LoadingProblem
++{
++    int total_dimension;
++    int num_constraints;
++    struct blockmatrix *pC;
++    double *a;
++    struct sparseblock **constraint_block_lookup;
++    struct constraintmatrix *constraints;
++};
++
++struct LoadingProblem* allocate_loading_prob(pC, block_dims, num_constraints, num_entries, printlevel)
++    struct blockmatrix *pC;
++    int *block_dims;
++    int num_constraints;
++    int *num_entries;
++    int printlevel;
++{
++    int mat;
++    int blk;
++    int numentries;
++    int length;
++    struct sparseblock *sparse_block;
++
++    if (pC->nblocks < 0)
++      {
++        if (printlevel >= 1)
++          printf("Invalid number of blocks in matrix C: %d\n", pC->nblocks);
++        exit(1);
++      }
++    pC->blocks = (struct blockrec *) safe_malloc((pC->nblocks + 1) * sizeof(struct blockrec));
++    for (blk = pC->nblocks; blk > 0; blk--)
++      {
++	    pC->blocks[blk].blocksize = abs(block_dims[blk]);
++        if (block_dims[blk] < 0)
++          {
++	        pC->blocks[blk].blockcategory=DIAG;
++            length = 1 + abs(block_dims[blk]);
++            pC->blocks[blk].data.vec = (double *) safe_malloc(length * sizeof(double));
++          }
++        else
++          {
++	        pC->blocks[blk].blockcategory=MATRIX;
++            length = block_dims[blk] * block_dims[blk];
++            pC->blocks[blk].data.mat = (double *) safe_malloc(length * sizeof(double));
++          }
++      }
++    zero_mat(*pC);
++
++    struct LoadingProblem *problem = (struct LoadingProblem *) safe_malloc(sizeof(struct LoadingProblem));
++
++    problem->total_dimension = 0;
++    for (blk = 1; blk <= pC->nblocks; blk++)
++      problem->total_dimension += pC->blocks[blk].blocksize;
++
++    if (num_constraints < 0)
++      {
++        if (printlevel >= 1)
++          printf("Invalid number of constraints: %d\n", num_constraints);
++        exit(1);
++      }
++    problem->num_constraints = num_constraints;
++
++    problem->pC = pC;
++    problem->a = (double *) safe_malloc((num_constraints + 1) * sizeof(double));
++
++    problem->constraint_block_lookup = (struct sparseblock **) safe_malloc((num_constraints) * (pC->nblocks) * sizeof(struct sparseblock *));
++    problem->constraints = (struct constraintmatrix *) safe_malloc((num_constraints + 1) * sizeof(struct constraintmatrix));
++
++    for (mat = 1; mat <= num_constraints; mat++)
++      {
++        problem->constraints[mat].blocks = NULL;
++        for (blk = pC->nblocks; blk > 0; blk--)
++          {
++            numentries = num_entries[ijtok(mat,blk,num_constraints)];
++            if (numentries < 0)
++              {
++                if (printlevel >= 1)
++                  printf("Invalid number of entries for constraint %d and block %d: %d\n", mat, blk, numentries);
++                exit(1);
++              }
++            else if (numentries == 0)
++              {
++                problem->constraint_block_lookup[ijtok(mat,blk,num_constraints)] = NULL;
++              }
++            else
++              {
++                sparse_block = (struct sparseblock *) safe_malloc(sizeof(struct sparseblock));
++                sparse_block->next = problem->constraints[mat].blocks;
++                sparse_block->nextbyblock = NULL;
++                sparse_block->entries = (double *) safe_malloc((numentries + 1) * sizeof(double));
++                sparse_block->iindices = (int *) safe_malloc((numentries + 1) * sizeof(int));
++                sparse_block->jindices = (int *) safe_malloc((numentries + 1) * sizeof(int));
++                sparse_block->numentries = 0;
++                sparse_block->blocknum = blk;
++                sparse_block->blocksize = abs(block_dims[blk]);
++                sparse_block->constraintnum = mat;
++                sparse_block->issparse = 1;
++
++                problem->constraint_block_lookup[ijtok(mat,blk,num_constraints)] = sparse_block;
++                problem->constraints[mat].blocks = sparse_block;
++              }
++          }
++      }
++
++    return problem;
++}
++
++void free_loaded_prob(prob,X,y,Z)
++     struct LoadingProblem* prob;
++     struct blockmatrix X;
++     double *y;
++     struct blockmatrix Z;
++{
++  free_prob(prob->total_dimension,prob->num_constraints,*(prob->pC),prob->a,
++            prob->constraints,X,y,Z);
++}
++
++void free_loading_prob(loading_prob)
++    struct LoadingProblem* loading_prob;
++{
++    free(loading_prob->constraint_block_lookup);
++    free(loading_prob);
++}
++
++
++void setconstant(loading_prob,mat,ent)
++  struct LoadingProblem *loading_prob;
++  int mat;
++  double ent;
++{
++  loading_prob->a[mat] = ent;
++}
++
++int addentry(loading_prob,mat,blk,indexi,indexj,ent,allow_duplicates)
++  struct LoadingProblem *loading_prob;
++  int mat;
++  int blk;
++  int indexi;
++  int indexj;
++  double ent;
++  int allow_duplicates;
++{
++  struct blockrec *blocks;
++  struct sparseblock *sparse_block;
++  int blksz;
++  int itemp;
++  int index;
++  double *vec;
++
++  if (ent == 0.0)
++    return(0);
++
++  /*
++   * Arrange things so that indexi <= indexj.
++   */
++
++  if (indexi > indexj)
++    {
++      itemp=indexi;
++      indexi=indexj;
++      indexj=itemp;
++    };
++
++  if (mat == 0)
++    {
++      blocks = loading_prob->pC->blocks;
++	  blksz = blocks[blk].blocksize;
++	  if (blocks[blk].blockcategory == DIAG)
++        {
++          index = indexi;
++          vec = blocks[blk].data.vec;
++        }
++      else
++        {
++          index = ijtok(indexi,indexj,blksz);
++          vec = blocks[blk].data.mat;
++        }
++      if (!allow_duplicates && vec[index] != 0.0)
++        return(1);
++      vec[index] += ent;
++	  if (indexi != indexj && blocks[blk].blockcategory == MATRIX)
++        vec[ijtok(indexj,indexi,blksz)] += ent;
++    }
++  else
++    {
++      sparse_block = loading_prob->constraint_block_lookup[ijtok(mat,blk,loading_prob->num_constraints)];
++      sparse_block->numentries += 1;
++	  sparse_block->entries[sparse_block->numentries] = ent;
++	  sparse_block->iindices[sparse_block->numentries] = indexi;
++	  sparse_block->jindices[sparse_block->numentries] = indexj;
++    }
++
++  return(0);
++}
++
++void loaded_initsoln(problem,pX0,py0,pZ0)
++     struct LoadingProblem* problem;
++     struct blockmatrix *pX0;
++     double **py0;
++     struct blockmatrix *pZ0;
++{
++    initsoln(problem->total_dimension,problem->num_constraints,
++             *problem->pC,problem->a,problem->constraints,pX0,py0,pZ0);
++}
++int loaded_sdp(problem,constant_offset,pX,py,pZ,ppobj,pdobj,printlevel,params)
++     struct LoadingProblem* problem;
++     double constant_offset;
++     struct blockmatrix *pX;
++     double **py;
++     struct blockmatrix *pZ;
++     double *ppobj;
++     double *pdobj;
++     int printlevel;
++     struct paramstruc params;
++{
++    return parametrized_sdp(problem->total_dimension,problem->num_constraints,*problem->pC,
++                            problem->a,problem->constraints,constant_offset,pX,py,pZ,ppobj,pdobj,printlevel,params);
++}
+--- a/lib/readprob.c
++++ b/lib/readprob.c
+@@ -1,5 +1,5 @@
+ /*
+-  Read in out a problem in SDPA sparse format.  Return 0 if ok, 1 if 
++  Read in out a problem in SDPA sparse format.  Return 0 if ok, 1 if
+   failure.
+ */
+ 
+@@ -9,10 +9,18 @@
+ #include <limits.h>
+ #include "declarations.h"
+ 
++void* safe_malloc();
++
++#include "julia.c"
++
++int load_prob_from_file();
++int read_prob_size();
++int load_prob();
++
++FILE* sdpa_fopen();
+ void skip_to_end_of_line();
++int safe_get_line();
+ int get_line();
+-void countentry();
+-int addentry();
+ 
+ int read_prob(fname,pn,pk,pC,pa,pconstraints,printlevel)
+      char *fname;
+@@ -22,662 +30,352 @@ int read_prob(fname,pn,pk,pC,pa,pconstraints,printlevel)
+      double **pa;
+      struct constraintmatrix **pconstraints;
+      int printlevel;
+-     
++
+ {
+-  struct constraintmatrix *myconstraints;
+-  FILE *fid;
+-  int i,j;
+-  int buflen;
+-  char *buf;
+-  int c;
+-  int nblocks;
+-  int blksz;
+-  int blk;
+-  char *ptr1;
+-  char *ptr2;
+-  int matno;
+-  int blkno;
+-  int indexi;
+-  int indexj;
+-  double ent;
+   int ret;
+-  struct sparseblock *p;
+-  int *isdiag;
+-  double *tempdiag;
++  int blk;
++  struct LoadingProblem *loading_prob;
+ 
+-  /*
+-   * Open the file for reading, and determine the length of the longest
+-   * line.
+-   */
++  ret = load_prob_from_file(fname,pC,&loading_prob,printlevel);
++  if (ret != 0)
++    return ret;
+ 
+-  fid=fopen(fname,"r");
+- 
+-  if (fid == (FILE *) NULL)
+-    {
+-      if (printlevel >= 1)
+-        printf("Couldn't open problem file for reading! \n");
+-      exit(201);
+-    };
++  *pn = loading_prob->total_dimension;
++  *pk = loading_prob->num_constraints;
++  *pa = loading_prob->a;
++  *pconstraints = loading_prob->constraints;
++
++  free_loading_prob(loading_prob);
+ 
+   /*
+-   * This constant allows for up to 500000*20=10,000,000 byte long lines.
+-   * You might see a line this long in a problem with 500000 constraints.
++   * If the printlevel is high, print out info on constraints and block
++   * matrix structure.
+    */
+-  
+-  buflen=8000000;
+-
+-  buf=(char *)malloc(buflen*sizeof(char));
+-  if (buf == NULL)
++  if (printlevel >= 3)
+     {
+-      if (printlevel >= 1)
+-        printf("Storage allocation failed!\n");
+-      exit(205);
++      printf("Block matrix structure.\n");
++      for (blk=1; blk<=pC->nblocks; blk++)
++	    {
++	      if (pC->blocks[blk].blockcategory == DIAG)
++	        printf("Block %d, DIAG, %d \n",blk,pC->blocks[blk].blocksize);
++	      if (pC->blocks[blk].blockcategory == MATRIX)
++	        printf("Block %d, MATRIX, %d \n",blk,pC->blocks[blk].blocksize);
++	    };
+     };
+ 
+-  /*
+-   * In the first pass through the file, determine the size parameters,
+-   * and allocate space for everything.
+-   */
++  return(0);
++}
+ 
+-  fid=fopen(fname,"r");
+- 
+-  if (fid == (FILE *) NULL)
+-    {
+-      if (printlevel >= 1)
+-        printf("Couldn't open problem file for reading! \n");
+-      exit(201);
+-    };
++int load_prob_from_file(fname,pC,problem,printlevel)
++     char *fname;
++     struct blockmatrix *pC;
++     struct LoadingProblem **problem;
++     int printlevel;
++
++{
++  int ret;
++  int buflen;
++  char *buf;
+ 
+   /*
+-   * First, read through the comment lines.
++   * This constant allows for up to 500000*20=10,000,000 byte long lines.
++   * You might see a line this long in a problem with 500000 constraints.
+    */
+- 
+-  c=getc(fid);
+-  while ((c == '"') || (c == '*'))
+-    {
+-      skip_to_end_of_line(fid);
+-      c=getc(fid);
+-    };
+ 
+-  ungetc(c,fid);
++  buflen = 8000000;
++
++  buf = (char *) safe_malloc(buflen*sizeof(char));
+ 
+   /*
+-   * Get the number of constraints (primal variables in SDPA terminology)
++   * In the first pass through the file, determine the size parameters,
++   * and allocate space for everything.
+    */
+ 
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
++  ret = read_prob_size(fname,pC,buf,buflen,problem,printlevel);
++  if (ret != 0)
+     {
+-      ret=sscanf(buf,"%d",pk);
+-      if ((ret!=1) || (*pk<=0))
+-	{
+-          if (printlevel >= 1)
+-            printf("Incorrect SDPA file.  Couldn't read mDIM\n");
+-	  fclose(fid);
+-	  return(1);
+-	};
++      free(buf);
++      return ret;
+     }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read mDIM \n");
+-      fclose(fid);
+-      return(1);
+-    };
+ 
+-#ifndef BIT64
+   /*
+-   * If operating in 32 bit mode, make sure that the dimension mDIM isn't
+-   * too big for 32 bits.  If we don't do this check, then integer overflow
+-   * won't be detected, and we'll allocate a bogus amount of storage for
+-   * O.
++   *  In the final pass through the file, fill in the actual data.
+    */
+ 
+-  if (*pk > 23169)
+-    {
+-      if (printlevel >= 1)
+-        printf("This problem is too large to be solved in 32 bit mode!\n");
+-      exit(206);
+-    };
+-#endif
+-
+-  /*
+-   * Read in the number of blocks.
+-   */
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
++  ret = load_prob(fname,buf,buflen,*problem,printlevel);
++  free(buf);
++  if (ret != 0)
+     {
+-      ret=sscanf(buf,"%d",&nblocks);
+-      if ((ret != 1) || (nblocks <= 0))
+-	{
+-          if (printlevel >= 1)
+-            printf("Incorect SDPA file. Couldn't read nBLOCKS. \n");
+-	  fclose(fid);
+-	  return(1);
+-	};
++      return ret;
++      free_loading_prob(*problem);
+     }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read nBLOCKS. \n");
+-      fclose(fid);
+-      return(1);
+-    };
+ 
+-  /*
+-   * Keep track of which blocks have off diagonal entries. 
+-   */
++  return(0);
++}
+ 
+-  isdiag=(int *)malloc((nblocks+1)*sizeof(int));
+-  for (i=1; i<=nblocks; i++)
+-    isdiag[i]=1;
++int load_prob(fname,buf,buflen,loading_prob,printlevel)
++     char *fname;
++     char *buf;
++     int buflen;
++     struct LoadingProblem *loading_prob;
++     int printlevel;
++{
++  char *ptr1;
++  char *ptr2;
++  FILE *fid;
++  int ret;
++  int mat;
++  int blk;
++  int indexi;
++  int indexj;
++  double ent;
+ 
++  fid = sdpa_fopen(fname, printlevel);
+   /*
+-   * Allocate space for the C matrix.
++   * Skip the number of constraints (primal variables in SDPA terminology).
+    */
+-
+-  pC->nblocks=nblocks;
+-  pC->blocks=(struct blockrec *)malloc((nblocks+1)*sizeof(struct blockrec));
+-  if (pC->blocks == NULL)
+-    {
+-      if (printlevel >= 1)
+-        printf("Storage allocation failed!\n");
+-      exit(205);
+-    }
+-
++  ret = safe_get_line(fid,buf,buflen,"mDIM",printlevel);
++  if (ret != 0) return(1);
+   /*
+-   * Allocate space for the constraints.
++   * Skip the number of blocks.
+    */
+-
+-  myconstraints=(struct constraintmatrix *)malloc((*pk+1)*sizeof(struct constraintmatrix));
+-
+-  if (myconstraints == NULL)
+-    {
+-      if (printlevel >= 1)
+-        printf("Storage allocation failed!\n");
+-      exit(205);
+-    };
+-  
++  ret = safe_get_line(fid,buf,buflen,"nBLOCKS",printlevel);
++  if (ret != 0) return(1);
+   /*
+-   * Null out all pointers in constraints.
++   * Skip the block structure.
+    */
+-  for (i=1; i<=*pk; i++)
+-    {
+-      myconstraints[i].blocks=NULL;
+-    };
+-
+-  *pa=(double *)malloc((*pk+1)*sizeof(double));
+-
+-  if (*pa == NULL)
+-    {
+-      if (printlevel >= 1)
+-        printf("Storage allocation failed!\n");
+-      exit(205);
+-    };
++  ret = safe_get_line(fid,buf,buflen,"block sizes",printlevel);
++  if (ret != 0) return(1);
+ 
+   /*
+-   * And read the block structure.
++   *  Read in the right hand side values.
+    */
+-
+-  *pn=0;
+-
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
+-    {
+-      /*
+-       * Decode nblocks numbers out of the buffer.  Put the results in 
+-       * block_structure.
+-       */
+-      ptr1=buf;
+-      for (blk=1; blk<=nblocks; blk++)
+-	{
+-	  blksz=strtol(ptr1,&ptr2,10);
+-	  ptr1=ptr2;
+-
+-	  /*
+-	   * negative numbers are used to indicate diagonal blocks.  First,
+-	   * update n.
+-	   */
+-
+-	  *pn=*pn+abs(blksz);
+-
+-	  /*
+-	   * Now, handle diagonal blocks and matrix blocks separately.
+-	   */
+-	  if (blksz < 0)
+-	    {
+-	      /*
+-	       * It's a diag block.
+-	       */
+-	      pC->blocks[blk].blocksize=abs(blksz);
+-	      pC->blocks[blk].blockcategory=DIAG;
+-	      pC->blocks[blk].data.vec=(double *)malloc((1+abs(blksz))*sizeof(double));
+-	      if (pC->blocks[blk].data.vec == NULL)
+-		{
+-                  if (printlevel >= 1)
+-                    printf("Storage allocation failed!\n");
+-		  exit(205);
+-		};
+-	      for (i=1; i<=abs(blksz); i++)
+-		pC->blocks[blk].data.vec[i]=0.0;
+-
+-	    }
+-	  else
+-	    {
+-	      /*
+-	       * It's a matrix block.  In the I32LP64 model, we can't do array 
+-               * indexing for huge blocks using 32 bit integers.  46340 is 
+-               * the largest sized block that we can handle.  Trying to 
+-               * malloc a larger block could cause integer overflow and
+-               * result in a negative malloc size.
+-b	       */
+-              if (blksz > 46340)
+-                {
+-                  printf("This problem is too large to be solved in I32LP64 mode.\n");
+-                  exit(206);
+-                  
+-                };
+-              /*
+-               * Setup the block in C.
+-               */
+-	      pC->blocks[blk].blocksize=abs(blksz);
+-	      pC->blocks[blk].blockcategory=MATRIX;
+-	      pC->blocks[blk].data.mat=(double *)malloc((blksz*blksz)*sizeof(double));
+-	      if (pC->blocks[blk].data.mat == NULL)
+-		{
+-                  if (printlevel >= 1)
+-                    printf("Storage allocation failed!\n");
+-		  exit(205);
+-		};
+-
+-	      for (j=1; j<=blksz; j++)
+-		for (i=1; i<=blksz; i++)
+-		  pC->blocks[blk].data.mat[ijtok(i,j,blksz)]=0.0;
+-
+-	    };
+-		
+-	};
+-
+-    }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read block sizes.\n");
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
+-    };
+-
++  ret = safe_get_line(fid,buf,buflen,"values",printlevel);
++  if (ret != 0) return(1);
+   /*
+-   *  Read in the right hand side values.
++   * Decode k numbers out of the buffer.  Put the results in
++   * a.
+    */
+-
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
++  ptr1 = buf;
++  for (mat=1; mat<=loading_prob->num_constraints; mat++)
+     {
++      setconstant(loading_prob,mat,strtod(ptr1,&ptr2));
+       /*
+-       * Decode k numbers out of the buffer.  Put the results in 
+-       * a.
++       * Check for a case where ptr2 didn't advance.  This indicates
++       * a strtod failure.
+        */
+-      ptr1=buf;
+-      for (i=1; i<=*pk; i++)
+-	{
+-	  (*pa)[i]=strtod(ptr1,&ptr2);
+-	  /*
+-	   * Check for a case where ptr2 didn't advance.  This indicates
+-	   * a strtod failure.
+-	   */
+-	  if (ptr1==ptr2)
+-	    {
+-              if (printlevel >= 1)
+-                printf("Incorect SDPA file. Can't read RHS values.\n");
+-	      fclose(fid);
+-	      free(isdiag);
+-	      return(1);
+-	    };
+-	  ptr1=ptr2;
+-	};
+-    }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Can't read values.\n");
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
++      if (ptr1 == ptr2)
++        {
++          if (printlevel >= 1)
++            printf("Incorrect SDPA file. Can't read RHS values.\n");
++          fclose(fid);
++          return(1);
++        };
++      ptr1=ptr2;
+     };
+ 
+   /*
+-   *  Now, loop through the entries, 
+-   *  counting entries in the constraint matrices block by block.
++   * Now, read the actual entries.
+    */
+-
+-  ret=fscanf(fid,"%d %d %d %d %le ",&matno,&blkno,&indexi,&indexj,&ent);
+-
+-  if (ret != 5)
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Return code from fscanf is %d, should be 5\n",ret);
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
+-    };
+-
++  ret=fscanf(fid,"%d %d %d %d %le ",&mat,&blk,&indexi,&indexj,&ent);
+   do {
+-
+     /*
+-     * Check the validity of these values.
++     * No need for sanity checking the second time around.
+      */
+ 
+-    if ((matno < 0) || (matno > *pk) ||
+-	(blkno<1) || (blkno>nblocks) ||
+-	(indexi < 1) || (indexi > pC->blocks[blkno].blocksize) ||
+-	(indexj < 1) || (indexj > pC->blocks[blkno].blocksize))
++    ret=addentry(loading_prob,mat,blk,indexi,indexj,ent,0);
++    if (ret != 0)
+       {
+         if (printlevel >= 1)
+-          printf("Incorect SDPA file. Bad values in line: %d %d %d %d %e \n",
+-                 matno,blkno,indexi,indexj,ent);
+-	fclose(fid);
+-	free(isdiag);
+-	return(1);
+-      };
++          {
++            printf("Incorrect SDPA file. Duplicate entry.\n");
++            printf("mat=%d\n",mat);
++            printf("blk=%d\n",blk);
++            printf("indexi=%d\n",indexi);
++            printf("indexj=%d\n",indexj);
++          };
+ 
+-    if (matno != 0)
+-      {
+-	if (ent != 0.0)
+-	  countentry(myconstraints,matno,blkno,pC->blocks[blkno].blocksize);
+-      }
+-    else
+-      {
+-	/*
+-	 * An entry in C. ignore it for now.
+-	 */
++        fclose(fid);
++        return(1);
+       };
+-    ret=fscanf(fid,"%d %d %d %d %le",&matno,&blkno,&indexi,&indexj,&ent);
++    ret=fscanf(fid,"%d %d %d %d %le ",&mat,&blk,&indexi,&indexj,&ent);
+   } while (ret == 5);
+ 
+   if ((ret != EOF) && (ret != 0))
+     {
+       if (printlevel >= 1)
+-        printf("Incorrect SDPA file, while reading entries.  ret=%d \n",ret);
++        printf("Incorrect SDPA file. \n");
+       fclose(fid);
+-      free(isdiag);
+       return(1);
+     };
+ 
+-  fclose(fid);
+ 
+-  /*
+-   * Now, go through each of the blks in each of the constraint matrices,
+-   * and allocate space for the entries and indices.
+-   */
+-  for (i=1; i<=*pk; i++)
+-    {
+-      p=myconstraints[i].blocks;
+-
+-      while (p != NULL)
+-	{
+-	  /*
+-	   * allocate storage for the entries in this block of this constraint.
+-	   */
+-	  p->entries=(double *)malloc((p->numentries+1)*sizeof(double));
+-          if (p->entries == NULL)
+-	    {
+-              if (printlevel >= 1)
+-                printf("Storage allocation failed!\n");
+-	      exit(205);
+-	    };
+-
+-	  p->iindices=(int *)malloc((p->numentries+1)*sizeof(int));
+-
+-          if (p->iindices == NULL)
+-	    {
+-              if (printlevel >= 1)
+-                printf("Storage allocation failed!\n");
+-	      exit(205);
+-	    };
+-
+-	  p->jindices=(int *)malloc((p->numentries+1)*sizeof(int));
+-
+-          if (p->jindices == NULL)
+-	    {
+-              if (printlevel >= 1)
+-                printf("Storage allocation failed!\n");
+-	      exit(205);
+-	    };
++  fclose(fid);
++  return(0);
++}
+ 
+-	  p->numentries=0;
+-	  p=p->next;
+-	};
+-    };
++int read_prob_size(fname,pC,buf,buflen,ploading_prob,printlevel)
++     char *fname;
++     struct blockmatrix *pC;
++     char *buf;
++     int buflen;
++     struct LoadingProblem **ploading_prob;
++     int printlevel;
++{
++  int ret;
++  int blk;
++  int mat;
++  int indexi;
++  int indexj;
++  double ent;
++  char *ptr1;
++  char *ptr2;
++  FILE *fid;
++  int *isdiag;
++  int *block_dims;
++  int *num_entries;
++  int num_constraints;
+ 
++  fid = sdpa_fopen(fname, printlevel);
+ 
+   /*
+-   *  In the final pass through the file, fill in the actual data.
++   * Get the number of constraints (primal variables in SDPA terminology)
+    */
++  ret = safe_get_line(fid,buf,buflen,"mDIM",printlevel);
++  if (ret != 0) return(1);
++  ret = sscanf(buf,"%d",&num_constraints);
++  if ((ret != 1) || (num_constraints <= 0))
++  {
++    if (printlevel >= 1)
++      printf("Incorrect SDPA file.  Couldn't read mDIM\n");
++    fclose(fid);
++    return(1);
++  };
+ 
+-  zero_mat(*pC);
+-  
++#ifndef BIT64
+   /*
+-   * Open the file for reading, and then read in all of the actual 
+-   * matrix entries.
+-   * line.
++   * If operating in 32 bit mode, make sure that the dimension mDIM isn't
++   * too big for 32 bits.  If we don't do this check, then integer overflow
++   * won't be detected, and we'll allocate a bogus amount of storage for
++   * O.
+    */
+-  fid=fopen(fname,"r");
+- 
+-  if (fid == (FILE *) NULL)
++
++  if (num_constraints > 23169)
+     {
+       if (printlevel >= 1)
+-        printf("Couldn't open problem file for reading! \n");
+-      exit(201);
++        printf("This problem is too large to be solved in 32 bit mode!\n");
++      exit(206);
+     };
++#endif
+ 
+   /*
+-   * First, read through the comment lines.
++   * Read in the number of blocks.
+    */
+- 
+-  c=getc(fid);
+-  while ((c == '"') || (c == '*'))
+-    {
+-      skip_to_end_of_line(fid);
+-      c=getc(fid);
+-    };
+-
+-  ungetc(c,fid);
++  ret = safe_get_line(fid,buf,buflen,"nBLOCKS",printlevel);
++  if (ret != 0) return(1);
++  ret = sscanf(buf,"%d",&(pC->nblocks));
++  if ((ret != 1) || (pC->nblocks <= 0))
++  {
++    if (printlevel >= 1)
++      printf("Incorrect SDPA file. Couldn't read nBLOCKS. \n");
++    fclose(fid);
++    return(1);
++  }
+ 
+   /*
+-   * Get the number of constraints (primal variables in SDPA terminology)
++   * And read the block structure.
+    */
+-
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
+-    {
+-      sscanf(buf,"%d",pk);
+-    }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read mDIM \n");
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
+-    };
+-
++  block_dims = (int *) safe_malloc((pC->nblocks+1)*sizeof(int),printlevel);
++  ret = safe_get_line(fid,buf,buflen,"block sizes",printlevel);
++  if (ret != 0) return(1);
+   /*
+-   * Read in the number of blocks.
++   * Decode nblocks numbers out of the buffer.  Put the results in
++   * block_structure.
+    */
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
++  ptr1=buf;
++  for (blk=1; blk<=pC->nblocks; blk++)
+     {
+-      sscanf(buf,"%d",&nblocks);
++      block_dims[blk] = strtol(ptr1,&ptr2,10);
++      ptr1=ptr2;
+     }
+-  else
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read nBLOCKS. \n");
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
+-    };
+ 
+   /*
+-   * And read the block structure.
++   *  Skip the right hand side values, it will be taken in to account in `load_prob`.
+    */
++  ret = safe_get_line(fid,buf,buflen,"values",printlevel);
++  if (ret != 0) return(1);
+ 
+-  ret=get_line(fid,buf,buflen);
+-  if (ret != 0)
+-    {
+-      if (printlevel >= 1)
+-        printf("Incorect SDPA file. Couldn't read block sizes.\n");
+-      fclose(fid);
+-      free(isdiag);
+-      return(1);
+-    };
++  /*
++   * Keep track of which blocks have off diagonal entries.
++   */
++  isdiag = (int *) safe_malloc((pC->nblocks+1)*sizeof(int),printlevel);
++  for (blk=1; blk<=pC->nblocks; blk++)
++    isdiag[blk] = 1;
+ 
+   /*
+-   *  Read in the right hand side values.
++   *  Now, loop through the entries,
++   *  counting entries in the constraint matrices block by block.
+    */
+ 
+-  ret=get_line(fid,buf,buflen);
+-  if (ret == 0)
+-    {
+-      /*
+-       * Decode k numbers out of the buffer.  Put the results in 
+-       * a.
+-       */
+-      ptr1=buf;
+-      for (i=1; i<=*pk; i++)
+-	{
+-	  (*pa)[i]=strtod(ptr1,&ptr2);
+-	  /*
+-	   * Check for a case where ptr2 didn't advance.  This indicates
+-	   * a strtod failure.
+-	   */
+-	  if (ptr1==ptr2)
+-	    {
+-              if (printlevel >= 1)
+-                printf("Incorect SDPA file. Can't read RHS values.\n");
+-	      fclose(fid);
+-	      free(isdiag);
+-	      return(1);
+-	    };
+-	  ptr1=ptr2;
+-	};
+-    }
+-  else
++  num_entries = (int *) safe_malloc((num_constraints) * pC->nblocks * sizeof(int));
++  for (mat = 1; mat <= num_constraints; mat++)
++    for (blk = 1; blk <= pC->nblocks; blk++)
++      num_entries[ijtok(mat,blk,num_constraints)] = 0;
++
++  ret=fscanf(fid,"%d %d %d %d %le ",&mat,&blk,&indexi,&indexj,&ent);
++
++  if (ret != 5)
+     {
+       if (printlevel >= 1)
+-        printf("Incorect SDPA file. Can't read a values.\n");
++        printf("Incorrect SDPA file. Return code from fscanf is %d, should be 5\n",ret);
+       fclose(fid);
+       free(isdiag);
+       return(1);
+     };
+ 
+-  /*
+-   * Now, read the actual entries.
+-   */
+-  ret=fscanf(fid,"%d %d %d %d %le ",&matno,&blkno,&indexi,&indexj,&ent);
+   do {
+ 
+     /*
+-     * No need for sanity checking the second time around.
++     * Check the validity of these values.
+      */
+ 
++    if ((mat < 0) || (mat > num_constraints) ||
++	    (blk < 1) || (blk > pC->nblocks) ||
++	    (indexi < 1) || (indexi > abs(block_dims[blk])) ||
++	    (indexj < 1) || (indexj > abs(block_dims[blk])))
++      {
++        if (printlevel >= 1)
++          printf("Incorrect SDPA file. Bad values in line: %d %d %d %d %e \n",
++                 mat,blk,indexi,indexj,ent);
++	    fclose(fid);
++	    free(isdiag);
++	    return(1);
++      };
++
+     /*
+      * Mark this block as not diagonal if indexi!=indexj.
+      */
+-    if ((indexi != indexj)  && (ent != 0.0))
+-      isdiag[blkno]=0;
++    if (block_dims[blk] > 0 && indexi != indexj && ent != 0.0)
++      isdiag[blk]=0;
+ 
+-    if (matno != 0)
++    if (mat != 0)
+       {
+-	if (ent != 0.0)
+-          {
+-	  ret=addentry(myconstraints,matno,blkno,indexi,indexj,ent);
+-        
+-          if (ret != 0)
+-            {
+-              if (printlevel >= 1)
+-                {
+-                  printf("Incorrect SDPA file. Duplicate entry.\n");
+-                  printf("matno=%d\n",matno);
+-                  printf("blkno=%d\n",blkno);
+-                  printf("indexi=%d\n",indexi);
+-                  printf("indexj=%d\n",indexj);
+-                };
+-              
+-              fclose(fid);
+-              free(isdiag);
+-              return(1);
+-            };
+-          };
++	    if (ent != 0.0)
++	      num_entries[ijtok(mat,blk,num_constraints)] += 1;
+       }
+     else
+       {
+-	/*
+-	 * An entry in C. 
+-	 */
+-	if (ent != 0.0)
+-	  {
+-	    blksz=pC->blocks[blkno].blocksize;
+-	    if (pC->blocks[blkno].blockcategory == DIAG)
+-	      {
+-                if (pC->blocks[blkno].data.vec[indexi] != 0.0)
+-                  {
+-                    /*
+-                     * We've got a duplicate entry in C!
+-                     */
+-                    if (printlevel >= 1)
+-                      {
+-                        printf("Incorrect SDPA file. Duplicate entry.\n");
+-                        printf("matno=%d\n",matno);
+-                        printf("blkno=%d\n",blkno);
+-                        printf("indexi=%d\n",indexi);
+-                        printf("indexj=%d\n",indexj);
+-                      };
+-
+-                    fclose(fid);
+-                    free(isdiag);
+-                    return(1);
+-                  }
+-                else
+-                  pC->blocks[blkno].data.vec[indexi]=ent;
+-	      }
+-	    else
+-	      {
+-                if (pC->blocks[blkno].data.mat[ijtok(indexi,indexj,blksz)] != 0.0)
+-                  {
+-                    /*
+-                     * We've got a duplicate entry in C!
+-                     */
+-                    if (printlevel >= 1)
+-                      {
+-                        printf("Incorrect SDPA file. Duplicate entry.\n");
+-                        printf("matno=%d\n",matno);
+-                        printf("blkno=%d\n",blkno);
+-                        printf("indexi=%d\n",indexi);
+-                        printf("indexj=%d\n",indexj);
+-                      };
+-
+-                    fclose(fid);
+-                    free(isdiag);
+-                    return(1);                    
+-                  }
+-                else
+-                  {
+-                    pC->blocks[blkno].data.mat[ijtok(indexi,indexj,blksz)]=ent;
+-                    pC->blocks[blkno].data.mat[ijtok(indexj,indexi,blksz)]=ent;
+-                  };
+-	      };
+-	  };
++	    /*
++	     * An entry in C. ignore it for now.
++	     */
+       };
+-    ret=fscanf(fid,"%d %d %d %d %le ",&matno,&blkno,&indexi,&indexj,&ent);
++    ret=fscanf(fid,"%d %d %d %d %le",&mat,&blk,&indexi,&indexj,&ent);
+   } while (ret == 5);
+ 
+   if ((ret != EOF) && (ret != 0))
+     {
+       if (printlevel >= 1)
+-        printf("Incorrect SDPA file. \n");
++        printf("Incorrect SDPA file, while reading entries.  ret=%d \n",ret);
+       fclose(fid);
+       free(isdiag);
+       return(1);
+@@ -688,77 +386,76 @@ b	       */
+    * are "hidden LP blocks"  and correct the block type if needed.
+    */
+ 
+-  for (i=1; i<=nblocks; i++)
++  for (blk=1; blk<=pC->nblocks; blk++)
+     {
+-      if ((pC->blocks[i].blockcategory != DIAG) && 
+-	  (isdiag[i]==1) && (pC->blocks[i].blocksize > 1))
+-	{
+-	  /*
+-	   * We have a hidden diagonal block!
+-	   */
+-	  if (printlevel >= 2)
++      if (block_dims[blk] > 1 && isdiag[blk] == 1)
+ 	    {
+-	      printf("Block %d is actually diagonal.\n",i);
++	      /*
++	       * We have a hidden diagonal block!
++	       */
++	      if (printlevel >= 2)
++	        printf("Block %d is actually diagonal.\n",blk);
++          block_dims[blk] = -block_dims[blk];
+ 	    };
+-	  blksz=pC->blocks[i].blocksize;
+-	  tempdiag=(double *)malloc((blksz+1)*sizeof(double));
+-	  for (j=1; j<=blksz; j++)
+-	    tempdiag[j]=pC->blocks[i].data.mat[ijtok(j,j,blksz)];
+-	  free(pC->blocks[i].data.mat);
+-	  pC->blocks[i].data.vec=tempdiag;
+-	  pC->blocks[i].blockcategory=DIAG;
+-	};
+     };
++  free(isdiag);
+ 
+-  /*
+-   * If the printlevel is high, print out info on constraints and block
+-   * matrix structure.
+-   */
+-  if (printlevel >= 3)
++  *ploading_prob = allocate_loading_prob(pC, block_dims, num_constraints, num_entries, printlevel);
++
++  free(block_dims);
++  free(num_entries);
++
++  fclose(fid);
++  return(0);
++}
++
++void* safe_malloc(size, printlevel)
++    int size;
++    int printlevel;
++{
++  void *ptr = malloc(size);
++  if (ptr == NULL)
+     {
+-      printf("Block matrix structure.\n");
+-      for (blk=1; blk<=pC->nblocks; blk++)
+-	{
+-	  if (pC->blocks[blk].blockcategory == DIAG)
+-	    printf("Block %d, DIAG, %d \n",blk,pC->blocks[blk].blocksize);
+-	  if (pC->blocks[blk].blockcategory == MATRIX)
+-	    printf("Block %d, MATRIX, %d \n",blk,pC->blocks[blk].blocksize);
+-	};
+-    };
++      if (printlevel >= 1)
++        printf("Storage allocation of %d bytes failed!\n", size);
++      exit(205);
++    }
++  return ptr;
++}
+ 
+-  /*
+-   * Next, setup issparse and NULL out all nextbyblock pointers.
+-   */
++FILE* sdpa_fopen(fname, printlevel)
++     char *fname;
++     int printlevel;
++{
++  char c;
++  FILE *fid;
++  fid=fopen(fname,"r");
+ 
+-  for (i=1; i<=*pk; i++)
++  if (fid == (FILE *) NULL)
+     {
+-      p=myconstraints[i].blocks;
+-      while (p != NULL)
+-	{
+-	  p->nextbyblock=NULL;
+-	  p=p->next;
+-	};
++      if (printlevel >= 1)
++        printf("Couldn't open problem file for reading! \n");
++      exit(201);
+     };
+-  
++
+   /*
+-   * Free unneeded memory.
++   * First, read through the comment lines.
+    */
+ 
+-  free(buf);
+-  free(isdiag);
++  c=getc(fid);
++  while ((c == '"') || (c == '*'))
++    {
++      skip_to_end_of_line(fid);
++      c=getc(fid);
++    };
+ 
+-  /*
+-   *  Put back all the returned values.
+-   */
++  ungetc(c,fid);
+ 
+-  *pconstraints=myconstraints;
+-  
+-  fclose(fid);
+-  return(0);
++  return fid;
+ }
+ 
+ /*
+- *  This routine skips to the end of the current line of input from the 
++ *  This routine skips to the end of the current line of input from the
+  *  file fid.
+  */
+ 
+@@ -766,12 +463,30 @@ void skip_to_end_of_line(fid)
+      FILE *fid;
+ {
+   char c;
+- 
++
+   c=getc(fid);
+   while (c != '\n')
+     c=getc(fid);
+ }
+ 
++int safe_get_line(fid,buffer,bufsiz,name,printlevel)
++     FILE *fid;
++     char *buffer;
++     int bufsiz;
++     char *name;
++     int printlevel;
++{
++  int ret;
++  ret = get_line(fid,buffer,bufsiz);
++  if (ret != 0)
++    {
++      if (printlevel >= 1)
++        printf("Incorrect SDPA file. Can't read %s.\n", name);
++      fclose(fid);
++    }
++  return ret;
++}
++
+ /*
+  *  This routine reads a line of input into a buffer, and translates all
+  *  occurences of "," "{" "}" "(" ")" to spaces.
+@@ -809,7 +524,7 @@ int get_line(fid,buffer,bufsiz)
+       /*
+        * return an error if the line is longer than the buffer!
+        */
+-      
++
+       if (k<bufsiz-5)
+         return(0);
+       else
+@@ -818,173 +533,3 @@ int get_line(fid,buffer,bufsiz)
+   else
+     return(2);
+ }
+-  
+-
+-void countentry(constraints,matno,blkno,blocksize)
+-     struct constraintmatrix *constraints;
+-     int matno;
+-     int blkno;
+-     int blocksize;
+-{
+-  struct sparseblock *p;
+-  struct sparseblock *q;
+-  
+-  p=constraints[matno].blocks;
+-
+-  if (p == NULL)
+-    {
+-      /*
+-       * We haven't yet allocated any blocks.
+-       */
+-      p=(struct sparseblock *)malloc(sizeof(struct sparseblock));
+-      if (p==NULL)
+-	{
+-          printf("Storage allocation failed!\n");
+-	  exit(205);
+-	};
+-      p->constraintnum=matno;
+-      p->blocknum=blkno;
+-      p->numentries=1;
+-      p->next=NULL;
+-      p->entries=NULL;
+-      p->iindices=NULL;
+-      p->jindices=NULL;
+-      p->blocksize=blocksize;
+-      constraints[matno].blocks=p;
+-    }
+-  else
+-    {
+-      /*
+-       * We have some existing blocks.  See whether this block is already
+-       * in the chain.
+-       */
+-
+-      while ((p->next) != NULL)
+-	{
+-	  if (p->blocknum == blkno)
+-	    {
+-	      /*
+-	       * Found the right block.
+-	       */
+-	      p->numentries=p->numentries+1;
+-	      return;
+-	    };
+-	  p=p->next;
+-	};
+-      /*
+-       * If we get here, we still have to check the last block in the
+-       * chain.
+-       */
+-      if (p->blocknum == blkno)
+-	{
+-	  /*
+-	   * Found the right block.
+-	   */
+-	  p->numentries=p->numentries+1;
+-	  return;
+-	};
+-      /*
+-       * If we get here, then the block doesn't exist yet.
+-       */
+-      q=(struct sparseblock *)malloc(sizeof(struct sparseblock));
+-      if (q==NULL)
+-	{
+-          printf("Storage allocation failed!\n");
+-	  exit(205);
+-	};
+-      /*
+-       * Fill in information for this block.
+-       */
+-      q->blocknum=blkno;
+-      q->constraintnum=matno;
+-      q->numentries=1;
+-      q->next=NULL;
+-      q->entries=NULL;
+-      p->iindices=NULL;
+-      p->jindices=NULL;
+-      q->blocksize=blocksize;
+-      /*
+-       * Now link it into the list.
+-       */
+-      p->next=q;
+-    };
+-
+-}
+-
+-int addentry(constraints,matno,blkno,indexi,indexj,ent)
+-     struct constraintmatrix *constraints;
+-     int matno;
+-     int blkno;
+-     int indexi;
+-     int indexj;
+-     double ent;
+-{
+-  struct sparseblock *p;
+-  int itemp;
+-    
+-  /*
+-   * Arrange things so that indexi <= indexj.
+-   */
+-
+-  if (indexi > indexj)
+-    {
+-      itemp=indexi;
+-      indexi=indexj;
+-      indexj=itemp;
+-    };
+-
+-  /* 
+-   * Find the appropriate block.
+-   */
+-  
+-  p=constraints[matno].blocks;
+-  
+-  if (p == NULL)
+-    {
+-      printf("Internal Error in readprob.c !\n");
+-      exit(206);
+-    }
+-  else
+-    {
+-      /*
+-       * We have some existing blocks.  See whether this block is already
+-       * in the chain.
+-       */
+-
+-      while (p != NULL)
+-	{
+-	  if (p->blocknum == blkno)
+-	    {
+-	      /*
+-	       * Found the right block. 
+-	       */
+-
+-	      p->numentries=(p->numentries)+1;
+-	      p->entries[(p->numentries)]=ent;
+-	      p->iindices[(p->numentries)]=indexi;
+-	      p->jindices[(p->numentries)]=indexj;
+-
+-              /*
+-               * We've successfully added the entry.
+-               */
+-              
+-	      return(0);
+-	    };
+-	  p=p->next;
+-	};
+-      /*
+-       * If we get here, we have an internal error.
+-       */
+-      printf("Internal Error in CSDP readprob.c !\n");
+-      exit(206);
+-    };
+-
+-  /*
+-   * Everything is good, so return 0.
+-   */
+-
+-  return(0);
+-
+-}
+-
+-

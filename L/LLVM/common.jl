@@ -139,11 +139,10 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DLLVM_TOOLS_BINARY_DIR="\${LLVM_INSTALL_PREFIX}/tools")
-CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="\${LLVM_INSTALL_PREFIX}/tools")
+CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
 
 # Also build and install utils, since we want FileCheck, and lit
-CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="\${LLVM_INSTALL_PREFIX}/tools")
+CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 
 # Include perf/oprofile/vtune markers
@@ -275,6 +274,7 @@ mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full/*
 """
 
@@ -293,6 +293,7 @@ rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
 rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${prefix}/lib/clang
 """
 
 function configure_build(ARGS, version)
@@ -332,11 +333,14 @@ function configure_build(ARGS, version)
     return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, version_with_build, name)
-    if name != "libLLVM" && isempty(version_with_build.build)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing)
+    if isempty(LLVM_full_version.build)
+        error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
+    end
+    if name != "libLLVM" && (libLLVM_version === nothing || isempty(libLLVM_version.build))
         error("You must lock an extracted LLVM build to a particular libLLVM build number!")
     end
-    version = VersionNumber(version_with_build.major, version_with_build.minor, version_with_build.patch)
+    version = VersionNumber(LLVM_full_version.major, LLVM_full_version.minor, LLVM_full_version.patch)
     if name == "libLLVM"
         script = libllvmscript
         products = [
@@ -360,16 +364,16 @@ function configure_extraction(ARGS, version_with_build, name)
 
     dependencies = BinaryBuilder.AbstractDependency[]
     if "--assert" in ARGS
-        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_assert_jll", version=version)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if name in ("Clang", "LLVM")
-            push!(dependencies, Dependency(get_addable_spec("libLLVM_assert_jll", version_with_build)))
+            push!(dependencies, Dependency(get_addable_spec("libLLVM_assert_jll", libLLVM_version)))
         end
         name = "$(name)_assert"
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     else
-        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_jll", version=version)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
         if name in ("Clang", "LLVM")
-            push!(dependencies, Dependency(get_addable_spec("libLLVM_jll", version_with_build)))
+            push!(dependencies, Dependency(get_addable_spec("libLLVM_jll", libLLVM_version)))
         end
     end
 

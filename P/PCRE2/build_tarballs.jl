@@ -1,12 +1,14 @@
-using BinaryBuilder
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
 
 name = "PCRE2"
-version = v"10.31"
+version = v"10.34.0"
 
-# Collection of sources required to build Pcre
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "e07d538704aa65e477b6a392b32ff9fc5edf75ab9a40ddfc876186c4ff4d68ac"),
+    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
+                  "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,13 +21,22 @@ update_configure_scripts
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
-./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties --enable-jit
-make -j${nproc} V=1
-make install V=1
+./configure --prefix=${prefix} --host=${target} \
+    --disable-static \
+    --enable-utf \
+    --enable-unicode-properties \
+    --enable-jit \
+    --enable-pcre2-16 \
+    --enable-pcre2-32
+
+make -j${nproc}
+make install
 
 # On windows we need libcpre2-8.dll as well
 if [[ ${target} == *mingw* ]]; then
-    ln -s libpcre2-8-0.dll ${prefix}/bin/libpcre2-8.dll
+    ln -s libpcre2-8-0.dll  ${libdir}/libpcre2-8.dll
+    ln -s libpcre2-16-0.dll ${libdir}/libpcre2-16.dll
+    ln -s libpcre2-32-0.dll ${libdir}/libpcre2-32.dll
 fi
 """
 
@@ -35,13 +46,14 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpcre2-8", :libpcre)
+    LibraryProduct("libpcre2-8", :libpcre2_8),
+    LibraryProduct("libpcre2-16", :libpcre2_16),
+    LibraryProduct("libpcre2-32", :libpcre2_32)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-

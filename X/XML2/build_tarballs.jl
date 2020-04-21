@@ -16,9 +16,14 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
 ./autogen.sh --prefix=${prefix} --host=${target} \
     --without-python \
+    --disable-static \
     --with-zlib=${prefix} \
     --with-iconv=${prefix}
-make -j${nproc} install
+make -j${nproc}
+make install
+
+# Remove heavy doc directories
+rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,8 +39,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "Libiconv_jll",
+    Dependency("Zlib_jll"),
+    Dependency("Libiconv_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

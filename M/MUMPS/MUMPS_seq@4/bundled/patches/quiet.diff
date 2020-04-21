@@ -1,0 +1,20 @@
+index af0b62a..55e372e 100644
+--- a/MUMPS/src/dmumps_part1.F
++++ b/MUMPS/src/dmumps_part1.F
+@@ -104,16 +104,6 @@ C       matrix in assembled format (ICNTL(5)=0, and ICNTL(18) $\neq$ 3),
+         MPG     = id%ICNTL(3)
+         PROK    = ((MP.GT.0).AND.(id%ICNTL(4).GE.3))
+         PROKG   = ( MPG .GT. 0 .and. id%MYID .eq. MASTER )
+-        IF (PROKG) THEN
+-           IF (id%ICNTL(5) .NE. 1) THEN
+-              WRITE(MPG,'(A,I4,I12,I15)') 
+-     &             'Entering DMUMPS driver with JOB, N, NZ =', JOB,N,NZ
+-           ELSE
+-              WRITE(MPG,'(A,I4,I12,I15)') 
+-     &             'Entering DMUMPS driver with JOB, N, NELT =', JOB,N
+-     &             ,NELT
+-           ENDIF
+-        ENDIF
+       ELSE
+         MPG = 0
+         PROK = .FALSE.

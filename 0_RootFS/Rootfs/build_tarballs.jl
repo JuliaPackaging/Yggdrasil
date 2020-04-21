@@ -185,8 +185,11 @@ git clone https://github.com/VundleVim/Vundle.vim ${prefix}/etc/vim/bundle/Vundl
 chroot ${prefix} vim -E -u /etc/vim/vimrc -c PluginInstall -c qall
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
-gcc -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
+gcc -g -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
 cp -vd ${WORKSPACE}/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
+
+# Build the BB service client
+gcc -O2 -static -static-libgcc -o ${prefix}/bin/bb $WORKSPACE/srcdir/utils/bb.c
 
 # Move over libc loaders from our bundled directory.  These have very strict location requirements,
 # so they MUST exist in /lib and /lib64.  These were generated from the `Glibc` and `Musl` builders

@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.3586"
+version = v"1.0.3771"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,51 +12,54 @@ version = v"1.0.3586"
 
 # Collection of sources required to build IGC
 sources = [
-    ArchiveSource("https://github.com/intel/intel-graphics-compiler/archive/igc-$(version).tar.gz", "e1b558a53f49deeb5a6e826ecbfd4e4b79bcfebb86316c64020134ca6aabfe8c"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "577887bf74c51a6084058836720fe58f8c35ca58"),
     # use LLVM 9 as suggested in https://github.com/intel/intel-graphics-compiler/blob/master/documentation/build_ubuntu.md
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-9.0.1/llvm-project-9.0.1.tar.xz", "ea241c807e949c24615691a5271e20bcaaa404b28a5f6deb462f9c22b478489b"),
-    GitSource("https://github.com/intel/opencl-clang.git", "6c384160d03b7b8eb9c0a5e5eff265aa2b0084fd"), # ocl-open-90
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "cc7eff18ad99019adb3730437ffd577116fc116b"), # llvm_release_90
+    GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
+    GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "7743482f2053582be990e93ca46d15239c509c9d"), # v10.0.0
     # patches
-    GitSource("https://github.com/intel/llvm-patches.git", "1c93162ab33af968c22fe1cbfb12ea87f5a25bfa"),
+    GitSource("https://github.com/intel/llvm-patches.git", "4023a728d4c113c08fd881c182b43ef871151c4f"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# don't have opencl-clang generate headers,
-# working around https://github.com/intel/opencl-clang/issues/91
-sed -i '/cl_headers/d' opencl-clang/CMakeLists.txt
+# the build system uses git
+export HOME=$(pwd)
+git config --global user.name "Binary Builder"
+git config --global user.email "your@email.com"
 
-# build certain LLVM tools for the host system,
-# working around LLVM and IGC's inability to cross-compile
-mkdir ${WORKSPACE}/bootstrap
-pushd ${WORKSPACE}/bootstrap
-CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
-CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-cmake -GNinja ${WORKSPACE}/srcdir/llvm-project-*/llvm ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-config llvm-tblgen clang-tblgen clang
-popd
+# apply opencl-clang's patches ourself, which is more robust than letting the build system do it
+if [[ -d opencl-clang/patches/clang ]]; then
+    pushd llvm-project
+    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
+        atomic_patch -p1 $patch
+        rm $patch
+    done
+    popd
+fi
+if [[ -d opencl-clang/patches/spirv ]]; then
+    pushd SPIRV-LLVM-Translator
+    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
+        atomic_patch -p1 $patch
+        rm $patch
+    done
+    popd
+fi
 
 # move everything in places where it will get detected by the IGC build system
-mv llvm-project-* llvm-project
 mv llvm-project/clang llvm-project/llvm/tools/
 mv opencl-clang llvm-project/llvm/projects/opencl-clang
 mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 mv llvm-patches llvm_patches
 
-cd intel-graphics-compiler-*
+cd intel-graphics-compiler
 install_license LICENSE.md
 
 # Work around compilation failures
 atomic_patch -p1 ../patches/format_macros.patch
-# https://github.com/intel/intel-graphics-compiler/issues/125
-atomic_patch -p1 -R ../patches/static_assert.patch
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+atomic_patch -p1 ../patches/gcc-constexpr_assert_bug.patch
 if [[ "${target}" == *86*-linux-musl* ]]; then
     atomic_patch -p1 ../patches/musl-concat.patch
     atomic_patch -p1 ../patches/musl-inttypes.patch
@@ -68,36 +71,27 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
     popd
 fi
 
-# the build system uses git
-export HOME=$(pwd)
-git config --global user.name "Binary Builder"
-git config --global user.email "your@email.com"
-
 CMAKE_FLAGS=()
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
-# Install things into $prefix, and make sure it knows we're cross-compiling
+# Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
-# Tell LLVM where our pre-built tools are
-CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
-CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
-CMAKE_FLAGS+=(-DCLANG_TOOL=${WORKSPACE}/bootstrap/bin/clang)
-
-# Don't have IGC use target Clang
-sed -i 's/add_executable(clang-tool ALIAS clang)/add_executable(clang-tool IMPORTED GLOBAL)\n  set_property(TARGET clang-tool PROPERTY "IMPORTED_LOCATION" "${CLANG_TOOL}")/' IGC/BiFModule/CMakeLists.txt
+# NOTE: igc currently can't cross compile due to a variety of issues:
+# - https://github.com/intel/intel-graphics-compiler/issues/131
+# - https://github.com/intel/opencl-clang/issues/91
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
-mkdir build && cd build
-cmake ${CMAKE_FLAGS[@]} ..
-make -j${nproc}
-make install
+# Silence developer warnings
+CMAKE_FLAGS+=(-Wno-dev)
+
+cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -123,5 +117,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
+# IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
+               preferred_gcc_version=v"8")

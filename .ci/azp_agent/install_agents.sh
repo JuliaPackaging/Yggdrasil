@@ -26,9 +26,7 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
 
     # Install Julia into the rootfs
     echo "Installing Julia..."
-    #JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.0-linux-x86_64.tar.gz"
-    # until 1.4-rc2 is out
-    JULIA_URL="julialangnightlies-s3.julialang.org/assert_pretesting/linux/x64/1.4/julia-3a22e2fdcf-linux64.tar.gz"
+    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.4/julia-1.4.0-linux-x86_64.tar.gz"
     curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs"
 
     # Install `sandbox` and `run_agent.sh` into the rootfs

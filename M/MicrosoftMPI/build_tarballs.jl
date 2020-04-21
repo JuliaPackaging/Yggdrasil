@@ -13,7 +13,16 @@ script = raw"""
 apk add p7zip
 
 cd ${WORKSPACE}/srcdir/
-7z x msmpisetup.exe -o$prefix
+7z x -t# msmpisetup.exe -otmp
+if [[ ${target} == i686-w64-* ]]; then
+    # 32-bit files
+    7z x tmp/2.msi -o$prefix
+else
+    # 64-bit files
+    7z x tmp/4.msi -o$prefix
+    mv -f $prefix/msmpi64.dll $prefix/msmpi.dll
+    mv -f $prefix/msmpires64.dll $prefix/msmpires.dll
+fi
 7z x msmpisdk.msi -o$prefix
 
 cd ${WORKSPACE}/destdir/
@@ -25,6 +34,9 @@ mv *.exe *.dll bin
 mkdir -p lib
 mv *.lib lib
 mkdir -p include
+# Move to includedir only the mpifptr.h for current architecture
+mv "mpifptr${nbits}.h" "include/mpifptr.h"
+rm mpifptr*.h
 mv *.h *.man include
 mkdir -p src
 mv *.f90 src
@@ -39,7 +51,7 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs.

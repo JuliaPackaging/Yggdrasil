@@ -1,42 +1,42 @@
-using BinaryBuilder
+include("../coin-or-common.jl")
 
 name = "CoinUtils"
-version = v"2.11.4"
+version = CoinUtils_version
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/coin-or/CoinUtils.git", "f709081c9b57cc2dd32579d804b30689ca789982"),
+    GitSource("https://github.com/coin-or/CoinUtils.git",
+              CoinUtils_gitsha),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/CoinUtils*
 
-# Remove wrong libtool files
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
-if [[ ${target} == *mingw* ]]; then	
+mkdir build
+cd build/
+
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
+if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --with-pic --disable-pkg-config \
---enable-dependency-linking lt_cv_deplibs_check_method=pass_all \
---with-blas --with-blas-lib="-lopenblas" --with-lapack --with-lapack-lib="-lopenblas"
+../configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
+--with-pic --disable-pkg-config --disable-debug \
+--enable-shared lt_cv_deplibs_check_method=pass_all \
+--with-blas --with-blas-lib="-lopenblas" \
+--with-lapack --with-lapack-lib="-lopenblas"
 
 make -j${nproc}
 make install
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 # The products that we will ensure are always built
 products = [
@@ -50,4 +50,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=gcc_version)

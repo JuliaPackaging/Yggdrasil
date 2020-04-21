@@ -7,8 +7,8 @@ version = v"1.42.4"
 
 # Collection of sources required to build Pango
 sources = [
-    "http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz" =>
-    "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d"
+    ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
+                  "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,12 +47,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FriBidi_jll",
-    "FreeType2_jll",
-    "Glib_jll",
-    "Fontconfig_jll",
-    "HarfBuzz_jll",
-    "Cairo_jll",
+    Dependency("FriBidi_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Glib_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("HarfBuzz_jll"),
+    Dependency("Cairo_jll"),
+    BuildDependency("Xorg_xorgproto_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

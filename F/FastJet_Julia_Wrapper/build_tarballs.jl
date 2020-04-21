@@ -3,22 +3,31 @@
 using BinaryBuilder
 
 name = "FastJet_Julia_Wrapper"
-version = v"0.5.0"
+version = v"0.6.0"
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
-   GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "1ed483a0449a5a7330e0d899492b5c5d2247d47a"; unpack_target="FastJet_Julia_Wrapper"),
-   ArchiveSource("https://github.com/JuliaPackaging/JuliaBuilder/releases/download/v1.0.0-2/julia-1.0.0-x86_64-linux-gnu.tar.gz", "34b6e59acf8970a3327cf1603a8f90fa4da8e5ebf09e6624509ac39684a1835d"; unpack_target="x86_64-linux-gnu"), 
-   ArchiveSource("https://github.com/JuliaPackaging/JuliaBuilder/releases/download/v1.0.0-2/julia-1.0.0-x86_64-apple-darwin14.tar.gz", "a9537f53306f9cf4f0f376f737c745c16b78e9cf635a0b22fbf0562713454b10"; unpack_target="x86_64-apple-darwin14")
+   GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "b12021d7fc6277cc266cb5adcad6e286db84982f"; unpack_target="FastJet_Julia_Wrapper"),
+	ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz", "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad"; unpack_target="julia-x86_64-linux-gnu"),
+   ArchiveSource("https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-x86_64-apple-darwin14.tar.gz", "f2e5359f03314656c06e2a0a28a497f62e78f027dbe7f5155a5710b4914439b1"; unpack_target="julia-x86_64-apple-darwin14"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-ln -s ${WORKSPACE}/srcdir/${target}/include/ /opt/${target}/${target}/sys-root/usr/local
+case "$target" in
+	arm-linux-gnueabihf|x86_64-linux-gnu)
+        Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/julia-1.3.1
+        ;;
+    x86_64-apple-darwin14|x86_64-w64-mingw32)
+        Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/juliabin
+        ;;
+esac
+
 cd ${WORKSPACE}/srcdir/FastJet_Julia_Wrapper/FastJet_Julia_Wrapper*
 mkdir build && cd build
-cmake -DJulia_PREFIX=${WORKSPACE}/srcdir/${target} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DJulia_PREFIX=${Julia_PREFIX} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=ON cmake --build . --config Release --target install
+install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/FastJet_Julia_Wrapper/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further

@@ -8,7 +8,7 @@ version = v"0.91.10"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/oneapi-src/level-zero.git",
-              "ebb363e938a279cf866cb93d28e31aaf0791ea19")
+              "ebb363e938a279cf866cb93d28e31aaf0791ea19"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,6 +41,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("OpenCL_Headers_jll"),
+    Dependency("NEO_jll"), # FIXME: OptionalDependency
+    # oneL0 doesn't depend on NEO, it just needs _a_ implementation to be available.
+    # it does so by looking for (dlopening) known drivers at module load time,
+    # so this package's JLL should put any implementation on the library search path
+    # without actually depending on it. For now, use a regular dependency.
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
