@@ -3,16 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.12.16259"
+version = v"20.15.16524"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "43016c65591bd125a9590ea05ca83d094a628f79"),
+              "e0633548a9bd025c70bc7f3539eef094b1bc9ce1"),
+    # vendored dependencies
+    GitSource("https://github.com/oneapi-src/level-zero.git",
+              "ebb363e938a279cf866cb93d28e31aaf0791ea19"),  # v0.91.10
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# NEO builds against a very specific version of the oneL0 specification headers,
+# so we can't use regular (Build)Dependencies.
+mv level-zero level_zero
+
 cd compute-runtime
 install_license LICENSE
 
@@ -65,9 +72,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gmmlib_jll", version=v"19.4.1")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.3586")),
-    Dependency(PackageSpec(name="oneAPI_Level_Zero_jll", version=v"0.91.10")),
+    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.1.1")),
+    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.3771")),
+    # TODO: reverse compatibility bounds, where NEO (providing a oneL0 impl of, e.g., v0.91)
+    #       restricts oneAPI_Level_Zero_jll to be below that version too.
 ]
 
 # GCC 4 has constexpr incompatibilities
