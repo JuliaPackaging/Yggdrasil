@@ -2,49 +2,36 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Nettle
 name = "XGBoost"
-version = v"1.0.2"
+version = v"1.1.0"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","917b0a7b46954e9be36cbc430a1727bb093234bb"),
+    GitSource("https://github.com/dmlc/xgboost.git","a734f52807040be68b62b3aba50bcb0d781e7a94"), #master
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
-
 git submodule init
 git submodule update
 
 # Patch dmlc-core to use case-sensitive windows.h includes
-(cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows_h.patch")
-(cd dmlc-core && atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_musl_build_config_default_h.patch")
-
+(cd dmlc-core; atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows.patch")
 
 # For Linux, build using CMake
-if [[ ${target} == *linux* ]]; then
+if [[ ${target} == *linux* ]] ||  [[ ${target} == *mingw* ]]; then
     (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
     make -C build -j ${nproc}
+# For Mac and FreeBSD, build without openmp
 elif [[ ${target} == *darwin* ]] ||  [[ ${target} == *freebsd* ]]; then
     (mkdir build; cd build; cmake .. -DUSE_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
     make -C build -j ${nproc}
-else
-    if [[ ${target} == *mingw* ]]; then
-        # Target Windows specifically
-        EXTRA_FLAGS=(UNAME=Windows)
-    fi
-
-    # Otherwise, build with `make`, and do a minimal build
-    cp make/minimum.mk config.mk
-    make -j ${nproc} ${EXTRA_FLAGS[@]}
 fi
 
 # Install
 mkdir -p ${prefix}/{bin,include,lib}
 cp -ra include/xgboost ${prefix}/include/
-cp -a xgboost ${prefix}/bin/xgboost${exeext}
+cp -a xgboost${exeext} ${prefix}/bin/xgboost${exeext}
 
-# We also need to bundle `libgomp`, so snarf it from the
-# compiler support directory while we copy our main bundle of joy
 if [[ ${target} == *mingw* ]]; then
     cp -a lib/xgboost.dll ${prefix}/bin
 else
@@ -56,10 +43,8 @@ fi
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Disable FreeBSD for now, because freebsd doesn't have backtrace()
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+# Disable powerpc for now
 platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
-platforms = [p for p in platforms if !(libc(p) == :musl)]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
