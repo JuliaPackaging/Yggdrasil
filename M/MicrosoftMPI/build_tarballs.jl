@@ -34,6 +34,9 @@ mv *.exe *.dll bin
 mkdir -p lib
 mv *.lib lib
 mkdir -p include
+# Move to includedir only the mpifptr.h for current architecture
+mv "mpifptr${nbits}.h" "include/mpifptr.h"
+rm mpifptr*.h
 mv *.h *.man include
 mkdir -p src
 mv *.f90 src
@@ -48,7 +51,7 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs.
