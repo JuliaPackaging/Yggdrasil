@@ -28,8 +28,7 @@ esac
 mkdir connect4/build
 cd connect4/build
 cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_PREFIX_PATH=$prefix/destdir/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=${prefix} ..
-make -j${nproc}
-make install
+VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license ${WORKSPACE}/srcdir/connect4/LICENSE
 """
 
