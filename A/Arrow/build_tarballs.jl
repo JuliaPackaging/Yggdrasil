@@ -15,11 +15,16 @@ script = raw"""
 cd $WORKSPACE/srcdir/arrow-apache-arrow-0.17.0/cpp
 
 sed -i 's/Ws2_32/ws2_32/g' CMakeLists.txt
-sed -i 's/Ws2_32/ws2_32/g' cmake_modules/FindThrift.cmake
 sed -i 's/Ws2_32/ws2_32/g' src/arrow/flight/CMakeLists.txt
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
+FLAGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    FLAGS+=(-DARROW_CXXFLAGS="-mmacosx-version-min=10.9")
+fi
+
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DARROW_JEMALLOC=OFF ${FLAGS[@]}
+
+make -j${nproc}
 make install
 """
 
@@ -28,8 +33,14 @@ make install
 platforms = [
     Linux(:i686, libc=:glibc),
     Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    # Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    Linux(:powerpc64le, libc=:glibc),
     Linux(:i686, libc=:musl),
     Linux(:x86_64, libc=:musl),
+    Linux(:aarch64, libc=:musl),
+    # Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    MacOS(:x86_64),
     FreeBSD(:x86_64),
     Windows(:i686),
     Windows(:x86_64)
