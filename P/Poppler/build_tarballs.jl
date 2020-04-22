@@ -19,6 +19,11 @@ cd $WORKSPACE/srcdir/poppler-*/
 ln -s ${bindir} /opt/${target}/${target}/sys-root/usr/local/bin
 export CXXFLAGS="-I${prefix}/include/openjpeg-2.3"
 
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # When building for the host platform, the system libexpat is picked up
+    rm /usr/lib/libexpat.so*
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
