@@ -36,6 +36,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("Cairo_jll"),
     #Dependency("gdk_pixbuf_jll"),
