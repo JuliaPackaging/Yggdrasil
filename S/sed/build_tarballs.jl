@@ -14,8 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sed-4.8/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+make -j${nproc} SUBDIRS="po ."
+make install SUBDIRS="po ."
 """
 
 # These are the platforms we will build for by default, unless further
