@@ -7,8 +7,8 @@ version = v"5.3.1"
 
 # Collection of sources required to build rr
 sources = [
-    GitSource("https://github.com/mozilla/rr.git",
-              "c979313cf04ce78b09e5517b22f95ac068bb7c2d")
+    GitSource("https://github.com/Keno/rr.git",
+              "0362a9e4984e6b8fd5df617b504d2ddd3bef8b76")
 ]
 
 # Bash recipe for building across all platforms
