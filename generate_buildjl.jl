@@ -94,8 +94,13 @@ function _pkey(platform)
     for (i, j) in [(3, 4), (4, 7), (5, 8)]
         pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\")" => "CompilerABI(:gcc$j)")
     end
-    for i in ["03", "11"]
-        pkey = replace(pkey, "CompilerABI(cxxstring_abi=:cxx$i)" => "CompilerABI(:gcc_any, :cxx$i)")
+    for k in ["03", "11"]
+        pkey = replace(pkey, "CompilerABI(cxxstring_abi=:cxx$k)" => "CompilerABI(:gcc_any, :cxx$k)")
+    end
+    for (i, j) in [(3, 4), (4, 7), (5, 8)]
+        for k in ["03", "11"]
+            pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\", cxxstring_abi=:cxx$k)" => "CompilerABI(:gcc$j, :cxx$k)")
+        end
     end
     return pkey
 end
