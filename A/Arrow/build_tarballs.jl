@@ -22,7 +22,7 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-DARROW_CXXFLAGS="-mmacosx-version-min=10.9")
 fi
 
-if [[ ${target} == arm-* ]]; then
+if [[ ${target} == arm* ]]; then
     FLAGS+=(-DARROW_SIMD_LEVEL=NONE)
 fi
 
