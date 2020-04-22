@@ -13,6 +13,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/unpaper-6.1/
 apk add libxslt
+if [[ "${target}" == *-linux-* ]]; then
+    export LDFLAGS="-lstdc++"
+fi
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
