@@ -15,6 +15,12 @@ cd $WORKSPACE/srcdir/unpaper-6.1/
 apk add libxslt
 if [[ "${target}" == *-linux-* ]]; then
     export LDFLAGS="-lstdc++"
+elif [[ "${target}" == *-mingw* ]]; then
+    # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+    # Give some hints to the linker
+    export LDFLAGS="-L${libdir}"
+    export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
