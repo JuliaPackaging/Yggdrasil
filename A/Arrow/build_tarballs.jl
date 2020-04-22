@@ -26,7 +26,7 @@ if [[ ${target} == arm-* ]]; then
     FLAGS+=(-DARROW_SIMD_LEVEL=NONE)
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DARROW_JEMALLOC=OFF ${FLAGS[@]}
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DARROW_JEMALLOC=OFF -DARROW_PARQUET=ON ${FLAGS[@]}
 
 make -j${nproc}
 make install
@@ -40,11 +40,13 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libparquet", :libparquet),
     LibraryProduct("libarrow", :libarrow)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("boost_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
