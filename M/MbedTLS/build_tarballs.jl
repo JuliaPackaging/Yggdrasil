@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "MbedTLS"
-version = v"2.16.0"
+version = v"2.16.6"
 
 # Collection of sources required to build MbedTLS
 sources = [
     "https://github.com/ARMmbed/mbedtls.git" =>
-    "fb1972db23da39bd11d4f9c9ea6266eee665605b",
+    "f5fbadbb3caf431adf8135f5fa926e81e9f92670",
 ]
 
 # Bash recipe for building across all platforms
