@@ -30,7 +30,16 @@ sed -i 's/AccCtrl.h/accctrl.h/g' lib/cpp/src/thrift/transport/TPipeServer.cpp
 sed -i 's/Aclapi.h/aclapi.h/g' lib/cpp/src/thrift/transport/TPipeServer.cpp
 sed -i 's/WS2tcpip.h/ws2tcpip.h/g' lib/cpp/src/thrift/windows/SocketPair.cpp
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-boost="${prefix}" --without-py3 --without-python ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes --enable-tests=no --enable-tutorials=no
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-boost="${prefix}" \
+    --without-py3 \
+    --without-python \
+     --enable-tests=no \
+     --enable-tutorial=no \
+    ac_cv_func_malloc_0_nonnull=yes \
+    ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 """
