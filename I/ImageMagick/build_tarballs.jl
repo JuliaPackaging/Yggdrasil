@@ -6,8 +6,8 @@ version = v"6.9.10-12"
 
 # Collection of sources required to build imagemagick
 sources = [
-    "https://github.com/ImageMagick/ImageMagick6/archive/6.9.10-12.tar.gz" =>
-    "efaae51489af9f895762bcb7090636f03194daaa026eda97dae230098d2ccec7",
+    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/6.9.10-12.tar.gz",
+    "efaae51489af9f895762bcb7090636f03194daaa026eda97dae230098d2ccec7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -31,10 +31,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "libpng_jll",
-    "JpegTurbo_jll",
-    "Libtiff_jll"
+    Dependency("Zlib_jll"),
+    Dependency("libpng_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libtiff_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
