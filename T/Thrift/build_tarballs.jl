@@ -7,7 +7,8 @@ version = v"0.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://mirror.23media.de/apache/thrift/0.13.0/thrift-0.13.0.tar.gz", "7ad348b88033af46ce49148097afe354d513c1fca7c607b59c33ebb6064b5179")
+    ArchiveSource("http://mirror.23media.de/apache/thrift/0.13.0/thrift-0.13.0.tar.gz", "7ad348b88033af46ce49148097afe354d513c1fca7c607b59c33ebb6064b5179"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,18 +31,33 @@ sed -i 's/AccCtrl.h/accctrl.h/g' lib/cpp/src/thrift/transport/TPipeServer.cpp
 sed -i 's/Aclapi.h/aclapi.h/g' lib/cpp/src/thrift/transport/TPipeServer.cpp
 sed -i 's/WS2tcpip.h/ws2tcpip.h/g' lib/cpp/src/thrift/windows/SocketPair.cpp
 
+if [[ "${target}" == *86*-linux-musl* ]]; then
+    pushd /opt/${target}/lib/gcc/${target}/*/include
+    # Fix bug in Musl C library, see
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
+    popd
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --with-boost="${prefix}" \
     --without-py3 \
     --without-python \
-     --enable-tests=no \
-     --enable-tutorial=no \
+    --enable-tests=no \
+    --enable-tutorial=no \
     ac_cv_func_malloc_0_nonnull=yes \
     ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
+
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Manually build the shared library for Windows
+    cd "${prefix}/lib"
+    cc -shared -o "${libdir}/libthrift.${dlext}" libthrift.a
+fi
 """
 
 # These are the platforms we will build for by default, unless further
