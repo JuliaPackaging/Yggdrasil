@@ -1,0 +1,21 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index aedda708..580e281d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -547,10 +547,15 @@ if(strip)
+   set_target_properties(rr PROPERTIES LINK_FLAGS "-s")
+ endif()
+ 
++if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
++  set(STDCXXFS -lstdc++fs)
++endif()
++
+ target_link_libraries(rr
+   ${CMAKE_DL_LIBS}
+   -lrt
+   brotli
++  ${STDCXXFS}
+ )
+ 
+ if(staticlibs)
+
