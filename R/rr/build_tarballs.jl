@@ -8,7 +8,7 @@ version = v"5.3.1"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "0362a9e4984e6b8fd5df617b504d2ddd3bef8b76")
+              "0614ef87d857a41c64d7c8a03ac19ae7a540b298")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,4 +46,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"5") 
+               preferred_gcc_version=v"9") 
