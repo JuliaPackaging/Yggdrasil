@@ -44,6 +44,7 @@ products = [
 # This is really a build dependency
 dependencies = [
     Dependency("capnproto_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
