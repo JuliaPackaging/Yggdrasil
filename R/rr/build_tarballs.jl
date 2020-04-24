@@ -8,14 +8,16 @@ version = v"5.3.1"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "0614ef87d857a41c64d7c8a03ac19ae7a540b298")
+              "0614ef87d857a41c64d7c8a03ac19ae7a540b298"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 pip3 install pexpect
+cd ${WORKSPACE}/srcdir/rr/
 
-cd $WORKSPACE/srcdir/rr/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rr_cxx17_filesystem_gcc8.patch
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -42,8 +44,9 @@ products = [
 # This is really a build dependency
 dependencies = [
     Dependency("capnproto_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"9") 
+               preferred_gcc_version=v"8") 
