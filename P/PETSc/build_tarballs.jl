@@ -30,9 +30,6 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
-    # Rename mpifptr.h header.  We should probably fix directly in
-    # the MicrosoftMPI JLL package.
-    mv "${prefix}/include/mpifptr${nbits}.h" "${prefix}/include/mpifptr.h"
 else
     MPI_LIBS="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]"
 fi
