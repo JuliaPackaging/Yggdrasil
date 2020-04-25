@@ -1,0 +1,100 @@
+#!/usr/bin/bash
+#
+# Copyright (C) 2020 Mosè Giordano
+# License is MIT "Expat"
+#
+### Commentary:
+#
+# This script converts platform-specific arguments for the compiler or the
+# linker.  For example, when building for Linux or FreeBSD:
+#
+#   $ flagon --relative-rpath-link /../lib --whole-archive
+#   -Wl,-rpath=/../lib -Wl,-rpath-link=/../lib -Wl,-z,origin --whole-archive
+#
+# but when building for macOS this will be
+#
+#   $ flagon --relative-rpath-link=/../lib --whole-archive
+#   -Wl,-rpath=@loader_path/../lib -Wl,-rpath-link=@loader_path/../lib -all_load
+#
+# You can change the platform with the `--platform` option,
+# e.g. `--platform x86_64-linux-musl`
+#
+### Code:
+
+ARGS=$(getopt -o "" -l "platform:,whole-archive,no-whole-archive,relative-rpath-link:" -- "$@")
+
+usage () {
+    echo "Usage: ${0} [--platform PLATFORM] [--whole-archive] [--no-whole-archive] [--relative-rpath-link PATH]"
+}
+
+eval set -- "$ARGS"
+
+# Print usage
+if [[ $# -lt 2 ]]; then
+    usage
+fi
+
+# Initialise some variables
+PLATFORM="${target}"
+# Accumulate flags to be converted
+FLAGS=()
+
+# Parse the arguments
+while true; do
+    case "$1" in
+        --platform)
+            PLATFORM="${2}"
+            shift 2;;
+        --relative-rpath-link)
+            FLAGS+=("${1}:${2}")
+            shift 2;;
+        --)
+            shift
+            break;;
+        *)
+            FLAGS+=("${1}")
+            shift;;
+    esac
+done
+
+# Do the actual conversion
+for flag in "${FLAGS[@]}"; do
+    case "${flag}" in
+        --whole-archive)
+            case "${PLATFORM}" in
+                *-apple-*)
+                    echo -n "-all_load "
+                    ;;
+                *)
+                    echo -n "--whole-archive "
+                    ;;
+            esac
+            ;;
+        --no-whole-archive)
+            case "${PLATFORM}" in
+                *-apple-*)
+                    echo -n "-noall_load -n"
+                    ;;
+                *)
+                    echo -n "--no-whole-archive "
+                    ;;
+            esac
+            ;;
+        --relative-rpath-link*)
+            arg="$(echo "${flag}" | cut -d: -f2 -- -)"
+            case "${PLATFORM}" in
+                *-apple-*)
+                    echo -n "-Wl,-rpath=@loader_path${arg} -Wl,-rpath-link=@loader_path${arg} "
+                    ;;
+                *-mingw*)
+                    echo -n " "
+                    ;;
+                *)
+                    echo -n "-Wl,-rpath=$ORIGIN${arg} -Wl,-rpath-link=$ORIGIN${arg} -Wl,-z,origin "
+                    ;;
+            esac
+            ;;
+        *)
+            ;;
+    esac
+done
