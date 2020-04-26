@@ -7,9 +7,9 @@ version = v"2.42.2"
 
 # Collection of sources required to build librsvg
 sources = [
-    "https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz" =>
-    "0c550a0bffef768a436286116c03d9f6cd3f97f5021c13e7f093b550fac12562",
-    "./bundled",
+    ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
+                  "0c550a0bffef768a436286116c03d9f6cd3f97f5021c13e7f093b550fac12562"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -88,9 +88,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "gdk_pixbuf_jll",
-    "Pango_jll",
-    "Libcroco_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("gdk_pixbuf_jll"),
+    Dependency("Pango_jll"),
+    Dependency("Libcroco_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
