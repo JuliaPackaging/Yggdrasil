@@ -5,7 +5,7 @@ name = "FastTransforms"
 version = v"0.3.0"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "17b90f22415b34c485e0dc932d178b2c6ac16eba8e0edc3af16c17ea3a81800b"),
+                  "33baf524c45ae59f149783ada628212bb45a2865e067e424134c7ef0fd49ed9a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,6 @@ mv -f libfasttransforms.${dlext} ${libdir}
 
 platforms = expand_gfortran_versions(supported_platforms())
 platforms = [p for p in platforms if BinaryBuilder.proc_family(p) == :intel]
-platforms = [p for p in platforms if compiler_abi(p).libgfortran_version > v"3.0.0"]
 
 # The products that we will ensure are always built
 products = [
