@@ -27,6 +27,7 @@ if [[ ${nbits} == 64 ]]; then
 else
     BLAS=openblas
 fi
+make assembly CC=gcc
 make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
