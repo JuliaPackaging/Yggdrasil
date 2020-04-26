@@ -18,7 +18,7 @@ else
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
-    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm)
+    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
         SYMBOL_DEFS+=("-Dcblas_${sym}=cblas_${sym}64_")
     done
@@ -34,6 +34,7 @@ mv -f libfasttransforms.${dlext} ${libdir}
 
 platforms = expand_gfortran_versions(supported_platforms())
 platforms = [p for p in platforms if BinaryBuilder.proc_family(p) == :intel]
+platforms = [p for p in platforms if compiler_abi(p).libgfortran_version > v"3.0.0"]
 
 # The products that we will ensure are always built
 products = [
