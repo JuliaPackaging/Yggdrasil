@@ -88,9 +88,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "gdk_pixbuf_jll",
-    "Pango_jll",
-    "Libcroco_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("gdk_pixbuf_jll"),
+    Dependency("Pango_jll"),
+    Dependency("Libcroco_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
