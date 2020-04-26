@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.2.13"
+version = v"0.3.0"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "d1145aaf8a22e861697a57f23998e862eecf2e5e2e0bc15fabd6e521fb469cea"),
+                  "33baf524c45ae59f149783ada628212bb45a2865e067e424134c7ef0fd49ed9a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ else
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
-    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm)
+    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
         SYMBOL_DEFS+=("-Dcblas_${sym}=cblas_${sym}64_")
     done
@@ -27,6 +27,7 @@ if [[ ${nbits} == 64 ]]; then
 else
     BLAS=openblas
 fi
+make assembly CC=gcc
 make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
