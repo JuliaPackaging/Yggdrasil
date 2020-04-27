@@ -15,8 +15,8 @@
 
 using BinaryBuilder
 
-HELICS_VERSION = v"2.4.2"
-HELICS_SHA = "957856f06ed6d622f05dfe53df7768bba8fe2336d841252f5fac8345070fa5cb"
+HELICS_VERSION = v"2.5.0"
+HELICS_SHA = "6f4f9308ebb59d82d71cf068e0d9d66b6edfa7792d61d54f0a61bf20dd2a7428"
 
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
