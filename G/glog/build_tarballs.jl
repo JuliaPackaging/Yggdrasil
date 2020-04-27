@@ -14,11 +14,31 @@ cd $WORKSPACE/srcdir/glog-*
 
 mkdir cmake_build
 cd cmake_build/
+FLAGS=()
+if [[ "${target}" == i686-w64-mingw32 ]]; then
+    # For some reasons, CMake can't find the symbol `UnDecorateSymbolName` in libdbghelp
+    FLAGS+=(-DHAVE_DBGHELP=TRUE)
+elif [[ "${target}" == *-freebsd* ]]; then
+    # It looks like the build is broken with Clang for FreeBSD:
+    #
+    #   In file included from /workspace/srcdir/glog-0.4.0/src/utilities.cc:375:
+    #   /workspace/srcdir/glog-0.4.0/src/stacktrace_x86_64-inl.h:64:6: error: use of undeclared identifier '_Unwind_Backtrace'
+    #        _Unwind_Backtrace(nop_backtrace, NULL);
+    #        ^
+    #   /workspace/srcdir/glog-0.4.0/src/stacktrace_x86_64-inl.h:100:3: error: use of undeclared identifier '_Unwind_Backtrace'
+    #     _Unwind_Backtrace(GetOneFrame, &targ);
+    #     ^
+    #   2 errors generated.
+    #   make[2]: *** [CMakeFiles/glog.dir/build.make:115: CMakeFiles/glog.dir/src/utilities.cc.o] Error 1
+    #
+    CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
+      "${FLAGS[@]}" \
       ..
 
 make -j${nproc}
@@ -39,8 +59,6 @@ cat >${prefix}/lib/libglog.pc <<EOS
   Libs: -L${libdir} -lglog
   Cflags: -I${prefix}/include
 EOS
-
-cd ..
 """
 
 # These are the platforms we will build for by default, unless further
