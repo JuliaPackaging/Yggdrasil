@@ -7,17 +7,22 @@ version = v"1.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/openucx/ucx/releases/download/v1.7.0/ucx-1.7.0.tar.gz" =>
-    "6ab81ee187bfd554fe7e549da93a11bfac420df87d99ee61ffab7bb19bdd3371",
+    ArchiveSource("https://github.com/openucx/ucx/releases/download/v1.7.0/ucx-1.7.0.tar.gz",
+                  "6ab81ee187bfd554fe7e549da93a11bfac420df87d99ee61ffab7bb19bdd3371"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ucx-*
+cd $WORKSPACE/srcdir/ucx-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-numa
-make -j${nproc}
+    --disable-numa \
+    --disable-logging \
+    --disable-debug \
+    --disable-assertions \
+    --disable-params-check
+# For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
+# into, we have to build with `V=1`
+make -j${nproc} V=1
 make install
 """
 
@@ -25,7 +30,7 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    Linux(:powerpc64le, libc=:glibc)
+    Linux(:powerpc64le, libc=:glibc),
 ]
 
 
@@ -39,7 +44,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
