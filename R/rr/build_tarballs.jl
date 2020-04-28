@@ -8,7 +8,7 @@ version = v"5.3.1"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "0614ef87d857a41c64d7c8a03ac19ae7a540b298"),
+              "68b6b3e6fc519b0f622714bd50731c76fc70a3b5"),
     DirectorySource("./bundled"),
 ]
 
