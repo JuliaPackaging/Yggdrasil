@@ -10,7 +10,8 @@ while !eof(buff)
     push!(objs, BinaryBuilder.JSON.parse(buff))
 end
 
-objs_unmerged = deepcopy(objs) # Merging later on modifies the argument
+# Merging modifies `obj`, so let's keep an unmerged version around
+objs_unmerged = deepcopy(objs)
 
 # Merge the multiple outputs into one
 merged = BinaryBuilder.merge_json_objects(objs)
@@ -58,6 +59,8 @@ mktempdir() do download_dir
     repo = "JuliaBinaryWrappers/$(name)_jll.jl"
     tag = "$(name)-v$(build_version)"
     upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+
+    # This loop over the unmerged objects necessary in the event that we have multiple packages being built by a single build_tarballs.jl
     for (i,json_obj) in enumerate(objs_unmerged)
         from_scratch = (i == 1)
         BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
