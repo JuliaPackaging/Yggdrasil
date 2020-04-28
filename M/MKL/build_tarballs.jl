@@ -44,7 +44,19 @@ dependencies = [
     Dependency("IntelOpenMP_jll"),
 ]
 
-# Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
-# macOS causes runtime issues:
-# https://github.com/JuliaPackaging/Yggdrasil/issues/915.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts = true, autofix = false)
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+include("../../fancy_toys.jl")
+no_autofix_platforms = [Windows(:i686), Windows(:x86_64), MacOS(:x86_64)]
+autofix_platforms = [Linux(:x86_64)]
+if any(should_build_platform.(triplet.(no_autofix_platforms)))
+    # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
+    # macOS causes runtime issues:
+    # https://github.com/JuliaPackaging/Yggdrasil/issues/915.
+    build_tarballs(non_reg_ARGS, name, version, sources, script, no_autofix_platforms, products, dependencies; lazy_artifacts = true, autofix = false)
+end
+if any(should_build_platform.(triplet.(autofix_platforms)))
+    # ... but we need to run autofix on Linux, because here libmkl_rt doesn't
+    # have a soname, so we can't ccall it without specifying the path:
+    # https://github.com/JuliaSparse/Pardiso.jl/issues/69
+    build_tarballs(ARGS, name, version, sources, script, autofix_platforms, products, dependencies; lazy_artifacts = true)
+end
