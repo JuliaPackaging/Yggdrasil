@@ -1,0 +1,14 @@
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -40,7 +40,7 @@ if(USE_OPENMP)
+   target_link_libraries(CovidSim PUBLIC OpenMP::OpenMP_CXX)
+ endif()
+ if(WIN32)
+-  target_link_libraries(CovidSim PUBLIC Gdiplus.lib Vfw32.lib)
++  target_link_libraries(CovidSim PUBLIC gdiplus.lib vfw32.lib)
+   target_compile_definitions(CovidSim PUBLIC  "_CRT_SECURE_NO_WARNINGS")
+ elseif(UNIX)
+   target_compile_definitions(CovidSim PUBLIC UNIX)
+-- 
+2.20.2
+
