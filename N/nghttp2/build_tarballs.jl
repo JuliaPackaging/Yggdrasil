@@ -7,8 +7,8 @@ version = v"1.40.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    "https://github.com/nghttp2/nghttp2/releases/download/v$(version)/nghttp2-$(version).tar.bz2" =>
-    "82758e13727945f2408d0612762e4655180b039f058d5ff40d055fa1497bd94f",
+    ArchiveSource("https://github.com/nghttp2/nghttp2/releases/download/v$(version)/nghttp2-$(version).tar.bz2",
+                  "82758e13727945f2408d0612762e4655180b039f058d5ff40d055fa1497bd94f"),
 ]
 
 # Bash recipe for building across all platforms
