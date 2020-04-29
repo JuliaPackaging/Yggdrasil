@@ -358,7 +358,7 @@ static void mount_dev(const char * root_dir) {
 
     // Do the same for /dev/pts and /dev/ptmx
     snprintf(path, sizeof(path), "%s/dev/pts", root_dir);
-    touch(path);
+    mkpath(path);
     check(0 == mount("devpts", path, "devpts", 0, "ptmxmode=0666"));
 
     snprintf(path, sizeof(path), "%s/dev/pts/ptmx", root_dir);

@@ -93,18 +93,18 @@ Core.eval(BinaryBuilder, :(bootstrap_list = Symbol[:rootfs]))
 
 # Sources we build from
 sources = [
-    rootfs_url => rootfs_hash,
+    ArchiveSource(rootfs_url, rootfs_hash),
     # Objconv is very useful
-    "https://github.com/staticfloat/objconv/archive/v2.49.tar.gz" =>
-    "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f",
+    ArchiveSource("https://github.com/staticfloat/objconv/archive/v2.49.tar.gz",
+                  "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
     # As is patchelf
-    "https://github.com/NixOS/patchelf.git" =>
-    "e1e39f3639e39360ceebb2f7ed533cede4623070",
+    GitSource("https://github.com/NixOS/patchelf.git",
+              "e1e39f3639e39360ceebb2f7ed533cede4623070"),
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    "https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz" =>
-    "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32",
+    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz",
+                  "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32"),
     # And also our own local patches, utilities, etc...
-    "./bundled",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
