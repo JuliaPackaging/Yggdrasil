@@ -18,7 +18,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blegat.patch
 
 CFLAGS="-O2 -fPIC -ansi -Wall -DUSEGETTIME -I../include"
 if [[ "${target}" != *mingw* ]]; then
-    CFLAGS+="-fopenmp -DUSEOPENMP -DSETNUMTHREADS"
+    CFLAGS+=" -fopenmp -DUSEOPENMP -DSETNUMTHREADS"
 fi
 LIBS="-L../lib -lsdp -lopenblas -lm"
 
