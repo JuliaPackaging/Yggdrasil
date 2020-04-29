@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "MKL"
-version = v"2020.0.166"
+version = v"2020.1.216"
 
 sources = [
-    ArchiveSource("https://anaconda.org/anaconda/mkl/2020.0/download/linux-64/mkl-2020.0-166.tar.bz2",
-                  "59154b30dd74561e90d547f9a3af26c75b6f4546210888f09c9d4db8f4bf9d4c"; unpack_target = "mkl-x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/anaconda/mkl/2020.0/download/osx-64/mkl-2020.0-166.tar.bz2",
-                  "b45713c9f72d225e28d489bd6e9f4dc02622e6b4e4253050ebc026db4d292247"; unpack_target = "mkl-x86_64-apple-darwin14"),
-    ArchiveSource("https://anaconda.org/anaconda/mkl/2020.0/download/win-32/mkl-2020.0-166.tar.bz2",
-                  "78fbe6dfec291ba3332862bface5814cb0f128564bd4b99da53434ec6dd162a7"; unpack_target = "mkl-i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/anaconda/mkl/2020.0/download/win-64/mkl-2020.0-166.tar.bz2",
-                  "c44096070fc5a5df0548c1168bcc464303d2757502ab2332f2184842d8eb7404"; unpack_target = "mkl-x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/linux-64/mkl-2020.1-intel_217.tar.bz2",
+                  "8814e952c0b4f28079361adac8bec1051b97d62dee621666798a3302e70d75e0"; unpack_target = "mkl-x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/osx-64/mkl-2020.1-intel_216.tar.bz2",
+                  "4dab8dd1aa12b02cd121228ba881a887448399c799ee5a2d53942716a03f880e"; unpack_target = "mkl-x86_64-apple-darwin14"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/win-32/mkl-2020.1-intel_216.tar.bz2",
+                  "b43ca7a8f5aed51e197af1f9165b3a72e5dd0a7f036fd9364ccfe90a8645a235"; unpack_target = "mkl-i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/win-64/mkl-2020.1-intel_216.tar.bz2",
+                  "5dd8eff29b390ddb1cf15f391aba7fa3bdc4034f79b98d226865a5e331060f76"; unpack_target = "mkl-x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,11 +19,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mkl-${target}
 if [[ ${target} == *mingw* ]]; then
     cp -r Library/bin/* ${libdir}
-    install_license info/*.txt
 else
     cp -r lib/* ${libdir}
-    install_license info/licenses/*.txt
 fi
+install_license info/*.txt
 """
 
 platforms = [
