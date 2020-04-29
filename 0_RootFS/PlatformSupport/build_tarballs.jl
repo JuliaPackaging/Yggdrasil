@@ -129,6 +129,7 @@ mv ${COMPILER_TARGET}/* ${prefix}
 # We create a link from ${COMPILER_TARGET}/sys-root/usr/local to ${prefix}.
 # This is the most reliable way for our sysroot'ed compilers to find destination
 # libraries so far, hopefully this changes in the future.
+mkdir -p "${sysroot}/usr"
 ln -s "${prefix}" "${sysroot}/usr/local"
 """
 
