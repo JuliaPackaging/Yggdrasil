@@ -1,0 +1,12 @@
+diff --git a/src/zsolve/Heuristics.hpp b/src/zsolve/Heuristics.hpp
+index eb09e8a..c7111a7 100644
+--- a/src/zsolve/Heuristics.hpp
++++ b/src/zsolve/Heuristics.hpp
+@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ #include <fstream>
+ #include <map>
+ #include <cstdlib>
++#include <time.h>
+ 
+ #include "zsolve/BitSet.h"
+ #include "zsolve/LinearSystem.hpp"

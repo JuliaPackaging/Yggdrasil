@@ -1,0 +1,40 @@
+From 4fc8909e7099a37125bec79b51184ea082140f8f Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Thu, 30 Apr 2020 16:30:44 +0200
+Subject: [PATCH] configure: patch -ftrapv support detection
+
+---
+ configure | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/configure b/configure
+index 4aa8e51..3e42e5d 100755
+--- a/configure
++++ b/configure
+@@ -9208,10 +9208,7 @@ CXXFLAGS="${CXXFLAGS} ${TRAPV_FLAG}"
+ $as_echo_n "checking whether -ftrapv actually seems to work for int... " >&6; }
+ trapv_int=no
+ if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
++  trapv_int=no
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+@@ -9247,10 +9244,7 @@ $as_echo "$trapv_int" >&6; }
+ $as_echo_n "checking whether -ftrapv actually seems to work for long long... " >&6; }
+ trapv_long_long=no
+ if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
++  trapv_long_long=no
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+-- 
+2.26.1.107.gefe3874640
+
