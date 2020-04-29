@@ -16,7 +16,10 @@ cd $WORKSPACE/srcdir/Csdp*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blegat.patch
 
-CFLAGS="-O2 -fPIC -fopenmp -ansi -Wall -DUSEOPENMP -DSETNUMTHREADS -DUSEGETTIME -I../include"
+CFLAGS="-O2 -fPIC -ansi -Wall -DUSEGETTIME -I../include"
+if [[ "${target}" != *mingw* ]]; then
+    CFLAGS+=" -fopenmp -DUSEOPENMP -DSETNUMTHREADS"
+fi
 LIBS="-L../lib -lsdp -lopenblas -lm"
 
 if [[ "${nbits}" == 64 ]] && [[ "${target}" != *aarch64* ]]; then
@@ -40,7 +43,11 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 mkdir -p ${libdir}
-${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm
+if [[ "${target}" != *mingw* ]]; then
+   ${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lgomp -lopenblas -lm
+else
+   ${CC} -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${libdir}/libcsdp.${dlext} -lopenblas -lm
+fi
 """
 
 # These are the platforms we will build for by default, unless further
