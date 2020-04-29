@@ -19,11 +19,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mkl-${target}
 if [[ ${target} == *mingw* ]]; then
     cp -r Library/bin/* ${libdir}
-    install_license info/*.txt
 else
     cp -r lib/* ${libdir}
-    install_license info/licenses/*.txt
 fi
+install_license info/*.txt
 """
 
 platforms = [
