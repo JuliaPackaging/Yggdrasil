@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xsum
-mkdir -p ${prefix}/lib
+mkdir -p ${libdir}
 if [[ $target == i686-* ]]; then
     xsumfpmath="-mfpmath=sse"
 fi
