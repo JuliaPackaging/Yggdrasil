@@ -169,9 +169,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "boost_jll",
-    "armadillo_jll",
-    "OpenBLAS_jll"
+    Dependency("boost_jll"),
+    Dependency("armadillo_jll"),
+    Dependency("OpenBLAS_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
