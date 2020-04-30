@@ -3,55 +3,40 @@
 using BinaryBuilder
 
 name = "Elemental"
-version = v"1.3.3"
+version = v"0.87.7"
 
 # Collection of sources required to build Elemental
 sources = [
-    GitSource("https://github.com/LLNL/Elemental.git",
-              "38505fbf3b9f4a511fb35b0776144f336616fe38"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/elemental/Elemental.git",
+              "477e503a7a840cc1a75173552711b980505a0b06"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd Elemental
-
-atomic_patch -p1 ../patches/01-fix-suffix.patch
-if [[ "$target" == *86*-linux-musl* ]]; then
-    pushd /opt/$target/lib/gcc/$target/*/include
-    atomic_patch -p0 "$WORKSPACE/srcdir/patches/02-fix-musl.patch"
-    popd
-fi
-
-mkdir build
-cd build
-
-if [[ "$nbits" == 64 ]]; then
-  IS_64="ON"
-else
-  IS_64="OFF"
-fi
-
-if [[ "$nbits" == 64 ]] && [[ "$target" != aarch64-* ]]; then
+if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
   BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
-  IS_BLAS_64="ON"
+  BLAS_LAPACK_SUFFIX="_64_"
 else
   BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
-  IS_BLAS_64="OFF"
+  BLAS_LAPACK_SUFFIX=""
 fi
+
+mkdir "$WORKSPACE/srcdir/$SRC_NAME/build"
+cd "$WORKSPACE/srcdir/$SRC_NAME/build"
 
 cmake \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
   -DCMAKE_BUILD_TYPE="Release" \
-  -DBUILD_SHARED_LIBS="ON" \
+  -DEL_DISABLE_PARMETIS="ON" \
+  -DMETIS_TEST_RUNS_EXITCODE="0" \
+  -DMETIS_TEST_RUNS_EXITCODE__TRYRUN_OUTPUT="" \
+  -DMATH_LIBS="$BLAS_LAPACK_LIB" \
   -DBLAS_LIBRARIES="$BLAS_LAPACK_LIB" \
   -DLAPACK_LIBRARIES="$BLAS_LAPACK_LIB" \
-  -DHydrogen_ENABLE_TESTING="OFF" \
-  -DHydrogen_USE_OpenBLAS="ON" \
-  -DHydrogen_USE_64BIT_INTS="$IS_64" \
-  -DHydrogen_USE_64BIT_BLAS_INTS="$IS_BLAS_64" \
-  ..
+  -DEL_BLAS_SUFFIX="$BLAS_LAPACK_SUFFIX" \
+  -DEL_LAPACK_SUFFIX="$BLAS_LAPACK_SUFFIX" \
+  "$WORKSPACE/srcdir/$SRC_NAME"
 
 make "-j$nproc"
 make install
@@ -65,11 +50,13 @@ filter!(p -> !(p isa Windows), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libHydrogen_CXX", :libHydrogen),
+    LibraryProduct("libEl", :libEl),
+    LibraryProduct("libElSuiteSparse", :libElSuiteSparse),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("METIS_jll"),
     Dependency("MPICH_jll"),
     Dependency("OpenBLAS_jll"),
 ]
