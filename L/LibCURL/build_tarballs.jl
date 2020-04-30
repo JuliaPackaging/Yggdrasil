@@ -20,13 +20,14 @@ FLAGS=(
     # Disable....almost everything
     --without-ssl --without-gnutls --without-gssapi
     --without-libidn --without-libidn2 --without-libmetalink --without-librtmp
-    --without-nghttp2 --without-nss --without-polarssl
+    --without-nss --without-polarssl
     --without-spnego --without-libpsl --disable-ares --disable-manual
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
     --disable-static
 
     # Two things we actually enable
     --with-libssh2=${prefix} --with-mbedtls=${prefix} --with-zlib=${prefix}
+    --with-nghttp2=${prefix}
 )
 
 # We need to tell it where to find libssh2 on windows
@@ -54,6 +55,7 @@ dependencies = [
     "LibSSH2_jll",
     "MbedTLS_jll",
     "Zlib_jll",
+    "nghttp2_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
