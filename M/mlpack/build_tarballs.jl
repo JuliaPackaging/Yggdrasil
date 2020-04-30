@@ -137,7 +137,7 @@ products = [
     LibraryProduct("libmlpack_julia_lars", :libmlpack_julia_lars),
     LibraryProduct("libmlpack_julia_linear_regression",
         :libmlpack_julia_linear_regression),
-    LibraryProduct("libmlpack_julia_linear_svm", :libmlpack_julia_linear_svm)
+    LibraryProduct("libmlpack_julia_linear_svm", :libmlpack_julia_linear_svm),
     LibraryProduct("libmlpack_julia_lmnn", :libmlpack_julia_lmnn),
     LibraryProduct("libmlpack_julia_local_coordinate_coding",
         :libmlpack_julia_local_coordinate_coding),
