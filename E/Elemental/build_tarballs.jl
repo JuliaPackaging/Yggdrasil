@@ -13,12 +13,20 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
+if [[ "$nbits" == "64" ]]; then
+  INT64="ON"
+else
+  INT64="OFF"
+fi
+
+if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
   BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
   BLAS_LAPACK_SUFFIX="_64_"
+  BLAS_INT64="ON"
 else
   BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
   BLAS_LAPACK_SUFFIX=""
+  BLAS_INT64="OFF"
 fi
 
 mkdir "$WORKSPACE/srcdir/$SRC_NAME/build"
@@ -28,6 +36,8 @@ cmake \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
   -DCMAKE_BUILD_TYPE="Release" \
+  -DEL_USE_64BIT_INTS="$INT64" \
+  -DEL_USE_64BIT_BLAS_INTS="$BLAS_INT64" \
   -DEL_DISABLE_PARMETIS="ON" \
   -DMETIS_TEST_RUNS_EXITCODE="0" \
   -DMETIS_TEST_RUNS_EXITCODE__TRYRUN_OUTPUT="" \
