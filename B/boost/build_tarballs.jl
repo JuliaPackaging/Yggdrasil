@@ -7,9 +7,9 @@ version = v"1.71.0"
 
 # Collection of sources required to build boost
 sources = [
-    "https://dl.bintray.com/boostorg/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2" =>
-    "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee",
-    "./bundled",
+    ArchiveSource("https://dl.bintray.com/boostorg/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+                  "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,11 +46,13 @@ elif [[ $target == *freebsd* ]]; then
     echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
 ./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system install
+
+install_license LICENSE_1_0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -91,7 +93,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
