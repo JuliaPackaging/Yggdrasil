@@ -6,10 +6,10 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.3.0"
+version = v"3.3.1"
 sources = [
-    ArchiveSource("https://www.mlpack.org/files/mlpack-3.3.0.tar.gz",
-                  "63cdc3569f2e929899cc30c2e808a42709723c2ea56f8c2953edc7188eab5559")
+    ArchiveSource("https://www.mlpack.org/files/mlpack-3.3.1.tar.gz",
+                  "310f95faa93b975c1489344ae4a499eddcd825ef9db76909eb680e1695cd1e36")
 ]
 
 script = raw"""
@@ -137,6 +137,7 @@ products = [
     LibraryProduct("libmlpack_julia_lars", :libmlpack_julia_lars),
     LibraryProduct("libmlpack_julia_linear_regression",
         :libmlpack_julia_linear_regression),
+    LibraryProduct("libmlpack_julia_linear_svm", :libmlpack_julia_linear_svm)
     LibraryProduct("libmlpack_julia_lmnn", :libmlpack_julia_lmnn),
     LibraryProduct("libmlpack_julia_local_coordinate_coding",
         :libmlpack_julia_local_coordinate_coding),
