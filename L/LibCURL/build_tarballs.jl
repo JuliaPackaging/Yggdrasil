@@ -3,12 +3,14 @@
 using BinaryBuilder
 
 name = "LibCURL"
-version = v"7.68.0"
+version = v"7.70.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    "https://curl.haxx.se/download/curl-$(version).tar.bz2" =>
-    "207f54917dd6a2dc733065ccf18d61bb5bebeaceb5df49cd9445483e8623eeb9",
+    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
+    "ca2feeb8ef13368ce5d5e5849a5fd5e2dd4755fecf7d8f0cc94000a4206fb8e7"), 
+    FileSource("https://curl.haxx.se/ca/cacert.pem", 
+    "adf770dfd574a0d6026bfaa270cb6879b063957177a991d453ff1d302c02081f")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,6 +39,8 @@ fi
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
 make -j${nproc}
 make install
+install_license COPYING
+cp ../cacert.pem $prefix/share/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,13 +51,14 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libcurl", :libcurl),
     ExecutableProduct("curl", :curl),
+    FileProduct("share/cacert.pem", :cacert)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "LibSSH2_jll",
-    "MbedTLS_jll",
-    "Zlib_jll",
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
