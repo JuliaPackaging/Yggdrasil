@@ -20,9 +20,11 @@ apk add sqlite
 if [[ ${target} == *mingw* ]]; then
     SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
     CURL_LIBRARY=${libdir}/libcurl-4.dll
+    TIFF_LIBRARY_RELEASE=${libdir}/libtiff-5.dll
 else
     SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
     CURL_LIBRARY=${libdir}/libcurl.${dlext}
+    TIFF_LIBRARY_RELEASE=${libdir}/libtiff.${dlext}
 fi
 
 mkdir build
@@ -34,9 +36,10 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBUILD_TESTING=OFF \
       -DSQLITE3_INCLUDE_DIR=$prefix/include \
       -DSQLITE3_LIBRARY=$SQLITE3_LIBRARY \
-      -DCURL_LIBRARY=$CURL_LIBRARY \
       -DCURL_INCLUDE_DIR=$prefix/include \
+      -DCURL_LIBRARY=$CURL_LIBRARY \
       -DTIFF_INCLUDE_DIR=$prefix/include \
+      -DTIFF_LIBRARY_RELEASE=$TIFF_LIBRARY_RELEASE \
       ..
 make -j${nproc}
 make install
