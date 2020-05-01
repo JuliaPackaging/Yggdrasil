@@ -92,7 +92,8 @@ function meson_link_args()
 
 function meson_is_foreign()
 {
-    if [[ "$1" == x86_64-linux-* ]] || [[ "$1" == i686-linux-* ]]; then
+    # We can't run C++/Fortran executables for i686-linux-musl
+    if [[ "$1" == x86_64-linux-* ]] || [[ "$1" == i686-linux-gnu ]]; then
         echo "false"
     else
         echo "true"
