@@ -3,29 +3,32 @@
 using BinaryBuilder
 
 name = "z3"
-version = v"4.8.6"
+version = v"4.8.7"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/Z3Prover/z3.git" =>
-    "78ed71b8de7d4d089f2799bf2d06f411ac6b9062",
-    "./bundled",
+    GitSource("https://github.com/Z3Prover/z3.git",
+              "30e7c225cd510400eacd41d0a83e013b835a8ece"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/z3/
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/memory_manager_windows.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-32-bit-linux.patch
 
 mkdir z3-build && cd z3-build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -34,7 +37,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
