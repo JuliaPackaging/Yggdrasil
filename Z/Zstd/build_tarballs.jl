@@ -27,6 +27,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libzstd", :libzstd),
     ExecutableProduct("zstd", :zstd),
+    ExecutableProduct("zstdmt", :zstdmt),
 ]
 
 dependencies = []
