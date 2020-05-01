@@ -17,6 +17,14 @@ cd $WORKSPACE/srcdir/proj-*/
 # cross-compiled one since it needs to be executed on the host
 apk add sqlite
 
+if [[ ${target} == *mingw* ]]; then
+    SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
+    CURL_LIBRARY=${libdir}/libcurl-4.dll
+else
+    SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
+    CURL_LIBRARY=${libdir}/libcurl.${dlext}
+fi
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -24,6 +32,11 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
+      -DSQLITE3_INCLUDE_DIR=$prefix/include \
+      -DSQLITE3_LIBRARY=$SQLITE3_LIBRARY \
+      -DCURL_LIBRARY=$CURL_LIBRARY \
+      -DCURL_INCLUDE_DIR=$prefix/include \
+      -DTIFF_INCLUDE_DIR=$prefix/include \
       ..
 make -j${nproc}
 make install
