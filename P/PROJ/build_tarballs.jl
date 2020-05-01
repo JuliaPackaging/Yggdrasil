@@ -1,12 +1,12 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "PROJ"
-version = v"6.3.0"
+version = v"6.3.2"
 
 # Collection of sources required to build PROJ
 sources = [
-    "https://download.osgeo.org/proj/proj-$version.tar.gz" =>
-    "68ce9ba0005d442c2c1d238a3b9bc6654c358159b4af467b91e8d5b407c79c77",
+    ArchiveSource("https://download.osgeo.org/proj/proj-$version.tar.gz",
+        "cb776a70f40c35579ae4ba04fb4a388c1d1ce025a1df6171350dc19f25b80311"),
 ]
 
 # Bash recipe for building across all platforms
@@ -71,7 +71,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = ["SQLite_jll"]
+dependencies = [
+    Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8")),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
