@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "Ipopt"
-version = v"3.13.1"
+version = v"3.13.2"
 
 sources = [
     ArchiveSource("https://github.com/coin-or/Ipopt/archive/releases/$(version).tar.gz",
-                  "64fc63a3fe27cf5efaf17ebee861f7db5bf70aacf9c316c0d37e4beb4eb72e11"),
+                  "891ab9e9c7db29fc8ac5c779ccec6313301098de7bbf735ca230cd5544c49496"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd Ipopt-releases-3.13.1
+cd Ipopt-releases-3.13.2
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
