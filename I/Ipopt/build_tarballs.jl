@@ -11,7 +11,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd Ipopt-releases-3.13.2
+cd Ipopt-releases-*
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
