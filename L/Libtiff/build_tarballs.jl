@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libtiff"
-version = v"4.0.10"
+version = v"4.1.0"
 
 # Collection of sources required to build Libtiff
 sources = [
     ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(version).tar.gz",
-                  "2c52d11ccaf767457db0c46795d9c7d1a8d8f76f68b0b800a3dfe45786b996e4")
+                  "5d29f32517dadb6dbcd1255ea5bbc93a2b54b94fbf83653b4d65c7d6775b8634")
 ]
 
 # Bash recipe for building across all platforms
