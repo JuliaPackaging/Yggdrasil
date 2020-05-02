@@ -25,7 +25,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libMagickWand", "libMagickWand-6.Q16"], :libwand),
-    ExecutableProduct("convert", :convert),
+    ExecutableProduct("convert", :imagemagick_convert),
     ExecutableProduct("identify", :identify),
 ]
 
