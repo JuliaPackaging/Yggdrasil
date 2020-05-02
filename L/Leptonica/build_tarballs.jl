@@ -5,53 +5,38 @@ using BinaryBuilder, Pkg
 name = "Leptonica"
 version = v"1.79.0"
 
-# Collection of sources required to complete build
+# Collection of sources required to build Leptonica
 sources = [
-    GitSource("https://github.com/DanBloomberg/leptonica.git", "002843bdf81ef4018fdf0f5c53262bbeab2b0fdc")
+    ArchiveSource("http://www.leptonica.org/source/leptonica-$(version).tar.gz",
+                  "045966c9c5d60ebded314a9931007a56d9d2f7a6ac39cb5cc077c816f62300d8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_PROG=1 ../leptonica/
-make -j${nprocs}
-make -j${nprocs} xtractprotos
+cd $WORKSPACE/srcdir/leptonica-*/
+./configure --prefix=$prefix --host=$target
+make -j${nproc}
 make install
-mkdir -p $prefix/share/licenses/Leptonica
-cp ../leptonica/leptonica-license.txt $prefix/share/licenses/Leptonica/LICENSE
+install_license leptonica-license.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("converttops", :converttops),
-    ExecutableProduct("convertsegfilestopdf", :convertsegfilestopdf),
-    ExecutableProduct("xtractprotos", :xtractprotos),
-    LibraryProduct("libleptonica", :liblept),
+    LibraryProduct("liblept", :liblept),
+    ExecutableProduct("convertfilestopdf", :convertfilestopdf),
     ExecutableProduct("convertfilestops", :convertfilestops),
     ExecutableProduct("convertformat", :convertformat),
+    ExecutableProduct("convertsegfilestopdf", :convertsegfilestopdf),
     ExecutableProduct("convertsegfilestops", :convertsegfilestops),
-    ExecutableProduct("fileinfo", :fileinfo),
     ExecutableProduct("converttopdf", :converttopdf),
-    ExecutableProduct("convertfilestopdf", :convertfilestopdf)
+    ExecutableProduct("converttops", :converttops),
+    ExecutableProduct("fileinfo", :fileinfo),
+    ExecutableProduct("imagetops", :imagetops),
+    ExecutableProduct("xtractprotos", :xtractprotos),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -64,5 +49,5 @@ dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
