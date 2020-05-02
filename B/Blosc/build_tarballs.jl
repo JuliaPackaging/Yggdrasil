@@ -48,7 +48,7 @@ dependencies = [
 	Dependency("Zlib_jll"),
 	Dependency("Zstd_jll"),
 	Dependency("Lz4_jll"),
-#	Dependency("Snappy_jll"),
+	# Dependency("Snappy_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
