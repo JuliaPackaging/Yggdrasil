@@ -7,8 +7,8 @@ version = v"1.3.1"
 
 # Collection of sources required to build Opus
 sources = [
-    "https://archive.mozilla.org/pub/opus/opus-$(version).tar.gz" =>
-    "65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d",
+    ArchiveSource("https://archive.mozilla.org/pub/opus/opus-$(version).tar.gz",
+                  "65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,10 @@ if [[ ${target} == *musl* ]]; then
     STACK_PROTECTOR="--disable-stack-protector"
 fi
 
-./configure --prefix=$prefix --host=$target --disable-static --enable-custom-modes ${STACK_PROTECTOR}
+./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
+            --disable-static \
+            --enable-custom-modes \
+            ${STACK_PROTECTOR}
 make -j${nproc}
 make install
 """
