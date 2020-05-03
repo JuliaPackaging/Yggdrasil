@@ -14,9 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
-./configure --prefix=$prefix --host=$target
+./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
 make -j${nproc}
 make install
+install_license COPYING.Xiph
 """
 
 # These are the platforms we will build for by default, unless further
