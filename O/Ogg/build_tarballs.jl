@@ -12,6 +12,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libogg-*/
 
+# Don't let `configure` use `-ffast-math` ANYWHERE
+sed -i.bak -e 's/-ffast-math//g' ./configure
 ./configure --prefix=$prefix --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
