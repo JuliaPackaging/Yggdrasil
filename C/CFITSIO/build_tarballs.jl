@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"3.47.0"
+version = v"3.48.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz",
-                  "418516f10ee1e0f1b520926eeca6b77ce639bed88804c7c545e74f26b3edf4ef"),
+                  "91b48ffef544eb8ea3908543052331072c99bf09ceb139cb3c6977fc3e47aac1"),
     DirectorySource("./bundled"),
 ]
 
@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "LibCURL_jll",
+    Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
