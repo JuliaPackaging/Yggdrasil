@@ -6,14 +6,24 @@ version = v"1.3.6"
 
 # Collection of sources required to build libvorbis
 sources = [
-    "https://downloads.xiph.org/releases/vorbis/libvorbis-$(version).tar.xz" =>
-    "af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415",
+    ArchiveSource("https://downloads.xiph.org/releases/vorbis/libvorbis-$(version).tar.xz",
+                  "af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libvorbis-*
-./configure --prefix=$prefix --host=$target
+
+# Patch in explicit dependency on `stdint.h` to fix libogg
+# This will be fixed in a future libogg release:
+# https://github.com/xiph/ogg/commit/c8fca6b4a02d695b1ceea39b330d4406001c03ed
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/stdint.patch"
+
+# Force `./configure` to repent from using `-ffast-math`
+sed -ie 's/-ffast-math//g' ./configure
+
+./configure --prefix=$prefix --host=$target --build=${MACHTYPE}
 make -j${nproc}
 make install
 """
@@ -30,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Ogg_jll",
+    Dependency("Ogg_jll"),
 ]
 
 
