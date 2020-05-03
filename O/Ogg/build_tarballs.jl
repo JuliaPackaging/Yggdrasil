@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libogg-*/
 
-i./configure --prefix=$prefix --host=${target} --build=${MACHTYPE}
+./configure --prefix=$prefix --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
 """
