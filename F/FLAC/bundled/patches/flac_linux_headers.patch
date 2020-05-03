@@ -1,0 +1,13 @@
+diff --git a/src/libFLAC/cpu.c b/src/libFLAC/cpu.c
+index 64da9cbc..1d679901 100644
+--- a/src/libFLAC/cpu.c
++++ b/src/libFLAC/cpu.c
+@@ -54,7 +54,7 @@
+ #endif
+ 
+ #if defined FLAC__CPU_PPC
+-#include <sys/auxv.h>
++#include <linux/auxvec.h>
+ #endif
+ 
+ #if (defined FLAC__CPU_IA32 || defined FLAC__CPU_X86_64) && (defined FLAC__HAS_NASM || FLAC__HAS_X86INTRIN) && !defined FLAC__NO_ASM

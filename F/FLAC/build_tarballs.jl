@@ -7,21 +7,28 @@ version = v"1.3.3"
 
 # Collection of sources required to build FLAC
 sources = [
-    "https://downloads.xiph.org/releases/flac/flac-$(version).tar.xz" =>
-    "213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748",
+    ArchiveSource("https://downloads.xiph.org/releases/flac/flac-$(version).tar.xz",
+                  "213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
-./configure --prefix=$prefix --host=$target
+
+# Include patch for finding definition of `AT_HWCAP2` within the Linux
+# kernel headers, rather than the glibc headers, sicne our glibc is too old
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
+
+./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
 make -j${nproc}
 make install
+install_license COPYING.Xiph
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -33,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Ogg_jll",
+    Dependency("Ogg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
