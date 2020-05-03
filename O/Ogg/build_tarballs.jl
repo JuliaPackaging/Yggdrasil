@@ -3,7 +3,6 @@ using BinaryBuilder
 name = "Ogg"
 version = v"1.3.4"
 
-# Collection of sources required to build Ogg
 sources = [
     ArchiveSource("https://downloads.xiph.org/releases/ogg/libogg-$(version).tar.xz",
                   "c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe"),
@@ -13,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libogg-*/
 
-./configure --prefix=$prefix --host=${target}
+i./configure --prefix=$prefix --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
 """
