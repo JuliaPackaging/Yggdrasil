@@ -1,0 +1,48 @@
+diff --git a/include/vorbis/codec.h b/include/vorbis/codec.h
+index 42aa291..93ebd7c 100644
+--- a/include/vorbis/codec.h
++++ b/include/vorbis/codec.h
+@@ -22,6 +22,7 @@ extern "C"
+ {
+ #endif /* __cplusplus */
+ 
++#include <stdint.h>
+ #include <ogg/ogg.h>
+ 
+ typedef struct vorbis_info{
+diff --git a/lib/analysis.c b/lib/analysis.c
+index 0e11a16..0c95c1a 100644
+--- a/lib/analysis.c
++++ b/lib/analysis.c
+@@ -17,6 +17,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <math.h>
++#include <stdint.h>
+ #include <ogg/ogg.h>
+ #include "vorbis/codec.h"
+ #include "codec_internal.h"
+diff --git a/lib/os.h b/lib/os.h
+index 4e9b280..3a8d0d8 100644
+--- a/lib/os.h
++++ b/lib/os.h
+@@ -21,6 +21,7 @@
+ #endif
+ 
+ #include <math.h>
++#include <stdint.h>
+ #include <ogg/os_types.h>
+ 
+ #include "misc.h"
+diff --git a/lib/synthesis.c b/lib/synthesis.c
+index 5f6092c..f5180da 100644
+--- a/lib/synthesis.c
++++ b/lib/synthesis.c
+@@ -15,6 +15,7 @@
+  ********************************************************************/
+ 
+ #include <stdio.h>
++#include <stdint.h>
+ #include <ogg/ogg.h>
+ #include "vorbis/codec.h"
+ #include "codec_internal.h"
