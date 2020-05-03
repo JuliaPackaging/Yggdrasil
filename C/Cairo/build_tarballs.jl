@@ -44,8 +44,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcairo", :libcairo),
     LibraryProduct("libcairo-gobject", :libcairo_gobject),
+    LibraryProduct("libcairo-script-interpreter", :libcairo_script_interpreter),
+    LibraryProduct("libcairo", :libcairo),
 ]
 
 # Dependencies that must be installed before this package can be built
