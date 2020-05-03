@@ -9,11 +9,17 @@ version = v"1.3.3"
 sources = [
     ArchiveSource("https://downloads.xiph.org/releases/flac/flac-$(version).tar.xz",
                   "213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
+
+# Include patch for finding definition of `AT_HWCAP2` within the Linux
+# kernel headers, rather than the glibc headers, sicne our glibc is too old
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
+
 ./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
 make -j${nproc}
 make install
