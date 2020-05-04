@@ -6,7 +6,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "659812b7f8a9c51e9ce215c964e0376af2063ad0"),
+              "b5bf0b870f0e2b0891f5ae218d8c43d849d3bc79"),
 ]
 
 # Bash recipe for building across all platforms
