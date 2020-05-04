@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 const name = "libcgal_julia"
-const version = v"0.7.0"
+const version = v"0.8.0"
 
 # Collection of sources required to build CGAL
 const sources = [
     GitSource("https://github.com/rgcv/libcgal-julia.git",
-              "da7c613b5462dc636675e331d634cd3104dfc775"),
+              "ce3b4312d8ba161d85ff6bd2c4aed788f5523613"),
     # julia binaries
     ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz",
                   "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad"; unpack_target="julia-x86_64-linux-gnu"),
