@@ -1,0 +1,86 @@
+diff --git a/Makefile b/Makefile
+index bc3c86a..77827b8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -30,7 +30,7 @@ blaslib:
+ 	( cd CBLAS; $(MAKE) )
+ 
+ superlulib:
+-	( cd SRC; $(MAKE) )
++	( cd SRC; $(MAKE) single )
+ 
+ tmglib:
+ 	( cd TESTING/MATGEN; $(MAKE) )
+diff --git a/SRC/Makefile b/SRC/Makefile
+index 81209e5..83286b3 100644
+--- a/SRC/Makefile
++++ b/SRC/Makefile
+@@ -102,20 +102,16 @@ ZLUSRC = dcomplex.o zreadhb.o zreadrb.o zmatgen.o dzsum1.o izmax1.o \
+ all:    single double complex complex16
+ 
+ single: $(SLUSRC) $(ALLAUX) $(SZAUX)
+-	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
+-	$(RANLIB) ../lib/$(SUPERLULIB)
++	$(CC) -shared -o ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
+ 
+ double: $(DLUSRC) $(ALLAUX) $(DZAUX)
+-	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
+-	$(RANLIB) ../lib/$(SUPERLULIB)
++	$(CC) -shared -o ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
+ 
+ complex: $(CLUSRC) $(ALLAUX) $(SZAUX)
+-	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
+-	$(RANLIB) ../lib/$(SUPERLULIB)
++	$(CC) -shared -o ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
+ 
+ complex16: $(ZLUSRC) $(ALLAUX) $(DZAUX)
+-	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
+-	$(RANLIB) ../lib/$(SUPERLULIB)
++	$(CC) -shared -o ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
+ 
+ ##################################
+ # Do not optimize this routine   #
+@@ -127,10 +123,10 @@ dclock.o:  dclock.c ; $(CC) -c $(PREDEFS) $(NOOPTS) $<
+ 
+ # Do not optimize this on Cray; related to 'volatile' variable.
+ await.o: await.c
+-	$(CC) -c $(NOOPTS) $< $(VERBOSE)
++	$(CC) -c $(NOOPTS) $<
+ 
+ .c.o:
+-	$(CC) $(CFLAGS) $(CDEFS) $(BLASDEF) -c $< $(VERBOSE)
++	$(CC) $(CFLAGS) $(CDEFS) $(BLASDEF) -c $<
+ 
+ clean:	
+ 	rm -f *.o core ../lib/$(SUPERLULIB)
+diff --git a/make.inc b/make.inc
+index 44b73da..9e1ab42 100644
+--- a/make.inc
++++ b/make.inc
+@@ -20,7 +20,7 @@ PLAT = _PTHREAD
+ #  The name of the libraries to be created/linked to
+ #
+ TMGLIB       	= libtmglib$(PLAT).a
+-SUPERLULIB   	= libsuperlu_mt$(PLAT).a
++SUPERLULIB   	= libsuperlu_mt$(PLAT).so
+ BLASDEF	        = -DUSE_VENDOR_BLAS
+ BLASLIB		= -L/usr/lib -lf77blas -latlas
+ #BLASLIB = ../lib/libblas$(PLAT).a
+@@ -41,7 +41,7 @@ RANLIB       	= ranlib
+ PREDEFS      	= -D__PTHREAD  ## -DDEBUGlevel=0 -DPRNTlevel=0
+ #
+ CC           	= gcc
+-CFLAGS       	= $(PREDEFS) -g #-O3
++CFLAGS       	= $(PREDEFS) -fPIC -g #-O3
+ # Uncomment the following to use 64-bit integer
+ CFLAGS          += -D_LONGINT
+ 
+@@ -49,7 +49,7 @@ CFLAGS          += -D_LONGINT
+ # There are a few files that should NOT be optimized, which appear in the
+ # end of SRC/Makefile, taking the flag $(NOOPTS)
+ # NOOPTS should be defined to explicitly turn off any optimization.
+-NOOPTS	     	= -O0
++NOOPTS	     	= -fPIC -O0
+ 
+ BLASOPTS	=
+ 
