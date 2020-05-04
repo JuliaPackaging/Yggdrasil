@@ -11,6 +11,7 @@ pool: Native
 
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
+    JULIA_VERSION: 1.4 # should be the same as installed on the arctic's
 
 jobs:
 - job: generator
@@ -252,6 +253,53 @@ jobs:
       S3SECRET: $(S3SECRET)
     displayName: "run build_tarballs.jl"
     condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
+
+- job: test
+  dependsOn:
+    - generator
+    - build
+  pool:
+    name: Azure Pipelines
+    vmImage: ubuntu-latest
+  strategy:
+    matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  variables:
+    projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
+  steps:
+  - script: |
+      wget -nv https://julialang-s3.julialang.org/bin/linux/x64/$(JULIA_VERSION)/julia-$(JULIA_VERSION)-latest-linux-x86_64.tar.gz
+      mkdir julia-$(JULIA_VERSION)
+      tar zxf julia-$(JULIA_VERSION)-latest-linux-x86_64.tar.gz -C julia-$(JULIA_VERSION) --strip-components 1
+    displayName: 'Download and extract Julia'
+  - script: |
+      set -e
+      JULIA=`pwd`/julia-$(JULIA_VERSION)/bin/julia
+
+      cd $(PROJECT)
+      echo "Generating meta.json..."
+      ${JULIA} --project=$(Build.SourcesDirectory)/.ci -e "using Pkg; Pkg.instantiate()"
+      ${JULIA} --project=$(Build.SourcesDirectory)/.ci ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
+      echo "Instantiating $(NAME)..."
+      export BB_HASH PROJ_HASH
+      # Build JLL without uploading it
+      ${JULIA} --project=$(Build.SourcesDirectory)/.ci $(Build.SourcesDirectory)/.ci/register_package.jl $(Agent.TempDirectory)/$(NAME).meta.json --verbose --local
+      
+      if [[ -f SKIPTESTS ]]; then
+        echo "Skipping tests"
+      else
+        tmp_dir=$(mktemp -d)
+        ${JULIA} --project=${tmp_dir} -e "using Pkg; Pkg.develop(\"$(NAME)_jll\")"
+        ${JULIA} --project=${tmp_dir} -e "using $(NAME)_jll"
+
+        if [[ -d test ]]; then
+          ${JULIA} --project=test -e "using Pkg; Pkg.develop(\"$(NAME)_jll\")"
+          ${JULIA} --project=test test/runtests.jl
+        fi 
+        rm -rf ${tmp_dir}
+      fi
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+    displayName: 'Test JLL'
 
 - job: register
   dependsOn:

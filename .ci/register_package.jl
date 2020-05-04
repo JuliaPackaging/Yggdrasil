@@ -1,6 +1,7 @@
 using BinaryBuilder, Pkg, Pkg.PlatformEngines
 
 verbose = "--verbose" in ARGS
+should_upload = !("--local" in ARGS) 
 
 # Read in input `.json` file
 json = String(read(ARGS[1]))
@@ -52,11 +53,19 @@ mktempdir() do download_dir
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
     repo = "JuliaBinaryWrappers/$(name)_jll.jl"
     tag = "$(name)-v$(build_version)"
-    upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    if should_upload
+        upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    else
+        bb_hash = ENV["BB_HASH"]
+        proj_hash = ENV["PROJ_HASH"]
+        upload_prefix = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/"
+    end
     BinaryBuilder.rebuild_jll_package(merged; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=lazy_artifacts)
     
     # Upload them to GitHub releases
-    BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
+    should_upload && BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
 end
-BinaryBuilder.push_jll_package(name, build_version)
-BinaryBuilder.register_jll(name, build_version, dependencies)
+if should_upload
+    BinaryBuilder.push_jll_package(name, build_version)
+    BinaryBuilder.register_jll(name, build_version, dependencies)
+end
