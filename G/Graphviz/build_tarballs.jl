@@ -7,10 +7,10 @@ version = v"2.42.3"
 
 # Collection of sources required to complete build
 sources = [
-    "https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz" =>
-    "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add",
+    ArchiveSource("https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz",
+                  "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add"),
 
-    "./bundled",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -64,7 +64,6 @@ fi
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gvpr", :gvpr),
@@ -73,10 +72,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")
-    PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201")
-    PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")
-    PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")
+    Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
+    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201")),
+    Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
+    # PCRE is needed only for Windows.  Maybe it's only a build dependency?
+    # Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
