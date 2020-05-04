@@ -57,30 +57,27 @@ diff --git a/make.inc b/make.inc
 index 44b73da..9e1ab42 100644
 --- a/make.inc
 +++ b/make.inc
-@@ -20,7 +20,7 @@ PLAT = _PTHREAD
+@@ -20,7 +20,7 @@ PLAT = _OPENMP
  #  The name of the libraries to be created/linked to
  #
- TMGLIB       	= libtmglib$(PLAT).a
--SUPERLULIB   	= libsuperlu_mt$(PLAT).a
-+SUPERLULIB   	= libsuperlu_mt$(PLAT).so
- BLASDEF	        = -DUSE_VENDOR_BLAS
- BLASLIB		= -L/usr/lib -lf77blas -latlas
- #BLASLIB = ../lib/libblas$(PLAT).a
-@@ -41,7 +41,7 @@ RANLIB       	= ranlib
- PREDEFS      	= -D__PTHREAD  ## -DDEBUGlevel=0 -DPRNTlevel=0
- #
- CC           	= gcc
--CFLAGS       	= $(PREDEFS) -g #-O3
-+CFLAGS       	= $(PREDEFS) -fPIC -g #-O3
- # Uncomment the following to use 64-bit integer
- CFLAGS          += -D_LONGINT
+ TMGLIB       = libtmglib.a
+-SUPERLULIB   = libsuperlu_mt$(PLAT).a
++SUPERLULIB   = libsuperlu_mt$(PLAT).so
  
-@@ -49,7 +49,7 @@ CFLAGS          += -D_LONGINT
+ BLASDEF   =
+ BLASLIB = ../lib/libblas$(PLAT).a
+@@ -39,12 +39,12 @@ PREDEFS         = -D__OPENMP
+ #
+ 
+ CC           = gcc -fopenmp
+-CFLAGS       = -O3 $(PREDEFS) -DPRNTlevel=0 -DDEBUGlevel=0
++CFLAGS       = -fPIC -O3 $(PREDEFS) -DPRNTlevel=0 -DDEBUGlevel=0
+ #
  # There are a few files that should NOT be optimized, which appear in the
  # end of SRC/Makefile, taking the flag $(NOOPTS)
  # NOOPTS should be defined to explicitly turn off any optimization.
--NOOPTS	     	= -O0
-+NOOPTS	     	= -fPIC -O0
+-NOOPTS	 = -O0
++NOOPTS	 = -fPIC -O0
  
- BLASOPTS	=
- 
+ ############################################################################
+ FORTRAN      = gfortran -fopenmp

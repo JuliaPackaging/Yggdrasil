@@ -16,6 +16,8 @@ sources = [
 script = raw"""
 cd SuperLU_MT_*
 
+cp MAKE_INC/make.linux.openmp make.inc
+
 atomic_patch -p1 ../patches/01-fix-makefiles.patch
 
 # Weird sed delimiters because some variables contain slashes.
@@ -28,7 +30,7 @@ if [[ "$nbits" != 64 ]]; then
 fi
 
 make superlulib "-j$nproc"
-cp lib/libsuperlu_mt_PTHREAD.so "$libdir"
+cp lib/libsuperlu_mt_OPENMP.so "$libdir"
 cp SRC/*.h "$prefix/include"
 """
 
@@ -38,7 +40,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsuperlu_mt_PTHREAD", :libsuperlu_mt),
+    LibraryProduct("libsuperlu_mt_OPENMP", :libsuperlu_mt),
 ]
 
 # Dependencies that must be installed before this package can be built
