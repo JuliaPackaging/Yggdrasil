@@ -7,7 +7,7 @@ index bc3c86a..77827b8 100644
  
  superlulib:
 -	( cd SRC; $(MAKE) )
-+	( cd SRC; $(MAKE) single )
++	( cd SRC; $(MAKE) double )
  
  tmglib:
  	( cd TESTING/MATGEN; $(MAKE) )
