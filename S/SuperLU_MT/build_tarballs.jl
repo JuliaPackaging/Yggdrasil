@@ -26,6 +26,7 @@ echo "NOOPTS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
 
 # If our OpenBLAS is 64-bit, we need to suffix some symbols.
 if [[ "$nbits" == 64 && "$target" != aarch64-* ]]; then
+  echo "CFLAGS += -D_LONGINT" >> make.inc
   BLAS_SUFFIX=64_
   SYMBOLS=()
   for sym in dasum daxpy dcopy dtrsv idamax; do
