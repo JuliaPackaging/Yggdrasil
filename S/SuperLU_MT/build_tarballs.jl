@@ -24,16 +24,17 @@ atomic_patch -p1 ../patches/01-fix-makefiles.patch
 echo "CFLAGS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
 echo "NOOPTS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
 
-# If our OpenBLAS is 64-bit, we need to suffix some symbols.
-if [[ "$nbits" == 64 && "$target" != aarch64-* ]]; then
+# On 64-bit systems, use 64-bit integers for indexing.
+if [[ "$nbits" == 64 ]]; then
   echo "CFLAGS += -D_LONGINT" >> make.inc
-  BLAS_SUFFIX=64_
-  SYMBOLS=()
-  for sym in dasum daxpy dcopy dtrsv idamax; do
-    SYMBOLS+=("-D$sym=${sym}_64_")
-  done
-  echo "CFLAGS += ${SYMBOLS[@]}" >> make.inc
 fi
+
+# We need to add a suffix to BLAS symbols.
+SYMBOLS=()
+for sym in dasum daxpy dcopy dtrsv idamax; do
+  SYMBOLS+=("-D$sym=${sym}_")
+done
+echo "CFLAGS += ${SYMBOLS[@]}" >> make.inc
 
 # We're building a shared library, not a static one.
 sed -i "s/SUPERLULIB.*/SUPERLULIB = libsuperlu_mt\$(PLAT).$dlext/" make.inc
@@ -49,7 +50,7 @@ if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
 fi
 
 # Weird sed delimiters because some variables contain slashes.
-sed -i "s~^BLASLIB.*~BLASLIB = -L$libdir -lopenblas$BLAS_SUFFIX~" make.inc
+sed -i "s~^BLASLIB.*~BLASLIB = -L$libdir -lopenblas~" make.inc
 sed -i "s~^CC.*~CC = $CC~" make.inc
 sed -i "s~^FORTRAN.*~FORTRAN = $FC~" make.inc
 
@@ -70,7 +71,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
