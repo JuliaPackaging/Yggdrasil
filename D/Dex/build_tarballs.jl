@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p "${bindir}"
+mkdir -p "${bindir}" "${prefix}/share"
 cd dex/
 atomic_patch -p1 ../patches/01-allow-optional-github-gitlab-scopes.patch
 install_license LICENSE 
@@ -22,6 +22,7 @@ make
 mv bin/dex "$bindir/dex${exeext}"
 mv bin/example-app "$bindir/example-app${exeext}"
 mv bin/grpc-client "$bindir/grpc-client${exeext}"
+tar -czvf $prefix/share/webtemplates.tar.gz -C ./web static templates themes
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,7 +37,8 @@ platforms = [
 products = [
     ExecutableProduct("example-app", :exampleapp),
     ExecutableProduct("grpc-client", :grpcclient),
-    ExecutableProduct("dex", :dex)
+    ExecutableProduct("dex", :dex),
+    FileProduct("share/webtemplates.tar.gz", :webtemplates),
 ]
 
 # Dependencies that must be installed before this package can be built
