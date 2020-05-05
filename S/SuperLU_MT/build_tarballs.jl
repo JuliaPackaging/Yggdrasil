@@ -18,7 +18,7 @@ cd SuperLU_MT_*
 
 cp MAKE_INC/make.linux.openmp make.inc
 
-atomic_patch -p1 ../patches/01-fix-makefiles.patch
+atomic_patch -p1 ../patches/01-fix-makefile.patch
 
 # Build object files suitable for a shared library, and link the libraries we need.
 echo "CFLAGS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
