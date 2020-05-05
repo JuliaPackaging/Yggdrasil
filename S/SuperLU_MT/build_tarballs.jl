@@ -31,13 +31,10 @@ fi
 
 # We need to add a suffix to BLAS symbols.
 SYMBOLS=()
-for sym in dasum daxpy dcopy dtrsv idamax; do
-  SYMBOLS+=("-D$sym=${sym}_")
+for fun in isamax sasum saxpy scopy strsv idamax dasum daxpy dcopy dtrsv ctrsv ztrsv; do
+  SYMBOLS+=("-D$fun=${fun}_")
 done
 echo "CFLAGS += ${SYMBOLS[@]}" >> make.inc
-
-# We're building a shared library, not a static one.
-sed -i "s/SUPERLULIB.*/SUPERLULIB = libsuperlu_mt\$(PLAT).$dlext/" make.inc
 
 # Don't use 64-bit integers on non-64-bit systems.
 if [[ "$nbits" != 64 ]]; then
@@ -55,7 +52,10 @@ sed -i "s~^CC.*~CC = $CC~" make.inc
 sed -i "s~^FORTRAN.*~FORTRAN = $FC~" make.inc
 
 make superlulib "-j$nproc"
-cp "lib/libsuperlu_mt_OPENMP.$dlext" "$libdir"
+cp lib/single "$libdir/libsuperlumts.$dlext"
+cp lib/double "$libdir/libsuperlumtd.$dlext"
+cp lib/complex "$libdir/libsuperlumtc.$dlext"
+cp lib/complex16 "$libdir/libsuperlumtz.$dlext"
 cp SRC/*.h "$prefix/include"
 """
 
@@ -65,7 +65,10 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsuperlu_mt_OPENMP", :libsuperlu_mt),
+    LibraryProduct("libsuperlumts", :libsuperlumts),
+    LibraryProduct("libsuperlumtd", :libsuperlumtd),
+    LibraryProduct("libsuperlumtc", :libsuperlumtc),
+    LibraryProduct("libsuperlumtz", :libsuperlumtz),
 ]
 
 # Dependencies that must be installed before this package can be built

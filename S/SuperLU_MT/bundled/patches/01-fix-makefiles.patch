@@ -1,16 +1,3 @@
-diff --git a/Makefile b/Makefile
-index bc3c86a..77827b8 100644
---- a/Makefile
-+++ b/Makefile
-@@ -30,7 +30,7 @@ blaslib:
- 	( cd CBLAS; $(MAKE) )
- 
- superlulib:
--	( cd SRC; $(MAKE) )
-+	( cd SRC; $(MAKE) double )
- 
- tmglib:
- 	( cd TESTING/MATGEN; $(MAKE) )
 diff --git a/SRC/Makefile b/SRC/Makefile
 index 81209e5..83286b3 100644
 --- a/SRC/Makefile
@@ -21,22 +8,22 @@ index 81209e5..83286b3 100644
  single: $(SLUSRC) $(ALLAUX) $(SZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/single $(SLUSRC) $(ALLAUX) $(SZAUX)
  
  double: $(DLUSRC) $(ALLAUX) $(DZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/double $(DLUSRC) $(ALLAUX) $(DZAUX)
  
  complex: $(CLUSRC) $(ALLAUX) $(SZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/complex $(CLUSRC) $(ALLAUX) $(SZAUX)
  
  complex16: $(ZLUSRC) $(ALLAUX) $(DZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/complex16 $(ZLUSRC) $(ALLAUX) $(DZAUX)
  
  ##################################
  # Do not optimize this routine   #
