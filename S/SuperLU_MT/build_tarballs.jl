@@ -24,11 +24,6 @@ atomic_patch -p1 ../patches/01-fix-makefile.patch
 echo "CFLAGS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
 echo "NOOPTS += -fPIC -fopenmp \$(BLASLIB)" >> make.inc
 
-# On 64-bit systems, use 64-bit integers for indexing.
-if [[ "$nbits" == 64 ]]; then
-  echo "CFLAGS += -D_LONGINT" >> make.inc
-fi
-
 # We need to add a suffix to BLAS symbols.
 SYMBOLS=()
 for fun in isamax sasum saxpy scopy strsv idamax dasum daxpy dcopy dtrsv ctrsv ztrsv; do
