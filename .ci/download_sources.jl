@@ -12,6 +12,7 @@ end
 # Merge the multiple outputs into one
 merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
+merged["platforms"] = [p == UnknownPlatform() ? AnyPlatform() : p for p in merged["platforms"]]
 
 # Download all sources
 download_source.(merged["sources"]; verbose=true)
