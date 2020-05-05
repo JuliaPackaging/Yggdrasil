@@ -24,13 +24,7 @@ elif [[ "${target}" == powerpc64le-* ]]; then
 fi
 
 # Set up LAPACK
-LAPACK_LIBRARIES="-lgfortran"
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas64_.${dlext}"
-else
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas.${dlext}"
-fi
+LAPACK_LIBRARIES="-lgfortran ${libdir}/libopenblas.${dlext}"
 if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
     LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lquadmath"
 elif [[ "${target}" == powerpc64le-* ]]; then
@@ -87,9 +81,9 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse_jll"),
-#    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs.
