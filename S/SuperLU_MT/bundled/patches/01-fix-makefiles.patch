@@ -21,22 +21,22 @@ index 81209e5..83286b3 100644
  single: $(SLUSRC) $(ALLAUX) $(SZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) -shared -o ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(SLUSRC) $(ALLAUX) $(SZAUX)
  
  double: $(DLUSRC) $(ALLAUX) $(DZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) -shared -o ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(DLUSRC) $(ALLAUX) $(DZAUX)
  
  complex: $(CLUSRC) $(ALLAUX) $(SZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) -shared -o ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(CLUSRC) $(ALLAUX) $(SZAUX)
  
  complex16: $(ZLUSRC) $(ALLAUX) $(DZAUX)
 -	$(ARCH) $(ARCHFLAGS) ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
 -	$(RANLIB) ../lib/$(SUPERLULIB)
-+	$(CC) -shared -o ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
++	$(CC) $(CFLAGS) -shared -o ../lib/$(SUPERLULIB) $(ZLUSRC) $(ALLAUX) $(DZAUX)
  
  ##################################
  # Do not optimize this routine   #
@@ -53,31 +53,3 @@ index 81209e5..83286b3 100644
  
  clean:	
  	rm -f *.o core ../lib/$(SUPERLULIB)
-diff --git a/make.inc b/make.inc
-index 44b73da..9e1ab42 100644
---- a/make.inc
-+++ b/make.inc
-@@ -20,7 +20,7 @@ PLAT = _OPENMP
- #  The name of the libraries to be created/linked to
- #
- TMGLIB       = libtmglib.a
--SUPERLULIB   = libsuperlu_mt$(PLAT).a
-+SUPERLULIB   = libsuperlu_mt$(PLAT).so
- 
- BLASDEF   =
- BLASLIB = ../lib/libblas$(PLAT).a
-@@ -39,12 +39,12 @@ PREDEFS         = -D__OPENMP
- #
- 
- CC           = gcc -fopenmp
--CFLAGS       = -O3 $(PREDEFS) -DPRNTlevel=0 -DDEBUGlevel=0
-+CFLAGS       = -fPIC -O3 $(PREDEFS) -DPRNTlevel=0 -DDEBUGlevel=0
- #
- # There are a few files that should NOT be optimized, which appear in the
- # end of SRC/Makefile, taking the flag $(NOOPTS)
- # NOOPTS should be defined to explicitly turn off any optimization.
--NOOPTS	 = -O0
-+NOOPTS	 = -fPIC -O0
- 
- ############################################################################
- FORTRAN      = gfortran -fopenmp
