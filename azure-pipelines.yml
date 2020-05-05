@@ -95,7 +95,7 @@ jobs:
               pushd ${PROJECT} >/dev/null
               echo "Generating meta.json..."
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
-              $(JULIA) ./build_tarballs.jl --compile=min --meta-json="${JSON_PATH}"
+              $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
               echo "Downloading sources..."
               $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
 
@@ -188,7 +188,7 @@ jobs:
 
       cd $(PROJECT)
       echo "Generating meta.json..."
-      $(JULIA) ./build_tarballs.jl --compile=min --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
+      $(JULIA) --compile=min ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
       echo "Initializing JLL package..."
       $(JULIA) $(Build.SourcesDirectory)/.ci/jll_init.jl "$(Agent.TempDirectory)/${NAME}.meta.json"
     env:
@@ -269,7 +269,7 @@ jobs:
 
       cd $(PROJECT)
       echo "Generating meta.json..."
-      $(JULIA) ./build_tarballs.jl --compile=min --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
+      $(JULIA) --compile=min ./build_tarballs.jl --meta-json=$(Agent.TempDirectory)/$(NAME).meta.json
       echo "Registering $(NAME)..."
       export BB_HASH PROJ_HASH
       $(JULIA) $(Build.SourcesDirectory)/.ci/register_package.jl $(Agent.TempDirectory)/$(NAME).meta.json --verbose
