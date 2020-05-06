@@ -37,7 +37,7 @@ for name in ClusteringVetoPlugin ConstituentSubtractor EnergyCorrelator FlavorCo
 do
     cd $name
     rm example*
-    $CXX -fPIC -shared -O3 -Wall [A-Z]*.cc -o lib${name}.o
+    $CXX -fPIC -shared -I${prefix}/include -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o lib${name}.o
     mv lib${name}.o $prefix/lib
     cd ..
 done
