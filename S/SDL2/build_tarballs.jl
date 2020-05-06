@@ -3,23 +3,17 @@
 using BinaryBuilder
 
 name = "SDL2"
-version = v"2.0.10"
+version = v"2.0.12"
 
 # Collection of sources required to build SDL2
 sources = [
-    "http://www.libsdl.org/release/SDL2-$(version).tar.gz" =>
-    "b4656c13a1f0d0023ae2f4a9cf08ec92fffb464e0f24238337784159b8b91d57",
-    "./bundled",
+    ArchiveSource("http://www.libsdl.org/release/SDL2-$(version).tar.gz",
+                  "349268f695c02efbc9b9148a70b85e58cefbbf704abd3e91be654db7f1e2c863"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2-*/
-
-if [[ "${target}" == i686-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then
-    # Apply patch suggested at http://forums.libsdl.org/viewtopic.php?p=38887#38887
-    atomic_patch -p1 ../patches/opengl_es2_conflicting_type.patch
-fi
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -48,13 +42,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libX11_jll",
-    "Xorg_libXcursor_jll",
-    "Xorg_libXext_jll",
-    "Xorg_libXinerama_jll",
-    "Xorg_libXrandr_jll",
-    "Xorg_libXScrnSaver_jll",
-    "Libglvnd_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_libXcursor_jll"),
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Xorg_libXScrnSaver_jll"),
+    Dependency("Libglvnd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
