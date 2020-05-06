@@ -3,10 +3,11 @@
 using BinaryBuilder
 
 name = "MozillaCACerts"
-version = v"1.0.0"
+# Info and new versions here: https://curl.haxx.se/docs/caextract.html
 cacert_version = "2020-01-01"
+version = VersionNumber(replace(cacert_version, '_'=>'.'))
 
-# Collection of sources required to build LibCURL
+# Collection of sources required to build MozillaCACerts
 sources = [
     FileSource("https://curl.haxx.se/ca/cacert-$cacert_version.pem", 
     "adf770dfd574a0d6026bfaa270cb6879b063957177a991d453ff1d302c02081f",
