@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Cross"
-version = v"1.0.0"
+version = v"2020.04.03"
 
 # Collection of sources required to complete build
 sources = [
