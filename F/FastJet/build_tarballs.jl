@@ -33,13 +33,14 @@ make -j ${nprocs} "${FLAGS[@]}"
 make install
 tail -n 340 COPYING > LICENSE
 install_license LICENSE
+cp include/fastjet/config_win.h ${includedir}/fastjet/
 
 cd $WORKSPACE/srcdir/fjcontrib-*/
 for name in ClusteringVetoPlugin ConstituentSubtractor EnergyCorrelator FlavorCone GenericSubtractor JetCleanser JetFFMoments JetsWithoutJets LundPlane Nsubjettiness QCDAwarePlugin RecursiveTools ScJet SoftKiller SubjetCounting ValenciaPlugin VariableR
 do
     cd $name
     rm example*
-    c++ -fPIC -shared -I${includedir} -lfastjet -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}"
+    c++ -fPIC -shared -I${includedir} -lfastjet -lfastjettools -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}"
     cd ..
 done
 """
