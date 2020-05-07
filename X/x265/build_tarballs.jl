@@ -7,8 +7,8 @@ version = v"3.0"
 
 # Collection of sources required to build x265Builder
 sources = [
-    "http://ftp.videolan.org/pub/videolan/x265/x265_3.0.tar.gz" =>
-    "c5b9fc260cabbc4a81561a448f4ce9cad7218272b4011feabc3a6b751b2f0662",
+    ArchiveSource("http://ftp.videolan.org/pub/videolan/x265/x265_3.0.tar.gz",
+                  "c5b9fc260cabbc4a81561a448f4ce9cad7218272b4011feabc3a6b751b2f0662"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,8 @@ mkdir bld && cd bld
 cmake -DCMAKE_INSTALL_PREFIX="${prefix}" -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DENABLE_PIC=ON -DENABLE_SHARED=ON ../source
 make -j${nproc}
 make install
+# Remove the large static archive
+rm  ${prefix}/lib/libx265.a
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,7 +37,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

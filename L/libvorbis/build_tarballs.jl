@@ -23,9 +23,11 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/stdint.patch"
 # Force `./configure` to repent from using `-ffast-math`
 sed -ie 's/-ffast-math//g' ./configure
 
-./configure --prefix=$prefix --host=$target --build=${MACHTYPE}
+./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --disable-static
 make -j${nproc}
 make install
+# Remove large docs directory
+rm -r "${prefix}/share/doc"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,7 +44,6 @@ products = [
 dependencies = [
     Dependency("Ogg_jll"),
 ]
-
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

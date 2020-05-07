@@ -7,15 +7,14 @@ version = v"0.1.6"
 
 # Collection of sources required to build libfdk
 sources = [
-    "https://downloads.sourceforge.net/opencore-amr/fdk-aac-$(version).tar.gz" =>
-    "aab61b42ac6b5953e94924c73c194f08a86172d63d39c5717f526ca016bed3ad",
-
+    ArchiveSource("https://downloads.sourceforge.net/opencore-amr/fdk-aac-$(version).tar.gz",
+                  "aab61b42ac6b5953e94924c73c194f08a86172d63d39c5717f526ca016bed3ad"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/fdk-aac-*
-./configure --prefix=$prefix --host=$target
+./configure --prefix=$prefix --host=$target --disable-static
 make -j${nproc}
 make install
 install_license NOTICE
@@ -31,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

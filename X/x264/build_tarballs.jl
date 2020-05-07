@@ -7,9 +7,8 @@ version = v"2019.05.25"
 
 # Collection of sources required to build x264
 sources = [
-    "https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-20190525-2245-stable.tar.bz2" =>
-    "638581a18bff8e9375211955422eff145011c8ccfd0994d43bd194cd82984f7a",
-
+    ArchiveSource("https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-20190525-2245-stable.tar.bz2",
+                  "638581a18bff8e9375211955422eff145011c8ccfd0994d43bd194cd82984f7a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +20,9 @@ if [[ "${target}" == x86_64* ]] || [[ "${target}" == i686* ]]; then
 else
     export AS="${CC}"
 fi
-./configure --prefix=$prefix --host=$target --enable-shared --enable-pic
+./configure --prefix=$prefix --host=$target --enable-shared --enable-pic --disable-static
+# Remove unsafe compilation flag
+sed -i 's/ -ffast-math//g' config.mak
 make -j${nproc}
 make install
 """
@@ -37,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

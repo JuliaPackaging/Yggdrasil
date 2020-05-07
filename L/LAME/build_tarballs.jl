@@ -7,8 +7,8 @@ version = v"3.100"
 
 # Collection of sources required to build liblame
 sources = [
-    "https://downloads.sourceforge.net/lame/lame-$(version.major).$(version.minor).tar.gz" =>
-    "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+    ArchiveSource("https://downloads.sourceforge.net/lame/lame-$(version.major).$(version.minor).tar.gz",
+                  "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ apk add nasm
 if [[ $(uname -m) == i?86 ]]; then
     sed -i -e 's/<xmmintrin.h/&.nouse/' configure
 fi
-./configure --prefix=$prefix --host=$target
+./configure --prefix=$prefix --host=$target --disable-static
 make -j${nproc}
 make install
 """
@@ -35,8 +35,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
