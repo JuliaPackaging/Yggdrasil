@@ -31,6 +31,8 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-auto-ptr
 make -j ${nprocs} "${FLAGS[@]}"
 make install
+tail -n 340 COPYING > LICENSE
+install_license LICENSE
 
 cd $WORKSPACE/srcdir/fjcontrib-*/
 for name in ClusteringVetoPlugin ConstituentSubtractor EnergyCorrelator FlavorCone GenericSubtractor JetCleanser JetFFMoments JetsWithoutJets LundPlane Nsubjettiness QCDAwarePlugin RecursiveTools ScJet SoftKiller SubjetCounting ValenciaPlugin VariableR
