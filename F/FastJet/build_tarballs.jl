@@ -40,14 +40,14 @@ for name in ClusteringVetoPlugin ConstituentSubtractor EnergyCorrelator FlavorCo
 do
     cd $name
     rm example*
-    c++ -fPIC -shared -I${includedir} -lfastjet -lfastjettools -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}"
+    c++ -fPIC -shared -I${includedir} -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}" -lfastjet -lfastjettools
     cd ..
 done
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([p for p in supported_platforms() if !(p isa Windows)])
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
