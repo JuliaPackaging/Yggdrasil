@@ -7,8 +7,8 @@ version = v"4.1.0"
 
 # Collection of sources required to build FFMPEG
 sources = [
-    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2" =>
-    "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5",
+    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2",
+                  "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -120,20 +120,20 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
-    "libass_jll",
-    "libfdk_aac_jll",
-    "FriBidi_jll",
-    "FreeType2_jll",
-    "LAME_jll",
-    "libvorbis_jll",
-    "Ogg_jll",
-    "LibVPX_jll",
-    "x264_jll",
-    "x265_jll",
-    "Bzip2_jll",
-    "Zlib_jll",
-    "OpenSSL_jll",
-    "Opus_jll",
+    Dependency("libass_jll"),
+    Dependency("libfdk_aac_jll"),
+    Dependency("FriBidi_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("LAME_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("LibVPX_jll"),
+    Dependency("x264_jll"),
+    Dependency("x265_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("OpenSSL_jll"),
+    Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
