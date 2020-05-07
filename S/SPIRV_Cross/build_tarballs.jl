@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 
 cd SPIRV-Cross/
 
-install_license LICENSE 
+install_license LICENSE
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -28,14 +28,8 @@ CMAKE_FLAGS+=(-DSPIRV_CROSS_SHARED=ON)
 
 mkdir build && cd build
 
-cmake  ${CMAKE_FLAGS[@]} .. 
-
-# patch only on osx
-if [[ ${target} == *apple* ]]; then
-	sed -i -e 's/soname/install_name/g' CMakeFiles/spirv-cross-c-shared.dir/link.txt
-fi
-
-make -j${nproc} 
+cmake  ${CMAKE_FLAGS[@]} ..
+make -j${nproc}
 make install
 """
 
