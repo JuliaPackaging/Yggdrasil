@@ -1,0 +1,45 @@
+diff --git a/SuiteSparse_config/SuiteSparse_config.mk b/SuiteSparse_config/SuiteSparse_config.mk
+index 752c426..6428f2a 100644
+--- a/SuiteSparse_config/SuiteSparse_config.mk
++++ b/SuiteSparse_config/SuiteSparse_config.mk
+@@ -449,11 +449,11 @@ SO_OPTS = $(LDFLAGS)
+ ifeq ($(UNAME),Windows)
+     # Cygwin Make on Windows
+     AR_TARGET = $(LIBRARY).lib
+-    SO_TARGET  = $(LIBRARY).dll
++    SO_TARGET  = $(LIBRARY)$(LIBRARY_SUFFIX).dll
+     # The following two links are just garbage copies of the real target
+     # they aren't actually supported by this OS
+-    SO_MAIN   = $(LIBRARY).$(SO_VERSION).dll
+-    SO_PLAIN = $(LIBRARY).$(VERSION).dll
++    SO_MAIN   = $(LIBRARY)$(LIBRARY_SUFFIX).$(SO_VERSION).dll
++    SO_PLAIN = $(LIBRARY)$(LIBRARY_SUFFIX).$(VERSION).dll
+     SO_OPTS  += -shared
+     SO_INSTALL_NAME = echo
+ else
+@@ -461,9 +461,9 @@ else
+     AR_TARGET = $(LIBRARY).a
+     ifeq ($(UNAME),Darwin)
+         # Mac
+-        SO_PLAIN  = $(LIBRARY).dylib
+-        SO_MAIN   = $(LIBRARY).$(SO_VERSION).dylib
+-        SO_TARGET = $(LIBRARY).$(VERSION).dylib
++        SO_PLAIN  = $(LIBRARY)$(LIBRARY_SUFFIX).dylib
++        SO_MAIN   = $(LIBRARY)$(LIBRARY_SUFFIX).$(SO_VERSION).dylib
++        SO_TARGET = $(LIBRARY)$(LIBRARY_SUFFIX).$(VERSION).dylib
+         SO_OPTS  += -dynamiclib -compatibility_version $(SO_VERSION) \
+                     -current_version $(VERSION) \
+                     -shared -undefined dynamic_lookup
+@@ -472,9 +472,9 @@ else
+         SO_INSTALL_NAME = install_name_tool -id
+     else
+         # Linux and other variants of Unix
+-        SO_PLAIN  = $(LIBRARY).so
+-        SO_MAIN   = $(LIBRARY).so.$(SO_VERSION)
+-        SO_TARGET = $(LIBRARY).so.$(VERSION)
++        SO_PLAIN  = $(LIBRARY)$(LIBRARY_SUFFIX).so
++        SO_MAIN   = $(LIBRARY)$(LIBRARY_SUFFIX).so.$(SO_VERSION)
++        SO_TARGET = $(LIBRARY)$(LIBRARY_SUFFIX).so.$(VERSION)
+         SO_OPTS  += -shared -Wl,-soname -Wl,$(SO_MAIN) -Wl,--no-undefined \
+                      -Wl,-rpath,'$$ORIGIN' -Wl,-z,origin
+         # Use rpath ORIGIN so that Linux/Unix *.so files can be moved without modification:
