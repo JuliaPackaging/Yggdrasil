@@ -28,7 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     #   libtool: warning: undefined symbols not allowed in x86_64-w64-mingw32 shared libraries; building static only
     FLAGS+=(LDFLAGS="-no-undefined")
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-auto-ptr
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-auto-ptr --disable-static
 make -j ${nprocs} "${FLAGS[@]}"
 make install
 tail -n 340 COPYING > LICENSE
