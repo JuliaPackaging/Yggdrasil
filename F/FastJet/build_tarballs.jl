@@ -39,7 +39,7 @@ for name in ClusteringVetoPlugin ConstituentSubtractor EnergyCorrelator FlavorCo
 do
     cd $name
     rm example*
-    c++ -fPIC -shared -I${includedir} -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}"
+    c++ -fPIC -shared -I${includedir} -lfastjet -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}"
     cd ..
 done
 """
