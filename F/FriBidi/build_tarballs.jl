@@ -7,8 +7,8 @@ version = v"1.0.5"
 
 # Collection of sources required to build FriBidi
 sources = [
-    "https://github.com/fribidi/fribidi.git" =>
-    "0f849e344d446934b4ecdbe9edc32abd29029731",
+    GitSource("https://github.com/fribidi/fribidi.git",
+              "0f849e344d446934b4ecdbe9edc32abd29029731"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

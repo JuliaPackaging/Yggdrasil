@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libass-*
 apk add nasm
-./configure --prefix=$prefix --host=$target --disable-require-system-font-provider
+./configure --prefix=$prefix --host=$target --disable-require-system-font-provider --disable-static
 make -j${nproc}
 make install
 """
@@ -30,10 +30,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FreeType2_jll",
-    "FriBidi_jll",
-    "Bzip2_jll",
-    "Zlib_jll"
+    Dependency("FreeType2_jll"),
+    Dependency("FriBidi_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
