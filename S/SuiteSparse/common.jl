@@ -49,6 +49,13 @@ function make_script(; suitesparse32=false)
       atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-library-suffix.patch
       SUFFIX=64_
       FLAGS+=(LIBRARY_SUFFIX="$SUFFIX")
+      # NOTE: symbols.txt should be updated for new versions of SuiteSparse
+      # Ideally, CFLAGS would be a list, and we'd add it to FLAGS,
+      # but I can't figure out how to get the Bash right.
+      export CFLAGS=""
+      for s in $(grep -v "#" ${WORKSPACE}/srcdir/symbols.txt); do
+        CFLAGS="$CFLAGS-D$s=$s$SUFFIX "
+      done
     fi
 
     make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
@@ -93,7 +100,7 @@ function make_script(; suitesparse32=false)
 
     # Compile SuiteSparse_wrapper shim
     cd $WORKSPACE/srcdir/SuiteSparse_wrapper
-    "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper$SUFFIX.${dlext} -L${libdir} "-lcholmod$SUFFIX"
+    "${CC}" ${CFLAGS} -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper$SUFFIX.${dlext} -L${libdir} "-lcholmod$SUFFIX"
     """
 end
 
