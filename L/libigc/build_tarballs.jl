@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.3771"
+version = v"1.0.3899"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,7 +12,7 @@ version = v"1.0.3771"
 
 # Collection of sources required to build IGC
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "577887bf74c51a6084058836720fe58f8c35ca58"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "d5cf8dc51b5b710df7bcf28019cff0afb40571fc"),
     # use LLVM 9 as suggested in https://github.com/intel/intel-graphics-compiler/blob/master/documentation/build_ubuntu.md
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
     GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1

@@ -2,12 +2,7 @@ diff --git a/IGC/Compiler/CISACodeGen/CISABuilder.cpp b/IGC/Compiler/CISACodeGen
 index 2496ad87..f4b89939 100644
 --- a/IGC/Compiler/CISACodeGen/CISABuilder.cpp
 +++ b/IGC/Compiler/CISACodeGen/CISABuilder.cpp
-@@ -199,7 +199,7 @@ namespace IGC
-         case EXEC_SIZE_8:  lanes = 8; break;
-         case EXEC_SIZE_16: lanes = 16; break;
-         case EXEC_SIZE_32: lanes = 32; break;
--        default: assert(false);
+@@ -199,2 +199,2 @@ namespace IGC
+         case SIMDMode::UNKNOWN:
+-        default: IGC_ASSERT(false && "unreachable"); break;
 +        default: break;
-         }
-         return lanes;
-     }
