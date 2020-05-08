@@ -9,8 +9,6 @@ version = v"2020.2"
 sources = [
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "fd8e130510a6b002b28eee5885a9505040a9bdc9"),
     # vendored dependencies
-    # TODO: put SPIRV-Headers in a separate package and use -DSPIRV-Headers_SOURCE_DIR
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "2ad0492fb00919d99500f1da74abf5ad3c870e4e"), # master
     GitSource("https://github.com/google/effcee.git", "6fa2a03cebb4fb18fbad086d53d1054928bef54e"), # 2019.0
     GitSource("https://github.com/google/re2.git", "209eda1b607909cf3c9ad084264039546155aeaa"), # 2020-04-01
 ]
@@ -18,7 +16,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # put vendored dependencies in places they will be picked up by the build system
-mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
 
@@ -42,6 +39,9 @@ CMAKE_FLAGS+=(-DSPIRV_SKIP_TESTS=ON)
 # Don't use -Werror
 CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
 
+# Point to the SPIRV Headers JLL
+CMAKE_FLAGS+=(-DSPIRV-Headers_SOURCE_DIR=${prefix})
+
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 """
@@ -64,6 +64,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    BuildDependency("SPIRV_Headers_jll")
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
