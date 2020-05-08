@@ -12,10 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-ls
-cd unixODBC-2.3.7/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} && make && make install
+cd $WORKSPACE/srcdir/unixODBC-2.3.7/
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,7 +36,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Libiconv_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
