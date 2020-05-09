@@ -41,6 +41,7 @@ do
     cd $name
     rm example*
     c++ -fPIC -shared -I${includedir} -O3 -Wall ${LDFLAGS} [A-Z]*.cc -o "${libdir}/lib${name}.${dlext}" -lfastjet -lfastjettools
+    cp [A-Z]*.hh ${includedir}/fastjet
     cd ..
 done
 """
