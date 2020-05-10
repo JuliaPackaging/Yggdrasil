@@ -13,11 +13,24 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gperftools*/
+
+# Remove misleading libtool files
+rm -f ${prefix}/lib/*.la
+rm -f /opt/${target}/${target}/lib*/*.la
+rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
+
 if [[ "${target}" == *-linux-* ]]; then
-    # Trick suggested in
     # https://github.com/gperftools/gperftools/blob/e5f77d6485bd2f6ce43862e3e57118b1bb97d30a/README
     export CXXFLAGS="-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
+elif [[ "${target}" == *-apple-* ]]; then
+    # https://github.com/Homebrew/homebrew-core/blob/5e8ab5f092bd4dfe9658bab6d86150e26a326de3/Formula/gperftools.rb#L28
+    export CXXFLAGS=-D_XOPEN_SOURCE
+elif [[ "${target}" == *-freebsd* ]]; then
+    # Fix the error
+    #   undefined reference to `backtrace_symbols'
+    export LDFLAGS="-lexecinfo"
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -48,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibUnwind_jll")
+    Dependency("LibUnwind_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
