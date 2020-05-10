@@ -13,6 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gperftools*/
+if [[ "${target}" == *-linux-* ]]; then
+    # Trick suggested in
+    # https://github.com/gperftools/gperftools/blob/e5f77d6485bd2f6ce43862e3e57118b1bb97d30a/README
+    export CXXFLAGS="-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free"
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
