@@ -66,8 +66,15 @@ platforms = expand_cxxstring_abis(filter!(p -> !isa(p, FreeBSD) & !isa(p, Window
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libcdt", :libcdt),
+    LibraryProduct("libcgraph", :libcgraph),
+    LibraryProduct("libgvc", :libgvc),
+    LibraryProduct("libgvpr", :libgvpr),
+    LibraryProduct("liblab_gamut", :liblab_gamut),
+    LibraryProduct("libpathplan", :libpathplan),
+    LibraryProduct("libxdot", :libxdot),
     ExecutableProduct("gvpr", :gvpr),
-    ExecutableProduct("dot", :dot)
+    ExecutableProduct("dot", :dot),
 ]
 
 # Dependencies that must be installed before this package can be built
