@@ -1,0 +1,20 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -379,7 +379,7 @@
+ 	        LDFLAGS="${LDFLAGS} -Wl,-headerpad_max_install_names"
+ 	        ;;
+ 	    *-freebsd* )
+-	        CFLAGS="${CFLAGS} -Wstrict-prototypes -Wpointer-arith -Wall -ffast-math"
++	        CFLAGS="${CFLAGS} -Wstrict-prototypes -Wpointer-arith -Wall"
+ 		    ;;
+ 	    * )
+ 	    # -Wno-unused-parameter only needed for bug in gcc3
+@@ -393,7 +393,7 @@
+ 					;;
+ 				esac
+ 		    fi
+-	        CFLAGS="${CFLAGS} -Wno-unknown-pragmas -Wstrict-prototypes -Wpointer-arith -Wall -ffast-math"
++	        CFLAGS="${CFLAGS} -Wno-unknown-pragmas -Wstrict-prototypes -Wpointer-arith -Wall"
+ 	        ;;
+ 	    esac
+ 	    ;;
