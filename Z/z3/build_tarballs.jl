@@ -3,23 +3,23 @@
 using BinaryBuilder
 
 name = "z3"
-version = v"4.8.7"
+version = v"4.8.8"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Z3Prover/z3.git",
-              "30e7c225cd510400eacd41d0a83e013b835a8ece"),
-    DirectorySource("./bundled"),
+              "ad55a1f1c617a7f0c3dd735c0780fc758424c7f1"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/z3/
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-32-bit-linux.patch
 
 mkdir z3-build && cd z3-build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DZ3_BUILD_JULIA_BINDINGS=True \
+    -DJulia_PREFIX=${Julia_PREFIX} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     ..
 make -j${nproc}
@@ -33,11 +33,13 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
+    LibraryProduct("libz3jl", :libz3jl),
     ExecutableProduct("z3", :z3)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("libcxxwrap_julia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
