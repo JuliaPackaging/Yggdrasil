@@ -7,7 +7,7 @@ version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "0dc437abd75ba9a56d24e4f4f5a60bd89a2839a5"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "c9f7b5c7550563b4db590b2c3bb02af33c5517e2"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,18 +23,17 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
+make -j${nproc} highs
+make install highs
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(
-    p -> !isa(p, Windows) && (arch(p) != :powerpc64le),
-    supported_platforms()
+platforms = expand_gfortran_versions(
+    expand_cxxstring_abis(supported_platforms())
 )
-platforms = expand_gfortran_versions(expand_cxxstring_abis(platforms))
+filter!(p -> !isa(p, Windows), platforms)
 
 # The products that we will ensure are always built
 products = [
