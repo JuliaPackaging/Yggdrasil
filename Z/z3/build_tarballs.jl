@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/z3/
 
 mkdir z3-build && cd z3-build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DZ3_BUILD_JULIA_BINDINGS=True \
     -DJulia_PREFIX=${Julia_PREFIX} \
