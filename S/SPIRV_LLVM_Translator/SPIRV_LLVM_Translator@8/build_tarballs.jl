@@ -14,6 +14,6 @@ dependencies = [
     #Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1"))
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7")
