@@ -75,6 +75,8 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+include("../../fancy_toys.jl")
+
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
     build_tarballs(ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies_libcxxwrap; preferred_gcc_version=v"8")
 end
