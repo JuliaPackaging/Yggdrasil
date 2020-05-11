@@ -68,11 +68,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies_libcxxwrap = Dependency[
-    Dependency("libcxxwrap_julia_jll")
-]
-
 dependencies = Dependency[
+    Dependency("libcxxwrap_julia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
@@ -81,7 +78,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
-    build_tarballs(non_reg_ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies_libcxxwrap; preferred_gcc_version=v"8")
+    build_tarballs(non_reg_ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies; preferred_gcc_version=v"8")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
