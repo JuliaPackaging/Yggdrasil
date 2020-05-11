@@ -79,7 +79,7 @@ dependencies = Dependency[
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies_libcxxwrap; preferred_gcc_version=v"8")
+    build_tarballs(non_reg_ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies_libcxxwrap; preferred_gcc_version=v"8")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
