@@ -38,6 +38,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
