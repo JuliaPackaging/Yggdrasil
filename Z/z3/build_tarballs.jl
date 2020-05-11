@@ -17,7 +17,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 case $target in
-  x86_64-linux-gnu)
+  arm-linux-gnueabihf|x86_64-linux-gnu)
     Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/julia-1.3.1
     ;;
   x86_64-apple-darwin14|x86_64-w64-mingw32)
