@@ -7,9 +7,9 @@ version = v"4.1.1"
 
 # Collection of sources required to build Tesseract
 sources = [
-    "https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz" =>
-    "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb",
-    "./bundled"
+    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz",
+                  "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,17 +38,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Giflib_jll",
-    "JpegTurbo_jll",
-    "libpng_jll",
-    "Libtiff_jll",
-    "Zlib_jll",
-    "Leptonica_jll",
-    "CompilerSupportLibraries_jll",
+    Dependency("Giflib_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Libtiff_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Leptonica_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
-    # "ICU_jll",
-    "Cairo_jll",
-    "Pango_jll",
+    # Dependency("ICU_jll"),
+    Dependency("Cairo_jll"),
+    Dependency("Pango_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
