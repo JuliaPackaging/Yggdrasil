@@ -76,6 +76,8 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
