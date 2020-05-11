@@ -19,9 +19,11 @@ script = raw"""
 case $target in
   arm-linux-gnueabihf|x86_64-linux-gnu)
     Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/julia-1.3.1
+    Julia_ARGS="-DZ3_BUILD_JULIA_BINDINGS=True -DJulia_PREFIX=${Julia_PREFIX}"
     ;;
   x86_64-apple-darwin14|x86_64-w64-mingw32)
     Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/juliabin
+    Julia_ARGS="-DZ3_BUILD_JULIA_BINDINGS=True -DJulia_PREFIX=${Julia_PREFIX}"
     ;;
 esac
 
@@ -31,9 +33,8 @@ mkdir z3-build && cd z3-build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DZ3_BUILD_JULIA_BINDINGS=True \
-    -DJulia_PREFIX=${Julia_PREFIX} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    ${Julia_ARGS} \
     ..
 make -j${nproc}
 make install
@@ -41,25 +42,42 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
+platforms_libcxxwrap = [
     Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     Linux(:x86_64, libc=:glibc),
     MacOS(:x86_64),
-    Windows(:x86_64),
+    Windows(:x86_64)
 ]
+
+platforms = filter(x->!(x in platforms_libcxxwrap), supported_platforms())
+
+platforms_libcxxwrap = expand_cxxstring_abis(platforms_libcxxwrap)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-products = [
+products_libcxxwrap = [
     LibraryProduct("libz3", :libz3),
     LibraryProduct("libz3jl", :libz3jl),
     ExecutableProduct("z3", :z3)
 ]
 
+products = [
+    LibraryProduct("libz3", :libz3),
+    ExecutableProduct("z3", :z3)
+]
+
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies_libcxxwrap = Dependency[
     Dependency("libcxxwrap_julia_jll")
 ]
 
+dependencies = Dependency[
+]
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies_libcxxwrap; preferred_gcc_version=v"8")
+end
+if any(should_build_platform.(triplet.(platforms)))
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+end
