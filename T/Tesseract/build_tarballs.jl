@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tesseract"
-version = v"4.1.0"
+version = v"4.1.1"
 
 # Collection of sources required to build Tesseract
 sources = [
     "https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz" =>
-    "5c5ed5f1a76888dc57a83704f24ae02f8319849f5c4cf19d254296978a1a1961",
+    "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb",
     "./bundled"
 ]
 
@@ -19,6 +19,7 @@ if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Apply layman patch to make this work
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/sys_time_musl_freebsd.patch"
 fi
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
 ./autogen.sh
 ./configure --prefix=$prefix --host=$target
 make -j${nproc}
