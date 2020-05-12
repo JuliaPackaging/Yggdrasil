@@ -18,6 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd openresty-1.15.8.3/
 ./configure --prefix=$prefix --with-cc=$CC --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t --with-pcre=$WORKSPACE/srcdir/pcre-8.43 --with-pcre-jit
+make -j${nproc}
 make install
 rm $prefix/bin/openresty 
 cd $prefix/bin/
