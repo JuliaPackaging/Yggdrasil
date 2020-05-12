@@ -17,6 +17,16 @@ cd ${WORKSPACE}/srcdir/mpich-*
 rm -f /opt/${target}/${target}/lib64/*.la
 rm -f /opt/${target}/${target}/lib/*.la
 
+if [[ "${target}" == powerpc64le-* ]]; then
+    # I don't understand why, but the extra link flags we append in the gfortran
+    # wrapper confuse the build system: the rule to build libmpifort has an
+    # extra lone `-l` flag, without any library to link to.  The following sed
+    # script basically reverts
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
+    # extra link flags are not appended to the gfortran wrapper
+    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
+fi
+
 atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
 pushd src/mpi/romio
 autoreconf -vi
