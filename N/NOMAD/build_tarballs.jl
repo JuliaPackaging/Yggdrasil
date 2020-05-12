@@ -12,8 +12,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/NOMAD"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad_openmp.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sgtelib_openmp.patch"
+# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad_openmp.patch"
+# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sgtelib_openmp.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cache_corrections.patch"
 if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/include_sys_time_missing_timeval_musl.patch"
