@@ -17,6 +17,7 @@ cd thrift/
 ./bootstrap.sh 
 if [ $target != "x86_64-apple-darwin14" ] && [ $target != "x86_64-unknown-freebsd11.1" ]; then     LDFLAGS="-static-libgcc -static-libstdc++";     export LDFLAGS; fi
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-tutorial=no --enable-tests=no --enable-libs=no --disable-werror
+make -j${nproc}
 make install
 """
 
@@ -30,8 +31,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="Bison_jll", uuid="0f48145f-aea8-549d-8864-7f251ac1e6d0"))
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
