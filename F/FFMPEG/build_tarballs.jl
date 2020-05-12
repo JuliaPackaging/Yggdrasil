@@ -91,7 +91,7 @@ pkg-config --list-all
   --enable-parsers     \
   --enable-openssl     \
   --disable-schannel   \
-  --extra-cflags="-I${prefix}/include" \
+  --extra-cflags="-I${prefix}/include -O3" \
   --extra-ldflags="-L${libdir}"
 make -j${nproc}
 make install
