@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "nlopt"
+name = "NLopt"
 version = v"2.6.2"
 
 # Collection of sources required to build NLopt
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() # build on all supported platforms
+platforms = expand_cxxstring_abis(supported_platforms()) # build on all supported platforms
 
 # The products that we will ensure are always built
 products = [
