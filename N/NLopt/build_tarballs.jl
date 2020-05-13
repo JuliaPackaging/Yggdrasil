@@ -15,7 +15,8 @@ cd $WORKSPACE/srcdir/nlopt
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DNLOPT_PYTHON=Off -DNLOPT_OCTAVE=Off -DNLOPT_MATLAB=Off -DNLOPT_GUILE=Off -DNLOPT_SWIG=Off -DNLOPT_LINK_PYTHON=Off ..
-make && make install
+make -j{nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
