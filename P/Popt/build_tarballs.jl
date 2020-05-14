@@ -27,6 +27,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/get-w32-console-maxcols.mingw32.pa
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-uid-stuff-on.mingw32.patch"
 
 if [[ "${target}" == powerpc64le-* || "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix-old-configure-macros.patch"
     autoreconf -vi
 fi
 
