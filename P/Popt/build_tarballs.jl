@@ -29,7 +29,6 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-uid-stuff-on.mingw32.patch"
 make -j${nproc}
 make install
 install_license COPYING
-false
 """
 
 # These are the platforms we will build for by default, unless further
