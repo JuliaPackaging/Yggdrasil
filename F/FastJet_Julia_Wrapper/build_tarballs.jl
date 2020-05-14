@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "FastJet_Julia_Wrapper"
-version = v"0.6.0"
+version = v"0.7.0"
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
-   GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "b12021d7fc6277cc266cb5adcad6e286db84982f"; unpack_target="FastJet_Julia_Wrapper"),
-	ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz", "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad"; unpack_target="julia-x86_64-linux-gnu"),
-   ArchiveSource("https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-x86_64-apple-darwin14.tar.gz", "f2e5359f03314656c06e2a0a28a497f62e78f027dbe7f5155a5710b4914439b1"; unpack_target="julia-x86_64-apple-darwin14"),
+	GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "6d4181ca351c7a40348745097c87afd97bf9ce62"; unpack_target="FastJet_Julia_Wrapper"),
+    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz", "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad"; unpack_target="julia-x86_64-linux-gnu"),
+    ArchiveSource("https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-x86_64-apple-darwin14.tar.gz", "f2e5359f03314656c06e2a0a28a497f62e78f027dbe7f5155a5710b4914439b1"; unpack_target="julia-x86_64-apple-darwin14"),
 ]
 
 # Bash recipe for building across all platforms
