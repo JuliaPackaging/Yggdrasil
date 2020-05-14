@@ -25,6 +25,11 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/356669.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/367153-manpage.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/get-w32-console-maxcols.mingw32.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-uid-stuff-on.mingw32.patch"
+
+if [[ "${target}" == powerpc64le-* || "${target}" == *-freebsd* ]]; then
+    autoreconf -vi
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
