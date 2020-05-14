@@ -1,0 +1,14 @@
+diff --git a/configure b/configure
+index 3e42e5d..a7fb9b6 100755
+--- a/configure
++++ b/configure
+@@ -23235,6 +23235,9 @@ if ac_fn_cxx_try_link "$LINENO"; then :
+ $as_echo "unknown" >&6; }
+ 				echo "WARNING: You appear to be cross compiling, so there is no way to determine"
+ 				echo "whether your GMP version is new enough. I am assuming it is."
++				gmp_found="yes"
++				GMP_HAVE_CXX=yes
++				GMP_LIBS="$GMP_LIBS -lgmpxx -lgmp"
+ 
+ 
+ 
