@@ -75,30 +75,32 @@ products = [
    LibraryProduct("lib4ti2int64", :lib4ti2int64),
    LibraryProduct("libzsolve", :libzsolve),
 
-   # The commented out executables below are shell scripts, and are not
-   # handled on Windows currently, which is why they are commented out
-   # for now.
-   # Also, Julia identifiers can't start with a digit, so we have to add
+   # Julia identifiers can't start with a digit, so we have to add
    # a prefix to the symbol used to refer to some of the executables.
    ExecutableProduct("4ti2gmp", :exe4ti2gmp),
    ExecutableProduct("4ti2int32", :exe4ti2int32),
    ExecutableProduct("4ti2int64", :exe4ti2int64),
-   #ExecutableProduct("circuits", :circuits),
    ExecutableProduct("genmodel", :genmodel),
    ExecutableProduct("gensymm", :gensymm),
-   #ExecutableProduct("graver", :graver),
-   #ExecutableProduct("groebner", :groebner),
-   #ExecutableProduct("hilbert", :hilbert),
-   #ExecutableProduct("markov", :markov),
-   #ExecutableProduct("minimize", :minimize),
-   #ExecutableProduct("normalform", :normalform),
    ExecutableProduct("output", :output),
    ExecutableProduct("ppi", :ppi),
-   #ExecutableProduct("qsolve", :qsolve),
-   #ExecutableProduct("rays", :rays),
-   #ExecutableProduct("walk", :walk),
-   #ExecutableProduct("zbasis", :zbasis),
    ExecutableProduct("zsolve", :zsolve),
+
+   # The following are shell scripts; we can't declare them as
+   # ExecutableProduct because that would break on Windows (where only .exe
+   # files are accepted as executables). But people still are interested in
+   # having these scripts, it seems, at least on POSIX systems.
+   FileProduct("bin/circuits", :circuits),
+   FileProduct("bin/graver", :graver),
+   FileProduct("bin/groebner", :groebner),
+   FileProduct("bin/hilbert", :hilbert),
+   FileProduct("bin/markov", :markov),
+   FileProduct("bin/minimize", :minimize),
+   FileProduct("bin/normalform", :normalform),
+   FileProduct("bin/qsolve", :qsolve),
+   FileProduct("bin/rays", :rays),
+   FileProduct("bin/walk", :walk),
+   FileProduct("bin/zbasis", :zbasis),
 ]
 
 # Dependencies that must be installed before this package can be built
