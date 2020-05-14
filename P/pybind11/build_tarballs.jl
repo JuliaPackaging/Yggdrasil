@@ -12,8 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add py3-distutils-extra
-
 cd $WORKSPACE/srcdir/pybind11-*
 mkdir build
 cd build
@@ -21,6 +19,7 @@ cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DPYBIND11_PYTHON_VERSION=3.8 \
     -DPYBIND11_TEST=OFF
 make -j${nproc}
 make install
