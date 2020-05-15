@@ -18,8 +18,8 @@ cd build
 
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DPYBIND11_PYTHON_VERSION=3.8 \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DPYTHON_EXECUTABLE="${bindir}/python3.8${exeext}" \
     -DPYBIND11_TEST=OFF
 make -j${nproc}
 make install
@@ -27,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # No products: pybind11 is a pure header library
 products = Product[
