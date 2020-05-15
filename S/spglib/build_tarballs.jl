@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "spglib"
-version = v"1.14.1"
+version = v"1.15.1"
 
 # Collection of sources required to build spglib
 sources = [
@@ -21,7 +21,7 @@ mkdir _build
 cd _build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      ../
+      ..
 make -j${nproc}
 make install VERBOSE=1
 """
