@@ -1,0 +1,76 @@
+diff --git before/cosma/src/cosma/blas.cpp after/cosma/src/cosma/blas.cpp
+index b4fc8b5..7cd17db 100644
+--- before/cosma/src/cosma/blas.cpp
++++ after/cosma/src/cosma/blas.cpp
+@@ -1,5 +1,8 @@
+ #include <cosma/blas.hpp>
+ 
++#define COSMA_CONCAT(name1,name2) name1 ## name2
++#define BLAS_NAME(X) X
++
+ #ifdef COSMA_WITH_MKL_BLAS
+ #include <mkl.h>
+ #endif
+@@ -9,6 +12,26 @@
+ // this is for backward compatibility,
+ // in case CLBAS_LAYOUT is not defined
+ typedef CBLAS_ORDER CBLAS_LAYOUT;
++
++// Openblas 64bit has a suffix 64_
++#ifdef OPENBLAS_USE64BITINT
++#define BLAS_NAME(X) COSMA_CONCAT(X, 64_)
++extern "C" {
++    void BLAS_NAME(cblas_sgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
++                     OPENBLAS_CONST float alpha, OPENBLAS_CONST float *A, OPENBLAS_CONST blasint lda, OPENBLAS_CONST float *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST float beta, float *C, OPENBLAS_CONST blasint ldc);
++    void BLAS_NAME(cblas_dgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
++                     OPENBLAS_CONST double alpha, OPENBLAS_CONST double *A, OPENBLAS_CONST blasint lda, OPENBLAS_CONST double *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST double beta, double *C, OPENBLAS_CONST blasint ldc);
++    void BLAS_NAME(cblas_cgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
++                     OPENBLAS_CONST void *alpha, OPENBLAS_CONST void *A, OPENBLAS_CONST blasint lda, OPENBLAS_CONST void *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST void *beta, void *C, OPENBLAS_CONST blasint ldc);
++    void BLAS_NAME(cblas_zgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
++                     OPENBLAS_CONST void *alpha, OPENBLAS_CONST void *A, OPENBLAS_CONST blasint lda, OPENBLAS_CONST void *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST void *beta, void *C, OPENBLAS_CONST blasint ldc);
++}
++#endif
++#endif
++
++#ifdef COSMA_WITH_OPENBLAS
++#include <cblas.h>
++
+ #endif
+ 
+ // The file is not needed if GPU is used
+@@ -26,7 +49,7 @@ void gemm(const int M,
+           const double beta,
+           double *C,
+           const int ldc) {
+-    cblas_dgemm(CBLAS_LAYOUT::CblasColMajor,
++    BLAS_NAME(cblas_dgemm)(CBLAS_LAYOUT::CblasColMajor,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 M,
+@@ -53,7 +76,7 @@ void gemm(const int M,
+           const std::complex<double> beta,
+           std::complex<double> *C,
+           const int ldc) {
+-    cblas_zgemm(CBLAS_LAYOUT::CblasColMajor,
++    BLAS_NAME(cblas_zgemm)(CBLAS_LAYOUT::CblasColMajor,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 M,
+@@ -80,7 +103,7 @@ void gemm(const int M,
+           const float beta,
+           float *C,
+           const int ldc) {
+-    cblas_sgemm(CBLAS_LAYOUT::CblasColMajor,
++    BLAS_NAME(cblas_sgemm)(CBLAS_LAYOUT::CblasColMajor,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 M,
+@@ -107,7 +130,7 @@ void gemm(const int M,
+           const std::complex<float> beta,
+           std::complex<float> *C,
+           const int ldc) {
+-    cblas_cgemm(CBLAS_LAYOUT::CblasColMajor,
++    BLAS_NAME(cblas_cgemm)(CBLAS_LAYOUT::CblasColMajor,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 CBLAS_TRANSPOSE::CblasNoTrans,
+                 M,
