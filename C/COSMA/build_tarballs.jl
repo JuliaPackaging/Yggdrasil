@@ -53,11 +53,16 @@ cmake ../cosma \
     -DMPI_CXX_COMPILER=$bindir/mpicxx \
     -DMPI_C_COMPILER=$bindir/mpicc \
     -DOPENBLAS_LIBRARIES=$BLAS_LAPACK_LIB \
-    -DOPENBLAS_INCLUDE_DIR=$libdir/../include \
+    -DOPENBLAS_INCLUDE_DIR=$includedir \
     $OPENMP_CMAKE_FLAGS
 
 make -j$(nproc)
 make install
+
+# Manually copy license
+LICENSE_DIR="${prefix}/share/licenses/COSMA"
+mkdir -p "$LICENSE_DIR"
+cp ../cosma/LICENSE "$LICENSE_DIR"
 """
 
 # These are the platforms we will build for by default, unless further
