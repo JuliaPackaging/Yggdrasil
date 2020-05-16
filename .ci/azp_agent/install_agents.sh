@@ -22,7 +22,7 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
 
     # Set up the one true locale
     echo "en_US.UTF-8 UTF-8" >> ${STORAGE_DIR}/rootfs/etc/locale.gen
-    sudo chroot /data/staticfloat/yggstorage2/rootfs locale-gen
+    sudo chroot ${STORAGE_DIR}/rootfs locale-gen
 
     # Install Julia into the rootfs
     echo "Installing Julia..."
