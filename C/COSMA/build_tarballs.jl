@@ -15,10 +15,19 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
-  BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
+    BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
 else
-  BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
+    BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
 fi
+
+if [[ "$target" == x86_64-apple-darwin14 ]]; then
+    OPENMP_CMAKE_FLAGS="-DOpenMP_CXX_FLAGS=-fopenmp=libgomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_gomp_LIBRARY=$libdir/libgomp.dylib"
+
+    # todo, fix me in CompilerSupportLibraries_jll?
+    cp /opt/x86_64-apple-darwin14/lib/gcc/x86_64-apple-darwin14/4.8.5/include/omp.h /opt/x86_64-linux-musl/lib/clang/9.0.1/include/
+else
+    OPENMP_CMAKE_FLAGS=
+end
 
 mkdir build
 cd build
@@ -38,7 +47,8 @@ cmake ../cosma \
     -DMPI_CXX_COMPILER=$bindir/mpicxx \
     -DMPI_C_COMPILER=$bindir/mpicc \
     -DOPENBLAS_LIBRARIES=$BLAS_LAPACK_LIB \
-    -DOPENBLAS_INCLUDE_DIR=$libdir/../include
+    -DOPENBLAS_INCLUDE_DIR=$libdir/../include \
+    $OPENMP_CMAKE_FLAGS
 
 make -j$(nproc)
 make install
@@ -68,8 +78,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
