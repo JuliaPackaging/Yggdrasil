@@ -24,7 +24,10 @@ if [[ "$target" == x86_64-apple-darwin14 ]]; then
     OPENMP_CMAKE_FLAGS="-DOpenMP_CXX_FLAGS=-fopenmp=libgomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_gomp_LIBRARY=$libdir/libgomp.dylib"
 
     # todo, fix me in CompilerSupportLibraries_jll?
-    cp /opt/x86_64-apple-darwin14/lib/gcc/x86_64-apple-darwin14/4.8.5/include/omp.h /opt/x86_64-linux-musl/lib/clang/9.0.1/include/
+    OMP_HEADER=`find / -name omp.h 2>/dev/null  | head -n1`
+    mkdir include
+    cp $OMP_HEADER include/
+    export CPATH=$PWD/include
 else
     OPENMP_CMAKE_FLAGS=
 fi
