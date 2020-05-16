@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "spglib"
-version = v"1.14.1"
+version = v"1.15.1"
 
 # Collection of sources required to build spglib
 sources = [
-    "https://github.com/atztogo/spglib/archive/v$(version).tar.gz" =>
-    "9803b0648d9c2d99377f3e1c4cecf712320488403cd674192ec5cbe956bb3c78",
+    ArchiveSource("https://github.com/atztogo/spglib/archive/v$(version).tar.gz",
+                  "b6dc2c8adcc7d0edee7a076e765c28b2941b2aeba590d213a0b4893c8af0c026"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ mkdir _build
 cd _build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      ../
+      ..
 make -j${nproc}
 make install VERBOSE=1
 """
