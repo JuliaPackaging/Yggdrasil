@@ -27,7 +27,7 @@ if [[ "$target" == x86_64-apple-darwin14 ]]; then
     cp /opt/x86_64-apple-darwin14/lib/gcc/x86_64-apple-darwin14/4.8.5/include/omp.h /opt/x86_64-linux-musl/lib/clang/9.0.1/include/
 else
     OPENMP_CMAKE_FLAGS=
-end
+fi
 
 mkdir build
 cd build
