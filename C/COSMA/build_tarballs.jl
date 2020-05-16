@@ -60,9 +60,7 @@ make -j$(nproc)
 make install
 
 # Manually copy license
-LICENSE_DIR="${prefix}/share/licenses/COSMA"
-mkdir -p "$LICENSE_DIR"
-cp ../cosma/LICENSE "$LICENSE_DIR"
+install_license ../cosma/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
