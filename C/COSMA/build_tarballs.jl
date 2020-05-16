@@ -7,19 +7,22 @@ version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v2.2.0/cosma.tar.gz", "1eb92a98110df595070a12193b9221eecf9d103ced8836c960f6c79a2bd553ca"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v2.2.0/cosma.tar.gz", "1eb92a98110df595070a12193b9221eecf9d103ced8836c960f6c79a2bd553ca")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 
 if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
     BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
+
+    # Fix suffixes for 64-bit OpenBLAS
+    SYMB_DEFS=()
+    for sym in cblas_sgemm cblas_dgemm cblas_cgemm cblas_zgemm; do
+        SYMB_DEFS+=("-D${sym}=${sym}64_")
+    done
+    export CXXFLAGS="${SYMB_DEFS[@]}"
 else
     BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
 fi
@@ -60,7 +63,8 @@ make -j$(nproc)
 make install
 
 # Manually copy license
-install_license ../cosma/LICENSE
+ls $WORKSPACE/srcdir/cosma
+install_license $WORKSPACE/srcdir/cosma/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
