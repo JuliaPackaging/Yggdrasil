@@ -62,9 +62,7 @@ cmake ../cosma \
 make -j$(nproc)
 make install
 
-# Manually copy license
-ls $WORKSPACE/srcdir/cosma
-install_license $WORKSPACE/srcdir/cosma/LICENSE
+install_license ../cosma/LICENCE
 """
 
 # These are the platforms we will build for by default, unless further
