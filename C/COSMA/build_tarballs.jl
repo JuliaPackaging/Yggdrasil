@@ -20,10 +20,9 @@ else
     BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
 fi
 
-if [[ "$target" == x86_64-apple-darwin14 ]]; then
-    OPENMP_CMAKE_FLAGS="-DOpenMP_CXX_FLAGS=-fopenmp=libgomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_gomp_LIBRARY=$libdir/libgomp.dylib"
-
-    # todo, fix me in CompilerSupportLibraries_jll?
+if [[ "$target" == x86_64-apple-darwin14 ]] || [[ "$target" == x86_64-unknown-freebsd11.1 ]]; then
+    OMP_LIB=`find $libdir -iname 'libgomp*'`
+    OPENMP_CMAKE_FLAGS="-DOpenMP_CXX_FLAGS=-fopenmp=libgomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_gomp_LIBRARY=$OMP_LIB"
     OMP_HEADER=`find / -name omp.h 2>/dev/null  | head -n1`
     mkdir include
     cp $OMP_HEADER include/
@@ -59,18 +58,9 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64)
-]
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+filter!(p -> !(p isa Windows), platforms)
 
 
 # The products that we will ensure are always built
