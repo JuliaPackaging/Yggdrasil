@@ -7,14 +7,13 @@ version = v"3.52.13"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openlink/iODBC.git", "074b326bf3e00e92fb62e720c0ce340895ec6834")
+    GitSource("https://github.com/quinnj/iODBC.git", "ab2832e01a18260d1f89756dd445079e52718d4d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd iODBC/
-ls
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make && make install
