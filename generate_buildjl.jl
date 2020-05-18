@@ -219,6 +219,13 @@ if !isfile(build_tarballs_path)
 end
 
 m = Module(:__anon__)
+
+# Setup anonymous module
+Core.eval(m, quote
+    eval(x) = $(Expr(:core, :eval))(__anon__, x)
+    include(x) = $(Expr(:top, :include))(__anon__, x)
+    include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, __anon__, x)
+end)
 Core.eval(m, quote
     using BinaryBuilder, Pkg.BinaryPlatforms
 
