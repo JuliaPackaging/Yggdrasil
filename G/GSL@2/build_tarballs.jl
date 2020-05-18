@@ -22,7 +22,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
     autoreconf -vi
 fi
 
-./configure --prefix=$prefix --host=${target}
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
