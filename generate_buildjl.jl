@@ -168,6 +168,14 @@ if length(ARGS) < 1 || length(ARGS) > 3
     exit(1)
 end
 
+function registered_paths(ctx, uuid)
+    @static if VERSION < "1.5.0-DEV.863"
+        return Pkg.Operations.registered_paths(ctx.env, uuid)
+    else
+        return Pkg.Operations.registered_paths(ctx, uuid)
+    end
+end
+
 build_tarballs_path = ARGS[1]
 @info "Build tarballs script: $(build_tarballs_path)"
 src_name = basename(dirname(build_tarballs_path))
@@ -185,7 +193,7 @@ else
     # Force-update the registry here, since we may have pushed a new version recently
     BinaryBuilder.update_registry(ctx)
     versions = VersionNumber[]
-    paths = Pkg.Operations.registered_paths(ctx.env, BinaryBuilder.jll_uuid("$(src_name)_jll"))
+    paths = registered_paths(ctx, BinaryBuilder.jll_uuid("$(src_name)_jll"))
     if any(p -> isfile(joinpath(p, "Package.toml")), paths)
         # Find largest version number that matches ours in the registered paths
         for path in paths
@@ -211,6 +219,13 @@ if !isfile(build_tarballs_path)
 end
 
 m = Module(:__anon__)
+
+# Setup anonymous module
+Core.eval(m, quote
+    eval(x) = $(Expr(:core, :eval))(__anon__, x)
+    include(x) = $(Expr(:top, :include))(__anon__, x)
+    include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, __anon__, x)
+end)
 Core.eval(m, quote
     using BinaryBuilder, Pkg.BinaryPlatforms
 
