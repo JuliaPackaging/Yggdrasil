@@ -52,7 +52,7 @@ target_include_directories(cimplot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cimplot
     ${CMAKE_CURRENT_SOURCE_DIR}/cimplot/implot)
 
 target_link_libraries(cimplot cimgui)
-set_target_properties(cimplot PROPERTIES PUBLIC_HEADER cimplot.h)
+set_target_properties(cimplot PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/cimplot/cimplot.h)
 
 install(TARGETS cimplot
         RUNTIME DESTINATION bin
