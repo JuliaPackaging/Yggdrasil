@@ -25,9 +25,16 @@ elif [[ "${target}" == *86*-linux-musl* ]]; then
     popd
 fi
 sh autogen.sh
-./configure --prefix=$prefix --host=${target} \
-    --without-docs --disable-libunwind --disable-perf --disable-Werror \
-    --disable-eventfd --without-gcov --disable-curve-keygen \
+./configure --prefix=$prefix \
+    --host=${target} \
+    --without-docs \
+    --disable-libunwind \
+    --disable-perf \
+    --disable-Werror \
+    --disable-eventfd \
+    --without-gcov \
+    --disable-curve-keygen \
+    --disable-static \
     CXXFLAGS="-O2 -fms-extensions"
 make -j${nproc}
 make install
