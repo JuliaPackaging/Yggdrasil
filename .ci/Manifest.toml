@@ -1,5 +1,11 @@
 # This file is machine-generated - editing it directly is not advised
 
+[[ArgParse]]
+deps = ["Logging", "TextWrap"]
+git-tree-sha1 = "a8fc2e149cd6db276c76faebe197ccd3a92fb9ff"
+uuid = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+version = "1.1.0"
+
 [[AssetRegistry]]
 deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
 git-tree-sha1 = "b25e88db7944f98789130d7b503276bc34bc098e"
@@ -15,8 +21,8 @@ version = "0.2.0"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
-deps = ["Base64", "CodecZlib", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "c6e67cba72910018ce7cb85cefcd83eb871e7324"
+deps = ["ArgParse", "Base64", "CodecZlib", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
+git-tree-sha1 = "cc87c61950c207e2d4d8a5318a0e7a904c25fc29"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -35,9 +41,9 @@ version = "1.3.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "6166ecfaf2b8bbf2b68d791bc1d54501f345d314"
+git-tree-sha1 = "7d7578b00789cf16c5f68fad71868e773edd58a2"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.15"
+version = "0.17.16"
 
 [[DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -182,9 +188,9 @@ version = "0.7.0"
 
 [[ObjectFile]]
 deps = ["Reexport", "StructIO", "Test"]
-git-tree-sha1 = "310770e17bb9c4142b9f0b8d2d30dd7bd1c13a73"
+git-tree-sha1 = "26bf52f95a07d471a4ec2dcae6774584e7d2d7c1"
 uuid = "d8793406-e978-5875-9003-1fc021f44a92"
-version = "0.3.3"
+version = "0.3.4"
 
 [[OrderedCollections]]
 git-tree-sha1 = "12ce190210d278e12644bcadf5b21cbdcf225cd3"
@@ -193,9 +199,9 @@ version = "1.2.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "72c3451932513427caffbd8bab15643ad693804b"
+git-tree-sha1 = "f0abb338b4d00306500056a3fd44c221b8473ef2"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.3"
+version = "1.0.4"
 
 [[Pidfile]]
 deps = ["FileWatching", "Test"]
@@ -219,9 +225,9 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[ProgressMeter]]
 deps = ["Distributed", "Printf"]
-git-tree-sha1 = "ea1f4fa0ff5e8b771bf130d87af5b7ef400760bd"
+git-tree-sha1 = "b3cb8834eee5410c7246734cc6f4f586fe0dc50e"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
-version = "1.2.0"
+version = "1.3.0"
 
 [[REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets"]
@@ -239,7 +245,7 @@ version = "0.2.0"
 
 [[Registrator]]
 deps = ["AutoHashEquals", "Base64", "Dates", "Distributed", "FileWatching", "GitForge", "GitHub", "HTTP", "JSON", "LibGit2", "Logging", "MbedTLS", "Mustache", "Mux", "Pkg", "RegistryTools", "Serialization", "Sockets", "TimeToLive", "UUIDs", "ZMQ"]
-git-tree-sha1 = "fc03fdec0e29ab36e3e994a08cb8272f53f65354"
+git-tree-sha1 = "58e84c9733c0606ca53349dbce519209d8a8402b"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaRegistries/Registrator.jl.git"
 uuid = "4418983a-e44d-11e8-3aec-9789530b3b3e"
@@ -282,6 +288,11 @@ version = "1.0.4"
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
+[[TextWrap]]
+git-tree-sha1 = "9250ef9b01b66667380cf3275b3f7488d0e25faf"
+uuid = "b718987f-49a8-5099-9789-dcd902bef87d"
+version = "1.0.1"
+
 [[TimeToLive]]
 deps = ["Dates"]
 git-tree-sha1 = "1f1389007d16385ec02e497bef6c2caffba99b65"
@@ -321,9 +332,9 @@ version = "4.3.2+2"
 
 [[Zlib_jll]]
 deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "2f6c3e15e20e036ee0a0965879b31442b7ec50fa"
+git-tree-sha1 = "a2e0d558f6031002e380a90613b199e37a8565bf"
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.11+9"
+version = "1.2.11+10"
 
 [[ghr_jll]]
 deps = ["Libdl", "Pkg"]
