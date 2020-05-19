@@ -43,4 +43,22 @@ install(TARGETS cimgui_helper
         INCLUDES DESTINATION include
         PUBLIC_HEADER DESTINATION include)
 
+add_library(cimplot SHARED)
+
+target_sources(cimplot PRIVATE ./cimplot/cimplot.cpp)
+target_sources(cimplot PRIVATE ./cimplot/implot/implot.cpp)
+
+target_include_directories(cimplot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cimplot
+    ${CMAKE_CURRENT_SOURCE_DIR}/cimplot/implot)
+
+target_link_libraries(cimplot cimgui)
+set_target_properties(cimplot PROPERTIES PUBLIC_HEADER cimplot.h)
+
+install(TARGETS cimplot
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static
+        INCLUDES DESTINATION include
+        PUBLIC_HEADER DESTINATION include)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION share)

@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CImGui"
-version = v"1.76.0"
+version = v"1.76.1"
 
 # Collection of sources required to build CImGui
 sources = [
@@ -11,7 +11,13 @@ sources = [
               "5503c0a12e0c929e84b3f61b2cb4bb9177ea3da1"),
 
     GitSource("https://github.com/cimgui/cimgui.git",
-              "be187bcdc43b124250f7c0f6b4c216a4094053b1"),
+              "787939bebc888302072dee6944f96dd9cab23690"),
+
+    GitSource("https://github.com/cimgui/cimplot.git",
+              "8799c69b20081a744f44bb1ff9d39f6c8d8f23a1"),
+
+    GitSource("https://github.com/epezent/implot.git",
+              "1353014bce7d330e612529cb6193d811281eabac"),
 
     DirectorySource("./bundled"),
 ]
@@ -21,6 +27,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 rm cimgui/CMakeLists.txt
 mv imgui wrapper/helper.c wrapper/helper.h wrapper/CMakeLists.txt cimgui/
+mv implot cimplot/ && mv cimplot cimgui/
 mkdir -p cimgui/build && cd cimgui/build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
@@ -36,6 +43,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libcimgui", :libcimgui),
     LibraryProduct("libcimgui_helper", :libcimgui_helper),
+    LibraryProduct("libcimplot", :libcimplot),
     FileProduct("share/compile_commands.json", :compile_commands)
 ]
 
