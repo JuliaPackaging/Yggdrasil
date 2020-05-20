@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
-# Collection of sources required to build Nettle
+# Collection of sources required to build XGBoost
 name = "XGBoost"
 version = v"1.1.0"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","a734f52807040be68b62b3aba50bcb0d781e7a94"), #master
+    GitSource("https://github.com/dmlc/xgboost.git","f5d4fddafec7ff0e908b776e0cebf554df6b89d0"), 
     DirectorySource("./bundled"),
 ]
 
