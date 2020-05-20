@@ -37,11 +37,11 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              )
 
 # Clang doesn't play nicely with OpenMP.
-# if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
+if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
 #  CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=gcc)
-#  export CC=gcc
-#  export CXX=g++
-# fi
+ export CC=gcc
+ export CXX=g++
+fi
 
 cmake ${CMAKE_FLAGS[@]} ..
 
