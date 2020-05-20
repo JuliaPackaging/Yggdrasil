@@ -15,8 +15,14 @@ cd $WORKSPACE/srcdir/ceres-solver-1.14.0
 mkdir cmake_build
 cd cmake_build/
 
+toolchain=${CMAKE_TARGET_TOOLCHAIN}
+# Clang doesn't play nicely with OpenMP.
+if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
+  toolchain="/opt/$target/${target}_gcc.cmake"
+fi
+
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+             -DCMAKE_TOOLCHAIN_FILE="${toolchain}"
              -DBUILD_SHARED_LIBS=ON
              -DBUILD_EXAMPLES=OFF
              -DBUILD_TESTING=OFF
@@ -35,13 +41,6 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
              -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
              )
-
-# Clang doesn't play nicely with OpenMP.
-if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
-#  CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=gcc)
- export CC=gcc
- export CXX=g++
-fi
 
 cmake ${CMAKE_FLAGS[@]} ..
 
