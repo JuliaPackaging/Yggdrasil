@@ -1,0 +1,48 @@
+--- a/dsn/odbc_dsn.c
++++ b/dsn/odbc_dsn.c
+@@ -18,9 +18,9 @@
+ *************************************************************************************/
+ #define WIN32_LEAN_AND_MEAN
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <stdlib.h>
+-#include <CommCtrl.h>
++#include <commctrl.h>
+ #include <tchar.h>
+ #include <windowsx.h>
+ #include <winuser.h>
+--- a/ma_platform_win32.h
++++ b/ma_platform_win32.h
+@@ -34,7 +34,7 @@
+ #define HAVE_UNICODE
+ 
+-#include <windows.h>
+-#include <WinSock2.h>
++#include <winsock2.h>
++#include <windows.h>
+ #include <shlwapi.h>
+ 
+ #if !defined(HAVE_mit_thread) && !defined(HAVE_STRTOK_R)
+--- a/dsn/odbc_dsn.rc
++++ b/dsn/odbc_dsn.rc
+@@ -7,7 +7,7 @@
+ //
+ // Generated from the TEXTINCLUDE 2 resource.
+ //
+-#include "WinResrc.h"
++#include "winresrc.h"
+ 
+ #ifndef IDC_STATIC 
+ # define IDC_STATIC (-1) 
+--- a/ma_platform_win32.c
++++ b/ma_platform_win32.c
+@@ -24,7 +24,7 @@
+         of the function you are changing, needs to be changed accordingly */
+ 
+ #include <ma_odbc.h>
+-#include "Shlwapi.h"
++#include "shlwapi.h"
+ 
+ extern Client_Charset utf8;
+ char LogFile[256];
