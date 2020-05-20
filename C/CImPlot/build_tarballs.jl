@@ -28,7 +28,10 @@ mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
-install_license ../cimplot/LICENSE ../cimplot/implot/LICENSE
+mkdir -p ${prefix}/share/licenses/${SRC_NAME}
+mv ../cimplot/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_cimplot
+mv ../cimplot/implot/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_implot
+mv ../imgui/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_imgui
 """
 
 # These are the platforms we will build for by default, unless further
