@@ -6,6 +6,7 @@ version = v"1.4.1"
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
+    FreeBSD(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
     Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
     Linux(:aarch64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
     Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
@@ -31,7 +32,7 @@ sources = [
     ArchiveSource("https://julialang2.s3.amazonaws.com/bin/winnt/x86/1.4/julia-1.4.1-win32.tar.gz",
                   "04d1abb1e28d643c6d049a4b241483ced155aebaf3eea8fb2d995299543645c5"; unpack_target="i686-w64-mingw32-libgfortran4-cxx11"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/freebsd/x64/1.4/julia-1.4.1-freebsd-x86_64.tar.gz",
-                  "f7a6545953f8843201acec16ea66ba0d0ced8145439b6cebfcb893e9671cf7af"; unpack_target="x86_64-unknown-freebsd11.1"), 
+                  "f7a6545953f8843201acec16ea66ba0d0ced8145439b6cebfcb893e9671cf7af"; unpack_target="x86_64-unknown-freebsd11.1-libgfortran4-cxx11"),
 ]
 script = raw"""
 cp -rva ${WORKSPACE}/srcdir/${bb_full_target}/julia-*/* ${prefix}/
