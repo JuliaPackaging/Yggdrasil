@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.8.0)
+project(cimplot)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_library(cimplot SHARED)
+
+target_sources( cimplot PRIVATE ./cimplot/cimplot.cpp)
+target_sources( cimplot PRIVATE ./cimplot/implot/implot.cpp)
+target_sources( cimplot PRIVATE ./cimplot/implot/implot_demo.cpp)
+target_sources( cimplot PRIVATE ./imgui/imgui.cpp)
+target_sources( cimplot PRIVATE ./imgui/imgui_draw.cpp)
+target_sources( cimplot PRIVATE ./imgui/imgui_demo.cpp)
+target_sources( cimplot PRIVATE ./imgui/imgui_widgets.cpp)
+
+target_include_directories(cimplot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cimplot
+    ${CMAKE_CURRENT_SOURCE_DIR}/cimplot/implot ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+
+add_definitions("-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS=1")
+
+if (WIN32)
+    add_definitions("-DIMGUI_IMPL_API=extern \"C\" __declspec\(dllexport\)")
+else(WIN32)
+    add_definitions("-DIMGUI_IMPL_API=extern \"C\" ")
+endif(WIN32)
+
+set_target_properties(cimplot PROPERTIES PUBLIC_HEADER
+    ${CMAKE_CURRENT_SOURCE_DIR}/cimplot/cimplot.h)
+
+install(TARGETS cimplot
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION share)
