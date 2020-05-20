@@ -31,7 +31,7 @@ make install
 mkdir -p ${prefix}/share/licenses/${SRC_NAME}
 mv ../cimplot/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_cimplot
 mv ../cimplot/implot/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_implot
-mv ../imgui/LICENSE ${prefix}/share/licenses/${SRC_NAME}/LICENSE_imgui
+mv ../imgui/LICENSE.txt ${prefix}/share/licenses/${SRC_NAME}/LICENSE_imgui
 """
 
 # These are the platforms we will build for by default, unless further
