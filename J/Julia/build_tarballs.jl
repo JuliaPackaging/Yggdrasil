@@ -30,6 +30,8 @@ sources = [
                   "c4c1ae109f7eed5e9791d871b3e29003309d61ffa55a05cfd23184447ec8cfbe"; unpack_target="x86_64-w64-mingw32-libgfortran4-cxx11"),
     ArchiveSource("https://julialang2.s3.amazonaws.com/bin/winnt/x86/1.4/julia-1.4.1-win32.tar.gz",
                   "04d1abb1e28d643c6d049a4b241483ced155aebaf3eea8fb2d995299543645c5"; unpack_target="i686-w64-mingw32-libgfortran4-cxx11"),
+    ArchiveSource("https://julialang-s3.julialang.org/bin/freebsd/x64/1.4/julia-1.4.1-freebsd-x86_64.tar.gz",
+                  "f7a6545953f8843201acec16ea66ba0d0ced8145439b6cebfcb893e9671cf7af"; unpack_target="x86_64-unknown-freebsd11.1"), 
 ]
 script = raw"""
 cp -rva ${WORKSPACE}/srcdir/${bb_full_target}/julia-*/* ${prefix}/
