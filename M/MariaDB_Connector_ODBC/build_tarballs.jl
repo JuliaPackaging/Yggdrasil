@@ -52,11 +52,8 @@ sed -i 's/ADD_SUBDIRECTORY(osxinstall)/# ADD_SUBDIRECTORY(osxinstall)/' CMakeLis
 mkdir build && cd build
 
 export CFLAGS="-I${includedir}/mariadb"
-export LDFLAGS="-L${libdir}/mariadb"
-if [[ "${target}" == *-apple-* ]]; then
-    # Link to the right OpenSSL and Zlib libraries
-    export LDFLAGS="${LDFLAGS} ${libdir}/libssl.${dlext} ${libdir}/libcrypto.${dlext} -lz"
-fi
+# Find the MariaDB lib and link to the right OpenSSL and Zlib libraries
+export LDFLAGS="-L${libdir}/mariadb ${libdir}/libssl.${dlext} ${libdir}/libcrypto.${dlext} -lz"
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
