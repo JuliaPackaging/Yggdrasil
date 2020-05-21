@@ -15,32 +15,37 @@ cd $WORKSPACE/srcdir/ceres-solver-1.14.0
 mkdir cmake_build
 cd cmake_build/
 
-toolchain=${CMAKE_TARGET_TOOLCHAIN}
-# Clang doesn't play nicely with OpenMP.
 if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
-  toolchain="/opt/$target/${target}_gcc.cmake"
+  # Clang doesn't play nicely with OpenMP
+  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=/opt/$target/${target}_gcc.cmake)
+else
+  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
+if [[ "$target" == *-apple-* ]]; then
+  # compilation fails with glog due to a c++11 error
+  CMAKE_FLAGS+=(-DMINIGLOG=ON)
+else
+  CMAKE_FLAGS+=(-DGLOG_INCLUDE_DIR_HINTS=${prefix}/include)
 fi
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${toolchain}"
-             -DBUILD_SHARED_LIBS=ON
-             -DBUILD_EXAMPLES=OFF
-             -DBUILD_TESTING=OFF
-             -DOPENMP=ON
-             -DTBB=OFF
-             -DGLOG_INCLUDE_DIR_HINTS=${WORKSPACE}/destdir/include
-             -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
-             -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
-             -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
-             -DSUITESPARSE_INCLUDE_DIR_HINTS=${prefix}/include
-             -DAMD_LIBRARY="${libdir}/libamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-             -DCAMD_LIBRARY="${libdir}/libcamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-             -DCCOLAMD_LIBRARY="${libdir}/libccolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-             -DCHOLMOD_LIBRARY="${libdir}/libcholmod.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-             -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitepsarseconfig.${dlext}"
-             -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-             -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
-             )
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
+              -DBUILD_SHARED_LIBS=ON
+              -DBUILD_EXAMPLES=OFF
+              -DBUILD_TESTING=OFF
+              -DOPENMP=ON
+              -DTBB=OFF
+              -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
+              -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
+              -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
+              -DSUITESPARSE_INCLUDE_DIR_HINTS=${prefix}/include
+              -DAMD_LIBRARY="${libdir}/libamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
+              -DCAMD_LIBRARY="${libdir}/libcamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
+              -DCCOLAMD_LIBRARY="${libdir}/libccolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
+              -DCHOLMOD_LIBRARY="${libdir}/libcholmod.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
+              -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitepsarseconfig.${dlext}"
+              -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
+              -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
+              )
 
 cmake ${CMAKE_FLAGS[@]} ..
 
