@@ -16,16 +16,13 @@ mkdir cmake_build
 cd cmake_build/
 
 if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
-  # Clang doesn't play nicely with OpenMP
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=/opt/$target/${target}_gcc.cmake)
-else
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-fi
-if [[ "$target" == *-apple-* ]]; then
+  # Clang doesn't play nicely with OpenMP and
   # compilation fails with glog due to a c++11 error
-  CMAKE_FLAGS+=(-DMINIGLOG=ON)
+  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=/opt/$target/${target}_gcc.cmake
+               -DMINIGLOG=ON)
 else
-  CMAKE_FLAGS+=(-DGLOG_INCLUDE_DIR_HINTS=${prefix}/include)
+  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+               -DGLOG_INCLUDE_DIR_HINTS=${prefix}/include)
 fi
 
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
