@@ -12,7 +12,7 @@ target_sources(cimplot PRIVATE ./implot/implot.cpp)
 target_sources(cimplot PRIVATE ./implot/implot_demo.cpp)
 
 target_include_directories(cimplot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/implot ${CMAKE_CURRENT_SOURCE_DIR}/../imgui)
+    ${CMAKE_CURRENT_SOURCE_DIR}/implot ${WORKSPACE}/destdir/include)
 
 set_target_properties(cimplot PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/cimplot.h)
 target_compile_features(cimplot PRIVATE cxx_std_11)

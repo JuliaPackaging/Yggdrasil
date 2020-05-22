@@ -13,9 +13,6 @@ sources = [
     GitSource("https://github.com/epezent/implot.git",
               "1353014bce7d330e612529cb6193d811281eabac"),
 
-    GitSource("https://github.com/ocornut/imgui.git",
-              "58b3e02b95b4c7c5bb9128a28c6d55546501bf93"),
-
     DirectorySource("./bundled"),
 ]
 
@@ -47,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-                Dependency(PackageSpec(name="CImGui_jll", rev="8c0f8f1ef5a82cf84432880b7423ae727aaa5f8e")),
+                Dependency(PackageSpec(name="CImGui_jll", version=v"1.75.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
