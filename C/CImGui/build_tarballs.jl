@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CImGui"
-version = v"1.75.0+2"
+version = v"1.75.0"
 
 # Collection of sources required to build CImGui
 sources = [
