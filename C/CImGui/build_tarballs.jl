@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "CImGui"
-version = v"1.76.0"
+version = v"1.75.0+2"
 
 # Collection of sources required to build CImGui
 sources = [
     GitSource("https://github.com/ocornut/imgui.git",
-              "5503c0a12e0c929e84b3f61b2cb4bb9177ea3da1"),
+              "58b3e02b95b4c7c5bb9128a28c6d55546501bf93"),
 
     GitSource("https://github.com/cimgui/cimgui.git",
-              "be187bcdc43b124250f7c0f6b4c216a4094053b1"),
+              "c5eea0b2dbfb2fc763292c410aba69a72eccfc4f"),
 
     DirectorySource("./bundled"),
 ]
@@ -34,6 +34,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libimgui-cpp", :libimgui),
     LibraryProduct("libcimgui", :libcimgui),
     LibraryProduct("libcimgui_helper", :libcimgui_helper),
     FileProduct("share/compile_commands.json", :compile_commands)
