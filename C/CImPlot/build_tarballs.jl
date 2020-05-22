@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
-
+using Pkg
 name = "CImPlot"
 version = v"0.0.1"
 
@@ -47,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CImGui_jll"),
+                Dependency(PackageSpec(name="CImGui_jll", rev="8c0f8f1ef5a82cf84432880b7423ae727aaa5f8e")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
