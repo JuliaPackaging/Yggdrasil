@@ -18,6 +18,11 @@ rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
+# Without fixing this configure reports that we can't build shared
+# libraries. We use `elf64lppc` for LE support. This seems to be
+# fixed on master, but using `update_configure_scripts -reconf` breaks.
+sed -i s/elf64ppc/elf64lppc/ configure
+
 mkdir build
 cd build/
 
