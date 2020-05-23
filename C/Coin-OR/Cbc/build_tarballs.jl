@@ -19,6 +19,9 @@ rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
+# old and custom autoconf
+sed -i s/elf64ppc/elf64lppc/ configure
+
 # Apply patch related to https://github.com/JuliaOpt/Cbc.jl/issues/117 and https://github.com/coin-or/Cbc/issues/267
 (cd Cbc/src && atomic_patch -p0 $WORKSPACE/srcdir/patches/no_lp.patch)
 
