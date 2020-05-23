@@ -17,6 +17,9 @@ rm -f ${prefix}/lib/*.la
 rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
+# old and custom autoconf
+sed -i s/elf64ppc/elf64lppc/ configure
+
 mkdir build
 cd build/
 
