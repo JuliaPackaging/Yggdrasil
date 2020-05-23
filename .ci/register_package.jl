@@ -26,12 +26,13 @@ version = merged["version"]
 dependencies = Dependency[dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
 lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
+repo = "JuliaBinaryWrappers/$(name)_jll.jl"
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
     name,
     joinpath(Pkg.devdir(), "$(name)_jll"),
-    "JuliaBinaryWrappers/$(name)_jll.jl",
+    repo,
 )
 
 function download_cached_binaries(download_dir, platforms)
@@ -56,7 +57,6 @@ mktempdir() do download_dir
     download_cached_binaries(download_dir, merged["platforms"])
     
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
-    repo = "JuliaBinaryWrappers/$(name)_jll.jl"
     tag = "$(name)-v$(build_version)"
     upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
 
