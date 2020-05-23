@@ -59,7 +59,6 @@ products = [
     LibraryProduct(["libmkl_vml_avx512", "mkl_vml_avx512"], :libmkl_vml_avx512),
     LibraryProduct(["libmkl_vml_mc2", "mkl_vml_mc2"], :libmkl_vml_mc2),
     LibraryProduct(["libmkl_vml_mc3", "mkl_vml_mc3"], :libmkl_vml_mc3),
-    LibraryProduct(["libiopm5", "iopm5"], :libiomp5)
 ]
 
 # Dependencies that must be installed before this package can be built
