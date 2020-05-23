@@ -1,17 +1,15 @@
 using BinaryBuilder
 
 name = "Zstd"
-version = v"1.4.4"
+version = v"1.4.5"
 
 sources = [
     ArchiveSource("https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz",
-                  "59ef70ebb757ffe74a7b3fe9c305e2ba3350021a918d168a046c6300aeea9315"),
-    DirectorySource("./bundled"),
+                  "98e91c7c6bf162bf90e4e70fdbc41a8188b9fa8de5ad840c401198014406ce9e"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*/
-atomic_patch -p1 ../patches/timefn_h_windows.patch
 mkdir build-zstd && cd build-zstd
 if [[ "${target}" == i686-linux-musl ]]; then
     # We can't run executables for i686-linux-musl in the BB environment
