@@ -36,6 +36,30 @@ platforms = [
 products = [
     LibraryProduct(["libmkl_core", "mkl_core"], :libmkl_core),
     LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
+    LibraryProduct(["libmkl_intel_lp64", "mkl_intel_lp64"], :libmkl_intel_lp64),
+    LibraryProduct(["libmkl_intel_ilp64", "mkl_intel_ilp64"], :libmkl_intel_ilp64),
+    LibraryProduct(["libmkl_intel_thread", "mkl_intel_thread"], :libmkl_intel_thread),
+    LibraryProduct(["libmkl_avx", "mkl_avx"], :libmkl_avx),
+    LibraryProduct(["libmkl_avx2", "mkl_avx2"], :libmkl_avx2),
+    LibraryProduct(["libmkl_avx512", "mkl_avx512"], :libmkl_avx512),
+    LibraryProduct(["libmkl_blacs_mpich_ilp64", "mkl_blacs_mpich_ilp64"], :libmkl_blacs_mpich_ilp64),
+    LibraryProduct(["libmkl_blacs_mpich_lp64", "mkl_blacs_mpich_lp64"], :libmkl_blacs_mpich_lp64),
+    LibraryProduct(["libmkl_cdft_core", "mkl_cdft_core"], :libmkl_cdft_core),
+    LibraryProduct(["libmkl_intel_ilp64", "mkl_intel_ilp64"], :libmkl_intel_ilp64),
+    LibraryProduct(["libmkl_intel_lp64", "mkl_intel_lp64"], :libmkl_intel_lp64),
+    LibraryProduct(["libmkl_intel_thread", "mkl_intel_thread"], :libmkl_intel_thread),
+    LibraryProduct(["libmkl_mc3", "mkl_mc3"], :libmkl_mc3),
+    LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
+    LibraryProduct(["libmkl_scalapack_ilp64", "mkl_scalapack_ilp64"], :libmkl_scalapack_ilp64),
+    LibraryProduct(["libmkl_scalapack_lp64", "mkl_scalapack_lp64"], :libmkl_scalapack_lp64),
+    LibraryProduct(["libmkl_sequential", "mkl_sequential"], :libmkl_sequential),
+    LibraryProduct(["libmkl_tbb_thread", "mkl_tbb_thread"], :libmkl_tbb_thread),
+    LibraryProduct(["libmkl_vml_avx", "mkl_vml_avx"], :libmkl_vml_avx),
+    LibraryProduct(["libmkl_vml_avx2", "mkl_vml_avx2"], :libmkl_vml_avx2),
+    LibraryProduct(["libmkl_vml_avx512", "mkl_vml_avx512"], :libmkl_vml_avx512),
+    LibraryProduct(["libmkl_vml_mc2", "mkl_vml_mc2"], :libmkl_vml_mc2),
+    LibraryProduct(["libmkl_vml_mc3", "mkl_vml_mc3"], :libmkl_vml_mc3),
+    LibraryProduct(["libiopm5", "iopm5"], :libiomp5)
 ]
 
 # Dependencies that must be installed before this package can be built
