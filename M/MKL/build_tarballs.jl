@@ -33,33 +33,113 @@ platforms = [
 ]
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct(["libmkl_core", "mkl_core"], :libmkl_core),
-    LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
-    LibraryProduct(["libmkl_intel_lp64", "mkl_intel_lp64"], :libmkl_intel_lp64),
-    LibraryProduct(["libmkl_intel_ilp64", "mkl_intel_ilp64"], :libmkl_intel_ilp64),
-    LibraryProduct(["libmkl_intel_thread", "mkl_intel_thread"], :libmkl_intel_thread),
-    LibraryProduct(["libmkl_avx", "mkl_avx"], :libmkl_avx),
-    LibraryProduct(["libmkl_avx2", "mkl_avx2"], :libmkl_avx2),
-    LibraryProduct(["libmkl_avx512", "mkl_avx512"], :libmkl_avx512),
-    LibraryProduct(["libmkl_blacs_mpich_ilp64", "mkl_blacs_mpich_ilp64"], :libmkl_blacs_mpich_ilp64),
-    LibraryProduct(["libmkl_blacs_mpich_lp64", "mkl_blacs_mpich_lp64"], :libmkl_blacs_mpich_lp64),
-    LibraryProduct(["libmkl_cdft_core", "mkl_cdft_core"], :libmkl_cdft_core),
-    LibraryProduct(["libmkl_intel_ilp64", "mkl_intel_ilp64"], :libmkl_intel_ilp64),
-    LibraryProduct(["libmkl_intel_lp64", "mkl_intel_lp64"], :libmkl_intel_lp64),
-    LibraryProduct(["libmkl_intel_thread", "mkl_intel_thread"], :libmkl_intel_thread),
-    LibraryProduct(["libmkl_mc3", "mkl_mc3"], :libmkl_mc3),
-    LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
-    LibraryProduct(["libmkl_scalapack_ilp64", "mkl_scalapack_ilp64"], :libmkl_scalapack_ilp64),
-    LibraryProduct(["libmkl_scalapack_lp64", "mkl_scalapack_lp64"], :libmkl_scalapack_lp64),
-    LibraryProduct(["libmkl_sequential", "mkl_sequential"], :libmkl_sequential),
-    LibraryProduct(["libmkl_tbb_thread", "mkl_tbb_thread"], :libmkl_tbb_thread),
-    LibraryProduct(["libmkl_vml_avx", "mkl_vml_avx"], :libmkl_vml_avx),
-    LibraryProduct(["libmkl_vml_avx2", "mkl_vml_avx2"], :libmkl_vml_avx2),
-    LibraryProduct(["libmkl_vml_avx512", "mkl_vml_avx512"], :libmkl_vml_avx512),
-    LibraryProduct(["libmkl_vml_mc2", "mkl_vml_mc2"], :libmkl_vml_mc2),
-    LibraryProduct(["libmkl_vml_mc3", "mkl_vml_mc3"], :libmkl_vml_mc3),
+products_macos = [
+    LibraryProduct("libmkl_avx", :libmkl_avx),
+    LibraryProduct("libmkl_avx2", :libmkl_avx2),
+    LibraryProduct("libmkl_avx512", :libmkl_avx512),
+    LibraryProduct("libmkl_blacs_mpich_ilp64", :libmkl_blacs_mpich_ilp64),
+    LibraryProduct("libmkl_blacs_mpich_lp64", :libmkl_blacs_mpich_lp64),
+    LibraryProduct("libmkl_cdft_core", :libmkl_cdft_core),
+    LibraryProduct("libmkl_core", :libmkl_core),
+    LibraryProduct("libmkl_intel_ilp64", :libmkl_intel_ilp64),
+    LibraryProduct("libmkl_intel_lp64", :libmkl_intel_lp64),
+    LibraryProduct("libmkl_intel_thread", :libmkl_intel_thread),
+    LibraryProduct("libmkl_mc3", :libmkl_mc3),
+    LibraryProduct("libmkl_rt", :libmkl_rt),
+    LibraryProduct("libmkl_scalapack_ilp64", :libmkl_scalapack_ilp64),
+    LibraryProduct("libmkl_scalapack_lp64", :libmkl_scalapack_lp64),
+    LibraryProduct("libmkl_sequential", :libmkl_sequential),
+    LibraryProduct("libmkl_tbb_thread", :libmkl_tbb_thread),
+    LibraryProduct("libmkl_vml_avx", :libmkl_vml_avx),
+    LibraryProduct("libmkl_vml_avx2", :libmkl_vml_avx2),
+    LibraryProduct("libmkl_vml_avx512", :libmkl_vml_avx512),
+    LibraryProduct("libmkl_vml_mc2", :libmkl_vml_mc2),
+    LibraryProduct("libmkl_vml_mc3", :libmkl_vml_mc3),
 ]
+
+products_linux = [
+    LibraryProduct("libmkl_avx2", :libmkl_avx2),
+    LibraryProduct("libmkl_avx512_mic", :libmkl_avx512_mic),
+    LibraryProduct("libmkl_avx512", :libmkl_avx512),
+    LibraryProduct("libmkl_avx", :libmkl_avx),
+    LibraryProduct("libmkl_blacs_intelmpi_ilp64", :libmkl_blacs_intelmpi_ilp64),
+    LibraryProduct("libmkl_blacs_intelmpi_lp64", :libmkl_blacs_intelmpi_lp64),
+    LibraryProduct("libmkl_blacs_openmpi_ilp64", :libmkl_blacs_openmpi_ilp64),
+    LibraryProduct("libmkl_blacs_openmpi_lp64", :libmkl_blacs_openmpi_lp64),
+    LibraryProduct("libmkl_blacs_sgimpt_ilp64", :libmkl_blacs_sgimpt_ilp64),
+    LibraryProduct("libmkl_blacs_sgimpt_lp64", :libmkl_blacs_sgimpt_lp64),
+    LibraryProduct("libmkl_cdft_core", :libmkl_cdft_core),
+    LibraryProduct("libmkl_core", :libmkl_core),
+    LibraryProduct("libmkl_def", :libmkl_def),
+    LibraryProduct("libmkl_gf_ilp64", :libmkl_gf_ilp64),
+    LibraryProduct("libmkl_gf_lp64", :libmkl_gf_lp64),
+    LibraryProduct("libmkl_gnu_thread", :libmkl_gnu_thread),
+    LibraryProduct("libmkl_intel_ilp64", :libmkl_intel_ilp64),
+    LibraryProduct("libmkl_intel_lp64", :libmkl_intel_lp64),
+    LibraryProduct("libmkl_intel_thread", :libmkl_intel_thread),
+    LibraryProduct("libmkl_mc3", :libmkl_mc3),
+    LibraryProduct("libmkl_mc", :libmkl_mc),
+    LibraryProduct("libmkl_pgi_thread", :libmkl_pgi_thread),
+    LibraryProduct("libmkl_rt", :libmkl_rt),
+    LibraryProduct("libmkl_scalapack_ilp64", :libmkl_scalapack_ilp64),
+    LibraryProduct("libmkl_scalapack_lp64", :libmkl_scalapack_lp64),
+    LibraryProduct("libmkl_sequential", :libmkl_sequential),
+    LibraryProduct("libmkl_tbb_thread", :libmkl_tbb_thread),
+    LibraryProduct("libmkl_vml_avx2", :libmkl_vml_avx2),
+    LibraryProduct("libmkl_vml_avx512_mic", :libmkl_vml_avx512_mic),
+    LibraryProduct("libmkl_vml_avx512", :libmkl_vml_avx512),
+    LibraryProduct("libmkl_vml_avx", :libmkl_vml_avx),
+    LibraryProduct("libmkl_vml_cmpt", :libmkl_vml_cmpt),
+    LibraryProduct("libmkl_vml_def", :libmkl_vml_def),
+    LibraryProduct("libmkl_vml_mc2", :libmkl_vml_mc2),
+    LibraryProduct("libmkl_vml_mc3", :libmkl_vml_mc3),
+    LibraryProduct("libmkl_vml_mc", :libmkl_vml_mc),
+]
+
+products_win = [
+    LibraryProduct("libimalloc", :liblibimalloc),
+    LibraryProduct("mkl_avx", :libmkl_avx),
+    LibraryProduct("mkl_avx2", :libmkl_avx2),
+    LibraryProduct("mkl_avx512", :libmkl_avx512),
+    LibraryProduct("mkl_blacs_ilp64", :libmkl_blacs_ilp64),
+    LibraryProduct("mkl_blacs_intelmpi_ilp64", :libmkl_blacs_intelmpi_ilp64),
+    LibraryProduct("mkl_blacs_intelmpi_lp64", :libmkl_blacs_intelmpi_lp64),
+    LibraryProduct("mkl_blacs_lp64", :libmkl_blacs_lp64),
+    LibraryProduct("mkl_blacs_mpich2_ilp64", :libmkl_blacs_mpich2_ilp64),
+    LibraryProduct("mkl_blacs_mpich2_lp64", :libmkl_blacs_mpich2_lp64),
+    LibraryProduct("mkl_blacs_msmpi_ilp64", :libmkl_blacs_msmpi_ilp64),
+    LibraryProduct("mkl_blacs_msmpi_lp64", :libmkl_blacs_msmpi_lp64),
+    LibraryProduct("mkl_cdft_core", :libmkl_cdft_core),
+    LibraryProduct("mkl_core", :libmkl_core),
+    LibraryProduct("mkl_def", :libmkl_def),
+    LibraryProduct("mkl_intel_thread", :libmkl_intel_thread),
+    LibraryProduct("mkl_mc", :libmkl_mc),
+    LibraryProduct("mkl_mc3", :libmkl_mc3),
+    LibraryProduct("mkl_msg", :libmkl_msg),
+    LibraryProduct("mkl_pgi_thread", :libmkl_pgi_thread),
+    LibraryProduct("mkl_rt", :libmkl_rt),
+    LibraryProduct("mkl_scalapack_ilp64", :libmkl_scalapack_ilp64),
+    LibraryProduct("mkl_scalapack_lp64", :libmkl_scalapack_lp64),
+    LibraryProduct("mkl_sequential", :libmkl_sequential),
+    LibraryProduct("mkl_tbb_thread", :libmkl_tbb_thread),
+    LibraryProduct("mkl_vml_avx", :libmkl_vml_avx),
+    LibraryProduct("mkl_vml_avx2", :libmkl_vml_avx2),
+    LibraryProduct("mkl_vml_avx512", :libmkl_vml_avx512),
+    LibraryProduct("mkl_vml_cmpt", :libmkl_vml_cmpt),
+    LibraryProduct("mkl_vml_def", :libmkl_vml_def),
+    LibraryProduct("mkl_vml_mc", :libmkl_vml_mc),
+    LibraryProduct("mkl_vml_mc2", :libmkl_vml_mc2),
+    LibraryProduct("mkl_vml_mc3", :libmkl_vml_mc3)
+]
+
+include("../../fancy_toys.jl")
+if any(should_build_platform.(triplet.([Windows(:i686), Windows(:x86_64)])))
+    products = products_win
+elseif should_build_platform(triplet(Linux(:x86_64)))
+    products = products_linux
+else
+    products = products_macos
+end
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -67,7 +147,6 @@ dependencies = [
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
 no_autofix_platforms = [Windows(:i686), Windows(:x86_64), MacOS(:x86_64)]
 autofix_platforms = [Linux(:x86_64)]
 if any(should_build_platform.(triplet.(no_autofix_platforms)))
