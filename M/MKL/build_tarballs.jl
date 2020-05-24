@@ -96,7 +96,7 @@ products_linux = [
     LibraryProduct("libmkl_vml_mc", :libmkl_vml_mc),
 ]
 
-products_win = [
+products_win64 = [
     LibraryProduct("libimalloc", :liblibimalloc),
     LibraryProduct("mkl_avx", :libmkl_avx),
     LibraryProduct("mkl_avx2", :libmkl_avx2),
@@ -129,12 +129,39 @@ products_win = [
     LibraryProduct("mkl_vml_def", :libmkl_vml_def),
     LibraryProduct("mkl_vml_mc", :libmkl_vml_mc),
     LibraryProduct("mkl_vml_mc2", :libmkl_vml_mc2),
-    LibraryProduct("mkl_vml_mc3", :libmkl_vml_mc3)
+    LibraryProduct("mkl_vml_mc3", :libmkl_vml_mc3),
+]
+
+products_win32 = [
+    LibraryProduct("libimalloc", :liblibimalloc),
+    LibraryProduct("mkl_avx", :libmkl_avx),
+    LibraryProduct("mkl_avx2", :libmkl_avx2),
+    LibraryProduct("mkl_avx512", :libmkl_avx512),
+    LibraryProduct("mkl_core", :libmkl_core),
+    LibraryProduct("mkl_intel_thread", :libmkl_intel_thread),
+    LibraryProduct("mkl_msg", :libmkl_msg),
+    LibraryProduct("mkl_p4", :libmkl_p4),
+    LibraryProduct("mkl_p4m", :libmkl_p4m),
+    LibraryProduct("mkl_p4m3", :libmkl_p4m3),
+    LibraryProduct("mkl_rt", :libmkl_rt),
+    LibraryProduct("mkl_sequential", :libmkl_sequential),
+    LibraryProduct("mkl_tbb_thread", :libmkl_tbb_thread),
+    LibraryProduct("mkl_vml_avx", :libmkl_vml_avx),
+    LibraryProduct("mkl_vml_avx2", :libmkl_vml_avx2),
+    LibraryProduct("mkl_vml_avx512", :libmkl_vml_avx512),
+    LibraryProduct("mkl_vml_cmpt", :libmkl_vml_cmpt),
+    LibraryProduct("mkl_vml_ia", :libmkl_vml_ia),
+    LibraryProduct("mkl_vml_p4", :libmkl_vml_p4),
+    LibraryProduct("mkl_vml_p4m", :libmkl_vml_p4m),
+    LibraryProduct("mkl_vml_p4m2", :libmkl_vml_p4m2),
+    LibraryProduct("mkl_vml_p4m3", :libmkl_vml_p4m3),
 ]
 
 include("../../fancy_toys.jl")
-if any(should_build_platform.(triplet.([Windows(:i686), Windows(:x86_64)])))
-    products = products_win
+if should_build_platform(triplet(Windows(:i686)))
+    products = products_win32
+elseif should_build_platform(triplet(Windows(:x86_64)))
+    products = products_win64
 elseif should_build_platform(triplet(Linux(:x86_64)))
     products = products_linux
 else
