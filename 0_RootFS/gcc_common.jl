@@ -656,6 +656,9 @@ function gcc_script(compiler_target::Platform)
     ## Build, build, build!
     make -j ${nproc}
     make install
+
+    # Remove misleading libtool archives
+    rm -f ${prefix}/${COMPILER_TARGET}/lib*/*.la
     """
 
     return script
