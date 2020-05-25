@@ -31,7 +31,7 @@ sources = [
 #                  ""; unpack_target="x86_64-w64-mingw32-libgfortran4-cxx11"),
 #    ArchiveSource("https://julialang2.s3.amazonaws.com/bin/winnt/x86/1.4/julia-$(version)-win32.tar.gz",
 #                  ""; unpack_target="i686-w64-mingw32-libgfortran4-cxx11"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/freebsd/x64/1.4/julia-$(version)-freebsd-x86_64.tar.gz",
+    ArchiveSource("https://julialang2.s3.julialang.org/bin/freebsd/x64/1.4/julia-$(version)-freebsd-x86_64.tar.gz",
                   "29892e81d663dc081281b8530fa2e949306da933dcf2d6d28a5dec165a92aa24"; unpack_target="x86_64-unknown-freebsd11.1-libgfortran4-cxx11"),
 ]
 script = raw"""
