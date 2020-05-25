@@ -20,7 +20,7 @@ sources = [
     ArchiveSource("https://julialang2.s3.amazonaws.com/bin/linux/aarch64/1.4/julia-$(version)-linux-aarch64.tar.gz",
                   "f124d1b9fa68c3049d4ffe2349454f8ba1753d17d6578bc6e7cb916aed7cff4a"; unpack_target="aarch64-linux-gnu-libgfortran4-cxx11"),
 #    ArchiveSource("https://julialang2.s3.amazonaws.com/bin/linux/armv7l/1.4/julia-$(version)-linux-armv7l.tar.gz",
-                  "bdcf24e0365f16092838daf7059bf5c0036bff9dc418511010e79249d9f71e96"; unpack_target="armv7l-linux-gnueabihf-libgfortran4-cxx11"),
+#                  "bdcf24e0365f16092838daf7059bf5c0036bff9dc418511010e79249d9f71e96"; unpack_target="armv7l-linux-gnueabihf-libgfortran4-cxx11"),
     ArchiveSource("https://julialang2.s3.amazonaws.com/bin/linux/x64/1.4/julia-$(version)-linux-x86_64.tar.gz",
                   "d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28"; unpack_target="x86_64-linux-gnu-libgfortran4-cxx11"),
     ArchiveSource("https://julialang2.s3.amazonaws.com/bin/linux/x86/1.4/julia-$(version)-linux-i686.tar.gz",
