@@ -13,33 +13,29 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Patch to find unordered_map from tr1, logic there doesn't work for MINGW32.
+if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; 
+    then sed -i '/add_definitions(-DUNORDERED)/d' LASzip/src/CMakeLists.txt;  
+fi
+
 mkdir LASzip/build
 cd LASzip/build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=OFF ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=OFF ..
 cmake --build . --target install --config Release
+
+# Rename versioned library so BinaryBuilder picks it up
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then mv $prefix/bin/liblaszip3.dll $prefix/bin/liblaszip.dll;  fi
 exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64)
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblaszip_api", :liblaszip),
     LibraryProduct("liblaszip", :liblaszip)
 ]
 
