@@ -26,8 +26,9 @@ install_license LICENSE
 # work around compilation failures
 ## already defined in gmmlib
 sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
-## build systems shouldn't touch LD_LIBRARY_PATH...
-find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec sed -i 's/LD_LIBRARY_PATH=[^ ]* //g' '{}' \;
+## extend LD_LIBRARY_PATH, don't overwrite it
+find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
+    sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
 
 CMAKE_FLAGS=()
 
