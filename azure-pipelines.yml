@@ -24,11 +24,23 @@ jobs:
 
       # Normally we look at the last pushed commit
       COMPARE_AGAINST="HEAD~1"
+      # Keyword to be used in the commit message to skip a rebuild
+      SKIP_BUILD_COOKIE="[skip build]"
+      # This variable will tell us whether we want to skip the build
+      SKIP_BUILD="false"
 
       # If we're on a PR though, we look at the entire branch at once
       if [[ $(Build.Reason) == "PullRequest" ]]; then
           TARGET_BRANCH="remotes/origin/$(System.PullRequest.TargetBranch)"
           COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
+          git fetch origin "refs/pull/$(System.PullRequest.PullRequestNumber)/head:refs/remotes/origin/pr/$(System.PullRequest.PullRequestNumber)"
+          if [[ "$(git show -s --format=%B origin/pr/$(System.PullRequest.PullRequestNumber))" == *"${SKIP_BUILD_COOKIE}"* ]]; then
+              SKIP_BUILD="true"
+          fi
+      else
+          if [[ "$(Build.SourceVersionMessage)" == *"${SKIP_BUILD_COOKIE}"* ]]; then
+              SKIP_BUILD="true"
+          fi
       fi
 
       $(JULIA) -e "using InteractiveUtils; versioninfo()"
@@ -135,7 +147,8 @@ jobs:
                                 'PROJECT':'${PROJECT}', \
                                 'PLATFORMS':'${PLATFORMS}', \
                                 'BB_HASH':'${BB_HASH}', \
-                                'PROJ_HASH':'${PROJ_HASH}'\
+                                'PROJ_HASH':'${PROJ_HASH}', \
+                                'SKIP_BUILD':'${SKIP_BUILD}' \
                             }, "
 
               # Some debugging info
@@ -143,6 +156,11 @@ jobs:
 
               # For $(PROJPLATFORMS)`, we need to know more...
               for PLATFORM in ${PLATFORMS}; do
+                  if [[ "${SKIP_BUILD}" == "true" ]]; then
+                      echo "The commit messages contains ${SKIP_BUILD_COOKIE}, skipping build"
+                      break
+                  fi
+
                   # Here, we hit the build cache to see if we can skip this particular combo
                   CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
                   if curl --output /dev/null --silent --fail --HEAD "${CACHE_URL}"; then
