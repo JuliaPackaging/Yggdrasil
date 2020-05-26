@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.18.16699"
+version = v"20.20.16837"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "0a2767d532d2abe2b9ee2141957171695f7db641"),
+              "b9b34659c8817393dd8ce35bf37c167c23cefcff"),
     # vendored dependencies
     GitSource("https://github.com/oneapi-src/level-zero.git",
               "ebb363e938a279cf866cb93d28e31aaf0791ea19"),  # v0.91.10
@@ -73,7 +73,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="gmmlib_jll", version=v"20.1.1")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.3899")),
+    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.3977")),
     # TODO: reverse compatibility bounds, where NEO (providing a oneL0 impl of, e.g., v0.91)
     #       restricts oneAPI_Level_Zero_jll to be below that version too.
 ]
