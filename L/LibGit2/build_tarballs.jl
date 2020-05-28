@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-case-sensitive.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
