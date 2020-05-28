@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"0.28.2"
+version = v"1.0.0"
 
 # Collection of sources required to build libgit2
 sources = [
    "https://github.com/libgit2/libgit2.git" =>
-   "b3e1a56ebb2b9291e82dc027ba9cbcfc3ead54d3",
+   "7d3c7057f0e774aecd6fc4ef8333e69e5c4873e0",
    "./bundled",
 ]
 
