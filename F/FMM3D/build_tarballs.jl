@@ -1,5 +1,18 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
+
+# author: Travis Askham (askhamwhat@gmail.com)
+#
+#TODO: there are a number of stumbling points for the
+# FAST_KER=ON option when cross-compiling. it is completely
+# disabled for now. Some issues:
+# - on musl, darwin, and freebsd various standard libraries
+#   are not found
+# - on mingw there is an invalid regiser error on x86_64 arch
+# - generally, these seem to require a later version of gcc
+#   but we would like to compile for various libgfortran
+#   major versions
+
 using BinaryBuilder, Pkg
 
 name = "FMM3D"
@@ -34,33 +47,19 @@ echo "CXXFLAGS+=\$(FFLAGS)" >> make.inc;
 echo "OMPFLAGS= -fopenmp" >> make.inc;
 echo "OMPLIBS= -lgomp" >> make.inc;
 
+echo "LIBS = -lm -lstdc++" >> make.inc;
+
 
 echo "${TARGET}"
-if [[ ${target} = *musl* || ${target} = *freebsd* ]]; then
 
-    # turn of fast_ker (only c++ part of code) for certain
-    # troublesome systems. this seems fixable but it's currently 
-    # a headache. libraries are not found on a few systems:
-    # - musl: stddef not found?
-    # - freebsd: omp.h not found?
-    
-    echo "LIBS = -lm" >> make.inc;
-    echo "$(<make.inc)"
-    make -j${nproc} lib OMP=ON
-    cp lib/libfmm3d.so ${libdir}/
-    echo "copying libfmm3d.so to ${libdir}/libfmm3d.so"
-
-elif [[ ${target} = *darwin* ]]; then
+if [[ ${target} = *darwin* ]]; then
 
     # on mac needed a dylib not an so (make this cleaner later?)
-    # also has the library issue for the fast kernels
-    # - darwin: omp.h not found?
 
-    echo "LIBS = -lm" >> make.inc;
     make -j${nproc} lib OMP=ON
     cd lib-static
     ar x libfmm3d.a
-    ${FC} -dynamiclib -fPIC -fopenmp *.o -o libfmm3d.dylib -lm
+    ${FC} -dynamiclib -fPIC -fopenmp *.o -o libfmm3d.dylib -lm -lstdc++
     cd ..
     mv lib-static/libfmm3d.dylib lib/
     cp lib/libfmm3d.dylib ${libdir}/
@@ -69,10 +68,7 @@ elif [[ ${target} = *darwin* ]]; then
 elif [[ ${target} = *mingw* ]]; then
 
     # on windows needed a dll not an so (make this cleaner later?)
-    # also, when compiling on azure has an issue with invalid
-    # registers (again, only c++ files). kill fast_ker
 
-    echo "LIBS = -lm -lstdc++" >> make.inc;
     make -j${nproc} lib OMP=ON
     cd lib-static
     ar x libfmm3d.a
@@ -83,9 +79,10 @@ elif [[ ${target} = *mingw* ]]; then
     echo "copying libfmm3d.dll to ${libdir}/libfmm3d.dll"
     
 else
+
     echo "LIBS = -lm -lstdc++" >> make.inc;
     echo "$(<make.inc)"
-    make -j${nproc} lib OMP=ON FAST_KER=ON
+    make -j${nproc} lib OMP=ON
     cp lib/libfmm3d.so ${libdir}/
     echo "copying libfmm3d.so to ${libdir}/libfmm3d.so"
 
@@ -112,4 +109,4 @@ dependencies = Dependency[Dependency(PackageSpec(name="CompilerSupportLibraries_
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;)
