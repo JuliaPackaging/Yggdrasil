@@ -10,7 +10,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/chafa-*/
-./autogen.sh
+./autogen.sh --prefix=${prefix} --host=${target}
 make -j${nproc}
 make install
 """
@@ -23,6 +23,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency("FreeType2_jll"),
     Dependency("Glib_jll"),
     Dependency("ImageMagick_jll"),
 ]
