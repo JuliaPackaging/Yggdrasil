@@ -31,21 +31,65 @@ fi
 echo "CXXFLAGS= -std=c++11 -DSCTL_PROFILE=-1" >> make.inc;
 echo "CXXFLAGS+=\$(FFLAGS)" >> make.inc;
 
-echo "OMPFLAGS =-fopenmp" >> make.inc;
-echo "OMPLIBS =-lgomp" >> make.inc;
+echo "OMPFLAGS= -fopenmp" >> make.inc;
+echo "OMPLIBS= -lgomp" >> make.inc;
 
-# check if musl (fast_ker option seems broken, stddef not found?)
-# might be fixable. for now, kill fast_ker
-if [[ ${target} == *musl* ]]; then
+
+echo "${TARGET}"
+if [[ ${target} = *musl* || ${target} = *freebsd* ]]; then
+
+    # turn of fast_ker (only c++ part of code) for certain
+    # troublesome systems. this seems fixable but it's currently 
+    # a headache. libraries are not found on a few systems:
+    # - musl: stddef not found?
+    # - freebsd: omp.h not found?
+    
+    echo "LIBS = -lm" >> make.inc;
+    echo "$(<make.inc)"
+    make -j${nproc} lib OMP=ON
+    cp lib/libfmm3d.so ${libdir}/
+    echo "copying libfmm3d.so to ${libdir}/libfmm3d.so"
+
+elif [[ ${target} = *darwin* ]]; then
+
+    # on mac needed a dylib not an so (make this cleaner later?)
+    # also has the library issue for the fast kernels
+    # - darwin: omp.h not found?
+
+    echo "LIBS = -lm" >> make.inc;
+    make -j${nproc} lib OMP=ON
+    cd lib-static
+    ar x libfmm3d.a
+    ${FC} -dynamiclib -fPIC -fopenmp *.o -o libfmm3d.dylib -lm
+    cd ..
+    mv lib-static/libfmm3d.dylib lib/
+    cp lib/libfmm3d.dylib ${libdir}/
+    echo "copying libfmm3d.dylib to ${libdir}/libfmm3d.dylib"
+    
+elif [[ ${target} = *mingw* ]]; then
+
+    # on windows needed a dll not an so (make this cleaner later?)
+
     echo "LIBS = -lm -lstdc++" >> make.inc;
-    make lib OMP=ON
+    make -j${nproc} lib OMP=ON FAST_KER=ON
+    cd lib-static
+    ar x libfmm3d.a
+    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm -lstdc++
+    cd ..
+    mv lib-static/libfmm3d.dll lib/
+    cp lib/libfmm3d.dll ${libdir}/
+    echo "copying libfmm3d.dll to ${libdir}/libfmm3d.dll"
+    
 else
     echo "LIBS = -lm -lstdc++" >> make.inc;
-    make lib OMP=ON FAST_KER=ON
+    echo "$(<make.inc)"
+    make -j${nproc} lib OMP=ON FAST_KER=ON
+    cp lib/libfmm3d.so ${libdir}/
+    echo "copying libfmm3d.so to ${libdir}/libfmm3d.so"
+
 fi
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
-cp lib/libfmm3d.so $prefix/lib/
 rm make.inc
 exit
 """
@@ -53,8 +97,8 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#platforms = expand_gfortran_versions(platforms)
-#platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
