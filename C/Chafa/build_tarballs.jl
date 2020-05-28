@@ -10,7 +10,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/chafa-*/
-./autogen.sh --prefix=${prefix} --host=${target}
+./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
