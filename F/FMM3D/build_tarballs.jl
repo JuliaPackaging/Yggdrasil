@@ -72,11 +72,11 @@ elif [[ ${target} = *mingw* ]]; then
     # also, when compiling on azure has an issue with invalid
     # registers (again, only c++ files). kill fast_ker
 
-    echo "LIBS = -lm" >> make.inc;
+    echo "LIBS = -lm -lstdc++" >> make.inc;
     make -j${nproc} lib OMP=ON
     cd lib-static
     ar x libfmm3d.a
-    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm
+    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm -lstdc++
     cd ..
     mv lib-static/libfmm3d.dll lib/
     cp lib/libfmm3d.dll ${libdir}/
