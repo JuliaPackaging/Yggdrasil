@@ -69,6 +69,7 @@ elif [[ ${target} = *mingw* ]]; then
 
     # on windows needed a dll not an so (make this cleaner later?)
 
+    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -march=native -funroll-loops" >> make.inc;
     make -j${nproc} lib OMP=ON
     cd lib-static
     ar x libfmm3d.a
