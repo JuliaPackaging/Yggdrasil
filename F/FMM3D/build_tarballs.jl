@@ -69,12 +69,14 @@ elif [[ ${target} = *darwin* ]]; then
 elif [[ ${target} = *mingw* ]]; then
 
     # on windows needed a dll not an so (make this cleaner later?)
+    # also, when compiling on azure has an issue with invalid
+    # registers (again, only c++ files). kill fast_ker
 
-    echo "LIBS = -lm -lstdc++" >> make.inc;
-    make -j${nproc} lib OMP=ON FAST_KER=ON
+    echo "LIBS = -lm" >> make.inc;
+    make -j${nproc} lib OMP=ON
     cd lib-static
     ar x libfmm3d.a
-    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm -lstdc++
+    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm
     cd ..
     mv lib-static/libfmm3d.dll lib/
     cp lib/libfmm3d.dll ${libdir}/
