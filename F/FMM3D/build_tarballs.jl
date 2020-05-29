@@ -30,64 +30,43 @@ cd FMM3D/
 
 touch make.inc
 
+# clang has some issue with openmp (lomp not found)
+# force gcc
+if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
+  export CC="gcc"
+fi
+
 echo "CC=${CC}" >> make.inc;
 echo "CXX=${CXX}" >> make.inc;
 echo "FC=${FC}" >> make.inc;
 
-echo "FFLAGS= -fPIC -O3 -march=native -funroll-loops" >> make.inc;
-
-# check if non Intel architecture (get rid of march native)
-if [[ ${proc_family} != intel ]]; then
+if [[ ${target} = *mingw* ]]; then
+    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -funroll-loops" >> make.inc;
+else
     echo "FFLAGS= -fPIC -O3 -funroll-loops" >> make.inc;
 fi
 
-echo "CXXFLAGS= -std=c++11 -DSCTL_PROFILE=-1" >> make.inc;
-echo "CXXFLAGS+=\$(FFLAGS)" >> make.inc;
+export OMPFLAGS="-fopenmp"
+export OMPLIBS="-lgomp"
+echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
+echo "OMPLIBS= ${OMPLIBS}" >> make.inc;
 
-echo "OMPFLAGS= -fopenmp" >> make.inc;
-echo "OMPLIBS= -lgomp" >> make.inc;
+export LIBS="-lm -lgfortran"
+echo "LIBS = ${LIBS}" >> make.inc;
 
-echo "LIBS = -lm -lstdc++" >> make.inc;
-
+make -j${nproc} lib OMP=ON
 
 echo "${TARGET}"
 
-if [[ ${target} = *darwin* ]]; then
+# build the correct type of dynamic library for
+# current target
 
-    # on mac needed a dylib not an so (make this cleaner later?)
+export SHAREFLAGS="-shared -fPIC"
 
-    make -j${nproc} lib OMP=ON
-    cd lib-static
-    ar x libfmm3d.a
-    ${FC} -dynamiclib -fPIC -fopenmp *.o -o libfmm3d.dylib -lm -lstdc++
-    cd ..
-    mv lib-static/libfmm3d.dylib lib/
-    cp lib/libfmm3d.dylib ${libdir}/
-    echo "copying libfmm3d.dylib to ${libdir}/libfmm3d.dylib"
-    
-elif [[ ${target} = *mingw* ]]; then
-
-    # on windows needed a dll not an so (make this cleaner later?)
-
-    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -march=native -funroll-loops" >> make.inc;
-    make -j${nproc} lib OMP=ON
-    cd lib-static
-    ar x libfmm3d.a
-    ${FC} -shared -fPIC -fopenmp *.o -o libfmm3d.dll -lm -lstdc++
-    cd ..
-    mv lib-static/libfmm3d.dll lib/
-    cp lib/libfmm3d.dll ${libdir}/
-    echo "copying libfmm3d.dll to ${libdir}/libfmm3d.dll"
-    
-else
-
-    echo "LIBS = -lm -lstdc++" >> make.inc;
-    echo "$(<make.inc)"
-    make -j${nproc} lib OMP=ON
-    cp lib/libfmm3d.so ${libdir}/
-    echo "copying libfmm3d.so to ${libdir}/libfmm3d.so"
-
-fi
+cd lib-static
+ar x libfmm3d.a
+${CC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
+cd ..
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
 rm make.inc
