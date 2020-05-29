@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "libserialport"
-version = v"0.2.0"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
