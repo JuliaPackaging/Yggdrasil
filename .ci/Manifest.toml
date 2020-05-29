@@ -22,7 +22,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "Base64", "CodecZlib", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "cc87c61950c207e2d4d8a5318a0e7a904c25fc29"
+git-tree-sha1 = "061e65add10fc2aa1150c557c1be5991d94185a0"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -41,9 +41,9 @@ version = "1.3.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "7d7578b00789cf16c5f68fad71868e773edd58a2"
+git-tree-sha1 = "af6d9c86e191c917c2276fbede1137e8ea20157f"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.16"
+version = "0.17.17"
 
 [[DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -75,15 +75,15 @@ version = "0.1.5"
 
 [[GitHub]]
 deps = ["Base64", "Dates", "HTTP", "JSON", "MbedTLS", "Sockets"]
-git-tree-sha1 = "bc8ded5984130076ca6fe6b752508effa1201a19"
+git-tree-sha1 = "a1c60c4079c54486e5e1daab1f4cdaebb21f6f63"
 uuid = "bc5e4493-9b4d-5f90-b8aa-2b2bcaad7a26"
-version = "5.1.5"
+version = "5.1.6"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "IniFile", "MbedTLS", "Sockets"]
-git-tree-sha1 = "fe31f4ff144392ad8176f5c7c03cca6ba320271c"
+git-tree-sha1 = "ec87d5e2acbe1693789efbbe14f5ea7525758f71"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.8.14"
+version = "0.8.15"
 
 [[Hiccup]]
 deps = ["MacroTools", "Test"]
@@ -145,9 +145,9 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[LoggingExtras]]
-git-tree-sha1 = "c867b50bfc564f0beded1c566f4fc66cfd8b5418"
+git-tree-sha1 = "b60616c70eff0cc2c0831b6aace75940aeb0939d"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "0.4.0"
+version = "0.4.1"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
@@ -176,9 +176,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Mustache]]
 deps = ["Printf", "Tables"]
-git-tree-sha1 = "2e11fc5de3a01d23482a257e22009ddaab058d9a"
+git-tree-sha1 = "fcfc8266461f2905534aa00c0fc59b8751b1026e"
 uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
-version = "1.0.2"
+version = "1.0.3"
 
 [[Mux]]
 deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "Lazy", "Pkg", "Sockets", "Test", "WebSockets"]
@@ -245,7 +245,7 @@ version = "0.2.0"
 
 [[Registrator]]
 deps = ["AutoHashEquals", "Base64", "Dates", "Distributed", "FileWatching", "GitForge", "GitHub", "HTTP", "JSON", "LibGit2", "Logging", "MbedTLS", "Mustache", "Mux", "Pkg", "RegistryTools", "Serialization", "Sockets", "TimeToLive", "UUIDs", "ZMQ"]
-git-tree-sha1 = "58e84c9733c0606ca53349dbce519209d8a8402b"
+git-tree-sha1 = "816632a4db6b9b9826d8092c59620fc01571dccc"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaRegistries/Registrator.jl.git"
 uuid = "4418983a-e44d-11e8-3aec-9789530b3b3e"
@@ -326,9 +326,9 @@ version = "1.2.0"
 
 [[ZeroMQ_jll]]
 deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "42b0955a7ad0935d454d750fedd812d3f2836fde"
+git-tree-sha1 = "ac15b32cf384a72b058f3c214708e5a11a91ac86"
 uuid = "8f1865be-045e-5c20-9c9f-bfbfb0764568"
-version = "4.3.2+2"
+version = "4.3.2+3"
 
 [[Zlib_jll]]
 deps = ["Libdl", "Pkg"]
