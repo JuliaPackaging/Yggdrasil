@@ -26,7 +26,8 @@ make -j${nproc}
 make install
 """
 
-platforms = supported_platforms()
+# Chafa itself does not support Windows
+platforms = filter!(p -> !isa(p, Windows), supported_platforms())
 
 products = [
     LibraryProduct("libchafa", :libchafa),
