@@ -1,18 +1,19 @@
 using BinaryBuilder
 
-# Collection of sources required to build libserialport
 name = "libserialport"
-version = v"0.1.1"
+version = v"0.2.0"
+
+# Collection of sources required to complete build
 sources = [
-    "http://sigrok.org/download/source/libserialport/libserialport-$(version).tar.gz" =>
-    "4a2af9d9c3ff488e92fb75b4ba38b35bcf9b8a66df04773eba2a7bbf1fa7529d",
+    GitSource("https://github.com/sigrokproject/libserialport.git",
+        "ffbfc5c76ba8100d21d0141478a6c0d761ecfb2f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libserialport-*/
-
-./configure --prefix=$prefix --host=$target --with-include-path=$prefix/include
+cd $WORKSPACE/srcdir/libserialport/
+./autogen.sh
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -30,8 +31,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
