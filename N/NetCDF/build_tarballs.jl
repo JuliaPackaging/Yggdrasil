@@ -70,7 +70,10 @@ nc-config --all
 platforms = [
     Linux(:x86_64),
     Linux(:i686),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    # HDF5_jll on armv7l should use the same glibc as the root filesystem
+    # before it can be used
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
+    # Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     Linux(:aarch64, libc=:glibc),
     MacOS(),
     Windows(:x86_64),
