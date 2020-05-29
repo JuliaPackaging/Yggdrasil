@@ -44,9 +44,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "GMP_jll",
-    "Nettle_jll",
+    Dependency("Zlib_jll"),
+    Dependency("GMP_jll"),
+    Dependency("Nettle_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
