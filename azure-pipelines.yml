@@ -29,8 +29,8 @@ jobs:
       # This variable will tell us whether we want to skip the build
       SKIP_BUILD="false"
 
-      # If we're on a PR though, we look at the entire branch at once
       if [[ $(Build.Reason) == "PullRequest" ]]; then
+          # If we're on a PR though, we look at the entire branch at once
           TARGET_BRANCH="remotes/origin/$(System.PullRequest.TargetBranch)"
           COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
           git fetch origin "refs/pull/$(System.PullRequest.PullRequestNumber)/head:refs/remotes/origin/pr/$(System.PullRequest.PullRequestNumber)"
@@ -38,7 +38,7 @@ jobs:
               SKIP_BUILD="true"
           fi
       else
-          if [[ "$(Build.SourceVersionMessage)" == *"${SKIP_BUILD_COOKIE}"* ]]; then
+          if [[ '$(Build.SourceVersionMessage)' == *"${SKIP_BUILD_COOKIE}"* ]]; then
               SKIP_BUILD="true"
           fi
       fi
