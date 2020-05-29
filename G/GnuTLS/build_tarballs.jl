@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/gnutls-*/
 #    export AR=/opt/${target}/bin/ar
 #fi
 
-GMP_CFLAGS="-I${prefix}/include"./configure --prefix=${prefix} --host=${target} \
+GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
     --without-p11-kit 
