@@ -10,12 +10,18 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/chafa-*/
+
+if [[ "${proc_family}" == intel ]]; then
+    BUILTIN_FUNCS=yes
+else
+    BUILTIN_FUNCS=no
+fi
 ./autogen.sh \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    ax_cv_gcc_check_x86_cpu_init=yes \
-    ax_cv_gcc_check_x86_cpu_supports=yes
+    ax_cv_gcc_check_x86_cpu_init="${BUILTIN_FUNCS}" \
+    ax_cv_gcc_check_x86_cpu_supports="${BUILTIN_FUNCS}"
 make -j${nproc}
 make install
 """
