@@ -10,7 +10,12 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/chafa-*/
-./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./autogen.sh \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    ax_cv_gcc_check_x86_cpu_init=yes \
+    ax_cv_gcc_check_x86_cpu_supports=yes
 make -j${nproc}
 make install
 """
