@@ -55,7 +55,7 @@ function download_binaries_from_release(download_dir, platforms)
     # The version of the latest build is one build number less than the next one
     # (pretty obvious, isn't it?).  Since we're supposed to be rebuilding the
     # latest version, make sure the next build version is greater than 0
-    if build_version.build[1] > 0
+    if build_version.build[1] <= 0
         error("The next version is $(build_version), but it must have build number greater than 0")
     end
     # Guess what's the latest released version.
