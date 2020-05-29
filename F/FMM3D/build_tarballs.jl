@@ -16,7 +16,7 @@
 using BinaryBuilder, Pkg
 
 name = "FMM3D"
-version = v"0.0.0"
+version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
