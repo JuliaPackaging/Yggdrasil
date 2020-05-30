@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "leanprovercommunity"
+name = "LEAN_Community"
 version = v"3.15.0"
 
 # Collection of sources required to complete build
