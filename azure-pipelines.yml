@@ -34,7 +34,7 @@ jobs:
           TARGET_BRANCH="remotes/origin/$(System.PullRequest.TargetBranch)"
           COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
           git fetch origin "refs/pull/$(System.PullRequest.PullRequestNumber)/head:refs/remotes/origin/pr/$(System.PullRequest.PullRequestNumber)"
-          if [[ "$(git show -s --format=%B origin/pr/$(System.PullRequest.PullRequestNumber))" == *"${SKIP_BUILD_COOKIE}"* ]]; then
+          if [[ "${BUILD_SOURCEVERSIONMESSAGE}" == *"${SKIP_BUILD_COOKIE}"* ]]; then
               SKIP_BUILD="true"
           fi
       else
