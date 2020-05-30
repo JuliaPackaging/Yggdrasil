@@ -15,9 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd lean
 cd src
-ls
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make bin_lean
+make -j${nproc} bin_lean
 mkdir -p "${bindir}"
 cp ${WORKSPACE}/srcdir/lean/bin/* "${bindir}"
 exit
