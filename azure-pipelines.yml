@@ -38,7 +38,9 @@ jobs:
               SKIP_BUILD="true"
           fi
       else
-          if [[ '$(Build.SourceVersionMessage)' == *"${SKIP_BUILD_COOKIE}"* ]]; then
+          # I wish we could use Build.SourceVersionMessage here, but it breaks
+          # in uncountable many ways.
+          if [[ "$(git show -s --format=%B HEAD)" == *"${SKIP_BUILD_COOKIE}"* ]]; then
               SKIP_BUILD="true"
           fi
       fi
