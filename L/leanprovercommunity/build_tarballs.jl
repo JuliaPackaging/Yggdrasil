@@ -7,28 +7,36 @@ version = v"3.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/leanprover-community/lean.git", "56f8877f1efa22215aca0b82f1c0ce2ff975b9c3")
+    GitSource("https://github.com/leanprover-community/lean.git", "56f8877f1efa22215aca0b82f1c0ce2ff975b9c3"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd lean
-cd src
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make -j${nproc} bin_lean
-mkdir -p "${bindir}"
-cp ${WORKSPACE}/srcdir/lean/bin/* "${bindir}"
-exit
+cd $WORKSPACE/srcdir/lean
+
+for patch_file in ../patches/*.patch; do
+    atomic_patch -p1 "${patch_file}"
+done
+
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    ../src
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("lean", :lean)
+    ExecutableProduct("lean", :lean),
+    ExecutableProduct("leanchecker", :leanchecker),
 ]
 
 # Dependencies that must be installed before this package can be built

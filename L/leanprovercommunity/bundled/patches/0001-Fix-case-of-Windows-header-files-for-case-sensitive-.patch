@@ -1,0 +1,32 @@
+diff --git a/src/library/process.cpp b/src/library/process.cpp
+index 5cfa44105..db26d8f2d 100644
+--- a/src/library/process.cpp
++++ b/src/library/process.cpp
+@@ -12,7 +12,7 @@ Author: Jared Roesch
+ 
+ #if defined(LEAN_WINDOWS) && !defined(LEAN_CYGWIN)
+ #include <windows.h>
+-#include <Fcntl.h>
++#include <fcntl.h>
+ #include <io.h>
+ #include <tchar.h>
+ #include <stdio.h>
+diff --git a/src/library/vm/vm_io.cpp b/src/library/vm/vm_io.cpp
+index 751992989..6bf5b2b53 100644
+--- a/src/library/vm/vm_io.cpp
++++ b/src/library/vm/vm_io.cpp
+@@ -40,9 +40,9 @@ Author: Leonardo de Moura
+     #ifndef NOMINMAX
+         #define NOMINMAX
+     #endif
+-    #include <Winsock2.h>
++    #include <winsock2.h>
+     #include <windows.h>
+-    #include <Fileapi.h>
++    #include <fileapi.h>
+     #define UNIX_PATH_MAX 108
+ 
+     typedef struct sockaddr_un {
+-- 
+2.20.4
+
