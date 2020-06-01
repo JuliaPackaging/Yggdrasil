@@ -9,7 +9,6 @@ version = v"2.48.2"
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
                   "272658a0e04fce21eb1368c345cc1305bfeada4ca6d7db99e77323ed0668bdca"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +18,6 @@ cd $WORKSPACE/srcdir/librsvg-*/
 # Pango's `.la` files are wrong on certain platforms, and we don't need them anyway
 rm -f ${prefix}/lib/*.la
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/librsvg_link_order.patch"
 autoreconf -f -i
 
 # We need this for bootstrapping purposes
@@ -32,10 +30,12 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 # cssparser must be upgraded as it doesn't build properly anymore
-sed -i.bak -e 's&cssparser = "0.23"&cssparser = "0.25"&' rust/Cargo.toml
-(cd rust && cargo vendor)
+sed -i.bak -e 's&cssparser = "0.23"&cssparser = "0.25"&' Cargo.toml
+cargo vendor
 
-LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64" ./configure --prefix=$prefix --host=$target \
+export LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64"
+./configure --prefix=$prefix \
+    --host=$target \
     --disable-static \
     --enable-pixbuf-loader \
     --disable-introspection \
@@ -57,11 +57,11 @@ if [[ ${target} == i686-w64-mingw32 ]]; then
 fi
 
 # Manually build rust library because rust target doesn't match C target
-(cd rust && PKG_CONFIG_ALLOW_CROSS=1 cargo build --release)
+(PKG_CONFIG_ALLOW_CROSS=1 cargo build --release)
 
-RUST_LIB="$(pwd)/rust/target/${rust_target}/release/librsvg_internals.a"
+RUST_LIB="$(pwd)/target/${rust_target}/release/librsvg_c_api.a"
 if [[ ${target} == *mingw32* ]]; then
-    mv "$(pwd)/rust/target/${rust_target}/release/rsvg_internals.lib" "${RUST_LIB}"
+    mv "$(pwd)/target/${rust_target}/release/rsvg_c_api.lib" "${RUST_LIB}"
 fi
 
 make RUST_LIB="${RUST_LIB}" -j${nproc}
