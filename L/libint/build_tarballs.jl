@@ -29,7 +29,7 @@ cd libint-2.7.0-beta.5/
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --target install -- -j${nprocs}
+cmake --build . --target install -- -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
