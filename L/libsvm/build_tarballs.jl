@@ -26,14 +26,10 @@ fi
 export OS=`uname`
 make 
 make lib
-if [[ "${target}" == *mingw32 ]]; then
-	cp libsvm.${dlext} ${prefix}/bin
-else
-	cp libsvm.${dlext} ${prefix}/lib
-fi
-cp svm-train${exeext} ${prefix}/bin
-cp svm-predict${exeext} ${prefix}/bin
-cp svm-scale${exeext} ${prefix}/bin
+cp libsvm.${dlext} ${libdir}
+cp svm-train${exeext} ${bindir}
+cp svm-predict${exeext} ${bindir}
+cp svm-scale${exeext} ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
