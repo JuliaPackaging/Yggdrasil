@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libint"
-version = v"2.7.0-beta.5"
+version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
