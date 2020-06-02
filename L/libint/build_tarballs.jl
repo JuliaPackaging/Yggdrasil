@@ -12,28 +12,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libint-2.7.0-beta.5/
-mkdir build
-cd build/
+cd $WORKSPACE/srcdir/libint-*/
+mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLIBINT2_BUILD_SHARED_AND_STATIC_LIBS=ON ..
 cmake --build . --target install -- -j${nproc}
+# Remove large static archive
+rm ${prefix}/lib/liblibint2-static.a
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64)
-]
-
+platforms = filter!(p -> !isa(p, Windows), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -42,8 +31,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Eigen_jll"
-    "boost_jll"
+    BuildDependency("Eigen_jll"),
+    BuildDependency("boost_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
