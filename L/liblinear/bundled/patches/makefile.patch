@@ -1,0 +1,33 @@
+diff --git before/liblinear-230/Makefile after/liblinear-230/Makefile
+index 0534f2b..f7c1bb8 100644
+--- before/liblinear-230/Makefile
++++ after/liblinear-230/Makefile
+@@ -10,17 +10,17 @@ all: train predict
+ 
+ lib: linear.o tron.o blas/blas.a
+ 	if [ "$(OS)" = "Darwin" ]; then \
+-		SHARED_LIB_FLAG="-dynamiclib -Wl,-install_name,liblinear.so.$(SHVER)"; \
++		SHARED_LIB_FLAG="-dynamiclib -Wl,-install_name,liblinear.${dlext}"; \
+ 	else \
+-		SHARED_LIB_FLAG="-shared -Wl,-soname,liblinear.so.$(SHVER)"; \
++		SHARED_LIB_FLAG="-shared -Wl,-soname,liblinear.${dlext}"; \
+ 	fi; \
+-	$(CXX) $${SHARED_LIB_FLAG} linear.o tron.o blas/blas.a -o liblinear.so.$(SHVER)
++	$(CXX) $${SHARED_LIB_FLAG} linear.o tron.o blas/blas.a -o liblinear.${dlext}
+ 
+ train: tron.o linear.o train.c blas/blas.a
+-	$(CXX) $(CFLAGS) -o train train.c tron.o linear.o $(LIBS)
++	$(CXX) $(CFLAGS) -o train${exeext} train.c tron.o linear.o $(LIBS)
+ 
+ predict: tron.o linear.o predict.c blas/blas.a
+-	$(CXX) $(CFLAGS) -o predict predict.c tron.o linear.o $(LIBS)
++	$(CXX) $(CFLAGS) -o predict${exeext} predict.c tron.o linear.o $(LIBS)
+ 
+ tron.o: tron.cpp tron.h
+ 	$(CXX) $(CFLAGS) -c -o tron.o tron.cpp
+@@ -34,4 +34,4 @@ blas/blas.a: blas/*.c blas/*.h
+ clean:
+ 	make -C blas clean
+ 	make -C matlab clean
+-	rm -f *~ tron.o linear.o train predict liblinear.so.$(SHVER)
++	rm -f *~ tron.o linear.o train predict liblinear.${dlext}
