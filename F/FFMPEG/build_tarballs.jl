@@ -106,6 +106,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ffmpeg", :ffmpeg),
     ExecutableProduct("ffprobe", :ffprobe),
+    ExecutableProduct("ffplay", :ffplay),
     LibraryProduct(["libavcodec", "avcodec"], :libavcodec),
     LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
     LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
