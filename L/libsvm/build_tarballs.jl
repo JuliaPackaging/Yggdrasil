@@ -14,16 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+cd libsvm-324/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cd libsvm-324/
-mkdir -p ${prefix}/bin
+mkdir -p ${bindir}
+mkdir -p ${libdir}
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
     CXX=g++
 fi
-export OS=`uname`
 make 
 make lib
 cp libsvm.${dlext} ${libdir}
