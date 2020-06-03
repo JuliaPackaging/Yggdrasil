@@ -92,7 +92,8 @@ pkg-config --list-all
   --enable-openssl     \
   --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${libdir}"
+  --extra-ldflags="-L${libdir}" \
+  --enable-ffplay
 make -j${nproc}
 make install
 install_license LICENSE.md COPYING.*
