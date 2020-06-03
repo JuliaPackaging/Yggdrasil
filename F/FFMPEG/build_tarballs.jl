@@ -136,6 +136,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency("Opus_jll"),
+    Dependency("SDL2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
