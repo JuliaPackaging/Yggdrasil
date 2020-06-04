@@ -22,7 +22,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "Base64", "CodecZlib", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "bde3e6734befd9fa5786b83ff81a6a1b7cc6e4c0"
+git-tree-sha1 = "1cc271b2acae1e3aed5246a6e4db26f9b46cfbbd"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
