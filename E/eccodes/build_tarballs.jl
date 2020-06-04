@@ -17,6 +17,16 @@ sed -e '21,93d' eccodes-2.17.0-Source/cmake/eccodes_test_endiness.cmake > new_en
 echo 'set( IEEE_BE ${ECCODES_BIG_ENDIAN} )' >> new_endianess_test
 echo 'set( IEEE_LE ${ECCODES_LITTLE_ENDIAN} )' >> new_endianess_test
 mv new_endianess_test eccodes-2.17.0-Source/cmake/eccodes_test_endiness.cmake
+if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32"] ; then 
+    sed -e '318d' -e '320d' -e '322d' -e '358d' eccodes-2.17.0-Source/CMakeLists.txt -e '26 a add_compile_definitions(ECCODES_ON_WINDOWS)'> new_cmakelist
+    mv new_cmakelist eccodes-2.17.0-Source/CMakeLists.txt
+    sed -e '425d' eccodes-2.17.0-Source/src/grib_context.c > new_context
+    mv new_context eccodes-2.17.0-Source/src/grib_context.c
+    chmod +x eccodes-2.17.0-Source/cmake/ecbuild_windows_replace_symlinks.sh 
+else 
+    sed -e '318d' -e '320d' -e '322d' -e '358d' eccodes-2.17.0-Source/CMakeLists.txt > new_cmakelist
+    mv new_cmakelist eccodes-2.17.0-Source/CMakeLists.txt
+fi
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.17.0-Source/
