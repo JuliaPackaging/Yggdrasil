@@ -2,13 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "hwloc"
-version = v"2.0.4"
+name = "Hwloc"
+version = v"2.2.0"
 
 # Collection of sources required to build hwloc
 sources = [
-    "https://download.open-mpi.org/release/hwloc/v2.0/hwloc-$(version).tar.bz2" =>
-    "653c05742dff16e5ee6ad3343fd40e93be8ba887eaffbd539832b68780d047a9",
+    ArchiveSource("https://download.open-mpi.org/release/hwloc/v2.2/hwloc-$(version).tar.bz2", "ae70b893df272b84afd7068d351aae5c8c4fd79d40ca783b3e67554b873a2252")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,8 +23,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libhwloc", :libhwloc)
+products = [
+    LibraryProduct("libhwloc", :libhwloc)
 ]
 
 # Dependencies that must be installed before this package can be built
