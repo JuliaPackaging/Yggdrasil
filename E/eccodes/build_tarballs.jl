@@ -7,26 +7,21 @@ version = v"2.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-2.17.0-Source.tar.gz", "762d6b71993b54f65369d508f88e4c99e27d2c639c57a5978c284c49133cc335")
+    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-2.17.0-Source.tar.gz", "762d6b71993b54f65369d508f88e4c99e27d2c639c57a5978c284c49133cc335"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-sed -e '21,93d' eccodes-2.17.0-Source/cmake/eccodes_test_endiness.cmake > new_endianess_test
-echo 'set( IEEE_BE ${ECCODES_BIG_ENDIAN} )' >> new_endianess_test
-echo 'set( IEEE_LE ${ECCODES_LITTLE_ENDIAN} )' >> new_endianess_test
-mv new_endianess_test eccodes-2.17.0-Source/cmake/eccodes_test_endiness.cmake
-if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32"] ; then 
-    sed -e '318d' -e '320d' -e '322d' -e '358d' eccodes-2.17.0-Source/CMakeLists.txt -e '26 a add_compile_definitions(ECCODES_ON_WINDOWS)'> new_cmakelist
-    mv new_cmakelist eccodes-2.17.0-Source/CMakeLists.txt
-    sed -e '425d' eccodes-2.17.0-Source/src/grib_context.c > new_context
-    mv new_context eccodes-2.17.0-Source/src/grib_context.c
-    chmod +x eccodes-2.17.0-Source/cmake/ecbuild_windows_replace_symlinks.sh 
-else 
-    sed -e '318d' -e '320d' -e '322d' -e '358d' eccodes-2.17.0-Source/CMakeLists.txt > new_cmakelist
-    mv new_cmakelist eccodes-2.17.0-Source/CMakeLists.txt
+cd eccodes-2.17.0-Source
+if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32" ] ; then 
+    chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
+    atomic_patch -p1 /workspace/srcdir/patches/windows.patch
+else
+    atomic_patch -p1 /workspace/srcdir/patches/unix.patch
 fi
+cd ..
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.17.0-Source/
