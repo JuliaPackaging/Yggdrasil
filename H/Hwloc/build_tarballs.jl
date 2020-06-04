@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "hwloc"
+name = "Hwloc"
 version = v"2.2.0"
 
 # Collection of sources required to build hwloc
