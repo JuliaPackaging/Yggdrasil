@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "eccodes"
-version = v"1.0.0"
+version = v"2.17.0"
 
 # Collection of sources required to complete build
 sources = [
