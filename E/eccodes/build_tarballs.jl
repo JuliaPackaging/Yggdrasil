@@ -20,22 +20,12 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.17.0-Source/
 make
 make install
+cp ../eccodes-2.17.0-Source/LICENSE ${prefix}/share/licenses/eccodes
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf)
-]
-
+platforms = supported_platforms() 
 
 # The products that we will ensure are always built
 products = [
