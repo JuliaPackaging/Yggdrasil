@@ -17,10 +17,10 @@ sed -e '91,93d' -e '88d' -e '60,86d' -e '55,57d' -e '51d' -e '23,49d' eccodes-2.
 mv new_endianess_test eccodes-2.17.0-Source/cmake/eccodes_test_endiness.cmake
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.17.0-Source/
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF -DIEEE=1 ../eccodes-2.17.0-Source/
 make
 make install
-cp ../eccodes-2.17.0-Source/LICENSE ${prefix}/share/licenses/eccodes
+install_license ../eccodes-2.17.0-Source/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
