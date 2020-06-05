@@ -5,24 +5,19 @@ version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gist.github.com/amontoison/06dac8b63424854f754264597af6b09e/raw/942aba554a82800d0c7438288d3da1a827ef2974/NOMAD.zip", "a6653af375be8006e742239af3914ba48034015d57a2be7a07fc14c6ff245d1b"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/amontoison/nomad.git","3021813788bab9facddcec89047c8ab132db1cdd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd "${WORKSPACE}/srcdir/NOMAD"
-# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad_openmp.patch"
-# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/sgtelib_openmp.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cache_corrections.patch"
-if [[ "${target}" == *-musl* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/include_sys_time_missing_timeval_musl.patch"
-elif [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+cd "${WORKSPACE}/srcdir/nomad"
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CC=gcc
     CXX=g++
 fi
+mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DNOMAD_WITH_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
