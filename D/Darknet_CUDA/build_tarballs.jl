@@ -10,7 +10,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/darknet-*
+cd $WORKSPACE/srcdir
 
 
 ## CUDA setup
@@ -28,6 +28,8 @@ else
     ln -s ${prefix}/cuda/lib64/libcudart.so libcudart.so
     ln -s ${prefix}/cuda/lib64/libnvToolsExt.so libnvToolsExt.so
 fi
+
+cd $WORKSPACE/srcdir/darknet-*
 
 ## Required for OPENMP=1
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
