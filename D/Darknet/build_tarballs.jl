@@ -4,8 +4,7 @@ using BinaryBuilder
 name = "Darknet"
 version = v"2019.6.5"
 sources = [
-    "https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip" =>
-    "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f",
+    ArchiveSource("https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip", "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f")
 ]
 
 script = raw"""
@@ -14,7 +13,7 @@ cd $WORKSPACE/srcdir/darknet-*
 export AVXENABLE=0
 
 # Make sure to have the directories, before building
-make obj backup results setchmod
+# make obj backup results setchmod
 make -j${nproc} libdarknet.${dlext} \
     LIBNAMESO="libdarknet.${dlext}" \
     LIBSO=1 \
