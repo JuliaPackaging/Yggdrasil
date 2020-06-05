@@ -32,8 +32,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libbson-1.0", :libbson),
-    LibraryProduct("libmongoc-1.0", :libmongoc),
+    LibraryProduct(["libbson-1.0", "libbson"], :libbson),
+    LibraryProduct(["libmongoc-1.0", "libmongoc"], :libmongoc),
     ExecutableProduct("mongoc-stat", :mongoc_stat)
 ]
 
