@@ -14,7 +14,7 @@ export AVXENABLE=0
 
 # Make sure to have the directories, before building
 # make obj backup results setchmod
-make -j${nproc} libdarknet.${dlext} \
+make OPTS="" -j${nproc} libdarknet.${dlext} \
     LIBNAMESO="libdarknet.${dlext}" \
     LIBSO=1 \
     GPU=0 \
