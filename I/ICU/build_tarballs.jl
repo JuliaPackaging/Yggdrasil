@@ -7,8 +7,8 @@ version = v"65.1"
 
 # Collection of sources required to build ICU
 sources = [
-    "https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz" =>
-    "53e37466b3d6d6d01ead029e3567d873a43a5d1c668ed2278e253b683136d948",
+    ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz" ,
+    "53e37466b3d6d6d01ead029e3567d873a43a5d1c668ed2278e253b683136d948")
 ]
 
 # Bash recipe for building across all platforms
