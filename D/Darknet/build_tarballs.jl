@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Darknet
 name = "Darknet"
-version = v"2019.6.5"
+version = v"2020.6.5"
 sources = [
     ArchiveSource("https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip", "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f")
 ]
