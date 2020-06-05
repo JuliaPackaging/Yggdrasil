@@ -1,4 +1,5 @@
 using BinaryBuilder
+using Pkg
 
 # Collection of sources required to build Darknet
 name = "Darknet"
