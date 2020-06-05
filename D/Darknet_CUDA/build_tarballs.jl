@@ -7,19 +7,25 @@ version = v"2020.6.5"
 sources = [
     ArchiveSource("https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip", "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f"),
     ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = "cudnn"),
+    ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDA.v10.1.243.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = "cuda"),
 ]
+
+
 
 script = raw"""
 cd $WORKSPACE/srcdir
 
 ## CUDA setup
 
-mv cudnn $prefix
+mv cudnn $prefix                # Note - when MacOS is added, Darknet expects cudnn in cuda's dir: https://github.com/AlexeyAB/darknet/blob/master/Makefile#L112
+mkdir -p /usr/local/cudnn
+cd /usr/local/cudnn
+ln -s ${prefix}/cudnn /usr/local/cudnn
 
+mv cuda $prefix
 mkdir -p /usr/local/cuda
 cd /usr/local/cuda
 ln -s ${prefix}/cuda /usr/local/cuda
-
 
 cd $WORKSPACE/srcdir/darknet-*
 
