@@ -1,29 +1,24 @@
 using BinaryBuilder
+using Pkg
 
 # Collection of sources required to build Darknet
 name = "Darknet"
-version = v"2019.11.15"
+version = v"2020.6.5"
 sources = [
-    "https://github.com/AlexeyAB/darknet/archive/71e835458904f782a905a06d28b4558d9e9830b4.zip" =>
-    "d77017462ae49f9ce2540c3e47589e68b2ce565573bf7d2f011b560bc989fbfa",
-    "./bundled",
+    ArchiveSource("https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip", "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/darknet-*
 
-if [[ "${target}" == *-mingw* ]]; then
-    # Fix case of some Windows headers
-    atomic_patch -p1 ../patches/windows_headers_case.patch
-    # Comment out a couple of definitions
-    atomic_patch -p1 ../patches/getopt_windows.patch
-    # Link against ws2_32 on Windows
-    atomic_patch -p1 ../patches/windows_ldflags.patch
-    # This makes it work for 64-bit Windows
-    atomic_patch -p1 ../patches/gemmc_windows_64bit.patch
+## Required for OPENMP=1
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
 fi
 
-# if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-apple* ]]; then
+## Note for the future: Supporting AVX will make more sense with microarchitecture support
+# if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] then
 #     # Disable AVX on powerpc, arm, aarch, windows, apple
 #     export AVXENABLE=0
 # else
@@ -33,8 +28,8 @@ fi
 export AVXENABLE=0
 
 # Make sure to have the directories, before building
-make obj backup results setchmod
-make -j${nproc} libdarknet.${dlext} \
+# make obj backup results setchmod
+make OPTS="" -j${nproc} libdarknet.${dlext} \
     LIBNAMESO="libdarknet.${dlext}" \
     LIBSO=1 \
     GPU=0 \
@@ -42,7 +37,7 @@ make -j${nproc} libdarknet.${dlext} \
     CUDNN_HALF=0 \
     OPENCV=0 \
     DEBUG=0 \
-    OPENMP=0 \
+    OPENMP=1 \
     ZED_CAMERA=0 \
     AVX=${AVXENABLE}
 
@@ -52,7 +47,7 @@ cp libdarknet.${dlext} "${libdir}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -61,6 +56,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
