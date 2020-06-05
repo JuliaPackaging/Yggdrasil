@@ -16,27 +16,9 @@ cd $WORKSPACE/srcdir
 
 mv cudnn $prefix
 
-if [[ "${target}" == *-apple-* ]]; then
-    mkdir -p /usr/local/cuda/lib
-    cd /usr/local/cuda/lib
-    ln -s ${prefix}/cuda/lib/libcudart.so libcudart.so
-    ln -s ${prefix}/cuda/lib/libnvToolsExt.so libnvToolsExt.so
-    
-    # cudnn resides in cuda on macos
-else
-    mkdir -p /usr/local/cuda/lib64
-    cd /usr/local/cuda/lib64
-    ln -s ${prefix}/cuda/lib64/libcudart.so libcudart.so
-    ln -s ${prefix}/cuda/lib64/libnvToolsExt.so libnvToolsExt.so
-    
-    mkdir -p /usr/local/cudnn/include
-    cd /usr/local/cudnn/include
-    ln -s ${prefix}/cudnn/include /usr/local/cudnn/include
-fi
-
-mkdir -p /usr/local/cuda/include
-cd /usr/local/cuda/include
-ln -s ${prefix}/cuda/include /usr/local/cuda/include
+mkdir -p /usr/local/cuda
+cd /usr/local/cuda
+ln -s ${prefix}/cuda /usr/local/cuda
 
 
 cd $WORKSPACE/srcdir/darknet-*
