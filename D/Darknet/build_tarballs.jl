@@ -10,6 +10,20 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/darknet-*
 
+## Required for OPENMP=1
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
+
+## Note for the future: Supporting AVX will make more sense with microarchitecture support
+# if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] then
+#     # Disable AVX on powerpc, arm, aarch, windows, apple
+#     export AVXENABLE=0
+# else
+#     # Enable everywhere else (linux)
+#     export AVXENABLE=1
+# fi
 export AVXENABLE=0
 
 # Make sure to have the directories, before building
@@ -22,7 +36,7 @@ make OPTS="" -j${nproc} libdarknet.${dlext} \
     CUDNN_HALF=0 \
     OPENCV=0 \
     DEBUG=0 \
-    OPENMP=0 \
+    OPENMP=1 \
     ZED_CAMERA=0 \
     AVX=${AVXENABLE}
 
