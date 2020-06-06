@@ -21,9 +21,23 @@ sed -i "s/Mstcpip.h/mstcpip.h/" src/libmongoc/src/mongoc/mongoc-socket.c
 sed -i "s/Dnsapi/dnsapi/" build/cmake/FindResSearch.cmake
 mkdir cmake-build
 cd cmake-build/
-cmake  -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_SSL=OPENSSL -DENABLE_SASL=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE-UNINSTALL=OFF -DENABLE_STATIC=OFF -DENABLE_MONGOC=ON -DENABLE_BSON=ON -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+
+# if [[ "${nbits}" == 64 ]]; then
+#     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+# else
+#     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+# fi
+
+cmake  -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_SSL=OPENSSL -DENABLE_SASL=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_UNINSTALL=OFF -DENABLE_STATIC=OFF -DENABLE_SNAPPY=OFF -DENABLE_MONGOC=ON -DENABLE_BSON=ON -DOPENSSL_ROOT_DIR=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-apple-darwin* ]]; then
+    rm ${libdir}/libbson-1.0.0.dylib
+    rm ${libdir}/libmongoc-1.0.0.dylib
+    mv ${libdir}/libmongoc-1.0.0.0.0.dylib ${libdir}/libmongoc-1.0.0.dylib
+    mv ${libdir}/libbson-1.0.0.0.0.dylib ${libdir}/libbson-1.0.0.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,9 +46,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libbson-1.0", "libbson"], :libbson),
-    LibraryProduct(["libmongoc-1.0", "libmongoc"], :libmongoc),
-    ExecutableProduct("mongoc-stat", :mongoc_stat)
+    LibraryProduct(["libbson-1", "libbson-1.0", "libbson"], :libbson),
+    LibraryProduct(["libmongoc-1", "libmongoc-1.0", "libmongoc"], :libmongoc),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -42,6 +55,7 @@ dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4"))
+    Dependency(PackageSpec(name="snappy_jll", uuid="fe1e1685-f7be-5f59-ac9f-4ca204017dfd"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
