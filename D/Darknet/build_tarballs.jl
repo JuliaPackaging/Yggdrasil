@@ -43,6 +43,8 @@ make OPTS="" -j${nproc} libdarknet.${dlext} \
 
 mkdir -p "${libdir}"
 cp libdarknet.${dlext} "${libdir}"
+mkdir -p "${prefix}/include/"
+cp include/* ${prefix}/include/
 """
 
 # These are the platforms we will build for by default, unless further
