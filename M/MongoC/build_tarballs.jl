@@ -22,13 +22,13 @@ sed -i "s/Dnsapi/dnsapi/" build/cmake/FindResSearch.cmake
 mkdir cmake-build
 cd cmake-build/
 
-# if [[ "${nbits}" == 64 ]]; then
-#     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-# else
-#     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-# fi
+if [[ "${nbits}" == 32 ]]; then
+    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+elif [[ "${target}" != *-apple-* ]]; then 
+    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+fi
 
-cmake  -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_SSL=OPENSSL -DENABLE_SASL=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_UNINSTALL=OFF -DENABLE_STATIC=OFF -DENABLE_SNAPPY=OFF -DENABLE_MONGOC=ON -DENABLE_BSON=ON -DOPENSSL_ROOT_DIR=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake  -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_SSL=OPENSSL -DENABLE_SASL=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_UNINSTALL=OFF -DENABLE_STATIC=OFF -DENABLE_SNAPPY=ON -DENABLE_MONGOC=ON -DENABLE_BSON=ON -DOPENSSL_ROOT_DIR=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
 make -j${nproc}
 make install
 
