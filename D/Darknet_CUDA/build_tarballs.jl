@@ -16,10 +16,12 @@ cd $WORKSPACE/srcdir
 
 ## CUDA setup
 
-mv cudnn $prefix                # Note - when MacOS is added, Darknet expects cudnn in cuda's dir: https://github.com/AlexeyAB/darknet/blob/master/Makefile#L112
+mv cudnn $prefix                # Note - when MacOS is added, Darknet expects cudnn in cuda's dir: https://github.com/AlexeyAB/darknet/blob/cde72f8e0bc177439c32ce49740fd45ebc79859a/Makefile#L112
 mkdir -p /usr/local
 ln -s ${prefix}/cudnn /usr/local/cudnn
 ln -s ${prefix}/cuda /usr/local/cuda
+# Darknet expects the lib in `/usr/local/cuda/lib`: https://github.com/AlexeyAB/darknet/blob/cde72f8e0bc177439c32ce49740fd45ebc79859a/Makefile#L113
+ln -s lib64 /usr/local/cuda/lib
 export PATH=$PATH:/usr/local/cuda/bin
 
 cd $WORKSPACE/srcdir/darknet-*
