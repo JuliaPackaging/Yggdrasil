@@ -20,7 +20,7 @@ mv cudnn $prefix                # Note - when MacOS is added, Darknet expects cu
 mkdir -p /usr/local
 ln -s ${prefix}/cudnn /usr/local/cudnn
 ln -s ${prefix}/cuda /usr/local/cuda
-export PATH=$PATH:/usr/local/cuda
+export PATH=$PATH:/usr/local/cuda/bin
 
 cd $WORKSPACE/srcdir/darknet-*
 
