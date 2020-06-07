@@ -22,7 +22,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "Base64", "CodecZlib", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "MbedTLS", "ObjectFile", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "1cc271b2acae1e3aed5246a6e4db26f9b46cfbbd"
+git-tree-sha1 = "c5183e377ac5e1b3ba9f31a94f0a4ee37ae04e53"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -120,9 +120,9 @@ version = "0.21.0"
 
 [[JSON2]]
 deps = ["Dates", "Parsers", "Test"]
-git-tree-sha1 = "6cbbbab27d9411946725f5d5c91e8b8fb5f7d5db"
+git-tree-sha1 = "66397cc6c08922f98a28ab05a8d3002f9853b129"
 uuid = "2535ab7d-5cd8-5a07-80ac-9b1792aadce3"
-version = "0.3.1"
+version = "0.3.2"
 
 [[Lazy]]
 deps = ["MacroTools"]
@@ -199,9 +199,9 @@ version = "1.2.0"
 
 [[Parsers]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "f0abb338b4d00306500056a3fd44c221b8473ef2"
+git-tree-sha1 = "eb3e09940c0d7ae01b01d9291ebad7b081c844d3"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.4"
+version = "1.0.5"
 
 [[Pidfile]]
 deps = ["FileWatching", "Test"]
@@ -320,9 +320,9 @@ version = "1.5.2"
 
 [[ZMQ]]
 deps = ["FileWatching", "Sockets", "ZeroMQ_jll"]
-git-tree-sha1 = "adb2d52aa12c8284da12714f35d2b21fc3d5b2bb"
+git-tree-sha1 = "fc68e8a3719166950a0f3e390a14c7302c48f8de"
 uuid = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
-version = "1.2.0"
+version = "1.2.1"
 
 [[ZeroMQ_jll]]
 deps = ["Libdl", "Pkg"]
