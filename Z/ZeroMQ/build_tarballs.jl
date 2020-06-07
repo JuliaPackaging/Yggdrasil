@@ -28,6 +28,7 @@ sh autogen.sh
 ./configure --prefix=$prefix \
     --host=${target} \
     --without-docs \
+    --enable-drafts \
     --disable-libunwind \
     --disable-perf \
     --disable-Werror \
