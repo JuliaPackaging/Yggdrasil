@@ -7,13 +7,15 @@ version = v"2.1.27"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.27/cyrus-sasl-2.1.27.tar.gz", "26866b1549b00ffd020f188a43c258017fa1c382b3ddadd8201536f72efb05d5")
+    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.27/cyrus-sasl-2.1.27.tar.gz", "26866b1549b00ffd020f188a43c258017fa1c382b3ddadd8201536f72efb05d5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd cyrus-sasl-2.1.27/
+cd $WORKSPACE/srcdir/cyrus-sasl-*/
+atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
+autoreconf -vi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=${prefix} --enable-ntlm --disable-gssapi --with-dblib=none
 make -j${nproc}
 make install
