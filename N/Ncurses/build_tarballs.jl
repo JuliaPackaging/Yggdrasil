@@ -7,8 +7,8 @@ version = v"6.1"
 
 # Collection of sources required to build Ncurses
 sources = [
-    "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz" =>
-    "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17",
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
+                  "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17"),
 ]
 
 # Bash recipe for building across all platforms
@@ -85,7 +85,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Gettext_jll",
+    Dependency("Gettext_jll"),
 ]
 
 # Build the tarballs.
