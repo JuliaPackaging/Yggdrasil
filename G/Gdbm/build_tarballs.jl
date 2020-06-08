@@ -26,6 +26,8 @@ if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-mingw* ]]; then
     # Rebuild the configure script to convince it to build the shared library
     autoreconf -vi
 fi
+
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix}
 make -j${nproc}
 make install
