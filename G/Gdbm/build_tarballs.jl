@@ -20,6 +20,12 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gdbm-1.15-win32.patch
 fi
 
+if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-mingw* ]]; then
+    # Install `autopoint` and other tools needed by `autoreconf`
+    apk add gettext-dev
+    # Rebuild the configure script to convince it to build the shared library
+    autoreconf -vi
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix}
 make -j${nproc}
 make install
