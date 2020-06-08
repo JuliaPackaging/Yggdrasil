@@ -28,6 +28,8 @@ fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-shared \
+    --disable-static \
+    --without-manpages \
     --with-normal \
     --without-debug \
     --without-ada \
