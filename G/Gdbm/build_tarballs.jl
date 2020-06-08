@@ -46,7 +46,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
+    # We need to use our Readline library to fix this linking issue when
+    # building for macOS:
+    #    Undefined symbols for architecture x86_64:
+    #      "_history_list", referenced from:
+    #          _input_history_handler in input-rl.o
+    #    ld: symbol(s) not found for architecture x86_64
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
