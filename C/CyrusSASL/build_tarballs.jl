@@ -30,7 +30,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
 autoreconf -vi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=${prefix} --with-sqlite3=${prefix} --oldincludedir=${prefix}/include --enable-ntlm --disable-gssapi --with-dblib=gdbm --disable-static --disable-ldapdb --without-saslauthd --without-pwcheck --without-des --without-authdemond --disable-sample --with-plugindir=${prefix}/lib/sasl2 --with-configdir=${prefix}/etc/sasl2:${prefix}/etc/sasl:${prefix}/lib/sasl2
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-openssl=${prefix} --with-sqlite3=${prefix} --oldincludedir=${prefix}/include --enable-ntlm --disable-gssapi --with-dblib=gdbm --disable-static --disable-ldapdb --without-saslauthd --without-pwcheck --without-des --without-authdaemond --disable-sample --with-plugindir=${prefix}/lib/sasl2 --with-configdir=${prefix}/etc/sasl2:${prefix}/etc/sasl:${prefix}/lib/sasl2
 make -j${nproc}
 make install
 install_license COPYING
