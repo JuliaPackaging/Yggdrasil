@@ -16,12 +16,18 @@ cd $WORKSPACE/srcdir
 cd mpv-*
 ln -s /usr/bin/pkg-config /usr/bin/$target-pkg-config
 if [[ "${nbits}" == 32 ]]; then
-    export LDFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
 elif [[ "${target}" != *-apple-* ]]; then 
-    export LDFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+else 
+    export LDFLAGS="-L${prefix}/lib -liconv"
 fi
 python3 bootstrap.py
-TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 configure
+if [[  "${target}" == *-apple-* ]]; then
+    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 --disable-gl configure
+else 
+    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 configure
+fi
 ./waf build -j${nproc}
 ./waf install
 """
@@ -38,14 +44,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
     Dependency(PackageSpec(name="SDL2_jll", uuid="ab825dc5-c88e-5901-9575-1e5e20358fcf"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
     Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"))
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
-    Dependency(PackageSpec(name="Xorg_scrnsaverproto_jll", uuid="a13fabe6-5ee6-5635-9a74-e87bffe1fafd"))
-    Dependency(PackageSpec(name="Xorg_kbproto_jll", uuid="060dd47b-79ec-5ba1-a7b2-f4f2f7dcdd0f"))
-    Dependency(PackageSpec(name="Xorg_randrproto_jll", uuid="0e394dc1-71ae-5c65-abe5-8749687e42d3"))
     Dependency(PackageSpec(name="Xorg_libXrandr_jll", uuid="ec84b674-ba8e-5d96-8ba1-2a689ba10484"))
     Dependency(PackageSpec(name="Xorg_libXinerama_jll", uuid="d1454406-59df-5ea1-beac-c340f2130bc3"))
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
