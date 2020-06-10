@@ -15,6 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd mpv-*
 ln -s /usr/bin/pkg-config /usr/bin/$target-pkg-config
+
+# libstc++ required for c++ libs when using C compiler
 if [[ "${nbits}" == 32 ]]; then
     export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
 elif [[ "${target}" != *-apple-* ]]; then 
@@ -22,7 +24,14 @@ elif [[ "${target}" != *-apple-* ]]; then
 else 
     export LDFLAGS="-L${prefix}/lib -liconv"
 fi
+
+# pkg-config files for ffmpeg are in $bindir for windows
+if [[ "${target}" == *-mingw* ]]; then
+    cp $bindir/pkgconfig/lib*  /workspace/destdir/lib/pkgconfig/
+fi
 python3 bootstrap.py
+
+# No opengl on MacOS
 if [[  "${target}" == *-apple-* ]]; then
     TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 --disable-gl configure
 else 
