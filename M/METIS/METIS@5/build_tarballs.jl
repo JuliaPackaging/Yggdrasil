@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 # Patches from https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-metis
 script = raw"""
-cd $WORKSPACE/srcdir/metis-5.1.0/
+cd $WORKSPACE/srcdir/metis-*
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
@@ -41,8 +41,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = Dependency[]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
