@@ -17,6 +17,11 @@ cd arb/
 
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1
+elif [[ ${target} == *mingw* ]]; then
+   # /lib is hardcoded in many places
+   sed -i -e "s#/lib\>#/$(basename ${libdir})#g" configure
+   # MSYS_NT-6.3 is not detected as MINGW
+   extraflags=--build=MINGW${nbits}
 fi
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
