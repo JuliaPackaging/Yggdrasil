@@ -17,7 +17,6 @@ cd arb/
 
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1
-   sed -i -e 's/#define _GNU_SOURCE$/#define _GNU_SOURCE 1/' thread_pool.h configure;
 fi
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
