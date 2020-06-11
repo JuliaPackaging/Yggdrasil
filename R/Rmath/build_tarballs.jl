@@ -4,8 +4,8 @@ name = "Rmath"
 version = v"0.2.2"
 
 sources = [
-    "https://github.com/JuliaStats/Rmath-julia/archive/v$(version).tar.gz" =>
-        "6544f40e51999469873b0f28d4bdeecdc847d4b24250a65027ae07e7dccb9ccd",
+    ArchiveSource("https://github.com/JuliaStats/Rmath-julia/archive/v$(version).tar.gz",
+                  "6544f40e51999469873b0f28d4bdeecdc847d4b24250a65027ae07e7dccb9ccd"),
 ]
 
 script = raw"""
@@ -21,6 +21,6 @@ products = [
     LibraryProduct("libRmath-julia", :libRmath),
 ]
 
-dependencies = []
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
