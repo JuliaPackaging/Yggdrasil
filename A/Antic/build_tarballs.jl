@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wbhart/antic.git", "c02176789fe2d5d28cf928eafa63c3765117cc7c")
+    GitSource("https://github.com/wbhart/antic.git", "2f72d8f0ae4a04b1e677bb234516cbdc6816c91f")
 ]
 
 # Bash recipe for building across all platforms
