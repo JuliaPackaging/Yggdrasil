@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libcxxwrap_julia"
-version = v"0.7.1"
+version = v"0.8.0"
 
 const is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/JuliaInterop/libcxxwrap-julia.git" : joinpath(ENV["HOME"], "src/julia/libcxxwrap-julia/")
@@ -11,7 +11,7 @@ unpack_target = is_yggdrasil ? "" : "libcxxwrap-julia"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "52627ad392ea211df51cf4d27af7752400555672", unpack_target=unpack_target),
+    GitSource(git_repo, "30997d732f6a317348a05b4ccb777dfbcc483525", unpack_target=unpack_target),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Julia_jll")
+    BuildDependency(PackageSpec(name="Julia_jll",version=v"1.4.1"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
