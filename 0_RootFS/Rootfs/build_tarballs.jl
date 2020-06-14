@@ -160,6 +160,7 @@ done
 mkdir -p ./usr/local/bin ./usr/local/share/configure_scripts
 cp -vd ${WORKSPACE}/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp -vd ${WORKSPACE}/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
+cp -vd ${WORKSPACE}/srcdir/utils/flagon ./usr/local/bin/flagon
 cp -vd ${WORKSPACE}/srcdir/utils/fake_uname.sh ./usr/bin/uname
 mv ./sbin/sysctl ./sbin/_sysctl
 cp -vd ${WORKSPACE}/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
