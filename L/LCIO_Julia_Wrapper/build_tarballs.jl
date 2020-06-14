@@ -14,7 +14,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper/
 mkdir build && cd build
-ls ${libdir}/cmake/JlCxx
 cmake -DCMAKE_PREFIX_PATH=${libdir}/cmake -DJulia_PREFIX=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${libdir}/cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJlCxx_DIR=${libdir}/cmake/JlCxx ..
 make -j${nproc}
 make install
@@ -27,7 +26,7 @@ platforms = Platform[
     Linux(:x86_64, libc=:glibc),
     MacOS(:x86_64)
 ]
-platforms = expand_cxxstring_abis(platforms)
+#platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
