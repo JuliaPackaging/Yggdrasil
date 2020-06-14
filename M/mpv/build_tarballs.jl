@@ -44,7 +44,7 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
 
 # The products that we will ensure are always built
 products = [
