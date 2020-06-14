@@ -7,7 +7,7 @@ version = v"0.9.0"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "d3563a8b29086e264e9483c92a26b7d29faf7c70")
+	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "a1c201bd7a15c236f221f4f343dd795874794379")
 ]
 
 # Bash recipe for building across all platforms
