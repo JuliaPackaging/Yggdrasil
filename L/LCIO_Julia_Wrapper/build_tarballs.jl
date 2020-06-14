@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.8.2"
+version = v"0.9.0"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/LCIO_Julia_Wrapper/
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=${libdir}/cmake -DJulia_PREFIX=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${libdir}/cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJlCxx_DIR=${libdir}/cmake/JlCxx ..
+cmake -DJulia_PREFIX=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${libdir}/cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 install_license $WORKSPACE/srcdir/LCIO_Julia_Wrapper/LICENSE
@@ -35,9 +35,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-	Dependency("libcxxwrap_julia_jll"),
-	Dependency("LCIO_jll"),
-	BuildDependency("Julia_jll")
+        Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8")),
+        Dependency("LCIO_jll"),
+        BuildDependency(PackageSpec(name="Julia_jll",version=v"1.4.1"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
