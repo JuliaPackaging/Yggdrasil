@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/FastJet_Julia_Wrapper
 mkdir build && cd build
-cmake -DJulia_PREFIX=${Julia_PREFIX} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DJulia_PREFIX=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 ￼make install
 install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/FastJet_Julia_Wrapper/LICENSE.md
