@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using Pkg
 
 name = "FastJet_Julia_Wrapper"
 version = v"0.8.0"
@@ -24,7 +25,7 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/FastJet_Julia_Wrapper/LI
 # platforms are passed in on the command line
 platforms = Platform[
     Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-￼    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11))
+    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11))
 ]
 
 # The products that we will ensure are always built
