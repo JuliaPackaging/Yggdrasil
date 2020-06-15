@@ -7,7 +7,7 @@ version = v"0.8.0"
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
-	GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "6d4181ca351c7a40348745097c87afd97bf9ce62"),
+	GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "de21f03e874f91da2f3db5431603d172e2c004a6"),
 ]
 
 # Bash recipe for building across all platforms
