@@ -6,11 +6,13 @@ version = v"4.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/amontoison/nomad.git","a15c91feb589451e6934b1544edb4360af8fbc41"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/nomad"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/compilation.patch"
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CC=gcc
     CXX=g++
