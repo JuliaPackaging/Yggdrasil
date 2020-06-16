@@ -14,7 +14,7 @@ const sources = [
 
 # Dependencies that must be installed before this package can be built
 const dependencies = [
-    BuildDependency("Julia_jll"),
+    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
 
     Dependency("CGAL_jll"),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", version=v"0.7.1")),
