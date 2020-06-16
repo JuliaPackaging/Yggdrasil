@@ -10,7 +10,7 @@ sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/5.14/$version/single/qt-everywhere-src-$version.tar.xz",
                   "c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 script = raw"""
