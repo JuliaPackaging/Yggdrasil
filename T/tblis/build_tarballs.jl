@@ -26,6 +26,7 @@ platforms = [
     Linux(:x86_64, libc=:glibc),
     Linux(:x86_64, libc=:musl)
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
