@@ -1,22 +1,23 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+import Pkg: PackageSpec
 
 const name = "libcgal_julia"
-const version = v"0.9.1"
+const version = v"0.10.1"
 
 # Collection of sources required to build CGAL
 const sources = [
     GitSource("https://github.com/rgcv/libcgal-julia.git",
-              "306c43938205c81d28cccf47eab5a24297dea5ba"),
+              "631c98fcfb0305d1bb20e4c23bd539bbb85c4145"),
 ]
 
 # Dependencies that must be installed before this package can be built
 const dependencies = [
-    BuildDependency("Julia_jll"),
+    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
 
     Dependency("CGAL_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", version=v"0.7.1")),
 ]
 
 # Bash recipe for building across all platforms
