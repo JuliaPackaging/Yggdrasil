@@ -4,11 +4,11 @@ using BinaryBuilder
 
 # Collection of sources required to build GMP
 name = "GMP"
-version = v"6.1.2"
+version = v"6.2.0"
 
 sources = [
     ArchiveSource("https://gmplib.org/download/gmp/gmp-$(version).tar.bz2",
-                  "5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2"),
+                  "f51c99cb114deb21a60075ffb494c1a210eb9d7cb729ed042ddb7de9534451ea"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,15 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gmp-*
 
-# Update config.status
-update_configure_scripts
-
-# Patch `configure` to include `$LDFLAGS` in its tests.  This is necessary on FreeBSD.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.patch
-
 # Include Julia-carried patches
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp_alloc_overflow_func.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-exception.patch
 
 flags=(--enable-cxx --enable-shared --disable-static)
 
@@ -34,10 +27,6 @@ if [[ ${proc_family} == intel ]]; then
 fi
 
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
-
-# Something is broken in the libtool that gets generated on macOS; I can't
-# figure out why, but `hardcode_action` is set to blank for CXX files.  /shrug
-sed -i -e 's&hardcode_action=$&hardcode_action=immediate&g' libtool
 
 make -j${nproc}
 make install
