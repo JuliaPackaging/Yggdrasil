@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.3977"
+version = v"1.0.4062"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,13 +12,13 @@ version = v"1.0.3977"
 
 # Collection of sources required to build IGC
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "ee02884c6a2fc3eca62651a53e8dad65608fc352"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "18081c401f7bbfeefede84572a066f038a2d0709"),
     # use LLVM 10 as provided by the official packages for Ubuntu 18.04
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
     GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "7743482f2053582be990e93ca46d15239c509c9d"), # v10.0.0
     # patches
-    GitSource("https://github.com/intel/llvm-patches.git", "4023a728d4c113c08fd881c182b43ef871151c4f"),
+    GitSource("https://github.com/intel/llvm-patches.git", "595c1e3eeb30afc8b6c20855f6a69560f7a9864a"),
     DirectorySource("./bundled"),
 ]
 
@@ -57,7 +57,6 @@ cd intel-graphics-compiler
 install_license LICENSE.md
 
 # Work around compilation failures
-atomic_patch -p1 ../patches/format_macros.patch
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p1 ../patches/gcc-constexpr_assert_bug.patch
 if [[ "${target}" == *86*-linux-musl* ]]; then

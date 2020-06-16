@@ -4,5 +4,5 @@ index 2496ad87..f4b89939 100644
 +++ b/IGC/Compiler/CISACodeGen/CISABuilder.cpp
 @@ -199,2 +199,2 @@ namespace IGC
          case SIMDMode::UNKNOWN:
--        default: IGC_ASSERT(false && "unreachable"); break;
+-        default: IGC_ASSERT_MESSAGE(0, "unreachable"); break;
 +        default: break;
