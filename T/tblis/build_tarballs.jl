@@ -16,8 +16,8 @@ cd $WORKSPACE/srcdir
 cd tblis/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-cp lib/.libs/libtblis.so.0.0.0 /workspace/destdir/lib/libtblis.so.0
-cp src/external/tci/lib/.libs/libtci.so.0.0.0 /workspace/destdir/lib/libtci.so.0
+cp lib/.libs/libtblis.so.0.0.0 ${libdir}/libtblis.so.0
+cp src/external/tci/lib/.libs/libtci.so.0.0.0 ${libdir}/libtci.so.0
 """
 
 # These are the platforms we will build for by default, unless further
