@@ -2,18 +2,21 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "ntl"
-version = v"10.5.0"
+version = v"11.4.3"
 sources = [
-    "https://www.shoup.net/ntl/ntl-10.5.0.tar.gz" =>
-    "b90b36c9dd8954c9bc54410b1d57c00be956ae1db5a062945822bbd7a86ab4d2",
+    ArchiveSource("https://www.shoup.net/ntl/ntl-$(version).tar.gz",
+                  "b7c1ccdc64840e6a24351eb4a1e68887d29974f03073a1941c906562c0b83ad2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ntl-*/src
-./configure "PREFIX=${prefix}" "GMP_PREFIX=${prefix}" NATIVE=off SHARED=on TUNE=x86 CXX="ccache ${CXX}"
+./configure PREFIX="${prefix}" GMP_PREFIX="${prefix}" NATIVE=off SHARED=on
+
 make -j${nproc}
 make install
+
+install_license ../doc/copying.txt
 """
 
 # Bootstrapping problem; only do natively-runnable platforms
@@ -22,15 +25,16 @@ platforms = [
     Linux(:i686),
     Linux(:x86_64; libc=:musl),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libntl", :libntl),
+products = [
+    LibraryProduct("libntl", :libntl),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
+    Dependency("GMP_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
