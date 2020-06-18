@@ -31,33 +31,10 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcamlrun_shared", :libcamlrun_shared),
-    LibraryProduct("dllunix", :dllunix),
-    ExecutableProduct("ocamlcmt", :ocamlcmt),
     LibraryProduct("bigarray", :bigarray),
-    ExecutableProduct("ocamlprof.opt", :ocamlprof),
-    ExecutableProduct("ocamlmklib.opt", :ocamlmklib),
-    ExecutableProduct("ocamlobjinfo.opt", :ocamlobjinfo),
-    FileProduct("lib/ocaml/compiler-libs/main.o", :main),
     ExecutableProduct("ocamlopt.opt", :ocamlopt),
-    FileProduct("lib/ocaml/compiler-libs/optmain.o", :optmain),
-    LibraryProduct("dllthreads", :dllthreads),
-    ExecutableProduct("objinfo_helper", :objinfo_helper, "lib/ocaml"),
-    LibraryProduct("libasmrun_shared", :libasmrun_shared),
-    ExecutableProduct("ocamlmktop.opt", :ocamlmktop),
-    FileProduct("lib/ocaml/std_exit.o", :std_exit),
-    ExecutableProduct("ocamllex.opt", :ocamllex),
     LibraryProduct("unix", :unix),
-    ExecutableProduct("ocamldep.opt", :ocamldep),
-    ExecutableProduct("ocamlcp.opt", :ocamlcp),
-    ExecutableProduct("ocamldoc.opt", :ocamldoc),
-    FileProduct("lib/ocaml/profiling.o", :profiling),
     LibraryProduct("str", :str),
-    ExecutableProduct("ocamlrund", :ocamlrund),
-    ExecutableProduct("ocamlruni", :ocamlruni),
-    LibraryProduct("dllcamlstr", :dllcamlstr),
-    ExecutableProduct("ocamlyacc", :ocamlyacc),
-    ExecutableProduct("ocamlrun", :ocamlrun),
     ExecutableProduct("ocamlc.opt", :ocamlc)
 ]
 
