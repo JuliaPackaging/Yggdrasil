@@ -1,0 +1,71 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -57,6 +57,11 @@
+ 
+ if(WINDOWS OR MINGW)
+   list(APPEND SOURCES ${SOURCE_DIR}/os_dependent/SettingsWin32.cxx ${SOURCE_DIR}/os_dependent/OSystemWin32.cxx ${SOURCE_DIR}/os_dependent/FSNodeWin32.cxx)
++  SET(BIN_INSTALL_DIR "bin")
++  SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
++  SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin${LIB_SUFFIX}" CACHE STRING "Library directory name")
++  SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE STRING "Headers directory name")
++  SET(PKGCONFIG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/" CACHE STRING "Base directory for pkgconfig files")
+ else()
+   list(APPEND SOURCES ${SOURCE_DIR}/os_dependent/SettingsUNIX.cxx ${SOURCE_DIR}/os_dependent/OSystemUNIX.cxx ${SOURCE_DIR}/os_dependent/FSNodePOSIX.cxx)
+   SET(BIN_INSTALL_DIR "bin")
+@@ -68,8 +73,6 @@
+ endif()
+ 
+ # List and set the install targets for the headers, generate and install the pkgconfig file
+-if(UNIX)
+-
+   INSTALL(FILES ${SOURCE_DIR}/os_dependent/SettingsUNIX.hxx ${SOURCE_DIR}/os_dependent/SettingsWin32.hxx ${SOURCE_DIR}/os_dependent/OSystemUNIX.hxx ${SOURCE_DIR}/os_dependent/OSystemWin32.hxx DESTINATION ${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}/os_dependent)
+   file(GLOB module_headers ${SOURCE_DIR}/*.h?[xp])
+   foreach(header ${module_headers})
+@@ -108,8 +111,6 @@
+ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+       DESTINATION ${PKGCONFIG_INSTALL_DIR})
+ 
+-endif(UNIX)
+-
+ include_directories(
+   ${SOURCE_DIR}
+   ${SOURCE_DIR}/common
+@@ -134,10 +135,8 @@
+   add_library(ale-lib SHARED ${SOURCE_DIR}/ale_interface.cpp ${SOURCES})
+   set_target_properties(ale-lib PROPERTIES OUTPUT_NAME ale)
+   set_target_properties(ale-lib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+-  if(UNIX)
+-    install(TARGETS ale-lib
+-      DESTINATION ${LIB_INSTALL_DIR})
+-  endif()
++  install(TARGETS ale-lib
++    DESTINATION ${LIB_INSTALL_DIR})
+   target_link_libraries(ale-lib ${LINK_LIBS})
+ endif()
+ 
+@@ -145,10 +144,8 @@
+   add_executable(ale-bin ${SOURCE_DIR}/main.cpp ${SOURCE_DIR}/ale_interface.cpp ${SOURCES})
+   set_target_properties(ale-bin PROPERTIES OUTPUT_NAME ale)
+   set_target_properties(ale-bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+-  if(UNIX)
+-    install(TARGETS ale-bin
+-      DESTINATION ${BIN_INSTALL_DIR})
+-  endif()
++  install(TARGETS ale-bin
++    DESTINATION ${BIN_INSTALL_DIR})
+   target_link_libraries(ale-bin ${LINK_LIBS})
+ endif()
+ 
+@@ -156,10 +153,8 @@
+   add_library(ale-c-lib SHARED ${CMAKE_CURRENT_SOURCE_DIR}/ale_python_interface/ale_c_wrapper.cpp ${SOURCE_DIR}/ale_interface.cpp ${SOURCES})
+   set_target_properties(ale-c-lib PROPERTIES OUTPUT_NAME ale_c)
+   set_target_properties(ale-c-lib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ale_python_interface)
+-  if(UNIX)
+-    install(TARGETS ale-c-lib
+-      DESTINATION ${LIB_INSTALL_DIR})
+-  endif()
++  install(TARGETS ale-c-lib
++    DESTINATION ${LIB_INSTALL_DIR})
+   target_link_libraries(ale-c-lib ${LINK_LIBS})
+ endif()
+ 

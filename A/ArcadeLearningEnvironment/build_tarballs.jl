@@ -7,15 +7,27 @@ version = v"0.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v0.6.1.tar.gz", "8059a4087680da03878c1648a8ceb0413a341032ecaa44bef4ef1f9f829b6dde")
+    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v0.6.1.tar.gz", "8059a4087680da03878c1648a8ceb0413a341032ecaa44bef4ef1f9f829b6dde"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Arcade-Learning-Environment-0.6.1/
-cmake -DUSE_SDL=OFF -DBUILD_EXAMPLES=OFF -DBUILD_CPP_LIB=OFF -DBUILD_CLI=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-I${prefix}/include" .
-make
+cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
+atomic_patch -p1 ../patches/fix-dlext-macos.patch
+atomic_patch -p1 ../patches/cmake-install-for-windows.patch
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUSE_SDL=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_CPP_LIB=OFF \
+    -DBUILD_CLI=OFF \
+    -DCMAKE_CXX_FLAGS="-I${includedir}" \
+    -DCMAKE_SHARED_LINKER_FLAGS_INIT="-L${libdir}" \
+    ..
+make -j${nproc}
 make install
 """
 
