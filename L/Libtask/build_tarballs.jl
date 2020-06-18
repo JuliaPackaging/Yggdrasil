@@ -4,7 +4,7 @@ using Pkg
 using BinaryBuilder
 
 name = "Libtask"
-version = v"0.3.1"
+version = v"0.3.2"
 commit_id = "fbe338053f402d76524d0a01f3796dd7da90b781"
 
 # see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/336
@@ -26,6 +26,7 @@ script = read(script_file, String)
 platforms = [
     Linux(:i686, libc=:glibc),
     Linux(:x86_64, libc=:glibc),
+    Linux(:powerpc64le, libc=:glibc),
     # Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     Linux(:aarch64),
     MacOS(:x86_64),
