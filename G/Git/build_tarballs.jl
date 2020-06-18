@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.26.1"
+version = v"2.27.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "888228408f254634330234df3cece734d190ef6381063821f31ec020538f0368"),
+                  "73ca9774d7fa226e1d87c1909401623f96dca6a044e583b9a762e84d7d1a73f9"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "7c9bf2b200d1f65ae0d038c6801efa410760da880eb1f5e683ea8e1efd288c38"; unpack_target = "i686-w64-mingw32"),
+                  "96bcfb93c7fbb34bbd4c5c9ba14a2a6ae8f58b299688278e38db1dacad180df2"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "066c2e88c32d942e32d78aa888559b76ec1785e642b498c6710900026dc05310"; unpack_target = "x86_64-w64-mingw32"),
+                  "a653c41999e4c80eebde8de046dd92a5a9e38a77f60466120daab2f31d3d0935"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
