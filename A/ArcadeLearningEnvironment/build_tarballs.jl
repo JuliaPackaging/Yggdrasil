@@ -20,7 +20,7 @@ make
 make install
 cd ../Arcade-Learning-Environment-0.6.1/
 cmake -DUSE_SDL=OFF -DBUILD_EXAMPLES=OFF -DBUILD_CPP_LIB=OFF -DBUILD_CLI=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-isystem\ ../zlib-1.2.11/ .
-make
+make -j${nproc}
 make install
 """
 
