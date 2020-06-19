@@ -45,6 +45,7 @@ rm -f ${prefix}/lib/*.la
     --with-libz=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
+    --with-openjpeg \
     --with-python=no \
     --enable-shared \
     --disable-static
@@ -91,6 +92,7 @@ dependencies = [
     "Zlib_jll",
     "SQLite_jll",
     "LibCURL_jll",
+    "OpenJpeg_jll",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
