@@ -31,10 +31,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("bigarray", :bigarray),
     ExecutableProduct("ocamlopt.opt", :ocamlopt),
-    LibraryProduct("unix", :unix),
-    LibraryProduct("str", :str),
     ExecutableProduct("ocamlc.opt", :ocamlc)
 ]
 
