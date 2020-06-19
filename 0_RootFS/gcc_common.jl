@@ -8,74 +8,74 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     # We download GCC, MPFR, MPC, ISL and GMP.
     gcc_version_sources = Dict(
         v"4.8.5" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2" =>
-            "22fb1e7e0f68a63cee631d85b20461d1ea6bda162f03096350e38c8d427ecf23",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz" =>
-            "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz" =>
-            "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2" =>
-            "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2",
+                          "22fb1e7e0f68a63cee631d85b20461d1ea6bda162f03096350e38c8d427ecf23"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz",
+                          "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz",
+                          "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2",
+                          "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775"),
         ],
         v"5.2.0" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-5.2.0/gcc-5.2.0.tar.bz2" =>
-            "5f835b04b5f7dd4f4d2dc96190ec1621b8d89f2dc6f638f9f8bc1b1014ba8cad",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz" =>
-            "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz" =>
-            "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2" =>
-            "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.14.tar.bz2" =>
-            "7e3c02ff52f8540f6a85534f54158968417fd676001651c8289c705bd0228f36",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-5.2.0/gcc-5.2.0.tar.bz2",
+                          "5f835b04b5f7dd4f4d2dc96190ec1621b8d89f2dc6f638f9f8bc1b1014ba8cad"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz",
+                          "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz",
+                          "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2",
+                          "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.14.tar.bz2",
+                          "7e3c02ff52f8540f6a85534f54158968417fd676001651c8289c705bd0228f36"),
         ],
         v"6.1.0" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-6.1.0/gcc-6.1.0.tar.bz2" =>
-            "09c4c85cabebb971b1de732a0219609f93fc0af5f86f6e437fd8d7f832f1a351",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz" =>
-            "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz" =>
-            "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2" =>
-            "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.15.tar.bz2" =>
-            "8ceebbf4d9a81afa2b4449113cee4b7cb14a687d7a549a963deb5e2a41458b6b",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-6.1.0/gcc-6.1.0.tar.bz2",
+                          "09c4c85cabebb971b1de732a0219609f93fc0af5f86f6e437fd8d7f832f1a351"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-2.4.2.tar.xz",
+                          "d7271bbfbc9ddf387d3919df8318cd7192c67b232919bfa1cb3202d07843da1b"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/mpc-0.8.1.tar.gz",
+                          "e664603757251fd8a352848276497a4c79b7f8b21fd8aedd5cc0598a38fee3e4"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-4.3.2.tar.bz2",
+                          "936162c0312886c21581002b79932829aa048cfaf9937c6265aeaa14f1cd1775"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.15.tar.bz2",
+                          "8ceebbf4d9a81afa2b4449113cee4b7cb14a687d7a549a963deb5e2a41458b6b"),
         ],
         v"7.1.0" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-7.1.0/gcc-7.1.0.tar.bz2" =>
-            "8a8136c235f64c6fef69cac0d73a46a1a09bb250776a050aec8f9fc880bebc17",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-3.1.4.tar.xz" =>
-            "761413b16d749c53e2bfd2b1dfaa3b027b0e793e404b90b5fbaeef60af6517f5",
-            "https://mirrors.kernel.org/gnu/mpc/mpc-1.0.3.tar.gz" =>
-            "617decc6ea09889fb08ede330917a00b16809b8db88c29c31bfbb49cbf88ecc3",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.16.1.tar.bz2" =>
-            "412538bb65c799ac98e17e8cfcdacbb257a57362acfaaff254b0fcae970126d2",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-6.1.0.tar.xz" =>
-            "68dadacce515b0f8a54f510edf07c1b636492bcdb8e8d54c56eb216225d16989",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-7.1.0/gcc-7.1.0.tar.bz2",
+                          "8a8136c235f64c6fef69cac0d73a46a1a09bb250776a050aec8f9fc880bebc17"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-3.1.4.tar.xz",
+                          "761413b16d749c53e2bfd2b1dfaa3b027b0e793e404b90b5fbaeef60af6517f5"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.0.3.tar.gz",
+                          "617decc6ea09889fb08ede330917a00b16809b8db88c29c31bfbb49cbf88ecc3"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.16.1.tar.bz2",
+                          "412538bb65c799ac98e17e8cfcdacbb257a57362acfaaff254b0fcae970126d2"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.0.tar.xz",
+                          "68dadacce515b0f8a54f510edf07c1b636492bcdb8e8d54c56eb216225d16989"),
         ],
         v"8.1.0" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-8.1.0/gcc-8.1.0.tar.xz" =>
-            "1d1866f992626e61349a1ccd0b8d5253816222cdc13390dcfaa74b093aa2b153",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz" =>
-            "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e",
-            "https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz" =>
-            "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2" =>
-            "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz" =>
-            "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-8.1.0/gcc-8.1.0.tar.xz",
+                          "1d1866f992626e61349a1ccd0b8d5253816222cdc13390dcfaa74b093aa2b153"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
+                          "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
+                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
         v"9.1.0" => [
-            "https://mirrors.kernel.org/gnu/gcc/gcc-9.1.0/gcc-9.1.0.tar.xz" =>
-            "79a66834e96a6050d8fe78db2c3b32fb285b230b855d0a66288235bc04b327a0",
-            "https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz" =>
-            "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a",
-            "https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz" =>
-            "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e",
-            "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2" =>
-            "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b",
-            "https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz" =>
-            "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-9.1.0/gcc-9.1.0.tar.xz",
+                          "79a66834e96a6050d8fe78db2c3b32fb285b230b855d0a66288235bc04b327a0"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz",
+                          "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
+                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
     )
 
@@ -84,10 +84,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     if isa(compiler_target, MacOS)
         # MacOS doesn't actually use binutils, it uses cctools
         binutils_sources = [
-            "https://github.com/tpoechtrager/apple-libtapi.git" =>
-            "3efb201881e7a76a21e0554906cf306432539cef",
-            "https://github.com/tpoechtrager/cctools-port.git" =>
-            "a2e02aad90a98ac034b8d0286496450d136ebfcd",
+            GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
+                      "3efb201881e7a76a21e0554906cf306432539cef"),
+            GitSource("https://github.com/tpoechtrager/cctools-port.git",
+                      "a2e02aad90a98ac034b8d0286496450d136ebfcd"),
         ]
     else
         # Different versions of GCC should be pared with different versions of Binutils
@@ -103,28 +103,28 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         # Everyone else uses GNU Binutils, but we have to version carefully.
         binutils_version_sources = Dict(
             v"2.24" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2" =>
-                "e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2",
+                              "e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137"),
             ],
             v"2.25.1" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2" =>
-                "b5b14added7d78a8d1ca70b5cb75fef57ce2197264f4f5835326b0df22ac9f22",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2",
+                              "b5b14added7d78a8d1ca70b5cb75fef57ce2197264f4f5835326b0df22ac9f22"),
             ],
             v"2.26" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.26.tar.bz2" =>
-                "c2ace41809542f5237afc7e3b8f32bb92bc7bc53c6232a84463c423b0714ecd9",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.26.tar.bz2",
+                              "c2ace41809542f5237afc7e3b8f32bb92bc7bc53c6232a84463c423b0714ecd9"),
             ],
             v"2.27" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.bz2" =>
-                "369737ce51587f92466041a97ab7d2358c6d9e1b6490b3940eb09fb0a9a6ac88",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.bz2",
+                              "369737ce51587f92466041a97ab7d2358c6d9e1b6490b3940eb09fb0a9a6ac88"),
             ],
             v"2.31" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.bz2" =>
-                "2c49536b1ca6b8900531b9e34f211a81caf9bf85b1a71f82b81ae32fcd8ffe19",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.bz2",
+                              "2c49536b1ca6b8900531b9e34f211a81caf9bf85b1a71f82b81ae32fcd8ffe19"),
             ],
             v"2.33.1" => [
-                "https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz" =>
-                "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf",
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz",
+                              "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
@@ -136,41 +136,41 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         # Depending on our architecture, we choose different versions of glibc
         if arch(compiler_target) in [:x86_64, :i686]
             libc_sources = [
-                "https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz" =>
-                "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f",
+                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
+                              "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
             ]
         elseif arch(compiler_target) in [:armv7l, :aarch64]
             libc_sources = [
-                "https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz" =>
-                "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2",
+                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
+                              "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
             ]
         elseif arch(compiler_target) in [:powerpc64le]
             libc_sources = [
-                "https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz" =>
-                "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e",
+                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
+                              "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
             ]
         else
             error("Unknown arch for glibc for compiler target $(compiler_target)")
         end
     elseif isa(compiler_target, Linux) && libc(compiler_target) == :musl
         libc_sources = [
-            "https://www.musl-libc.org/releases/musl-1.1.19.tar.gz" =>
-            "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9",
+            ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
+                          "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
     elseif isa(compiler_target, MacOS)
         libc_sources = [
-            "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
-            "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
+            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz",
+                          "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce"),
         ]
     elseif isa(compiler_target, FreeBSD)
         libc_sources = [
-            "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
-            "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
+            ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz",
+                          "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19"),
         ]
     elseif isa(compiler_target, Windows)
         libc_sources = [
-            "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
-            "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
+            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2",
+                          "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0"),
         ]
     else
         error("Unknown libc mapping for platform $(compiler_target)")
@@ -181,7 +181,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         gcc_version_sources[gcc_version]...,
         binutils_sources...,
         libc_sources...,
-        "./bundled",
+        DirectorySource("./bundled"),
     ]
 end
 
