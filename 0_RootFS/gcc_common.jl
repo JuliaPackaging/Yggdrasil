@@ -285,6 +285,9 @@ function gcc_script(compiler_target::Platform)
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-as=${prefix}/bin/${COMPILER_TARGET}-as"
 
+        # GCC doesn't turn LTO on by default for some reason.
+        GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-lto --enable-plugin"
+
         # On darwin, cilk doesn't build on 5.X-7.X.  :(
         export enable_libcilkrts=no
     fi
