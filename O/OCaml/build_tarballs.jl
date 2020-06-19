@@ -15,8 +15,13 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd ocaml-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
+for bin in $(file ${bindir}/* | grep "a ${bindir}/ocamlrun script" | cut -d: -f1); do
+    # Fix shebang of ocamlrun scripts to not hardcode
+    # a path of the build environment
+    sed -i "s?${bindir}/ocamlrun?/usr/bin/env ocamlrun?" "${bin}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
