@@ -5,9 +5,9 @@ version = v"3.0.4"
 
 # Collection of sources required to build GDAL
 sources = [
-    "https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz" =>
-    "fc15d2b9107b250305a1e0bd8421dd9ec1ba7ac73421e4509267052995af5e83",
-    "./bundled",
+    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz",
+        "fc15d2b9107b250305a1e0bd8421dd9ec1ba7ac73421e4509267052995af5e83"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_6_3"
+    export PROJ_LIBS="proj_7_0"
 elif [[ "${target}" == *-linux-* ]]; then
     # Make sure GEOS is linked against libstdc++
      atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
@@ -45,6 +45,7 @@ rm -f ${prefix}/lib/*.la
     --with-libz=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
+    --with-openjpeg \
     --with-python=no \
     --enable-shared \
     --disable-static
@@ -86,11 +87,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "GEOS_jll",
-    "PROJ_jll",
-    "Zlib_jll",
-    "SQLite_jll",
-    "LibCURL_jll",
+    Dependency("GEOS_jll"),
+    Dependency("PROJ_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("SQLite_jll"),
+    Dependency("LibCURL_jll"),
+    Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
