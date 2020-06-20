@@ -7,15 +7,22 @@ version = v"3.4.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libarchive/libarchive/archive/v3.4.3.tar.gz", "19556c1c67aacdff547fd719729630444dbc7161c63eca661a310676a022bb01")
+    ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz", "0bfc3fd40491768a88af8d9b86bf04a9e95b6d41a94f9292dbc0ec342288c05f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libarchive-3.4.3/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
+cd $WORKSPACE/srcdir/libarchive-*/
+export CPPFLAGS="-I${includedir}"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-expat \
+    --without-xml2 \
+    --without-nettle \
+    --without-openssl \
+    --disable-static
+make -j${nproc}
 make install
 """
 
@@ -32,7 +39,14 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Bzip2_jll"),
+    Dependency("Expat_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Lz4_jll"),
+    Dependency("XZ_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
