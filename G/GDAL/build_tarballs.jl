@@ -19,7 +19,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_6_3"
+    export PROJ_LIBS="proj_7_0"
 elif [[ "${target}" == *-linux-* ]]; then
     # Make sure GEOS is linked against libstdc++
      atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
