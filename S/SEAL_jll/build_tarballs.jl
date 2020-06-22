@@ -7,19 +7,24 @@ version = v"3.5.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.4.tar.gz", "0c325c3e3d9b77be63ef866a7c73de861be46b99b61a22be60518d34865a1f37"),
+    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.4.tar.gz",
+                  "0c325c3e3d9b77be63ef866a7c73de861be46b99b61a22be60518d34865a1f37"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Apply patches that fix some cross-compilation issues
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
+
 cd SEAL-*
+
 # The last three '-DSEAL_USE__*' flags are required to circumvent
-# cross-compilation issues.
+# cross-compilation issues
 if [[ "${target}" == *-darwin* ]]; then
   # C++17 is disabled on MacOS due to the environment being too old.
   cmake . \
@@ -61,6 +66,9 @@ platforms = [
     Linux(:aarch64, libc=:musl)
 ]
 
+# Fix incompatibilities across the GCC 4/5 version boundary due to std::string,
+# as suggested by the wizard
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
