@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/gmp-*
 
 # Include Julia-carried patches
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp_alloc_overflow_func.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-exception.patch
 
 flags=(--enable-cxx --enable-shared --disable-static)
 
