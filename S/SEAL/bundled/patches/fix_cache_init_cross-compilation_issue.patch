@@ -1,0 +1,38 @@
+diff --git before/SEAL-3.5.4/CMakeLists.txt after/SEAL-3.5.4/CMakeLists.txt
+index c0b6dc8..99b7b73 100644
+--- before/SEAL-3.5.4/CMakeLists.txt
++++ after/SEAL-3.5.4/CMakeLists.txt
+@@ -262,14 +262,14 @@ if(SEAL_USE_MSGSL AND NOT MSVC)
+             RESULT_VARIABLE result
+             WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)
+     else()
+-        seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/msgsl)
++        # seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/msgsl)
+         if(EXISTS ${SEAL_THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
+             # Force regenerating make files. When cross compiling we might be
+             # compiling more than one platform at a time.
+             file(REMOVE ${SEAL_THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
+         endif()
+         execute_process(
+-            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -Ccache_init.txt
++            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -DCMAKE_INSTALL_PREFIX=$ENV{prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+             OUTPUT_QUIET
+             RESULT_VARIABLE result
+             WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)
+@@ -322,14 +322,14 @@ if(SEAL_USE_ZLIB AND NOT MSVC)
+             RESULT_VARIABLE result
+             WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/zlib)
+     else()
+-        seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/zlib)
++        # seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/zlib)
+         if(EXISTS ${SEAL_THIRDPARTY_DIR}/zlib/build/CMakeCache.txt)
+             # Force regenerating make files. When cross compiling we might be
+             # compiling more than one platform at a time.
+             file(REMOVE ${SEAL_THIRDPARTY_DIR}/zlib/build/CMakeCache.txt)
+         endif()
+         execute_process(
+-            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -Ccache_init.txt
++            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -DCMAKE_INSTALL_PREFIX=$ENV{prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+             OUTPUT_QUIET
+             RESULT_VARIABLE result
+             WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/zlib)
