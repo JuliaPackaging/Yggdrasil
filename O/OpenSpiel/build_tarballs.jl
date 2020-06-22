@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenSpiel"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/findmyway/open_spiel/archive/v0.1.1.tar.gz", "8791ab9902aa46fd8263b79ea789f34d17e3a38dbc9e7ecbd46c5423922f0124"),
+    ArchiveSource("https://github.com/deepmind/open_spiel/archive/v0.1.0.tar.gz", "2c605e8190f0280c666aaed3f944f364d6e7b201192611441dbe1a7ab4689b59"),
     ArchiveSource("https://github.com/findmyway/dds/archive/v0.1.0.tar.gz", "81070b8e96779b5b2303185642753013aa874bffbd58b9cc599204aee064292d"),
     ArchiveSource("https://github.com/findmyway/abseil-cpp/archive/v0.1.0.tar.gz", "7b612c1fed278250b5d1a4e29ddb410145b26a0e7c781c1ca4ac03d092179202"),
     ArchiveSource("https://github.com/findmyway/hanabi-learning-environment/archive/v0.1.0.tar.gz", "6126936fd13a95f8cadeacaa69dfb38a960eaf3bd588aacc8893a6e07e4791a3"),
@@ -22,7 +22,7 @@ sources = [
 script = raw"""
 
 case "$target" in
-	arm-linux-gnueabihf|x86_64-linux-gnu)
+        arm-linux-gnueabihf|x86_64-linux-gnu)
         Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/julia-1.3.1
         ;;
     x86_64-apple-darwin14|x86_64-w64-mingw32)
@@ -30,7 +30,7 @@ case "$target" in
         ;;
 esac
 
-mv open_spiel-0.1.1 open_spiel
+mv open_spiel-0.1.0 open_spiel
 mv abseil-cpp-0.1.0/ open_spiel/open_spiel/abseil-cpp
 mv dds-0.1.0 open_spiel/open_spiel/games/bridge/double_dummy_solver
 mv hanabi-learning-environment-0.1.0 open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
