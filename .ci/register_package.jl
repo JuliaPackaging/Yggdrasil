@@ -49,24 +49,17 @@ function download_cached_binaries(download_dir, platforms)
     end
 end
 
-function download_binaries_from_release(download_dir, platforms)
+function download_binaries_from_release(download_dir)
     probe_platform_engines!(;verbose=verbose)
 
-    # The version of the latest build is one build number less than the next one
-    # (pretty obvious, isn't it?).  Since we're supposed to be rebuilding the
-    # latest version, make sure the next build version is greater than 0
-    if build_version.build[1] <= 0
-        error("The next version is $(build_version), but it must have build number greater than 0")
-    end
-    # Guess what's the latest released version.
-    latest_build_version = VersionNumber(build_version.major, build_version.minor, build_version.patch,
-                                         build_version.prerelease, build_version.build .- 1)
-    tag = "$(name)-v$(latest_build_version)"
-
-    for platform in platforms
-        filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
-        url = "https://github.com/$(repo)/releases/download/$(tag)/$(filename)"
-        PlatformEngines.download(url, joinpath(download_dir, filename); verbose=verbose)
+    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
+    for artifact in artifacts[name]
+        info = artifact["download"][1]
+        url = info["url"]
+        hash = info["sha256"]
+        filename = basename(url)
+        PlatformEngines.download_verify(url, hash, joinpath(download_dir, filename); verbose=verbose)
     end
 end
 
@@ -80,7 +73,7 @@ mktempdir() do download_dir
     if skip_build
         # We only want to update the wrappers, so download the tarballs from the
         # latest build.
-        download_binaries_from_release(download_dir, merged["platforms"])
+        download_binaries_from_release(download_dir)
     else
         # We are going to publish the new binaries we've just baked, take them
         # out of the cache while they're hot.
