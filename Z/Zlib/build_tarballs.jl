@@ -21,6 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DUNIX=true \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     ..
 make install -j${nproc}
 install_license ../README
