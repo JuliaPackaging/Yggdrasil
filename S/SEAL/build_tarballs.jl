@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "SEAL_jll"
+name = "SEAL"
 version = v"3.5.4"
 
 # Collection of sources required to complete build
