@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Antic"
-version = v"0.2.1"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wbhart/antic.git", "f506971449186eac57bb9d44682013c1e7f5cdc6")
+    GitSource("https://github.com/wbhart/antic.git", "4efeec6d538217d647f91e1754654e0643269977"),
+    FileSource("https://raw.githubusercontent.com/wbhart/antic/f506971449186eac57bb9d44682013c1e7f5cdc6/LICENSE", "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"),
+    FileSource("https://raw.githubusercontent.com/wbhart/antic/f506971449186eac57bb9d44682013c1e7f5cdc6/gpl-2.0.txt", "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +27,8 @@ fi
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
+install_license gpl-2.0.txt
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
