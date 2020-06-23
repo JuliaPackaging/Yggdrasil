@@ -2,7 +2,7 @@ include("../../fancy_toys.jl")
 
 version = v"1.0.1"
 
-name = "CUTENSOR_CUDA$(cuda_version.major).$(cuda_version.minor)"
+name = "CUTENSOR_CUDA$(cuda_version.major)$(cuda_version.minor)"
 
 products = [
     LibraryProduct(["libcutensor"], :libcutensor),

@@ -2,7 +2,7 @@ include("../../fancy_toys.jl")
 
 version = v"7.6.5"
 
-name = "CUDNN_CUDA$(cuda_version.major).$(cuda_version.minor)"
+name = "CUDNN_CUDA$(cuda_version.major)$(cuda_version.minor)"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
