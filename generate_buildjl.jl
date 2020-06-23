@@ -169,7 +169,7 @@ if length(ARGS) < 1 || length(ARGS) > 3
 end
 
 function registered_paths(ctx, uuid)
-    @static if VERSION < "1.5.0-DEV.863"
+    @static if VERSION < v"1.5.0-DEV.863"
         return Pkg.Operations.registered_paths(ctx.env, uuid)
     else
         return Pkg.Operations.registered_paths(ctx, uuid)
@@ -197,7 +197,7 @@ else
     if any(p -> isfile(joinpath(p, "Package.toml")), paths)
         # Find largest version number that matches ours in the registered paths
         for path in paths
-            append!(versions, Pkg.Compress.load_versions(joinpath(path, "Versions.toml")))
+            append!(versions, Pkg.Operations.load_versions(ctx, joinpath(path, "Versions.toml")))
         end
     end
     if !isempty(versions)
