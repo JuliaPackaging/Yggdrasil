@@ -27,8 +27,8 @@ fi
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
-install_license gpl-2.0.txt
-install_license LICENSE
+install_license ${WORKSPACE}/srcdir/gpl-2.0.txt
+install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
