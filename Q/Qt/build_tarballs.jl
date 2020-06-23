@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Qt"
-version = v"5.14.2"
+version = v"5.15.0"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/5.14/$version/single/qt-everywhere-src-$version.tar.xz",
-                  "c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/5.15/$version/single/qt-everywhere-src-$version.tar.xz",
+                  "22b63d7a7a45183865cc4141124f12b673e7a17b1fe2b91e433f6547c5d548c3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -32,7 +32,7 @@ case "$target" in
         export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
         ../qt-everywhere-src-*/configure -L $prefix/lib -I $prefix/include \
             -prefix $prefix $commonoptions \
-            -skip qtwinextras -system-xcb -fontconfig
+            -skip qtwinextras -fontconfig
         ln -s /lib64/libc.so.6 /lib64/libc.so
         ;;
         
@@ -98,23 +98,23 @@ EOT
         
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi3-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
-            -skip qtwinextras -system-xcb -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
 esac
 
 make -j${nproc}
 make install
+install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
+platforms_linux = [
     Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Windows(:x86_64),
-    Linux(:x86_64, libc=:glibc)
+    Linux(:x86_64, libc=:glibc),
 ]
-platforms = expand_cxxstring_abis(platforms)
-
+platforms_linux = expand_cxxstring_abis(platforms_linux)
+platforms_win = expand_cxxstring_abis([Windows(:x86_64)])
 platforms_macos = [ MacOS(:x86_64) ]
 
 # The products that we will ensure are always built
@@ -136,24 +136,27 @@ products_macos = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_libXext_jll"),
+    BuildDependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_libXext_jll"),
     BuildDependency("Xorg_glproto_jll"),
-    Dependency("Xorg_libxcb_jll"),
-    Dependency("Xorg_xcb_util_wm_jll"),
-    Dependency("Xorg_xcb_util_image_jll"),
-    Dependency("Xorg_xcb_util_keysyms_jll"),
-    Dependency("Xorg_xcb_util_renderutil_jll"),
-    Dependency("xkbcommon_jll"),
-    Dependency("Libglvnd_jll"),
-    Dependency("Fontconfig_jll"),
+    BuildDependency("Xorg_libxcb_jll"),
+    BuildDependency("Xorg_xcb_util_wm_jll"),
+    BuildDependency("Xorg_xcb_util_image_jll"),
+    BuildDependency("Xorg_xcb_util_keysyms_jll"),
+    BuildDependency("Xorg_xcb_util_renderutil_jll"),
+    BuildDependency("xkbcommon_jll"),
+    BuildDependency("Libglvnd_jll"),
+    BuildDependency("Fontconfig_jll"),
     BuildDependency("Glib_jll"),
 ]
 
 include("../../fancy_toys.jl")
 
-if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
+if any(should_build_platform.(triplet.(platforms_linux)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+end
+if any(should_build_platform.(triplet.(platforms_win)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
     build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies)
