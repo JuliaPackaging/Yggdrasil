@@ -3,25 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "FLINT"
-version = v"2.6.0"
+version = v"0.0.2"
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git","1d0a2da90620cb8fa1adc79bc5e39e494381afc7")
+    GitSource("https://github.com/wbhart/flint2.git","f465622699d5c4c22bb3617596f8ae86e4570652")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd flint2/
-
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE=1
+   # and properly define _GNU_SOURCE here as well to avoid many warnings
+   sed -i -e 's/#define _GNU_SOURCE$/#define _GNU_SOURCE 1/' thread_pool.h configure
 elif [[ ${target} == *mingw* ]]; then
+   # fix arch detection:
+   sed -i -e 's/$(ARCH)/$ARCH/g' configure
    extraflags=--reentrant
 fi
-
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
