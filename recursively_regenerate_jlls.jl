@@ -10,15 +10,11 @@ function build_tarballs_path(dep_name::String, base::String = @__DIR__)
     return joinpath(base, uppercase(dep_name[1:1]), dep_name, "build_tarballs.jl")
 end
 
-build_tarballs = Sys.ARGS[1]
+build_tarballs = build_tarballs_path(get(Sys.ARGS, 1, ""))
 
 if !isfile(build_tarballs)
-    # Maybe someone just gave us `Git_jll`?
-    build_tarballs = build_tarballs_path(build_tarballs)
-    if !isfile(build_tarballs)
-        println(stderr, "usage: recursively_regenerate_jlls.jl path/to/build_tarballs.jl")
-        exit(1)
-    end
+    println(stderr, "usage: recursively_regenerate_jlls.jl <jll name>")
+    exit(1)
 end
 
 function recursively_collect_dependencies(build_tarballs::String, dependencies = Set{String}())
@@ -50,7 +46,7 @@ function open_jll_bump_pr(dep_name::String)
         repo = LibGit2.clone(BinaryBuilder.get_yggdrasil(), tmp)
         build_tarballs = build_tarballs_path(dep_name, tmp)
         if !isfile(build_tarballs)
-            throw(ArgumentError("Invalid dep_name \"$(dep_name)\""))
+            throw(ArgumentError("Invalid dep_name \"$(dep_name)\", no file $(build_tarballs)"))
         end
 
         # We're going to need to alter the build_tarballs.jl file.
@@ -109,6 +105,7 @@ function open_jll_bump_pr(dep_name::String)
 end
 
 deps = recursively_collect_dependencies(build_tarballs)
+push!(deps, Sys.ARGS[1])
 println("Discovered dependencies:")
 println(deps)
 
