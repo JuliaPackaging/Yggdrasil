@@ -7,8 +7,9 @@ version = v"65.1"
 
 # Collection of sources required to build ICU
 sources = [
-    "https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz" =>
-    "53e37466b3d6d6d01ead029e3567d873a43a5d1c668ed2278e253b683136d948",
+    ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
+                  "53e37466b3d6d6d01ead029e3567d873a43a5d1c668ed2278e253b683136d948"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,13 +40,14 @@ cd $WORKSPACE/srcdir/icu/
     make -j${nproc}
 )
 
-# Don't use llvm-ar since ICU doesn't know how to deal with it
-if [[ ${target} == *apple* ]] || [[ ${target} == *freebsd* ]]; then
-    export AR=/opt/${target}/bin/${target}-ar
-fi
-
 # Do the cross build
 cd source/
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Do not append `-c` flag to ar, which isn't supported by LLVM's ar
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/argflags-no--c.patch
+fi
+
 update_configure_scripts
 ./configure --prefix=$prefix --host=$target \
     --with-cross-build="/workspace/srcdir/icu/native_build"
@@ -55,21 +57,21 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libicudata", :libicudata),
-    LibraryProduct("libicui18n", :libicui18n),
-    LibraryProduct("libicuio", :libicuio),
-    LibraryProduct("libicutest", :libicutest),
-    LibraryProduct("libicutu", :libicutu),
-    LibraryProduct("libicuuc", :libicuuc),
+    LibraryProduct(["libicudata", "icudt"], :libicudata),
+    LibraryProduct(["libicui18n", "icuin"], :libicui18n),
+    LibraryProduct(["libicuio", "icuio"], :libicuio),
+    LibraryProduct(["libicutest", "icutest"], :libicutest),
+    LibraryProduct(["libicutu", "icutu"], :libicutu),
+    LibraryProduct(["libicuuc", "icuuc"], :libicuuc),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
