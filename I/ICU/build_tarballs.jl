@@ -9,6 +9,7 @@ version = v"65.1"
 sources = [
     ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
                   "53e37466b3d6d6d01ead029e3567d873a43a5d1c668ed2278e253b683136d948"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,6 +42,12 @@ cd $WORKSPACE/srcdir/icu/
 
 # Do the cross build
 cd source/
+
+if [[ "${target}" == *-apple-* ]]; then
+    # Do not append `-c` flag to ar, which isn't supported by LLVM's ar
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/argflags-no--c.patch
+fi
+
 update_configure_scripts
 ./configure --prefix=$prefix --host=$target \
     --with-cross-build="/workspace/srcdir/icu/native_build"
