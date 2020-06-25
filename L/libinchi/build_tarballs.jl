@@ -12,12 +12,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libinchi
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cd $WORKSPACE/srcdir/libinchi
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
-exit
+if [[ "${target}" == *-mingw* ]]; then
+    mkdir -p "${libdir}"
+    cp "libinchi.${dlext}" "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
