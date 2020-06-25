@@ -35,3 +35,5 @@ dependencies = Dependency[]
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
 
+
+# auto-bump
