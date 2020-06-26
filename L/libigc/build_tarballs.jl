@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.4062"
+version = v"1.0.4154"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,7 +12,7 @@ version = v"1.0.4062"
 
 # Collection of sources required to build IGC
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "18081c401f7bbfeefede84572a066f038a2d0709"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "173eb2a0f5d0a16f4abc07bbd093056bf0c04ae5"),
     # use LLVM 10 as provided by the official packages for Ubuntu 18.04
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
     GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1
