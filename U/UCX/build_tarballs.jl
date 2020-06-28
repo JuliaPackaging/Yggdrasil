@@ -14,12 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ucx-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-numa \
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
     --disable-logging \
     --disable-debug \
     --disable-assertions \
-    --disable-params-check
+    --disable-params-check \
+    --disable-static
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
 make -j${nproc} V=1
@@ -40,11 +42,15 @@ products = [
     LibraryProduct("libucm", :libucm),
     LibraryProduct("libucp", :libucp),
     LibraryProduct("libucs", :libucs),
-    ExecutableProduct("ucx_info", :ucx_info)
+    ExecutableProduct("ucx_info", :ucx_info),
+    ExecutableProduct("ucx_perftest", :ucx_perftest),
+    ExecutableProduct("ucx_read_profile", :ucx_read_profile),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
