@@ -18,9 +18,9 @@ export CPPFLAGS="-I${includedir}"
     --build=${MACHTYPE} \
     --host=${target} \
     --with-expat \
+    --with-openssl \
     --without-xml2 \
     --without-nettle \
-    --without-openssl \
     --disable-static
 make -j${nproc}
 make install
@@ -40,10 +40,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("acl_jll"),
+    Dependency("Attr_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Expat_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Lz4_jll"),
+    Dependency("OpenSSL_jll"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
