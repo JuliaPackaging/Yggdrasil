@@ -13,21 +13,25 @@ To contribute a new recipe, you can either
 * use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successfull build for all requested platforms
 * Copy another build recipe using it as a template, and then open a manual pull request to this repository
 
-Yggrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0-rc4 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
+Yggrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
 
 [Azure pipelines](https://dev.azure.com/JuliaPackaging/Yggdrasil/_build?view=runs) are used to test that the builders can successfully produce the tarballs.
 
-If you prefer to test your manual buildscript before opening the pull request, we suggest installing `BinaryBuilder.jl` on Julia 1.3 and running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  On MacOS, you will need to have `docker` installed for this to work.
+If you prefer to test your manual buildscript before opening the pull request, we suggest installing `BinaryBuilder.jl` on Julia 1.3 or any following release and running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  On MacOS, you will need to have `docker` installed for this to work.
+
+### Updating the version of an existing builder
+
+To trigger the build of a new version of the upstream package simply open a pull request to update the builder as necessary.  This usually boils down to only updating the version number and the source (e.g., URL and hash for an archive, or the revision for a git repository), but in some cases more changes may be needed.
 
 ## Using the generated tarballs
 
 ### JLL packages
 
-The development version of BinaryBuilder makes use of the new [`Artifacts` system](https://julialang.github.io/Pkg.jl/dev/artifacts/) shipping in Julia 1.3.  This means that BinaryBuilder no longer generates `build.jl` files that are placed into your Julia package's `deps/` folder, but instead generates whole Julia packages (known colloquially as "jll" packages) that are placed within the [JuliaBinaryWrappers organization](https://github.com/JuliaBinaryWrappers/).  Merged pull requests to Yggdrasil result in new versions of these wrapper packages being generated, uploaded and registered, allowing your client Julia code to simply invoke `using LibFoo_jll` to get ahold of your binaries with no need for a `Pkg.build()` step.  (This will, of course, only be the case for Julia 1.3+)
+The last versions of BinaryBuilder make use of the [`Artifacts` system](https://julialang.github.io/Pkg.jl/dev/artifacts/) shipping in Julia 1.3.  This means that BinaryBuilder no longer generates `build.jl` files that are placed into your Julia package's `deps/` folder, but instead generates whole Julia packages (known colloquially as "jll" packages) that are placed within the [JuliaBinaryWrappers organization](https://github.com/JuliaBinaryWrappers/).  Merged pull requests to Yggdrasil result in new versions of these wrapper packages being generated, uploaded and registered, allowing your client Julia code to simply invoke `using LibFoo_jll` to get ahold of your binaries with no need for a `Pkg.build()` step.  (This will, of course, only be the case for Julia 1.3+).
 
-JLL packages created by Yggdrasil are hosted under the [JuliaBinaryWrappers](https://github.com/JuliaBinaryWrappers) GitHub organization.
+We encourage Julia developers to use JLL packages for their libraries.  Read the [documention of BinaryBuilder](https://juliapackaging.github.io/BinaryBuilder.jl/dev/jll/) to learn how to use them.
 
-We encourage Julia developers to use JLL packages for their libraries.  Here are a few examples of pull requests switching to JLL package:
+Here are a few examples of pull requests of Julia packages switching to using JLL package to provide the prebuilt binaries to the users:
 
 * [Cairo.jl](https://github.com/JuliaGraphics/Cairo.jl/pull/293)
 * [FFTW.jl](https://github.com/JuliaMath/FFTW.jl/pull/122)
@@ -35,7 +39,7 @@ We encourage Julia developers to use JLL packages for their libraries.  Here are
 * [Gtk.jl](https://github.com/JuliaGraphics/Gtk.jl/pull/447)
 * [Rsvg.jl](https://github.com/lobingera/Rsvg.jl/pull/36)
 
-You can read more about the `Artifacts` system and JLL packages and how they are important for reproducibility in this post on Julia's blog "[Pkg + BinaryBuilder -- The Next Generation](https://julialang.org/blog/2019/11/artifacts)".
+You can read more about the `Artifacts` system and how it is important for reproducibility in this post on Julia's blog "[Pkg + BinaryBuilder -- The Next Generation](https://julialang.org/blog/2019/11/artifacts)".
 
 ### BinaryProvider.jl
 
@@ -63,5 +67,5 @@ Remember that you will also need the `build.jl` files for all direct and indirec
 
 Here are a few examples of packages using this system to install their libraries:
 
-* [Cairo.jl](https://github.com/JuliaGraphics/Cairo.jl/tree/15706f267cbb31da58f62270e46dc892c0c7ff9f/deps)
-* [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl/tree/b6cca77f788e58409a13cac5ab6eaa6a5841b5c6/deps)
+* [FFMPEG.jl](https://github.com/JuliaIO/FFMPEG.jl/tree/b6cca77f788e58409a13cac5ab6eaa6a5841b5c6/deps);
+* [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl/tree/85bdb2924cb909e258568ae8cb1811948ab0d9b0/deps) uses JLL packages for Julia v1.3+ and `build.jl` scripts with `BinaryProvider.jl` for previous releases.
