@@ -20,8 +20,7 @@ export CPPFLAGS="-I${includedir}"
     --with-expat \
     --with-openssl \
     --without-xml2 \
-    --without-nettle \
-    --disable-static
+    --without-nettle
 make -j${nproc}
 make install
 """
