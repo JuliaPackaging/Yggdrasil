@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Antic"
-version = v"2.1.0"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
