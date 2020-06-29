@@ -3,20 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "xxHash"
-version = v"0.7.3"
+version = v"0.7.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Cyan4973/xxHash/archive/v0.7.3.tar.gz", "952ebbf5b11fbf59ae5d760a562d1e9112278f244340ad7714e8556cbe54f7f7"),
+    ArchiveSource("https://github.com/Cyan4973/xxHash/archive/v0.7.4.tar.gz", "4d9706c9da4fbdf901598f5e3b71db0eddd4ac962e827a73ebf75d66dfd820fe")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/xxHash-*/
 mkdir build
 cd build
 cmake ../cmake_unofficial -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
+CPPFLAGS=-DXXH_INLINE_ALL make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw* ]]; then
