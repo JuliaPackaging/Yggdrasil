@@ -1,0 +1,19 @@
+diff --git a/makefile b/makefile
+index 2921241..1fc6a2f 100644
+--- a/makefile
++++ b/makefile
+@@ -20,7 +20,7 @@ DIRBIN ?= $(PREFIX)/bin
+ DIRINC ?= $(PREFIX)/include
+ DIRLIB ?= $(PREFIX)/lib
+ 
+-OPT=-fstrict-aliasing
++OPT=-fstrict-aliasing -fPIC
+ ifeq (,$(findstring clang, $(CC)))
+ OPT+=-falign-loops
+ endif
+@@ -148,3 +148,5 @@ clean:
+ 	@find . -type f -name "icbench" -delete -or -name "idxqry" -delete -or -name "idxseg" -delete -or -name "idxcr" -delete -or -name "icapp" -delete
+ endif
+ 
++libic.so: $(LIB)
++	$(CC) -O3 $(CFLAGS) -shared -o libic.so $(LIB)
