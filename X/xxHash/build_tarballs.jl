@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/xxHash-*/
 mkdir build
 cd build
