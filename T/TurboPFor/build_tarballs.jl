@@ -17,9 +17,9 @@ cd $WORKSPACE/srcdir/TurboPFor-Integer-Compression
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/makefile.patch
 
-make -j${nprocs} libic.so
-mkdir -p ${prefix}/lib
-mv libic.so ${prefix}/lib/
+make -j${nprocs} libic.${dlext}
+mkdir -p ${libdir}
+mv libic.${dlext} ${libdir}
 
 install_license ${WORKSPACE}/srcdir/license.txt
 """
@@ -40,4 +40,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
-
