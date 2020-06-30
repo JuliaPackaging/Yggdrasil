@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "TurboPFor"
-version = v"1.0.0"
+version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
