@@ -3,7 +3,7 @@
 using BinaryBuilder
 using Pkg
 name = "CImPlot"
-version = v"0.3.0"
+version = v"0.3.0" # tracking tags of epezent/implot
 
 # Collection of sources required to build CImGui
 sources = [
