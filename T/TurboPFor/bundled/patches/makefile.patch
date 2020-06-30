@@ -15,5 +15,5 @@ index 2921241..1fc6a2f 100644
  	@find . -type f -name "icbench" -delete -or -name "idxqry" -delete -or -name "idxseg" -delete -or -name "idxcr" -delete -or -name "icapp" -delete
  endif
  
-+libic.so: $(LIB)
-+	$(CC) -O3 $(CFLAGS) -shared -o libic.so $(LIB)
++libic.$(dlext): $(LIB)
++	$(CC) -O3 $(CFLAGS) -shared -o $@ $^
