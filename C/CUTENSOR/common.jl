@@ -1,8 +1,13 @@
 include("../../fancy_toys.jl")
 
-version = v"1.0.1"
+version = v"1.1.0"
 
 name = "CUTENSOR_CUDA$(cuda_version.major)$(cuda_version.minor)"
+
+sources_linux = [
+    ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/secure/1.1.0/local_installers/libcutensor-linux-x86_64-1.1.0.tar.gz",
+                  "621aa5689a6c80dc9e196b628916a1f6993a5593866eda4f1b1668374f91a8c2")
+]
 
 products = [
     LibraryProduct(["libcutensor"], :libcutensor),
