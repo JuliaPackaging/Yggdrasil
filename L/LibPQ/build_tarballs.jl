@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "LibPQ"
 version = v"12.3"
 pg_version = string(version.major, '.', version.minor)
-tzdata_version = "2020a"
+tzcode_version = "2020a"
 
 # Collection of sources required to build LibPQ
 sources = [
@@ -14,11 +14,7 @@ sources = [
         "708fd5b32a97577679d3c13824c633936f886a733fc55ab5a9240b615a105f50"
     ),
     ArchiveSource(
-        "https://data.iana.org/time-zones/releases/tzdata$tzdata_version.tar.gz",
-        "547161eca24d344e0b5f96aff6a76b454da295dc14ed4ca50c2355043fb899a2",
-    ),
-    ArchiveSource(
-        "https://data.iana.org/time-zones/releases/tzcode$tzdata_version.tar.gz",
+        "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
         "7d2af7120ee03df71fbca24031ccaf42404752e639196fe93c79a41b38a6d669",
     ),
 ]
@@ -27,7 +23,7 @@ sources = [
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
 cd $WORKSPACE/srcdir
-make CC=$BUILD_CC
+make CC=$BUILD_CC VERSION_DEPS= zic
 export ZIC=$WORKSPACE/srcdir/zic
 cd postgresql-*/
 if [[ "${target}" == i686-linux-musl ]]; then
