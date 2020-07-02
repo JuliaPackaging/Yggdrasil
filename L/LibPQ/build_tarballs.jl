@@ -30,6 +30,14 @@ cd $WORKSPACE/srcdir
 make CC=$BUILD_CC
 export ZIC=$WORKSPACE/srcdir/zic
 cd postgresql-*/
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
+    # bugged and it can run only a few programs, with the result that the
+    # configure test to check whether we're cross-compiling returns that we're
+    # doing a native build, but then it fails to run a bunch of programs during
+    # other tests.
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+fi
 ./configure --prefix=$prefix --host=$target --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
 make -C src/interfaces/libpq install
 install_license COPYRIGHT
