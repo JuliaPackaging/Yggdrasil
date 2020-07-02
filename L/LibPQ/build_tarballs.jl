@@ -41,7 +41,6 @@ fi
 ./configure --prefix=$prefix --host=$target --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
 make -C src/interfaces/libpq install
 install_license COPYRIGHT
-rm -rf ${prefix}/logs
 """
 
 # These are the platforms we will build for by default, unless further
