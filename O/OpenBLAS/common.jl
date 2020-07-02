@@ -75,9 +75,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET= DYNAMIC_ARCH=1)
     # Otherwise, engage a specific target
     elif [[ ${target} == aarch64-* ]]; then
-        flags+=(TARGET=ARMV8)
+        flags+=(TARGET= DYNAMIC_ARCH=1)
     elif [[ ${target} == arm-* ]]; then
-        flags+=(TARGET=ARMV7)
+        flags+=(TARGET= DYNAMIC_ARCH=1)
     elif [[ ${target} == powerpc64le-* ]]; then
         flags+=(TARGET=POWER8)
     fi
