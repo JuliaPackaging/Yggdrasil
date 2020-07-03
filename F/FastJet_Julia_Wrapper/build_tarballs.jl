@@ -4,11 +4,11 @@ using BinaryBuilder
 using Pkg
 
 name = "FastJet_Julia_Wrapper"
-version = v"0.8.2"
+version = v"0.8.3"
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
-	GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "ec07d8344c96ce87691e84a7ab58560d33f82ef4"),
+	GitSource("https://github.com/jstrube/FastJet_Julia_Wrapper.git", "3843dc80d3a80952b56e118221e56e2ba1ab26fd"),
 ]
 
 # Bash recipe for building across all platforms
