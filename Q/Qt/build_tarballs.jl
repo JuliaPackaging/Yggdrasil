@@ -217,17 +217,17 @@ products_macos = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_libX11_jll"),
-    BuildDependency("Xorg_libXext_jll"),
+    Dependency("Xorg_libXext_jll"),
     BuildDependency("Xorg_glproto_jll"),
-    BuildDependency("Xorg_libxcb_jll"),
-    BuildDependency("Xorg_xcb_util_wm_jll"),
-    BuildDependency("Xorg_xcb_util_image_jll"),
-    BuildDependency("Xorg_xcb_util_keysyms_jll"),
-    BuildDependency("Xorg_xcb_util_renderutil_jll"),
-    BuildDependency("xkbcommon_jll"),
+    Dependency("Xorg_libxcb_jll"),
+    Dependency("Xorg_xcb_util_wm_jll"),
+    Dependency("Xorg_xcb_util_image_jll"),
+    Dependency("Xorg_xcb_util_keysyms_jll"),
+    Dependency("Xorg_xcb_util_renderutil_jll"),
+    Dependency("xkbcommon_jll"),
     BuildDependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    BuildDependency("Glib_jll"),
+    Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
 ]
 
