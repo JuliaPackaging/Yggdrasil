@@ -74,7 +74,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     if [[ ${proc_family} == intel ]]; then
         flags+=(TARGET= DYNAMIC_ARCH=1)
     # Otherwise, engage a specific target
-    elif [[ ${target} == aarch64-* ]]; then
+    elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
+        flags+=(TARGET= DYNAMIC_ARCH=1)
+    elif [[ ${bb_full_target} == aarch64*-libgfortran3* ]]; then
+        # Old GCC versions, with libgfortran3, can't build for newer
+        # microarchitectures, let's just use the generic one
         flags+=(TARGET=ARMV8)
     elif [[ ${target} == arm-* ]]; then
         flags+=(TARGET=ARMV7)
