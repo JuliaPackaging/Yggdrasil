@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.13.03"
+version = v"02.14.01"
 
 # Collection of sources required to build LCIO
 sources = [
-    GitSource("https://github.com/iLCSoft/LCIO.git", "0ac5c384661ed4804c2bde99e774cab96e65740b"),
+    GitSource("https://github.com/iLCSoft/LCIO.git", "e18ec38f569c85ad878f6404fa8f6c24ca08353d"),
 ]
 
 # Bash recipe for building across all platforms
