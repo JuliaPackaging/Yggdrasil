@@ -5,8 +5,8 @@ version = v"2.0.1"
 
 # Collection of sources required to build Ogg
 sources = [
-    "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/$(version).tar.gz" =>
-    "a30db8bcc8a0fab56998ea134233a8cdcb7ac81170e7d87f8bc900f02dda39d4",
+    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/archive/$(version).tar.gz",
+                  "a30db8bcc8a0fab56998ea134233a8cdcb7ac81170e7d87f8bc900f02dda39d4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
