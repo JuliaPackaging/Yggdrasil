@@ -7,7 +7,7 @@ version = v"0.21.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/junegunn/fzf.git", "4b518e50a3fce78eebff136dec2f1c8bee7c611c")
+    GitSource("https://github.com/junegunn/fzf.git", "334a4fa15920b08f7be2432398e620587cc6f079")
 ]
 
 # Bash recipe for building across all platforms
