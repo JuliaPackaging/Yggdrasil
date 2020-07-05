@@ -70,12 +70,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FreeType2_jll",
-    "Bzip2_jll",
-    "Zlib_jll",
-    "Libuuid_jll",
-    "Expat_jll",
+    Dependency("FreeType2_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Libuuid_jll"),
+    Dependency("Expat_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               init_block = """
+ENV["FONTCONFIG_FILE"] = get(ENV, "FONTCONFIG_FILE", fonts_conf)
+    ENV["FONTCONFIG_PATH"] = get(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
+""")
