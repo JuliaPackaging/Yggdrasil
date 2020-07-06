@@ -5,7 +5,7 @@ version = v"2.1.1"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "d2c1ae92b8c5c6d45406afd007d1ddad74635cfd")
+    GitSource("https://github.com/cvxgrp/scs.git", "e6ab81db115bb37502de0a9917041a0bc2ded313")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,29 +21,15 @@ else
     blasldflags+=" -lopenblas"
 fi
 
-# Patch to reverse this WIN64 change: https://github.com/cvxgrp/scs/commit/9858d6b562f499de75493b85286276c19ad84c6f#diff-a9dbab3214616022c64ee2656440f544
-# Looks like it is known that this change causes trouble witn mingw32 (but not for mingw64?):
-# https://github.com/cvxgrp/scs/blob/e6ab81db115bb37502de0a9917041a0bc2ded313/.appveyor.yml#L13-L16
-cd include
-cp glbopts.h glbopts.h.orig
-cat > file.patch <<'END'
---- glbopts.h.orig
-+++ glbopts.h
-@@ -97,7 +97,7 @@
- #ifdef _WIN64
- /* #include <stdint.h> */
- /* typedef int64_t scs_int; */
--typedef long scs_int;
-+typedef __int64 scs_int;
- #else
- typedef long scs_int;
- #endif
-END
-patch -l glbopts.h.orig file.patch -o glbopts.h
-cd ..
-
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsdir.${dlext}
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
+
+# Building CUDA dependent libs
+make clean
+
+flags="DLONG=0 USE_OPENMP=0"
+
+CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
 mkdir -p ${libdir}
 cp out/libscs*.${dlext} ${libdir}
@@ -56,12 +42,14 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libscsindir", :libscsindir),
-    LibraryProduct("libscsdir", :libscsdir)
+    LibraryProduct("libscsdir", :libscsdir),
+    LibraryProduct("libscsgpuindir", :libscsgpuindir)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll")
+    Dependency("OpenBLAS_jll"),
+    BuildDependency("CUDA_full_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
