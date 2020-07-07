@@ -43,7 +43,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libscsindir", :libscsindir),
     LibraryProduct("libscsdir", :libscsdir),
-    LibraryProduct("libscsgpuindir", :libscsgpuindir)
+    LibraryProduct("libscsgpuindir", :libscsgpuindir, dont_dlopen=true)
 ]
 
 # Dependencies that must be installed before this package can be built
