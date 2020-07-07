@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "eccodes"
-version = v"2.17.0"
+version = v"2.18.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-2.17.0-Source.tar.gz", "762d6b71993b54f65369d508f88e4c99e27d2c639c57a5978c284c49133cc335"),
+    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-2.18.0-Source.tar.gz", "d88943df0f246843a1a062796edbf709ef911de7269648eef864be259e9704e3"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd eccodes-2.17.0-Source
+cd eccodes-2.18.0-Source
 if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32" ] ; then 
     chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
     atomic_patch -p1 /workspace/srcdir/patches/windows.patch
@@ -24,10 +24,10 @@ fi
 cd ..
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.17.0-Source/
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.18.0-Source/
 make -j${nproc}
 make install
-install_license ../eccodes-2.17.0-Source/LICENSE
+install_license ../eccodes-2.18.0-Source/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
