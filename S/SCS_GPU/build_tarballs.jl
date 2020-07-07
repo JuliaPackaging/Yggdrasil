@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "SCS"
+name = "SCS_GPU"
 version = v"2.1.1"
 
 # Collection of sources required to build SCSBuilder
