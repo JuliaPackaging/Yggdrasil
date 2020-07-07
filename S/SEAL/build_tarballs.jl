@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SEAL"
-version = v"3.5.4"
+version = v"3.5.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.4.tar.gz",
-                  "0c325c3e3d9b77be63ef866a7c73de861be46b99b61a22be60518d34865a1f37"),
+    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.5.tar.gz",
+                  "e6117298392019111e9d795fa7757fdabe12817e18074d162105a0dc687f19bb"),
     DirectorySource("./bundled")
 ]
 
