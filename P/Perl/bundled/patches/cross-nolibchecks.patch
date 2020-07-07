@@ -1,0 +1,117 @@
+--- perl-5.30.3-orig/Makefile.SH
++++ perl-5.30.3/Makefile.SH
+@@ -972,7 +972,7 @@
+ 
+ !NO!SUBS!
+ 
+-	case "${osname}${osvers}" in
++	case "${hostosname}${osvers}" in
+ 	amigaos*)
+ 		$spitshell >>$Makefile <<'!NO!SUBS!'
+ lib/buildcustomize.pl: $& $(miniperl_objs) write_buildcustomize.pl
+--- perl-5.30.3-orig/cpan/JSON/Makefile.PL
++++ perl-5.30.3/cpan/JSON/Makefile.PL
+@@ -2,12 +2,12 @@
+ use strict;
+ use ExtUtils::MakeMaker;
+ 
+-use lib qw( ./lib );
++#use lib qw( ./lib );
+ 
+ $| = 1;
+ 
+ $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+-eval q| require JSON |;
++#eval q| require JSON |;
+ 
+ if ($@) {
+     print "Loading lib/JSON.pm failed. No B module?\n";
+@@ -18,7 +18,7 @@
+ }
+ 
+ 
+-my $version     = JSON->VERSION;
++my $version     = '4.02';#JSON->VERSION;
+ 
+ print <<EOF;
+ Welcome to JSON (v.$version)
+@@ -61,7 +61,7 @@
+                 bugtracker  =>      'https://github.com/makamaka/JSON/issues',
+             },
+             recommends => {
+-                'JSON::XS' => JSON->require_xs_version,
++                'JSON::XS' => 2.34,
+             },
+         } ) : ()
+     ),
+--- perl-5.30.3-orig/cpan/Term-ReadLine-Gnu/Makefile.PL
++++ perl-5.30.3/cpan/Term-ReadLine-Gnu/Makefile.PL
+@@ -102,8 +102,8 @@
+ 
+ # Check version of GNU Readline Library (for version 4.2 and before)
+ {
+-    my ($rlmajorver, $rlminorver) =
+-	check_readline_version($RLINC, $RLLIB, $defs, $lddflags, $libs);
++    my ($rlmajorver, $rlminorver) = (8,0);
++    #	check_readline_version($RLINC, $RLLIB, $defs, $lddflags, $libs);
+ 
+     if ($rlmajorver < 4 || $rlmajorver == 4 && $rlminorver <= 2) {
+ 	$defs .= " -DRL_READLINE_VERSION=" .
+@@ -172,6 +172,7 @@
+ # ExtUtils::Liblist::ext() do similar job as this subroutine, but it
+ # warns unnecessary messages.
+ sub search_lib {
++    return "-lncurses";
+     my ($lib) = @_;
+     unless ($lib =~ /^-l/) {
+ 	warn "search_lib: illegal arguments, \`$lib\'.\n";
+@@ -271,6 +272,7 @@
+ # https://rt.cpan.org/Ticket/Display.html?id=65973
+ 
+ sub guess_malloc_names {
++    return undef;
+     my ($RLINC, $RLLIB, $defs, $lddflags, $libs) = @_;
+     my $frlmalloc = 'rlmalloc.c';
+ 
+--- perl-5.30.3-orig/cpan/TermReadKey/Makefile.PL
++++ perl-5.30.3/cpan/TermReadKey/Makefile.PL
+@@ -79,7 +79,7 @@
+     my $self = shift;
+     $_ = $self->MM::processPL();
+     s/ReadKey.pm :: ReadKey.pm.PL/ReadKey.pm :: ReadKey.pm.PL dynamic/;
+-    s/\$\(PERLRUN\)/\$(FULLPERLRUNINST)/;
++    #    s/\$\(PERLRUN\)/\$(FULLPERLRUNINST)/;
+     return $_;
+ }
+ 
+--- perl-5.30.3-orig/cpan/TermReadKey/ReadKey.pm.PL
++++ perl-5.30.3/cpan/TermReadKey/ReadKey.pm.PL
+@@ -511,8 +511,10 @@
+ require DynaLoader;
+ our @ISA = qw(DynaLoader);
+ 
++sub blockoptions { 5 };
++
+ print "Bootstrapping the XS for blockoptions: ";
+-bootstrap Term::ReadKey or die;
++#bootstrap Term::ReadKey or die;
+ print blockoptions()."\n";
+ 
+ open OUT, ">>", $file or die "Can't append to $file: $!";
+--- perl-5.30.3-orig/cpan/XML-SAX/Makefile.PL
++++ perl-5.30.3/cpan/XML-SAX/Makefile.PL
+@@ -48,7 +48,7 @@
+         }
+     }
+     
+-    if ($write_ini_ok) {
++    if (undef) {
+         $script =~ s/install :: (.*)$/install :: $1 install_sax_pureperl/m;
+         $script .= <<"INSTALL";
+ 
+--- /dev/null
++++ perl-5.30.3/cpan/XML-SAX/lib/XML/SAX/ParserDetails.ini
+@@ -0,0 +1,3 @@
++[XML::SAX::PurePerl]
++http://xml.org/sax/features/namespaces = 1
++
