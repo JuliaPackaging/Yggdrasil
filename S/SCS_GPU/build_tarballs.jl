@@ -25,8 +25,6 @@ cp out/libscs*.${dlext} ${libdir}
 
 platforms = [
     Linux(:x86_64),
-    Windows(:x86_64),
-    MacOS(:x86_64),
 ]
 
 # The products that we will ensure are always built
