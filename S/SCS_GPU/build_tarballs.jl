@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
 flags="DLONG=0 USE_OPENMP=0 BLAS64=1 BLASSUFFIX=_64_"
-blasldflags="-L${prefix}/lib -lopenblas64_"
+blasldflags="-L${libdir} -lopenblas64_"
 
 CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
