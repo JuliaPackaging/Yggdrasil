@@ -1,0 +1,102 @@
+diff --git a/Configure b/Configure
+index 684a9c0768..94255941d1 100755
+--- a/Configure
++++ b/Configure
+@@ -8704,7 +8704,7 @@ true)
+ 	true|define)
+ 		echo "Cannot build with both -Duserelocatableinc and -Duseshrplib" >&4
+ 		echo "See INSTALL for an explanation why that won't work." >&4
+-		exit 4
++	#	exit 4
+ 		;;
+ 	esac
+ 	case "$libperl" in
+@@ -8802,6 +8802,7 @@ esac
+ shrpdir=$archlibexp/CORE
+ xxx=''
+ tmp_shrpenv=''
++shrpdirorigin=$(printf '%s' "$shrpdir" | sed -e 's/\.\.\./\\$$ORIGIN/g')
+ if "$useshrplib"; then
+     case "$osname" in
+ 	aix)
+@@ -8811,10 +8812,10 @@ if "$useshrplib"; then
+ 		xxx="-R $shrpdir"
+ 		;;
+ 	freebsd|minix|mirbsd|netbsd|openbsd|interix|dragonfly|bitrig)
+-		xxx="-Wl,-R$shrpdir"
++		xxx="-Wl,-R$shrpdirorigin"
+ 		;;
+ 	bsdos|linux|irix*|dec_osf|gnu*|haiku)
+-		xxx="-Wl,-rpath,$shrpdir"
++		xxx="-Wl,-rpath,$shrpdirorigin"
+ 		;;
+ 	hpux*)
+ 		# hpux doesn't like the default, either.
+diff --git a/caretx.c b/caretx.c
+index 247708de8c..428f82cd4a 100644
+--- a/caretx.c
++++ b/caretx.c
+@@ -36,6 +36,12 @@
+ #include "nwutil.h"
+ #endif
+ 
++#ifdef HAS_DLADDR
++#include <stdio.h>
++#include <dlfcn.h>
++#include <libgen.h>
++#endif
++
+ #ifdef USE_KERN_PROC_PATHNAME
+ #  include <sys/sysctl.h>
+ #endif
+@@ -68,7 +74,49 @@ Perl_set_caret_X(pTHX) {
+ #else
+     /* We can try a platform-specific one if possible; if it fails, or we
+      * aren't running on a suitable platform, we'll fall back to argv[0]. */
+-# ifdef USE_KERN_PROC_PATHNAME
++# if defined(PERL_RELOCATABLE_INC) && defined(HAS_DLADDR)
++    Dl_info dli_perl;
++    char path[MAXPATHLEN];
++    char linkbuf[MAXPATHLEN];
++    char * dir;
++    struct stat link_stat;
++    int linkcount = 0;
++    SSize_t len;
++    size_t size;
++    /* the reverse of ARCHLIB, i.e. ../lib/perl5/5.30.3/darwin-2level/CORE */
++    const char * relperl = "/../../../../../bin/perl";
++    if (dladdr((void*)&perl_destruct, &dli_perl)) {
++        strncpy(path, dli_perl.dli_fname, sizeof(path) - 1);
++        while (lstat(path, &link_stat) == 0 && S_ISLNK(link_stat.st_mode)) {
++            len = readlink(path, linkbuf, sizeof(linkbuf) - 1);
++            if (len != -1) {
++                linkbuf[len] = '\0';
++            }
++            if (linkcount++ > 255) {
++                exit(-1);
++            }
++            if (linkbuf[0] == '/')
++                strncpy(path, linkbuf, len+1);
++            else {
++                /* relative symlink */
++                dir = strrchr(path, '/');
++                strncpy(dir+1,linkbuf,sizeof(linkbuf)-(dir-path)-1);
++                
++            }
++        }
++        dir = dirname(path);
++        strncpy(path,dir,sizeof(path)-1);
++        size = strlen(dir)+strlen(relperl);
++        strncpy(path+strlen(dir),relperl,sizeof(path)-strlen(dir)-1);
++        if (size < sizeof(path)) {
++            path[size] = '\0';
++            if (realpath(path,linkbuf) != NULL) {
++                sv_setpv(caret_x, linkbuf);
++                return;
++            }
++        }
++    }
++# elif USE_KERN_PROC_PATHNAME
+     size_t size = 0;
+     int mib[4];
+     mib[0] = CTL_KERN;
