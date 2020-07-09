@@ -1,3 +1,4 @@
+using Pkg
 using BinaryBuilder
 
 name = "SCS_GPU"
@@ -33,9 +34,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+
+cuda_version = v"9.0.176"
+
 dependencies = [
     Dependency("OpenBLAS_jll"),
-    BuildDependency("CUDA_full_jll"),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
