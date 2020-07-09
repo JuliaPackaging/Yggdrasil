@@ -1,5 +1,5 @@
 using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
-using BinaryBuilder: TarballDependency, CompilerShard
+using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
 host_platform = Linux(:x86_64; libc=:musl)
 
@@ -18,7 +18,7 @@ end
 function unpacked_to_squashfs(unpacked_hash::Base.SHA1, name, version; platform=host_platform, target=nothing)
     path = artifact_path(unpacked_hash)
     squashfs_cs = CompilerShard(name, version, platform, :squashfs; target=target)
-    art_name = BinaryBuilder.artifact_name(squashfs_cs)
+    art_name = BinaryBuilderBase.artifact_name(squashfs_cs)
     squash_hash = create_artifact() do target_dir
         target_squashfs = joinpath(target_dir, art_name)
         success(`mksquashfs $(path) $(target_squashfs) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
@@ -35,7 +35,7 @@ function generate_artifacts(path::AbstractString, name, version; platform=host_p
 
     # First, the unpacked version
     squashfs_cs = CompilerShard(name, version, platform, :unpacked; target=target)
-    art_name = BinaryBuilder.artifact_name(squashfs_cs)
+    art_name = BinaryBuilderBase.artifact_name(squashfs_cs)
     unpacked_hash = create_artifact() do target
         rm(target; force=true, recursive=true)
         cp(path, target)
@@ -56,8 +56,8 @@ function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.
 end
 
 function get_next_shard_tag(cs)
-    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
-    meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.host)
+    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilderBase))), "Artifacts.toml")
+    meta = artifact_meta(BinaryBuilderBase.artifact_name(cs), artifacts_toml; platform=cs.host)
     if meta === nothing || !haskey(meta, "download")
         return "$(cs.name)-v$(cs.version)"
     end
@@ -86,7 +86,7 @@ end
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = get_next_shard_tag(cs)
-    filename = BinaryBuilder.artifact_name(cs)
+    filename = BinaryBuilderBase.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
     return [
@@ -98,8 +98,8 @@ end
 # the Artifacts.toml that belongs to BB
 function insert_compiler_shard(name, version, hash, archive_type; platform=host_platform, download_info = nothing, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
-    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
-    bind_artifact!(artifacts_toml, BinaryBuilder.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
+    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilderBase))), "Artifacts.toml")
+    bind_artifact!(artifacts_toml, BinaryBuilderBase.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
 function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
