@@ -8,7 +8,7 @@ version = v"3.5.5"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.5.tar.gz",
-                  "f5ee25b78a05ea3b2d64e8e5e1c5cec310880884a14ad587aa001aa50a7d2009"),
+                  "ae987c9df02a0a887eeb96032f307781b945183d3433e54a0a6d59207f4b8143"),
     DirectorySource("./bundled")
 ]
 
