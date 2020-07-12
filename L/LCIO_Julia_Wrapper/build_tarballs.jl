@@ -4,11 +4,11 @@ using BinaryBuilder
 using Pkg
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.9.0"
+version = v"0.10.0"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "a1c201bd7a15c236f221f4f343dd795874794379")
+	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "06ff63906b116cc9486ec3f3740e29aa4c5c8f70")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
         Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8")),
-        Dependency(PackageSpec(name="LCIO_jll", version=v"2.13.3")),
+        Dependency(PackageSpec(name="LCIO_jll", version=v"2.14.1")),
         BuildDependency(PackageSpec(name="Julia_jll",version=v"1.4.1"))
 ]
 
