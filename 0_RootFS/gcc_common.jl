@@ -182,7 +182,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         gcc_version_sources[gcc_version]...,
         binutils_sources...,
         libc_sources...,
-        DirectorySource("./bundled"),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ]
 end
 
