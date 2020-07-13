@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"0.28.5"
+version = v"1.0.0"
 
 # Collection of sources required to build libgit2
 sources = [
-   "https://github.com/libgit2/libgit2.git" =>
-   "7a2b969d559b83798d93728f24d1729ffc97b717",
-   "./bundled",
+    GitSource("https://github.com/libgit2/libgit2.git",
+              "7d3c7057f0e774aecd6fc4ef8333e69e5c4873e0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-case-sensitive.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -35,6 +34,7 @@ elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
+export CFLAGS="-I${prefix}/include"
 
 mkdir build && cd build
 
@@ -54,9 +54,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "MbedTLS_jll",
-    "LibSSH2_jll",
-    "LibCURL_jll",
+    Dependency("MbedTLS_jll"),
+    Dependency("LibSSH2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
