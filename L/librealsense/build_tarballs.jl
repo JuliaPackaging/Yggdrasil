@@ -67,7 +67,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
     "libusb_jll",
 ]
 
