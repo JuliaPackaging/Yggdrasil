@@ -12,14 +12,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/nomad"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/compilation.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad-no-headers-generation.patch"
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CC=gcc
     CXX=g++
 fi
 mkdir build
 cd build
-cmake -DNOMAD_WITH_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DNOMAD_WITH_OPENMP=OFF -DNOMAD_WITH_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
