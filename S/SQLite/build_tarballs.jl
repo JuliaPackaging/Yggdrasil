@@ -15,7 +15,27 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sqlite-autoconf-*/
-./configure --prefix=$prefix --host=$target
+
+# Use same flags as
+# https://git.archlinux.org/svntogit/packages.git/tree/trunk/PKGBUILD?h=packages/sqlite&id=d8b6ba561152179e943807054388462b7259e6df
+export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
+                 -DSQLITE_ENABLE_UNLOCK_NOTIFY \
+                 -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+                 -DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
+                 -DSQLITE_SECURE_DELETE \
+                 -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
+                 -DSQLITE_MAX_EXPR_DEPTH=10000"
+
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=$target \
+    --disable-static \
+    --disable-amalgamation \
+    --enable-fts3 \
+    --enable-fts4 \
+    --enable-fts5 \
+    --enable-rtree \
+    --enable-json1
 make -j${nproc}
 make install
 install_license "${WORKSPACE}/srcdir/LICENSE"
@@ -31,7 +51,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
