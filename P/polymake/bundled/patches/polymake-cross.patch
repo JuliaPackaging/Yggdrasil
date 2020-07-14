@@ -1,0 +1,61 @@
+diff --git a/perl/polymake-config b/perl/polymake-config
+index 8990e897d9..23a55ff67a 100644
+--- a/perl/polymake-config
++++ b/perl/polymake-config
+@@ -90,7 +90,7 @@ while (defined ($_=shift)) {
+       my ($major, $minor)=split /\./, $Version;
+       my $version_for_c=sprintf("%d%02d", $major, $minor);
+       $_="-DPOLYMAKE_VERSION=$version_for_c $ConfigFlags{CsharedFLAGS} $ConfigFlags{CXXFLAGS}";
+-      if ($^O eq "darwin") {
++      if ($ConfigFlags{Arch} =~ /^darwin/) {
+          s/\$\{ARCHFLAGS\}/$ConfigFlags{ARCHFLAGS}/;
+       }
+ 
+@@ -160,7 +160,7 @@ while (defined ($_=shift)) {
+          }
+       }
+       close CC;
+-      if ($^O eq "darwin") {
++      if ($ConfigFlags{Arch} =~ /^darwin/) {
+          $ldflags = "$ConfigFlags{ARCHFLAGS} $ldflags -flat_namespace";
+       } else {
+          $ldflags .= " -Wl,-E";
+diff --git a/support/generate_applib_fake.pl b/support/generate_applib_fake.pl
+index 3b6762df05..a671fd1c6b 100644
+--- a/support/generate_applib_fake.pl
++++ b/support/generate_applib_fake.pl
+@@ -21,7 +21,7 @@ use strict;
+ use Config;
+ 
+ my @out;
+-my $nmopts= $^O eq "darwin" ? "-Ugp" : "--defined-only --extern-only -p";
++my $nmopts= $Config::Config{osname} eq "darwin" ? "-Ugp" : "--defined-only --extern-only -p";
+ 
+ for my $shlib (@ARGV) {
+    -r $shlib or die "shared module $shlib does not exist or unreadable\n";
+@@ -36,7 +36,7 @@ for my $shlib (@ARGV) {
+ 
+    while (<SYMS>) {
+       if (/ [TW] ([_ZNK]+$prefix\w+)$/) {
+-	  if ( $^O eq "darwin" ) {    # aliases don't seem to work on MacOS, so we actually define the functions with empty body
++	  if ( $Config::Config{osname} eq "darwin" ) {    # aliases don't seem to work on MacOS, so we actually define the functions with empty body
+ 	      my $functionname = $1;
+ 	      $functionname =~ s/^__/_/;
+ 	      push @out, "void $functionname() {};\n";
+@@ -49,14 +49,14 @@ for my $shlib (@ARGV) {
+ }
+ 
+ if (@out) {
+-   if ($^O eq "darwin") {
++   if ($Config::Config{osname} eq "darwin") {
+       print "#ifndef POLYMAKE_FAKE_FUNCTIONS\n";
+    }
+    print <<'.';
+ void __dummy() __attribute__((visibility ("hidden")));
+ void __dummy() { }
+ .
+-   if ($^O eq "darwin") {
++   if ($Config::Config{osname} eq "darwin") {
+       print "#endif\n";
+    }
+    print "#ifdef POLYMAKE_FAKE_FUNCTIONS\n", @out, "#endif\n";
