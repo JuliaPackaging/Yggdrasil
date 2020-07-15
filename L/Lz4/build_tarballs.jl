@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lz4-*/
-make -j${nproc}
+make -j${nproc} CFLAGS="-O3 -fPIC"
 make install
 """
 
@@ -37,3 +37,9 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+
+
+
+
+
+
