@@ -7,8 +7,8 @@ version = v"1.9.2"
 
 # Collection of sources required to build Lz4
 sources = [
-    "https://github.com/lz4/lz4/archive/v$(version).tar.gz" =>
-    "658ba6191fa44c92280d4aa2c271b0f4fbc0e34d249578dd05e50e76d0e5efcc",
+    ArchiveSource("https://github.com/lz4/lz4/archive/v$(version).tar.gz",
+                  "658ba6191fa44c92280d4aa2c271b0f4fbc0e34d249578dd05e50e76d0e5efcc")
 ]
 
 # Bash recipe for building across all platforms
