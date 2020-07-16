@@ -8,7 +8,7 @@ version = v"7.71.1"
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d")
+    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +48,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcurl", :libcurl),
-    ExecutableProduct("curl", :curl)
+    ExecutableProduct("curl", :curl),
 ]
 
 # Dependencies that must be installed before this package can be built
