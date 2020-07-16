@@ -1,7 +1,7 @@
-diff --git before/SEAL-3.5.5/CMakeLists.txt after/SEAL-3.5.5/CMakeLists.txt
+diff --git before/CMakeLists.txt after/CMakeLists.txt
 index c0b6dc8..99b7b73 100644
---- before/SEAL-3.5.5/CMakeLists.txt
-+++ after/SEAL-3.5.5/CMakeLists.txt
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
 @@ -262,14 +262,14 @@ if(SEAL_USE_MSGSL AND NOT MSVC)
              RESULT_VARIABLE result
              WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)

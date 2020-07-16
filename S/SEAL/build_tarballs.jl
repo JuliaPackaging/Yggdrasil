@@ -3,25 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "SEAL"
-version = v"3.5.5"
+version = v"3.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.5.tar.gz",
-                  "ae987c9df02a0a887eeb96032f307781b945183d3433e54a0a6d59207f4b8143"),
+    ArchiveSource("https://github.com/microsoft/SEAL/archive/v$(version).tar.gz",
+                  "13674a39a48c0d1c6ff544521cf10ee539ce1af75c02bfbe093f7621869e3406"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/SEAL-*
 
 # Apply patches that fix some cross-compilation issues
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-
-cd SEAL-*
 
 # The last three '-DSEAL_USE__*' flags are required to circumvent
 # cross-compilation issues
