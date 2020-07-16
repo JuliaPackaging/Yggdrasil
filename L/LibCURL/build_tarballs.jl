@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "LibCURL"
-version = v"7.70.0"
-cacert_version = "2020-01-01"
+version = v"7.71.1"
+cacert_version = "2020-06-24"
 
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-    "ca2feeb8ef13368ce5d5e5849a5fd5e2dd4755fecf7d8f0cc94000a4206fb8e7"), 
+    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d"), 
     FileSource("https://curl.haxx.se/ca/cacert-$cacert_version.pem", 
-    "adf770dfd574a0d6026bfaa270cb6879b063957177a991d453ff1d302c02081f",
+    "726889705b00f736200ed7999f7a50021b8735d53228d679c4e6665aa3b44987",
     filename="cacert.pem")
 ]
 
