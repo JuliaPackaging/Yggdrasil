@@ -7,13 +7,14 @@ version = v"2.2.53"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-2.2.53.tar.gz", "06be9865c6f418d851ff4494e12406568353b891ffe1f596b34693c387af26c7")
+    ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-2.2.53.tar.gz",
+                  "06be9865c6f418d851ff4494e12406568353b891ffe1f596b34693c387af26c7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/acl-*/
-export CPPFLAGS="-I${includedir}"
+export CPPFLAGS="-I${includedir} -fPIC -DPIC"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
