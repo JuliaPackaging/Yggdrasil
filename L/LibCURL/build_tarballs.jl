@@ -4,15 +4,11 @@ using BinaryBuilder
 
 name = "LibCURL"
 version = v"7.71.1"
-cacert_version = "2020-06-24"
 
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d"), 
-    FileSource("https://curl.haxx.se/ca/cacert-$cacert_version.pem", 
-    "726889705b00f736200ed7999f7a50021b8735d53228d679c4e6665aa3b44987",
-    filename="cacert.pem")
+    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d")
 ]
 
 # Bash recipe for building across all platforms
@@ -43,7 +39,6 @@ fi
 make -j${nproc}
 make install
 install_license COPYING
-cp ../cacert.pem $prefix/share/cacert.pem
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,8 +48,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcurl", :libcurl),
-    ExecutableProduct("curl", :curl),
-    FileProduct("share/cacert.pem", :cacert)
+    ExecutableProduct("curl", :curl)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -67,4 +61,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
