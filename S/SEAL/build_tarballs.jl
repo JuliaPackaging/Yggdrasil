@@ -14,14 +14,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/SEAL-*
 
 # Apply patches that fix some cross-compilation issues
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-
-cd SEAL-*
 
 # The last three '-DSEAL_USE__*' flags are required to circumvent
 # cross-compilation issues
