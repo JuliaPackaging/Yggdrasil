@@ -7,7 +7,7 @@ version = v"3.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v3.5.6.tar.gz",
+    ArchiveSource("https://github.com/microsoft/SEAL/archive/v$(version).tar.gz",
                   "13674a39a48c0d1c6ff544521cf10ee539ce1af75c02bfbe093f7621869e3406"),
     DirectorySource("./bundled")
 ]
