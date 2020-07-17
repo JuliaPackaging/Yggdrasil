@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.4154"
+version = v"1.0.4241"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,13 +12,13 @@ version = v"1.0.4154"
 
 # Collection of sources required to build IGC
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "173eb2a0f5d0a16f4abc07bbd093056bf0c04ae5"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "9a456d81355b266ac60b26c1865935b4a266d6e2"),
     # use LLVM 10 as provided by the official packages for Ubuntu 18.04
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
-    GitSource("https://github.com/intel/opencl-clang.git", "9f0c2c0f5ddea1accc921aed4c94bc52c1b85637"), # v10.0.0-1
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "7743482f2053582be990e93ca46d15239c509c9d"), # v10.0.0
+    GitSource("https://github.com/intel/opencl-clang.git", "92f3f7f1a06f25fb13708f87c26b0fbf50924c96"), # v10.0.0-2
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "4d43f68a30a510b4e7607351caab3df8e7426a6b"),
     # patches
-    GitSource("https://github.com/intel/llvm-patches.git", "595c1e3eeb30afc8b6c20855f6a69560f7a9864a"),
+    GitSource("https://github.com/intel/llvm-patches.git", "0e35a4a02de23c235f28505f52c1222731667d17"),
     DirectorySource("./bundled"),
 ]
 
