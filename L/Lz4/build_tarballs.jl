@@ -16,6 +16,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/lz4-*/
 make -j${nproc} CFLAGS="-O3 -fPIC"
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    mkdir -p "${prefix}/lib"
+    mv "${libdir}/liblz4.a" "${prefix}/lib/."
+    mv "${libdir}/liblz4.dll.a" "${prefix}/lib/."
+fi
 """
 
 # These are the platforms we will build for by default, unless further
