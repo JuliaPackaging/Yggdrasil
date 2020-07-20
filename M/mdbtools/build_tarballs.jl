@@ -15,9 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd mdbtools/
 autoreconf -if
-apk add glib-dev
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man
-make -j8
+make -j${nproc}
 make install
 """
 
