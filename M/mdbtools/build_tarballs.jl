@@ -31,11 +31,11 @@ platforms = [
     Linux(:i686, libc=:musl),
     Linux(:x86_64, libc=:musl),
     Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf)
-    MacOS(:x86_64)
-    FreeBSD(:x86_64)
-    Windows(:i686)
-    Windows(:x86_64)
+    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    MacOS(:x86_64),
+    FreeBSD(:x86_64),
+    Windows(:i686),
+    Windows(:x86_64),
 ]
 
 
