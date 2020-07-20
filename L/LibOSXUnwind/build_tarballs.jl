@@ -6,7 +6,7 @@ version = v"0.0.6"
 # Collection of sources required to build libosxunwind
 sources = [
     ArchiveSource("https://github.com/JuliaLang/libosxunwind/archive/v$(version).tar.gz",
-                  "61f88a1fa8f5ba7492ffed7c7049ed7d3d77841ac633a4894a23dcf86203e7d8"),
+                  "c3943fdd063c2c8c249778326cbfecdc62c804a0509c4ae4799604e1817f9058"),
 ]
 
 # Bash recipe for building across all platforms
