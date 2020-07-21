@@ -2,14 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tree_sitter_c"
+name = "tree_sitter_go"
 version = v"0.16.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-c/archive/$(version).tar.gz",
-        "7aa44dd4c3ea1dd24739dec86a95c88f66654c1e52bc8a033925b1f60f4de054"
+        "https://github.com/tree-sitter/tree-sitter-go/archive/v$(version).tar.gz",
+        "7278f1fd4dc4de8a13b0f60407425d38c5cb3973e1938d3031a68e1e69bd0b75"
     ),
     DirectorySource("./bundled")
 ]
@@ -27,7 +27,7 @@ make install
 
 cd ..
 if [ -d tree-sitter/queries ]; then
-   cp -r tree-sitter/queries $WORKSPACE/destdir/
+    cp -r tree-sitter/queries $WORKSPACE/destdir/
 fi
 if [ -f tree-sitter/LICENSE ]; then
     install_license tree-sitter/LICENSE
@@ -40,7 +40,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtreesitter_c", :libtreesitter_c),
+    LibraryProduct("libtreesitter_go", :libtreesitter_go),
 ]
 
 # Dependencies that must be installed before this package can be built
