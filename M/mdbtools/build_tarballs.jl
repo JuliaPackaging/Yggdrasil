@@ -7,22 +7,27 @@ version = v"0.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cyberemissary/mdbtools.git", "b753ff36a0f1d88ae8a300ed6712f4aa2ddb7d08")
+    GitSource("https://github.com/cyberemissary/mdbtools.git", "b753ff36a0f1d88ae8a300ed6712f4aa2ddb7d08"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd mdbtools/
+if [[ ${target} == *-mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/locale_header.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/build_shared_libraries_mingw.patch"
+fi
 autoreconf -if
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man --enable-shared
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude = [Windows(:i686), Windows(:x86_64)])
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
