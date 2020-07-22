@@ -15,11 +15,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd mdbtools/
-if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
+if [[ ${target} == *-mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/locale_header.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/build_shared_libraries_mingw.patch"
 fi
 autoreconf -if
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man --enable-shared
 make -j${nproc}
 make install
 """
@@ -40,8 +41,8 @@ products = [
     ExecutableProduct("mdb-header", :mdb_header),
     ExecutableProduct("mdb-export", :mdb_export),
     ExecutableProduct("mdb-hexdump", :mdb_hexdump),
-    # LibraryProduct("libmdbsql", :libmdbsql),
-    # LibraryProduct("libmdb", :libmdb),
+    LibraryProduct("libmdbsql", :libmdbsql),
+    LibraryProduct("libmdb", :libmdb),
     ExecutableProduct("mdb-array", :mdb_array)
 ]
 

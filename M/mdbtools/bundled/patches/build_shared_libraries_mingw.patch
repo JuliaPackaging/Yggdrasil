@@ -1,0 +1,24 @@
+diff --git a/src/libmdb/Makefile.am b/src/libmdb/Makefile.am
+index aa823ba..bc2185b 100644
+--- a/src/libmdb/Makefile.am
++++ b/src/libmdb/Makefile.am
+@@ -1,5 +1,5 @@
+ lib_LTLIBRARIES	=	libmdb.la
+ libmdb_la_SOURCES=	catalog.c mem.c file.c table.c data.c dump.c backend.c money.c sargs.c index.c like.c write.c stats.c map.c props.c worktable.c options.c iconv.c
+-libmdb_la_LDFLAGS = -version-info 2:1:0 -export-symbols-regex '^(mdb_|_mdb_put_int16$$|_mdb_put_int32$$)'
++libmdb_la_LDFLAGS = -version-info 2:1:0 -export-symbols-regex '^(mdb_|_mdb_put_int16$$|_mdb_put_int32$$)' -no-undefined
+ AM_CFLAGS	=	-I$(top_srcdir)/include $(GLIB_CFLAGS)
+ LIBS = $(GLIB_LIBS) @LIBS@ @LIBICONV@
+diff --git a/src/sql/Makefile.am b/src/sql/Makefile.am
+index 94b0838..6a95a9a 100644
+--- a/src/sql/Makefile.am
++++ b/src/sql/Makefile.am
+@@ -2,7 +2,7 @@ BUILT_SOURCES = parser.h
+ AM_YFLAGS = -d
+ lib_LTLIBRARIES	=	libmdbsql.la
+ libmdbsql_la_SOURCES=	mdbsql.c parser.y lexer.l 
+-libmdbsql_la_LDFLAGS = -version-info 2:0:0 -export-symbols-regex '^mdb_sql_'
++libmdbsql_la_LDFLAGS = -version-info 2:0:0 -export-symbols-regex '^mdb_sql_' -no-undefined
+ CLEANFILES = parser.c parser.h lexer.c
+ AM_CFLAGS	=	-I$(top_srcdir)/include $(GLIB_CFLAGS)
+ LIBS	=	$(GLIB_LIBS)
