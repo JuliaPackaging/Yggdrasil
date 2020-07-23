@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "MPFR"
-version = v"4.0.2"
+version = v"4.1.0"
 
 # Collection of sources required to build MPFR
 sources = [
@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpfr-*
-./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix}
+./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
 make -j${nproc}
 make install
 
