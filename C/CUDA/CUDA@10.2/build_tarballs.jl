@@ -131,7 +131,7 @@ products = [
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
     LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libcurand),
+    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libnvgraph),
     LibraryProduct(["libnppc", "nppc64_10"], :libnppc),
     LibraryProduct(["libnppial", "nppial64_10"], :libnppial),
     LibraryProduct(["libnppicc", "nppicc64_10"], :libnppicc),
