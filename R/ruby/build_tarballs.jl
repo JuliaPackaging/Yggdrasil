@@ -7,24 +7,31 @@ version = v"2.6.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.6.tar.gz", "364b143def360bac1b74eb56ed60b1a0dca6439b00157ae11ff77d5cd2e92291")
+    ArchiveSource(
+        "https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.6.tar.gz",
+        "364b143def360bac1b74eb56ed60b1a0dca6439b00157ae11ff77d5cd2e92291",
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ruby-2.6.6/
 apk add ruby-full
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-baseruby=/usr/bin/ruby
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-baseruby=/usr/bin/ruby --enable-shared
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter(
+    i -> (i isa Linux && i.libc === :glibc) || i isa FreeBSD,
+    supported_platforms(),
+)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libruby", :libruby),
     ExecutableProduct("ruby", :ruby),
     ExecutableProduct("erb", :erb),
     ExecutableProduct("gem", :gem),
