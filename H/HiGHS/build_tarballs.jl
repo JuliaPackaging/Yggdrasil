@@ -8,11 +8,19 @@ version = v"0.1.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ERGO-Code/HiGHS.git", "0b4cb7f882a6c5d208fbb2edb4d8c416291ed4f5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+if [[ "${target}" == *86*-linux-musl* ]]; then
+    pushd /opt/${target}/lib/gcc/${target}/*/include
+    # Fix bug in Musl C library, see
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
+    popd
+fi
 mkdir -p HiGHS/build
 cd HiGHS/build
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
