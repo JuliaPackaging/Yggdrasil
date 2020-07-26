@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "jlqml"
-version = v"0.1.1"
+version = v"0.1.3"
 
 const is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/barche/jlqml.git" : joinpath(ENV["HOME"], "src/julia/jlqml/.git")
@@ -11,7 +11,7 @@ unpack_target = is_yggdrasil ? "" : "jlqml"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "1d7d72f7cc9fac09fc0dc79359b7d9288c2bc847", unpack_target=unpack_target),
+    GitSource(git_repo, "7cfe4025dff8ecdbdffb1178943c53f073e9d212", unpack_target=unpack_target),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.x86_64-linux-gnu-libgfortran4-cxx11.tar.gz", "378b6a23ce4363eeb7afd5bd8092f902caa512f2f987dfc47fc51ae6bdff0e56"; unpack_target="julia-x86_64-linux-gnu"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.x86_64-w64-mingw32-libgfortran4-cxx11.tar.gz", "621029838e895bf5f201d0858fdbd31f1bb7f458aa0bc0646b4b30185a7d8e7c"; unpack_target="julia-x86_64-w64-mingw32"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.armv7l-linux-gnueabihf-libgfortran4-cxx11.tar.gz", "0d733c2e0147d6ffb731b638a8b1bd4225069c5735df22bc3a953dffce663d74"; unpack_target="julia-arm-linux-gnueabihf"),
