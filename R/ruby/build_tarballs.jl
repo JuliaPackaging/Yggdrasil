@@ -15,7 +15,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ruby-2.6.6/
+cd $WORKSPACE/srcdir/ruby-*/
 apk add ruby-full
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-baseruby=/usr/bin/ruby --enable-shared
 make -j${nproc}
