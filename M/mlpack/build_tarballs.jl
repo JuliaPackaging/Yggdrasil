@@ -36,6 +36,8 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_JULIA_BINDINGS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
+       -DBUILD_GO_BINDINGS=OFF
+       -DBUILD_PYTHON_BINDINGS=OFF
        -DBUILD_TESTS=OFF)
 
 if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
