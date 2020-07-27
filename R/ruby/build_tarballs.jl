@@ -31,10 +31,9 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(
-    i -> (i isa Linux && i.libc === :glibc) || i isa FreeBSD,
-    supported_platforms(),
-)
+platforms = filter(supported_platforms()) do p
+    return (p isa Linux && p.libc === :glibc) || p isa FreeBSD
+end
 
 # The products that we will ensure are always built
 products = [
