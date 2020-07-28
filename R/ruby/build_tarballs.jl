@@ -27,6 +27,11 @@ apk add ruby-full || true
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-baseruby=/usr/bin/ruby --enable-shared
 make -j${nproc}
 make install
+${bindir}/ruby -e 'puts $:' | sed 's:${prefix}::g' > ${prefix}/RUBYLIB
+for bin in $(grep -rl "${bindir}/ruby" ${bindir})
+do
+    sed -i "s:${bindir}/ruby:/usr/bin/env ruby:" ${bin}
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,17 +41,27 @@ make install
 # It also seems like some of the libraries don't support case-insensitive file systems,
 # so this might be a problem when trying to get those to work.
 platforms = filter(p -> p isa Union{Linux,FreeBSD}, supported_platforms())
+# TODO: fix armv7l musl. Probably an upstream issue though
+filter!(!=(Linux(:armv7l, libc=:musl, call_abi=:eabihf)), platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libruby", :libruby),
     ExecutableProduct("ruby", :ruby),
+    # These are actually ruby scripts
+    ExecutableProduct("bundle", :bundle),
+    ExecutableProduct("bundler", :bundler),
     ExecutableProduct("erb", :erb),
     ExecutableProduct("gem", :gem),
     ExecutableProduct("irb", :irb),
+    ExecutableProduct("racc", :racc),
+    ExecutableProduct("racc2y", :racc2y),
     ExecutableProduct("rake", :rake),
     ExecutableProduct("rdoc", :rdoc),
     ExecutableProduct("ri", :ri),
+    # these are all subdirs of ${prefix} that need to be in the env var RUBYLIB for ruby to
+    # work properly
+    FileProduct("RUBYLIB", :RUBYLIB),
 ]
 
 # Dependencies that must be installed before this package can be built
