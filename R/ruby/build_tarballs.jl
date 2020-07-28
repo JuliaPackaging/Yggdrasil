@@ -31,9 +31,11 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(supported_platforms()) do p
-    return (p isa Linux && p.libc === :glibc) || p isa FreeBSD
-end
+
+# Unfortunately Windows and Mac don't seem to cross-compile out of the box.
+# It also seems like some of the libraries don't support case-insensitive file systems,
+# so this might be a problem when trying to get those to work.
+platforms = filter(p -> p isa Union{Linux,FreeBSD}, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
