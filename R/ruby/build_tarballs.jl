@@ -27,7 +27,7 @@ apk add ruby-full || true
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-baseruby=/usr/bin/ruby --enable-shared
 make -j${nproc}
 make install
-${bindir}/ruby -e 'puts $:' | sed 's:${prefix}::g' > ${prefix}/RUBYLIB
+${bindir}/ruby -e 'puts $:' | sed "s:${prefix}/::g" > ${prefix}/RUBYLIB
 for bin in $(grep -rl "${bindir}/ruby" ${bindir})
 do
     sed -i "s:${bindir}/ruby:/usr/bin/env ruby:" ${bin}
