@@ -2,21 +2,30 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.3.2"
+version = v"0.3.3"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "ef401079751e570d3dcfd4ac3c40e7d7d5858a44ea66c62808cf319a68c223c8"),
+                  "4566fd59d29f4bff4d68814334d8bc603056932d462e40bb22acaacbf353763a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/FastTransforms-*
-if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    export CFLAGS="-O3 -mavx -fno-asynchronous-unwind-tables "
+if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
+    export MSSE=-msse
+    export MSSE2=-msse2
+    export MAVX=-mavx
+    export MFMA=-mfma
+    if [[ ${target} == *-w64-mingw32 ]]; then
+        export CFLAGS="-O3 -mavx -fno-asynchronous-unwind-tables "
+    else
+        export CFLAGS="-O3 -mavx "
+        export MAVX512F=-mavx512f
+    fi
 else
-    export CFLAGS="-O3 -mavx "
+    export CFLAGS="-O3 "
 fi
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SYMBOL_DEFS=()
     SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
@@ -27,13 +36,15 @@ if [[ ${nbits} == 64 ]]; then
 else
     BLAS=openblas
 fi
-make assembly CC=gcc
-make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
+if [[ ${target} == *apple* ]]; then
+    export FT_OPENMP="-fopenmp=libgomp "
+fi
+make assembly
+make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
-platforms = [p for p in platforms if BinaryBuilder.proc_family(p) == :intel]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -49,4 +60,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
