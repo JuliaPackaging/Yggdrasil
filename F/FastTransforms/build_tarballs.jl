@@ -36,6 +36,9 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 else
     BLAS=openblas
 fi
+if [[ ${target} == *apple* ]]; then
+    export FT_OPENMP="-fopenmp=libgomp "
+fi
 make assembly
 make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
