@@ -27,7 +27,10 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liborc", :liborc)
+    LibraryProduct("liborc-test", :liborc_test),
+    ExecutableProduct("orcc", :orcc),
+    LibraryProduct("liborc", :liborc),
+    ExecutableProduct("orc-bugreport", :orc_bugreport)
 ]
 
 # Dependencies that must be installed before this package can be built
