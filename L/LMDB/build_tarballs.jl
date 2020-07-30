@@ -22,6 +22,7 @@ if [ "${exeext}" ]; then
         mv "${f}" "${f}${exeext}"
     done
 fi
+install_license ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
