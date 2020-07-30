@@ -14,10 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd orc-0.4.31
-meson ${prefix} . --cross-file=${MESON_TARGET_TOOLCHAIN}
-cd ..
-cd ..
-cd destdir
+mkdir build && cd build
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja
 ninja install
 exit
