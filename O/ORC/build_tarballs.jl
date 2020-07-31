@@ -27,7 +27,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liborc-test", :liborc_test),
+    LibraryProduct("liborc-test-0.4", :liborc_test),
     ExecutableProduct("orcc", :orcc),
     LibraryProduct("liborc", :liborc),
     ExecutableProduct("orc-bugreport", :orc_bugreport)
