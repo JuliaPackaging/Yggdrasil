@@ -17,8 +17,8 @@ cd ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb
 make SOEXT=.${dlext} -j${nproc}
 make SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
 rm -rf ${prefix}/share
-if [ "${exeext}" ]; then
-    for f in ${prefix}/bin/*; do
+if [ -n "${exeext}" ]; then
+    for f in ${bindir}/mdb_*; do
         mv "${f}" "${f}${exeext}"
     done
 fi
