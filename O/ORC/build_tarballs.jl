@@ -29,7 +29,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("liborc-test-0.4", :liborc_test),
     ExecutableProduct("orcc", :orcc),
-    LibraryProduct("liborc", :liborc),
+    LibraryProduct("liborc-0.4", :liborc),
     ExecutableProduct("orc-bugreport", :orc_bugreport)
 ]
 
