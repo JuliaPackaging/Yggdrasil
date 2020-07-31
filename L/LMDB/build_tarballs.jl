@@ -5,17 +5,21 @@ version = v"0.9.25"
 
 # No sources, we're just building the testsuite
 sources = [
-    ArchiveSource("https://git.openldap.org/openldap/openldap/-/archive/LMDB_0.9.25/openldap-LMDB_$(version).tar.gz",
+    ArchiveSource("https://git.openldap.org/openldap/openldap/-/archive/LMDB_$(version)/openldap-LMDB_$(version).tar.gz",
                   "4f6eebe5ad98c10a75badd106f498ee2249d454352d048c78a49c99c940d4cae"),
 ]
 
 # Bash recipe for building across all platforms
-# rm: remove man files (it does not name sense)
-# exeext: Makefile does not support extensions - need to rename execuables manually
+# - CC: mdb_env_close0 segfaults if gcc is used instead of clang on Mac
+# - rm: remove man files (it does not name sense)
+# - exeext: Makefile does not support extensions - need to rename execuables manually
 script = raw"""
 cd ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb
-make SOEXT=.${dlext} -j${nproc}
-make SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=clang
+fi
+make CC=${CC} SOEXT=.${dlext} -j${nproc}
+make CC=${CC} SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
 rm -rf ${prefix}/share
 if [ -n "${exeext}" ]; then
     for f in ${bindir}/mdb_*; do
@@ -28,6 +32,7 @@ install_license ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+#platforms = [Linux(:x86_64, libc=:glibc)]
 
 # The products that we will ensure are always built
 products = [
