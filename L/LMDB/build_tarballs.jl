@@ -10,14 +10,11 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-# - CC: mdb_env_close0 segfaults if gcc is used instead of clang on Mac
+# - CC: mdb_env_close0 segfaults on MacOS because CC is set to gcc in Makefile
 # - rm: remove man files (it does not name sense)
 # - exeext: Makefile does not support extensions - need to rename execuables manually
 script = raw"""
 cd ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=clang
-fi
 make CC=${CC} SOEXT=.${dlext} -j${nproc}
 make CC=${CC} SOEXT=.${dlext} ILIBS=liblmdb.${dlext} prefix=${prefix} install
 rm -rf ${prefix}/share
@@ -32,7 +29,6 @@ install_license ${WORKSPACE}/srcdir/openldap-*/libraries/liblmdb/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#platforms = [Linux(:x86_64, libc=:glibc)]
 
 # The products that we will ensure are always built
 products = [
