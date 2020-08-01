@@ -13,7 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/figtree-*/
-make
+make -j${nproc}
+mkdir -p ${libdir}
 mv "lib/libann_figtree_version.${dlext}" "${libdir}/libann_figtree_version.${dlext}"
 mv "lib/libfigtree.${dlext}" "${libdir}/libfigtree.${dlext}"
 """
