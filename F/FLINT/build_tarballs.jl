@@ -3,25 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "FLINT"
-version = v"0.0.2"
+version = v"2.6.2"
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git","f465622699d5c4c22bb3617596f8ae86e4570652")
+    ArchiveSource("http://www.flintlib.org/flint-$(version).tar.gz",
+                  "5f9b45113c3b50c10564a04e9dd929eb8ad96488b5eb901db5723cd21bbae1da")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd flint2/
+cd $WORKSPACE/srcdir/flint*
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
-   export CFLAGS=-D_GNU_SOURCE=1
-   # and properly define _GNU_SOURCE here as well to avoid many warnings
-   sed -i -e 's/#define _GNU_SOURCE$/#define _GNU_SOURCE 1/' thread_pool.h configure
+   export CFLAGS=-D_GNU_SOURCE
 elif [[ ${target} == *mingw* ]]; then
-   # fix arch detection:
-   sed -i -e 's/$(ARCH)/$ARCH/g' configure
    extraflags=--reentrant
 fi
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
@@ -45,4 +41,16 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               init_block = """
+  if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
+    #to match the global gmp ones
+    fm = dlsym(libflint_handle, :__flint_set_memory_functions)
+    ccall(fm, Nothing,
+      (Ptr{Nothing},Ptr{Nothing},Ptr{Nothing},Ptr{Nothing}),
+        cglobal(:jl_malloc),
+        cglobal(:jl_calloc),
+        cglobal(:jl_realloc),
+        cglobal(:jl_free))
+  end
+""")
