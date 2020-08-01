@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Antic"
-version = v"0.2.1"
+version = v"0.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wbhart/antic.git",
-              "9b9029f2768fbdd9cbda976819ce442fc2352acc")
+    ArchiveSource("https://github.com/wbhart/antic/archive/0.2.2.tar.gz",
+                  "9e8d518fc9b27807d5bfd173cc81d779a6a1e07ae37bc59427c5223283e9e4d4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd antic/
+cd antic*/
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1;
 elif [[ ${target} == *mingw* ]]; then
@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.2"))
+    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82"))
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
     Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
 ]
