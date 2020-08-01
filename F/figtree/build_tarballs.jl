@@ -12,13 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd figtree-0.9.3/
+cd $WORKSPACE/srcdir/figtree-*/
 make
-cd lib
-mv libann_figtree_version.so $prefix/libann_figtree_version.so
-mv libfigtree.so $prefix/libfigtree.so
-exit
+mv "lib/libann_figtree_version.${dlext}" "${libdir}/libann_figtree_version.${dlext}"
+mv "lib/libfigtree.${dlext}" "${libdir}/libfigtree.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
