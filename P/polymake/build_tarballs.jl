@@ -100,7 +100,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll")
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82",version=v"2.6.0"))
+    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82",version=v"2.6.2"))
     Dependency("GMP_jll")
     Dependency("MPFR_jll")
     Dependency("PPL_jll")
