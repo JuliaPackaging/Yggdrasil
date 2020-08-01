@@ -7,7 +7,8 @@ version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/wbhart/antic.git", "b4c444e6ba4efa0aa59f97f4e8dc6ce7a8166c4e")
+    GitSource("https://github.com/wbhart/antic.git",
+              "9b9029f2768fbdd9cbda976819ce442fc2352acc")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.0"))
+    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.2"))
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
     Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
 ]
