@@ -3,20 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "figtree"
-version = v"1.0.0"
+version = v"0.9.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/figtree/files/figtree-0.9.3.zip", "f0b39cef8a0ab56075cce0c656b1b4327d9bd1acb31aad927241974ac4d10d82")
+    ArchiveSource("https://sourceforge.net/projects/figtree/files/figtree-$(version).zip", "f0b39cef8a0ab56075cce0c656b1b4327d9bd1acb31aad927241974ac4d10d82"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/figtree-*/
+atomic_patch -p1 ../patches/fix-dlext.patch
 make -j${nproc}
 mkdir -p ${libdir}
-mv "lib/libann_figtree_version.so" "${libdir}/libann_figtree_version.${dlext}"
-mv "lib/libfigtree.so" "${libdir}/libfigtree.${dlext}"
+mv "lib/libann_figtree_version.${dlext}" "${libdir}/libann_figtree_version.${dlext}"
+mv "lib/libfigtree.${dlext}" "${libdir}/libfigtree.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
