@@ -7,19 +7,14 @@ version = v"2.0.15"
 
 # Collection of sources required to build SDL2_ttf
 sources = [
-    "https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-$(version).tar.gz" =>
-    "a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33",
-    "./bundled",
+    ArchiveSource("https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-$(version).tar.gz",
+                  "a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_ttf-*/
-
-FLAGS=()
-if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(--with-x)
-fi
 
 atomic_patch -p1 ../patches/configure_in-v2.0.15.patch
 atomic_patch -p1 ../patches/Makefile_in_dont_build_programs.patch
@@ -56,8 +51,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "SDL2_jll",
-    "FreeType2_jll",
+    Dependency("SDL2_jll"),
+    Dependency("FreeType2_jll"),
+    # The following libraries aren't needed for the build, but libSDL2_ttf is
+    # dynamically linked to them regardless.
+    Dependency("libpng_jll"),
+    Dependency("HarfBuzz_jll"),
+    Dependency("Graphite2_jll"),
+    Dependency("Glib_jll"),
+    Dependency("PCRE_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
