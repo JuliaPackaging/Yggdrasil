@@ -12,13 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd orc-0.4.31
+cd $WORKSPACE/srcdir/orc-0.4.31/
 mkdir build && cd build
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja
+ninja -j${nproc}
 ninja install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -27,9 +25,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liborc-test-0.4", :liborc_test),
+    LibraryProduct(["liborc-test-0.4", "liborc-test-0"], :liborc_test),
     ExecutableProduct("orcc", :orcc),
-    LibraryProduct("liborc-0.4", :liborc),
+    LibraryProduct(["liborc-0.4", "liborc-0"], :liborc),
     ExecutableProduct("orc-bugreport", :orc_bugreport)
 ]
 
