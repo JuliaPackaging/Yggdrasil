@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/figtree-*/
 make -j${nproc}
 mkdir -p ${libdir}
-mv "lib/libann_figtree_version.${dlext}" "${libdir}/libann_figtree_version.${dlext}"
-mv "lib/libfigtree.${dlext}" "${libdir}/libfigtree.${dlext}"
+mv "lib/libann_figtree_version.so" "${libdir}/libann_figtree_version.${dlext}"
+mv "lib/libfigtree.so" "${libdir}/libfigtree.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
