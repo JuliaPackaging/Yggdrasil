@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd antic/
+cd antic*/
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1;
 elif [[ ${target} == *mingw* ]]; then
