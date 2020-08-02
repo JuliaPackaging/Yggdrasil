@@ -1,0 +1,83 @@
+--- a/external/ann_1.1.1/Make-config
++++ b/external/ann_1.1.1/Make-config
+@@ -84,7 +84,7 @@
+ #					Linux using g++, make shared library
+ linux-g++-sl:
+ 	$(MAKE) targets \
+-	"ANNLIB = libann_figtree_version.so" \
++	"ANNLIB = libann_figtree_version.$(dlext)" \
+ 	"C++ = g++" \
+ 	"CFLAGS = -fpic -O3" \
+ 	"MAKELIB = g++ -shared -o" \
+@@ -129,7 +129,7 @@
+ #					SunOS5 with g++ and shared libraries
+ sunos5-g++-sl:
+ 	$(MAKE) targets \
+-	"ANNLIB = libann_figtree_version.so" \
++	"ANNLIB = libann_figtree_version.$(dlext)" \
+ 	"C++ = g++" \
+ 	"CFLAGS = -fpic -O3" \
+ 	"MAKELIB = ld -G -o" \
+@@ -199,7 +199,7 @@
+ #					SunOS4 with g++ and shared libraries
+ sunos4-g++-sl:
+ 	$(MAKE) targets \
+-	"ANNLIB = libann_figtree_version.so" \
++	"ANNLIB = libann_figtree_version.$(dlext)" \
+ 	"C++ = g++" \
+ 	"CC = g++" \
+ 	"CFLAGS = -fPIC -O3" \
+--- a/external/Makefile
++++ b/external/Makefile
+@@ -2,7 +2,7 @@
+ LIBSUFFIX=.a
+ MAKEOPT=linux-g++
+ else
+-LIBSUFFIX=.so
++LIBSUFFIX=.$(dlext)
+ MAKEOPT=linux-g++-sl
+ endif
+ 
+@@ -12,11 +12,11 @@
+ 
+ clean:
+ 	cd ann_1.1.1 ; $(MAKE) realclean
+-	rm -f ../lib/libann_figtree_version.so
++	rm -f ../lib/libann_figtree_version.$(dlext)
+ 	rm -f ../lib/libann_figtree_version.a
+ 
+ mostlyclean:
+ 	cd ann_1.1.1 ; $(MAKE) realclean
+-	rm -f ../lib/libann_figtree_version.so
++	rm -f ../lib/libann_figtree_version.$(dlext)
+ 	rm -f ../lib/libann_figtree_version.a
+ 
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -44,7 +44,7 @@
+ COMPILE=g++
+ MAKELIB=g++ -shared -o
+ CFLAGS=-c -O3 -fpic
+-LIBSUFFIX=.so
++LIBSUFFIX=.$(dlext)
+ endif
+ 
+ CFLAGS+= -I$(INCDIR)
+@@ -67,7 +67,7 @@
+ # Make rules:
+ #-----------------------------------------------------------------------------
+ all: $(SOURCES) $(TARGET)
+-	
++
+ $(TARGET): $(OBJECTS) 
+ 	$(MAKELIB) $@ $(OBJECTS) $(LDFLAGS)
+ 
+@@ -75,7 +75,7 @@
+ 	$(COMPILE) $(CFLAGS) $< -o $@
+ 
+ clean:
+-	rm -f ${TARGETBASE}.a ${TARGETBASE}.so ${OBJECTS}
++	rm -f ${TARGETBASE}.a ${TARGETBASE}.$(dlext) ${OBJECTS}
+ 
+ mostlyclean:
+ 	rm -f $(OBJECTS)
