@@ -15,7 +15,7 @@ sources = [
 # TODO: Theora once it's available
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ffmpeg-4.3/
+cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 apk add coreutils yasm
 
@@ -122,6 +122,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
+    Dependency("nv_codec_headers_jll"),
     Dependency("libass_jll"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
