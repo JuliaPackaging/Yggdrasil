@@ -86,6 +86,7 @@ pkg-config --list-all
   --enable-libvpx      \
   --enable-encoders    \
   --enable-nvenc       \
+  --enable-cuda-llvm   \
   --enable-decoders    \
   --enable-muxers      \
   --enable-demuxers    \
