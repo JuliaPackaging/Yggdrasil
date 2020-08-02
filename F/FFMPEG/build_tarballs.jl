@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FFMPEG"
-version = v"4.1.0"
+version = v"4.3.1"
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2",
-                  "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5"),
+                  "a7e87112fc49ad5b59e26726e3a7cae0ffae511cba5376c579ba3cb04483d6e2"),
 ]
 
 # Bash recipe for building across all platforms
