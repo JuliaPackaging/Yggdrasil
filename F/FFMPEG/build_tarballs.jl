@@ -15,7 +15,7 @@ sources = [
 # TODO: Theora once it's available
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ffmpeg-4.1/
+cd ffmpeg-4.3/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 apk add coreutils yasm
 
