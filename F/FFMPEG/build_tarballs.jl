@@ -85,6 +85,7 @@ pkg-config --list-all
   --enable-libx265     \
   --enable-libvpx      \
   --enable-encoders    \
+  --enable-nvenc       \
   --enable-decoders    \
   --enable-muxers      \
   --enable-demuxers    \
