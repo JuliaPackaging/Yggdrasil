@@ -16,7 +16,7 @@ script = raw"""
 cd nv-codec-headers-*
 
 mkdir ${prefix}/include
-mv include ${prefix}/include/
+mv include/ffnvcodec ${prefix}/include/
 """
 
 # These are the platforms we will build for by default, unless further
