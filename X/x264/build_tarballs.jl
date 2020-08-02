@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "x264"
-version = v"2020.07.14"
+version = v"2019.05.25"
 
 # Collection of sources required to build x264
 sources = [
-    ArchiveSource("https://code.videolan.org/videolan/x264/-/archive/db0d417728460c647ed4a847222a535b00d3dbcb/x264-db0d417728460c647ed4a847222a535b00d3dbcb.tar.gz",
-                  "b79b7038ce083f152fdd35da2f0d770ac9189fa2319fd09012567bc3a33737af"),
-                  
+    ArchiveSource("https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-20190525-2245-stable.tar.bz2",
+                  "638581a18bff8e9375211955422eff145011c8ccfd0994d43bd194cd82984f7a"),
 ]
 
 # Bash recipe for building across all platforms
