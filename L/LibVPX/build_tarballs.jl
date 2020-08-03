@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "LibVPX"
-version = v"1.8.1"
+version = v"1.9.0"
 
 # Collection of sources required to build LibVPX
 sources = [
     ArchiveSource("https://github.com/webmproject/libvpx/archive/v$(version).tar.gz",
-                  "df19b8f24758e90640e1ab228ab4a4676ec3df19d23e4593375e6f3847dee03e"),
+                  "d279c10e4b9316bf11a570ba16c3d55791e1ad6faa4404c67422eb631782c80a"),
 ]
 
 # Bash recipe for building across all platforms
