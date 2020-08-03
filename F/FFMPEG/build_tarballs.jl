@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "FFMPEG"
-version = v"4.1.0"
+version = v"4.3.1"
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2",
-                  "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5"),
+                  "a7e87112fc49ad5b59e26726e3a7cae0ffae511cba5376c579ba3cb04483d6e2"),
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ffmpeg-4.1/
+cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 apk add coreutils yasm
 
@@ -45,6 +45,16 @@ elif [[ "${target}" == powerpc64le-* ]]; then
     export ccARCH="powerpc64le"
 else
     export ccARCH="x86_64"
+fi
+
+if [[ "${target}" == arm-* ]]; then
+    export CUDA_ARGS=""
+elif [[ "${target}" == *-apple-* ]]; then
+    export CUDA_ARGS=""
+elif [[ "${target}" == *-unknown-freebsd* ]]; then
+    export CUDA_ARGS=""
+else
+    export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
 fi
 
 pkg-config --list-all
@@ -92,7 +102,7 @@ pkg-config --list-all
   --enable-openssl     \
   --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${libdir}"
+  --extra-ldflags="-L${libdir}" ${CUDA_ARGS}
 make -j${nproc}
 make install
 install_license LICENSE.md COPYING.*
@@ -120,6 +130,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
+    BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
@@ -138,4 +149,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
-
