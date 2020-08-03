@@ -14,9 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd nv-codec-headers-*
-
-mkdir ${prefix}/include
-mv include/ffnvcodec ${prefix}/include/
+make install PREFIX=${prefix}
+install_license /usr/share/licenses/MIT
 """
 
 # These are the platforms we will build for by default, unless further
