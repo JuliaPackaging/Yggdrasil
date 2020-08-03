@@ -15,6 +15,7 @@ sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platform
 ./configure linux-i486-gcc
 ./makeall
 cp ./difmap $bindir
+install_license ./README
 """
 
 platforms = [
