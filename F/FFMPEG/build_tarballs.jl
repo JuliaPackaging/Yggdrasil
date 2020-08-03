@@ -122,7 +122,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
-    Dependency("nv_codec_headers_jll"),
+    BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
@@ -141,4 +141,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
-
