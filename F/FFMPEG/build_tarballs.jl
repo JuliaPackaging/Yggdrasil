@@ -47,9 +47,11 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == armv7-* ]]; then
+if [[ "${target}" == armv7l-* ]]; then
     export CUDA_ARGS=""
 elif [[ "${target}" == *-apple-* ]]; then
+    export CUDA_ARGS=""
+elif [[ "${target}" == *-unknown-freebsd* ]]; then
     export CUDA_ARGS=""
 else
     export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
