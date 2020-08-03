@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "nv_codec_headers"
-version = v"10.0.26-0"
+version = v"10.0.26"
 
 # Collection of sources required to build this package
 sources = [
