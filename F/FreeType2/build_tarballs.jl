@@ -8,7 +8,7 @@ version = v"2.10.1"
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.gz",
-               "3a60d391fd579440561bf0e7f31af2222bc610ad6ce4d9d7bd2165bca8669110")
+                  "3a60d391fd579440561bf0e7f31af2222bc610ad6ce4d9d7bd2165bca8669110")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,9 +30,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Bzip2_jll",
-    "Zlib_jll",
+    Dependency("Bzip2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+
