@@ -27,6 +27,8 @@ platforms = [
 
 products = [LibraryProduct("libpgplot", :libpgplot)]
 
-dependencies = [Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))]
+dependencies = [
+    BuildDependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
