@@ -13,7 +13,7 @@ mkdir pgplot_build && cd pgplot_build/
 cat ../pgplot/drivers.list | sed 's|! PSDRIV|  PSDRIV|g' | sed 's|! GIDRIV|  GIDRIV|g' > drivers.list
 ../pgplot/makemake ../pgplot/ linux g77_gcc
 sed -i 's|FCOMPL=g77|FCOMPL=gfortran|' makefile
-make && make clean
+make
 cp ../pgplot_build/libpgplot.so $libdir
 install_license copyright.notice
 """
