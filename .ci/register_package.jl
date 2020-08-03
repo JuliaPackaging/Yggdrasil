@@ -101,4 +101,10 @@ mktempdir() do download_dir
     end
 end
 BinaryBuilder.push_jll_package(name, build_version)
+mktempdir() do dir
+    Pkg.activate(dir)
+    Pkg.dev(code_dir)
+    module_name = Symbol(name * "_jll")
+    @eval using $(module_name)
+end
 BinaryBuilder.register_jll(name, build_version, dependencies)
