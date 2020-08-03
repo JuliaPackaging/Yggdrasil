@@ -6,8 +6,8 @@ version = v"1.0.6"
 
 # Collection of sources required to build bzip2
 sources = [
-    "https://github.com/enthought/bzip2-1.0.6.git" =>
-    "288acf97a15d558f96c24c89f578b724d6e06b0c"
+    GitSource("https://github.com/enthought/bzip2-1.0.6.git",
+              "288acf97a15d558f96c24c89f578b724d6e06b0c"),
 ]
 
 # Bash recipe for building across all platforms
