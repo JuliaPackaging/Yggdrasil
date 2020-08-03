@@ -47,7 +47,7 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == armv7l-* ]]; then
+if [[ "${target}" == arm-* ]]; then
     export CUDA_ARGS=""
 elif [[ "${target}" == *-apple-* ]]; then
     export CUDA_ARGS=""
