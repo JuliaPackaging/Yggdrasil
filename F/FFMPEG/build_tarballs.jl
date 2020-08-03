@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "FFMPEG"
 version = v"4.3.1"
@@ -139,7 +139,7 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("LibVPX_jll"),
-    Dependency("x264_jll"),
+    Dependency(PackageSpec(name="x264_jll", version=v"2020.7.14")),
     Dependency("x265_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Zlib_jll"),
