@@ -21,7 +21,6 @@ install_license ../pgplot/copyright.notice
 platforms = [
     Linux(:x86_64, libc=:musl),
     Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:musl),
     Linux(:i686, libc=:glibc),
 ]
 
