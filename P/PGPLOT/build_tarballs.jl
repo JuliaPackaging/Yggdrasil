@@ -24,7 +24,6 @@ platforms = [
     Linux(:i686, libc=:musl),
     Linux(:i686, libc=:glibc),
 ]
-platforms = expand_gfortran_versions(platforms)
 
 products = [LibraryProduct("libpgplot", :libpgplot)]
 
