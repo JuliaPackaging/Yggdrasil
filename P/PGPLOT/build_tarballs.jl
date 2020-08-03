@@ -23,12 +23,12 @@ platforms = [
     Linux(:x86_64, libc=:glibc),
     Linux(:i686, libc=:glibc),
 ]
-platform = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 products = [LibraryProduct("libpgplot", :libpgplot)]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
