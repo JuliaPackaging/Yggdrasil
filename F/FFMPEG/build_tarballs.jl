@@ -138,7 +138,7 @@ dependencies = [
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
-    Dependency("LibVPX_jll"),
+    BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency(PackageSpec(name="x264_jll", version=v"2020.7.14")),
     Dependency("x265_jll"),
     Dependency("Bzip2_jll"),
