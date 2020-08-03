@@ -13,7 +13,7 @@ mkdir pgplot_build && cd pgplot_build/
 cat ../pgplot/drivers.list | sed 's|! PSDRIV|  PSDRIV|g' | sed 's|! GIDRIV|  GIDRIV|g' > drivers.list
 ../pgplot/makemake ../pgplot/ linux g77_gcc
 sed -i 's|FCOMPL=g77|FCOMPL=gfortran|' makefile
-make
+make lib SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 cp libpgplot.so $libdir
 install_license ../pgplot/copyright.notice
 """
@@ -26,8 +26,7 @@ platforms = [
 
 products = [LibraryProduct("libpgplot", :libpgplot)]
 
-dependencies = [
-    BuildDependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
+dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
