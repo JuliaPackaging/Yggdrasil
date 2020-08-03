@@ -4,8 +4,8 @@ using BinaryBuilder
 name = "OpenSSL"
 version = v"1.1.1"
 sources = [
-    "https://www.openssl.org/source/openssl-1.1.1e.tar.gz" =>
-    "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe",
+    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1e.tar.gz",
+                  "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe"),
 ]
 
 # Bash recipe for building across all platforms
