@@ -47,6 +47,14 @@ else
     export ccARCH="x86_64"
 fi
 
+if [[ "${target}" == armv7-* ]]; then
+    export CUDA_ARGS=""
+elif [[ "${target}" == *-apple-* ]]; then
+    export CUDA_ARGS=""
+else
+    export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
+fi
+
 pkg-config --list-all
 
 ./configure            \
@@ -85,8 +93,6 @@ pkg-config --list-all
   --enable-libx265     \
   --enable-libvpx      \
   --enable-encoders    \
-  --enable-nvenc       \
-  --enable-cuda-llvm   \
   --enable-decoders    \
   --enable-muxers      \
   --enable-demuxers    \
@@ -94,7 +100,7 @@ pkg-config --list-all
   --enable-openssl     \
   --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${libdir}"
+  --extra-ldflags="-L${libdir}" ${CUDA_ARGS}
 make -j${nproc}
 make install
 install_license LICENSE.md COPYING.*
