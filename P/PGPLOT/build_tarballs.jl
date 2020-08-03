@@ -15,6 +15,7 @@ cat ../pgplot/drivers.list | sed 's|! PSDRIV|  PSDRIV|g' | sed 's|! GIDRIV|  GID
 sed -i 's|FCOMPL=g77|FCOMPL=gfortran|' makefile
 make && make clean
 cp ../pgplot_build/libpgplot.so $libdir
+install_license copyright.notice
 """
 
 platforms = [
