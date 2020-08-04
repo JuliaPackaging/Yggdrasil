@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd scipoptsuite-7.0.1/
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=0 -DBOOST=off ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=OFF -DBOOST=off ..
 make -j${nproc}
 make install
 """
@@ -44,10 +44,8 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("scip", :scip),
-    ExecutableProduct("soplex", :soplex),
     LibraryProduct("libgcg", :libgcg),
     LibraryProduct("libscip", :libscip),
-    ExecutableProduct("gcg", :gcg)
 ]
 
 # Dependencies that must be installed before this package can be built
