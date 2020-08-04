@@ -16,8 +16,8 @@ cd $WORKSPACE/srcdir
 cd scipoptsuite-7.0.1/
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 ..
-make
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=0 ..
+make -j${nproc}
 make install
 """
 
@@ -35,14 +35,14 @@ platforms = [
     Linux(:armv7l, libc=:musl, call_abi=:eabihf),
     MacOS(:x86_64),
     FreeBSD(:x86_64),
-    Windows(:i686)
+    Windows(:i686),
+    Windows(:x86_64),
 ]
 
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("zimpl", :zimpl),
     ExecutableProduct("scip", :scip),
     ExecutableProduct("soplex", :soplex),
     LibraryProduct("libgcg", :libgcg),
