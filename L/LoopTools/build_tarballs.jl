@@ -13,8 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/LoopTools-*
-
-./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
+export AR=ar
+export RANLIB=ranlib
+./configure --prefix=$prefix --host=${target}
 make -j${nproc}
 make install
 """
