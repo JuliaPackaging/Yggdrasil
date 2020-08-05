@@ -1,0 +1,134 @@
+--- a/configure
++++ b/configure
+@@ -159,14 +159,14 @@
+ ${FFLAGS-${CONF_DEBUG:--O3} ${CONF_DEBUG:+-Wall -Wno-unused-dummy-argument -Wtabs -ffpe-trap=invalid,overflow,zero}} \
+ $CONF_ARCH $CONF_AS $CONF_BITS -ffixed-line-length-none -fno-range-check \
+ ${CONF_QUAD:+-freal-8-real-$CONF_QUADSIZE} \
+-${CONF_STATIC:-$CONF_STATIC_GFORTRAN} ${CONF_STATIC_EXT:+-static-libgfortran -static-libgcc}"
++${CONF_STATIC:-$CONF_STATIC_GFORTRAN} ${CONF_STATIC_EXT:+-static-libgfortran -static-libgcc} -fPIC"
+   ;;
+ GNU,Fortran,*)
+   eval setflags FFLAGS "\
+ ${FFLAGS-${CONF_DEBUG:--O3} ${CONF_DEBUG:+-Wall -Wno-unused-dummy-argument -Wno-tabs -Wno-conversion -ffpe-trap=invalid,overflow,zero}} \
+ $CONF_ARCH $CONF_AS $CONF_BITS -ffixed-line-length-none -fno-range-check \
+ ${CONF_QUAD:+-freal-8-real-$CONF_QUADSIZE} \
+-${CONF_STATIC:-$CONF_STATIC_GFORTRAN} ${CONF_STATIC_EXT:+-static-libgfortran -static-libgcc}"
++${CONF_STATIC:-$CONF_STATIC_GFORTRAN} ${CONF_STATIC_EXT:+-static-libgfortran -static-libgcc} -fPIC"
+   ;;
+ pgf*)
+   eval setflags FFLAGS "\
+@@ -233,11 +233,11 @@
+ [[ "`eval $CONF_CC --version -c 2>&1`" =~ gcc ]] && CONF_STATIC_GCC="$CONF_STATIC_EXT"
+ 
+ eval setflags CFLAGS "\
+-${CFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -ffast-math -fPIC -Wall} \
++${CFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -fPIC -Wall} \
+ $CONF_STATIC ${CONF_STATIC_GCC:+-static-libgcc}"
+ 
+ eval setflags CXXFLAGS "\
+-${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -ffast-math -Wall} \
++${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -Wall} \
+ $CONF_STATIC ${CONF_STATIC_GCC:+-static-libstdc++ -static-libgcc}"
+ 
+ 
+@@ -245,29 +245,10 @@
+ 
+ echo -n "does $CONF_FC append underscores... " 1>&3
+ 
+-tee $test-c.c << _EOF_ 1>&2
+-int uscore_ = 95;
+-int uscore = 59;
+-_EOF_
+-
+-for CONF_BITS in ${CONF_BITS:--m64 -m32} "" ; do
+-  eval $CONF_CC$CONF_CFLAGS $CONF_BITS -c $test-c.c 1>&2 || continue
+-  eval $CONF_FC$CONF_FFLAGS -o $test$CONF_EXE $test.f $test-c.o $CONF_LDFLAGS 1>&2 && break
+-done
+-
+-./$test$CONF_EXE
+-case $? in
+-95)
+-  echo "yes" 1>&3
+-  CONF_NOUNDERSCORE=0 ;;
+-59)
+-  echo "no" 1>&3
+-  CONF_NOUNDERSCORE=1 ;;
+-*)
+-  echo "error linking Fortran and C" 1>&3
+-  exit 1 ;;
+-esac
+-
++# We know the compiler appends underscores
++echo "yes" 1>&3
++CONF_NOUNDERSCORE=0
++  
+ CONF_CFLAGS+=" $CONF_BITS"
+ CONF_CXXFLAGS+=" $CONF_BITS"
+ 
+@@ -278,27 +259,14 @@
+ 
+ echo -n "does $CONF_FC support REAL*$CONF_QUADSIZE... " 1>&3
+ 
+-rm -fr $test*
++if [[ "${target}" == arm-* ]]; then
++    # On 32-bit the Fortran compiler doesn't support quadsize reals
++    CONF_QUADSIZE=0
++    echo "no" 1>&3
++else
++    echo "yes" 1>&3
++fi
+ 
+-tee $test.f << _EOF_ 1>&2
+-	program test
+-	real*$CONF_QUADSIZE a, b
+-	a = 2D0**(52/2+2)
+-	b = a + 1/a
+-	if( a .eq. b ) call exit(1)
+-	end
+-_EOF_
+-
+-eval $CONF_FC$CONF_FFLAGS -o $test$CONF_EXE $test.f 1>&2
+-
+-./$test$CONF_EXE 1>&2 && {
+-  echo "yes" 1>&3
+-} || {
+-  echo "no" 1>&3
+-  CONF_QUADSIZE=0
+-}
+-
+-
+ ## does Fortran need 'external' for U77 routines?
+ 
+ echo -n "does $CONF_FC need 'external' for U77 routines... " 1>&3
+@@ -325,28 +288,9 @@
+ 
+ echo -n "are we big-endian... " 1>&3
+ 
+-rm -fr $test*
+-
+-tee $test.c << _EOF_ 1>&2
+-#include <stdio.h>
+-int main() {
+-  union { int i; char c; } u;
+-  u.i = 1;
+-  u.c = 0;
+-  return u.i;
+-}
+-_EOF_
+-
+-eval $CONF_CC$CONF_CFLAGS -o $test$CONF_EXE $test.c 1>&2
+-
+-./$test$CONF_EXE && {
+-  echo "no" 1>&3
+-  CONF_BIGENDIAN=0
+-} || {
+-  echo "yes" 1>&3
+-  CONF_BIGENDIAN=1
+-}
+-
++# We know we are little-endian
++echo "no" 1>&3
++CONF_BIGENDIAN=0
+ 
+ ## can we do MathLink compilations
+ 
