@@ -7,9 +7,8 @@ version = v"1.0.23"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/libusb/libusb.git" =>
-    "e782eeb2514266f6738e242cdcb18e3ae1ed06fa",
-
+    GitSource("https://github.com/libusb/libusb.git",
+              "e782eeb2514266f6738e242cdcb18e3ae1ed06fa"),
 ]
 
 # Bash recipe for building across all platforms
