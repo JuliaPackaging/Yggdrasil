@@ -355,7 +355,8 @@ function gcc_script(compiler_target::Platform)
             --with-sysroot="${sysroot}" \
             --enable-multilib \
             --program-prefix="${COMPILER_TARGET}-" \
-            --disable-werror
+            --disable-werror \
+            --enable-deterministic-archives
 
         make -j${nproc}
         make install
