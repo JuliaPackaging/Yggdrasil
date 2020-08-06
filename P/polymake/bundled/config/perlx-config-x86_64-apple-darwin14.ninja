@@ -1,0 +1,5 @@
+PERL=/workspace/destdir/deps/Perl_jll/bin/miniperl-for-build
+CXXglueFLAGS=-I/workspace/destdir/deps/Perl_jll/lib/perl5/5.30.3/darwin-2level/CORE -fno-common -DPERL_DARWIN -mmacosx-version-min=10.8 -fno-strict-aliasing -pipe -fstack-protector-strong -DPERL_USE_SAFE_PUTENV -I/workspace/destdir/deps/Perl_jll/include -DPerlVersion=5303 -Wno-nonnull
+LIBperlFLAGS=-L/workspace/destdir/deps/Perl_jll/lib/perl5/5.30.3/darwin-2level/CORE -lperl
+ExtUtils_xsubpp=/workspace/destdir/deps/Perl_jll/lib/perl5/5.30.3/ExtUtils/xsubpp
+ExtUtils_typemap=/workspace/destdir/deps/Perl_jll/lib/perl5/5.30.3/ExtUtils/typemap

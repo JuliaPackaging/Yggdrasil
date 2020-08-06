@@ -1,0 +1,217 @@
+diff --git a/support/configure.pl b/support/configure.pl
+index 616b11224d..e0cfed17cd 100644
+--- a/support/configure.pl
++++ b/support/configure.pl
+@@ -33,6 +33,7 @@ you can specify its location on the command line:
+ use Config;
+ use Cwd;
+ use File::Path;
++use File::Basename qw( dirname );
+ 
+ use strict 'vars', 'subs';
+ use lib "perllib";
+@@ -1710,8 +1711,9 @@ sub write_perl_specific_configuration_file {
+    my $includePerlCore = defined($XcodeVersion) && v_cmp($XcodeVersion, "10.0") >= 0 && $Config::Config{perlpath} eq "/usr/bin/perl" ? "-iwithsysroot " : "-I";
+ 
+    # fedora has ExtUtils::ParseXS in vendorlib
+-   my ($xsubpp) = grep { -e $_ } map { "$Config::Config{$_}/ExtUtils/xsubpp" } qw(privlib vendorlib);
+-   my ($typemap) = grep { -e $_ } map { "$Config::Config{$_}/ExtUtils/typemap" } qw(privlib vendorlib);
++   my $perldir = File::Basename::dirname($^X);
++   my ($xsubpp) = grep { -e $_ } map { s/\.\.\./$perldir/r } map { "$Config::Config{$_}/ExtUtils/xsubpp" } qw(privlib vendorlib);
++   my ($typemap) = grep { -e $_ } map { s/\.\.\./$perldir/r } map { "$Config::Config{$_}/ExtUtils/typemap" } qw(privlib vendorlib);
+ 
+    print $conf <<"---";
+ PERL=$Config::Config{perlpath}
+diff --git a/support/install_utils.pl b/support/install_utils.pl
+index e2950c7062..f5a1b80348 100644
+--- a/support/install_utils.pl
++++ b/support/install_utils.pl
+@@ -44,8 +44,14 @@ sub load_config_file {
+      }
+   }
+   close $cf;
+-  $root eq $values{root}
+-     or die "configuration file $config_file does not match the top directory $root\n";
++  unless ($root eq $values{root}) {
++     (my $newprefix = $root) =~ s#/share/polymake$##;
++     (my $oldprefix = $values{root}) =~ s#/share/polymake$##;
++     warn "configuration file $config_file does not match the top directory $root - adjusting\n";
++     foreach (keys(%values)) {
++        $values{$_} =~ s/$oldprefix/$newprefix/g;
++     }
++  }
+   %values;
+ }
+ 
+diff --git a/support/install.pl b/support/install.pl
+index 010ea05066..7b03cafc14 100644
+--- a/support/install.pl
++++ b/support/install.pl
+@@ -552,8 +552,10 @@ sub install_bin_scripts {
+    }
+ 
+    my $init_block = <<"---";
+-   \$InstallTop='$ConfigFlags{InstallTop}';
+-   \$InstallArch='$ConfigFlags{InstallArch}';
++   use Cwd qw( abs_path );
++   use File::Basename qw( dirname );
++   \$InstallTop=abs_path(dirname(\$0)."/../share/polymake");
++   \$InstallArch=abs_path(dirname(\$0)."/../lib/polymake");
+    \$Arch="$ConfigFlags{Arch}";
+    \@BundledExts=qw(@BundledExts);
+ ---
+@@ -589,9 +591,10 @@ sub install_bin_scripts {
+       s{^\#!\S+}{#!$Config::Config{perlpath}}s;
+    }
+ 
++   s{use strict;}{use strict;\nuse Cwd qw( abs_path );\nuse File::Basename qw( dirname );};
+    s{=Version(?=;)}{=$Version};
+-   s{=InstallTop(?=;)}{='$ConfigFlags{InstallTop}'};
+-   s{=InstallArch(?=;)}{='$ConfigFlags{InstallArch}'};
++   s{=InstallTop(?=;)}{=abs_path(dirname(\$0)."/../share/polymake")};
++   s{=InstallArch(?=;)}{=abs_path(dirname(\$0)."/../lib/polymake")};
+ 
+    if (-e "$InstallBin/polymake-config") {
+       unlink "$InstallBin/polymake-config"
+@@ -641,6 +644,9 @@ sub transform_core_config_file {
+ 
+    s{[ =] -Wl,-z, \K now}{lazy}x;
+ 
++   s{[ =] -target [ =] \S+}{}x;
++   s{[ =] --sysroot [ =] \S+}{}x;
++
+    if ($buildmode eq "San") {
+       s{^\s* PERL \s*= .*\n \K}{PERLSANITIZE = $ConfigFlags{PERLSANITIZE}\n}xm;
+    }
+diff --git a/lib/callable/src/perl/Main.cc b/lib/callable/src/perl/Main.cc
+index 4a11f833bb..c27e284774 100644
+--- a/lib/callable/src/perl/Main.cc
++++ b/lib/callable/src/perl/Main.cc
+@@ -84,6 +84,7 @@ std::string read_rel_link(std::string link, bool mandatory=true)
+       return {};
+    }
+ 
++   do {
+    std::string result(link_stat.st_size+1, '\0');
+    if (readlink(link.c_str(), const_cast<char*>(result.c_str()), link_stat.st_size+1) != link_stat.st_size)
+       throw std::runtime_error("polymake::Main - readlink(" + link + ") failed");
+@@ -101,8 +102,27 @@ std::string read_rel_link(std::string link, bool mandatory=true)
+          throw std::runtime_error("polymake::Main - path " + link + " does not contain enough folder levels");
+       link.erase(slash+1);
+    }
++   link = link+result;
++   } while (lstat(link.c_str(), &link_stat) == 0 && S_ISLNK(link_stat.st_mode));
+ 
+-   return link+result;
++   return link;
++}
++
++std::string find_perl(std::string libperl) {
++   struct stat link_stat;
++   while (lstat(libperl.c_str(), &link_stat) == 0 && S_ISLNK(link_stat.st_mode)) {
++      libperl = read_rel_link(libperl);
++   }
++   auto slash=libperl.rfind('/');
++   libperl.erase(slash+1);
++   // lib is in lib/perl5/<version>/<arch>/CORE:
++   libperl += "../../../../../bin/perl";
++   char perlpath[PATH_MAX];
++   char *res = realpath(libperl.c_str(), perlpath);
++   if (res)
++       return std::string(perlpath);
++   else
++      throw std::runtime_error("polymake::Main - unable to find real path of perl - guessed: " + libperl);
+ }
+ 
+ // Follow symbolic links created by the installation script
+@@ -190,6 +210,8 @@ Main::Main(const std::string& user_opts, std::string install_top, std::string in
+    if (install_top.empty())
+       deduce_install_dirs(dli_polymake.dli_fname, install_top, install_arch);
+ 
++   std::string perl = find_perl(std::string(dli_perl.dli_fname));
++
+    std::string script_arg(scr0);
+    script_arg += install_top;
+    script_arg += scr8InstallTop;
+@@ -206,7 +228,7 @@ Main::Main(const std::string& user_opts, std::string install_top, std::string in
+    script_arg += must_reset_SIGCHLD();
+    script_arg += scr8reset_SIGCHLD;
+ 
+-   const char* perl_start_args[] = { "perl", "-e", script_arg.c_str(), 0 };
++   const char* perl_start_args[] = { perl.c_str(), "-e", script_arg.c_str(), 0 };
+    int argc = sizeof(perl_start_args) / sizeof(perl_start_args[0])-1;
+    const char** argv = perl_start_args;
+    char *** const env = PmGetEnvironPtr;
+diff --git a/perllib/Polymake/Configure.pm b/perllib/Polymake/Configure.pm
+index 4e872f553e..4fb83ad279 100644
+--- a/perllib/Polymake/Configure.pm
++++ b/perllib/Polymake/Configure.pm
+@@ -149,6 +149,8 @@ sub enter_program {
+ sub load_config_vars {
+    return if defined $Arch;
+    return unless -f (my $conf_file="$Polymake::InstallArch/config.ninja");
++   $conf_file = "$Polymake::InstallArch/config-reloc.ninja"
++      if -f "$Polymake::InstallArch/config-reloc.ninja";
+    open my $CF, $conf_file
+      or die "can't read $conf_file: $!\n";
+    local $_;
+@@ -198,7 +200,9 @@ sub create_extension_build_trees {
+    my ($ext, $ext_build_root)=@_;
+    local $BuildModes="$BuildModes $ENV{POLYMAKE_BUILD_MODE}" if index($BuildModes, $ENV{POLYMAKE_BUILD_MODE}) < 0;
+    create_build_trees($Polymake::InstallArch, $ext_build_root,
+-                      include => [ "$Polymake::InstallArch/config.ninja",
++                      include => [ -f "$Polymake::InstallArch/config-reloc.ninja" ?
++                                   "$Polymake::InstallArch/config-reloc.ninja" :
++                                   "$Polymake::InstallArch/config.ninja",
+                                    map { $_->is_bundled ? () : $_->build_dir."/config.ninja" } @{$ext->requires} ],
+                       $Polymake::InstallArch =~ m{/build(\.[^/]+)?/\w+$}
+                       ? (addvars => "PERL=$Config::Config{perlpath}\n") : ());
+diff --git a/perllib/Polymake/Core/CPlusPlusGenerator.pm b/perllib/Polymake/Core/CPlusPlusGenerator.pm
+index 8ba9419499..e9f92f171b 100644
+--- a/perllib/Polymake/Core/CPlusPlusGenerator.pm
++++ b/perllib/Polymake/Core/CPlusPlusGenerator.pm
+@@ -931,12 +931,16 @@ Set the variable $Polymake::User::Verbose::cpp to a positive value and repeat fo
+ ##############################################################################################
+ sub write_temp_build_ninja_file {
+    my ($file, $app, $extension, $src_name, $def_src_dir, $stem, $so_name) = @_;
++
+    open my $conf, ">", $file
+      or die "can't create $file: $!\n";
++   my $configpath = exists $ENV{POLYMAKE_DEPS_TREE} && -f "$InstallArch/config-reloc.ninja" ?
++      "$InstallArch/config-reloc.ninja\nprefix=$ENV{POLYMAKE_DEPS_TREE}" :
++      "$InstallArch/config.ninja";
+    print $conf <<"---";
+-config.file=$InstallArch/config.ninja
++config.file=$configpath
+ include \${config.file}
+-PERL=$Config::Config{perlpath}
++PERL=$^X
+ ---
+    my $cxxflags = "-DPOLYMAKE_APPNAME=".$app->name;
+    my $cxxincludes = '${app.includes} ${core.includes}';
+diff --git a/perllib/Polymake/Core/Extension.pm b/perllib/Polymake/Core/Extension.pm
+index 97c5f662da..174b7becd9 100644
+--- a/perllib/Polymake/Core/Extension.pm
++++ b/perllib/Polymake/Core/Extension.pm
+@@ -474,7 +474,7 @@ For the meanwhile, the extension will stay disabled for architecture $Arch.
+                while (<$bf>) {
+                   # the core system configuration file is included first:
+                   # does it match the current system?
+-                  if (m{^\s*include\s+(\S+)/config.ninja\s*$}) {
++                  if (m{^\s*include\s+(\S+)/config(?:-reloc)?.ninja\s*$}) {
+                      return 1 if $1 eq $InstallArch;
+                      last;
+                   }
+diff --git a/perllib/Polymake/ConfigureStandalone.pm b/perllib/Polymake/ConfigureStandalone.pm
+index 9cf0b7b0a8..1a13040bd6 100644
+--- a/perllib/Polymake/ConfigureStandalone.pm
++++ b/perllib/Polymake/ConfigureStandalone.pm
+@@ -399,6 +399,8 @@ config.file=\${builddir}/config.ninja
+       print $conf <<"---";
+ root.config.file=${$include_list}[0]
+ ---
++      print $conf "prefix=$ENV{POLYMAKE_DEPS_TREE}\n"
++         if length($ENV{POLYMAKE_DEPS_TREE});
+       foreach my $included (@$include_list) {
+          print $conf "include $included\n";
+       }

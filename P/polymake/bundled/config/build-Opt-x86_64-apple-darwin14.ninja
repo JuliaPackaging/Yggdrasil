@@ -1,0 +1,18 @@
+builddir=/workspace/srcdir/polymake/build
+buildmode=Opt
+buildtop=${builddir}/${buildmode}
+config.file=${builddir}/config.ninja
+include ${config.file}
+perlxpath=perlx/5.30.3/apple-darwin14
+include ${builddir}/${perlxpath}/config.ninja
+include ${root}/support/rules.ninja
+CmodeFLAGS=${COptFLAGS}
+CexternModeFLAGS=${CexternOptFLAGS}
+CmodeCACHE=${COptCACHE}
+LDmodeFLAGS=${LDOptFLAGS}
+
+include ${builddir}/targets.ninja
+
+# should rerun the target generation if any of the included files changes
+build build.ninja: phony | ${config.file} ${builddir}/targets.ninja
+
