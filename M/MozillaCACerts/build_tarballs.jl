@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "MozillaCACerts"
 # Info and new versions here: https://curl.haxx.se/docs/caextract.html
-cacert_version = "2020-01-01"
+cacert_version = "2020-07-22"
 version = VersionNumber(replace(cacert_version, '_'=>'.'))
 
 # Collection of sources required to build MozillaCACerts
