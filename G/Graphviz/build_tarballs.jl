@@ -58,6 +58,8 @@ if [[ "${target}" == *-mingw* ]]; then
     # Cover up the traces of the hack
     rm ${prefix}/include/regex.h
 fi
+
+${bindir}/dot -c
 """
 
 # These are the platforms we will build for by default, unless further
