@@ -3,16 +3,16 @@ using BinaryBuilder
 cuda_version = v"10.2.89"   # NOTE: could be less specific
 
 sources_linux_x64 = [
-    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.1.13/10.2_20200626/cudnn-10.2-linux-x64-v8.0.1.13.tgz",
-                  "0c106ec84f199a0fbcf1199010166986da732f9b0907768c9ac5ea5b120772db")
+    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.2.39/10.2_20200626/cudnn-10.2-linux-x64-v8.0.2.39.tgz",
+                  "c9cbe5c211360f3cfbc0fb104f0e9096b37e53f89392525679f049276b2f701f")
 ]
 sources_linux_ppc64le = [
-    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.1.13/10.2_20200626/cudnn-10.2-linux-ppc64le-v8.0.1.13.tgz",
-                  "0e15a28b4bb1fb97370f406deb14af2deb3e1670d330b5c148cbf7d3c1ff7e0e")
+    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.2.39/10.2_20200626/cudnn-10.2-linux-ppc64le-v8.0.2.39.tgz",
+                  "c32325ff84a8123491f2e58b3694885a9a672005bc21764b38874688c0e43262")
 ]
 sources_windows = [
-    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.1.13/10.2_20200626/cudnn-10.2-windows-x64-v8.0.1.13.zip",
-                  "88382786d0974a786f0b643bb30ed6182e69f04ddbc3228e54ad7509997a11b2")
+    ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.0.2.39/10.2_20200626/cudnn-10.2-windows10-x64-v8.0.2.39.zip",
+                  "ba7d544fba2aaa7e6445cc41d6890a890567ea14ca942c13115f7d5654ea451f")
 ]
 
 include("../common.jl")
