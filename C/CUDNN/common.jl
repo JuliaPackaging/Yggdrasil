@@ -1,6 +1,6 @@
 include("../../fancy_toys.jl")
 
-version = v"8.0.1"#.13
+version = v"8.0.2"#.39
 
 name = "CUDNN_CUDA$(cuda_version.major)$(cuda_version.minor)"
 

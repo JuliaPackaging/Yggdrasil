@@ -1,0 +1,217 @@
+diff --git a/support/generate_cpperl_modules.pl b/support/generate_cpperl_modules.pl
+index dda9bf7d3c..daf723ecc3 100644
+--- a/support/generate_cpperl_modules.pl
++++ b/support/generate_cpperl_modules.pl
+@@ -20,8 +20,8 @@
+ package Polymake::GenerateCppPerl;
+ 
+ use strict;
+-use JSON;
+-use Fcntl ':flock';
++use JSON::Tiny 'from_json';
++#use Fcntl ':flock';
+ 
+ my $default_chunk_size = 40;
+ my ($temp_module, $ext_config, $allow_report_config_file_dependency);
+@@ -48,8 +48,6 @@ if (@ARGV >= 2) {
+    if (@update) {
+       open my $R, ">>", $gen_rules
+         or die "can't append to $gen_rules: $!\n";
+-      flock $R, LOCK_EX
+-        or die "can't lock $gen_rules: $!\n";
+       print $R "#\@update @update\n";
+    }
+ } else {
+@@ -180,7 +178,8 @@ sub read_def_file {
+    local $/;
+    open my $in, "<:utf8", $def_file
+      or die "can't read definition file $def_file: $!\n";
+-   JSON->new->relaxed->utf8->decode(<$in>);
++   #JSON->new->relaxed->utf8->decode(<$in>);
++   from_json(<$in>);
+ }
+ 
+ sub distinct {
+diff --git a/support/generate_ninja_targets.pl b/support/generate_ninja_targets.pl
+index f084af2a08..24bab37d0f 100644
+--- a/support/generate_ninja_targets.pl
++++ b/support/generate_ninja_targets.pl
+@@ -128,7 +128,7 @@ sub process_app_sources {
+ 
+       my $ignore_sources = delete $custom_flags{IGNORE};
+ 
+-      foreach my $src_file (glob "$app/src/*.{cc,cpp,C}") {
++      foreach my $src_file (glob "$app/src/*.cc") {
+          my ($src_name, $obj_name)=basename($src_file, "(?:cc|cpp|C)");
+          push @all_source_files, $src_file;
+          next if $ignore_sources->{$src_name};
+@@ -161,7 +161,7 @@ build $obj_file : cxxcompile $src_file_in_rules$pre_gen
+          }
+       }
+ 
+-      foreach my $src_file (glob "$cpperl_gen_dir/*.{cc,cpp,C}") {
++      foreach my $src_file (glob "$cpperl_gen_dir/*.cc") {
+          my $src_file_in_rules= $src_file =~ s/^\Q$srcroot\E/$srcrootname/r;
+          if (defined (my $def_file=$cpperl_mods{$src_file_in_rules})) {
+             # cpperl definition exists - check the main C++ module
+@@ -370,7 +370,7 @@ sub generate_targets {
+         or die "can't write to $bundled_flags: $!\n";
+       foreach my $bundled (@bundled_rev) {
+          my @look_in = ($bundled, $ConfigFlags{"bundled.$bundled.RequireExtensions"} =~ /(\S+)/g);
+-         my @includes = glob("$root/bundled/{".join(",", @look_in)."}/include/app*");
++         my @includes= grep { -d $_ } map {glob("$root/bundled/$_/include/app*")} @look_in;
+          s/^\Q$root\E/$srcrootname/ for @includes;
+          print $B "bundled.$bundled.includes=", (map { " -I$_" } @includes), "\n\n";
+       }
+@@ -500,7 +500,7 @@ build install : install_core || all $install_deps
+       my @bundled_config_scripts = map { s/^\Q$root\E/$srcrootname/r } grep { -f }
+                                    map { "$root/bundled/$_/support/configure.pl" } @bundled;
+       print <<"---";
+-build \${config.file}: reconfigure | \${root}/support/configure.pl @bundled_config_scripts
++# build \${config.file}: reconfigure | \${root}/support/configure.pl @bundled_config_scripts
+ ---
+    } else {
+       if (-f "$srcroot/support/rules.ninja") {
+diff --git a/support/install.pl b/support/install.pl
+index 010ea05066..6cd94a0204 100644
+--- a/support/install.pl
++++ b/support/install.pl
+@@ -18,7 +18,7 @@ use strict;
+ use feature 'state';
+ use vars qw( $dirmode $group $permmask $root $ext_root $builddir $config_file %ConfigFlags $buildmode
+              $xsmod @callable @fakelibs );
+-use POSIX qw ( :fcntl_h read write lseek );
++#use POSIX qw ( :fcntl_h read write lseek );
+ use File::Path;
+ use Config;
+ 
+@@ -136,7 +136,7 @@ sub install_core {
+       }
+    }
+ 
+-   foreach my $dir (glob_all_apps("{perllib,rules,scripts}")) {
++   foreach my $dir (map {glob_all_apps($_)} qw(perllib rules scripts)) {
+       copy_dir($dir, $InstallTop.substr($dir, length($root)), clean_dir => 1);
+    }
+ 
+@@ -189,7 +189,7 @@ sub install_core {
+       if (-l $lib_file) {
+          copy_link($lib_file, $to);
+       } else {
+-         copy_file($lib_file, $to, mode => 0555, $^O eq "darwin" ? (lib_id => $to) : ());
++         copy_file($lib_file, $to, mode => 0555, $Config::Config{osname} eq "darwin" ? (lib_id => $to) : ());
+       }
+    }
+    make_dir("$InstallArch/lib", clean_dir => 1);
+@@ -201,7 +201,7 @@ sub install_core {
+    # These symlinks are used by the callable library bootstrap module.
+    # Any change in naming scheme must be reflected in Main.cc as well.
+    rel_symlink($InstallTop, "$InstallArch/shared");
+-   if ($^O eq "darwin" && $ConfigFlags{FinkBase}) {
++   if ($Config::Config{osname} eq "darwin" && $ConfigFlags{FinkBase}) {
+       rel_symlink($ConfigFlags{FinkBase}, "$InstallArch/fink-base");
+    }
+ 
+@@ -215,7 +215,7 @@ sub install_core {
+             copy_link($lib_file, "$InstallLib/$basename");
+          } else {
+             $stub_lib_name //= $to;
+-            copy_file($lib_file, $to, mode => 0555, $^O eq "darwin" ? (lib_id => $stub_lib_name) : ());
++            copy_file($lib_file, $to, mode => 0555, $Config::Config{osname} eq "darwin" ? (lib_id => $stub_lib_name) : ());
+             # This symlink is also used by the callable library bootstrap module.
+             rel_symlink($to, "$InstallLib/$basename");
+          }
+@@ -373,35 +373,37 @@ sub copy {
+    my ($fmode, $mtime) = (stat $from)[2, 9];
+    if (defined $mode) {
+       # verbatim copy: assuming binary file
+-      my $in = POSIX::open $from, O_RDONLY;
+-      defined($in)
+-         or die "$0: can't read $from: $!\n";
+-      my $dummy = O_WRONLY + O_CREAT + O_TRUNC;  # bug in AutoLoader!
+-      my $out;
+-      if ($concat) {
+-         open $out, ">>$to";
+-      } else {
+-         $out = creat $to, 0600;
+-      }
+-      defined($out)
+-         or die "$0: can't create $to: $!\n";
+-
+-      my $trailing_zeroes;
+-      while ((my $size = read $in, $_, 1024) > 0) {
+-         if ($_ eq ($size == 1024 ? $z1024 : pack("x$size"))) {
+-            lseek $out, $size, SEEK_CUR;
+-            $trailing_zeroes = 1;
+-         } else {
+-            write $out, $_, $size;
+-            $trailing_zeroes = 0;
+-         }
+-      }
+-      if ($trailing_zeroes) {
+-         lseek $out, -1, SEEK_CUR;
+-         write $out, "\0", 1;
+-      }
+-      POSIX::close $in;
+-      POSIX::close $out;
++      #my $in = POSIX::open $from, O_RDONLY;
++      #defined($in)
++      #   or die "$0: can't read $from: $!\n";
++      #my $dummy = O_WRONLY + O_CREAT + O_TRUNC;  # bug in AutoLoader!
++      #my $out;
++      #if ($concat) {
++      #   open $out, ">>$to";
++      #} else {
++      #   $out = creat $to, 0600;
++      #}
++      #defined($out)
++      #   or die "$0: can't create $to: $!\n";
++
++      #my $trailing_zeroes;
++      #while ((my $size = read $in, $_, 1024) > 0) {
++      #   if ($_ eq ($size == 1024 ? $z1024 : pack("x$size"))) {
++      #      lseek $out, $size, SEEK_CUR;
++      #      $trailing_zeroes = 1;
++      #   } else {
++      #      write $out, $_, $size;
++      #      $trailing_zeroes = 0;
++      #   }
++      #}
++      #if ($trailing_zeroes) {
++      #   lseek $out, -1, SEEK_CUR;
++      #   write $out, "\0", 1;
++      #}
++      #POSIX::close $in;
++      #POSIX::close $out;
++
++      system("install -m 0600 $from $to");
+ 
+       if (my $lib_id = $options{lib_id}) {
+          substr($lib_id, 0, length($destdir)) = "";
+@@ -545,7 +547,7 @@ sub install_bin_scripts {
+    $_ = <S>;
+    close S;
+ 
+-   if ($^O eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
++   if ($Config::Config{osname} eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
+       s{^\#!/usr/bin/env perl}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
+    } else {
+       s{^\#!/usr/bin/env perl}{#!$Config::Config{perlpath}}s;
+@@ -557,7 +559,7 @@ sub install_bin_scripts {
+    \$Arch="$ConfigFlags{Arch}";
+    \@BundledExts=qw(@BundledExts);
+ ---
+-   if ($^O eq "darwin" && $ConfigFlags{FinkBase}) {
++   if ($Config::Config{osname} eq "darwin" && $ConfigFlags{FinkBase}) {
+       $init_block.="   \@addlibs=qw($ConfigFlags{FinkBase}/lib/perl5);\n";
+    }
+    s/(^BEGIN\s*\{\s*\n)(?s:.*?)(^\}\n)/$1$init_block$2/m;
+@@ -583,7 +585,7 @@ sub install_bin_scripts {
+    $_ = <S>;
+    close S;
+ 
+-   if ($^O eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
++   if ($Config::Config{osname} eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
+       s{^\#!\S+}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
+    } else {
+       s{^\#!\S+}{#!$Config::Config{perlpath}}s;
