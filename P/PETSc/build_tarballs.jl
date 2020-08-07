@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/petsc*
 includedir="${prefix}/include"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-BLAS_LAPACK_LIB="-lgfortran ${libdir}/libopenblas.${dlext}"
+BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
@@ -33,10 +33,12 @@ fi
     COPTFLAGS='-O3' \
     CXXOPTFLAGS='-O3' \
     FOPTFLAGS='-O3' \
+    --with-64-bit-indices=0 \
     --with-debugging=0 \
     --with-batch \
     --PETSC_ARCH=$target \
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
+    --with-blaslapack-suffix="" \
     --known-64-bit-blas-indices=0 \
     --with-mpi-lib="${MPI_LIBS}" \
     --known-mpi-int64_t=0 \
