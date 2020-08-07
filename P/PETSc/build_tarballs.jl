@@ -39,7 +39,7 @@ fi
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
     --known-64-bit-blas-indices=0 \
     --with-mpi-lib="${MPI_LIBS}" \
-    --known-mpi-int64_t=0
+    --known-mpi-int64_t=0 \
     --with-mpi-include="${includedir}" \
     --with-sowing=0
 
@@ -81,6 +81,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("MPICH_jll"),
     Dependency("MicrosoftMPI_jll"),
+    Dependency("SuperLU_MT_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
