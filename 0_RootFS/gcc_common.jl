@@ -345,6 +345,9 @@ function gcc_script(compiler_target::Platform)
     else
         # We also need to build binutils
         cd ${WORKSPACE}/srcdir/binutils-*
+
+        # Patch to make `dlltool` use deterministic mode when building static libraries
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_deterministic_dlltool.patch
         
         # Patch for building binutils 2.30+ against FreeBSD
         atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_freebsd_symbol_versioning.patch || true
