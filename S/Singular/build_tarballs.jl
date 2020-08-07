@@ -3,30 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "Singular"
-version = v"4.1.3"
+version = v"4.1.3"  # this is actually 4.1.3p2 with some extra patches
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Sources.git", "4c1fc06f2d81e12a8e75a5419444cb157fbe45e9"),
+    GitSource("https://github.com/Singular/Sources.git", "7ee144671ad6b1f2bb437bbbeb8ee7559f5029cb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd Sources
 ./autogen.sh
+export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
     --with-libparse \
     --enable-shared \
     --disable-static \
     --enable-p-procs-static \
     --disable-p-procs-dynamic \
-    --disable-gfanlib \
+    --enable-gfanlib \
     --with-readline=no \
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python
-
-#    --with-ntl=$prefix
 
 make -j${nproc}
 make install
@@ -50,15 +49,15 @@ products = [
     # LibraryProduct("interval", :interval),
     LibraryProduct("libfactory", :libfactory),
     LibraryProduct("libsingular_resources", :libsingular_resources),
-    LibraryProduct("libomalloc", :libomalloc)
+    LibraryProduct("libomalloc", :libomalloc),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FLINT_jll"),
+    Dependency("cddlib_jll"),
+    Dependency(PackageSpec(name="FLINT_jll", version=v"2.6.2")),
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
-    #Dependency("ntl_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
