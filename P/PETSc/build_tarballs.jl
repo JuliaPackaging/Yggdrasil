@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "PETSc"
-version = v"3.13.0"
+version = v"3.13.4"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
-    ArchiveSource("http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.13.1.tar.gz",
-    "74a895e44e2ff1146838aaccb7613e7626d99e0eed64ca032c87c72d084efac3"),
+    ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-3.13.4.tar.gz",
+    "2cf8abd70ec332510b17bff7dc8a465bf1eb053e17e2a0451a4a0256385657d8"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,15 +17,7 @@ cd $WORKSPACE/srcdir/petsc*
 includedir="${prefix}/include"
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ $nbits == 64 ]] && [[ "$target" != aarch64-* ]]; then
-  BLAS_LAPACK_LIB="${libdir}/libopenblas64_.${dlext}"
-  BLAS_LAPACK_SUFFIX="_64"
-  blas_64=1
-else
-  BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-  BLAS_LAPACK_SUFFIX=""
-  blas_64=0
-fi
+BLAS_LAPACK_LIB="-lgfortran ${libdir}/libopenblas.${dlext}"
 
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
@@ -45,8 +37,7 @@ fi
     --with-batch \
     --PETSC_ARCH=$target \
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-    --with-blaslapack-suffix=$BLAS_LAPACK_SUFFIX \
-    --known-64-bit-blas-indices=$blas_64 \
+    --known-64-bit-blas-indices=false \
     --with-mpi-lib="${MPI_LIBS}" \
     --with-mpi-include="${includedir}" \
     --with-sowing=0
