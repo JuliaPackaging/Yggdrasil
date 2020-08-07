@@ -37,8 +37,9 @@ fi
     --with-batch \
     --PETSC_ARCH=$target \
     --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-    --known-64-bit-blas-indices=false \
+    --known-64-bit-blas-indices=0 \
     --with-mpi-lib="${MPI_LIBS}" \
+    --known-mpi-int64_t=0
     --with-mpi-include="${includedir}" \
     --with-sowing=0
 
