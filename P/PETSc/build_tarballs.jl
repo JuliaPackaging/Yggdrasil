@@ -43,8 +43,8 @@ fi
     --with-mpi-lib="${MPI_LIBS}" \
     --known-mpi-int64_t=0 \
     --with-mpi-include="${includedir}" \
-    --with-superlu-include="${includedir}" \
-    --with-superlu-lib=${libdir}/libsuperlumts.${dlext}" \
+    --with-superlu=1 \
+    --download-superlu=1 \
     --with-sowing=0
 
 if [[ "${target}" == *-mingw* ]]; then
@@ -85,7 +85,6 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("MPICH_jll"),
     Dependency("MicrosoftMPI_jll"),
-    Dependency("SuperLU_MT_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
