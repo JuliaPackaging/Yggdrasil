@@ -43,6 +43,8 @@ fi
     --with-mpi-lib="${MPI_LIBS}" \
     --known-mpi-int64_t=0 \
     --with-mpi-include="${includedir}" \
+    --with-superlu-include="${includedir}" \
+    --with-superlu-lib=${libdir}/libsuperlumts.${dlext}" \
     --with-sowing=0
 
 if [[ "${target}" == *-mingw* ]]; then
