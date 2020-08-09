@@ -23,7 +23,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("isoband", :isoband)
+    LibraryProduct("libisoband", :libisoband)
 ]
 
 # Dependencies that must be installed before this package can be built
