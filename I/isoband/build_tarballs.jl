@@ -19,7 +19,7 @@ $CXX -shared -std=c++11 -O3 -fPIC -o ${libdir}/libisoband.${dlext} isoband/src/i
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
