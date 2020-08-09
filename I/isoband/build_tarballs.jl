@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir ${libdir}
+mkdir -p ${libdir}
 $CXX -shared -std=c++11 -O3 -fPIC -o ${libdir}/isoband isoband/src/isoband.cpp
 """
 
