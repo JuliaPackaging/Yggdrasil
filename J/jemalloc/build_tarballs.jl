@@ -13,6 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/jemalloc-*/
+if [[ "${target}" == *-freebsd* ]]; then
+    CC=gcc
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
 make -j${nproc}
 make install
