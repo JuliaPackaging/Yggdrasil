@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p ${libdir}
-$CXX -shared -std=c++11 -O3 -fPIC -o ${libdir}/isoband isoband/src/isoband.cpp
+$CXX -shared -std=c++11 -O3 -fPIC -o ${libdir}/libisoband.${dlext} isoband/src/isoband.cpp
 """
 
 # These are the platforms we will build for by default, unless further
