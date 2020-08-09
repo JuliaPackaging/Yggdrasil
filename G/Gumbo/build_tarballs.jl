@@ -9,8 +9,8 @@ version = v"0.10.1"
 #This is commit dated Jun 28, 2016 which is currently master as of Aug 5, 2020
 # v0.10.1 is the last release, so we keep that version number. 
 sources = [
-    "https://github.com/google/gumbo-parser.git" =>
-    "aa91b27b02c0c80c482e24348a457ed7c3c088e0",
+    GitSource("https://github.com/google/gumbo-parser.git",
+              "aa91b27b02c0c80c482e24348a457ed7c3c088e0"),
 
 ]
 
@@ -40,4 +40,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
