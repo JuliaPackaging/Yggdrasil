@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/finufft/
-# The buggy makefile forces `-fopenmp` even if `OMP=OFF`
-make lib -j${nproc} OMP="OFF" OMPFLAGS="" CFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range"
+# Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
+make lib -j${nproc} CFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range" LIBSFFT="-lfftw3 -lfftw3f -lm"
 cp lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
 """
 
@@ -30,7 +30,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
