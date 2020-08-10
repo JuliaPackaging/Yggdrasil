@@ -15,11 +15,30 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add groff
 cd openldap*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-slapd --without-yielding_select --disable-static --enable-shared 
+
+#needed to build shared libraries
+if [[ "${target}" == *-freebsd* || "${target}" == powerpc* || "${target}" == *-mingw* ]]; then
+	libtoolize --force --copy
+	AUTOMAKE=/bin/true autoreconf -fi
+fi
+
+#need a posix regex
+if [[ "${target}" == *-mingw* ]]; then
+	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h 
+	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-slapd --without-yielding_select --disable-static --enable-shared --enable-modules=yes --enable-hdb=no --enable-bdb=no
 sed -in-place 's/#define NEED_MEMCMP_REPLACEMENT 1/\/\* #undef NEED_MEMCMP_REPLACEMENT \*\//' include/portable.h
+
 make depend
 make -j${nproc} 
 make install
+
+if [[ "${target}" == *-mingw* ]]; then 
+    # Cover up the traces of the hack 
+    rm ${prefix}/include/regex.h 
+fi 
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,6 +62,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
