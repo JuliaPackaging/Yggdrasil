@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/finufft/
-# The buggy makefile forces `-fopenmp` even if `OMP=OFF`
-make lib -j${nproc} OMP="OFF" OMPFLAGS="" CFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range"
+# Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
+make lib -j${nproc} CFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range" LIBSFFT="-lfftw3 -lfftw3f -lm"
 cp lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
 """
 
