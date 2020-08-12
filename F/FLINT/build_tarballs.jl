@@ -8,7 +8,7 @@ version = v"2.6.3"
 # Collection of sources required to build FLINT
 sources = [
     ArchiveSource("http://www.flintlib.org/flint-$(version).tar.gz",
-                  "8f0199762173f521b40c35762684747fe1fce2e582709ddb9647289ea79ec1f9")
+                  "ce1a750a01fa53715cad934856d4b2ed76f1d1520bac0527ace7d5b53e342ee3")
 ]
 
 # Bash recipe for building across all platforms
