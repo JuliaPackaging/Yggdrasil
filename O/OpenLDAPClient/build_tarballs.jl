@@ -28,6 +28,15 @@ if [[ "${target}" == *-mingw* ]]; then
 	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
 fi
 
+#The mac build tries to pick up libraries from system root
+rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
+rm -f /opt/${target}/${target}/sys-root/usr/lib/libssl.*
+rm -f /opt/${target}/${target}/sys-root/usr/lib/libsasl2.*
+rm -f /lib/libcrypto.so*
+rm -f /usr/lib/libcrypto.so*
+rm -f /lib/libssl.so*
+rm -f /usr/lib/libssl.so*
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-slapd --without-yielding_select --disable-static --enable-shared --enable-modules=yes --enable-hdb=no --enable-bdb=no
 sed -in-place 's/#define NEED_MEMCMP_REPLACEMENT 1/\/\* #undef NEED_MEMCMP_REPLACEMENT \*\//' include/portable.h
 
