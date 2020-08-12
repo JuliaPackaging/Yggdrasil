@@ -1,39 +1,101 @@
 #!/usr/bin/env julia
 
-using BinaryBuilder, LibGit2, SHA
+using BinaryBuilder, LibGit2, SHA, Pkg
+using BinaryBuilder.Wizard: yn_prompt, WizardState
 
-function build_tarballs_path(dep_name::String, base::String = @__DIR__)
-    # Strip _jll from the end of the dep name, if it has it
-    if endswith(dep_name, "_jll")
-        dep_name = dep_name[1:end-4]
+function de_jll(name::String)
+    if endswith(name, "_jll")
+        name = name[1:end-4]
     end
-    return joinpath(base, uppercase(dep_name[1:1]), dep_name, "build_tarballs.jl")
+    return name
 end
 
-build_tarballs = build_tarballs_path(get(Sys.ARGS, 1, ""))
+function build_tarballs_path(dep_name::String, base::String = @__DIR__)
+    return joinpath(base, uppercase(dep_name[1:1]), de_jll(dep_name), "build_tarballs.jl")
+end
 
-if !isfile(build_tarballs)
+
+if !isfile(build_tarballs_path(get(Sys.ARGS, 1, "")))
     println(stderr, "usage: recursively_regenerate_jlls.jl <jll name>")
     exit(1)
 end
 
-function recursively_collect_dependencies(build_tarballs::String, dependencies = Set{String}())
-    # Generate meta.json for this script, read it in
+json_objs = Dict()
+function get_json_obj(dep_name::String)
+    dep_name = de_jll(dep_name)
+    if haskey(json_objs, dep_name)
+        return json_objs[dep_name]
+    end
+    build_tarballs = build_tarballs_path(dep_name)
+    if !isfile(build_tarballs)
+        @warn("Unable to find build_tarballs.jl file for dependency \"$(dep["name"])\"")
+    end
     @info("Parsing $(build_tarballs)")
     meta_json = String(read(`$(Base.julia_cmd()) --project=$(Base.active_project()) $(build_tarballs) --meta-json`))
-    meta_obj = BinaryBuilder.JSON.parse(meta_json)
+    json_objs[dep_name] = BinaryBuilder.JSON.parse(meta_json)
+    BinaryBuilder.cleanup_merged_object!(json_objs[dep_name])
+    return json_objs[dep_name]
+end
+
+function recursively_collect_dependencies(dep_name::String, dependencies = Set{String}())
+    # Generate meta.json for this script, read it in
+    meta_obj = get_json_obj(dep_name)
     for dep in meta_obj["dependencies"]
-        if !(dep["name"] ∈ dependencies)
-            dep_build_tarballs = build_tarballs_path(dep["name"])
-            if !isfile(dep_build_tarballs)
-                @warn("Unable to find build_tarballs.jl file for dependency \"$(dep["name"])\"")
-            else
-                push!(dependencies, dep["name"])
-                recursively_collect_dependencies(dep_build_tarballs, dependencies)
-            end
+        name = BinaryBuilder.BinaryBuilderBase.getname(dep)
+        if !(name ∈ dependencies)
+            push!(dependencies, name)
+            recursively_collect_dependencies(name, dependencies)
         end
     end
     return dependencies
+end
+
+function download_binaries_from_release(dep_name, code_dir, download_dir)
+    Pkg.PlatformEngines.probe_platform_engines!()
+
+    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
+    artifact_listing = artifacts[dep_name]
+
+    # Deal with non-platform-specific artifacts
+    if isa(artifact_listing, Dict)
+        artifact_listing = [artifact_listing]
+    end
+
+    for artifact in artifact_listing
+        info = artifact["download"][1]
+        url = info["url"]
+        hash = info["sha256"]
+        filename = basename(url)
+        Pkg.PlatformEngines.download_verify(url, hash, joinpath(download_dir, filename); verbose=true)
+    end
+end
+
+function regenerate_jll(dep_name::String)
+    dep_name = de_jll(dep_name)
+    json_obj = get_json_obj(dep_name)
+    code_dir = joinpath(Pkg.devdir(), "$(dep_name)_jll")
+    repo = "JuliaBinaryWrappers/$(dep_name)_jll.jl"
+    BinaryBuilder.init_jll_package(
+        dep_name,
+        code_dir,
+        repo,
+    )
+
+    download_dir = joinpath("/tmp/yggdrasil_download_temp", dep_name)
+    mkpath(download_dir)
+    download_binaries_from_release(dep_name, code_dir, download_dir)
+    build_version = BinaryBuilder.get_next_wrapper_version(json_obj["name"], json_obj["version"])
+    tag = "$(json_obj["name"])-v$(build_version)"
+    upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
+    BinaryBuilder.rebuild_jll_package(
+        json_obj;
+        download_dir=download_dir,
+        upload_prefix=upload_prefix,
+        verbose=true,
+        lazy_artifacts=json_obj["lazy_artifacts"],
+        from_scratch=true,
+    )
 end
 
 # This borrows heavily from BinaryBuilder.yggdrasil_deploy()
@@ -104,14 +166,17 @@ function open_jll_bump_pr(dep_name::String)
     end
 end
 
-deps = recursively_collect_dependencies(build_tarballs)
+deps = recursively_collect_dependencies(Sys.ARGS[1])
 push!(deps, Sys.ARGS[1])
-println("Discovered dependencies:")
-println(deps)
+println("Discovered dependencies: $(collect(deps))")
 
-if BinaryBuilder.yn_prompt(BinaryBuilder.WizardState(), "Open JLL-bumping PRs?", :y) == :y
+if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :y) == :y
 	for dep in deps
 		open_jll_bump_pr(dep)
 	end
+elseif yn_prompt(WizardState(), "Generate new JLLs locally?", :y) == :y
+    for dep in deps
+        regenerate_jll(dep)
+    end
 end
 
