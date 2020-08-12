@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "FLINT"
-version = v"2.6.2"
+version = v"2.6.3"
 
 # Collection of sources required to build FLINT
 sources = [
     ArchiveSource("http://www.flintlib.org/flint-$(version).tar.gz",
-                  "5f9b45113c3b50c10564a04e9dd929eb8ad96488b5eb901db5723cd21bbae1da")
+                  "8f0199762173f521b40c35762684747fe1fce2e582709ddb9647289ea79ec1f9")
 ]
 
 # Bash recipe for building across all platforms
