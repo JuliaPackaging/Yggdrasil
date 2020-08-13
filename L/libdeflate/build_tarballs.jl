@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir
 cd libdeflate-1.6/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_makefile.patch
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true install
-make PROG_SUFFIX=$exeext PREFIX=${prefix} install
+make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 """
 
 # These are the platforms we will build for by default, unless further
