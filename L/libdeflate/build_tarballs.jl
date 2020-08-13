@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd libdeflate-1.6/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_makefile.patch
-make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true install
+make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 """
 
