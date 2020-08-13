@@ -31,9 +31,34 @@ function get_json_obj(dep_name::String)
         @warn("Unable to find build_tarballs.jl file for dependency \"$(dep["name"])\"")
     end
     @info("Parsing $(build_tarballs)")
-    meta_json = String(read(`$(Base.julia_cmd()) --project=$(Base.active_project()) $(build_tarballs) --meta-json`))
-    json_objs[dep_name] = BinaryBuilder.JSON.parse(meta_json)
+
+    # We're going to `include()` the "build_tarballs.jl" function to avoid the overhead of `using BinaryBuilder`
+    # every time we launch a new julia process. 
+    meta_json = tempname()
+    m = Module(:__anon__)
+    Core.eval(m, quote
+        using BinaryBuilder
+
+        # Our special overriding build_tarballs() function:
+        function build_tarballs_meta_json(cli_args, args...; kwargs...)
+            cli_args = vcat(string("--meta-json=", $(meta_json)), cli_args)
+            BinaryBuilder.build_tarballs(cli_args, args...; kwargs...)
+        end
+
+        # Clear out ARGS from parent module.  :P
+        empty!(ARGS)
+    end)
+    # Be super-sneaky and replace `build_tarballs()` funciton calls with `build_tarballs_meta_json()`
+    Base.include(m, build_tarballs) do expr
+        if hasproperty(expr, :head) && expr.head == :call && expr.args[1] == :build_tarballs
+            expr.args[1] = :build_tarballs_meta_json
+        end
+        return expr
+    end
+
+    json_objs[dep_name] = BinaryBuilder.JSON.parse(String(read(meta_json)))
     BinaryBuilder.cleanup_merged_object!(json_objs[dep_name])
+    rm(meta_json; force=true)
     return json_objs[dep_name]
 end
 
@@ -166,8 +191,9 @@ function open_jll_bump_pr(dep_name::String)
     end
 end
 
-deps = recursively_collect_dependencies(Sys.ARGS[1])
-push!(deps, Sys.ARGS[1])
+toplevel_dep_name = Sys.ARGS[1]
+deps = recursively_collect_dependencies(toplevel_dep_name)
+push!(deps, toplevel_dep_name)
 println("Discovered dependencies: $(collect(deps))")
 
 if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :y) == :y
