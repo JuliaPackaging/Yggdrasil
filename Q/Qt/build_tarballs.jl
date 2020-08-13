@@ -81,13 +81,13 @@ EOT
             -skip qtwinextras
         ;;
         
-	*w64-mingw*)
+    *w64-mingw*)
         apk add g++ linux-headers
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
         
-        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform win32-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure -I $WORKSPACE/srcdir/qt-everywhere-src-*/qtbase/include/QtANGLE -platform linux-g++ -xplatform win32-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -prefix $prefix $commonoptions \
-            -opengl desktop
+            -opengl dynamic
 		;;
 
     *arm-linux*)
