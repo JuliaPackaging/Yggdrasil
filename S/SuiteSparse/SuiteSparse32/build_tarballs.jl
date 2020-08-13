@@ -23,19 +23,15 @@ else
     FLAGS+=(UNAME="$(uname)")
 fi
 
-FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
-
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
-
+mkdir -p ${prefix}/include
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" config
-
 for proj in SuiteSparse_config AMD BTF COLAMD KLU; do
     make -j${nproc} -C $proj "${FLAGS[@]}" static CFOPENMP="$CFOPENMP"
+    [[ -d ${proj}/Include ]] && cp ${proj}/Include/*.h ${prefix}/include
 done
 
 # Move the static libraries into place
+mkdir -p $libdir
 pat="*.a"
 if [[ ${target} == *mingw32* ]]; then
     pat="*.lib"
@@ -60,8 +56,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
-#    Dependency("METIS_jll"),
 ]
 
 # Build the tarballs
