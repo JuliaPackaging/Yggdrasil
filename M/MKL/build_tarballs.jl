@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "MKL"
-version = v"2020.1.216"
+version = v"2020.2.254"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/linux-64/mkl-2020.1-intel_217.tar.bz2",
-                  "8814e952c0b4f28079361adac8bec1051b97d62dee621666798a3302e70d75e0"; unpack_target = "mkl-x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/osx-64/mkl-2020.1-intel_216.tar.bz2",
-                  "4dab8dd1aa12b02cd121228ba881a887448399c799ee5a2d53942716a03f880e"; unpack_target = "mkl-x86_64-apple-darwin14"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/win-32/mkl-2020.1-intel_216.tar.bz2",
-                  "b43ca7a8f5aed51e197af1f9165b3a72e5dd0a7f036fd9364ccfe90a8645a235"; unpack_target = "mkl-i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.1/download/win-64/mkl-2020.1-intel_216.tar.bz2",
-                  "5dd8eff29b390ddb1cf15f391aba7fa3bdc4034f79b98d226865a5e331060f76"; unpack_target = "mkl-x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/linux-64/mkl-2020.2-intel_254.tar.bz2",
+                  "930d67bb4298c6da2dabb8ea068170e69e9304fc0ce1b4fc094af01851102a35"; unpack_target = "mkl-x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/osx-64/mkl-2020.2-intel_258.tar.bz2",
+                  "628c54329ab3c088b4c55d047ccb58feeb2ade7d6e50bf982aa51ac088cccd45"; unpack_target = "mkl-x86_64-apple-darwin14"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/win-32/mkl-2020.2-intel_254.tar.bz2",
+                  "19dfae9402e764e507ee143b2c22cbf091fd6b778b03620504addc2b8135f987"; unpack_target = "mkl-i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/win-64/mkl-2020.2-intel_254.tar.bz2",
+                  "99efbdd8014668f1683aec61ea190aa7182a90e14969439a7dfb7b3dfef55693"; unpack_target = "mkl-x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,10 +19,11 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mkl-${target}
 if [[ ${target} == *mingw* ]]; then
     cp -r Library/bin/* ${libdir}
+    install_license info/*.txt
 else
     cp -r lib/* ${libdir}
+    install_license info/licenses/*.txt
 fi
-install_license info/*.txt
 """
 
 platforms = [
