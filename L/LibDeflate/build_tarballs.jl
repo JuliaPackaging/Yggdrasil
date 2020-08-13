@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibDeflate"
-version = v"0.1.0"
+version = v"1.6"
 
 # Collection of sources required to complete build
 sources = [
@@ -14,21 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libdeflate-1.6/
-if [ ${target} = "x86_64-w64-mingw32" ]; then
-    TARGET=libdeflate.dll;
-    RESULT=$TARGET
-elif [ ${target} = "i686-w64-mingw32" ]; then
-    TARGET=libdeflate.dll;
-    RESULT=$TARGET
-elif [ ${target} = "x86_64-apple-darwin14" ]; then
-    TARGET=libdeflate.dylib;
-    RESULT=libdeflate.0.dylib
-else
-    TARGET=libdeflate.so;
-    RESULT=libdeflate.so.0
-fi
-make DISABLE_ZLIB=true "GCC=O3" ${TARGET}
-mv ${RESULT} /workspace/destdir/
+make PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true "GCC=O3"
+make install
 """
 
 # These are the platforms we will build for by default, unless further
