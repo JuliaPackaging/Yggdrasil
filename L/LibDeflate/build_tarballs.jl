@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "LibDeflate"
+name = "libdeflate"
 version = v"1.6"
 
 # Collection of sources required to complete build
@@ -14,7 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libdeflate-1.6/
-make PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true "GCC=O3"
+export PREFIX=${prefix}
+export LIBDIR=${libdir}
+make DISABLE_ZLIB=true "GCC=O3"
 make install
 """
 
