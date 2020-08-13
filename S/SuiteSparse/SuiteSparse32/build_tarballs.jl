@@ -51,11 +51,11 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct(["lib/libsuitesparseconfig.a", "bin/libsuitesparseconfig.lib"],  :libsuitesparseconfig),
-    FileProduct(["lib/libamd.a", "bin/libamd.lib"],                              :libamd),
-    FileProduct(["lib/libbtf.a", "bin/libbtf.lib"],                              :libbtf),
-    FileProduct(["lib/libcolamd.a", "bin/libcolamd.lib"],                        :libcolamd),
-    FileProduct(["lib/libklu.a", "bin/libklu.lib"],                              :libklu),
+    FileProduct(["lib/libsuitesparseconfig.a", "bin/libsuitesparseconfig.lib"],  :libsuitesparseconfig_a),
+    FileProduct(["lib/libamd.a", "bin/libamd.lib"],                              :libamd_a),
+    FileProduct(["lib/libbtf.a", "bin/libbtf.lib"],                              :libbtf_a),
+    FileProduct(["lib/libcolamd.a", "bin/libcolamd.lib"],                        :libcolamd_a),
+    FileProduct(["lib/libklu.a", "bin/libklu.lib"],                              :libklu_a),
 ]
 
 # Dependencies that must be installed before this package can be built
