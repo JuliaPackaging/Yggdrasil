@@ -1,0 +1,27 @@
+From 2fa25d0f8eee2a467d17dc92f5b25285a8582c74 Mon Sep 17 00:00:00 2001
+From: thofma <thofma@gmail.com>
+Date: Thu, 13 Aug 2020 17:08:29 +0200
+Subject: [PATCH] asdsd
+
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 43f8273..8e3b897 100644
+--- a/Makefile
++++ b/Makefile
+@@ -290,8 +290,8 @@ install:all
+ 	install -m755 $(SHARED_LIB) $(DESTDIR)$(LIBDIR)
+ 	ln -sf $(SHARED_LIB) $(DESTDIR)$(LIBDIR)/libdeflate.so
+ 	install -m644 libdeflate.h $(DESTDIR)$(INCDIR)
+-	install -m755 gzip $(DESTDIR)$(BINDIR)/libdeflate-gzip
+-	ln -f $(DESTDIR)$(BINDIR)/libdeflate-gzip $(DESTDIR)$(BINDIR)/libdeflate-gunzip
++	install -m755 gzip$(PROG_SUFFIX) $(DESTDIR)$(BINDIR)/libdeflate-gzip$(PROG_SUFFIX)
++	ln -f $(DESTDIR)$(BINDIR)/libdeflate-gzip$(PROG_SUFFIX) $(DESTDIR)$(BINDIR)/libdeflate-gunzip$(PROG_SUFFIX)
+ 
+ uninstall:
+ 	rm -f $(DESTDIR)$(LIBDIR)/$(STATIC_LIB) \
+-- 
+2.7.4
+
