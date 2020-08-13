@@ -8,7 +8,7 @@ version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ebiggers/libdeflate/archive/v1.6.tar.gz", "60748f3f7b22dae846bc489b22a4f1b75eab052bf403dd8e16c8279f16f5171e"),
-    "./bundled",
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
