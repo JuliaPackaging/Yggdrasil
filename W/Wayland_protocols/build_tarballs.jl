@@ -7,8 +7,8 @@ version = v"1.18"
 
 # Collection of sources required to build Wayland-protocols
 sources = [
-    "https://wayland.freedesktop.org/releases/wayland-protocols-$(version.major).$(version.minor).tar.xz" =>
-    "3d73b7e7661763dc09d7d9107678400101ecff2b5b1e531674abfa81e04874b3",
+    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-protocols-$(version.major).$(version.minor).tar.xz",
+                  "3d73b7e7661763dc09d7d9107678400101ecff2b5b1e531674abfa81e04874b3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Wayland_jll",
+    Dependency("Wayland_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
