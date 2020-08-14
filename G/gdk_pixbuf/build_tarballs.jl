@@ -56,6 +56,8 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"),
     Dependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_kbproto_jll"),
 ]
 
 # Build the tarballs.
