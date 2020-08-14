@@ -126,7 +126,7 @@ end
 # This borrows heavily from BinaryBuilder.yggdrasil_deploy()
 function open_jll_bump_pr(dep_name::String)
     @info("Opening JLL-bumping PR for $(dep_name)")
-    gh_auth = BinaryBuilder.github_auth(;allow_anonymous=false)
+    gh_auth = BinaryBuilder.Wizard.github_auth(;allow_anonymous=false)
     fork = BinaryBuilder.GitHub.create_fork("JuliaPackaging/Yggdrasil"; auth=gh_auth)
 
     mktempdir() do tmp
