@@ -38,9 +38,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Dbus_jll",
-    "Glib_jll",
-    "Xorg_libXtst_jll",
+    Dependency("Dbus_jll"),
+    Dependency("Glib_jll"),
+    Dependency("Xorg_libXtst_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
