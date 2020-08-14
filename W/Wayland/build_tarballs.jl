@@ -40,9 +40,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
-    "Libffi_jll",
-    "XML2_jll",
+    Dependency("Expat_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
