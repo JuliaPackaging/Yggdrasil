@@ -33,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libgpg_error_jll"
+    Dependency("Libgpg_error_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
