@@ -130,7 +130,7 @@ function open_jll_bump_pr(dep_name::String)
     fork = BinaryBuilder.GitHub.create_fork("JuliaPackaging/Yggdrasil"; auth=gh_auth)
 
     mktempdir() do tmp
-        repo = LibGit2.clone(BinaryBuilder.get_yggdrasil(), tmp)
+        repo = LibGit2.clone(BinaryBuilder.Wizard.get_yggdrasil(), tmp)
         build_tarballs = build_tarballs_path(dep_name, tmp)
         if !isfile(build_tarballs)
             throw(ArgumentError("Invalid dep_name \"$(dep_name)\", no file $(build_tarballs)"))
