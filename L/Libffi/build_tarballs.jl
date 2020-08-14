@@ -6,8 +6,8 @@ version = v"3.2.1"
 
 # Collection of sources required to build libffi
 sources = [
-    "https://sourceware.org/pub/libffi/libffi-$(version).tar.gz" =>
-    "d06ebb8e1d9a22d19e38d63fdb83954253f39bedc5d46232a05645685722ca37",
+    ArchiveSource("https://sourceware.org/pub/libffi/libffi-$(version).tar.gz",
+                  "d06ebb8e1d9a22d19e38d63fdb83954253f39bedc5d46232a05645685722ca37"),
 ]
 
 # Bash recipe for building across all platforms
