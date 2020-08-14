@@ -41,6 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_xorgproto"),
     Dependency("Xorg_xkeyboard_config_jll"),
     Dependency("Xorg_libxcb_jll"),
     Dependency("Wayland_jll"),
