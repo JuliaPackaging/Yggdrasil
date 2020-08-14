@@ -29,6 +29,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_kbproto_jll"),
     Dependency("Xorg_xkbcomp_jll"),
 ]
 
