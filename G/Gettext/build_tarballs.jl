@@ -28,8 +28,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libiconv_jll",
-    "XML2_jll",
+    Dependency("Libiconv_jll"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
