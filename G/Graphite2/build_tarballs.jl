@@ -7,8 +7,8 @@ version = v"1.3.13"
 
 # Collection of sources required to build Graphite2
 sources = [
-    "https://github.com/silnrsi/graphite/releases/download/$(version)/graphite2-$(version).tgz" =>
-    "dd63e169b0d3cf954b397c122551ab9343e0696fb2045e1b326db0202d875f06"
+    ArchiveSource("https://github.com/silnrsi/graphite/releases/download/$(version)/graphite2-$(version).tgz",
+                  "dd63e169b0d3cf954b397c122551ab9343e0696fb2045e1b326db0202d875f06"),
 ]
 
 # Bash recipe for building across all platforms
