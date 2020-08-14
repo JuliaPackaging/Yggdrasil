@@ -7,8 +7,8 @@ version = v"1.4.17"
 
 # Collection of sources required to build glproto
 sources = [
-    "https://www.x.org/archive/individual/proto/glproto-$(version).tar.bz2" =>
-    "adaa94bded310a2bfcbb9deb4d751d965fcfe6fb3a2f6d242e2df2d6589dbe40",
+    ArchiveSource("https://www.x.org/archive/individual/proto/glproto-$(version).tar.bz2",
+                  "adaa94bded310a2bfcbb9deb4d751d965fcfe6fb3a2f6d242e2df2d6589dbe40"),
 ]
 
 # Bash recipe for building across all platforms
