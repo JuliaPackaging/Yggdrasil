@@ -7,8 +7,8 @@ version = v"2.27"
 
 # Collection of sources required to build xkeyboard_config
 sources = [
-    "https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.bz2" =>
-    "690daec8fea63526c07620c90e6f3f10aae34e94b6db6e30906173480721901f",
+    ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.bz2",
+                  "690daec8fea63526c07620c90e6f3f10aae34e94b6db6e30906173480721901f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_xkbcomp_jll",
+    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_kbproto_jll"),
+    Dependency("Xorg_xkbcomp_jll"),
 ]
 
 # Build the tarballs.
