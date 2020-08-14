@@ -8,7 +8,7 @@ version = v"7.0.31"
 # Collection of sources required to build xproto
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/proto/xproto-$(version).tar.bz2",
-               "c6f9747da0bd3a95f86b17fb8dd5e717c8f3ab7f0ece3ba1b247899ec1ef7747")
+                  "c6f9747da0bd3a95f86b17fb8dd5e717c8f3ab7f0ece3ba1b247899ec1ef7747")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
