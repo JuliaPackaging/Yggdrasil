@@ -28,7 +28,7 @@ if any(startswith(a, "--meta-json") for a in ARGS)
     # How delightfully meta, for when we're calculating the meta!  ;D
     self_url = @__FILE__
     self_hash = open(io -> bytes2hex(sha256(io)), self_url)
-    build_info = Dict(p => (self_url, self_hash) for p in BinaryBuilder.abi_agnostic.(extraction_platforms))
+    build_info = Dict(p => (self_url, self_hash) for p in BinaryBuilder.BinaryBuilderBase.abi_agnostic.(extraction_platforms))
 else
     build_info = autobuild(joinpath(@__DIR__, "build", "extraction"),
         "LatestLibraries",
@@ -110,7 +110,7 @@ products = [
 for platform in platforms
     if should_build_platform(platform)
         # Find the corresponding source for this platform
-        tarball_path, tarball_hash = build_info[BinaryBuilder.abi_agnostic(platform)][1:2]
+        tarball_path, tarball_hash = build_info[BinaryBuilder.BinaryBuilderBase.abi_agnostic(platform)][1:2]
         sources = [
             FileSource(tarball_path, tarball_hash),
         ]
