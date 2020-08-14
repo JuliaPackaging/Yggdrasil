@@ -7,9 +7,9 @@ version = v"0.9.1"
 
 # Collection of sources required to build xkbcommon
 sources = [
-    "https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz" =>
-    "d4c6aabf0a5c1fc616f8a6a65c8a818c03773b9a87da9fbc434da5acd1199be0",
-    "./bundled"
+    ArchiveSource("https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz",
+                  "d4c6aabf0a5c1fc616f8a6a65c8a818c03773b9a87da9fbc434da5acd1199be0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,10 +41,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_xkeyboard_config_jll",
-    "Xorg_libxcb_jll",
-    "Wayland_jll",
-    "Wayland_protocols_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Xorg_xkeyboard_config_jll"),
+    Dependency("Xorg_libxcb_jll"),
+    Dependency("Wayland_jll"),
+    Dependency("Wayland_protocols_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
