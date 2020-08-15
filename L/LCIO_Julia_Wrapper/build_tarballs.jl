@@ -4,11 +4,11 @@ using BinaryBuilder
 using Pkg
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.11.2"
+version = v"0.12.0"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "e16bc4b153695889430fb5b2beb53c02cab8e77a")
+	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "ba7febedc0deee0ea38c033acd8f6ebb65e1ca54")
 ]
 
 # Bash recipe for building across all platforms
