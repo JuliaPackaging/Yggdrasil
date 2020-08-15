@@ -35,7 +35,14 @@ fi
 
 ./configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas="-lopenblas" --with-lapack="-lopenblas" \
+--with-blas="-lopenblas" --with-lapack="-openblas" \
+--with-coinutils-lib="-lCoinUtils" \
+--with-osi-lib="-lOsi -lCoinUtils" \
+--with-mumps-lib="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
+--with-mumps-incdir="${prefix}/include/mumps_seq" \
+--with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include"
+
+
 
 make -j${nproc}
 make install
@@ -54,7 +61,7 @@ fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DSDPA_DIR=$prefix -DMUMPS_INCLUDE_DIR="$prefix/include/coin/ThirdParty" \
+      -DSDPA_DIR=$prefix \
       -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DSDPA_LIBRARY="-lsdpa" \
@@ -76,11 +83,25 @@ products = [
     LibraryProduct("libsdpawrap", :libsdpawrap)
 ]
 
+# Pick platforms from L/libcxxwrap-julia/build_tarballs.jl
+platforms = [
+    FreeBSD(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Linux(:aarch64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Linux(:i686; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Windows(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Windows(:i686; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+]
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    BuildDependency(MUMPS_seq_packagespec),
+    BuildDependency(METIS_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
