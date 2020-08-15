@@ -69,7 +69,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DSDPA_DIR=$prefix \
-      -DMUMPS_INCLUDE_DIR="-I${prefix}/include -I${prefix}/include/mumps_seq" \
+      -DMUMPS_INCLUDE_DIR="../../destdir/include/mumps_seq" \
       -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DSDPA_LIBRARY="-lsdpa" \
