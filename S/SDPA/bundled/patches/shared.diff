@@ -1,0 +1,32 @@
+diff --git a/Makefile.am b/Makefile.am
+index afadcff..400b3cf 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -20,20 +20,22 @@ sdpa_call.h sdpa_chordal.h sdpa_dataset.h sdpa_dpotrf.h \
+ sdpa_include.h sdpa_io.h sdpa_jordan.h sdpa_linear.h sdpa_newton.h \
+ sdpa_parts.h sdpa_right.h sdpa_struct.h sdpa_tool.h
+ 
+-lib_LIBRARIES = libsdpa.a
+-libsdpa_a_SOURCES = sdpa_block.cpp sdpa_call.cpp sdpa_chordal.cpp \
++lib_LTLIBRARIES = libsdpa.la
++libsdpa_la_LDFLAGS = -shared -no-undefined -export-symbols-regex "(sdpa|SDPA)"
++libsdpa_la_LIBADD = $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
++libsdpa_la_SOURCES = sdpa_block.cpp sdpa_call.cpp sdpa_chordal.cpp \
+ sdpa_dataset.cpp sdpa_dpotrf.cpp sdpa_io.cpp sdpa_jordan.cpp \
+ sdpa_linear.cpp sdpa_newton.cpp sdpa_parts.cpp sdpa_solve.cpp \
+ sdpa_struct.cpp sdpa_tool.cpp \
+ sdpa_algebra.h sdpa_block.h \
+ sdpa_call.h sdpa_chordal.h sdpa_dataset.h sdpa_dpotrf.h \
+ sdpa_include.h sdpa_io.h sdpa_jordan.h sdpa_linear.h sdpa_newton.h \
+-sdpa_parts.h sdpa_right.h sdpa_struct.h sdpa_tool.h  
+-libsdpa_a_CXXFLAGS =  $(pthread_cflags) $(MUMPS_INCLUDE) $(PTHREAD_INCLUDE)
++sdpa_parts.h sdpa_right.h sdpa_struct.h sdpa_tool.h
++libsdpa_la_CXXFLAGS =  $(pthread_cflags) $(MUMPS_INCLUDE) $(PTHREAD_INCLUDE)
+ 
+ bin_PROGRAMS = sdpa
+ sdpa_SOURCES = sdpa_exe.cpp
+-sdpa_LDADD =  -L. -lsdpa $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
++sdpa_LDADD =  libsdpa.la $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
+ sdpa_CXXFLAGS = $(pthread_cflags) $(MUMPS_INCLUDE) $(PTHREAD_INCLUDE)
+ 
+ # each file of mumps is copied by 'nobase' option
