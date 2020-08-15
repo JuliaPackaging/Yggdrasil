@@ -1,8 +1,7 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SuiteSparseGraphBLAS"
 version = v"5.6.0"
-
 
 # Collection of sources required to build SuiteSparse
 sources = [
@@ -14,9 +13,10 @@ sources = [
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/SuiteSparse-*/GraphBLAS/build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DUSER_NONE=1
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSER_NONE=1
+
 make -j${nproc} install
+
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
     # For mysterious reasons, the shared library is not installed
     # when building for Windows
@@ -35,8 +35,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"6")
