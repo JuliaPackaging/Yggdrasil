@@ -83,7 +83,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse_jll"),
+    Dependency("SuiteSparse32_jll"),
 ]
 
 # Build the tarballs.
