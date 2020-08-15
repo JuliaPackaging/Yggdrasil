@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mmorise/World.git", "1f8815f7a85e344ea9f98ca6b1383578a161d4e2")
+    GitSource("https://github.com/mmorise/World.git", "1f8815f7a85e344ea9f98ca6b1383578a161d4e2"),
 ]
 
 # Bash recipe for building across all platforms
