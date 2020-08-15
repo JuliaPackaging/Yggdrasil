@@ -39,7 +39,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# This is really a build dependency
 dependencies = [
     Dependency("NUMA_jll"),
 ]
