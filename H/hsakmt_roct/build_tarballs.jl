@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsakmt_roct"
-version = v"3.5.0"
+version = v"3.7.0"
 
 # Collection of sources required to build ROCT-Thunk-Interface
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
-                  "d9f458c16cb62c3c611328fd2f2ba3615da81e45f3b526e45ff43ab4a67ee4aa")
+                  "b357fe7f425996c49f41748923ded1a140933de7564a70a828ed6ded6d896458")
 ]
 
 # Bash recipe for building across all platforms
