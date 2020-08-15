@@ -10,6 +10,16 @@ sources = [
     DirectorySource("./bundled")
 ]
 
+MUMPS_seq_version = v"4.10.0"
+MUMPS_seq_packagespec = PackageSpec(; name = "MUMPS_seq_jll",
+                                    uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
+                                    version = MUMPS_seq_version)
+
+METIS_version = v"4.0.3"
+METIS_packagespec = PackageSpec(; name = "METIS_jll",
+                                uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
+                                version = METIS_version)
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sdpa-*
