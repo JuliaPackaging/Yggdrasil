@@ -69,12 +69,13 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DSDPA_DIR=$prefix \
+      -DMUMPS_INCLUDE_DIR="-I${prefix}/include/mumps_seq" \
       -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DSDPA_LIBRARY="-lsdpa" \
       -DCMAKE_CXX_FLAGS="-march=$processor" \
       -D_GLIBCXX_USE_CXX11_ABI=1 \
-      -DJlCxx_DIR=$prefix/lib/cmake/JlCxx \
+      -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
       ..
 cmake --build . --config Release --target install
 
