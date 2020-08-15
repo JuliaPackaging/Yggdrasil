@@ -2,15 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "ROCT-Thunk-Interface"
+name = "hsakmt_roct"
 version = v"3.5.0"
 
 # Collection of sources required to build ROCT-Thunk-Interface
 sources = [
-    GitSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface.git",
-              "d4b224fafc82decdf3210b68ae763a1f345bf3a1"),
-#    ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
-#                  "d9f458c16cb62c3c611328fd2f2ba3615da81e45f3b526e45ff43ab4a67ee4aa")
+    ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
+                  "d9f458c16cb62c3c611328fd2f2ba3615da81e45f3b526e45ff43ab4a67ee4aa")
 ]
 
 # Bash recipe for building across all platforms
