@@ -1,3 +1,5 @@
+using BinaryBuilder, Pkg
+
 name = "SDPA"
 version = v"7.3.8"
 
