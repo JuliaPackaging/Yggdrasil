@@ -35,14 +35,11 @@ fi
 
 ./configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas="-lopenblas" --with-lapack="-openblas" \
+--with-blas="-lopenblas" --with-lapack="-lopenblas" \
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
 --with-mumps-lib="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
---with-mumps-incdir="${prefix}/include/mumps_seq" \
---with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include"
-
-
+--with-mumps-include="-I${prefix}/include/mumps_seq"
 
 make -j${nproc}
 make install

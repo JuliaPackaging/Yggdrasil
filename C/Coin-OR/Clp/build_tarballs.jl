@@ -38,7 +38,7 @@ fi
 ../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --disable-debug --disable-dependency-tracking \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas="-lopenblas" --with-lapack="-openblas" \
+--with-blas="-lopenblas" --with-lapack="-lopenblas" \
 --with-coinutils-lib="-lCoinUtils" \
 --with-osi-lib="-lOsi -lCoinUtils" \
 --with-mumps-lib="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
