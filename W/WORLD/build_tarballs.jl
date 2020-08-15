@@ -14,9 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd World/
-ls
 mkdir -p ${libdir}
-$CXX -O1 -Wall -shared -fPIC -o ${libdir}/libworld.${dlext} -Isrc src/*.cpp
+$CXX -O3 -Wall -shared -fPIC -o ${libdir}/libworld.${dlext} -Isrc src/*.cpp
 """
 
 # These are the platforms we will build for by default, unless further
