@@ -43,8 +43,6 @@ fi
     --with-mpi-lib="${MPI_LIBS}" \
     --known-mpi-int64_t=0 \
     --with-mpi-include="${includedir}" \
-    --with-superlu=1 \
-    --download-superlu=1 \
     --with-sowing=0
 
 if [[ "${target}" == *-mingw* ]]; then
