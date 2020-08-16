@@ -27,11 +27,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# ROCT-Thunk-Interface only supports Linux
+# ROCT-Thunk-Interface only supports Linux, seemingly only 64bit
 platforms = [
     Linux(:x86_64, libc=:glibc),
 ]
-platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
