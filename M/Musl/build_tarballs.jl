@@ -1,19 +1,19 @@
 using BinaryBuilder
 
 name = "Musl"
-version = v"1.1.22"
+version = v"1.1.24"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
-    "https://www.musl-libc.org/releases/musl-$(version).tar.gz" =>
-    "8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3",
+    ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
+                  "1370c9a812b2cf2a7d92802510cca0058cc37e66a7bedd70051f0a34015022a3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir ${WORKSPACE}/srcdir/musl_build
 cd ${WORKSPACE}/srcdir/musl_build
-musl_arch()                                                                                                                                                                                             
+musl_arch()
 {
     case "${target}" in
         i686*)
@@ -47,12 +47,7 @@ mv ${WORKSPACE}/srcdir/musl_deploy/usr/lib/libc.so ${prefix}/lib/$(basename "${l
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:musl)
-    Linux(:i686, libc=:musl)
-    Linux(:aarch64, libc=:musl)
-    Linux(:armv7l, libc=:musl)
-]
+platforms = [p for p in supported_platforms() if libc(p) == :musl]
 
 # The products that we will ensure are always built
 products = [
