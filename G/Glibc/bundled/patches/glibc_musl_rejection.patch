@@ -1,5 +1,5 @@
 diff --git a/elf/dl-load.c b/elf/dl-load.c
-index f972524421..c0c79bddbc 100644
+index f972524421..70b08b4bf5 100644
 --- a/elf/dl-load.c
 +++ b/elf/dl-load.c
 @@ -73,6 +73,8 @@ struct filebuf
@@ -100,24 +100,23 @@ index f972524421..c0c79bddbc 100644
  	if (ph->p_type == PT_NOTE && ph->p_filesz >= 32 && ph->p_align >= 4)
  	  {
  	    ElfW(Addr) size = ph->p_filesz;
-@@ -1756,7 +1820,21 @@ open_verify (const char *name, int fd,
- 	    break;
+@@ -1757,6 +1821,20 @@ open_verify (const char *name, int fd,
  	  }
        free (abi_note_malloced);
-+      /* Check the dynamic section */
-+      if (dynamic_addr != 0) {
-+        int err = validate_lib(fd, dynamic_addr, dynamic_size);
-+        if (err == -2) {
-+          errstring = N_("failed to read file");
-+          goto call_lose;
-+        }
-+        else if (err != 0) {
-+          __close (fd);
-+          __set_errno (ENOENT);
-+          fd = -1;
-+        }
-+      }
      }
++    /* Check the dynamic section */
++    if (dynamic_addr != 0 && fd != -1) {
++      int err = validate_lib(fd, dynamic_addr, dynamic_size);
++      if (err == -2) {
++        errstring = N_("failed to read file");
++        goto call_lose;
++      }
++      else if (err != 0) {
++        __close (fd);
++        __set_errno (ENOENT);
++        fd = -1;
++      }
++    }
 +  }
  
    return fd;
