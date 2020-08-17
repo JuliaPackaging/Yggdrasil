@@ -1,21 +1,14 @@
 #include "jlcxx/jlcxx.hpp"
 #include <sdpa_call.h>
 
-namespace jlcxx
-{
-  template<> struct IsBits<SDPA::ConeType> : std::true_type {};
-  template<> struct IsBits<SDPA::PhaseType> : std::true_type {};
-  template<> struct IsBits<SDPA::ParameterType> : std::true_type {};
-}
-
 JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
 {
-    sdpa.add_bits<SDPA::ConeType>("ConeType");
+    sdpa.add_bits<SDPA::ConeType>("ConeType", jlcxx::julia_type("CppEnum"));
     sdpa.set_const("SDP", SDPA::SDP);
     sdpa.set_const("SOCP", SDPA::SOCP);
     sdpa.set_const("LP", SDPA::LP);
 
-    sdpa.add_bits<SDPA::PhaseType>("PhaseType");
+    sdpa.add_bits<SDPA::PhaseType>("PhaseType", jlcxx::julia_type("CppEnum"));
     sdpa.set_const("noINFO", SDPA::noINFO);
     sdpa.set_const("pFEAS", SDPA::pFEAS);
     sdpa.set_const("dFEAS", SDPA::dFEAS);
@@ -27,7 +20,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
     sdpa.set_const("pUNBD", SDPA::pUNBD);
     sdpa.set_const("dUNBD", SDPA::dUNBD);
 
-    sdpa.add_bits<SDPA::ParameterType>("ParameterType");
+    sdpa.add_bits<SDPA::ParameterType>("ParameterType", jlcxx::julia_type("CppEnum"));
     sdpa.set_const("PARAMETER_DEFAULT", SDPA::PARAMETER_DEFAULT);
     sdpa.set_const("PARAMETER_UNSTABLE_BUT_FAST", SDPA::PARAMETER_UNSTABLE_BUT_FAST);
     sdpa.set_const("PARAMETER_STABLE_BUT_SLOW", SDPA::PARAMETER_STABLE_BUT_SLOW);
