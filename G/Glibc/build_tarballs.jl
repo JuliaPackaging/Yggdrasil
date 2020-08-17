@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "Glibc"
-version = v"2.25"
+version = v"2.29"
 
 # sources to build, such as glibc, linux kernel headers, our patches, etc....
 sources = [
-    "https://mirrors.kernel.org/gnu/glibc/glibc-$(version.major).$(version.minor).tar.xz" =>
-    "067bd9bb3390e79aa45911537d13c3721f1d9d3769931a30c2681bfee66f23a0",
-    "./bundled",
+    ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-$(version.major).$(version.minor).tar.xz",
+                  "f3eeb8d57e25ca9fc13c2af3dae97754f9f643bc69229546828e3a240e2af04b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -51,4 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true, preferred_gcc_version=v"8")
