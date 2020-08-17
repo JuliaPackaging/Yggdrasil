@@ -86,6 +86,8 @@ cmake --build . --config Release --target install
 if [[ $target == *w64-mingw32* ]] ; then
     cp $WORKSPACE/destdir/lib/libsdpawrap.dll ${libdir}
 fi
+
+install_license $WORKSPACE/srcdir/sdpa-*/COPYING
 """
 
 # The products that we will ensure are always built
@@ -106,6 +108,7 @@ platforms = [
     Windows(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
     Windows(:i686; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
 ]
+platforms = expand_gfortran_versions(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
