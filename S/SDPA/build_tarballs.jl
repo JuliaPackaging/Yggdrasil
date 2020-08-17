@@ -43,12 +43,10 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-./configure --prefix=$prefix --with-pic --disable-pkg-config  --build=${MACHTYPE} --host=${target} \
+./configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-lopenblas" \
---with-coinutils-lib="-lCoinUtils" \
---with-osi-lib="-lOsi -lCoinUtils" \
---with-mumps-lib="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
+--with-mumps-libs="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
 --with-mumps-include="-I${prefix}/include/mumps_seq"
 
 make -j${nproc}
@@ -108,7 +106,7 @@ platforms = [
     Windows(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
     Windows(:i686; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
 ]
-platforms = expand_gfortran_versions(platforms)
+#platforms = expand_gfortran_versions(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
