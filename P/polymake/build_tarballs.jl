@@ -40,7 +40,8 @@ if [[ $target == *darwin* ]]; then
   atomic_patch -p1 ../patches/polymake-cross-build.patch
 else
   ./configure CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
-              PERL=${prefix}/deps/Perl_jll/bin/perl LDFLAGS="$LDFLAGS" \
+              PERL=${prefix}/deps/Perl_jll/bin/perl \
+              LDFLAGS="$LDFLAGS -L${prefix}/deps/Perl_jll/lib -Wl,-rpath,${prefix}/deps/Perl_jll/lib" \
               --prefix=${prefix} \
               --with-flint=${prefix}/deps/FLINT_jll \
               --with-gmp=${prefix}/deps/GMP_jll \

@@ -68,8 +68,8 @@ index 010ea05066..7b03cafc14 100644
     s{=Version(?=;)}{=$Version};
 -   s{=InstallTop(?=;)}{='$ConfigFlags{InstallTop}'};
 -   s{=InstallArch(?=;)}{='$ConfigFlags{InstallArch}'};
-+   s{=InstallTop(?=;)}{=abs_path(dirname(\$0)."/../share/polymake")};
-+   s{=InstallArch(?=;)}{=abs_path(dirname(\$0)."/../lib/polymake")};
++   s{=InstallTop(?=;)}{=dirname(\$0)."/../share/polymake"};
++   s{=InstallArch(?=;)}{=dirname(\$0)."/../lib/polymake"};
  
     if (-e "$InstallBin/polymake-config") {
        unlink "$InstallBin/polymake-config"
