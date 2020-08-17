@@ -25,6 +25,7 @@ fi
 
 mkdir -p ${prefix}/include
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" config
+cp SuiteSparse_config/SuiteSparse_config.h ${prefix}/include
 for proj in SuiteSparse_config AMD BTF COLAMD KLU; do
     make -j${nproc} -C $proj "${FLAGS[@]}" static CFOPENMP="$CFOPENMP"
     [[ -d ${proj}/Include ]] && cp ${proj}/Include/*.h ${prefix}/include
