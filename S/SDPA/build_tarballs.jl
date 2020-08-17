@@ -66,14 +66,18 @@ else
     export processor=x86-64
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+# Override compiler ID to silence the horrible "No features found" cmake error
+if [[ $target == *"apple-darwin"* ]]; then
+  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
+fi
+
+cmake $macos_extra_flags -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DSDPA_DIR=$prefix \
       -DMUMPS_INCLUDE_DIR="../../destdir/include/mumps_seq" \
       -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DJulia_PREFIX=${prefix} \
       -DSDPA_LIBRARY="-lsdpa" \
-      -DCMAKE_CXX_FLAGS="-march=$processor" \
       -D_GLIBCXX_USE_CXX11_ABI=1 \
       -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
       ..
