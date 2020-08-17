@@ -3,17 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "util_linux"
-version = v"2.35.0"
+version = v"2.36.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.35/util-linux-2.35.tar.gz", "98acab129a8490265052e6c1e033ca96d68758a13bb7fcd232c06bf16cc96238")
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-2.36.tar.gz", "98acab129a8490265052e6c1e033ca96d68758a13bb7fcd232c06bf16cc96238")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd util-linux-2.35
+cd util-linux-2.36
+grep --recursive --files-with-matches '#include <fcntl.h>' . | xargs sed -i 's/#include <fcntl.h>/#include <linux\/fcntl.h>/'
+grep --recursive --files-with-matches '# include <fcntl.h>' . | xargs sed -i 's/# include <fcntl.h>/# include <linux\/fcntl.h>/'
+grep --recursive --files-with-matches '#include <sys\/file.h>' . | xargs sed -i 's/#include <sys\/file.h>//'
+grep --recursive --files-with-matches '#include <time.h>' . | xargs sed -i 's/#include <time.h>/#include <linux\/time.h>/'
+grep --recursive --files-with-matches '#include <time.h>' . | xargs sed -i 's/#include <time.h>/#include <linux\/time.h>/'
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown
 make
 make install
