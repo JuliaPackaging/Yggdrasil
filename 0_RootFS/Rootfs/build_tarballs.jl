@@ -12,27 +12,18 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_sources = Dict(
-    v"3.9" => (
-        "https://github.com/gliderlabs/docker-alpine/raw/6e9a4b00609e29210ff3f545acd389bb7e89e9c0/versions/library-3.9/x86_64/rootfs.tar.xz",
-        "9eafcb389d03266f31ac64b4ccd9e9f42f86510811360cd4d4d6acbd519b2dc4",
-    ),
-    v"3.7" => (
-        "https://github.com/gliderlabs/docker-alpine/raw/491dd665ca26a474277b266f2a2cc7e8fd8097bf/versions/library-3.7/x86_64/rootfs.tar.xz",
-        "332effbc32ad17b380955b7e513fbe5f188b104c00e602df02af038317b18d7f",
-    ),
-)
-rootfs_url, rootfs_hash = rootfs_sources[v"3.9"]
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.12/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz"
+rootfs_hash = "0beb54cf9bf69d085f9fcd291ff28b3335184d08b706d535f425e8180851edc9"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
-rootfs_tarxz_path = joinpath(@__DIR__, "build", "rootfs.tar.xz")
-download_verify(rootfs_url, rootfs_hash, rootfs_tarxz_path; verbose=verbose, force=true)
+rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
+download_verify(rootfs_url, rootfs_hash, rootfs_targz_path; verbose=verbose, force=true)
 
 # Unpack the rootfs (using `tar` on the local machine), then pack it up again (again using tools on the local machine) and squashify it:
 rootfs_extracted = joinpath(@__DIR__, "build", "rootfs_extracted")
 rm(rootfs_extracted; recursive=true, force=true)
 mkpath(rootfs_extracted)
-success(`tar -C $(rootfs_extracted) -Jxf $(rootfs_tarxz_path)`)
+success(`tar -C $(rootfs_extracted) -zxf $(rootfs_targz_path)`)
 
 # In order to launch our rootfs, we need at bare minimum, a sandbox/docker entrypoint.  Ensure those exist.
 # We check in `sandbox`, but if it gets modified, we would like it to be updated.  In general, we hope
@@ -134,7 +125,7 @@ mkdir ./dev/shm
 
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
-MISC_TOOLS="python sudo file libintl patchutils grep zlib"
+MISC_TOOLS="python2 python3 sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
@@ -190,7 +181,7 @@ gcc -g -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/s
 cp -vd ${WORKSPACE}/srcdir/utils/docker_entrypoint.sh ${prefix}/docker_entrypoint.sh
 
 # Build the BB service client
-gcc -O2 -static -static-libgcc -o ${prefix}/bin/bb $WORKSPACE/srcdir/utils/bb.c
+gcc -O2 -std=c99 -static -static-libgcc -o ${prefix}/bin/bb $WORKSPACE/srcdir/utils/bb.c
 
 # Move over libc loaders from our bundled directory.  These have very strict location requirements,
 # so they MUST exist in /lib and /lib64.  These were generated from the `Glibc` and `Musl` builders
