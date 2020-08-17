@@ -76,7 +76,7 @@ verbose && @info("Binding barebones bootstrap RootFS shards...")
 
 insert_compiler_shard(name, version, rootfs_unpacked_hash, :unpacked)
 insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
-Core.eval(BinaryBuilder, :(bootstrap_list = Symbol[:rootfs]))
+Core.eval(BinaryBuilder.BinaryBuilderBase, :(bootstrap_list = Symbol[:rootfs]))
 
 # PHWEW.  Okay.  Now, we do some of the same steps over again, but within BinaryBuilder, where
 # we can actulaly run tools inside of the rootfs (e.g. if we're building on OSX through docker)
@@ -103,7 +103,7 @@ script = raw"""
 set -x
 # Get build tools ready. Note that they do not pollute the eventual Rootfs image;
 # they are only within this currently-running, ephemeral, pocket universe
-apk add build-base curl autoconf automake linux-headers gawk python3 bison git
+apk add build-base curl autoconf automake linux-headers gawk python3 py3-setuptools bison git
 
 # $prefix is our chroot under construction
 mv bin dev etc home lib media mnt proc root run sbin srv sys tmp usr var $prefix/
