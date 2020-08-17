@@ -13,17 +13,17 @@ name = "PlatformSupport"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 
 sources = [
-    "https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
-    "a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
-    "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
-    "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
-    "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
-    "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
-    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
-    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
-    "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz" =>
-    "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78",
-    "./bundled",
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
+                  "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
+                  "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
+                  "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
+                  "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
+    DirectorySource("./bundled"),
 ]
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
@@ -96,7 +96,7 @@ case "${COMPILER_TARGET}" in
         ;;
 
     *-apple-*)
-        cd ${WORKSPACE}/srcdir/MacOSX10.10.sdk
+        cd ${WORKSPACE}/srcdir/MacOSX*.sdk
         mkdir -p "${sysroot}/usr"
         mv usr/include "${sysroot}/usr"
         mv System "${sysroot}/"
