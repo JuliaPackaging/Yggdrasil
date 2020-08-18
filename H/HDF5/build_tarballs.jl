@@ -19,7 +19,7 @@ sources = [
     ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz", "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2"),
 
      # We need some special compiler support libraries from mingw
-    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-10.2.0-1-any.pkg.tar.zst", "104994c697fe1e03a85b3d82bd7642a0b18512e41eb4d565bb42bdec52b4bbec"),
+    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-9.2.0-2-any.pkg.tar.xz", "66f86c9ab615e09875d98d8d3864c4ac290c136fe6de68dfb72a7e9c5b082ffc"),
 
     # Native build for arm
     ArchiveSource("https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz", "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7"),
