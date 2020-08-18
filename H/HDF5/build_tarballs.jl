@@ -25,7 +25,7 @@ sources = [
     ArchiveSource("https://github.com/JuliaPackaging/Yggdrasil/releases/download/HDF5-arm-linux-gnueabihf-v1.10.5/hdf5-arm-linux-gnueabihf-v1.10.5.tar.gz", "12797e8f8b864dd1a5846c09a3efa21439844f76507483b373690b22bc2f09d7"),
 
     # Conda build (no MPI) for aarch64
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.0/download/linux-aarch64/hdf5-1.12.0-nompi_h54c07f9_101.tar.bz2", "df3d8c61c1bc1cd1839251b3c095a0b93405f7cff31cf5a04cfce4ba25364bbc";
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.10.5/download/linux-aarch64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2", "46300770bb662aaefc92a9e21c5f78ebfaac5c00d4963844c3f730836400edb2";
                   unpack_target = "hdf5-aarch64-linux-gnu"),
 ]
 
