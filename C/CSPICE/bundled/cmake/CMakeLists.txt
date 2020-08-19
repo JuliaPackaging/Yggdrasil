@@ -12,6 +12,7 @@ include(GNUInstallDirs)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -DNON_UNIX_STDIO")
 
 add_library(cspice SHARED ${SRCS})
+set_target_properties(cspice PROPERTIES PUBLIC_HEADER "SpiceUsr.h;f2c.h")
 if(WIN32)
   GENERATE_EXPORT_HEADER(cspice
              BASE_NAME cspice
