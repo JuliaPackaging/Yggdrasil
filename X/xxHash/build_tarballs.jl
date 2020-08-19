@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "xxHash"
-version = v"0.7.4"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Cyan4973/xxHash/archive/v0.7.4.tar.gz", "4d9706c9da4fbdf901598f5e3b71db0eddd4ac962e827a73ebf75d66dfd820fe")
+    GitSource("https://github.com/Cyan4973/xxHash.git", "94e5f23e736f2bb67ebdf90727353e65344f9fc0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xxHash-*/
+cd $WORKSPACE/srcdir/xxHash/
 mkdir build
 cd build
 cmake ../cmake_unofficial -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
