@@ -26,7 +26,7 @@ diff --git a/support/install_utils.pl b/support/install_utils.pl
 index e2950c7062..f5a1b80348 100644
 --- a/support/install_utils.pl
 +++ b/support/install_utils.pl
-@@ -44,8 +44,14 @@ sub load_config_file {
+@@ -44,8 +44,13 @@ sub load_config_file {
       }
    }
    close $cf;
@@ -35,7 +35,6 @@ index e2950c7062..f5a1b80348 100644
 +  unless ($root eq $values{root}) {
 +     (my $newprefix = $root) =~ s#/share/polymake$##;
 +     (my $oldprefix = $values{root}) =~ s#/share/polymake$##;
-+     warn "configuration file $config_file does not match the top directory $root - adjusting\n";
 +     foreach (keys(%values)) {
 +        $values{$_} =~ s/$oldprefix/$newprefix/g;
 +     }
@@ -47,29 +46,28 @@ diff --git a/support/install.pl b/support/install.pl
 index 010ea05066..7b03cafc14 100644
 --- a/support/install.pl
 +++ b/support/install.pl
-@@ -552,8 +552,10 @@ sub install_bin_scripts {
+@@ -552,8 +552,9 @@ sub install_bin_scripts {
     }
  
     my $init_block = <<"---";
 -   \$InstallTop='$ConfigFlags{InstallTop}';
 -   \$InstallArch='$ConfigFlags{InstallArch}';
-+   use Cwd qw( abs_path );
 +   use File::Basename qw( dirname );
-+   \$InstallTop=abs_path(dirname(\$0)."/../share/polymake");
-+   \$InstallArch=abs_path(dirname(\$0)."/../lib/polymake");
++   \$InstallTop=dirname(dirname(\$0))."/share/polymake";
++   \$InstallArch=dirname(dirname(\$0))."/lib/polymake";
     \$Arch="$ConfigFlags{Arch}";
     \@BundledExts=qw(@BundledExts);
  ---
-@@ -589,9 +591,10 @@ sub install_bin_scripts {
+@@ -589,9 +590,10 @@ sub install_bin_scripts {
        s{^\#!\S+}{#!$Config::Config{perlpath}}s;
     }
  
-+   s{use strict;}{use strict;\nuse Cwd qw( abs_path );\nuse File::Basename qw( dirname );};
++   s{use strict;}{use strict;\nuse File::Basename qw( dirname );};
     s{=Version(?=;)}{=$Version};
 -   s{=InstallTop(?=;)}{='$ConfigFlags{InstallTop}'};
 -   s{=InstallArch(?=;)}{='$ConfigFlags{InstallArch}'};
-+   s{=InstallTop(?=;)}{=dirname(\$0)."/../share/polymake"};
-+   s{=InstallArch(?=;)}{=dirname(\$0)."/../lib/polymake"};
++   s{=InstallTop(?=;)}{=dirname(dirname(\$0))."/share/polymake"};
++   s{=InstallArch(?=;)}{=dirname(dirname(\$0))."/lib/polymake"};
  
     if (-e "$InstallBin/polymake-config") {
        unlink "$InstallBin/polymake-config"

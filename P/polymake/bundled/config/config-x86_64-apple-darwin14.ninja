@@ -18,7 +18,7 @@ CflagsSuppressWarnings =
 CLANGversion = 4.0
 CPPStd = 201402
 XcodeVersion = 9.1.0
-LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
+LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
 LDsharedFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong
 LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong  -mmacosx-version-min=10.8 -fstack-protector-strong
 LDsonameFLAGS = -install_name /workspace/destdir/lib/
