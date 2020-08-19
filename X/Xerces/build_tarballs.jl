@@ -19,6 +19,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/ThreadTest.patch"
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Dnetwork:BOOL=OFF
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/xerces-c-3.2.3/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
