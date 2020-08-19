@@ -3,15 +3,15 @@
 using BinaryBuilder
 using Pkg
 name = "CImPlot"
-version = v"0.3.0" # tracking tags of epezent/implot
+version = v"0.4.0" # tracking tags of epezent/implot
 
 # Collection of sources required to build CImGui
 sources = [
     GitSource("https://github.com/cimgui/cimplot.git",
-              "929f61d27b8b4e3c899b2a386679a7f4a82826ce"),
+              "e797b3f3a537f8d9efb83c6df3c1a6cdb0833013"),
 
     GitSource("https://github.com/epezent/implot.git",
-              "b95b23fec80dfe547da8905b570a9db30becf904"),
+              "5c9679c2abf77825c5c7a2b228a773a506754c50"),
 
     DirectorySource("./bundled"),
 ]
