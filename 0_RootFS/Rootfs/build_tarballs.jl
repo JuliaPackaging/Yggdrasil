@@ -52,6 +52,12 @@ if any(is_outdated.(libc_paths, download_libcs))
     success(`$download_libcs`)
 end
 
+csl_paths = [joinpath(@__DIR__, "bundled", "libs", "csl", "$(libc)-$(arch)") for libc in ("musl", "glibc") for arch in ("i686", "x86_64")]
+download_csls = joinpath(@__DIR__, "bundled", "libs", "csl", "download_csls.sh")
+if any(is_outdated.(csl_paths, download_csls))
+    success(`$download_csls`)
+end
+
 # Copy in `sandbox` and `docker_entrypoint.sh` since we need those just to get up in the morning.
 # Also set up a DNS resolver, since that's important too.  Yes, this work is repeated below, but
 # we need a tiny world to set up our slightly larger world inside of.
@@ -191,6 +197,16 @@ cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-x86_64/* ${prefix}/lib64
 cp -vd ${WORKSPACE}/srcdir/libs/libc/glibc-i686/* ${prefix}/lib
 cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-x86_64/* ${prefix}/lib
 cp -vd ${WORKSPACE}/srcdir/libs/libc/musl-i686/* ${prefix}/lib
+
+# Move over Compiler Support Libraries from our bundled directory into separate directories.
+# These do not have strict location requirements, so we just store them in descriptive folders
+# and BB will add them to `LD_LIBRARY_PATH`.
+for arch in x86_64 i686; do
+    for libc in glibc musl; do
+        mkdir -p ${prefix}/usr/lib/csl-${libc}-${arch}
+        cp -vd ${WORKSPACE}/srcdir/libs/csl/${libc}-${arch}/* ${prefix}/usr/lib/csl-${libc}-${arch}
+    done
+done
 
 # Build/install meson
 cd ${WORKSPACE}/srcdir/meson-*/
