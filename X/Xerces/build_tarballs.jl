@@ -7,13 +7,15 @@ version = v"3.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://apache.mirror.digionline.de//xerces/c/3/sources/xerces-c-3.2.3.tar.gz", "fb96fc49b1fb892d1e64e53a6ada8accf6f0e6d30ce0937956ec68d39bd72c7e")
+    ArchiveSource("https://apache.mirror.digionline.de//xerces/c/3/sources/xerces-c-3.2.3.tar.gz", "fb96fc49b1fb892d1e64e53a6ada8accf6f0e6d30ce0937956ec68d39bd72c7e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd xerces-c-3.2.3/
+atomic_patch -p1 "${WORKSPACE}/srcdir/ThreadTest.patch"
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Dnetwork:BOOL=OFF
 make -j${nproc}
 make install
