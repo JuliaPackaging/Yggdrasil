@@ -160,8 +160,8 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         ]
     elseif isa(compiler_target, MacOS)
         libc_sources = [
-            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz",
-                          "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce"),
+            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                          "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
         ]
     elseif isa(compiler_target, FreeBSD)
         libc_sources = [
@@ -535,6 +535,10 @@ function gcc_script(compiler_target::Platform)
         cd ${WORKSPACE}/srcdir/MacOSX*.sdk
         mkdir -p "${sysroot}"
         rsync -a usr "${sysroot}/"
+
+        # Clean out libssl and libcrypto, as we never want to link against those old versions included with MacOS
+        rm -rfv ${sysroot}/usr/lib/libssl.*
+        rm -rfv ${sysroot}/usr/lib/libcrypto.*
 
     elif [[ ${COMPILER_TARGET} == *freebsd* ]]; then
         cd ${WORKSPACE}/srcdir
