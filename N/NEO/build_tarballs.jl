@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.27.17231"
+version = v"20.32.17625"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "5eafc349c9c7566211bacd7d2de22ceed335c5c2"),
+              "f4742855d86b26bbc89a93c48a94b62a91555b63"),
     # vendored dependencies
     GitSource("https://github.com/oneapi-src/level-zero.git",
-              "ebb363e938a279cf866cb93d28e31aaf0791ea19"),  # v0.91.10
+              "fcc7b7aceacf3cbfabaf3c0952ae0cc02d083592"),  # v1.0
 ]
 
 # Bash recipe for building across all platforms
@@ -47,6 +47,9 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 # Don't run tests
 CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 
+# we don't care about cl_intel_va_api_media_sharing
+CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
+
 # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
 # FIXME: shouldn't BinaryBuilder do this?
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
@@ -73,8 +76,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.2.2")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.4241")),
+    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.2.3")),
+    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.4560")),
     # TODO: reverse compatibility bounds, where NEO (providing a oneL0 impl of, e.g., v0.91)
     #       restricts oneAPI_Level_Zero_jll to be below that version too.
 ]
