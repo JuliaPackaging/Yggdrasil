@@ -1,0 +1,44 @@
+--- vc-intrinsics/CMakeLists.txt	2020-08-20 12:46:58.661604144 +0200
++++ vc-intrinsics/CMakeLists.txt	2020-08-20 12:47:18.015427529 +0200
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.13.4)
++cmake_minimum_required(VERSION 3.13.0)
+
+ set(LLVM_GENX_INTRINSICS_VERSION 1.0)
+
+--- vc-intrinsics/GenXIntrinsics/CMakeLists.txt	2020-08-20 12:47:03.225053032 +0200
++++ vc-intrinsics/GenXIntrinsics/CMakeLists.txt	2020-08-20 12:47:09.055200659 +0200
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.13.4)
++cmake_minimum_required(VERSION 3.13.0)
+
+ set(GENX_INTRINSICS_MAIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+--- intel-graphics-compiler/IGC/VectorCompiler/cmake/spirv.cmake	2020-08-20 12:48:34.944041293 +0200
++++ intel-graphics-compiler/IGC/VectorCompiler/cmake/spirv.cmake	2020-08-20 12:48:55.821236181 +0200
+@@ -79,7 +79,6 @@
+ set(SPIRV_REV_PATCH 7c8443e3d2032af05b46571c12c7de1b5209f7fe)
+ set(SPRIV_PATCHES ${CMAKE_CURRENT_SOURCE_DIR}/spirv-patches-new/)
+ set(SPRIV_BRANCH_PATCH spirvdll_100)
+-find_program(MAKE_EXEC NAMES make gmake)
+
+ if(NOT EXISTS ${SPIRV_COPY})
+   message(STATUS "[VC] : Copying stock SPIRV-Translator sources to ${SPIRV_COPY}")
+@@ -98,7 +97,7 @@
+       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/SPIRVDLL
+       SOURCE_DIR ${SPIRV_COPY}
+       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/spirv-install
+-      BUILD_COMMAND ${MAKE_EXEC} SPIRVDLL
++      BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} SPIRVDLL
+       INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/spirv-install
+     )
+
+@@ -108,7 +107,7 @@
+       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/SPIRVDLL
+       SOURCE_DIR ${SPIRV_COPY}
+       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/spirv-install -DLLVM_DIR=${LLVM_DIR}
+-      BUILD_COMMAND ${MAKE_EXEC} SPIRVDLL
++      BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} SPIRVDLL
+       INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/spirv-install
+     )
+
