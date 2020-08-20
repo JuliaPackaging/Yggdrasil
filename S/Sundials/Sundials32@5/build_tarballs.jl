@@ -1,12 +1,12 @@
 using BinaryBuilder
 
-name = "Sundials"
-version = v"5.2.0"
+name = "Sundials32"
+version = v"5.3.0"
 
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "b16d3d3995668c9a13c9f4bee8b0113ff6a9cf6d"),
+              "887af4374af2271db9310d31eaa9b5aeff49e829"),
     DirectorySource("../bundled@5"),
 ]
 
