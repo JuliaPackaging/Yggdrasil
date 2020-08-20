@@ -1,5 +1,5 @@
---- a/cspice/dskx02.c
-+++ b/cspice/dskx02.c
+--- a/src/cspice/dskx02.c
++++ b/src/cspice/dskx02.c
 @@ -133,6 +133,7 @@
      extern /* Subroutine */ int insang_(doublereal *, doublereal *, 
  	    doublereal *, doublereal *, logical *, doublereal *), pltnrm_(
