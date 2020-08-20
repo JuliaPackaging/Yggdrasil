@@ -55,6 +55,7 @@ products = [
     # Libraries
     # reentrant Qhull
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
+    LibraryProduct(["libqhull", "qhull"], :libqhull),
     
     # Files
     # Reentrant Qhull header files
