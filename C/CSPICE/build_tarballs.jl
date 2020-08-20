@@ -17,8 +17,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cp cmake/CMakeLists.txt .
-cp -r cspice/src/cspice/ .
+cd cspice
+cp -r $WORKSPACE/srcdir/cmake .
+mv cmake/CMakeLists.txt .
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dskx02.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/subpnt.patch"
 mkdir build

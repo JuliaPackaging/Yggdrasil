@@ -1,5 +1,5 @@
---- a/cspice/subpnt.c
-+++ b/cspice/subpnt.c
+--- a/src/cspice/subpnt.c
++++ b/src/cspice/subpnt.c
 @@ -2095,6 +2095,13 @@
  
  /* $ Version */
