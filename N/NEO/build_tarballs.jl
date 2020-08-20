@@ -9,17 +9,10 @@ version = v"20.32.17625"
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
               "f4742855d86b26bbc89a93c48a94b62a91555b63"),
-    # vendored dependencies
-    GitSource("https://github.com/oneapi-src/level-zero.git",
-              "fcc7b7aceacf3cbfabaf3c0952ae0cc02d083592"),  # v1.0
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# NEO builds against a very specific version of the oneL0 specification headers,
-# so we can't use regular (Build)Dependencies.
-mv level-zero level_zero
-
 cd compute-runtime
 install_license LICENSE
 
@@ -78,8 +71,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="gmmlib_jll", version=v"20.2.3")),
     Dependency(PackageSpec(name="libigc_jll", version=v"1.0.4560")),
-    # TODO: reverse compatibility bounds, where NEO (providing a oneL0 impl of, e.g., v0.91)
-    #       restricts oneAPI_Level_Zero_jll to be below that version too.
+    Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=v"1.0")),
 ]
 
 # GCC 4 has constexpr incompatibilities
