@@ -40,6 +40,11 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
 fi
 
+# Set the mangling scheme manually on Apple
+if [[ "${target}" == *-apple-* ]]; then
+    mangling="-DSUNDIALS_F77_FUNC_CASE=lower -DSUNDIALS_F77_FUNC_UNDERSCORES=one"
+fi
+
 # Build
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -50,7 +55,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
     -DSUPERLUMT_ENABLE=ON -DSUPERLUMT_INCLUDE_DIR="$prefix/include" -DSUPERLUMT_LIBRARY_DIR="$libdir" \
     -DSUPERLUMT_LIBRARIES="$libdir/libopenblas.$dlext" -DSUPERLUMT_THREAD_TYPE="OpenMP" \
-    -DSUNDIALS_INDEX_SIZE=32 \
+    -DSUNDIALS_INDEX_SIZE=32 $mangling \
     ..
 make -j${nproc}
 make install
