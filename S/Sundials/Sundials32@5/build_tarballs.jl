@@ -39,6 +39,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DEXAMPLES_ENABLE_C=OFF \
     -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
     -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DSUNDIALS_INDEX_SIZE=32 \
     ..
 make -j${nproc}
 make install
