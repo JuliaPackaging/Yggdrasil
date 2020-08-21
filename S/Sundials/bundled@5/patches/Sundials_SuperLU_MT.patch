@@ -1,0 +1,15 @@
+diff --git a/config/FindSUPERLUMT.cmake b/config/FindSUPERLUMT.cmake
+index 4432ae9..d3b835d 100644
+--- a/config/FindSUPERLUMT.cmake
++++ b/config/FindSUPERLUMT.cmake
+@@ -59,8 +59,8 @@ else(SUPERLUMT_THREAD_TYPE STREQUAL "OPENMP")
+   endif()
+ endif()
+
+-# Set SuperLU_MT library name with thread type postfix
+-set(SUPERLUMT_LIBRARY_NAME superlu_mt_${SUPERLUMT_THREAD_TYPE})
++# Set SuperLU_MT library name for double precision real from SuperLU_MT_jll
++set(SUPERLUMT_LIBRARY_NAME superlumtd)
+
+ if(MSVC)
+   set(CMAKE_FIND_LIBRARY_PREFIXES lib ${CMAKE_FIND_LIBRARY_PREFIXES})

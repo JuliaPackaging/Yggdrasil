@@ -31,6 +31,9 @@ elif [[ "${target}" == powerpc64le-* ]]; then
     LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lgomp -ldl -lm -lpthread"
 fi
 
+# Fix the SuperLU_MT library name
+atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_SuperLU_MT.patch
+
 # Build
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -39,6 +42,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DEXAMPLES_ENABLE_C=OFF \
     -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
     -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DSUPERLUMT_ENABLE=ON -DSUPERLUMT_INCLUDE_DIR="$prefix/include" -DSUPERLUMT_LIBRARY_DIR="$libdir" \
+    -DSUPERLUMT_LIBRARIES="$libdir/libopenblas.$dlext" -DSUPERLUMT_THREAD_TYPE="OpenMP" \
     -DSUNDIALS_INDEX_SIZE=32 \
     ..
 make -j${nproc}
@@ -85,6 +90,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     BuildDependency("SuiteSparse32_jll"),
+    Dependency("SuperLU_MT_jll"),
 ]
 
 # Build the tarballs.
