@@ -97,14 +97,14 @@ products = [
 
 # Pick platforms from L/libcxxwrap-julia/build_tarballs.jl
 platforms = [
-    FreeBSD(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Linux(:aarch64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Linux(:i686; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    MacOS(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Windows(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
-    Windows(:i686; compiler_abi=CompilerABI(libgfortran_version=v"5", cxxstring_abi=:cxx11)),
+    FreeBSD(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Linux(:aarch64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Linux(:i686; libc=:glibc, compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    MacOS(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Windows(:x86_64; compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
+    Windows(:i686; compiler_abi=CompilerABI(libgfortran_version=v"4", cxxstring_abi=:cxx11)),
 ]
 #platforms = expand_gfortran_versions(platforms)
 
@@ -120,4 +120,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+               preferred_gcc_version=v"7")
