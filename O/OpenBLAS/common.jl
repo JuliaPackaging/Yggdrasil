@@ -3,6 +3,10 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.10" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz",
+                          "0484d275f87e9b8641ff2eecaa9df2830cbe276ac79ad80494822721de6e1693"),
+        ],
         v"0.3.9" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz",
                           "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380"),
