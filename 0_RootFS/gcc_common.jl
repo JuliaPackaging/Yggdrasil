@@ -301,8 +301,10 @@ function gcc_script(compiler_target::Platform)
         fi
     done
 
-    # Do not run fixincludes
-    sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+    # Do not run fixincludes except on Darwin
+    if [[ ${COMPILER_TARGET} != *-darwin* ]]; then
+        sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+    fi
 
     # Apply all gcc patches
     for p in ${WORKSPACE}/srcdir/patches/gcc*.patch; do
