@@ -187,10 +187,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
 end
 
 function gcc_script(compiler_target::Platform) 
-    script  = "COMPILER_TARGET=$(triplet(compiler_target))\n"
-    script *= "HOST_TARGET=$(triplet(host_platform))\n"
-    script *= raw"""
+    script = raw"""
     cd ${WORKSPACE}/srcdir
+    COMPILER_TARGET=${target}
+    HOST_TARGET=${MACHTYPE}
 
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
     apk add build-base gettext-dev gcc-objc clang
@@ -468,6 +468,7 @@ function gcc_script(compiler_target::Platform)
         ${WORKSPACE}/srcdir/glibc-*/configure \
             --prefix=/usr \
             --host=${COMPILER_TARGET} \
+            --build=${HOST_TARGET} \
             --with-headers="${sysroot}/usr/include" \
             --disable-multilib \
             --disable-werror \
