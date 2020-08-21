@@ -1,13 +1,13 @@
 using BinaryBuilder
 
-name = "Sundials"
-version = v"5.2.0"
+name = "Sundials32"
+version = v"5.3.0"
 
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "b16d3d3995668c9a13c9f4bee8b0113ff6a9cf6d"),
-    DirectorySource("./bundled"),
+              "887af4374af2271db9310d31eaa9b5aeff49e829"),
+    DirectorySource("../bundled@5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,13 +24,7 @@ elif [[ "${target}" == powerpc64le-* ]]; then
 fi
 
 # Set up LAPACK
-LAPACK_LIBRARIES="-lgfortran"
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas64_.${dlext}"
-else
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas.${dlext}"
-fi
+LAPACK_LIBRARIES="-lgfortran ${libdir}/libopenblas.${dlext}"
 if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
     LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lquadmath"
 elif [[ "${target}" == powerpc64le-* ]]; then
@@ -45,6 +39,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DEXAMPLES_ENABLE_C=OFF \
     -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
     -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DSUNDIALS_INDEX_SIZE=32 \
     ..
 make -j${nproc}
 make install
@@ -87,9 +82,9 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS_jll"),
-    Dependency("SuiteSparse_jll"),
-#    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenBLAS32_jll"),
+    BuildDependency("SuiteSparse32_jll"),
 ]
 
 # Build the tarballs.
