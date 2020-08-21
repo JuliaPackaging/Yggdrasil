@@ -9,8 +9,7 @@ version = v"4.1.0"
 
 # Collection of sources required to build FFPLAY
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2",
-                  "b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5"),
+    ArchiveSource("https://github.com/yakir12/FFmpeg/archive/n$version.tar.gz", "b513e8646cd99d7982b6c23783b1948cfa5ef73f00c7ab5615dd8f70ca971b0c"),
 ]
 
 # Bash recipe for building across all platforms
