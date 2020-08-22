@@ -43,10 +43,6 @@ fi
 # Set the mangling scheme manually on Apple
 if [[ "${target}" == *-apple-* ]]; then
     mangling="-DSUNDIALS_F77_FUNC_CASE=lower -DSUNDIALS_F77_FUNC_UNDERSCORES=one"
-    # Work around the "size too large (archive member extends past the end of the file)" issue
-    for bin in ar ranlib nm; do
-        ln -sf /opt/${target}/bin/${target}-gcc-${bin} /opt/${target}/bin/${target}-${bin}
-    done
 fi
 
 # Build
@@ -55,11 +51,19 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="$toolchain" \
     -DEXAMPLES_ENABLE_C=OFF \
-    -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
-    -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
-    -DSUPERLUMT_ENABLE=ON -DSUPERLUMT_INCLUDE_DIR="$prefix/include" -DSUPERLUMT_LIBRARY_DIR="$libdir" \
-    -DSUPERLUMT_LIBRARIES="$libdir/libopenblas.$dlext" -DSUPERLUMT_THREAD_TYPE="OpenMP" \
-    -DSUNDIALS_INDEX_SIZE=32 $mangling \
+    -DKLU_ENABLE=ON \
+    -DKLU_INCLUDE_DIR="${includedir}" \
+    -DKLU_LIBRARY_DIR="$libdir" \
+    -DLAPACK_ENABLE=ON \
+    -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DSUPERLUMT_ENABLE=ON \
+    -DSUPERLUMT_INCLUDE_DIR="${includedir}" \
+    -DSUPERLUMT_LIBRARY_DIR="$libdir" \
+    -DSUPERLUMT_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DSUPERLUMT_THREAD_TYPE="OpenMP" \
+    -DSUNDIALS_INDEX_SIZE=32 \
+    -DBUILD_STATIC_LIBS=OFF \
+    ${mangling} \
     ..
 make -j${nproc}
 make install
