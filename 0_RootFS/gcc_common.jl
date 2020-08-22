@@ -165,13 +165,13 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         ]
     elseif isa(compiler_target, FreeBSD)
         libc_sources = [
-            ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz",
-                          "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19"),
+            ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
+                          "3bac8257bdd5e5b071f7b80cc591ebecd01b9314ca7839a2903096cbf82169f9"),
         ]
     elseif isa(compiler_target, Windows)
         libc_sources = [
-            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2",
-                          "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0"),
+            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
+                          "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
         ]
     else
         error("Unknown libc mapping for platform $(compiler_target)")
@@ -423,10 +423,9 @@ function gcc_script(compiler_target::Platform)
         # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
 
-        # patch glibc's stupid gcc version check (we don't require this one, as if
-        # it doesn't apply cleanly, it's probably fine)
-        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
+        # patch glibc's stupid gcc/make version check (we don't require this one,
+        # as if it doesn't apply cleanly, it's probably fine)
+        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_deps_versions.patch || true
 
         # patch older glibc's 32-bit assembly to withstand __i686 definition of
         # newer GCC's.  ref: http://comments.gmane.org/gmane.comp.lib.glibc.user/758
