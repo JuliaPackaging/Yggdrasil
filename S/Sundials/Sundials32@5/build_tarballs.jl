@@ -61,6 +61,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DSUPERLUMT_LIBRARY_DIR="$libdir" \
     -DSUPERLUMT_LIBRARIES="${libdir}/libopenblas.${dlext}" \
     -DSUPERLUMT_THREAD_TYPE="OpenMP" \
+    -DMPI_ENABLE=ON \
+    -DPETSC_ENABLE=ON \
+    -DPETSC_LIBRARIES="$libdir/libpetsc.$dlext" \
+    -DPETSC_INCLUDES="$prefix/include" \
     -DSUNDIALS_INDEX_SIZE=32 \
     -DBUILD_STATIC_LIBS=OFF \
     ${mangling} \
@@ -107,7 +111,10 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("MPICH_jll"),
+    Dependency("MicrosoftMPI_jll"),
     Dependency("OpenBLAS32_jll"),
+    Dependency("PETSc_jll"),
     BuildDependency("SuiteSparse32_jll"),
     Dependency("SuperLU_MT_jll"),
 ]
