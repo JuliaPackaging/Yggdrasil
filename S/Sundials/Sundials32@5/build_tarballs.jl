@@ -43,8 +43,10 @@ fi
 # Set the mangling scheme manually on Apple
 if [[ "${target}" == *-apple-* ]]; then
     mangling="-DSUNDIALS_F77_FUNC_CASE=lower -DSUNDIALS_F77_FUNC_UNDERSCORES=one"
-    ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
-    ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
+    # Work around the "size too large (archive member extends past the end of the file)" issue
+    for bin in ar ranlib nm; do
+        ln -sf /opt/${target}/bin/${target}-gcc-${bin} /opt/${target}/bin/${target}-${bin}
+    done
 fi
 
 # Build
