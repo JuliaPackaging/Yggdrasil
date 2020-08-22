@@ -43,6 +43,8 @@ fi
 # Set the mangling scheme manually on Apple
 if [[ "${target}" == *-apple-* ]]; then
     mangling="-DSUNDIALS_F77_FUNC_CASE=lower -DSUNDIALS_F77_FUNC_UNDERSCORES=one"
+    ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
+    ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
 fi
 
 # Build
