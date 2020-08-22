@@ -31,15 +31,39 @@ elif [[ "${target}" == powerpc64le-* ]]; then
     LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lgomp -ldl -lm -lpthread"
 fi
 
+# Fix the SuperLU_MT library name
+atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_SuperLU_MT.patch
+
+# Use GCC on Apple/FreeBSD
+toolchain="$CMAKE_TARGET_TOOLCHAIN"
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+fi
+
+# Set the mangling scheme manually on Apple
+if [[ "${target}" == *-apple-* ]]; then
+    mangling="-DSUNDIALS_F77_FUNC_CASE=lower -DSUNDIALS_F77_FUNC_UNDERSCORES=one"
+fi
+
 # Build
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_TOOLCHAIN_FILE="$toolchain" \
     -DEXAMPLES_ENABLE_C=OFF \
-    -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
-    -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DKLU_ENABLE=ON \
+    -DKLU_INCLUDE_DIR="${includedir}" \
+    -DKLU_LIBRARY_DIR="$libdir" \
+    -DLAPACK_ENABLE=ON \
+    -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DSUPERLUMT_ENABLE=ON \
+    -DSUPERLUMT_INCLUDE_DIR="${includedir}" \
+    -DSUPERLUMT_LIBRARY_DIR="$libdir" \
+    -DSUPERLUMT_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    -DSUPERLUMT_THREAD_TYPE="OpenMP" \
     -DSUNDIALS_INDEX_SIZE=32 \
+    -DBUILD_STATIC_LIBS=OFF \
+    ${mangling} \
     ..
 make -j${nproc}
 make install
@@ -85,6 +109,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     BuildDependency("SuiteSparse32_jll"),
+    Dependency("SuperLU_MT_jll"),
 ]
 
 # Build the tarballs.
