@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GMAT"
-version = v"2020.0.0-a"
+version = v"2020.0.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -16,7 +16,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cd GMAT-R2020a/
-atomic_patch -p1 "${WORKSPACE}/srcdir/GMAT.patch"
+dos2unix plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/GMAT.patch"
 mkdir builddir
 cd builddir/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
