@@ -1,0 +1,120 @@
+From c58674df147ac0e2777208376bfd2b0d9acbef48 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Fri, 7 Aug 2020 16:38:15 -0400
+Subject: [PATCH] [X86] Don't produce bad x86andp nodes for i1 vectors
+
+In D85499, I attempted to fix this same issue by canonicalizing
+andnp for i1 vectors, but since there was some opposition to such
+a change, this commit just fixes the bug by using two different
+forms depending on which kind of vector type is in use. We can
+then always decide to switch the canonical forms later.
+
+Description of the original bug:
+We have a DAG combine that tries to fold (vselect cond, 0000..., X) -> (andnp cond, x).
+However, it does so by attempting to create an i64 vector with the number
+of elements obtained by truncating division by 64 from the bitwidth. This is
+bad for mask vectors like v8i1, since that division is just zero. Besides,
+we don't want i64 vectors anyway. For i1 vectors, switch the pattern
+to (andnp (not cond), x), which is the canonical form for `kandn`
+on mask registers.
+
+Fixes https://github.com/JuliaLang/julia/issues/36955.
+
+Differential Revision: https://reviews.llvm.org/D85553
+---
+ llvm/lib/Target/X86/X86ISelLowering.cpp | 12 +++--
+ llvm/test/CodeGen/X86/avx512-select.ll  | 61 +++++++++++++++++++++++++
+ 2 files changed, 69 insertions(+), 4 deletions(-)
+
+diff --git a/llvm/lib/Target/X86/X86ISelLowering.cpp b/llvm/lib/Target/X86/X86ISelLowering.cpp
+index 729c4207c8b6..37a8b4a998cb 100644
+--- a/llvm/lib/Target/X86/X86ISelLowering.cpp
++++ b/llvm/lib/Target/X86/X86ISelLowering.cpp
+@@ -39633,10 +39633,14 @@ combineVSelectWithAllOnesOrZeros(SDNode *N, SelectionDAG &DAG,
+ 
+   // vselect Cond, 000..., X -> andn Cond, X
+   if (TValIsAllZeros) {
+-    MVT AndNVT = MVT::getVectorVT(MVT::i64, CondVT.getSizeInBits() / 64);
+-    SDValue CastCond = DAG.getBitcast(AndNVT, Cond);
+-    SDValue CastRHS = DAG.getBitcast(AndNVT, RHS);
+-    SDValue AndN = DAG.getNode(X86ISD::ANDNP, DL, AndNVT, CastCond, CastRHS);
++    SDValue CastRHS = DAG.getBitcast(CondVT, RHS);
++    SDValue AndN;
++    // The canonical form differs for i1 vectors - x86andnp is not used
++    if (CondVT.getScalarType() == MVT::i1)
++      AndN = DAG.getNode(ISD::AND, DL, CondVT, DAG.getNOT(DL, Cond, CondVT),
++                         CastRHS);
++    else
++      AndN = DAG.getNode(X86ISD::ANDNP, DL, CondVT, Cond, CastRHS);
+     return DAG.getBitcast(VT, AndN);
+   }
+ 
+diff --git a/llvm/test/CodeGen/X86/avx512-select.ll b/llvm/test/CodeGen/X86/avx512-select.ll
+index 634757ddbf9d..a60f6ee06e73 100644
+--- a/llvm/test/CodeGen/X86/avx512-select.ll
++++ b/llvm/test/CodeGen/X86/avx512-select.ll
+@@ -705,3 +705,64 @@ define void @select_v1i1(<1 x i1>* %w, <1 x i1>* %x, <1 x i1>* %y, i1 %z) nounwi
+   store <1 x i1> %c, <1 x i1>* %x
+   ret void
+ }
++
++; Regression test from https://github.com/JuliaLang/julia/issues/36955
++define i8 @julia_issue36955(<8 x i1> %mask, <8 x double> %a) {
++; X86-AVX512F-LABEL: julia_issue36955:
++; X86-AVX512F:       # %bb.0:
++; X86-AVX512F-NEXT:    vpmovsxwq %xmm0, %zmm0
++; X86-AVX512F-NEXT:    vpsllq $63, %zmm0, %zmm0
++; X86-AVX512F-NEXT:    vxorpd %xmm2, %xmm2, %xmm2
++; X86-AVX512F-NEXT:    vcmplepd %zmm2, %zmm1, %k1
++; X86-AVX512F-NEXT:    vptestmq %zmm0, %zmm0, %k0 {%k1}
++; X86-AVX512F-NEXT:    korw %k0, %k1, %k0
++; X86-AVX512F-NEXT:    kmovw %k0, %eax
++; X86-AVX512F-NEXT:    # kill: def $al killed $al killed $eax
++; X86-AVX512F-NEXT:    vzeroupper
++; X86-AVX512F-NEXT:    retl
++;
++; X64-AVX512F-LABEL: julia_issue36955:
++; X64-AVX512F:       # %bb.0:
++; X64-AVX512F-NEXT:    vpmovsxwq %xmm0, %zmm0
++; X64-AVX512F-NEXT:    vpsllq $63, %zmm0, %zmm0
++; X64-AVX512F-NEXT:    vxorpd %xmm2, %xmm2, %xmm2
++; X64-AVX512F-NEXT:    vcmplepd %zmm2, %zmm1, %k1
++; X64-AVX512F-NEXT:    vptestmq %zmm0, %zmm0, %k0 {%k1}
++; X64-AVX512F-NEXT:    korw %k0, %k1, %k0
++; X64-AVX512F-NEXT:    kmovw %k0, %eax
++; X64-AVX512F-NEXT:    # kill: def $al killed $al killed $eax
++; X64-AVX512F-NEXT:    vzeroupper
++; X64-AVX512F-NEXT:    retq
++;
++; X86-AVX512BW-LABEL: julia_issue36955:
++; X86-AVX512BW:       # %bb.0:
++; X86-AVX512BW-NEXT:    vpsllw $15, %xmm0, %xmm0
++; X86-AVX512BW-NEXT:    vpxor %xmm2, %xmm2, %xmm2
++; X86-AVX512BW-NEXT:    vxorpd %xmm3, %xmm3, %xmm3
++; X86-AVX512BW-NEXT:    vcmplepd %zmm3, %zmm1, %k1
++; X86-AVX512BW-NEXT:    vpcmpgtw %zmm0, %zmm2, %k0 {%k1}
++; X86-AVX512BW-NEXT:    korw %k0, %k1, %k0
++; X86-AVX512BW-NEXT:    kmovd %k0, %eax
++; X86-AVX512BW-NEXT:    # kill: def $al killed $al killed $eax
++; X86-AVX512BW-NEXT:    vzeroupper
++; X86-AVX512BW-NEXT:    retl
++;
++; X64-AVX512BW-LABEL: julia_issue36955:
++; X64-AVX512BW:       # %bb.0:
++; X64-AVX512BW-NEXT:    vpsllw $15, %xmm0, %xmm0
++; X64-AVX512BW-NEXT:    vpxor %xmm2, %xmm2, %xmm2
++; X64-AVX512BW-NEXT:    vxorpd %xmm3, %xmm3, %xmm3
++; X64-AVX512BW-NEXT:    vcmplepd %zmm3, %zmm1, %k1
++; X64-AVX512BW-NEXT:    vpcmpgtw %zmm0, %zmm2, %k0 {%k1}
++; X64-AVX512BW-NEXT:    korw %k0, %k1, %k0
++; X64-AVX512BW-NEXT:    kmovd %k0, %eax
++; X64-AVX512BW-NEXT:    # kill: def $al killed $al killed $eax
++; X64-AVX512BW-NEXT:    vzeroupper
++; X64-AVX512BW-NEXT:    retq
++  %fcmp = fcmp ugt <8 x double> %a, zeroinitializer
++  %xor = xor <8 x i1> %fcmp, <i1 true, i1 true, i1 true, i1 true, i1 true, i1 true, i1 true, i1 true>
++  %select1 = select <8 x i1> %fcmp, <8 x i1> zeroinitializer, <8 x i1> %mask
++  %select2 = select <8 x i1> %xor, <8 x i1> <i1 true, i1 true, i1 true, i1 true, i1 true, i1 true, i1 true, i1 true>, <8 x i1> %select1
++  %ret = bitcast <8 x i1> %select2 to i8
++  ret i8 %ret
++}
