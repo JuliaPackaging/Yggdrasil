@@ -18,6 +18,7 @@ apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/m
 cd GMAT-R2020a/
 dos2unix plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/GMAT.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-remove_winsock_lib.patch"
 mkdir builddir
 cd builddir/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
