@@ -1,0 +1,24 @@
+From 4f6c3b35d6b9a4cd7cbbed96fa8d686d5a1ac539 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:51:29 +0200
+Subject: [PATCH 7/7] Remove explicit Ws2_32 linking
+
+---
+ plugins/EstimationPlugin/src/base/CMakeLists.txt | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/plugins/EstimationPlugin/src/base/CMakeLists.txt b/plugins/EstimationPlugin/src/base/CMakeLists.txt
+index 352b51b..89c8c66 100644
+--- a/plugins/EstimationPlugin/src/base/CMakeLists.txt
++++ b/plugins/EstimationPlugin/src/base/CMakeLists.txt
+@@ -192,7 +192,6 @@ TARGET_INCLUDE_DIRECTORIES(${TargetName} PRIVATE ${F2C_DIR})
+ TARGET_LINK_LIBRARIES(${TargetName} PRIVATE XercesC::XercesC)
+ if(WIN32)
+   TARGET_COMPILE_DEFINITIONS(${TargetName} PUBLIC -DXERCES_STATIC_LIBRARY)
+-  TARGET_LINK_LIBRARIES(${TargetName} PUBLIC Ws2_32)
+ endif()
+ 
+ # Set RPATH to find shared libraries in default locations on Mac/Linux
+-- 
+2.24.3 (Apple Git-128)
+

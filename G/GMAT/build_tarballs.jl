@@ -17,12 +17,16 @@ cd $WORKSPACE/srcdir
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cd GMAT-R2020a/
 dos2unix plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/GMAT.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-remove_winsock_lib.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-Remove-hard-coded-CSPICE-paths.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-Remove-MSVC-flags.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0003-Fix-non-portable-cast.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-Use-std-chrono-on-all-platforms.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-Use-Linux-typedefs-for-cross-compile.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-Use-standard-CMake-boost-module.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-Remove-explicit-Ws2_32-linking.patch"
 mkdir builddir
 cd builddir/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
   -DGMAT_INCLUDE_GUI=OFF \
   -DCSPICE_LIB=${libdir}/libcspice.${dlext} -DCSPICE_DIR=${prefix} -DCSPICE_INCLUDE_DIR=${includedir} \
   -DF2C_DIR=${includedir} \
@@ -78,9 +82,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
     Dependency(PackageSpec(name="CSPICE_jll", uuid="07f52509-e9d9-513c-a20d-3b911885bf96"))
+    Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
     Dependency(PackageSpec(name="Xerces_jll", uuid="637d83c4-b86a-5d90-b82d-5cf0573a8cfc"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

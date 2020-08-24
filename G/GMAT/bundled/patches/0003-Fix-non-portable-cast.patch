@@ -1,0 +1,25 @@
+From b4636edc3463a9263b6e5ad978e1e93cd4e7e9df Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:43:23 +0200
+Subject: [PATCH 3/7] Fix non-portable cast
+
+---
+ src/base/forcemodel/ODEModel.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/base/forcemodel/ODEModel.cpp b/src/base/forcemodel/ODEModel.cpp
+index be4e2a5..bbe9bdf 100644
+--- a/src/base/forcemodel/ODEModel.cpp
++++ b/src/base/forcemodel/ODEModel.cpp
+@@ -2680,7 +2680,7 @@ Integer ODEModel::SetupSpacecraftData(ObjectArray *sats, Integer i, bool updateE
+                   if (!cs)
+                   {
+                      char sataddr[20];
+-                     std::sprintf(sataddr, "%lx", (unsigned long)sat);
++                     std::sprintf(sataddr, "%lx", (uintptr_t)sat);
+                      throw ODEModelException(
+                         "CoordinateSystem is NULL on Spacecraft " + sat->GetName() +
+                         " at address " + sataddr);
+-- 
+2.24.3 (Apple Git-128)
+

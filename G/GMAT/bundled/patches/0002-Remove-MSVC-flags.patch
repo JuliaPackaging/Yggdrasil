@@ -1,0 +1,108 @@
+From 5a7ec1e197c39450ad1c8e39b1dd72ff8390d0c0 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:41:59 +0200
+Subject: [PATCH 2/7] Remove MSVC flags
+
+---
+ CMakeLists.txt              | 10 ----------
+ plugins/CMakeLists.txt      |  5 -----
+ src/base/CMakeLists.txt     |  4 ----
+ src/gmatutil/CMakeLists.txt |  4 ----
+ 4 files changed, 23 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 49d72ab..c71e9af 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -365,10 +365,6 @@ endif()
+ # ====================================================================
+ # Common build options
+ 
+-if(WIN32)
+-  SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W2")
+-endif()
+-
+ # Enable parallel builds on VisualStudio
+ if(MSVC)
+   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+@@ -405,12 +401,6 @@ endif()
+ # Mark debug libraries with a "d" suffix
+ SET(CMAKE_DEBUG_POSTFIX "d")
+ 
+-# Warning suppression definitions
+-# Note that warning C4430 presents as an error in the MatlabInterface plugin
+-if(WIN32)
+-  ADD_DEFINITIONS("/wd4430 /wd4251 /wd4231 /wd4996 /nologo")
+-endif()
+-
+ # Set 32/64-bit specific definitions and directories
+ if(GMAT_64_BIT)
+   ADD_DEFINITIONS("-DUSE_64_BIT_LONGS")
+diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
+index 6544dc2..1fcbb29 100644
+--- a/plugins/CMakeLists.txt
++++ b/plugins/CMakeLists.txt
+@@ -22,8 +22,6 @@
+ #   INSTALL_DIR: Directory to install plugin (plugins, bin, etc.)
+ # Note that all paths should be relative to the plugin's CMakeLists.txt
+ MACRO(_SETUPPLUGIN TargetName PLUGIN_DIRS PLUGIN_SRCS INSTALL_DIR)
+-  # Add Preproccessor Definitions
+-  ADD_DEFINITIONS("-D_DYNAMICLINK")
+ 
+   # ====================================================================
+   # Recursively find all include files in specified directories
+@@ -430,7 +428,4 @@ if(PluginTargets)
+   SET_TARGET_PROPERTIES(${PluginTargets} PROPERTIES VERSION ${GMAT_VERSION})
+ 
+   # Specify link flags for Win32 targets
+-  if(WIN32)
+-    SET_TARGET_PROPERTIES(${PluginTargets} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib\"")
+-  endif()
+ endif()
+diff --git a/src/base/CMakeLists.txt b/src/base/CMakeLists.txt
+index 5e19462..03f1e66 100644
+--- a/src/base/CMakeLists.txt
++++ b/src/base/CMakeLists.txt
+@@ -17,7 +17,6 @@ MESSAGE("GMAT base setup " ${VERSION})
+ SET(TargetName GmatBase)
+ 
+ # Add preprocessor definitions
+-ADD_DEFINITIONS("-D_DYNAMICLINK")
+ ADD_DEFINITIONS("-DEXP_STL")
+ 
+ SET(SPICE_SRCS
+@@ -543,9 +542,6 @@ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
+ _ADDSOURCEGROUPS("${BASE_DIRS}")
+ 
+ # Windows-specific link flags
+-if(WIN32)
+-  SET_TARGET_PROPERTIES(${TargetName} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib\" /INCREMENTAL:NO")
+-endif()
+ 
+ # Create build products in bin directory
+ _SETOUTPUTDIRECTORY(${TargetName} bin)
+diff --git a/src/gmatutil/CMakeLists.txt b/src/gmatutil/CMakeLists.txt
+index 18a35ef..37b6d7e 100644
+--- a/src/gmatutil/CMakeLists.txt
++++ b/src/gmatutil/CMakeLists.txt
+@@ -16,7 +16,6 @@ MESSAGE("GMAT util setup " ${VERSION})
+ SET(TargetName GmatUtil)
+ 
+ # Add preprocessor definitions
+-ADD_DEFINITIONS("-D_DYNAMICLINK")
+ ADD_DEFINITIONS("-DEXP_STL")
+ 
+ # ====================================================================
+@@ -142,9 +141,6 @@ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
+ _ADDSOURCEGROUPS("${UTIL_DIRS}")
+ 
+ # Windows-specific link flags
+-if(WIN32)
+-  SET_TARGET_PROPERTIES(${TargetName} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib\" /INCREMENTAL:NO")
+-endif()
+ 
+ # Create build products in bin directory
+ _SETOUTPUTDIRECTORY(${TargetName} bin)
+-- 
+2.24.3 (Apple Git-128)
+
