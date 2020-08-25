@@ -50,6 +50,7 @@ dependencies = [
     Dependency("Xorg_libXrandr_jll"),
     Dependency("Xorg_libXScrnSaver_jll"),
     Dependency("Libglvnd_jll"),
+    Dependency("alsa_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
