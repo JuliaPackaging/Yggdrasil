@@ -1,27 +1,21 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "TVM"
-version = v"0.5"
+version = v"0.6.1"
 
 sources = [
-    "https://github.com/dmlc/tvm.git" =>
-    "f08015e7fde92c835907d4c9b7ad6d3f634e94a5",
-    "https://github.com/dmlc/dlpack.git" =>
-    "0acb731e0e43d15deee27b66f10e4c5b4e667913",
-    "https://github.com/dmlc/dmlc-core.git" =>
-    "808f485387f9a03f78fa9f1159f387d0d91b7a28",
-    "https://github.com/agauniyal/rang.git" =>
-    "cabe04d6d6b05356fa8f9741704924788f0dd762",
-    "https://github.com/dmlc/HalideIR.git" =>
-    "b257a9221ee1e5180d994b3488ddcc259b0ac157",
+    GitSource("https://github.com/dmlc/tvm.git", "f552d4df8c356f5bb6b7fbef9b9cdac65d674d54"),
+    GitSource("https://github.com/dmlc/dlpack.git", "0acb731e0e43d15deee27b66f10e4c5b4e667913"),
+    GitSource("https://github.com/dmlc/dmlc-core.git", "808f485387f9a03f78fa9f1159f387d0d91b7a28"),
+    GitSource("https://github.com/agauniyal/rang.git", "cabe04d6d6b05356fa8f9741704924788f0dd762"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Start by moving things into the proper places
-for submodule in dlpack dmlc-core rang HalideIR; do
+for submodule in dlpack dmlc-core rang; do
     rm -rf "${WORKSPACE}/srcdir/tvm/3rdparty/${submodule}"
     mv "${WORKSPACE}/srcdir/${submodule}" "${WORKSPACE}/srcdir/tvm/3rdparty/${submodule}"
 done
@@ -32,7 +26,7 @@ cd $WORKSPACE/srcdir/tvm
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX="${prefix}" \
          -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-         -DCMAKE_
+         -DUSE_LLVM=ON
 make -j${nproc}
 make install
 """
@@ -60,8 +54,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "LLVM_jll",
+    Dependency(PackageSpec(name="Zlib_jll")),
+    Dependency(PackageSpec(name="LLVM_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
