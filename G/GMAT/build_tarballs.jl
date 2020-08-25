@@ -87,7 +87,7 @@ dependencies = [
     Dependency(PackageSpec(name="CSPICE_jll", uuid="07f52509-e9d9-513c-a20d-3b911885bf96"))
     Dependency(PackageSpec(name="Python_jll", uuid="93d3a430-8e7c-50da-8e8d-3dfcfb3baf05"))
     Dependency(PackageSpec(name="Xerces_jll", uuid="637d83c4-b86a-5d90-b82d-5cf0573a8cfc"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    BuildDependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

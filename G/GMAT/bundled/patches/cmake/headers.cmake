@@ -1,17 +1,17 @@
-set(C_INTERFACE_PLUGIN_HEADERS
+set(CInterfacePlugin_HEADERS
   plugins/CInterfacePlugin/src/command/PrepareMissionSequence.hpp
   plugins/CInterfacePlugin/src/factory/CCommandFactory.hpp
   plugins/CInterfacePlugin/src/include/CInterfaceIntro.hpp
   plugins/CInterfacePlugin/src/include/GmatCFunc_defs.hpp
   plugins/CInterfacePlugin/src/plugin/CInterfacePluginFunctions.hpp)
 
-set(DATA_CALLBACK_PLUGIN_HEADERS
+set(DataCallbackPlugin_HEADERS
   plugins/DataCallbackPlugin/src/base/factory/DataCallbackFactory.hpp
   plugins/DataCallbackPlugin/src/base/include/datacallback_defs.hpp
   plugins/DataCallbackPlugin/src/base/plugin/GmatPluginFunctions.hpp
   plugins/DataCallbackPlugin/src/base/subscriber/DataCallback.hpp)
 
-set(DATA_INTERFACE_PLUGIN_HEADERS
+set(DataInterfacePlugin_HEADERS
   plugins/DataInterfacePlugin/src/base/command/Set.hpp
   plugins/DataInterfacePlugin/src/base/datainterface/DataInterface.hpp
   plugins/DataInterfacePlugin/src/base/datainterface/FileInterface.hpp
@@ -25,7 +25,7 @@ set(DATA_INTERFACE_PLUGIN_HEADERS
   plugins/DataInterfacePlugin/src/base/include/DataInterfaceDefs.hpp
   plugins/DataInterfacePlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(EPHEM_PROPAGATOR_PLUGIN_HEADERS
+set(EphemPropagatorPlugin_HEADERS
   plugins/EphemPropagatorPlugin/src/base/factory/EphemPropFactory.hpp
   plugins/EphemPropagatorPlugin/src/base/include/ephempropagator_defs.hpp
   plugins/EphemPropagatorPlugin/src/base/plugin/GmatPluginFunctions.hpp
@@ -34,7 +34,7 @@ set(EPHEM_PROPAGATOR_PLUGIN_HEADERS
   plugins/EphemPropagatorPlugin/src/base/propagator/SPKPropagator.hpp
   plugins/EphemPropagatorPlugin/src/base/propagator/StkEPropagator.hpp)
 
-set(ESTIMATION_PLUGIN_HEADERS
+set(EstimationPlugin_HEADERS
   plugins/EstimationPlugin/src/base/adapter/AngleAdapterDeg.hpp
   plugins/EstimationPlugin/src/base/adapter/AzimuthAdapter.hpp
   plugins/EstimationPlugin/src/base/adapter/DSNRangeAdapter.hpp
@@ -126,7 +126,7 @@ set(ESTIMATION_PLUGIN_HEADERS
   plugins/EstimationPlugin/src/base/trackingfile/TrackingFileSet.hpp
   plugins/EstimationPlugin/swig/NavigationAPI.hpp)
 
-set(EVENT_LOCATOR_PLUGIN_HEADERS
+set(EventLocatorPlugin_HEADERS
   plugins/EventLocatorPlugin/src/base/event/ContactEvent.hpp
   plugins/EventLocatorPlugin/src/base/event/ContactResult.hpp
   plugins/EventLocatorPlugin/src/base/event/EclipseEvent.hpp
@@ -137,7 +137,7 @@ set(EVENT_LOCATOR_PLUGIN_HEADERS
   plugins/EventLocatorPlugin/src/base/locator/EclipseLocator.hpp
   plugins/EventLocatorPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(EXTENDED_KALMAN_FILTER_PLUGIN_HEADERS
+set(ExtendedKalmanFilterPlugin_HEADERS
   plugins/ExtendedKalmanFilterPlugin/src/base/EKF/ExtendedKalmanFilter.hpp
   plugins/ExtendedKalmanFilterPlugin/src/base/EKF/SeqEstimator.hpp
   plugins/ExtendedKalmanFilterPlugin/src/base/command/RunSmoother.hpp
@@ -156,25 +156,25 @@ set(EXTENDED_KALMAN_FILTER_PLUGIN_HEADERS
   plugins/ExtendedKalmanFilterPlugin/src/base/smoother/Smoother.hpp
   plugins/ExtendedKalmanFilterPlugin/src/base/smoother/SmootherBase.hpp)
 
-set(EXTRA_PROPAGATORS_PLUGIN_HEADERS
+set(ExtraPropagatorsPlugin_HEADERS
   plugins/ExtraPropagatorsPlugin/src/base/factory/ExtraPropagatorFactory.hpp
   plugins/ExtraPropagatorsPlugin/src/base/include/ExtraPropagatorDefs.hpp
   plugins/ExtraPropagatorsPlugin/src/base/plugin/GmatPluginFunctions.hpp
   plugins/ExtraPropagatorsPlugin/src/base/propagator/BulirschStoer.hpp)
 
-set(FMINCON_OPTIMIZER_PLUGIN_HEADERS
+set(FminconOptimizerPlugin_HEADERS
   plugins/FminconOptimizerPlugin/src/base/factory/FminconOptimizerFactory.hpp
   plugins/FminconOptimizerPlugin/src/base/include/fmincon_defs.hpp
   plugins/FminconOptimizerPlugin/src/base/plugin/GmatPluginFunctions.hpp
   plugins/FminconOptimizerPlugin/src/base/solver/FminconOptimizer.hpp)
 
-set(FORMATION_PLUGIN_HEADERS
+set(FormationPlugin_HEADERS
   plugins/FormationPlugin/src/base/factory/FormationFactory.hpp
   plugins/FormationPlugin/src/base/formation/Formation.hpp
   plugins/FormationPlugin/src/base/include/FormationDefs.hpp
   plugins/FormationPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(GEOMETRIC_MEASUREMENT_PLUGIN_HEADERS
+set(GeometricMeasurementPlugin_HEADERS
   plugins/GeometricMeasurementPlugin/src/base/factory/MeasurementFactory.hpp
   plugins/GeometricMeasurementPlugin/src/base/include/geometricmeasurement_defs.hpp
   plugins/GeometricMeasurementPlugin/src/base/measurement/GeometricAzEl.hpp
@@ -183,7 +183,7 @@ set(GEOMETRIC_MEASUREMENT_PLUGIN_HEADERS
   plugins/GeometricMeasurementPlugin/src/base/measurement/GeometricRangeRate.hpp
   plugins/GeometricMeasurementPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(GMAT_FUNCTION_PLUGIN_HEADERS
+set(GmatFunctionPlugin_HEADERS
   plugins/GmatFunctionPlugin/src/base/command/CallGmatFunction.hpp
   plugins/GmatFunctionPlugin/src/base/command/Global.hpp
   plugins/GmatFunctionPlugin/src/base/factory/GmatFunctionCommandFactory.hpp
@@ -193,7 +193,7 @@ set(GMAT_FUNCTION_PLUGIN_HEADERS
   plugins/GmatFunctionPlugin/src/base/include/GmatFunction_defs.hpp
   plugins/GmatFunctionPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(MATLAB_INTERFACE_PLUGIN_HEADERS
+set(MatlabInterfacePlugin_HEADERS
   plugins/MatlabInterfacePlugin/src/base/command/CallMatlabFunction.hpp
   plugins/MatlabInterfacePlugin/src/base/factory/CallMatlabFunctionFactory.hpp
   plugins/MatlabInterfacePlugin/src/base/factory/MatlabFunctionFactory.hpp
@@ -212,7 +212,7 @@ set(MATLAB_INTERFACE_PLUGIN_HEADERS
   plugins/MatlabInterfacePlugin/src/matlab/gmat_mex/src/MatlabClient.hpp
   plugins/MatlabInterfacePlugin/src/matlab/gmat_mex/src/MatlabConnection.hpp)
 
-set(NEW_PARAMETER_PLUGIN_HEADERS
+set(NewParameterPlugin_HEADERS
   plugins/NewParameterPlugin/src/base/factory/NewParameterFactory.hpp
   plugins/NewParameterPlugin/src/base/include/newparameter_defs.hpp
   plugins/NewParameterPlugin/src/base/parameter/AtmosDensity.hpp
@@ -227,7 +227,7 @@ set(NEW_PARAMETER_PLUGIN_HEADERS
   plugins/NewParameterPlugin/src/base/parameter/SolverString.hpp
   plugins/NewParameterPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(POLYHEDRON_GRAVITY_PLUGIN_HEADERS
+set(PolyhedronGravityPlugin_HEADERS
   plugins/PolyhedronGravityPlugin/src/base/factory/GravityParameterFactory.hpp
   plugins/PolyhedronGravityPlugin/src/base/factory/PolyhedronGravityModelFactory.hpp
   plugins/PolyhedronGravityPlugin/src/base/gravitymodel/PolyhedronBody.hpp
@@ -238,13 +238,13 @@ set(POLYHEDRON_GRAVITY_PLUGIN_HEADERS
   plugins/PolyhedronGravityPlugin/src/base/parameter/SurfaceHeight.hpp
   plugins/PolyhedronGravityPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(PRODUCTION_PROPAGATOR_PLUGIN_HEADERS
+set(ProductionPropagatorPlugin_HEADERS
   plugins/ProductionPropagatorPlugin/src/base/factory/ProductionPropagatorFactory.hpp
   plugins/ProductionPropagatorPlugin/src/base/include/ProductionPropagatorDefs.hpp
   plugins/ProductionPropagatorPlugin/src/base/plugin/GmatPluginFunctions.hpp
   plugins/ProductionPropagatorPlugin/src/base/propagator/PrinceDormand853.hpp)
 
-set(PYTHON_INTERFACE_PLUGIN_HEADERS
+set(PythonInterfacePlugin_HEADERS
   plugins/PythonInterfacePlugin/src/base/command/CallPythonFunction.hpp
   plugins/PythonInterfacePlugin/src/base/factory/PythonCommandFactory.hpp
   plugins/PythonInterfacePlugin/src/base/function/PythonModule.hpp
@@ -252,26 +252,26 @@ set(PYTHON_INTERFACE_PLUGIN_HEADERS
   plugins/PythonInterfacePlugin/src/base/interface/PythonInterface.hpp
   plugins/PythonInterfacePlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(SAVE_COMMAND_PLUGIN_HEADERS
+set(SaveCommandPlugin_HEADERS
   plugins/SaveCommandPlugin/src/base/command/Save.hpp
   plugins/SaveCommandPlugin/src/base/factory/SaveCommandFactory.hpp
   plugins/SaveCommandPlugin/src/base/include/SaveCommandDefs.hpp
   plugins/SaveCommandPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(SCRIPT_TOOLS_PLUGIN_HEADERS
+set(ScriptToolsPlugin_HEADERS
   plugins/ScriptToolsPlugin/src/base/command/CommandEcho.hpp
   plugins/ScriptToolsPlugin/src/base/factory/CommandEchoFactory.hpp
   plugins/ScriptToolsPlugin/src/base/include/ScriptToolsDefs.hpp
   plugins/ScriptToolsPlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(STATION_PLUGIN_HEADERS
+set(StationPlugin_HEADERS
   plugins/StationPlugin/src/base/factory/StationFactory.hpp
   plugins/StationPlugin/src/base/include/StationDefs.hpp
   plugins/StationPlugin/src/base/plugin/GmatPluginFunctions.hpp
   plugins/StationPlugin/src/base/station/GroundStation.hpp
   plugins/StationPlugin/swig/StationAPI.hpp)
 
-set(THRUST_FILE_PLUGIN_HEADERS
+set(ThrustFilePlugin_HEADERS
   plugins/ThrustFilePlugin/src/base/command/BeginFileThrust.hpp
   plugins/ThrustFilePlugin/src/base/command/EndFileThrust.hpp
   plugins/ThrustFilePlugin/src/base/datareader/ThfDataSegment.hpp
@@ -284,7 +284,7 @@ set(THRUST_FILE_PLUGIN_HEADERS
   plugins/ThrustFilePlugin/src/base/include/ThrustFileDefs.hpp
   plugins/ThrustFilePlugin/src/base/plugin/GmatPluginFunctions.hpp)
 
-set(YUKON_OPTIMIZER_FACTORY_HEADERS
+set(YukonOptimizerPlugin_HEADERS
   plugins/YukonOptimizerPlugin/src/base/factory/YukonOptimizerFactory.hpp
   plugins/YukonOptimizerPlugin/src/base/include/yukon_defs.hpp
   plugins/YukonOptimizerPlugin/src/base/plugin/GmatPluginFunctions.hpp
@@ -850,4 +850,6 @@ set(UTIL_HEADERS
 
 set(API_HEADERS
   swig/GmatAPI.hpp)
+
+install(FILES ${API_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT/api")
 

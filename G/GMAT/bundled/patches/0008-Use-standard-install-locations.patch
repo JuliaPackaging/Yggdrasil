@@ -1,4 +1,4 @@
-From 7e7a82a943433a3d44ca9c3ada56538511d248e8 Mon Sep 17 00:00:00 2001
+From 692502f480b4b5c25b560bf6935d8464cb1d864c Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Tue, 25 Aug 2020 11:27:38 +0200
 Subject: [PATCH 8/8] Use standard install locations
@@ -24,7 +24,7 @@ index 88fc553..4c1dc7e 100644
  # ====================================================================
  # Go to src directory and look for CMake instructions there
 diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
-index 1fcbb29..1b20b87 100644
+index 1fcbb29..1f8dd49 100644
 --- a/plugins/CMakeLists.txt
 +++ b/plugins/CMakeLists.txt
 @@ -63,20 +63,15 @@ MACRO(_SETUPPLUGIN TargetName PLUGIN_DIRS PLUGIN_SRCS INSTALL_DIR)
@@ -45,20 +45,20 @@ index 1fcbb29..1b20b87 100644
 -    endif()
 -    INSTALL(TARGETS ${TargetName} LIBRARY DESTINATION ${FULL_INSTALL_DIR})
 -  endif()
-+  # set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${BASE_HEADERS}")
++  set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${TargetName}_HEADERS")
 +  install(
 +    TARGETS ${TargetName}
 +    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT/${TargetName}"
 +    )
 +
  
  ENDMACRO(_SETUPPLUGIN)
  
 diff --git a/src/base/CMakeLists.txt b/src/base/CMakeLists.txt
-index 03f1e66..0292fe2 100644
+index 03f1e66..b8ffb09 100644
 --- a/src/base/CMakeLists.txt
 +++ b/src/base/CMakeLists.txt
 @@ -521,17 +521,6 @@ TARGET_LINK_LIBRARIES(${TargetName} PRIVATE XercesC::XercesC)
@@ -111,7 +111,7 @@ index 03f1e66..0292fe2 100644
 +  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT/base"
 +)
  
 -# Set RPATH to find shared libraries in default locations on Mac/Linux
@@ -127,7 +127,7 @@ index 03f1e66..0292fe2 100644
 -  endif()
 -endif()
 diff --git a/src/gmatutil/CMakeLists.txt b/src/gmatutil/CMakeLists.txt
-index 37b6d7e..a398855 100644
+index 37b6d7e..d562b03 100644
 --- a/src/gmatutil/CMakeLists.txt
 +++ b/src/gmatutil/CMakeLists.txt
 @@ -140,38 +140,13 @@ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
@@ -149,7 +149,7 @@ index 37b6d7e..a398855 100644
 +  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 +  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT/util"
    )
  
 -# Specify where to install (make install or VS "INSTALL" project)
