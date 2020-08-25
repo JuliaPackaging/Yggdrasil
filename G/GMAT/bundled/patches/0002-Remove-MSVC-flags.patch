@@ -1,7 +1,7 @@
 From 5a7ec1e197c39450ad1c8e39b1dd72ff8390d0c0 Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Mon, 24 Aug 2020 08:41:59 +0200
-Subject: [PATCH 2/7] Remove MSVC flags
+Subject: [PATCH 2/8] Remove MSVC flags
 
 ---
  CMakeLists.txt              | 10 ----------

@@ -1,0 +1,181 @@
+From 7e7a82a943433a3d44ca9c3ada56538511d248e8 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Tue, 25 Aug 2020 11:27:38 +0200
+Subject: [PATCH 8/8] Use standard install locations
+
+---
+ CMakeLists.txt              |  2 ++
+ plugins/CMakeLists.txt      | 23 +++++++---------
+ src/base/CMakeLists.txt     | 53 ++++++-------------------------------
+ src/gmatutil/CMakeLists.txt | 39 +++++----------------------
+ 4 files changed, 26 insertions(+), 91 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 88fc553..4c1dc7e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -477,6 +477,8 @@ ENDMACRO(_ADDSOURCEGROUPS)
+ # ====================================================================
+ # Setup GMAT directory structure
+ INCLUDE(build/install/CMake_INSTALL_Setup.cmake)
++include(GNUInstallDirs)
++include(cmake/headers.cmake)
+ 
+ # ====================================================================
+ # Go to src directory and look for CMake instructions there
+diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
+index 1fcbb29..1b20b87 100644
+--- a/plugins/CMakeLists.txt
++++ b/plugins/CMakeLists.txt
+@@ -63,20 +63,15 @@ MACRO(_SETUPPLUGIN TargetName PLUGIN_DIRS PLUGIN_SRCS INSTALL_DIR)
+   TARGET_LINK_LIBRARIES(${TargetName} PRIVATE GmatUtil)
+   TARGET_LINK_LIBRARIES(${TargetName} PRIVATE GmatBase)
+ 
+-  # ====================================================================
+-  # Specify where to install plugin
+-  # - On Windows the dll is RUNTIME (lib is ARCHIVE, ignored here)
+-  # - On Mac/Linux the dylib/so is LIBRARY
+-  if(WIN32)
+-    INSTALL(TARGETS ${TargetName} RUNTIME DESTINATION ${INSTALL_DIR})
+-  else()
+-    if(APPLE AND NOT ("${ARGN}" STREQUAL "FORCE"))
+-      set(FULL_INSTALL_DIR ${GMAT_MAC_APPBUNDLE_PATH}/${INSTALL_DIR})
+-    else()
+-      set(FULL_INSTALL_DIR ${INSTALL_DIR})
+-    endif()
+-    INSTALL(TARGETS ${TargetName} LIBRARY DESTINATION ${FULL_INSTALL_DIR})
+-  endif()
++  # set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${BASE_HEADERS}")
++  install(
++    TARGETS ${TargetName}
++    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++    )
++
+ 
+ ENDMACRO(_SETUPPLUGIN)
+ 
+diff --git a/src/base/CMakeLists.txt b/src/base/CMakeLists.txt
+index 03f1e66..0292fe2 100644
+--- a/src/base/CMakeLists.txt
++++ b/src/base/CMakeLists.txt
+@@ -521,17 +521,6 @@ TARGET_LINK_LIBRARIES(${TargetName} PRIVATE XercesC::XercesC)
+ TARGET_LINK_LIBRARIES(${TargetName} PRIVATE ${CMAKE_DL_LIBS})
+ TARGET_LINK_LIBRARIES(${TargetName} PRIVATE GmatUtil)
+ 
+-if(UNIX)
+-  if(APPLE)
+-    TARGET_LINK_LIBRARIES(${TargetName} PRIVATE ${COREFOUNDATION_LIBRARY} ${CORESERVICES_LIBRARY})
+-  else()
+-    TARGET_LINK_LIBRARIES(${TargetName} PRIVATE Threads::Threads)
+-  endif()
+-else()
+-  # XERCES_STATIC_LIBRARY required on Windows
+-  TARGET_COMPILE_DEFINITIONS(${TargetName} PUBLIC -DXERCES_STATIC_LIBRARY)
+-endif()
+-
+ # Library name should start with "lib"
+ # This is always true for Mac/Linux, but needs to be specified for Windows
+ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
+@@ -541,38 +530,12 @@ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
+ # Macro defined in top-level CMakeLists.txt
+ _ADDSOURCEGROUPS("${BASE_DIRS}")
+ 
+-# Windows-specific link flags
+-
+-# Create build products in bin directory
+-_SETOUTPUTDIRECTORY(${TargetName} bin)
+-
+-# Override debug output directory
+-SET_TARGET_PROPERTIES(${TargetName} PROPERTIES 
+-  RUNTIME_OUTPUT_DIRECTORY_DEBUG ${GMAT_BUILDOUTPUT_DEBUGDIR}
+-  LIBRARY_OUTPUT_DIRECTORY_DEBUG ${GMAT_BUILDOUTPUT_DEBUGDIR}
+-  )
+-
+-# Specify where to install (make install or VS "INSTALL" project)
+-if(WIN32)
+-  INSTALL(TARGETS ${TargetName} RUNTIME DESTINATION bin)
+-else()
+-  if(APPLE)
+-    SET(INSTALL_DIR ${GMAT_MAC_APPBUNDLE_PATH}/Frameworks)
+-  else()
+-    SET(INSTALL_DIR bin)
+-  endif()
+-  INSTALL(TARGETS ${TargetName} LIBRARY DESTINATION ${INSTALL_DIR})
+-endif()
++set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${BASE_HEADERS}")
++install(
++  TARGETS ${TargetName}
++  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
++)
+ 
+-# Set RPATH to find shared libraries in default locations on Mac/Linux
+-if(UNIX)
+-  if(APPLE)
+-    SET_TARGET_PROPERTIES(${TargetName} PROPERTIES INSTALL_RPATH
+-      "@loader_path/;@loader_path/../plugins/;@loader_path/../plugins/proprietary/"
+-      )
+-  else()
+-    SET_TARGET_PROPERTIES(${TargetName} PROPERTIES INSTALL_RPATH
+-      "\$ORIGIN/;\$ORIGIN/../plugins/;\$ORIGIN/../plugins/proprietary/"
+-      )
+-  endif()
+-endif()
+diff --git a/src/gmatutil/CMakeLists.txt b/src/gmatutil/CMakeLists.txt
+index 37b6d7e..a398855 100644
+--- a/src/gmatutil/CMakeLists.txt
++++ b/src/gmatutil/CMakeLists.txt
+@@ -140,38 +140,13 @@ SET_TARGET_PROPERTIES(${TargetName} PROPERTIES PREFIX "lib")
+ # Macro defined in top-level CMakeLists.txt
+ _ADDSOURCEGROUPS("${UTIL_DIRS}")
+ 
+-# Windows-specific link flags
+ 
+-# Create build products in bin directory
+-_SETOUTPUTDIRECTORY(${TargetName} bin)
+-
+-# Override debug output directory
+-SET_TARGET_PROPERTIES(${TargetName} PROPERTIES 
+-  RUNTIME_OUTPUT_DIRECTORY_DEBUG ${GMAT_BUILDOUTPUT_DEBUGDIR}
+-  LIBRARY_OUTPUT_DIRECTORY_DEBUG ${GMAT_BUILDOUTPUT_DEBUGDIR}
++set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${UTIL_HEADERS}")
++install(
++  TARGETS ${TargetName}
++  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
++  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
++  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+   )
+ 
+-# Specify where to install (make install or VS "INSTALL" project)
+-if(WIN32)
+-  INSTALL(TARGETS ${TargetName} RUNTIME DESTINATION bin)
+-else()
+-  if(APPLE)
+-    SET(INSTALL_DIR ${GMAT_MAC_APPBUNDLE_PATH}/Frameworks)
+-  else()
+-    SET(INSTALL_DIR bin)
+-  endif()
+-  INSTALL(TARGETS ${TargetName} LIBRARY DESTINATION ${INSTALL_DIR})
+-endif()
+-
+-# Set RPATH to find shared libraries in default locations on Mac/Linux
+-if(UNIX)
+-  if(APPLE)
+-    SET_TARGET_PROPERTIES(${TargetName} PROPERTIES INSTALL_RPATH
+-      "@loader_path/;@loader_path/../plugins/;@loader_path/../plugins/proprietary/"
+-      )
+-  else()
+-    SET_TARGET_PROPERTIES(${TargetName} PROPERTIES INSTALL_RPATH
+-      "\$ORIGIN/;\$ORIGIN/../plugins/;\$ORIGIN/../plugins/proprietary/"
+-      )
+-  endif()
+-endif()
+-- 
+2.24.3 (Apple Git-128)
+

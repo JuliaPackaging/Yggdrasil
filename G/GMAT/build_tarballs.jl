@@ -16,6 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cd GMAT-R2020a/
+cp -r $WORKSPACE/srcdir/cmake .
 dos2unix plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-Remove-hard-coded-CSPICE-paths.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-Remove-MSVC-flags.patch"
@@ -24,6 +25,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-Use-std-chrono-on-all-platfor
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-Use-Linux-typedefs-for-cross-compile.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-Use-standard-CMake-boost-module.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-Remove-explicit-Ws2_32-linking.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0008-Use-standard-install-locations.patch"
 mkdir builddir
 cd builddir/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \

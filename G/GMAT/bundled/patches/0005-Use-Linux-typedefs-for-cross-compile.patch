@@ -1,7 +1,7 @@
 From a0f58f1581c3dddedd593b08fa627b11d045e749 Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Mon, 24 Aug 2020 08:46:14 +0200
-Subject: [PATCH 5/7] Use Linux typedefs for cross-compile
+Subject: [PATCH 5/8] Use Linux typedefs for cross-compile
 
 ---
  .../measurement/Ionosphere/Ionosphere.hpp     | 29 -------------------

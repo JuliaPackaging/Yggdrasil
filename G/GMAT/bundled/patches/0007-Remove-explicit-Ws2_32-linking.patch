@@ -1,7 +1,7 @@
 From 4f6c3b35d6b9a4cd7cbbed96fa8d686d5a1ac539 Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Mon, 24 Aug 2020 08:51:29 +0200
-Subject: [PATCH 7/7] Remove explicit Ws2_32 linking
+Subject: [PATCH 7/8] Remove explicit Ws2_32 linking
 
 ---
  plugins/EstimationPlugin/src/base/CMakeLists.txt | 1 -

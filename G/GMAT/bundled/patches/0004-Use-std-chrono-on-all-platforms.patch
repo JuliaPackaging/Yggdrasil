@@ -1,7 +1,7 @@
 From 36d88c5b8753e3a4cd91663a43db4506f57bfbd3 Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Mon, 24 Aug 2020 08:44:35 +0200
-Subject: [PATCH 4/7] Use std::chrono on all platforms
+Subject: [PATCH 4/8] Use std::chrono on all platforms
 
 ---
  src/base/function/SystemTime.cpp | 60 +++++++++++++-------------------

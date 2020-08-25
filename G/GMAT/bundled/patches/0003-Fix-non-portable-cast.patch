@@ -1,7 +1,7 @@
 From b4636edc3463a9263b6e5ad978e1e93cd4e7e9df Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Mon, 24 Aug 2020 08:43:23 +0200
-Subject: [PATCH 3/7] Fix non-portable cast
+Subject: [PATCH 3/8] Fix non-portable cast
 
 ---
  src/base/forcemodel/ODEModel.cpp | 2 +-
