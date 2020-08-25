@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cd GMAT-R2020a/
-cp -r $WORKSPACE/srcdir/cmake .
+cp -r $WORKSPACE/srcdir/patches/cmake .
 dos2unix plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-Remove-hard-coded-CSPICE-paths.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-Remove-MSVC-flags.patch"
