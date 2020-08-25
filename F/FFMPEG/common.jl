@@ -7,13 +7,14 @@ version = v"4.3.1"
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.bz2",
-                  "a7e87112fc49ad5b59e26726e3a7cae0ffae511cba5376c579ba3cb04483d6e2"),
+    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version).tar.xz",
+                  "ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb"),
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
-script = raw"""
+function script(; ffplay=false)
+    "FFPLAY=$(ffplay)\n" * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
@@ -55,6 +56,10 @@ elif [[ "${target}" == *-unknown-freebsd* ]]; then
     export CUDA_ARGS=""
 else
     export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
+fi
+
+if [[ "${FFPLAY}" == "true" ]]; then
+    EXTRA_FLAGS=("--enable-ffplay")
 fi
 
 pkg-config --list-all
@@ -102,50 +107,22 @@ pkg-config --list-all
   --enable-openssl     \
   --disable-schannel   \
   --extra-cflags="-I${prefix}/include" \
-  --extra-ldflags="-L${libdir}" ${CUDA_ARGS}
+  --extra-ldflags="-L${libdir}" ${CUDA_ARGS} \
+  "${EXTRA_FLAGS[@]}"
 make -j${nproc}
-make install
+if [[ "${FFPLAY}" == "true" ]]; then
+    # Manually install only the FFplay binary
+    mv "ffplay${exeext}" "${bindir}/ffplay${exeext}"
+else
+    # Install all FFMPEG stuff: libraries, executables, header files, etc...
+    make install
+fi
 install_license LICENSE.md COPYING.*
 """
+end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# The products that we will ensure are always built
-products = [
-    ExecutableProduct("ffmpeg", :ffmpeg),
-    ExecutableProduct("ffprobe", :ffprobe),
-    LibraryProduct(["libavcodec", "avcodec"], :libavcodec),
-    LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
-    LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
-    LibraryProduct(["libavformat", "avformat"], :libavformat),
-    LibraryProduct(["libavresample", "avresample"], :libavresample),
-    LibraryProduct(["libavutil", "avutil"], :libavutil),
-    LibraryProduct(["libpostproc", "postproc"], :libpostproc),
-    LibraryProduct(["libswresample", "swresample"], :libswresample),
-    LibraryProduct(["libswscale", "swscale"], :libswscale),
-]
-
-# Dependencies that must be installed before this package can be built
-# TODO: Theora once it's available
-dependencies = [
-    BuildDependency("nv_codec_headers_jll"),
-    Dependency("libass_jll"),
-    Dependency("libfdk_aac_jll"),
-    Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
-    Dependency("LAME_jll"),
-    Dependency("libvorbis_jll"),
-    Dependency("Ogg_jll"),
-    BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency(PackageSpec(name="x264_jll", version=v"2020.7.14")),
-    Dependency("x265_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"),
-    Dependency("Opus_jll"),
-]
-
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+preferred_gcc_version = v"8"
