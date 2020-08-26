@@ -423,9 +423,11 @@ function gcc_script(compiler_target::Platform)
         # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
 
-        # patch glibc's stupid gcc/make version check (we don't require this one,
-        # as if it doesn't apply cleanly, it's probably fine)
-        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_deps_versions.patch || true
+        # patch glibc's stupid gcc/make version checks (we don't require these,
+        # as if it doesn't apply cleanly, it's probably fine).  We also keep them
+        # separate, as some glibc versions require one or not the other.  :(
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
 
         # patch older glibc's 32-bit assembly to withstand __i686 definition of
         # newer GCC's.  ref: http://comments.gmane.org/gmane.comp.lib.glibc.user/758
