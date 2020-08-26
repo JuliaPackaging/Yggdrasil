@@ -1,4 +1,4 @@
-From 692502f480b4b5c25b560bf6935d8464cb1d864c Mon Sep 17 00:00:00 2001
+From 3c775ba412e2af6310557c5bf546470284741f4d Mon Sep 17 00:00:00 2001
 From: Helge Eichhorn <git@helgeeichhorn.de>
 Date: Tue, 25 Aug 2020 11:27:38 +0200
 Subject: [PATCH 8/8] Use standard install locations
@@ -24,7 +24,7 @@ index 88fc553..4c1dc7e 100644
  # ====================================================================
  # Go to src directory and look for CMake instructions there
 diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
-index 1fcbb29..1f8dd49 100644
+index 1fcbb29..c6de0bb 100644
 --- a/plugins/CMakeLists.txt
 +++ b/plugins/CMakeLists.txt
 @@ -63,20 +63,15 @@ MACRO(_SETUPPLUGIN TargetName PLUGIN_DIRS PLUGIN_SRCS INSTALL_DIR)
@@ -45,7 +45,7 @@ index 1fcbb29..1f8dd49 100644
 -    endif()
 -    INSTALL(TARGETS ${TargetName} LIBRARY DESTINATION ${FULL_INSTALL_DIR})
 -  endif()
-+  set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${TargetName}_HEADERS")
++  set_target_properties(${TargetName} PROPERTIES PUBLIC_HEADER "${${TargetName}_HEADERS}")
 +  install(
 +    TARGETS ${TargetName}
 +    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
