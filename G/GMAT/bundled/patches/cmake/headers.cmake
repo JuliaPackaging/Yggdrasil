@@ -851,5 +851,5 @@ set(API_HEADERS
   plugins/StationPlugin/swig/StationAPI.hpp
   swig/GmatAPI.hpp)
 
-install(FILES ${API_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT/api")
+install(FILES ${API_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/GMAT")
 
