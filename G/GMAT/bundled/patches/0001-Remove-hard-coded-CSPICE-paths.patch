@@ -1,0 +1,26 @@
+From 86892ab9877ad123f27ee75a8d5fff348227ae07 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:38:05 +0200
+Subject: [PATCH 1/8] Remove hard-coded CSPICE paths
+
+---
+ CMakeLists.txt | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fb51077..49d72ab 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -210,9 +210,6 @@ if(CSPICE_DIR)
+   else()
+     SET(CSPICE_EXT "a")
+   endif()
+-  SET(CSPICE_LIB "${CSPICE_DIR}/lib/cspice.${CSPICE_EXT}")
+-  SET(CSPICE_LIB_DEBUG "${CSPICE_DIR}/lib/cspiced.${CSPICE_EXT}")
+-  SET(CSPICE_INCLUDE_DIR "${CSPICE_DIR}/include")
+   if(NOT EXISTS ${CSPICE_LIB_DEBUG})
+     SET(CSPICE_LIB_DEBUG ${CSPICE_LIB})
+   endif()
+-- 
+2.24.3 (Apple Git-128)
+
