@@ -26,6 +26,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-Use-Linux-typedefs-for-cross-
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0006-Use-standard-CMake-boost-module.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0007-Remove-explicit-Ws2_32-linking.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0008-Use-standard-install-locations.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0009-FreeBSD-compat.patch"
 mkdir builddir
 cd builddir/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
