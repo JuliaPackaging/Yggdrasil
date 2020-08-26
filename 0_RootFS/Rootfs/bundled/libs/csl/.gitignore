@@ -1,0 +1,3 @@
+# We're going to gitignore these files, downloading them on-demand
+glibc-*
+musl-*
