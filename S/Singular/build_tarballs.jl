@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Singular"
-version = v"4.1.3"  # this is actually 4.1.3p2 with some extra patches
+version = v"4.1.3"  # this is actually 4.1.3p3 with some extra patches
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Sources.git", "7ee144671ad6b1f2bb437bbbeb8ee7559f5029cb"),
+    GitSource("https://github.com/Singular/Sources.git", "6924d452049dc8bfbb851672c4b3ceac05081b6c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -55,7 +55,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=v"2.6.2")),
+    Dependency("FLINT_jll"),
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
 ]
