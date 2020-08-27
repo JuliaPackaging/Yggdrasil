@@ -30,8 +30,9 @@ platforms = [
     Linux(:aarch64, libc=:glibc),
     Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     Linux(:powerpc64le, libc=:glibc),
+    MacOS(:x86_64),
     Windows(:i686),
-    Windows(:x86_64)
+    Windows(:x86_64),
 ]
 
 
