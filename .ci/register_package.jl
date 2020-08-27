@@ -101,4 +101,4 @@ mktempdir() do download_dir
     end
 end
 BinaryBuilder.push_jll_package(name, build_version)
-BinaryBuilder.register_jll(name, build_version, dependencies)
+BinaryBuilder.register_jll(name, build_version, dependencies, merged["compat"])
