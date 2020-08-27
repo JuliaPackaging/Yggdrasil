@@ -28,6 +28,7 @@ lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 repo = "JuliaBinaryWrappers/$(name)_jll.jl"
 code_dir = joinpath(Pkg.devdir(), "$(name)_jll")
+julia_compat = merged["julia_compat"]
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
@@ -101,4 +102,4 @@ mktempdir() do download_dir
     end
 end
 BinaryBuilder.push_jll_package(name, build_version)
-BinaryBuilder.register_jll(name, build_version, dependencies, merged["compat"])
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat)
