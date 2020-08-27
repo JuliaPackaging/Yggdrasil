@@ -24,7 +24,7 @@ fi
 
 #need a posix regex
 if [[ "${target}" == *-mingw* ]]; then
-	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h 
+	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
 	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
 fi
 
@@ -54,13 +54,13 @@ fi
 sed -in-place 's/#define NEED_MEMCMP_REPLACEMENT 1/\/\* #undef NEED_MEMCMP_REPLACEMENT \*\//' include/portable.h
 
 make depend
-make -j${nproc} 
+make -j${nproc}
 make install
 
-if [[ "${target}" == *-mingw* ]]; then 
-    # Cover up the traces of the hack 
-    rm ${prefix}/include/regex.h 
-fi 
+if [[ "${target}" == *-mingw* ]]; then
+    # Cover up the traces of the hack
+    rm ${prefix}/include/regex.h
+fi
 """
 
 # These are the platforms we will build for by default, unless further
