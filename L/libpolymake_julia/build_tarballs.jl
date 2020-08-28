@@ -4,12 +4,12 @@ using BinaryBuilder
 import Pkg: PackageSpec
 
 const name = "libpolymake_julia"
-const version = v"0.1.0"
+const version = v"0.1.1"
 
 # Collection of sources required to build libpolymake_julia
 const sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "533237a1a1f7ff544017b9576704b2f05c6e3139443ea0aaa20bc88560675e9a"),
+                  "9765ecfbce06c2cca2ac3e2d9df13bc020a99f520502fbebd8be047b7eb548d9"),
 ]
 
 # Bash recipe for building across all platforms
