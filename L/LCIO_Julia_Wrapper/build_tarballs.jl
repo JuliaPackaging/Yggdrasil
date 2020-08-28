@@ -4,7 +4,7 @@ using BinaryBuilder
 using Pkg
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.12.0"
+version = v"0.12.1"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
@@ -36,7 +36,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
         Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8")),
-        Dependency(PackageSpec(name="LCIO_jll", version=v"2.15.0")),
+        Dependency(PackageSpec(name="LCIO_jll", version=v"2.15.3")),
         BuildDependency(PackageSpec(name="Julia_jll",version=v"1.4.1"))
 ]
 
