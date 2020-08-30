@@ -20,6 +20,8 @@ done
 
 mkdir -p "${libdir}"
 ${CC} -shared -o ${libdir}/libdeldir.${dlext} *.o
+
+install_license /usr/share/licenses/GPL3
 """
 
 # These are the platforms we will build for by default, unless further
