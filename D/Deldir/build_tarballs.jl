@@ -15,17 +15,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/deldir/src
 
 for f in *.f; do 
-        ${FC} -fPIC -O2 -pipe -g -c "${f}" -o "$(basename "${f}" .f).o"
-        done
+    ${FC} -fPIC -O2 -pipe -g -c "${f}" -o "$(basename "${f}" .f).o"
+done
 
-if [[ ${target} == *-mingw32 ]]; then  
-    libdir="bin"
-else 
-    libdir="lib"
-fi
-
-mkdir -p "${prefix}/${libdir}"
-${CC} -shared -o ${prefix}/${libdir}/libdeldir.${dlext} *.o
+mkdir -p "${libdir}"
+${CC} -shared -o ${libdir}/libdeldir.${dlext} *.o
 """
 
 # These are the platforms we will build for by default, unless further
