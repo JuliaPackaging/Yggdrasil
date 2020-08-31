@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsa_rocr"
-version = v"3.5.0"
+version = v"3.7.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCR-Runtime/archive/rocm-$(version).tar.gz",
-                  "52c12eec3e3404c0749c70f156229786ee0c3e6d3c979aed9bbaea500fa1f3b8")
+                  "0071d14431f73ce74574e61d0786f2b7cf34b14ea898a1f54b6e1b06b2d468c0")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +20,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_SKIP_RPATH=ON \
+      -DBITCODE_DIR=TODO_PATH_TO_OPENCL.BC \
       ../src
 make -j${nproc}
 make install
@@ -41,6 +42,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("hsakmt_roct_jll"),
+    Dependency("rocm_device_libs_jll"),
     Dependency("NUMA_jll"),
     Dependency("Zlib_jll"),
     Dependency("Elfutils_jll"),
