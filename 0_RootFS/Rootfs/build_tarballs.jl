@@ -261,10 +261,6 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-ndARGS = filter(x -> !occursin("--deploy", x), ARGS)
+ndARGS, deploy = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
-
-# Upload the shards
-if any(occursin.("--deploy", ARGS))
-    upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)
-end
+deploy("JuliaPackaging/Yggdrasil", name, version, build_info)

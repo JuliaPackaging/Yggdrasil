@@ -134,9 +134,6 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 """
 
 # Build the artifacts
-ndARGS = filter(x -> !occursin("--deploy", x), ARGS)
+ndARGS, deploy = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
-
-if any(occursin.("--deploy", ARGS))
-    upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
-end
+deploy("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)

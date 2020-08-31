@@ -3,10 +3,6 @@ using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
 host_platform = Linux(:x86_64; libc=:musl)
 
-if !haskey(ENV, "GITHUB_TOKEN")
-    error("export GITHUB_TOKEN you dolt!")
-end
-
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
     if !isfile(test)
@@ -47,10 +43,14 @@ function generate_artifacts(path::AbstractString, name, version; platform=host_p
     return (unpacked_hash, squashfs_hash)
 end
 
-function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString)
+function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString; build_local=false)
     mktempdir() do dir
         tarball_hash = archive_artifact(hash, joinpath(dir, "$(filename).tar.gz"))
-        BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        if build_local
+            @info "Skipping upload to GitHub because local build was requested!"
+        else
+            BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        end
         return tarball_hash
     end
 end
@@ -83,11 +83,11 @@ function get_next_shard_tag(cs)
 end
 
 
-function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
+function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing, build_local=false)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = get_next_shard_tag(cs)
     filename = BinaryBuilderBase.artifact_name(cs)
-    tarball_hash = publish_artifact(repo, tag, hash, filename)
+    tarball_hash = publish_artifact(repo, tag, hash, filename; build_local=build_local)
 
     return [
         ("https://github.com/$(repo)/releases/download/$(tag)/$(filename).tar.gz", tarball_hash),
@@ -102,22 +102,22 @@ function insert_compiler_shard(name, version, hash, archive_type; platform=host_
     bind_artifact!(artifacts_toml, BinaryBuilderBase.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
-function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
+function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing, build_local=false)
     # Upload them both to GH releases on Yggdrasil
-    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
-    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target, build_local=build_local)
+    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target, build_local=build_local)
 
     # Insert these final versions into BB
     insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
     insert_compiler_shard(name, version, squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
 end
 
-function upload_and_insert_shards(repo, name, version, build_info; target=nothing)
+function upload_and_insert_shards(repo, name, version, build_info; target=nothing, build_local=false)
     for platform in keys(build_info)
         unpacked_hash = build_info[platform][3]
         squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; platform=platform, target=target)
 
-        upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=target)
+        upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=target, build_local=build_local)
     end
 end
 
@@ -145,4 +145,15 @@ function build_tarballs(project_path::String, args::String...; deploy=false, reg
     end
 end
 
-
+function find_deploy_arg(ARGS)
+    dargs = ARGS[findall(arg->startswith(arg, "--deploy"), ARGS)]
+    length(dargs) > 1 && error("More than one deploy argument. Usage: --deploy|--deploy=local")
+    length(dargs) == 0 && return (ARGS, (args...; kwargs...)->nothing)
+    (dargs[] in ("--deploy","--deploy=local")) || error("--deploy argument must be --deploy or --deploy=local")
+    build_local = dargs[] == "--deploy=local"
+    if !build_local && !haskey(ENV, "GITHUB_TOKEN")
+        error("--deploy was selected, but GITHUB_TOKEN is not set!")
+    end
+    filter(arg->!startswith(arg, "--deploy"), ARGS),
+        (args...; kwargs...)->upload_and_insert_shards(args...; kwargs..., build_local=build_local)
+end
