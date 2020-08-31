@@ -52,7 +52,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libConstituentSubtractor", :libClusteringVetoPlugin),
+    LibraryProduct("libConstituentSubtractor", :libConstituentSubtractor),
     LibraryProduct("libQCDAwarePlugin", :libQCDAwarePlugin),
     LibraryProduct("libJetFFMoments", :libJetFFMoments),
     LibraryProduct("libLundPlane", :libLundPlane),
