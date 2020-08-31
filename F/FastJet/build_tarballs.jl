@@ -73,7 +73,7 @@ products = [
     LibraryProduct("libGenericSubtractor", :libGenericSubtractor),
     LibraryProduct("libScJet", :libScJet),
     LibraryProduct("libSubjetCounting", :libSubjetCounting),
-    LibraryProduct("libClusteringVetoPlugin", :libClusteringVetoPlugin)
+    LibraryProduct("libClusteringVetoPlugin", :libClusteringVetoPlugin),
 ]
 
 # Dependencies that must be installed before this package can be built
