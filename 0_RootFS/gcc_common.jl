@@ -243,7 +243,7 @@ function gcc_script(compiler_target::Platform)
     if [[ "${COMPILER_TARGET}" == arm*hf ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-float=hard --with-arch=armv7-a --with-fpu=vfpv3-d16"
     elif [[ "${COMPILER_TARGET}" == x86_64* ]]; then
-        GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-arch=core2"
+        GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-arch=x86-64"
     elif [[ "${COMPILER_TARGET}" == i686* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-arch=pentium4"
     fi
