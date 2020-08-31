@@ -86,7 +86,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         # MacOS doesn't actually use binutils, it uses cctools
         binutils_sources = [
             GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
-                      "3efb201881e7a76a21e0554906cf306432539cef"),
+                      "86f43cdb62a3ceb39f3ee6e4568eded67a4912e8"),
             GitSource("https://github.com/tpoechtrager/cctools-port.git",
                       "a2e02aad90a98ac034b8d0286496450d136ebfcd"),
         ]
@@ -315,7 +315,6 @@ function gcc_script(compiler_target::Platform)
     # If we're on MacOS, we need to install cctools first, separately.
     if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
         cd ${WORKSPACE}/srcdir/apple-libtapi
-        atomic_patch -p1 "${WORKSPACE}/srcdir/patches/libtapi_fullyaml.patch"
 
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
