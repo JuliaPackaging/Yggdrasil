@@ -702,13 +702,13 @@ function build_and_upload_gcc(version, ARGS=ARGS)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
+    ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
     build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true)
     build_info = Dict(host_platform => first(values(build_info)))
 
-    # Upload the artifacts
-    if any(occursin.("--deploy", ARGS))
-        upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
+    # Upload the artifacts (if requested)
+    if deploy
+        upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
     end
     return build_info
 end

@@ -3,10 +3,6 @@ using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
 host_platform = Linux(:x86_64; libc=:musl)
 
-if !haskey(ENV, "GITHUB_TOKEN")
-    error("export GITHUB_TOKEN you dolt!")
-end
-
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
     if !isfile(test)
@@ -50,7 +46,11 @@ end
 function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString)
     mktempdir() do dir
         tarball_hash = archive_artifact(hash, joinpath(dir, "$(filename).tar.gz"))
-        BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        if repo == "local"
+            @info "Skipping upload to GitHub because local build was requested!"
+        else
+            BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        end
         return tarball_hash
     end
 end
@@ -145,4 +145,23 @@ function build_tarballs(project_path::String, args::String...; deploy=false, reg
     end
 end
 
+function find_deploy_arg(ARGS)
+    dargs = ARGS[findall(arg->startswith(arg, "--deploy"), ARGS)]
+    if length(dargs) > 1
+        error("More than one deploy argument. Usage: --deploy|--deploy=local")
+    end
 
+    # No deployment
+    if length(dargs) == 0
+        return (ARGS, false, "")
+    end
+
+    ndARGS = filter(arg->!startswith(arg, "--deploy"), ARGS)
+    if dargs[] == "--deploy"
+        return (ndARGS, true, "JuliaPackaging/Yggdrasil")
+    elseif dargs[] == "--deploy=local"
+        return (ndARGS, true, "local")
+    else
+        error("--deploy argument must be --deploy or --deploy=local")
+    end
+end
