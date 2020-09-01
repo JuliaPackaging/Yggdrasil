@@ -20,7 +20,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_SKIP_RPATH=ON \
-      -DBITCODE_DIR=TODO_PATH_TO_OPENCL.BC \
+      -DIMAGE_SUPPORT=OFF # disabled for now as deps are still missing \
       ../src
 make -j${nproc}
 make install
@@ -42,7 +42,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("hsakmt_roct_jll"),
-    Dependency("rocm_device_libs_jll"),
     Dependency("NUMA_jll"),
     Dependency("Zlib_jll"),
     Dependency("Elfutils_jll"),
