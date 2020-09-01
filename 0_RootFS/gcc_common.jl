@@ -78,6 +78,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
+        v"11.0.0-iains" => [
+            GitSource("https://github.com/iains/gcc-darwin-arm64.git",
+                  "03d8ff79b7a2d408db953667f81f76c0b8da26f0"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
+                          "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
+                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+        ]
     )
 
 
@@ -159,10 +171,16 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                           "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
     elseif isa(compiler_target, MacOS)
-        libc_sources = [
-            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+        if gcc_version == v"11.0.0-iains"
+            libc_sources = [
+                DirectorySource(joinpath(@__DIR__, "DarwinSDKs"))
+            ]
+        else
+            libc_sources = [
+                ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
                           "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
-        ]
+            ]
+        end
     elseif isa(compiler_target, FreeBSD)
         libc_sources = [
             ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
