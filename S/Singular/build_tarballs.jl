@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Singular"
-version = v"4.1.3"  # this is actually 4.1.3p3 with some extra patches
+version = v"4.1.3"  # this is actually 4.1.3p4 with some extra patches
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Sources.git", "6924d452049dc8bfbb851672c4b3ceac05081b6c"),
+    GitSource("https://github.com/Singular/Sources.git", "20bab7d91a9351cbc13245eeb4da8a9ec894b6d2"),
 ]
 
 # Bash recipe for building across all platforms
