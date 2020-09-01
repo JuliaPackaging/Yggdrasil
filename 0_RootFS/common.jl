@@ -43,10 +43,10 @@ function generate_artifacts(path::AbstractString, name, version; platform=host_p
     return (unpacked_hash, squashfs_hash)
 end
 
-function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString; build_local=false)
+function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString)
     mktempdir() do dir
         tarball_hash = archive_artifact(hash, joinpath(dir, "$(filename).tar.gz"))
-        if build_local
+        if repo == "local"
             @info "Skipping upload to GitHub because local build was requested!"
         else
             BinaryBuilder.upload_to_github_releases(repo, tag, dir)
@@ -83,11 +83,11 @@ function get_next_shard_tag(cs)
 end
 
 
-function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing, build_local=false)
+function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = get_next_shard_tag(cs)
     filename = BinaryBuilderBase.artifact_name(cs)
-    tarball_hash = publish_artifact(repo, tag, hash, filename; build_local=build_local)
+    tarball_hash = publish_artifact(repo, tag, hash, filename)
 
     return [
         ("https://github.com/$(repo)/releases/download/$(tag)/$(filename).tar.gz", tarball_hash),
@@ -102,22 +102,22 @@ function insert_compiler_shard(name, version, hash, archive_type; platform=host_
     bind_artifact!(artifacts_toml, BinaryBuilderBase.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
-function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing, build_local=false)
+function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
     # Upload them both to GH releases on Yggdrasil
-    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target, build_local=build_local)
-    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target, build_local=build_local)
+    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
 
     # Insert these final versions into BB
     insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
     insert_compiler_shard(name, version, squashfs_hash, :squashfs; download_info=squashfs_dl_info, platform=platform, target=target)
 end
 
-function upload_and_insert_shards(repo, name, version, build_info; target=nothing, build_local=false)
+function upload_and_insert_shards(repo, name, version, build_info; target=nothing)
     for platform in keys(build_info)
         unpacked_hash = build_info[platform][3]
         squashfs_hash = unpacked_to_squashfs(unpacked_hash, name, version; platform=platform, target=target)
 
-        upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=target, build_local=build_local)
+        upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=target)
     end
 end
 
@@ -147,13 +147,21 @@ end
 
 function find_deploy_arg(ARGS)
     dargs = ARGS[findall(arg->startswith(arg, "--deploy"), ARGS)]
-    length(dargs) > 1 && error("More than one deploy argument. Usage: --deploy|--deploy=local")
-    length(dargs) == 0 && return (ARGS, (args...; kwargs...)->nothing)
-    (dargs[] in ("--deploy","--deploy=local")) || error("--deploy argument must be --deploy or --deploy=local")
-    build_local = dargs[] == "--deploy=local"
-    if !build_local && !haskey(ENV, "GITHUB_TOKEN")
-        error("--deploy was selected, but GITHUB_TOKEN is not set!")
+    if length(dargs) > 1
+        error("More than one deploy argument. Usage: --deploy|--deploy=local")
     end
-    filter(arg->!startswith(arg, "--deploy"), ARGS),
-        (args...; kwargs...)->upload_and_insert_shards(args...; kwargs..., build_local=build_local)
+
+    # No deployment
+    if length(dargs) == 0
+        return (ARGS, false, "")
+    end
+
+    ndARGS = filter(arg->!startswith(arg, "--deploy"), ARGS)
+    if dargs[] == "--deploy"
+        return (ndARGS, true, "JuliaPackaging/Yggdrasil")
+    elseif dargs[] == "--deploy=local"
+        return (ndARGS, true, "local")
+    else
+        error("--deploy argument must be --deploy or --deploy=local")
+    end
 end
