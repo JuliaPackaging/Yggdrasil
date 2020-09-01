@@ -30,7 +30,9 @@ version = "0.2.6"
 
 [[BinaryBuilderBase]]
 deps = ["CodecZlib", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "UUIDs"]
-git-tree-sha1 = "4e3a40300960e4f6ab783cbcc1568fd4d8e272af"
+git-tree-sha1 = "97cd717e1e3453db6211214b3041f120dc8d0816"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
 version = "0.4.1"
 

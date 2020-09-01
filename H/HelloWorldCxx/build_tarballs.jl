@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldCxx"
-version = v"1.0.2"
+version = v"1.0.3"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -28,4 +28,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
