@@ -10,7 +10,7 @@ sources = [
     GitSource(source, commit)
 ]
 
-script_unix = raw"""
+script = raw"""
 cd Vulkan-Headers
 install_license LICENSE.txt
 
@@ -39,4 +39,4 @@ products = Product[
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script_unix, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
