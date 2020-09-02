@@ -10,9 +10,19 @@ sources = [
     GitSource(source, commit)
 ]
 
-script_linux = raw"""
+script = raw"""
 cd glslang
 
+CMAKE_FLAGS=()
+
+# Release build for best performance
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+# Install things into $prefix
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
+# Explicitly use our cmake toolchain file
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -31,4 +41,4 @@ dependencies = [
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-build_tarballs(ARGS, name, version, sources, script_linux, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
