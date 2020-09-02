@@ -20,7 +20,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_SKIP_RPATH=ON \
-      -DIMAGE_SUPPORT=OFF # disabled for now as deps are still missing \
+      -DIMAGE_SUPPORT=OFF \
       ../src
 make -j${nproc}
 make install
