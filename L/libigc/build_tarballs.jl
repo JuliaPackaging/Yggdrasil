@@ -58,17 +58,6 @@ mv llvm-patches llvm_patches
 atomic_patch -p0 patches/cmake.patch
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
-if [[ "${target}" == *86*-linux-musl* ]]; then
-    atomic_patch -p0 patches/musl-concat.patch
-    atomic_patch -p0 patches/musl-inttypes.patch
-    atomic_patch -p0 patches/musl-deepbind.patch
-    # https://github.com/JuliaPackaging/Yggdrasil/issues/739
-    sed -i '/-fstack-protector/d' intel-graphics-compiler/IGC/CMakeLists.txt
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
-    pushd /opt/${target}/lib/gcc/${target}/*/include
-    atomic_patch -p0 $WORKSPACE/srcdir/patches/musl-malloc.patch
-    popd
-fi
 
 cd intel-graphics-compiler
 install_license LICENSE.md
@@ -101,7 +90,6 @@ ninja -C build -j ${nproc} install
 platforms = [
     Linux(:i686, libc=:glibc),
     Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
