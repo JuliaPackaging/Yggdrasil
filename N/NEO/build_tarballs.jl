@@ -8,7 +8,7 @@ version = v"20.34.17727"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "f4742855d86b26bbc89a93c48a94b62a91555b63"),
+              "49f450e09447099e052f7c462941cd58d4431c72"),
 ]
 
 # Bash recipe for building across all platforms
