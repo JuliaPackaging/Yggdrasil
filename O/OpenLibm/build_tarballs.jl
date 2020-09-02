@@ -3,8 +3,8 @@ using BinaryBuilder
 name = "OpenLibm"
 version = v"0.7.0"
 sources = [
-    "https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz" =>
-    "1699f773198018b55b12631db9c1801fe3ed191e618a1ee1be743f4570ae06a3",
+    GitSource("https://github.com/JuliaMath/openlibm.git",
+              "0e414577457d6456ef86f4f122bcaf9894a2685e"),
 ]
 
 script = raw"""
@@ -39,7 +39,7 @@ install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct("libopenlibm", :libopenlibm)
+    LibraryProduct("libopenlibm", :libopenlibm),
 ]
 
 dependencies = [
