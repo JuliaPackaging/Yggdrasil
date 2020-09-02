@@ -31,7 +31,7 @@ make "${flags[@]}" -j${nproc}
 # Install the library
 make "${flags[@]}" install
 
-install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
+install_license ./LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
