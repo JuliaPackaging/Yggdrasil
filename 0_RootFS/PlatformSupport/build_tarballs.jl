@@ -17,14 +17,19 @@ sources = [
                   "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
                   "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-                  "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
     ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
                   "3bac8257bdd5e5b071f7b80cc591ebecd01b9314ca7839a2903096cbf82169f9"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                   "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
     DirectorySource("./bundled"),
 ]
+
+if compiler_target isa MacOS && compiler_target.arch == :aarch64
+    push!(sources, DirectorySource(joinpath(@__DIR__, "..", "DarwinSDKs")))
+else
+    push!(sources, ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+        "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"))
+end
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
