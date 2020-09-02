@@ -16,14 +16,11 @@ diff --git a/visa/BinaryEncodingCNL.h b/visa/BinaryEncodingCNL.h
 index e301dc07..07c90cfd 100644
 --- intel-graphics-compiler/visa/BinaryEncodingCNL.h
 +++ intel-graphics-compiler/visa/BinaryEncodingCNL.h
-@@ -46,8 +46,8 @@ typedef uint64_t QWORD;
- #define BITFIELD_RANGE( startbit, endbit )     ((endbit)-(startbit)+1)
- #define BITFIELD_BIT( bit )                   1
-
+@@ -46,5 +46,5 @@ typedef uint64_t QWORD;
 -#define __CONCAT(x,y)   x ## y
--#define __UNIQUENAME( a1, a2 )  __CONCAT( a1, a2 )
+-#define __UNIQUENAME(a1, a2)  __CONCAT(a1, a2)
 +#define __CONCATING( a1, a2 )   a1 ## a2
 +#define __UNIQUENAME( a1, a2 )  __CONCATING( a1, a2 )
- #define UNIQUENAME( __text )    __UNIQUENAME( __text, __COUNTER__ )
+ #define UNIQUENAME(__text)    __UNIQUENAME(__text, __COUNTER__)
  #define STATIC_ASSERT(e)  typedef char UNIQUENAME(STATIC_ASSERT_)[(e)?1:-1]
 
