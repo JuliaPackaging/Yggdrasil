@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.4560"
+version = v"1.0.4756"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,7 +12,7 @@ version = v"1.0.4560"
 
 # Collection of sources required to build IGC
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "c622f2ffab847a00616a593e92057f4ed31a5c83"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3623209b10b357ddb3a3d6eac3551c53ebc897f7"),
     # use LLVM 10 as provided by the official packages for Ubuntu 18.04
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
     GitSource("https://github.com/intel/opencl-clang.git", "6a9cd2c7dc37f168dae327564a98cab7c4382a2c"),
@@ -58,17 +58,6 @@ mv llvm-patches llvm_patches
 atomic_patch -p0 patches/cmake.patch
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
-if [[ "${target}" == *86*-linux-musl* ]]; then
-    atomic_patch -p0 patches/musl-concat.patch
-    atomic_patch -p0 patches/musl-inttypes.patch
-    atomic_patch -p0 patches/musl-deepbind.patch
-    # https://github.com/JuliaPackaging/Yggdrasil/issues/739
-    sed -i '/-fstack-protector/d' intel-graphics-compiler/IGC/CMakeLists.txt
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
-    pushd /opt/${target}/lib/gcc/${target}/*/include
-    atomic_patch -p0 $WORKSPACE/srcdir/patches/musl-malloc.patch
-    popd
-fi
 
 cd intel-graphics-compiler
 install_license LICENSE.md
@@ -101,7 +90,6 @@ ninja -C build -j ${nproc} install
 platforms = [
     Linux(:i686, libc=:glibc),
     Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -121,4 +109,4 @@ dependencies = Dependency[]
 
 # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+               preferred_gcc_version=v"8", lock_microarchitecture=false)
