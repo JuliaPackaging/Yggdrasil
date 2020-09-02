@@ -9,7 +9,7 @@ sources = [
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/openlibm-*
+cd ${WORKSPACE}/srcdir/openlibm*
 
 # Install into output
 flags=("prefix=${prefix}")
