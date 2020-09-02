@@ -1,15 +1,15 @@
 using BinaryBuilder
 
 name = "OpenLibm"
-version = v"0.7.0"
+version = v"0.7.1"
 sources = [
-    "https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz" =>
-    "1699f773198018b55b12631db9c1801fe3ed191e618a1ee1be743f4570ae06a3",
+    ArchiveSource("https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz",
+                  "d4b252b71c74571fe5b39d42dee03ccca4bb238827e6a2c9ba108dbca2d3e879"),
 ]
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/openlibm-*
+cd ${WORKSPACE}/srcdir/openlibm*
 
 # Install into output
 flags=("prefix=${prefix}")
@@ -31,7 +31,7 @@ make "${flags[@]}" -j${nproc}
 # Install the library
 make "${flags[@]}" install
 
-install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
+install_license ./LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,11 +39,11 @@ install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct("libopenlibm", :libopenlibm)
+    LibraryProduct("libopenlibm", :libopenlibm),
 ]
 
 dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lock_microarchitecture=false)
