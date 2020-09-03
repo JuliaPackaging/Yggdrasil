@@ -19,6 +19,7 @@ cd $WORKSPACE/srcdir/gmp-*
 # Include Julia-carried patches
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp_alloc_overflow_func.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-exception.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-apple-arm64.patch
 
 flags=(--enable-cxx --enable-shared --disable-static)
 
@@ -27,6 +28,7 @@ if [[ ${proc_family} == intel ]]; then
     flags+=(--enable-fat)
 fi
 
+autoreconf
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
 
 make -j${nproc}
