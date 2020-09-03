@@ -24,23 +24,29 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     echo "en_US.UTF-8 UTF-8" >> ${STORAGE_DIR}/rootfs/etc/locale.gen
     sudo chroot ${STORAGE_DIR}/rootfs locale-gen
 
+    # Add `git` username
+    echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+fi
+
+if [[ ! -f "${STORAGE_DIR}/rootfs/usr/local/bin/julia" ]]; then
     # Install Julia into the rootfs
     echo "Installing Julia..."
-    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.4/julia-1.4.1-linux-x86_64.tar.gz"
-    curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs"
+    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.1-linux-x86_64.tar.gz"
+    curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs/usr/local"
+fi
 
+if [[ ! -f "${STORAGE_DIR}/rootfs/sandbox" ]]; then
     # Install `sandbox` and `run_agent.sh` into the rootfs
     echo "Installing sandbox..."
     SANDBOX_URL="https://github.com/JuliaPackaging/Yggdrasil/raw/master/0_RootFS/Rootfs/bundled/utils/sandbox"
     curl -# -L "${SANDBOX_URL}" -o "${STORAGE_DIR}/rootfs/sandbox"
     chmod +x "${STORAGE_DIR}/rootfs/sandbox"
     cp -a "${SRC_DIR}/run_agent.sh" "${STORAGE_DIR}/rootfs/run_agent.sh"
+fi
 
-    # Add `git` username
-    echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
-    echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
-    echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
-
+if [[ ! -d "${STORAGE_DIR}/rootfs/agent" ]]; then
     # Install agent executable
     AZP_AGENTPACKAGE_URL=$(
         curl -LsS -u "user:${AZP_TOKEN}" \
