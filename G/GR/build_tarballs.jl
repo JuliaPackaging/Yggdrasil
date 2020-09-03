@@ -7,7 +7,7 @@ version = v"0.52.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "ad3fe53dbc5396cba47ad75364da69ad6a1f405f"),
+    GitSource("https://github.com/sciapp/gr.git", "90ee73c741271d964f241f098b0dd3ba18eae271"),
 ]
 
 # Bash recipe for building across all platforms
