@@ -31,11 +31,12 @@ fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
-
-    FLAGS+=(BLAS="-lopenblas64_" LAPACK="-lopenblas64_")
+    BLAS_NAME=openblas64_
 else
-    FLAGS+=(BLAS="-lopenblas" LAPACK="-lopenblas")
+    BLAS_NAME=openblas
 fi
+
+FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
 #FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
@@ -56,11 +57,11 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
         if [[ ${target} == *-apple-* ]]; then
-            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep libopenblas64_ | awk '{ print $1 }')
-            install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/${nm}.dylib
+            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep ${BLAS_NAME} | awk '{ print $1 }')
+            install_name_tool -change ${OPENBLAS_LINK} @rpath/${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
-            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep libopenblas64_ | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${OPENBLAS_LINK} libopenblas64_.so ${libdir}/${nm}.so
+            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep ${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${OPENBLAS_LINK} ${BLAS_NAME}.so ${libdir}/${nm}.so
         fi
     done
 fi
