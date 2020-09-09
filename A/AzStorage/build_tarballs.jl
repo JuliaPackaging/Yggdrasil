@@ -15,7 +15,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/AzStorag/src
+cd ${WORKSPACE}/srcdir/AzStorage.jl/src
 
 # We need to tell the makefile where to find libssh2 on windows
 if [[ ${target} == *mingw* ]]; then
