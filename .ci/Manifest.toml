@@ -22,7 +22,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "652bb6475094c5e2df803f1090afed1a0f548bb7"
+git-tree-sha1 = "ee5506f2d8f3ab7af23d974f51abb0fcba78427d"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -30,7 +30,7 @@ version = "0.2.6"
 
 [[BinaryBuilderBase]]
 deps = ["CodecZlib", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "UUIDs"]
-git-tree-sha1 = "97cd717e1e3453db6211214b3041f120dc8d0816"
+git-tree-sha1 = "9f94fe7279ee3565d793f2a157ac369fb1da62e2"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
@@ -68,9 +68,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FileIO]]
 deps = ["Pkg"]
-git-tree-sha1 = "d367ced062a113d955c0dff847eb36f2565f2894"
+git-tree-sha1 = "992b4aeb62f99b69fcf0cb2085094494cc05dfb3"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.4.2"
+version = "1.4.3"
 
 [[FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -122,9 +122,9 @@ version = "0.1.14"
 
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "b34d7cef7b337321e97d22242c3c2b91f476748e"
+git-tree-sha1 = "81690084b6198a2e1da36fcfda16eeca9f9f24e4"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.0"
+version = "0.21.1"
 
 [[JSON2]]
 deps = ["Dates", "Parsers", "Test"]
@@ -134,9 +134,9 @@ version = "0.3.2"
 
 [[Lazy]]
 deps = ["MacroTools"]
-git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
+git-tree-sha1 = "ead48f10ad295afe72046ab0f2b9d704466452a0"
 uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
-version = "0.15.1"
+version = "0.14.0"
 
 [[LibGit2]]
 deps = ["Printf"]
@@ -176,9 +176,9 @@ version = "1.0.2"
 
 [[MbedTLS_jll]]
 deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "a0cb0d489819fa7ea5f9fa84c7e7eba19d8073af"
+git-tree-sha1 = "c0b1286883cac4e2b617539de41111e0776d02e8"
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.16.6+1"
+version = "2.16.8+0"
 
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
@@ -190,16 +190,16 @@ uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
 version = "1.0.5"
 
 [[Mux]]
-deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "Lazy", "Pkg", "Sockets", "Test", "WebSockets"]
-git-tree-sha1 = "5b41f03d63400c290bab4e1a49fb9ac36de1084a"
+deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "Lazy", "Pkg", "Sockets", "WebSockets"]
+git-tree-sha1 = "0f3a0c7e6ee65b7cc096feac8748f6ee03ea487f"
 uuid = "a975b10e-0019-58db-a62f-e48ff68538c9"
-version = "0.7.0"
+version = "0.7.2"
 
 [[ObjectFile]]
 deps = ["Reexport", "StructIO", "Test"]
-git-tree-sha1 = "c1b7b18d497eda21411c2e2075395edb10a42ee3"
+git-tree-sha1 = "e009c49f99dac98cb79f93b26c259ebca66eff26"
 uuid = "d8793406-e978-5875-9003-1fc021f44a92"
-version = "0.3.5"
+version = "0.3.6"
 
 [[OrderedCollections]]
 git-tree-sha1 = "293b70ac1780f9584c89268a6e2a560d938a7065"
@@ -259,17 +259,15 @@ version = "0.2.0"
 
 [[Registrator]]
 deps = ["AutoHashEquals", "Base64", "Dates", "Distributed", "FileWatching", "GitForge", "GitHub", "HTTP", "JSON", "LibGit2", "Logging", "MbedTLS", "Mustache", "Mux", "Pkg", "RegistryTools", "Serialization", "Sockets", "TimeToLive", "UUIDs", "ZMQ"]
-git-tree-sha1 = "e934b8c55381f28735124f23e8f7e96d09b20416"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaRegistries/Registrator.jl.git"
+git-tree-sha1 = "7c16227cd1dc9bae38e25d6dc6f9c020f8ebca46"
 uuid = "4418983a-e44d-11e8-3aec-9789530b3b3e"
 version = "1.2.1"
 
 [[RegistryTools]]
 deps = ["AutoHashEquals", "LibGit2", "Pkg", "UUIDs"]
-git-tree-sha1 = "ea27832a31084895842c77e4f78f5beea9677abd"
+git-tree-sha1 = "5270a369341e32d0612291d1665133449b074da8"
 uuid = "d1eb7eb1-105f-429d-abf5-b0f65cb9e2c4"
-version = "1.5.0"
+version = "1.5.1"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
