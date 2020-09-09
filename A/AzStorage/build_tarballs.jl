@@ -19,7 +19,7 @@ cd ${WORKSPACE}/srcdir/AzStorage.jl/src
 
 # We need to tell the makefile where to find libssh2 on windows
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L${WORKSPACE}/destdir/bin"
+    export LDFLAGS="-L${libdir}"
 fi
 
 make
