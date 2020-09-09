@@ -11,7 +11,7 @@ source .env
 if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     echo "Setting up rootfs..."
     mkdir -p "${STORAGE_DIR}/rootfs"
-    sudo debootstrap --variant=minbase --include=curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,zstd,expect,locales,libgomp1 buster "${STORAGE_DIR}/rootfs"
+    sudo debootstrap --variant=minbase --include=ssh,curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,zstd,expect,locales,libgomp1 buster "${STORAGE_DIR}/rootfs"
 
     # Remove special `dev` files
     sudo rm -rf "${STORAGE_DIR}/rootfs/dev/*"
@@ -23,17 +23,30 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     # Set up the one true locale
     echo "en_US.UTF-8 UTF-8" >> ${STORAGE_DIR}/rootfs/etc/locale.gen
     sudo chroot ${STORAGE_DIR}/rootfs locale-gen
+fi
 
+if [[ ! -f "${STORAGE_DIR}/rootfs/etc/gitconfig" ]]; then
     # Add `git` username
     echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
     echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
     echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
 fi
 
+# Add SSH keys
+SSH_DIR="${STORAGE_DIR}/rootfs/root/.ssh"
+if [[ ! -d "${SSH_DIR}" ]]; then
+    mkdir -p "${SSH_DIR}"
+    cp -a ./yggdrasil_rsa "${SSH_DIR}/id_rsa"
+    chmod 0600 "${SSH_DIR}/id_rsa"
+    chmod 0700 "${SSH_DIR}"
+fi
+
 if [[ ! -f "${STORAGE_DIR}/rootfs/usr/local/bin/julia" ]]; then
     # Install Julia into the rootfs
     echo "Installing Julia..."
-    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.1-linux-x86_64.tar.gz"
+    # RIGHT INTO THE DANGEEERRR ZOOOOOONE
+    JULIA_URL="https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz"
+    #JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.1-linux-x86_64.tar.gz"
     curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs/usr/local"
 fi
 
