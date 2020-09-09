@@ -6,10 +6,10 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.3.2"
+version = v"3.4.1"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
-                  "11904a39a7e34ee66028292fd054afb460eacd07ec5e6c63789aba117e4d854c")
+                  "05a20818477894b64726441fa98301a0334e36ded8c84380d2d0f800a961ad21")
 ]
 
 script = raw"""
@@ -37,6 +37,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
        -DBUILD_GO_BINDINGS=OFF
+       -DBUILD_R_BINDINGS=OFF
        -DBUILD_PYTHON_BINDINGS=OFF
        -DBUILD_TESTS=OFF)
 
@@ -108,6 +109,8 @@ products = [
     # binding.
     LibraryProduct("libmlpack_julia_adaboost", :libmlpack_julia_adaboost),
     LibraryProduct("libmlpack_julia_approx_kfn", :libmlpack_julia_approx_kfn),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression",
+        :libmlpack_julia_bayesian_linear_regression),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
     LibraryProduct("libmlpack_julia_decision_stump",
@@ -156,6 +159,8 @@ products = [
         :libmlpack_julia_preprocess_binarize),
     LibraryProduct("libmlpack_julia_preprocess_describe",
         :libmlpack_julia_preprocess_describe),
+    LibraryProduct("libmlpack_julia_preprocess_one_hot_encoding",
+        :libmlpack_julia_preprocess_one_hot_encoding),
     LibraryProduct("libmlpack_julia_preprocess_scale",
         :libmlpack_julia_preprocess_scale),
     LibraryProduct("libmlpack_julia_preprocess_split",
