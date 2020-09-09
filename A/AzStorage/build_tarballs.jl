@@ -24,13 +24,7 @@ fi
 
 make
 
-if [[ ${target} == *mingw* ]]; then
-    cp libAzStorage.so ${libdir}/libAzStorage.dll
-elif [[ ${target} == *apple* ]]; then
-    cp libAzStorage.so ${libdir}/libAzStorage.dylib
-else
-    cp libAzStorage.so ${libdir}/libAzStorage.so
-fi
+cp libAzStorage.so ${libdir}/libAzStorage.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
