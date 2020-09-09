@@ -18,24 +18,24 @@ platforms = [
 
 sources = [
     ArchiveSource("https://julialang-s3.julialang.org/bin/linux/aarch64/$(version.major).$(version.minor)/julia-$(version)-linux-aarch64.tar.gz",
-                  "f124d1b9fa68c3049d4ffe2349454f8ba1753d17d6578bc6e7cb916aed7cff4a"; unpack_target="aarch64-linux-gnu-libgfortran4-cxx11"),
+                  "f124d1b9fa68c3049d4ffe2349454f8ba1753d17d6578bc6e7cb916aed7cff4a"),
 #    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/armv7l/$(version.major).$(version.minor)/julia-$(version)-linux-armv7l.tar.gz",
-#                  ""; unpack_target="armv7l-linux-gnueabihf-libgfortran4-cxx11"),
+#                  ""),
     ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/$(version.major).$(version.minor)/julia-$(version)-linux-x86_64.tar.gz",
-                  "d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28"; unpack_target="x86_64-linux-gnu-libgfortran4-cxx11"),
+                  "d77311be23260710e89700d0b1113eecf421d6cf31a9cebad3f6bdd606165c28"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x86/$(version.major).$(version.minor)/julia-$(version)-linux-i686.tar.gz",
-                  "ce821b6671a137dc7c2ccbf40ff08471a6791ea8af80a30d6716806608e72dab"; unpack_target="i686-linux-gnu-libgfortran4-cxx11"),
+                  "ce821b6671a137dc7c2ccbf40ff08471a6791ea8af80a30d6716806608e72dab"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/mac/x64/$(version.major).$(version.minor)/julia-$(version)-mac64.tar.gz",
-                  "660ecd64db812e642e2b9483966c61f7fec3ee88c84a1eb26831bfce2aa51ac9"; unpack_target="x86_64-apple-darwin14-libgfortran4-cxx11"),
+                  "660ecd64db812e642e2b9483966c61f7fec3ee88c84a1eb26831bfce2aa51ac9"),
 #    ArchiveSource("https://julialang-s3.julialang.org/bin/winnt/x64/$(version.major).$(version.minor)/julia-$(version)-win64.tar.gz",
-#                  ""; unpack_target="x86_64-w64-mingw32-libgfortran4-cxx11"),
+#                  ""),
 #    ArchiveSource("https://julialang-s3.julialang.org/bin/winnt/x86/$(version.major).$(version.minor)/julia-$(version)-win32.tar.gz",
-#                  ""; unpack_target="i686-w64-mingw32-libgfortran4-cxx11"),
+#                  ""),
     ArchiveSource("https://julialang-s3.julialang.org/bin/freebsd/x64/$(version.major).$(version.minor)/julia-$(version)-freebsd-x86_64.tar.gz",
-                  "29892e81d663dc081281b8530fa2e949306da933dcf2d6d28a5dec165a92aa24"; unpack_target="x86_64-unknown-freebsd11.1-libgfortran4-cxx11"),
+                  "29892e81d663dc081281b8530fa2e949306da933dcf2d6d28a5dec165a92aa24"),
 ]
 script = raw"""
-cp -rva ${WORKSPACE}/srcdir/${bb_full_target}/julia-*/* ${prefix}/
+cp -rva ${WORKSPACE}/srcdir/julia-*/* ${prefix}/
 install_license /usr/share/licenses/MIT
 """
 
