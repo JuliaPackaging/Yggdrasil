@@ -32,6 +32,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libharfbuzz-icu", :libharfbuzz_icu),
     LibraryProduct("libharfbuzz", :libharfbuzz),
     LibraryProduct("libharfbuzz-subset", :libharfbuzz_subset),
     LibraryProduct("libharfbuzz-gobject", :libharfbuzz_gobject),
@@ -46,6 +47,7 @@ dependencies = [
     Dependency("Gettext_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
+    Dependency("ICU_jll"),
     BuildDependency("Xorg_xorgproto_jll")
 ]
 
