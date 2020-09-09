@@ -134,6 +134,7 @@ products = [
         :libmlpack_julia_hoeffding_tree),
     LibraryProduct("libmlpack_julia_image_converter",
         :libmlpack_julia_image_converter),
+    LibraryProduct("libmlpack_julia_kde", :libmlpack_julia_kde),
     LibraryProduct("libmlpack_julia_kernel_pca", :libmlpack_julia_kernel_pca),
     LibraryProduct("libmlpack_julia_kfn", :libmlpack_julia_kfn),
     LibraryProduct("libmlpack_julia_kmeans", :libmlpack_julia_kmeans),
