@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MiniFB"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/emoon/minifb.git", "2110dc18ac93a531bd832b323ea92a1622430e1c") #master as of 15Aug2020
+    GitSource("https://github.com/emoon/minifb.git", "dda1275bd741752d1b7cdc1ee4d9941887a1891a") #master as of 10Sep2020
 ]
 
 # Bash recipe for building across all platforms
