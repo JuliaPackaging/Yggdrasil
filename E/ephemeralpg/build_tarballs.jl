@@ -12,12 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/ephemeralpg-*
 export PREFIX=$prefix
-cd ephemeralpg-3.0
-make
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,7 +31,7 @@ platforms = [
     Linux(:aarch64, libc=:musl),
     Linux(:armv7l, libc=:musl, call_abi=:eabihf),
     MacOS(:x86_64),
-    FreeBSD(:x86_64)
+    FreeBSD(:x86_64),
 ]
 
 
