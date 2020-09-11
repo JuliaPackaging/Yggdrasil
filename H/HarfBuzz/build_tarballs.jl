@@ -9,11 +9,13 @@ version = v"2.6.1"
 sources = [
     ArchiveSource("https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$(version).tar.xz",
                   "c651fb3faaa338aeb280726837c2384064cdc17ef40539228d88a1260960844f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
+atomic_patch -p1 ../patches/Remove-HB_ICU_STMT.patch
 autoreconf -i -f
 ./configure --prefix=$prefix --host=$target \
     --with-gobject=yes \
