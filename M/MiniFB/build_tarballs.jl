@@ -12,28 +12,23 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd minifb/
-sed -i 's/add_library(minifb STATIC/add_library(minifb SHARED/' CMakeLists.txt
-mkdir build
-cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DMINIFB_BUILD_EXAMPLES=OFF ..
+cd $WORKSPACE/srcdir/minifb/
+sed -i -e 's/add_library(minifb STATIC/add_library(minifb SHARED/' \
+    -e 's/ -Wall/-I$ENV{includedir} -Wall/' \
+    CMakeLists.txt
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DMINIFB_BUILD_EXAMPLES=OFF \
+    ..
 make -j${nproc}
 mv libminifb* ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    MacOS(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64),
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
