@@ -1,4 +1,5 @@
 diff --git a/Makefile b/Makefile
+index 9e9f2c8f0c..d0b228ae28 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -282,7 +282,7 @@ JL_PRIVATE_LIBS-0 += libgfortran libgcc_s libquadmath
@@ -10,7 +11,7 @@ diff --git a/Makefile b/Makefile
  ifeq ($(BUNDLE_DEBUG_LIBS),1)
  	@$(MAKE) $(QUIET_MAKE) all
  else
-@@ -356,34 +356,6 @@ endif
+@@ -356,37 +356,6 @@ endif
  
  	# Copy public headers
  	cp -R -L $(build_includedir)/julia/* $(DESTDIR)$(includedir)/julia
@@ -36,7 +37,10 @@ diff --git a/Makefile b/Makefile
 -	-rm -f $(DESTDIR)$(datarootdir)/julia/stdlib/$(VERSDIR)/*/build-checked
 -	# Copy in beautiful new man page
 -	$(INSTALL_F) $(build_man1dir)/julia.1 $(DESTDIR)$(man1dir)/
--	# Copy .desktop file
+-	# Copy icon and .desktop file
+-	mkdir -p $(DESTDIR)$(datarootdir)/icons/hicolor/scalable/apps/
+-	$(INSTALL_F) $(JULIAHOME)/contrib/julia.svg $(DESTDIR)$(datarootdir)/icons/hicolor/scalable/apps/
+-	-touch -c $(DESTDIR)$(datarootdir)/icons/hicolor/
 -	mkdir -p $(DESTDIR)$(datarootdir)/applications/
 -	$(INSTALL_F) $(JULIAHOME)/contrib/julia.desktop $(DESTDIR)$(datarootdir)/applications/
 -	# Install appdata file
