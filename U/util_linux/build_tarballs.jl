@@ -21,7 +21,7 @@ exit
 """
 
 # Build only for Linux
-platforms = filter(Sys.islinux, supported_platforms)
+platforms = filter(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
