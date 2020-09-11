@@ -16,6 +16,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/icu/
 
+pushd /opt/${MACHTYPE}/lib/gcc/${MACHTYPE}/*/include
+# Fix bug in Musl C library, see
+# https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
+atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
+popd
+if [[ "${target}" == i686-linux-musl ]]; then
+    pushd /opt/${target}/lib/gcc/${target}/*/include
+    # Do the same for this cross-compiler as well
+    atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
+    popd
+fi
+
 # Do the native build
 (
     cp -r source/ native_build/
