@@ -14,10 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/util-linux-*
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown
 make -j${nproc}
 make install
-exit
 """
 
 # Build only for Linux
