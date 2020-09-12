@@ -46,6 +46,7 @@ cd source/
 if [[ "${target}" == *-apple-* ]]; then
     # Do not append `-c` flag to ar, which isn't supported by LLVM's ar
     atomic_patch -p1 $WORKSPACE/srcdir/patches/argflags-no--c.patch
+    export LDFLAGS="-headerpad_max_install_names"
 fi
 
 update_configure_scripts
