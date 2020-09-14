@@ -40,7 +40,7 @@ function configure(version)
         LIBLAPACKNAME=libopenblas
         USE_SYSTEM_GMP=1
         USE_SYSTEM_MPFR=1
-        USE_SYSTEM_SUITESPARSE=1
+        #USE_SYSTEM_SUITESPARSE=1
         USE_SYSTEM_LIBUV=1
         USE_SYSTEM_UTF8PROC=1
         USE_SYSTEM_MBEDTLS=1
@@ -53,7 +53,7 @@ function configure(version)
 
         NO_GIT=1
         prefix="${prefix}"
-        -j${nproc}
+        #-j${nproc}
     )
 
     # compile libjulia but don't try to build a sysimage
@@ -66,8 +66,7 @@ function configure(version)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = supported_platforms()
-    #platforms = expand_cxxstring_abis(platforms)
+    platforms = expand_cxxstring_abis(supported_platforms())
 
     # The products that we will ensure are always built
     products = [
