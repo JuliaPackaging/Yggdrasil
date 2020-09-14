@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "CvxCompress"
 version = v"1.0.0"
 
-# Collection of sources required to build AzStorage
+# Collection of sources required to build CvxCompress
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
@@ -13,18 +13,20 @@ sources = [
     )
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building across platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/CvxCompress
 make
 cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+  Linux(:x86_64, libc=:glibc)
+]
 
 # The products that we will ensure are always built
-# TODO - add libgomp dependency
 products = [
     LibraryProduct("libcvxcompress", :libcvxcompress)
 ]
