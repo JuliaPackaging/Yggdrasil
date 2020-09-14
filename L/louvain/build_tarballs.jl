@@ -12,11 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd louvain/
-make
-mv hierarchy louvain matrix convert $prefix
-exit
+cd $WORKSPACE/srcdir/louvain/
+make -j${nproc}
+mv hierarchy${exeext} louvain${exeext} matrix${exeext} convert${exeext} ${bindir}/.
 """
 
 # These are the platforms we will build for by default, unless further
