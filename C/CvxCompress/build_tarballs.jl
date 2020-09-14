@@ -9,7 +9,7 @@ version = v"1.0.0"
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        "89928d6639661a246d0a36ccbbc3469bd6de1a8d"
+        "55e072862196e917e3ecece81f014e93d60cdf81"
     )
 ]
 
