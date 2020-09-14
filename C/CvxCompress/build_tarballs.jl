@@ -16,7 +16,8 @@ sources = [
 # Bash recipe for building across platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CvxCompress
-make
+make -j${nproc}
+mkdir -p ${libdir}
 cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
 """
 
