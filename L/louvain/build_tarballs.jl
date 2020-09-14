@@ -14,7 +14,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/louvain/
 make -j${nproc}
-mv hierarchy${exeext} louvain${exeext} matrix${exeext} convert${exeext} ${bindir}/.
+mkdir -p ${bindir}
+for exe in hierarchy louvain matrix convert; do
+    mv "${exe}" "${bindir}/${exe}${exeext}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
