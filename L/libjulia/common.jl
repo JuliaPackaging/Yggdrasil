@@ -29,6 +29,7 @@ function configure(version)
     cd $WORKSPACE/srcdir/julia*
 
     FLAGS=(
+         USE_BINARYBUILDER=1
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
 #        USE_SYSTEM_PCRE=1
