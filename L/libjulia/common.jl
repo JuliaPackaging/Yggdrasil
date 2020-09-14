@@ -7,13 +7,22 @@ function configure(version)
     name = "libjulia"
 
     checksums = Dict(
-        v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
-        v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
-        v"1.5.1" => "1f138205772eb1e565f1d7ccd6f237be8a4d18713a3466e3b8d3a6aad6483fd9",
+        v"1.3.1" => "053908ec2706eb76cfdc998c077de123ecb1c60c945b4b5057aa3be19147b723",
+        v"1.4.2" => "948c70801d5cce81eeb7f764b51b4bfbb2dc0b1b9effc2cb9fc8f8cf6c90a334",
+        v"1.5.1" => "1d0debfccfc7cd07047aa862dd2b1a96f7438932da1f5feff6c1033a63f9b1d4",
     )
     sources = [
-        ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
+        ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version)-full.tar.gz", checksums[version]),
     ]
+
+#    checksums = Dict(
+#        v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
+#        v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
+#        v"1.5.1" => "1f138205772eb1e565f1d7ccd6f237be8a4d18713a3466e3b8d3a6aad6483fd9",
+#    )
+#    sources = [
+#        ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
+#    ]
 
     # Bash recipe for building across all platforms
     script = raw"""
@@ -57,7 +66,8 @@ function configure(version)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = expand_cxxstring_abis(supported_platforms())
+    platforms = supported_platforms()
+    #platforms = expand_cxxstring_abis(platforms)
 
     # The products that we will ensure are always built
     products = [
