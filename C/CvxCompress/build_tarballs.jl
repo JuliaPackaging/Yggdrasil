@@ -23,7 +23,11 @@ cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# TODO update make to adjust the intrinsic code generation to support more platforms
+platforms = [
+  Linux(:x86_64, libc=:glibc),
+  Linux(:x86_64, libc=:musl)
+]
 
 # The products that we will ensure are always built
 products = [
