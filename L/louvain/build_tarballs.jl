@@ -18,6 +18,7 @@ mkdir -p ${bindir}
 for exe in hierarchy louvain matrix convert; do
     mv "${exe}" "${bindir}/${exe}${exeext}"
 done
+install_license *gpl*.txt
 """
 
 # These are the platforms we will build for by default, unless further
