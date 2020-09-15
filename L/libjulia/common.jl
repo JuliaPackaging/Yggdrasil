@@ -31,6 +31,7 @@ function configure(version)
     FLAGS=(
          USE_BINARYBUILDER=1
          XC_HOST=${target}
+         OS=${target}
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
 #        USE_SYSTEM_PCRE=1
