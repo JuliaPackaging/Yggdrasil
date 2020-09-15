@@ -16,12 +16,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
-cargo build --release
-if [[ ${target} == *mingw* ]]; then
-    cp target/${rust_target}/release/tectonic.exe $bindir/
-else
-    cp target/${rust_target}/release/tectonic $bindir/
-fi
+cargo build --release -j${nproc}
+cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,4 +43,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false)
