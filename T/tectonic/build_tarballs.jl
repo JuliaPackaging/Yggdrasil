@@ -20,10 +20,23 @@ cargo build --release -j${nproc}
 cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.  We are manually disabling
-# many platforms that do not seem to work.
-platforms = expand_cxxstring_abis(supported_platforms())
+# Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
+platforms = [
+    FreeBSD(:x86_64),
+    Linux(:aarch64, libc=:glibc),
+    # Linux(:aarch64, libc=:musl),
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    # Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    Linux(:i686, libc=:glibc),
+    # Linux(:i686, libc=:musl),
+    Linux(:powerpc64le, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    # Linux(:x86_64, libc=:musl),
+    MacOS(:x86_64),
+    # Windows(:i686),
+    Windows(:x86_64),
+]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
