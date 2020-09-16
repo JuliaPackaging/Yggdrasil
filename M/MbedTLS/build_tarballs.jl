@@ -12,7 +12,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mbedtls
-mkdir -p $prefix/lib
 
 # llvm-ranlib gets confused, use the binutils one
 if [[ "${target}" == *apple* ]]; then
@@ -21,9 +20,14 @@ if [[ "${target}" == *apple* ]]; then
 fi
 
 # enable MD4
-sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h 
+sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DUSE_SHARED_MBEDTLS_LIBRARY=On
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_C_STANDARD=99 \
+    -DUSE_SHARED_MBEDTLS_LIBRARY=On \
+    ..
 make -j${nproc} && make install
 """
 
@@ -39,7 +43,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
