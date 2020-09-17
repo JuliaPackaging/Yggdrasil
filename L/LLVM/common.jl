@@ -215,7 +215,7 @@ cmake -LA || true
 ninja -j${nproc} -vv
 
 # Install!
-ninja install -j${nproc}
+ninja install
 
 # move clang products out of $prefix/bin to $prefix/tools
 mv ${prefix}/bin/clang* ${prefix}/tools/
