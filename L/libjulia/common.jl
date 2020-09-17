@@ -31,6 +31,7 @@ function configure(version)
     FLAGS=(
          USE_BINARYBUILDER=1
          XC_HOST=${bb_full_target}
+         BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
          OS=${target}
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
