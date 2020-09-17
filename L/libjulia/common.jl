@@ -30,7 +30,7 @@ function configure(version)
 
     FLAGS=(
          USE_BINARYBUILDER=1
-         XC_HOST=${target}
+         XC_HOST=${bb_full_target}
          OS=${target}
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
@@ -64,8 +64,8 @@ gfortran --version
 gfortran --version | head -1
 
 echo "Calling contrib/normalize_triplet.py"
-contrib/normalize_triplet.py ${target}
-contrib/normalize_triplet.py ${target} $(gfortran --version | head -1)
+contrib/normalize_triplet.py ${bb_full_target}
+contrib/normalize_triplet.py ${v} $(gfortran --version | head -1)
 
 
     # compile libjulia but don't try to build a sysimage
@@ -87,7 +87,6 @@ contrib/normalize_triplet.py ${target} $(gfortran --version | head -1)
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
     platforms = supported_platforms()
     platforms = expand_cxxstring_abis(platforms)
-    platforms = expand_gfortran_versions(platforms)
 
     # The products that we will ensure are always built
     products = [
