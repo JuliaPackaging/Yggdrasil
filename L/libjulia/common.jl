@@ -60,15 +60,6 @@ function configure(version)
         #-j${nproc}
     )
 
-echo "Checking gfortran version"
-gfortran --version
-gfortran --version | head -1
-
-echo "Calling contrib/normalize_triplet.py"
-contrib/normalize_triplet.py ${bb_full_target}
-contrib/normalize_triplet.py ${v} $(gfortran --version | head -1)
-
-
     # compile libjulia but don't try to build a sysimage
     make "${FLAGS[@]}" julia-ui-release
     # 'manually' install libraries and headers
