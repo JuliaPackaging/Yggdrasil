@@ -28,11 +28,26 @@ function configure(version)
     script = raw"""
     cd $WORKSPACE/srcdir/julia*
 
+    case ${target} in
+        *linux*)
+            OS=Linux
+        ;;
+        *mingw*)
+            OS=WINNT
+        ;;
+        *darwin*)
+            OS=Darwin
+        ;;
+        *freebsd*)
+            OS=FreeBSD
+        ;;
+    esac
+
     FLAGS=(
          USE_BINARYBUILDER=1
          XC_HOST=${target}
          BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
-         OS=${target}
+         OS=${OS}
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
 #        USE_SYSTEM_PCRE=1
