@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd cli/
 make
 mkdir ${bindir}
-mv ./bin/gh ${bindir}/gh
+mv ./bin/gh ${bindir}/gh${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
