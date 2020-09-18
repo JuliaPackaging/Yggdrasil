@@ -78,6 +78,8 @@ function configure(version)
     # compile libjulia but don't try to build a sysimage
     make "${FLAGS[@]}" julia-ui-release
     # 'manually' install libraries and headers
+    mkdir -p ${libdir}
+    mkdir -p ${includedir}/julia
     cp usr/lib/libjulia* ${libdir}/
     cp -R -L usr/include/julia/* ${includedir}/julia
     install_license /usr/share/licenses/MIT
