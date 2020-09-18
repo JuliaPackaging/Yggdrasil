@@ -66,7 +66,7 @@ function configure(version)
 #        USE_SYSTEM_LIBSSH2=1
 #        USE_SYSTEM_CURL=1
 #        USE_SYSTEM_LIBGIT2=1
-#        USE_SYSTEM_PATCHELF=1
+         USE_SYSTEM_PATCHELF=1
 #        USE_SYSTEM_ZLIB=1
 #        USE_SYSTEM_P7ZIP=1
 
@@ -115,7 +115,7 @@ function configure(version)
 #        Dependency("MbedTLS_jll"),
 #        Dependency("LibSSH2_jll"),
 #        Dependency("LibCURL_jll"),
-#        Dependency("Patchelf_jll"),
+       Dependency("Patchelf_jll"),
        Dependency("Zlib_jll"),
 #        Dependency("p7zip_jll"),
 #        Dependency("MPFR_jll"),
