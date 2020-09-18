@@ -48,6 +48,7 @@ function configure(version)
          XC_HOST=${target}
          BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
          OS=${OS}
+         USE_CROSS_FLISP=1
 #        USE_SYSTEM_LLVM=1
 #        USE_SYSTEM_LIBUNWIND=1
 #        USE_SYSTEM_PCRE=1
@@ -115,7 +116,7 @@ function configure(version)
 #        Dependency("MbedTLS_jll"),
 #        Dependency("LibSSH2_jll"),
 #        Dependency("LibCURL_jll"),
-       Dependency("Patchelf_jll"),
+#        Dependency("Patchelf_jll"),
        Dependency("Zlib_jll"),
 #        Dependency("p7zip_jll"),
 #        Dependency("MPFR_jll"),
