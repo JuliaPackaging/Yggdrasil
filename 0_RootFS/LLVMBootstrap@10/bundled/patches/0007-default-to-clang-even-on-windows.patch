@@ -1,0 +1,37 @@
+From 195126931c39fc19ac246f8244604c2700f08724 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Mon, 21 Sep 2020 08:41:08 -0400
+Subject: [PATCH] default to clang
+
+---
+ llvm/cmake/modules/LLVMExternalProjectUtils.cmake | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
+index 9a6adab1656..83737f39478 100644
+--- a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
++++ b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
+@@ -112,20 +112,11 @@ function(llvm_ExternalProject_Add name source_dir)
+ 
+   if(ARG_USE_TOOLCHAIN AND NOT CMAKE_CROSSCOMPILING)
+     if(CLANG_IN_TOOLCHAIN)
+-      if(_cmake_system_name STREQUAL Windows)
+-        set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl
+-                          -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl)
+-      else()
+         set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang
+                           -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang++)
+-      endif()
+     endif()
+     if(lld IN_LIST TOOLCHAIN_TOOLS)
+-      if(_cmake_system_name STREQUAL Windows)
+-        list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/lld-link)
+-      else()
+         list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/ld.lld)
+-      endif()
+     endif()
+     if(llvm-ar IN_LIST TOOLCHAIN_TOOLS)
+       list(APPEND compiler_args -DCMAKE_AR=${LLVM_RUNTIME_OUTPUT_INTDIR}/llvm-ar)
+-- 
+2.28.0
+
