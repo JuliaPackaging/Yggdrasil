@@ -57,13 +57,13 @@ elif [[ "${target}" == aarch64-* ]]; then
     chmod 755 ${bindir}/*
 else
     if [[ ${target} == x86_64-linux-gnu ]]; then
-        WHL_FILE="*-h5py-*manylinux1_x86_64*.whl"
+        WHL_FILE="*h5py-*manylinux1_x86_64*.whl"
         LIBSDIR=.libs
     elif [[ ${target} == i686-linux-gnu ]]; then
-        WHL_FILE="*-h5py-*manylinux1_i686*.whl"
+        WHL_FILE="*h5py-*manylinux1_i686*.whl"
         LIBSDIR=.libs
     elif [[ ${target} == x86_64-apple-darwin* ]]; then
-        WHL_FILE="*-h5py-*macosx*.whl"
+        WHL_FILE="*h5py-*macosx*.whl"
         LIBSDIR=.dylibs
     else
         echo "ERROR: Unsupported platform ${target}" >&2
