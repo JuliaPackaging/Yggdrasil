@@ -35,12 +35,13 @@ function get_json_obj(dep_name::String)
     # We're going to `include()` the "build_tarballs.jl" function to avoid the overhead of `using BinaryBuilder`
     # every time we launch a new julia process. 
     meta_json = tempname()
-    m = Module(:__anon__)
+    m_name = gensym()
+    m = Module(m_name)
     Core.eval(m, quote
         using BinaryBuilder
-        eval(x) = $(Expr(:core, :eval))(__anon__, x)
-        include(x) = $(Expr(:top, :include))(__anon__, x)
-        include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, __anon__, x)
+        eval(x) = $(Expr(:core, :eval))($(m_name), x)
+        include(x) = $(Expr(:top, :include))($(m_name), x)
+        include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, $(m_name), x)
         # Our special overriding build_tarballs() function:
         function build_tarballs_meta_json(cli_args, args...; kwargs...)
             cli_args = vcat(string("--meta-json=", $(meta_json)), cli_args)
@@ -101,6 +102,10 @@ end
 function regenerate_jll(dep_name::String)
     dep_name = de_jll(dep_name)
     json_obj = get_json_obj(dep_name)
+    # From now on we strictly need the name of the package, not the path where
+    # the `build_tarballs.jl` is, take the basename so that `FFMPEG/FFMPEG`
+    # becomes `FFMPEG`
+    dep_name = basename(dep_name)
     code_dir = joinpath(Pkg.devdir(), "$(dep_name)_jll")
     repo = "JuliaBinaryWrappers/$(dep_name)_jll.jl"
     BinaryBuilder.init_jll_package(
@@ -199,9 +204,9 @@ push!(deps, toplevel_dep_name)
 println("Discovered dependencies: $(collect(deps))")
 
 if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :y) == :y
-	for dep in deps
-		open_jll_bump_pr(dep)
-	end
+    for dep in deps
+	open_jll_bump_pr(dep)
+    end
 elseif yn_prompt(WizardState(), "Generate new JLLs locally?", :y) == :y
     for dep in deps
         regenerate_jll(dep)
