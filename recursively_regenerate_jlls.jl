@@ -38,7 +38,9 @@ function get_json_obj(dep_name::String)
     m = Module(:__anon__)
     Core.eval(m, quote
         using BinaryBuilder
-
+        eval(x) = $(Expr(:core, :eval))(__anon__, x)
+        include(x) = $(Expr(:top, :include))(__anon__, x)
+        include(mapexpr::Function, x) = $(Expr(:top, :include))(mapexpr, __anon__, x)
         # Our special overriding build_tarballs() function:
         function build_tarballs_meta_json(cli_args, args...; kwargs...)
             cli_args = vcat(string("--meta-json=", $(meta_json)), cli_args)
