@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.7.0+0"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -39,7 +39,9 @@ case ${target} in
         ;;
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
-        export BLI_THREAD=none
+        export BLI_THREAD=openmp
+        export CC=gcc
+        export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
