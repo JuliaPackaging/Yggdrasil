@@ -87,10 +87,9 @@ end
 function llvm_products(;kwargs...)
     return [
         # libraries
-        LibraryProduct("libLLVM",  :libLLVM)
         LibraryProduct("libLTO",   :libLTO)
-        LibraryProduct("libclang", :libclang)
         # tools
+        ExecutableProduct("clang", :libclang)
         ExecutableProduct("llvm-config", :llvm_config)
     ]
 end
