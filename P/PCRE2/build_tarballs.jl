@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PCRE2"
-version = v"10.34.0"
+version = v"10.35"
 
 # Collection of sources required to complete build
 sources = [
