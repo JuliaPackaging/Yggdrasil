@@ -8,7 +8,7 @@ version = v"10.35"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
+                  "8fdcef8c8f4cd735169dd0225fd010487970c1bcadd49e9b90e26c7250a33dc9")
 ]
 
 # Bash recipe for building across all platforms
