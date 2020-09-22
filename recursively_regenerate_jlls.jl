@@ -28,7 +28,7 @@ function get_json_obj(dep_name::String)
     end
     build_tarballs = build_tarballs_path(dep_name)
     if !isfile(build_tarballs)
-        @warn("Unable to find build_tarballs.jl file for dependency \"$(dep["name"])\"")
+        @warn("Unable to find build_tarballs.jl file for dependency $(repr(dep_name))")
     end
     @info("Parsing $(build_tarballs)")
 
