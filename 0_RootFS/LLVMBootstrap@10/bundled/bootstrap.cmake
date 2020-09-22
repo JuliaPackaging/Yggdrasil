@@ -45,7 +45,7 @@ set(COMPILER_RT_DEFAULT_TARGET_ONLY OFF CACHE BOOL "")
 set(RUNTIMES_BUILD_ALLOW_DARWIN ON CACHE BOOL "")
 set(ENABLE_LINKER_BUILD_ID ON CACHE BOOL "")
 
-function(CONFIGURE target is_musl OS SYSTEM build_sanitizers)
+function(CONFIGURE target is_musl OS SYSTEM build_sanitizers build_runtime)
   # Set the per-target builtins options.
   list(APPEND BUILTIN_TARGETS "${target}")
   set(BUILTIN_TARGETS ${BUILTIN_TARGETS} PARENT_SCOPE)
@@ -59,35 +59,34 @@ function(CONFIGURE target is_musl OS SYSTEM build_sanitizers)
   set(BUILTINS_${target}_CMAKE_SYSROOT "/opt/${SYSTEM}/${SYSTEM}/sys-root" CACHE STRING "")
   set(BUILTINS_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
   set(BUILTINS_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
-  set(BUILTINS_${target}_CMAKE_EXE_LINKER_FLAG "-fuse-ld=lld" CACHE STRING "")
+  set(BUILTINS_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
 
   # Set the per-target runtimes options.
-  list(APPEND RUNTIME_TARGETS "${target}")
-  set(RUNTIME_TARGETS ${RUNTIME_TARGETS} PARENT_SCOPE)
+  if(build_runtime)
+    list(APPEND RUNTIME_TARGETS "${target}")
+    set(RUNTIME_TARGETS ${RUNTIME_TARGETS} PARENT_SCOPE)
+  endif()
 
   set(RUNTIMES_${target}_CMAKE_BUILD_TYPE Release CACHE STRING "")
   set(RUNTIMES_${target}_LLVM_ENABLE_CXX1Y ON CACHE BOOL "")
   set(RUNTIMES_${target}_CMAKE_SYSTEM_NAME "${OS}" CACHE STRING "")
 
-  # Force GCC here, until:
-  # https://reviews.llvm.org/D28791 & https://reviews.llvm.org/D68407
-  # LLVM 9 has crt
-  # set(RUNTIMES_$(target)_CMAKE_C_COMPILER /opt/${SYSTEM}/bin/${SYSTEM}-gcc CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_CXX_COMPILER /opt/${SYSTEM}/bin/${SYSTEM}-g++ CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_LINKER /opt/${SYSTEM}/bin/${SYSTEM}-ld CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_OBJCOPY /opt/${SYSTEM}/bin/${SYSTEM}-objcopy CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_AR /opt/${SYSTEM}/bin/${SYSTEM}-ar CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_NM /opt/${SYSTEM}/bin/${SYSTEM}-nm CACHE STRING "")
-  # set(RUNTIMES_$(target)_CMAKE_RANLIB /opt/${SYSTEM}/bin/${SYSTEM}-ranlib CACHE STRING "")
-
-  # Normal config from https://github.com/llvm/llvm-project/blob/a8b8a9374a3c555ac8528fc37b92935554083b9f/clang/cmake/caches/Fuchsia-stage2.cmake#L110 
-  set(RUNTIMES_${target}_CMAKE_C_FLAGS "--target=${target}" CACHE STRING "")
-  set(RUNTIMES_${target}_CMAKE_CXX_FLAGS "--target=${target}" CACHE STRING "")
-  set(RUNTIMES_${target}_CMAKE_ASM_FLAGS "--target=${target}" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_C_FLAGS "--target=${target} --gcc-toolchain=/opt/${SYSTEM}" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_CXX_FLAGS "--target=${target} --gcc-toolchain=/opt/${SYSTEM}" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_ASM_FLAGS "--target=${target} --gcc-toolchain=/opt/${SYSTEM}" CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_C_FLAGS "--target=${target}" CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_CXX_FLAGS "--target=${target}" CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_ASM_FLAGS "--target=${target}" CACHE STRING "")
   set(RUNTIMES_${target}_CMAKE_SYSROOT "/opt/${SYSTEM}/${SYSTEM}/sys-root" CACHE STRING "")
-  set(RUNTIMES_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
-  set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
-  set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAG "-fuse-ld=lld" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld -L/opt/${SYSTEM}/${SYSTEM}/lib" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld -L/opt/${SYSTEM}/${SYSTEM}/lib" CACHE STRING "")
+  set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld -L/opt/${SYSTEM}/${SYSTEM}/lib" CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=lld " CACHE STRING "")
+  # set(RUNTIMES_${target}_CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld" CACHE STRING "")
+  set(RUNTIMES_${target}_LIBCXXABI_GCC_TOOLCHAIN "/opt/${SYSTEM}" ON CACHE STRING "")
+  set(RUNTIMES_${target}_LIBCXX_GCC_TOOLCHAIN "/opt/${SYSTEM}" ON CACHE STRING "")
+  set(RUNTIMES_${target}_LIBUNWIND_GCC_TOOLCHAIN "/opt/{SYSTEM}" ON CACHE STRING "")
   set(RUNTIMES_${target}_COMPILER_RT_USE_BUILTINS_LIBRARY ON CACHE BOOL "")
   set(RUNTIMES_${target}_LIBUNWIND_ENABLE_SHARED OFF CACHE BOOL "")
   set(RUNTIMES_${target}_LIBUNWIND_USE_COMPILER_RT ON CACHE BOOL "")
@@ -104,6 +103,8 @@ function(CONFIGURE target is_musl OS SYSTEM build_sanitizers)
   set(RUNTIMES_${target}_LLVM_ENABLE_ASSERTIONS ON CACHE BOOL "")
   set(RUNTIMES_${target}_COMPILER_RT_INCLUDE_TESTS OFF CACHE BOOL "")
   set(RUNTIMES_${target}_COMPILER_RT_BUILD_XRAY OFF CACHE BOOL "")
+  set(RUNTIMES_${target}_COMPILER_RT_BUILD_LIBFUZZER OFF CACHE BOOL "")
+  set(RUNTIMES_${target}_COMPILER_RT_BUILD_PROFILE OFF CACHE BOOL "")
   if(build_sanitizers)
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI "libc++" CACHE STRING "")
     set(RUNTIMES_${target}_SANITIZER_CXX_ABI_INTREE ON CACHE BOOL "")
@@ -113,44 +114,43 @@ function(CONFIGURE target is_musl OS SYSTEM build_sanitizers)
   endif()
   set(RUNTIMES_${target}_LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
 
-  # set(RUNTIMES_${target}_LIBCXXABI_GCC_TOOLCHAIN "/opt/${SYSTEM}" ON CACHE STRING "")
-  # set(RUNTIMES_${target}_LIBCXX_GCC_TOOLCHAIN "/opt/${SYSTEM}" ON CACHE STRING "")
-  # set(RUNTIMES_${target}_LIBUNWIND_GCC_TOOLCHAIN "/opt/{SYSTEM}" ON CACHE STRING "")
-
   if(is_musl)
     set(RUNTIMES_${target}_LIBCXX_HAS_MUSL_LIBC ON CACHE BOOL "")
     set(RUNTIMES_${target}_LIBCXX_HAS_GCC_S_LIB OFF CACHE BOOL "")
   endif()
 
   # Use .build-id link.
-  list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
-  set(RUNTIME_BUILD_ID_LINK ${RUNTIME_BUILD_ID_LINK} PARENT_SCOPE)
+  if(build_runtime)
+    list(APPEND RUNTIME_BUILD_ID_LINK "${target}")
+    set(RUNTIME_BUILD_ID_LINK ${RUNTIME_BUILD_ID_LINK} PARENT_SCOPE)
+  endif()
 endfunction()
 
 # Linux & glibc
-foreach(target aarch64-linux-gnu;i686-linux-gnu;x86_64-linux-gnu;powerpc64le-linux-gnu)
-  configure(${target} FALSE "Linux" ${target} FALSE)
+foreach(target aarch64-linux-gnu;;x86_64-linux-gnu;powerpc64le-linux-gnu)
+  configure(${target} FALSE "Linux" ${target} FALSE TRUE)
 endforeach()
-configure(armv7-unknown-linux-gnueabihf FALSE "Linux" arm-linux-gnueabihf FALSE)
+configure(armv7-unknown-linux-gnueabihf FALSE "Linux" arm-linux-gnueabihf FALSE TRUE)
+configure(i686-linux-gnu FALSE "Linux" i686-linux-gnu FALSE FALSE)
 
 # Linux & musl
-foreach(target aarch64-linux-musl;i686-linux-musl;x86_64-linux-musl)
-  configure(${target} TRUE "Linux" ${target} FALSE)
-endforeach()
-configure(armv7-linux-musleabihf TRUE "Linux" arm-linux-musleabihf FALSE)
+# foreach(target aarch64-linux-musl;i686-linux-musl;x86_64-linux-musl)
+#   configure(${target} TRUE "Linux" ${target} FALSE)
+# endforeach()
+# configure(armv7-linux-musleabihf TRUE "Linux" arm-linux-musleabihf FALSE)
 
 # Windows
 foreach(target x86_64-w64-mingw32;i686-w64-mingw32)
-  configure(${target} FALSE "Windows" ${target} FALSE)
+  configure(${target} FALSE "Windows" ${target} FALSE FALSE)
 endforeach()
 
 # FreeBSD
 set(target "x86_64-unknown-freebsd11.1")
-configure(${target} FALSE "FreeBSD" ${target} FALSE)
+configure(${target} FALSE "FreeBSD" ${target} FALSE TRUE)
 
 # Setup darwin
 set(target "x86_64-apple-darwin")
-configure(${target} FALSE "Darwin" x86_64-apple-darwin14 FALSE)
+configure(${target} FALSE "Darwin" x86_64-apple-darwin14 FALSE FALSE)
 
 set(BUILTINS_${target}_DARWIN_ios_ARCHS "" CACHE STRING "")
 set(BUILTINS_${target}_DARWIN_iossim_ARCHS "" CACHE STRING "")

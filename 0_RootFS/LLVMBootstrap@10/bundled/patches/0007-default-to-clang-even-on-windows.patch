@@ -1,6 +1,6 @@
-From 195126931c39fc19ac246f8244604c2700f08724 Mon Sep 17 00:00:00 2001
+From 2149ee1399a567b6054a583a7b21416fba4dc419 Mon Sep 17 00:00:00 2001
 From: Valentin Churavy <v.churavy@gmail.com>
-Date: Mon, 21 Sep 2020 08:41:08 -0400
+Date: Mon, 21 Sep 2020 10:44:55 -0400
 Subject: [PATCH] default to clang
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] default to clang
  1 file changed, 9 deletions(-)
 
 diff --git a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
-index 9a6adab1656..83737f39478 100644
+index 75f442b37e1..223c31066df 100644
 --- a/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
 +++ b/llvm/cmake/modules/LLVMExternalProjectUtils.cmake
 @@ -112,20 +112,11 @@ function(llvm_ExternalProject_Add name source_dir)
@@ -16,22 +16,22 @@ index 9a6adab1656..83737f39478 100644
    if(ARG_USE_TOOLCHAIN AND NOT CMAKE_CROSSCOMPILING)
      if(CLANG_IN_TOOLCHAIN)
 -      if(_cmake_system_name STREQUAL Windows)
--        set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl
--                          -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl)
+-        set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl${CMAKE_EXECUTABLE_SUFFIX}
+-                          -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang-cl${CMAKE_EXECUTABLE_SUFFIX})
 -      else()
-         set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang
-                           -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang++)
+         set(compiler_args -DCMAKE_C_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang${CMAKE_EXECUTABLE_SUFFIX}
+                           -DCMAKE_CXX_COMPILER=${LLVM_RUNTIME_OUTPUT_INTDIR}/clang++${CMAKE_EXECUTABLE_SUFFIX})
 -      endif()
      endif()
      if(lld IN_LIST TOOLCHAIN_TOOLS)
 -      if(_cmake_system_name STREQUAL Windows)
--        list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/lld-link)
+-        list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/lld-link${CMAKE_EXECUTABLE_SUFFIX})
 -      else()
-         list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/ld.lld)
+         list(APPEND compiler_args -DCMAKE_LINKER=${LLVM_RUNTIME_OUTPUT_INTDIR}/ld.lld${CMAKE_EXECUTABLE_SUFFIX})
 -      endif()
      endif()
      if(llvm-ar IN_LIST TOOLCHAIN_TOOLS)
-       list(APPEND compiler_args -DCMAKE_AR=${LLVM_RUNTIME_OUTPUT_INTDIR}/llvm-ar)
+       list(APPEND compiler_args -DCMAKE_AR=${LLVM_RUNTIME_OUTPUT_INTDIR}/llvm-ar${CMAKE_EXECUTABLE_SUFFIX})
 -- 
 2.28.0
 

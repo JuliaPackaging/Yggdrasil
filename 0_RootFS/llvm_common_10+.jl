@@ -5,10 +5,7 @@ using BinaryBuilderBase
 Core.eval(BinaryBuilderBase, :(bootstrap_list = [:rootfs, :platform_support, :glibc]))
 
 llvm_tags = Dict(
-    v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
-    v"7.1.0" => "4856a9330ee01d30e9e11b6c2f991662b4c04b07",
-    v"8.0.1" => "19a71f6bdf2dddb10764939e7f0ec2b98dba76c9",
-    v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
+    v"10.0.1" => "ef32c611aa214dea855364efd7ba451ec5ec3f74",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -77,9 +74,6 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     # Build!
     cmake -C ${WORKSPACE}/srcdir/bootstrap.cmake ${CMAKE_FLAGS[@]} ${LLVM_SRCDIR}
     cmake -LA || true
-
-    make -j${nproc} VERBOSE=1 llvm-lipo
-    ln -s `pwd`/bin/llvm-lipo /usr/local/bin/lipo
 
     make -j${nproc} VERBOSE=1 distribution
 
