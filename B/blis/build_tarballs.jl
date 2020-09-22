@@ -45,7 +45,9 @@ case ${target} in
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
-        export BLI_THREAD=none
+        export BLI_THREAD=openmp
+        export CC=gcc
+        export CXX=g++
         ;;
     *"aarch64"*"linux"*) 
         # Aarch64 has no metaconfiguration support yet.
@@ -65,6 +67,12 @@ esac
 ./configure -p ${prefix} -t ${BLI_THREAD} ${BLI_CONFIG}
 make -j${nproc}
 make install
+
+# Rename .dll for Windows targets.
+if [[ "${target}" == *"x86_64"*"w64"* ]]; then
+    mkdir ${prefix}/bin
+    mv ${prefix}/lib/libblis.3.dll ${prefix}/bin/libblis.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further
