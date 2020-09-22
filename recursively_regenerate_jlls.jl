@@ -33,7 +33,7 @@ function get_json_obj(dep_name::String)
     @info("Parsing $(build_tarballs)")
 
     # We're going to `include()` the "build_tarballs.jl" function to avoid the overhead of `using BinaryBuilder`
-    # every time we launch a new julia process. 
+    # every time we launch a new julia process.
     meta_json = tempname()
     m_name = gensym()
     m = Module(m_name)
@@ -183,17 +183,17 @@ function open_jll_bump_pr(dep_name::String)
             Base.shred!(creds)
         end
 
-		params = Dict(
-			"base" => "master",
-			"head" => "$(dirname(fork.full_name)):$(branch_name)",
-			"maintainer_can_modify" => true,
-			"title" => "JLL bump: $(dep_name)",
-			"body" => """
-			This pull request bumps the JLL version of $(dep_name).
-			It was generated via the `recursively_regenerate_jlls.jl` script.
-			"""
-		)
-		pr = BinaryBuilder.create_or_update_pull_request("JuliaPackaging/Yggdrasil", params, auth=gh_auth)
+        params = Dict(
+            "base" => "master",
+            "head" => "$(dirname(fork.full_name)):$(branch_name)",
+            "maintainer_can_modify" => true,
+            "title" => "JLL bump: $(dep_name)",
+            "body" => """
+            This pull request bumps the JLL version of $(dep_name).
+            It was generated via the `recursively_regenerate_jlls.jl` script.
+            """
+        )
+        pr = BinaryBuilder.create_or_update_pull_request("JuliaPackaging/Yggdrasil", params, auth=gh_auth)
         println("https://github.com/$(fork.full_name)/pull/new/$(BinaryBuilder.HTTP.escapeuri(branch_name))?expand=1")
     end
 end
@@ -203,7 +203,7 @@ deps = recursively_collect_dependencies(toplevel_dep_name)
 push!(deps, toplevel_dep_name)
 println("Discovered dependencies: $(collect(deps))")
 
-if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :y) == :y
+if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :n) == :y
     for dep in deps
 	open_jll_bump_pr(dep)
     end
