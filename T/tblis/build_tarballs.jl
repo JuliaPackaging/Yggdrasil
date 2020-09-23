@@ -41,11 +41,7 @@ case ${target} in
         export BLI_CONFIG=amd
         export BLI_THREAD=openmp
         # Wrapper for posix_memalign calls.
-        echo \
-            'inline int posix_memalign(void **memptr, size_t alignment, size_t size)'\
-            '{ *memptr = 0; *memptr = _aligned_malloc(alignment, size); '\
-            '  return (*memptr == 0 && size != 0); }' |\
-            cat - src/memory/aligned_allocator.hpp >> aligned_allocator_new.hpp
+        echo 'aW5saW5lIGludCBwb3NpeF9tZW1hbGlnbih2b2lkICoqbWVtcHRyLCBzaXplX3QgYWxpZ25tZW50LCBzaXplX3Qgc2l6ZSkKeyAqbWVtcHRyID0gMDsgKm1lbXB0ciA9IF9hbGlnbmVkX21hbGxvYyhhbGlnbm1lbnQsIHNpemUpOyAKICAgcmV0dXJuICgqbWVtcHRyID09IDAgJiYgc2l6ZSAhPSAwKTsgfQo=' | base64 -d | cat - src/memory/aligned_allocator.hpp >> aligned_allocator_new.hpp
         mv aligned_allocator_new.hpp src/memory/aligned_allocator.hpp
         # Additional linking parameter needed for MinGW Autoconf.
         # Update Autoconf parameters and refresh.
