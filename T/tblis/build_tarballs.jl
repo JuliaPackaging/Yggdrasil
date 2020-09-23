@@ -25,9 +25,15 @@ done
 case ${target} in
     # Unlike stated in Wiki, 
     # TBLIS automatically detects threading model.
-    *"x86_64"*"linux"*) 
+    *"x86_64"*"linux"*"gnu"*) 
         export BLI_CONFIG=x86
         export BLI_THREAD=openmp
+        ;;
+    *"x86_64"*"linux"*"musl"*)
+        export BLI_CONFIG=x86
+        export BLI_THREAD=pthreads
+        export CC=clang
+        export CXX=clang++
         ;;
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
@@ -84,7 +90,7 @@ fi
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
+    Linux(:x86_64, libc=:musl, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
     MacOS(:x86_64),
     FreeBSD(:x86_64),
     Windows(:x86_64)
@@ -105,4 +111,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
