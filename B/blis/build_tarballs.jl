@@ -70,7 +70,7 @@ make install
 
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
-    mkdir ${prefix}/bin
+    mkdir -p ${prefix}/bin
     mv ${prefix}/lib/libblis.3.dll ${prefix}/bin/libblis.dll
 fi
 """
