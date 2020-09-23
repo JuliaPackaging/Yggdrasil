@@ -25,15 +25,33 @@ done
 case ${target} in
     # Unlike stated in Wiki, 
     # TBLIS automatically detects threading model.
-    *"x86_64"*"linux"*) 
+    *"x86_64"*"linux"*"gnu"*) 
         export BLI_CONFIG=x86
         export BLI_THREAD=openmp
+        ;;
+    *"x86_64"*"linux"*"musl"*)
+        export BLI_CONFIG=x86
+        export BLI_THREAD=openmp
+        export CXXBASEPATH=$(dirname $(qfind /opt/ -name iostream | tail -n 1))
+        export CPATH=$CXXBASEPATH:$CXXBASEPATH/${target}
         ;;
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
         # Building only for AMD processors.
         export BLI_CONFIG=amd
         export BLI_THREAD=openmp
+        # Wrapper for posix_memalign calls.
+        sed -i "s/include <cstdlib>/include <cstdlib>\n inline int posix_memalign(void **memptr, size_t alignment, size_t size) { *memptr = 0; *memptr = _aligned_malloc(alignment, size); return (*memptr == 0 \&\& size != 0); }\n/" src/memory/aligned_allocator.hpp
+        # Additional linking parameter needed for MinGW Autoconf.
+        # Update Autoconf parameters and refresh.
+        cd src/external/tci
+        echo "AM_LDFLAGS=-no-undefined" >> Makefile.am
+        echo "lib_libtci_la_LDFLAGS=-no-undefined" >> Makefile.am
+        update_configure_scripts --reconf
+        cd ../../..
+        sed -i "s/.*AM_LDFLAGS.*/AM_LDFLAGS=-lpthread -no-undefined/" Makefile.am
+        echo "lib_libtblis_la_LDFLAGS=-no-undefined" >> Makefile.am
+        update_configure_scripts --reconf
         ;;
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86
@@ -59,21 +77,22 @@ CFG_OPTION_TBLIS="--enable-config=${BLI_CONFIG} --enable-thread-model=${BLI_THRE
 ./configure ${CFG_OPTION_TBLIS} ${CFG_OPTION_POSIX}
 make -j${nproc}
 make install
+
+if [[ ${target} == *"x86_64"*"w64"* ]]; then
+    # Rename binary files for MinGW
+    mv ${prefix}/bin/libtci-0.dll ${prefix}/bin/libtci.dll 
+    mv ${prefix}/bin/libtblis-0.dll ${prefix}/bin/libtblis.dll 
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     Linux(:x86_64, libc=:glibc),
-    # Some StdCpp headers missing for linux-musl toolchain.
-    # Linux(:x86_64, libc=:musl),
+    Linux(:x86_64, libc=:musl),
     MacOS(:x86_64),
     FreeBSD(:x86_64)
-    # Due to the following reasons, MinGW build is commented out:
-    # - Lack of support of some Intel XMM instructions;
-    # - Lack of posix_memalign (solvable as _aligned_malloc is available);
-    # - This build system fails to produce .dll on MinGW;
-    # Windows(:x86_64),
+    Windows(:x86_64),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
