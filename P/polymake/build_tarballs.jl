@@ -3,16 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "polymake"
-version = v"4.1.0"
+version = v"4.2.0"
 
 # Collection of sources required to build polymake
 sources = [
-    GitSource("https://github.com/polymake/polymake.git", "8704ebbba9f8cc2b07f824a283ffed49a8c036be")
+    ArchiveSource("https://github.com/polymake/polymake/archive/V$(version.major).$(version.minor).tar.gz", "d308f551ef4c9f490a3a848d45a1ab41ae6461b1daf5be3deeaebad7df3816d4")
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# the prepared config files for non-native architectures
+# assume a fixed source directory
+mv $WORKSPACE/srcdir/{polymake-*,polymake}
 cd $WORKSPACE/srcdir/polymake
 
 perl_version=5.30.3
@@ -24,7 +27,12 @@ for dir in FLINT GMP MPFR PPL Perl bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
+# adjust for hardcoded /workspace dirs
 atomic_patch -p1 ../patches/relocatable.patch
+
+# to unbreak ctrl+c in julia
+atomic_patch -p1 ../patches/sigint.patch
+
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
