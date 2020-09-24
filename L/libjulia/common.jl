@@ -91,11 +91,6 @@ function build_julia(version)
 
     override XC_HOST=${target}
     override OS=${OS}
-    override USE_BINARYBUILDER=1
-    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
-
-    #USE_CROSS_FLISP=1 ???
-    NO_GIT=1
 
     #llvm-config-host is not available
     override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
@@ -110,6 +105,11 @@ function build_julia(version)
 
     prefix=${prefix}
     LOCALBASE=${prefix}
+
+    override USE_BINARYBUILDER=1
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
+    NO_GIT=1
+
     EOM
 
     make BUILDING_HOST_TOOLS=1 -j${nproc} -C src/flisp host/flisp
