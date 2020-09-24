@@ -152,7 +152,7 @@ function build_julia(version)
 #        Dependency("OpenLibm_jll"),
 #        Dependency("dSFMT_jll"),
 #        Dependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")),
-#        Dependency("LibUV_jll"),
+        Dependency("LibUV_jll"),
 #        Dependency("utf8proc_jll"),
 #        Dependency("MbedTLS_jll"),
 #        Dependency("LibSSH2_jll"),
