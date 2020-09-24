@@ -45,6 +45,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     done
 
     cp -a integration/Sanitizer/* ${prefix}/cuda/bin
+
+    # HACK: remove static libraries to get past GitHub's 2GB limit
+    rm ${prefix}/cuda/lib64/*_static.a
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     apk add p7zip
 
