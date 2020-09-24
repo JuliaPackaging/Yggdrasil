@@ -6,14 +6,14 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "1fcc6d66f9df74189c74d3d390f02202bb7db953"),
+              "67d1dc2ca2289f25a23b016a0bc427d45301ec05"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libuv/
 
-# Touch some files so that the build system doesn't try to re-run `acreconf`:
+# Touch some files so that the build system doesn't attempt to re-run `autoconf`:
 touch -c aclocal.m4
 touch -c Makefile.in
 touch -c configure
