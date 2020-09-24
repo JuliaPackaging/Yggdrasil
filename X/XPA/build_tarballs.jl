@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/xpa
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
     make mingw-dll
-    cp libxpa.dll ${libdir}/libxpa.dll
+    cp libxpa.dll ${prefix}/bin/libxpa.dll
 fi
 make install
 """
