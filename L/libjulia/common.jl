@@ -73,9 +73,9 @@ function build_julia(version)
 
     cat << EOM >Make.user
     #USE_SYSTEM_LLVM=1
-    #USE_SYSTEM_LIBUNWIND=1
+    USE_SYSTEM_LIBUNWIND=1
     #USE_SYSTEM_PCRE=1
-    #USE_SYSTEM_OPENLIBM=1
+    USE_SYSTEM_OPENLIBM=1
     #USE_SYSTEM_DSFMT=1
     #USE_SYSTEM_BLAS=1
     #LIBBLASNAME=libopenblas
@@ -85,14 +85,14 @@ function build_julia(version)
     #USE_SYSTEM_MPFR=1
     #USE_SYSTEM_SUITESPARSE=1
     #USE_SYSTEM_LIBUV=1
-    #USE_SYSTEM_UTF8PROC=1
-    #USE_SYSTEM_MBEDTLS=1
-    #USE_SYSTEM_LIBSSH2=1
-    #USE_SYSTEM_CURL=1
-    #USE_SYSTEM_LIBGIT2=1
+    USE_SYSTEM_UTF8PROC=1
+    USE_SYSTEM_MBEDTLS=1
+    USE_SYSTEM_LIBSSH2=1
+    USE_SYSTEM_CURL=1
+    USE_SYSTEM_LIBGIT2=1
     USE_SYSTEM_PATCHELF=1
-    #USE_SYSTEM_ZLIB=1
-    #USE_SYSTEM_P7ZIP=1
+    USE_SYSTEM_ZLIB=1
+    USE_SYSTEM_P7ZIP=1
 
     override XC_HOST=${target}
     override OS=${OS}
@@ -174,20 +174,18 @@ function build_julia(version)
         Dependency("LibUnwind_jll"),
         Dependency("LibOSXUnwind_jll"),
 #        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
-#        Dependency("OpenLibm_jll"),
+        Dependency("OpenLibm_jll"),
 #        Dependency("dSFMT_jll"),
 #        Dependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")),
         Dependency("LibUV_jll"),
 #        Dependency("utf8proc_jll"),
-#        Dependency("MbedTLS_jll"),
-#        Dependency("LibSSH2_jll"),
-#        Dependency("LibCURL_jll"),
+        Dependency("MbedTLS_jll"),
+        Dependency("LibSSH2_jll"),
+        Dependency("LibCURL_jll"),
 #        Dependency("Patchelf_jll"),
-       Dependency("Zlib_jll"),
-#        Dependency("p7zip_jll"),
-#        Dependency("MPFR_jll"),
-#        Dependency("GMP_jll"),
-#        Dependency("LibGit2_jll"),
+        Dependency("Zlib_jll"),
+        Dependency("p7zip_jll"),
+        Dependency("LibGit2_jll"),
     ]
     if version.major == 1 && version.minor == 4
 #        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
