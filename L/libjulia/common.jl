@@ -28,7 +28,7 @@ function build_julia(version)
     # Bash recipe for building across all platforms
     script = raw"""
     apk update
-    apk add coreutils libuv-dev utf8proc
+    apk add coreutils libuv-dev utf8proc-dev
 
     cd $WORKSPACE/srcdir/julia*
 
@@ -39,7 +39,6 @@ function build_julia(version)
         atomic_patch -p1 ${f}
       done
     fi
-
 
     case ${target} in
         *linux*)
@@ -66,6 +65,7 @@ function build_julia(version)
     override LIBUV=/usr/lib/libuv.so
     override LIBUTF8PROC=/usr/lib/libutf8proc.so.2
     EOM
+
     cat << EOM >Make.user
     #USE_SYSTEM_LLVM=1
     #USE_SYSTEM_LIBUNWIND=1
