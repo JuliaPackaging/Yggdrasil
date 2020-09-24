@@ -16,15 +16,6 @@ function build_julia(version)
         DirectorySource("./bundled"),
     ]
 
-#   checksums = Dict(
-#       v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
-#       v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
-#       v"1.5.1" => "1f138205772eb1e565f1d7ccd6f237be8a4d18713a3466e3b8d3a6aad6483fd9",
-#   )
-#   sources = [
-#       ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
-#   ]
-
     # Bash recipe for building across all platforms
     script = raw"""
     apk update
@@ -68,6 +59,18 @@ function build_julia(version)
     override OS=Linux
     EOM
 
+    if [[ "${target}" == *mingw* ]]; then
+        LLVMLINK="-L${prefix}/bin -lLLVM"
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_LDFLAGS="-L${prefix}/bin"
+        LDFLAGS="-L${prefix}/bin"
+    else
+        LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_LDFLAGS="-L${prefix}/lib"
+        LDFLAGS=""
+    fi
+
     cat << EOM >Make.user
     #USE_SYSTEM_LLVM=1
     #USE_SYSTEM_LIBUNWIND=1
@@ -96,12 +99,16 @@ function build_julia(version)
     override BUILD_OS=Linux
 
     #llvm-config-host is not available
-    override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
-    override LLVM_CXXFLAGS=-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
-    override LLVM_LDFLAGS=-L${prefix}/lib
+    override LLVMLINK=${LLVMLINK}
+    override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
+    override LLVM_LDFLAGS=${LLVM_LDFLAGS}
 
     # just nop this
     override LLVM_CONFIG_HOST=
+
+    # we only run flisp and we built that for Linux
+    override spawn = \$(1)
+    override cygpath_w = \$(1)
 
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
@@ -111,22 +118,35 @@ function build_julia(version)
 
     override USE_BINARYBUILDER=1
     override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
-    NO_GIT=1
-
     EOM
 
-    make BUILDING_HOST_TOOLS=1 -j${nproc} -C src/flisp host/flisp
+    # Add file to one of the `STD_LIB_PATH`
+    if [[ "${target}" == *mingw* ]]; then
+        cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
+    fi
+
+    make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} -C src/flisp host/flisp
     make clean -C src
     make clean -C src/support
     make clean -C src/flisp
 
+    # We don't trust the system libm in places
+    # So we include a private copy of libopenlibm
+    mkdir -p usr/lib
+    cp ${prefix}/lib/libopenlibm.a usr/lib/
+
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 -j${nproc} julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
-    cp usr/lib/libjulia* ${libdir}/
+    if [[ "${target}" == *mingw* ]]; then
+        cp usr/bin/libjulia* ${bindir}/
+    else
+        cp usr/lib/libjulia* ${libdir}/
+    fi
+    
     cp -R -L usr/include/julia/* ${includedir}/julia
     install_license LICENSE.md
     """
@@ -135,7 +155,7 @@ function build_julia(version)
     # platforms are passed in on the command line
     #
     # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols 
+    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
     # dependent on the C++ strings ABI (coming from LLVM related code). This
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
@@ -193,4 +213,3 @@ function build_julia(version)
     global ARGS
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
 end
-
