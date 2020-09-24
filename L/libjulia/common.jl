@@ -13,6 +13,7 @@ function build_julia(version)
     )
     sources = [
         ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version)-full.tar.gz", checksums[version]),
+        DirectorySource("./bundled"),
     ]
 
 #   checksums = Dict(
@@ -26,7 +27,19 @@ function build_julia(version)
 
     # Bash recipe for building across all platforms
     script = raw"""
+    apk update
+    apk add coreutils libuv-dev utf8proc
+
     cd $WORKSPACE/srcdir/julia*
+
+    # Apply patches
+    if [ -d $WORKSPACE/srcdir/patches ]; then
+      for f in $WORKSPACE/srcdir/patches/*.patch; do
+        echo "Applying path ${f}"
+        atomic_patch -p1 ${f}
+      done
+    fi
+
 
     case ${target} in
         *linux*)
@@ -43,51 +56,76 @@ function build_julia(version)
         ;;
     esac
 
-    FLAGS=(
-         USE_BINARYBUILDER=1
-         XC_HOST=${target}
-         BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
-         OS=${OS}
-         USE_CROSS_FLISP=1
-#        USE_SYSTEM_LLVM=1
-#        USE_SYSTEM_LIBUNWIND=1
-#        USE_SYSTEM_PCRE=1
-#        USE_SYSTEM_OPENLIBM=1
-#        USE_SYSTEM_DSFMT=1
-#        USE_SYSTEM_BLAS=1
-#        LIBBLASNAME=libopenblas
-#        USE_SYSTEM_LAPACK=1
-#        LIBLAPACKNAME=libopenblas
-#        USE_SYSTEM_GMP=1
-#        USE_SYSTEM_MPFR=1
-#        #USE_SYSTEM_SUITESPARSE=1
-#        USE_SYSTEM_LIBUV=1
-#        USE_SYSTEM_UTF8PROC=1
-#        USE_SYSTEM_MBEDTLS=1
-#        USE_SYSTEM_LIBSSH2=1
-#        USE_SYSTEM_CURL=1
-#        USE_SYSTEM_LIBGIT2=1
-         USE_SYSTEM_PATCHELF=1
-#        USE_SYSTEM_ZLIB=1
-#        USE_SYSTEM_P7ZIP=1
+    cat << EOM >Make.host.user
+    override CC=${CC_BUILD}
+    override CXX=${CXX_BUILD}
+    override AR=${AR_BUILD}
+    USE_SYSTEM_LIBUV=1
+    USE_SYSTEM_UTF8PROC=1
+    # julia want's libuv.a
+    override LIBUV=/usr/lib/libuv.so
+    override LIBUTF8PROC=/usr/lib/libutf8proc.so.2
+    EOM
+    cat << EOM >Make.user
+    #USE_SYSTEM_LLVM=1
+    #USE_SYSTEM_LIBUNWIND=1
+    #USE_SYSTEM_PCRE=1
+    #USE_SYSTEM_OPENLIBM=1
+    #USE_SYSTEM_DSFMT=1
+    #USE_SYSTEM_BLAS=1
+    #LIBBLASNAME=libopenblas
+    #USE_SYSTEM_LAPACK=1
+    #LIBLAPACKNAME=libopenblas
+    #USE_SYSTEM_GMP=1
+    #USE_SYSTEM_MPFR=1
+    #USE_SYSTEM_SUITESPARSE=1
+    #USE_SYSTEM_LIBUV=1
+    #USE_SYSTEM_UTF8PROC=1
+    #USE_SYSTEM_MBEDTLS=1
+    #USE_SYSTEM_LIBSSH2=1
+    #USE_SYSTEM_CURL=1
+    #USE_SYSTEM_LIBGIT2=1
+    USE_SYSTEM_PATCHELF=1
+    #USE_SYSTEM_ZLIB=1
+    #USE_SYSTEM_P7ZIP=1
 
-        NO_GIT=1
-        prefix="${prefix}"
-        #-j${nproc}
-    )
+    override XC_HOST=${target}
+    override OS=${OS}
+    override USE_BINARYBUILDER=1
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
+
+    #USE_CROSS_FLISP=1 ???
+    NO_GIT=1
+
+    #llvm-config-host is not available
+    override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
+    override LLVM_CXXFLAGS=-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
+    override LLVM_LDFLAGS=-L${prefix}/lib
+
+    # just nop this
+    override LLVM_CONFIG_HOST=
+
+    # julia expects libuv-julia.a
+    override LIBUV=${prefix}/lib/libuv.a
+
+    prefix=${prefix}
+    LOCALBASE=${prefix}
+    EOM
+
+    make BUILDING_HOST_TOOLS=1 -j${nproc} -C src/flisp host/flisp
+    make clean -C src
+    make clean -C src/support
+    make clean -C src/flisp
 
     # compile libjulia but don't try to build a sysimage
-    make -C src/flisp host/Makefile
-    make -C src/flisp flisp.boot
-    cp src/flisp/flisp.boot src/flisp/host/flisp.boot
-    make "${FLAGS[@]}" julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 -j${nproc} julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
     cp usr/lib/libjulia* ${libdir}/
     cp -R -L usr/include/julia/* ${includedir}/julia
-    install_license /usr/share/licenses/MIT
+    install_license LICENSE.md
     """
 
     # These are the platforms we will build for by default, unless further
@@ -99,8 +137,7 @@ function build_julia(version)
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = supported_platforms()
-    platforms = expand_cxxstring_abis(platforms)
+    platforms = expand_cxxstring_abis(supported_platforms())
 
     # The products that we will ensure are always built
     products = [
