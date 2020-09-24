@@ -64,6 +64,8 @@ function build_julia(version)
     # julia want's libuv.a
     override LIBUV=/usr/lib/libuv.so
     override LIBUTF8PROC=/usr/lib/libutf8proc.so.2
+
+    override OS=Linux
     EOM
 
     cat << EOM >Make.user
@@ -91,6 +93,7 @@ function build_julia(version)
 
     override XC_HOST=${target}
     override OS=${OS}
+    override BUILD_OS=Linux
 
     #llvm-config-host is not available
     override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
