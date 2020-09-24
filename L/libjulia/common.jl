@@ -137,7 +137,9 @@ function build_julia(version)
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(supported_platforms())
+    platforms = supported_platforms()
+    filter!(!=(Linux(:i686, libc=:musl)), platforms)
+    platforms = expand_cxxstring_abis(platforms)
 
     # The products that we will ensure are always built
     products = [
