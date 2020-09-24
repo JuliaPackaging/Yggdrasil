@@ -7,23 +7,18 @@ version = v"2.1.20"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ericmandel/xpa.git", "c0452e139134d6d1677b5e6fda2ad5283c8ba4c7"),
+    GitSource("https://github.com/ericmandel/xpa.git", "923cc1bc7e761424b87049b1a20853eefe921388"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xpa
-if [[ ${target} == *freebsd* ]]; then
-    autoreconf -fvi
-fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
     make mingw-dll
-    # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
-    # absolutely filthy hack edits generated Makefile manually
-    sed -i 's/$(INSTALL_PROGRAM) $$i$(EXE)/$(INSTALL_PROGRAM) $$i/' Makefile
     sed -i 's%`ls *.so* *.dylib *.sl 2>/dev/null`%`ls *.so* *.dylib *.sl *.dll 2>/dev/null`%' Makefile
+    sed -i 's%LIB_INSTALL_DIR =	$(INSTALL_ROOT)$(exec_prefix)/lib%LIB_INSTALL_DIR =	$(INSTALL_ROOT)$(exec_prefix)/bin%' Makefile
 fi
 make install
 """
