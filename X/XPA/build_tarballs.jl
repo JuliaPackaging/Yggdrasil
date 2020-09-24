@@ -17,8 +17,7 @@ cd $WORKSPACE/srcdir/xpa
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
     make mingw-dll
-    sed -i 's%`ls *.so* *.dylib *.sl 2>/dev/null`%`ls *.so* *.dylib *.sl *.dll 2>/dev/null`%' Makefile
-    sed -i 's%LIB_INSTALL_DIR =	$(INSTALL_ROOT)$(exec_prefix)/lib%LIB_INSTALL_DIR =	$(INSTALL_ROOT)$(exec_prefix)/bin%' Makefile
+    cp libxpa.dll ${libdir}/bin
 fi
 make install
 """
