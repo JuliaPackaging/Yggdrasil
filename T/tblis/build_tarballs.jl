@@ -8,6 +8,7 @@ version = v"1.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/devinamatthews/tblis.git", "3e4c4b82943726c443b6f408c9c9791dcad7a847")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -41,8 +42,7 @@ case ${target} in
         export BLI_CONFIG=amd
         export BLI_THREAD=openmp
         # Wrapper for posix_memalign calls.
-        echo 'aW5saW5lIGludCBwb3NpeF9tZW1hbGlnbih2b2lkICoqbWVtcHRyLCBzaXplX3QgYWxpZ25tZW50LCBzaXplX3Qgc2l6ZSkKeyAqbWVtcHRyID0gMDsgKm1lbXB0ciA9IF9hbGlnbmVkX21hbGxvYyhhbGlnbm1lbnQsIHNpemUpOyAKICAgcmV0dXJuICgqbWVtcHRyID09IDAgJiYgc2l6ZSAhPSAwKTsgfQo=' | base64 -d | cat - src/memory/aligned_allocator.hpp >> aligned_allocator_new.hpp
-        mv aligned_allocator_new.hpp src/memory/aligned_allocator.hpp
+        patch src/memory/aligned_allocator.hpp < ${WORKSPACE}/srcdir/patches/aligned_allocator.hpp.mingw.patch
         # Additional linking parameter needed for MinGW Autoconf.
         # Update Autoconf parameters and refresh.
         cd src/external/tci
@@ -79,6 +79,9 @@ CFG_OPTION_TBLIS="--enable-config=${BLI_CONFIG} --enable-thread-model=${BLI_THRE
 make -j${nproc}
 make install
 
+# Copy license file
+mkdir -p ${prefix}/share/licenses/tblis
+cp LICENSE ${prefix}/share/licenses/tblis
 """
 
 # These are the platforms we will build for by default, unless further

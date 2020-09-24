@@ -1,0 +1,13 @@
+--- aligned_allocator.hpp	2020-09-24 16:33:17.771220891 +0900
++++ aligned_allocator.hpp	2020-09-24 16:35:19.754294209 +0900
+@@ -2,6 +2,10 @@
+ #define _TBLIS_ALIGNED_ALLOCATOR_HPP_
+ 
+ #include <cstdlib>
++inline int posix_memalign(void **memptr, size_t alignment, size_t size)
++{ *memptr = 0; *memptr = _aligned_malloc(alignment, size); 
++   return (*memptr == 0 && size != 0); }
++
+ #include <new>
+ 
+ #if TBLIS_HAVE_HBWMALLOC_H
