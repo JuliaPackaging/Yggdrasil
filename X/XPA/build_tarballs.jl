@@ -15,6 +15,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/xpa
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes
 make -j$(nproc)
+if [[ ${target} == *mingw* ]]; then
+    # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
+    # absolutely filthy hack edits generated Makefile manually
+    sed -i 's/$(INSTALL_PROGRAM) $$i$(EXE)/$(INSTALL_PROGRAM) $$i/' Makefile
+fi
 make install
 """
 
