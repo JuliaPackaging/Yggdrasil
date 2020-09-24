@@ -13,12 +13,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xpa
+if [[ ${target} == *freebsd* ]]; then
+    autoreconf -fvi
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
+    make mingw-dll
     # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
     # absolutely filthy hack edits generated Makefile manually
     sed -i 's/$(INSTALL_PROGRAM) $$i$(EXE)/$(INSTALL_PROGRAM) $$i/' Makefile
+    sed -i 's%`ls *.so* *.dylib *.sl 2>/dev/null`%`ls *.so* *.dylib *.sl *.dll 2>/dev/null`%' Makefile
 fi
 make install
 """
