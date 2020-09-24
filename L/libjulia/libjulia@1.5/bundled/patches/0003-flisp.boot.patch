@@ -11,21 +11,21 @@ diff --git a/src/flisp/Makefile b/src/flisp/Makefile
 index 42c4e11ed4..50566a0258 100644
 --- a/src/flisp/Makefile
 +++ b/src/flisp/Makefile
-@@ -107,8 +107,12 @@ $(BUILDDIR)/host/Makefile:
+@@ -115,9 +115,13 @@ $(BUILDDIR)/host/Makefile:
  	@echo 'BUILDING_HOST_TOOLS=1' >> $@
  	@echo 'include $(SRCDIR)/Makefile' >> $@
  
 -$(BUILDDIR)/host/$(EXENAME): $(BUILDDIR)/host/Makefile
--	make -C $(BUILDDIR)/host $(EXENAME)
 +$(BUILDDIR)/host/$(EXENAME): $(BUILDDIR)/host/Makefile | ${BUILDDIR}/host/flisp.boot
-+	make -C $(BUILDDIR)/host $(EXENAME)$(EXE)
-+
+ 	make -C $(BUILDDIR)/host $(EXENAME)
+ 
 +
 +$(BUILDDIR)/host/flisp.boot: $(SRCDIR)/flisp.boot | $(BUILDDIR)/host/Makefile
 +	cp $< $@
- 
++
  ifneq ($(BUILDDIR),.)
  ifneq ($(BUILDDIR),$(SRCDIR))
+ $(BUILDDIR)/flisp.boot: $(SRCDIR)/flisp.boot | $(BUILDDIR)
 -- 
 2.28.0
 
