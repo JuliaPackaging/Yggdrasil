@@ -3,22 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "XPA"
-version = v"2.1.19"
+version = v"2.1.20"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ericmandel/xpa.git", "c0452e139134d6d1677b5e6fda2ad5283c8ba4c7"),
+    GitSource("https://github.com/ericmandel/xpa.git", "923cc1bc7e761424b87049b1a20853eefe921388"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xpa
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+if [[ "${target}" == *-freebsd* ]]; then
+    export CFLAGS=-fPIC
+fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
-    # Target Windows specifically until https://github.com/ericmandel/xpa/pull/11 is merged and released
-    # absolutely filthy hack edits generated Makefile manually
-    sed -i 's/$(INSTALL_PROGRAM) $$i$(EXE)/$(INSTALL_PROGRAM) $$i/' Makefile
+    make mingw-dll
+    mkdir -p ${libdir}
+    cp libxpa.dll ${libdir}/libxpa.dll
 fi
 make install
 """
@@ -34,7 +37,8 @@ products = [
     ExecutableProduct("xpainfo", :xpainfo),
     ExecutableProduct("xpans", :xpans),
     ExecutableProduct("xpaset", :xpaset),
-    ExecutableProduct("xpaaccess", :xpaaccess)
+    ExecutableProduct("xpaaccess", :xpaaccess),
+    LibraryProduct("libxpa", :libxpa)
 ]
 
 # Dependencies that must be installed before this package can be built
