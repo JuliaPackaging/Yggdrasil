@@ -74,9 +74,9 @@ function build_julia(version)
     cat << EOM >Make.user
     #USE_SYSTEM_LLVM=1
     USE_SYSTEM_LIBUNWIND=1
-    #USE_SYSTEM_PCRE=1
+    USE_SYSTEM_PCRE=1
     USE_SYSTEM_OPENLIBM=1
-    #USE_SYSTEM_DSFMT=1
+    USE_SYSTEM_DSFMT=1
     #USE_SYSTEM_BLAS=1
     #LIBBLASNAME=libopenblas
     #USE_SYSTEM_LAPACK=1
@@ -84,7 +84,7 @@ function build_julia(version)
     #USE_SYSTEM_GMP=1
     #USE_SYSTEM_MPFR=1
     #USE_SYSTEM_SUITESPARSE=1
-    #USE_SYSTEM_LIBUV=1
+    USE_SYSTEM_LIBUV=1
     USE_SYSTEM_UTF8PROC=1
     USE_SYSTEM_MBEDTLS=1
     USE_SYSTEM_LIBSSH2=1
@@ -173,12 +173,12 @@ function build_julia(version)
     dependencies = [
         Dependency("LibUnwind_jll"),
         Dependency("LibOSXUnwind_jll"),
-#        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
+        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
         Dependency("OpenLibm_jll"),
-#        Dependency("dSFMT_jll"),
+        Dependency("dSFMT_jll"),
 #        Dependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")),
         Dependency("LibUV_jll"),
-#        Dependency("utf8proc_jll"),
+        Dependency("utf8proc_jll"),
         Dependency("MbedTLS_jll"),
         Dependency("LibSSH2_jll"),
         Dependency("LibCURL_jll"),
