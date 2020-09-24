@@ -20,7 +20,8 @@ fi
 make -j$(nproc)
 if [[ ${target} == *mingw* ]]; then
     make mingw-dll
-    cp libxpa.dll ${prefix}/bin/libxpa.dll
+    mkdir -p ${libdir}
+    cp libxpa.dll ${libdir}/libxpa.dll
 fi
 make install
 """
