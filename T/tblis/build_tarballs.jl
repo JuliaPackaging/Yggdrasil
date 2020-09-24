@@ -79,11 +79,6 @@ CFG_OPTION_TBLIS="--enable-config=${BLI_CONFIG} --enable-thread-model=${BLI_THRE
 make -j${nproc}
 make install
 
-if [[ ${target} == *"x86_64"*"w64"* ]]; then
-    # Rename binary files for MinGW
-    mv ${prefix}/bin/libtci-0.dll ${prefix}/bin/libtci.dll 
-    mv ${prefix}/bin/libtblis-0.dll ${prefix}/bin/libtblis.dll 
-fi
 """
 
 # These are the platforms we will build for by default, unless further
