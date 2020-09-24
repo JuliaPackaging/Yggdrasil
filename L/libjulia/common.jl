@@ -148,8 +148,8 @@ function build_julia(version)
 
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
-#        Dependency("LibUnwind_jll"),
-#        Dependency("LibOSXUnwind_jll"),
+        Dependency("LibUnwind_jll"),
+        Dependency("LibOSXUnwind_jll"),
 #        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
 #        Dependency("OpenLibm_jll"),
 #        Dependency("dSFMT_jll"),
@@ -166,25 +166,25 @@ function build_julia(version)
 #        Dependency("GMP_jll"),
 #        Dependency("LibGit2_jll"),
     ]
-#    if version.major == 1 && version.minor == 4
+    if version.major == 1 && version.minor == 4
 #        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
-#        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
+        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
 #        #push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
 #        #push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
 #        #push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
-#    elseif version.major == 1 && version.minor == 5
+    elseif version.major == 1 && version.minor == 5
 #        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
-#        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
+        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
 #        #push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
 #        #push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
 #        #push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
-#    elseif version.major == 1 && version.minor == 6
+    elseif version.major == 1 && version.minor == 6
 #        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
-#        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
+        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
 #        #push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
 #        #push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
 #        #push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
-#    end
+    end
 
     # Build the tarballs, and possibly a `build.jl` as well.
     global ARGS
