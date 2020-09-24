@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg.Types
 
 # Collection of sources required to build GMP
-function configure(version)
+function build_julia(version)
     name = "libjulia"
 
     checksums = Dict(
@@ -77,7 +77,11 @@ function configure(version)
     )
 
     # compile libjulia but don't try to build a sysimage
+    make -C src/flisp host/Makefile
+    make -C src/flisp flisp.boot
+    cp src/flisp/flisp.boot src/flisp/host/flisp.boot
     make "${FLAGS[@]}" julia-ui-release
+
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
@@ -143,6 +147,8 @@ function configure(version)
 #        #push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
 #    end
 
-    return name, version, sources, script, platforms, products, dependencies
+    # Build the tarballs, and possibly a `build.jl` as well.
+    global ARGS
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
 end
 
