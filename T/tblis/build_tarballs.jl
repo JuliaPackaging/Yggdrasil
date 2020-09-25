@@ -80,8 +80,7 @@ make -j${nproc}
 make install
 
 # Copy license file
-mkdir -p ${prefix}/share/licenses/tblis
-cp LICENSE ${prefix}/share/licenses/tblis
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
