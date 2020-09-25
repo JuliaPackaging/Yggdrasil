@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "mpv"
 version = v"0.32.0"
 
-# Collection of sources required to complete build
+# Collection of sources required to complete build #
 sources = [
     ArchiveSource("https://github.com/mpv-player/mpv/archive/v0.32.0.tar.gz", "9163f64832226d22e24bbc4874ebd6ac02372cd717bef15c28a0aa858c5fe592")
 ]
