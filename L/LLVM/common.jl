@@ -103,9 +103,9 @@ fi
 
 # build for our host arch and our GPU targets NVidia and AMD
 TARGETS=(host NVPTX AMDGPU)
-# Add WASM for LLVM 8
+# Add WASM and BPF for LLVM 8
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
-    TARGETS+=(WebAssembly)
+    TARGETS+=(WebAssembly BPF)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
