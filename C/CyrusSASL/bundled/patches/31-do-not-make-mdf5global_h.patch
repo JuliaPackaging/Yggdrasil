@@ -1,0 +1,12 @@
+--- a/include/Makefile.in
++++ b/include/Makefile.in
+@@ -809,8 +809,7 @@
+ makemd5$(BUILD_EXEEXT): LDFLAGS=$(LDFLAGS_FOR_BUILD)
+ 
+ md5global.h: makemd5$(BUILD_EXEEXT) Makefile
+-	-rm -f $@
+-	./$< $@
++	-touch $@
+ 
+ # TODO: automake, don't build it
+ makemd5$(EXEEXT):
