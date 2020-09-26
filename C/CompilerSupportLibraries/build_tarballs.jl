@@ -54,9 +54,9 @@ tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
 echo ***********************************************************
 echo LatestLibraries logs, reproduced here for debuggability:
-cat ${prefix}/logs/LatestLibraries.log
+zcat ${prefix}/logs/LatestLibraries.log.gz
 echo ***********************************************************
-rm -f ${prefix}/logs/LatestLibraries.log
+rm -f ${prefix}/logs/LatestLibraries.log.gz
 
 # Make sure expansions aren't empty
 shopt -s nullglob
