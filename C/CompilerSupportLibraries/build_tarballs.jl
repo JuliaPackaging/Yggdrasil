@@ -68,7 +68,7 @@ done
 
 # libwinpthread is a special snowflake and is only within `bin` for some reason
 if [[ ${target} == *mingw* ]]; then
-	cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
+    cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
 fi
 
 # Delete .a and .py files, we don't want those.
@@ -115,6 +115,10 @@ for platform in platforms
         sources = [
             FileSource(tarball_path, tarball_hash),
         ]
+        # Windows and aarch64 Linux don't have a libatomic on older GCC's
+        if libgfortran_version(platform).major != 3 || !(Sys.iswindows(platform) || arch(platform) == :aarch64)
+            push!(products, LibraryProduct("libatomic", :libatomic))
+        end
         build_tarballs(ARGS, name, version, sources, script, [platform], products, [])
     end
 end
