@@ -2,7 +2,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.3"
+version = v"0.3.4"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -105,6 +105,7 @@ products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgfortran", :libgfortran),
     LibraryProduct("libgomp", :libgomp),
+    LibraryProduct("libatomic", :libatomic),
 ]
 
 for platform in platforms
