@@ -105,7 +105,6 @@ products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgfortran", :libgfortran),
     LibraryProduct("libgomp", :libgomp),
-    LibraryProduct("libatomic", :libatomic),
 ]
 
 for platform in platforms
