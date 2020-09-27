@@ -100,7 +100,7 @@ install_license /usr/share/licenses/GPL3
 platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
-products = [
+common_products = [
     LibraryProduct(["libgcc_s", "libgcc_s_sjlj", "libgcc_s_seh"], :libgcc_s),
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgfortran", :libgfortran),
@@ -115,8 +115,12 @@ for platform in platforms
             FileSource(tarball_path, tarball_hash),
         ]
         # Windows and aarch64 Linux don't have a libatomic on older GCC's
-        if libgfortran_version(platform).major != 3 || !(Sys.iswindows(platform) || arch(platform) == :aarch64)
-            push!(products, LibraryProduct("libatomic", :libatomic))
+        products = if libgfortran_version(platform).major != 3 || !(Sys.iswindows(platform) || arch(platform) == "aarch64")
+            # Don't push to the common products, otherwise we'll keep
+            # accumulating libatomic into it when looping over all platforms.
+            vcat(common_products, LibraryProduct("libatomic", :libatomic))
+        else
+            common_products
         end
         build_tarballs(ARGS, name, version, sources, script, [platform], products, [])
     end
