@@ -145,19 +145,19 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     end
 
 
-    if isa(compiler_target, Linux) && libc(compiler_target) == :glibc
+    if Sys.islinux(compiler_target) && libc(compiler_target) == "glibc"
         # Depending on our architecture, we choose different versions of glibc
-        if arch(compiler_target) in [:x86_64, :i686]
+        if arch(compiler_target) in ["x86_64", "i686"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
                               "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
             ]
-        elseif arch(compiler_target) in [:armv7l, :aarch64]
+        elseif arch(compiler_target) in ["armv7l", "aarch64"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
                               "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
             ]
-        elseif arch(compiler_target) in [:powerpc64le]
+        elseif arch(compiler_target) in ["powerpc64le"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
                               "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
@@ -165,12 +165,12 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         else
             error("Unknown arch for glibc for compiler target $(compiler_target)")
         end
-    elseif isa(compiler_target, Linux) && libc(compiler_target) == :musl
+    elseif Sys.islinux(compiler_target) && libc(compiler_target) == "musl"
         libc_sources = [
             ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
                           "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
-    elseif isa(compiler_target, MacOS)
+    elseif Sys.isapple(copmiler_target)
         if gcc_version == v"11.0.0-iains"
             libc_sources = [
                 DirectorySource(joinpath(@__DIR__, "DarwinSDKs"))
@@ -181,12 +181,12 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                           "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
             ]
         end
-    elseif isa(compiler_target, FreeBSD)
+    elseif Sys.isfreebsd(compiler_target)
         libc_sources = [
             ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
                           "3bac8257bdd5e5b071f7b80cc591ebecd01b9314ca7839a2903096cbf82169f9"),
         ]
-    elseif isa(compiler_target, Windows)
+    elseif Sys.iswindows(compiler_target)
         libc_sources = [
             ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
                           "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
@@ -259,7 +259,8 @@ function gcc_script(compiler_target::Platform)
     ## Architecture-dependent arguments
     # On arm*hf targets, pass --with-float=hard explicitly, and choose a default arch.
     if [[ "${COMPILER_TARGET}" == arm*hf ]]; then
-        GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-float=hard --with-arch=armv7-a --with-fpu=vfpv3-d16"
+        # We choose the armv6 arch by default for compatibility
+        GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-float=hard --with-arch=armv6 --with-fpu=vfp"
     elif [[ "${COMPILER_TARGET}" == x86_64* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-arch=x86-64"
     elif [[ "${COMPILER_TARGET}" == i686* ]]; then
