@@ -23,7 +23,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    
+    ExecutableProduct("tth", :tth), 
 ]
 
 # Dependencies that must be installed before this package can be built
