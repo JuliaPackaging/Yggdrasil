@@ -12,10 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd tth_C
-gcc -o tth tth.c
-cp tth /usr/local/bin
+cd $WORKSPACE/srcdir/tth_C
+mkdir -p ${bindir}
+gcc -o ${bindir}/tth${exeext} tth.c
 """
 
 # These are the platforms we will build for by default, unless further
