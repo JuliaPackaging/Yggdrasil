@@ -34,12 +34,6 @@ function should_build_platform(platform)
     end
 end
 
-# compatibility for Julia 1.3-
-if VERSION < v"1.4"
-    Pkg.Types.registry_resolve!(ctx::Pkg.Types.Context, deps) = Pkg.Types.registry_resolve!(ctx.env, deps)
-end
-
-
 """
     get_tree_hash(tree::LibGit2.GitTree)
 
@@ -71,13 +65,9 @@ function get_addable_spec(name::AbstractString, version::VersionNumber)
 
     # Next, determine the tree hash from the registry
     tree_hashes = Base.SHA1[]
-    @static if VERSION >= v"1.4"
-        paths = Pkg.Operations.registered_paths(ctx, uuid)
-    else
-        paths = Pkg.Operations.registered_paths(ctx.env, uuid)
-    end
+    paths = Pkg.Operations.registered_paths(ctx, uuid)
     for path in paths
-        vers = Pkg.Operations.load_versions(path; include_yanked = true)
+        vers = Pkg.Operations.load_versions(ctx, path; include_yanked = true)
         tree_hash = get(vers, version, nothing)
         tree_hash !== nothing && push!(tree_hashes, tree_hash)
     end
