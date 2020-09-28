@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libglvnd-*/
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 FLAGS=()
 if [[ "${target}" == *musl* ]]; then
     FLAGS=(--disable-tls)
@@ -45,7 +45,7 @@ products = Product[
 dependencies = [
     Dependency("Xorg_libX11_jll"),
     Dependency("Xorg_libXext_jll"),
-    BuildDependency("Xorg_glproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs.
