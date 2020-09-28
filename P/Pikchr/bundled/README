@@ -1,0 +1,5 @@
+The Pikchr library homepage is available at https://pikchr.org
+
+The code is hosted on Fossil SCM, and is originally written as pikchr.y. As the ".y" suffix implies, this file is a grammar specification intended as input to the yacc-like LALR(1) parser generator program "Lemon".
+
+As a convinience, the result of the parser generator is checked into the Pikchr source repo as pikchr.c. We pick up this file directly, and use it to build the library. This is useful since running target executables during build is problematic in BinaryBuilder. 
