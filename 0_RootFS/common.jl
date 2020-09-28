@@ -1,7 +1,7 @@
 using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
-host_platform = Linux(:x86_64; libc=:musl)
+host_platform = Platform("x86_64", "linux"; libc="musl")
 
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
