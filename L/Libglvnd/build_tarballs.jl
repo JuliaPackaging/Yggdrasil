@@ -15,7 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libglvnd-*/
 export CPPFLAGS="-I${prefix}/include"
+if [[ "${target}" == *musl* ]]; then
+./configure --prefix=${prefix} --host=${target} --disable-tls
+else
 ./configure --prefix=${prefix} --host=${target}
+fi
 make -j${nproc}
 make install
 # The license is embedded in the README file
