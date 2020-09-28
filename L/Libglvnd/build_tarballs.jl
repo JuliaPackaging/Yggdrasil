@@ -15,11 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libglvnd-*/
 export CPPFLAGS="-I${prefix}/include"
+FLAGS=()
 if [[ "${target}" == *musl* ]]; then
-./configure --prefix=${prefix} --host=${target} --disable-tls
-else
-./configure --prefix=${prefix} --host=${target}
+    FLAGS=(--disable-tls)
 fi
+./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 # The license is embedded in the README file
@@ -28,7 +28,7 @@ install_license README.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = filter!(p ->Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[
@@ -50,4 +50,3 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
