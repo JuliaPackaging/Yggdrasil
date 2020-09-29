@@ -31,7 +31,7 @@ make install
 # platforms are passed in on the command line
 # rr only supports Linux
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -49,4 +49,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"8") 
+               preferred_gcc_version=v"8")
