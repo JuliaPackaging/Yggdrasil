@@ -165,6 +165,7 @@ cp -vd ${WORKSPACE}/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
 cp -vd ${WORKSPACE}/srcdir/utils/dual_libc_ldd.sh ./usr/bin/ldd
 cp -vd ${WORKSPACE}/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp -vd ${WORKSPACE}/srcdir/utils/install_license.sh ./usr/local/bin/install_license
+cp -vd ${WORKSPACE}/srcdir/utils/replace_includes.sh ./usr/local/bin/replace_includes
 cp -vd ${WORKSPACE}/srcdir/utils/config.* ./usr/local/share/configure_scripts/
 chmod +x ./usr/local/bin/*
 
