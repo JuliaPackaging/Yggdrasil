@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.3.1"
+version = v"5.3.2"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "e31f5f1f674e38093f83b6e7e176d48dbeb5a872"),
+              "3b25d7a9d2e267f3e65e5c1a9266c6befca38b59"),
     DirectorySource("./bundled"),
 ]
 
