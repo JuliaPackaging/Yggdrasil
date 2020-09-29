@@ -8,16 +8,13 @@ version = v"5.3.2"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "d6831d6684b539923f8fd424525aaa8780c8e35d"),
-    DirectorySource("./bundled"),
+              "cfd27dec0f7ae4fa677b0b1c9d3babd36c3ded8a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 pip3 install pexpect
 cd ${WORKSPACE}/srcdir/rr/
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rr_cxx17_filesystem_gcc8.patch
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
