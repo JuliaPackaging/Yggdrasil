@@ -16,7 +16,7 @@ cc -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/c/hello_wor
 # Also build with cmake
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 
 install_license /usr/share/licenses/MIT
 """
