@@ -44,7 +44,7 @@ products = [
     ExecutableProduct("pomdpconvert", :pomdpconvert),
     ExecutableProduct("pomdpeval", :pomdpeval),
     ExecutableProduct("pomdpsol", :pomdpsol),
-    ExecutableProduct("polgraph", :polgraph)
+    ExecutableProduct("polgraph", :polgraph),
 ]
 
 # Dependencies that must be installed before this package can be built
