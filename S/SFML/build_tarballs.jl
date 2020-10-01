@@ -25,6 +25,7 @@ cd ${WORKSPACE}/srcdir
 if [[ "${target}" == *linux* ]]; then
 
 cd SFML-2.5.1/
+mkdir -p ${prefix}
 mv ./include ./lib64 ${prefix}
 install_license ./share/SFML/license.md
 
