@@ -330,6 +330,11 @@ function gcc_script(compiler_target::Platform)
         atomic_patch -p1 "${p}" || true
     done
 
+    # Disable any non-POSIX usage of TLS for musl
+    if [[ "${COMPILER_TARGET}" == *musl* ]]; then
+        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch
+    fi
+
 
     # If we're on MacOS, we need to install cctools first, separately.
     if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
@@ -649,7 +654,7 @@ function gcc_script(compiler_target::Platform)
 
     elif [[ "${COMPILER_TARGET}" == *freebsd* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
-       
+
     # On mingw32 override native system header directories
     elif [[ "${COMPILER_TARGET}" == *mingw* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
