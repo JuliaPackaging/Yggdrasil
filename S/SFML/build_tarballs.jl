@@ -26,8 +26,8 @@ if [[ "${target}" == *linux* ]]; then
 
 cd SFML-2.5.1/
 mv ./include $WORKSPACE/destdir/
-mv ./lib $WORKSPACE/destdir/
-mv ./share $WORKSPACE/destdir/
+mv ./lib64 $WORKSPACE/destdir/
+install_license ./share/SFML/license.md
 
 else
 
