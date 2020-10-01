@@ -29,11 +29,11 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    MacOS(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64)
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
