@@ -7,9 +7,7 @@ uuid = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 version = "1.1.0"
 
 [[ArgTools]]
-git-tree-sha1 = "bdf73eec6a88885256f282d48eafcad25d7de494"
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
-version = "1.1.1"
 
 [[Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -330,9 +328,7 @@ version = "1.1.0"
 
 [[Tar]]
 deps = ["ArgTools", "Logging", "SHA"]
-git-tree-sha1 = "af3721253d44ec225e6bf33fe7d226238bdf84b4"
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.8.0"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
