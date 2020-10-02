@@ -35,14 +35,15 @@ products = [
     ExecutableProduct("sndfile-metadata-get", :sndfile_metadata_get),
     ExecutableProduct("sndfile-metadata-set", :sndfile_metadata_set),
     ExecutableProduct("sndfile-play", :sndfile_play),
-    ExecutableProduct("sndfile-salvage", :sndfile_salvage)
+    ExecutableProduct("sndfile-salvage", :sndfile_salvage),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FLAC_jll",
-    "Ogg_jll",
-    "libvorbis_jll"
+    Dependency("FLAC_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("alsa_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
