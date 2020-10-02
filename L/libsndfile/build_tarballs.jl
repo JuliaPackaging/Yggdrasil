@@ -35,7 +35,7 @@ products = [
     ExecutableProduct("sndfile-metadata-get", :sndfile_metadata_get),
     ExecutableProduct("sndfile-metadata-set", :sndfile_metadata_set),
     ExecutableProduct("sndfile-play", :sndfile_play),
-    ExecutableProduct("sndfile-salvage", :sndfile_salvage)
+    ExecutableProduct("sndfile-salvage", :sndfile_salvage),
 ]
 
 # Dependencies that must be installed before this package can be built
