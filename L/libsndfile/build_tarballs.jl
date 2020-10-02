@@ -40,9 +40,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FLAC_jll",
-    "Ogg_jll",
-    "libvorbis_jll"
+    Dependency("FLAC_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("alsa_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
