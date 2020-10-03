@@ -35,6 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xorg_libXcursor_jll"),
     Dependency("Xorg_libXi_jll"),
