@@ -33,8 +33,8 @@ make install
 # platforms are passed in on the command line
 # ROCT-Thunk-Interface only supports Linux, seemingly only 64bit
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
+    Platform("x86_64", "linux"; libc=:glibc),
+    Platform("x86_64", "linux"; libc=:musl),
 ]
 
 # The products that we will ensure are always built
