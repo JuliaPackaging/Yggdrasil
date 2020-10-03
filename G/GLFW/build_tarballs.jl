@@ -5,8 +5,8 @@ version = v"3.3.2"
 
 # Collection of sources required to build glfw
 sources = [
-    "https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip" =>
-    "08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7",
+    ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
+    "08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,11 +34,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libglvnd_jll",
-    "Xorg_libXcursor_jll",
-    "Xorg_libXi_jll",
-    "Xorg_libXinerama_jll",
-    "Xorg_libXrandr_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Libglvnd_jll"),
+    Dependency("Xorg_libXcursor_jll"),
+    Dependency("Xorg_libXi_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Xorg_libXrandr_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
