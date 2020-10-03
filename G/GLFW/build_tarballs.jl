@@ -13,15 +13,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/glfw-*/
 mkdir build && cd build
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_SHARED_LIBS=ON"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DGLFW_BUILD_EXAMPLES=false"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DGLFW_BUILD_TESTS=false"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DGLFW_BUILD_DOCS=OFF"
-cmake ${CMAKE_FLAGS} ..
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DGLFW_BUILD_EXAMPLES=false \
+    -DGLFW_BUILD_TESTS=false \
+    -DGLFW_BUILD_DOCS=OFF
 make -j${nproc}
 make install
-install_license ../LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
