@@ -31,8 +31,8 @@ make install
 # platforms are passed in on the command line
 # The rest of the ROCm stack only seem to support 64bit Linux:
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -56,4 +56,3 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
                preferred_gcc_version=v"8") 
-
