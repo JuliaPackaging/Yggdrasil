@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "librealsense"
-version = v"2.36.0"
+version = v"2.38.0"
 
 # Collection of sources required to build librealsense
 sources = [
     GitSource("https://github.com/IntelRealSense/librealsense.git",
-              "f7cdf6e8961e1709f6d864bdb33095c00a671ca7"),
+              "0adceb9dc6fce63c348346e1aef1b63c052a1db9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,17 +47,16 @@ CMAKE_FLAGS="${CMAKE_FLAGS} -DBUILD_GLSL_EXTENSIONS=true"
 cmake ${CMAKE_FLAGS} ..
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc = :glibc)
-    Linux(:x86_64, libc = :glibc)
-    Linux(:aarch64, libc = :glibc)
-    Linux(:armv7l, libc = :glibc, call_abi = :eabihf)
-    MacOS(:x86_64)
+    Platform("i686", "linux"; libc=:glibc),
+    Platform("x86_64", "linux"; libc=:glibc),
+    Platform("aarch64", "linux"; libc=:glibc),
+    Platform("armv7l", "linux"; libc=:glibc),
+    Platform("x86_64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
