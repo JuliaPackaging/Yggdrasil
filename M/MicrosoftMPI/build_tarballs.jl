@@ -44,7 +44,7 @@ mkdir -p share/licenses/MicrosoftMPI
 mv *.txt *.rtf share/licenses/MicrosoftMPI
 """
 
-platforms = filter!(p -> isa(p, Windows), supported_platforms())
+platforms = filter!(p -> Sys.iswindows(p), supported_platforms())
 
 products = [
     LibraryProduct("msmpi", :libmpi),

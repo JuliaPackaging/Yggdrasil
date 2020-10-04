@@ -29,7 +29,7 @@ make install DESTDIR=${prefix} prefix=/ lib=${LOADER_DIR} RAISE_SETFCAP=no
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = [p for p in supported_platforms() if p isa Linux]
+platforms = [p for p in supported_platforms() if Sys.islinux(p)]
 
 # The products that we will ensure are always built
 products = [

@@ -21,7 +21,7 @@ install bsdiff bspatch "${bindir}"
 
 # Disable Windows for now, as there are many BSD-isms in the source code
 # that we don't want to bother to patch out.  Things like err.h and whatnot.
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
+platforms = filter(p -> !Sys.iswindows(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [

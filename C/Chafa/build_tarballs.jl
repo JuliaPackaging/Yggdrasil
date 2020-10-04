@@ -31,7 +31,7 @@ make install
 """
 
 # Chafa itself does not support Windows
-platforms = filter!(p -> !isa(p, Windows), supported_platforms())
+platforms = filter!(p -> !Sys.iswindows(p), supported_platforms())
 
 products = [
     LibraryProduct("libchafa", :libchafa),

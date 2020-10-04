@@ -56,7 +56,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> !(p isa Windows), platforms)
+filter!(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [

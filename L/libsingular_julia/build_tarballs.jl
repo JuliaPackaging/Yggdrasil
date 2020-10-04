@@ -42,7 +42,7 @@ const platforms = expand_cxxstring_abis([
 ])
 
 #platforms = supported_platforms()
-#platforms = filter!(p -> !(p isa Windows), platforms)
+#platforms = filter!(p -> !Sys.iswindows(p), platforms)
 #platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built

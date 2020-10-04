@@ -34,7 +34,7 @@ sandbox_path = joinpath(@__DIR__, "bundled", "utils", "sandbox")
 if is_outdated(sandbox_path, "$(sandbox_path).c")
     try
         build_platform = platform_key_abi(String(read(`gcc -dumpmachine`)))
-        @assert isa(build_platform, Linux)
+        @assert Sys.islinux(build_platform)
         @assert arch(build_platform) == :x86_64
         verbose && @info("Rebuilding sandbox for initial bootstrap...")
         success(`gcc -O2 -static -static-libgcc -o $(sandbox_path) $(sandbox_path).c`)

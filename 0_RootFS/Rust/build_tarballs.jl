@@ -79,7 +79,7 @@ for target_platform in supported_platforms()
 
         # Our mingw rust shards need to have their crt2.o updated
         # https://github.com/rust-lang/rust/issues/48272#issuecomment-429596397
-        if isa(target_platform, Windows)
+        if Sys.iswindows(target_platform)
             # Find the corresponding mingw toolchain within a GCC shard
             all_cs = BinaryBuilder.all_compiler_shards()
             cs = first(filter(cs -> cs.name == "GCCBootstrap" && cs.target == target_platform && cs.archive_type == :unpacked, all_cs))

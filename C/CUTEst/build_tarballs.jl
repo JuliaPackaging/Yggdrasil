@@ -99,7 +99,7 @@ install_license $CUTEST/lgpl-3.0.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows), supported_platforms()))
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p), supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
