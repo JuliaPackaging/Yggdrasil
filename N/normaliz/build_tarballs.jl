@@ -24,7 +24,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # windows build would require MPIR instead of GMP for 'long long'
-platforms = filter(x->!Sys.iswindows(p), supported_platforms())
+platforms = filter(!Sys.iswindows, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 

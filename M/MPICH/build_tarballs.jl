@@ -75,7 +75,7 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p), supported_platforms()))
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
 
 products = [
     LibraryProduct("libmpicxx", :libmpicxx),

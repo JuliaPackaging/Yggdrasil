@@ -36,7 +36,7 @@ make install
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-platforms = filter!(p -> !Sys.iswindows(p), supported_platforms())
+platforms = filter!(!Sys.iswindows, supported_platforms())
 
 # The products that we will ensure are always built
 products = [

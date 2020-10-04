@@ -41,7 +41,7 @@ cp Setup.x${exe} ${prefix}/bin/
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
-platforms = [p for p in supported_platforms() if arch(p) == :x86_64 && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != :musl]
+platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != "musl"]
 
 # Build with GCC 6 at least, to dodge C++ problems
 platforms = BinaryBuilder.replace_gcc_version.(platforms, :gcc6)

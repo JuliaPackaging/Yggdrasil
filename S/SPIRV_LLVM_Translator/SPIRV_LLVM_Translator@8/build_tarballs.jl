@@ -6,7 +6,7 @@ version = v"8.0"
 sources = [GitSource(repo, "20240c9e4284a839337a04fb6001d8bf6b26fb62")]
 
 # LLVM 8's add_llvm_library does not work on Windows
-platforms = filter(p -> !Sys.iswindows(p), platforms)
+platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

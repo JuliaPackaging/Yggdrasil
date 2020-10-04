@@ -34,7 +34,7 @@ make install highs
 platforms = expand_gfortran_versions(
     expand_cxxstring_abis(supported_platforms())
 )
-filter!(p -> !Sys.iswindows(p), platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [

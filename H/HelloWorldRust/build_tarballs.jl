@@ -17,14 +17,14 @@ rustc -o ${prefix}/bin/hello_world${exeext} -g /usr/share/testsuite/rust/hello_w
 platforms = supported_platforms()
 
 # First, FreeBSD has -fPIC problems when linking in `crt.o`
-filter!(p -> !Sys.isfreebsd(p), platforms)
+filter!(!Sys.isfreebsd, platforms)
 
 # Next, :musl libcs have a hard time linking
 filter!(p -> libc(p) != :musl, platforms)
 
 # Finally, windows seems to be broken
 # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/499
-filter!(p -> !Sys.iswindows(p), platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [

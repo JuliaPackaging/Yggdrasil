@@ -23,7 +23,7 @@ make install
 
 # Only build for Linux, and disable musl/FreeBSD until we have a custom libargp, perhaps
 # the https://github.com/xhebox/libuargp which is known to be musl-friendly.
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) != :musl]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) != "musl"]
 
 # The products that we will ensure are always built
 products = [
