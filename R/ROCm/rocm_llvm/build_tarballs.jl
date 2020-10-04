@@ -21,6 +21,8 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;compiler-rt" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
+      -DLLVM_BUILD_LLVM_DYLIB:BOOL=OFF \
+      -DLLVM_LINK_LLVM_DYLIB:BOOL=OFF \
       -DBUILD_SHARED_LIBS=OFF \
       ../llvm
 make -j${nproc}
