@@ -7,7 +7,7 @@ version = v"4.1.3"  # this is actually 4.1.3p5 with some extra patches
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Sources.git", "eca06c1bccc0f72a9c3147f058fd8aad961ad7ee"),
+    GitSource("https://github.com/Singular/Sources.git", "17f0567a82824601e71ff151ecb63d656719b866"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = filter!(p -> !(p isa Windows), platforms)
+platforms = filter!(p -> !Sys.iswindows(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -56,7 +56,7 @@ products = [
 dependencies = [
     Dependency("cddlib_jll"),
     Dependency("FLINT_jll"),
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll"),
 ]
 
