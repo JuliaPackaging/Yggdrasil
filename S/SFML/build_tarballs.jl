@@ -64,13 +64,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Libglvnd_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Ogg_jll"),
     Dependency("FLAC_jll"),
     Dependency("FreeType2_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Xorg_libXrandr_jll"),
     Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_xorgproto_jll"),
     Dependency("OpenAL_jll")
 ]
 
