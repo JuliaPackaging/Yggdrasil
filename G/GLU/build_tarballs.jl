@@ -16,6 +16,7 @@ cd libglu
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j ${nproc}
 make install
+install_license debian/copyright
 """
 
 # These are the platforms we will build for by default, unless further
