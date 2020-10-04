@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg.Types
 
-# Collection of sources required to build GMP
+# Collection of sources required to build Julia
 function configure(version)
     name = "libjulia"
 
@@ -21,6 +21,7 @@ function configure(version)
     apk add coreutils libuv-dev utf8proc
 
     cd $WORKSPACE/srcdir/julia*
+    version=$(cat VERSION)
 
     # Apply patches
     if [ -d $WORKSPACE/srcdir/patches ]; then
@@ -58,27 +59,23 @@ function configure(version)
     override OS=Linux
     EOM
 
+    LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    LLVM_LDFLAGS="-L${prefix}/lib"
+    LDFLAGS="-L${prefix}/lib"
+    CFLAGS="-I${prefix}/include"
+    CXXFLAGS="-I${prefix}/include"
     if [[ "${target}" == *mingw* ]]; then
         LLVMLINK="-L${prefix}/bin -lLLVM"
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
-        CFLAGS="-I${prefix}/include"
-        CXXFLAGS="-I${prefix}/include"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
-        LLVM_LDFLAGS="-L${prefix}/lib"
-        LDFLAGS="-L${prefix}/lib"
-        CFLAGS="-I${prefix}/include"
-        CXXFLAGS="-I${prefix}/include"
     else
-        LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
-        LLVM_LDFLAGS="-L${prefix}/lib"
-        LDFLAGS="-L${prefix}/lib"
-        CFLAGS="-I${prefix}/include"
-        CXXFLAGS="-I${prefix}/include"
+        if [[ "${version}" == 1.4.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-8jl"
+        else
+            LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
+        fi
     fi
 
     cat << EOM >Make.user
@@ -88,11 +85,7 @@ function configure(version)
     USE_SYSTEM_PCRE=1
     USE_SYSTEM_OPENLIBM=1
     USE_SYSTEM_DSFMT=1
-    USE_SYSTEM_BLAS=1
-    LIBBLASNAME=libopenblas
-    USE_SYSTEM_LAPACK=1
-    LIBLAPACKNAME=libopenblas
-    # USE_SYSTEM_GMP=1
+    USE_SYSTEM_GMP=1
     USE_SYSTEM_MPFR=1
     USE_SYSTEM_SUITESPARSE=1
     USE_SYSTEM_LIBUV=1
@@ -131,6 +124,18 @@ function configure(version)
     LOCALBASE=${prefix}
     EOM
 
+    # setting USE_SYSTEM_BLAS to get Julia to use OpenBLAS_jll doesn't work on macOS,
+    # where the Julia build system instead tries to use a native BLAS, which however
+    # then requires compiling a custom lapack, which fails for Julia 1.4
+    if [[ "${target}" != *apple* ]]; then
+        cat << EOM >>Make.user
+        USE_SYSTEM_BLAS=1
+        LIBBLASNAME=libopenblas
+        USE_SYSTEM_LAPACK=1
+        LIBLAPACKNAME=libopenblas
+    EOM
+    fi
+
     # Add file to one of the `STD_LIB_PATH`
     if [[ "${target}" == *mingw* ]]; then
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
@@ -167,19 +172,30 @@ function configure(version)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    #
+    platforms = supported_platforms()
+    # For now skip FreeBSD...
+    filter!(!Sys.isfreebsd, platforms)
+    if version < v"1.5"
+        # in Julia <= 1.4 skip all musl builds
+        filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
+        # in Julia <= 1.4 skip 32bit ARM builds
+        filter!(p -> !(Sys.islinux(p) && arch(p) == "armv7l"), platforms)
+    else
+        # in Julia >= 1.5 skip 32bit musl builds
+        filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+    end
+
     # While the "official" Julia kernel ABI itself does not involve any C++
     # symbols on the linker level, `libjulia` still exports "unofficial" symbols
     # dependent on the C++ strings ABI (coming from LLVM related code). This
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = supported_platforms()
-    filter!(!=(Linux(:i686, libc=:musl)), platforms)
-
-    # For now skip FreeBSD...
-    filter!(!Sys.isfreebsd, platforms)
     platforms = expand_cxxstring_abis(platforms)
+
+    for p in platforms
+        p["julia_version"] = "$(version.major).$(version.minor)"
+    end
 
     # The products that we will ensure are always built
     products = [
@@ -206,19 +222,19 @@ function configure(version)
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
-        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
+        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 5
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
+        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 6
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
+        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
     end
 
