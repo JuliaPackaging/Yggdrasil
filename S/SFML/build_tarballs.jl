@@ -10,26 +10,13 @@ sources = [
     GitSource(
         "https://github.com/SFML/SFML.git",
         "2f11710abc5aa478503a7ff3f9e654bd2078ebab",
-    ),
-    ArchiveSource(
-        "https://www.sfml-dev.org/files/SFML-2.5.1-linux-gcc-64-bit.tar.gz",
-        "34ad106e4592d2ec03245db5e8ad8fbf85c256d6ef9e337e8cf5c4345dc583dd",
-    ),
+    )
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # build SFML
 cd ${WORKSPACE}/srcdir
-
-if [[ "${target}" == *linux* ]]; then
-
-cd SFML-2.5.1/
-mkdir -p ${prefix}
-mv ./include ./lib ${prefix}
-install_license ./share/SFML/license.md
-
-else
 
 cd SFML
 mkdir build && cd build
@@ -51,15 +38,14 @@ fi
 cmake .. ${CMAKE_FLAGS}
 make
 make install
-install_license ../license.md 
-
-fi
+install_license ../license.md
 
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
+    Linux(:i686),
     Linux(:x86_64),
     MacOS(:x86_64),
     Windows(:i686),
@@ -76,7 +62,16 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    Dependency("Ogg_jll"),
+    Dependency("FLAC_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_xorgproto_jll"),
+    Dependency("OpenAL_jll")
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
