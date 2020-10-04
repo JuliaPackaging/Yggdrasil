@@ -48,6 +48,6 @@ dependencies = [
     Dependency("libusb_jll")
 ]
 
-platforms = [p for p in supported_platforms() if !isa(p, FreeBSD)]
+platforms = [p for p in supported_platforms() if !Sys.isfreebsd(p)]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

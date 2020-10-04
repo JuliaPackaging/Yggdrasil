@@ -62,7 +62,7 @@ platforms = supported_platforms()
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
 # https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
-platforms = filter(p -> !isa(p, Windows), platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[

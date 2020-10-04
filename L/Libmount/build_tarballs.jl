@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(p isa Union{FreeBSD,Windows,MacOS})]
+platforms = [p for p in supported_platforms() if Sys.islinux(p)]
 
 # The products that we will ensure are always built
 products = [
@@ -34,4 +34,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
-

@@ -178,7 +178,7 @@ function configure(version)
     filter!(!=(Linux(:i686, libc=:musl)), platforms)
 
     # For now skip FreeBSD...
-    filter!(p->!(p isa FreeBSD), platforms)
+    filter!(!Sys.isfreebsd, platforms)
     platforms = expand_cxxstring_abis(platforms)
 
     # The products that we will ensure are always built

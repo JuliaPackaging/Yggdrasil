@@ -69,7 +69,7 @@ install_license ../cosma/LICENCE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> !(p isa Windows), platforms)
+filter!(!Sys.iswindows, platforms)
 
 
 # The products that we will ensure are always built

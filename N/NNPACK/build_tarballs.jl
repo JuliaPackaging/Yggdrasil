@@ -81,7 +81,7 @@ install_license ${WORKSPACE}/srcdir/NNPACK/LICENSE
 """
 
 # Build only Linux and MacOS
-platforms = filter(p -> (p isa Linux || p isa MacOS), supported_platforms())
+platforms = filter(p -> (Sys.islinux(p) || Sys.isdarwin(p)), supported_platforms())
 
 # Build only for AArch64, x86_64 and i686 (armv7l disabled for now until NEON support is figured out)
 platforms = filter(p -> arch(p) in (:aarch64, :x86_64, :i686), platforms)

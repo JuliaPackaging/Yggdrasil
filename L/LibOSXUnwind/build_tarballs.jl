@@ -35,7 +35,7 @@ cp -aR include ${prefix}/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> isa(p, MacOS), supported_platforms())
+platforms = filter(Sys.isdarwin, supported_platforms())
 
 # The products that we will ensure are always built
 products = [

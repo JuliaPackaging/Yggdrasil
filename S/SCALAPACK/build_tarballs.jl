@@ -72,7 +72,7 @@ make install
 
 # OpenMPI and MPICH are not precompiled for Windows
 # Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(filter!(p -> !isa(p, Windows) && arch(p) != :powerpc64le, supported_platforms()))
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
 
 # The products that we will ensure are always built
 products = [

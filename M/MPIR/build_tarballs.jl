@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if arch(p) == :x86_64 && !isa(p, FreeBSD)]
+platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p)]
 
 # The products that we will ensure are always built
 products(prefix) = [

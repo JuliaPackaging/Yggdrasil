@@ -19,7 +19,7 @@ make install
 """
 
 # Disable windows for now
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
+platforms = filter(!Sys.iswindows, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
