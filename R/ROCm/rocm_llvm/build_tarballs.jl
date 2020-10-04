@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "LLVM_AMDGPU"
+name = "rocm_llvm"
 version = v"3.8.0"
 
 # Collection of sources required to build
