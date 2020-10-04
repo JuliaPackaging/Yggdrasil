@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "GMP_jll",
+    Dependency("GMP_jll", v"6.1.2"),
     "MPFR_jll",
     "MPC_jll",
 ]

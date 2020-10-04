@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "GMP_jll",
+    Dependency("GMP_jll", v"6.1.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
