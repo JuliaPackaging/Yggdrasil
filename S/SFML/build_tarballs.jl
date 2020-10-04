@@ -23,6 +23,11 @@ mkdir build && cd build
 
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 
+
+if [[ "${target}" == *-linux-* ]]; then
+    apk add eudev-dev
+fi
+
 if [[ "${target}" == *apple* ]]; then
 CMAKE_FLAGS="${CMAKE_FLAGS} -DSFML_DEPENDENCIES_INSTALL_PREFIX=${WORKSPACE}/destdir/Frameworks"
 fi
