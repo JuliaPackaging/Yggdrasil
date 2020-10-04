@@ -26,6 +26,8 @@ CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TAR
 
 if [[ "${target}" == *-linux-* ]]; then
     apk add eudev-dev
+    cp /usr/include/libudev.h ${includedir}
+    cp /usr/include/udev.h ${includedir}
 fi
 
 if [[ "${target}" == *apple* ]]; then
