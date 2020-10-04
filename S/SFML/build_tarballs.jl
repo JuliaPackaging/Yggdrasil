@@ -21,13 +21,16 @@ cd ${WORKSPACE}/srcdir
 cd SFML
 mkdir build && cd build
 
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
 
 
 if [[ "${target}" == *-linux-* ]]; then
+    # I know I'm doing something evil here...
     apk add eudev-dev
     cp /usr/include/libudev.h ${includedir}
     cp /usr/include/udev.h ${includedir}
+    cp /usr/lib/libudev.a ${libdir}
+    cp /usr/lib/libudev.so ${libdir}
 fi
 
 if [[ "${target}" == *apple* ]]; then
