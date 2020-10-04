@@ -49,8 +49,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Ncurses_jll"), # 
-    BuildDependency("Python_jll"),
+    Dependency("Ncurses_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
