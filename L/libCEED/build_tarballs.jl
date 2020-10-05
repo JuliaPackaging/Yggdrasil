@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libCEED
 make -j${nproc} MEMCHK=0 CC_VENDOR=gcc
-make install
+make install MEMCHK=0 CC_VENDOR=gcc
 """
 
 # These are the platforms we will build for by default, unless further
@@ -31,4 +31,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
