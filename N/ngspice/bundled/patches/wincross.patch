@@ -1,0 +1,395 @@
+commit b6848fbbb669fbaf7e1db0a51bb5ea7a03beda76
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Oct 5 03:58:34 2020 -0400
+
+    Refactor /proc/meminfo code to use dynamic detection
+    
+    At the moment, the build system abuses a header check to make a
+    build-time determination about the existence of /proc/meminfo.
+    This is in general not idea, because it breaks cross compilation
+    (e.g. if we're compiling from Linux, which has /proc/meminfo to
+    Windows, which does not). It's also bad, because the existence
+    of /proc/meminfo is a transient condition. E.g. a Linux distribution
+    may sandbox its compile process without acess to /proc, but otherwise
+    make it available. This removes the compile time check and refactors
+    the rest of the code to dynamically check for /proc/meminfo. Where
+    other dynamic fall backs exist, I tried to make sure to maintain them
+    to avoid breaking users that may not have /proc/meminfo mounted.
+    
+    While I'm here, also fix two instances of an incorrect case of Windows.h
+    (most uses in the code base are correct). File systems on windows are
+    often case insensitive, which is why these kinds of things can easily
+    slip in (as well as being incorrect in a myriad of documentation and
+    tutorials) - nevertheless the official headers are all lower case.
+
+diff --git a/configure.ac b/configure.ac
+index dae84f91e..ec4ad9a66 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -619,8 +619,8 @@ case $with_wingui in
+         ;;
+     * )
+ 
+-# Check for /proc (virtual process information file system)
+-AC_CHECK_HEADERS([/proc/meminfo])
++
++AM_CONDITIONAL([CROSS_COMPILING], [test "x$cross_compiling" = xyes])
+ 
+ # Checks for X11 header files and libraries - X11 support can be disabled
+ # by passing the '--without-x' option to configure:
+@@ -1321,8 +1321,6 @@ AC_CONFIG_FILES([Makefile
+                  tests/resistance/Makefile
+                  tests/vbic/Makefile])
+ 
+-AM_CONDITIONAL([CROSS_COMPILING], [test "x$cross_compiling" = xyes])
+-
+ if test "x$cross_compiling" = xyes; then
+    AC_CONFIG_COMMANDS([mkdir], [$MKDIR_P src/xspice/cmpp/build])
+    AC_SUBST([CMPP], ['$(top_builddir)/src/xspice/cmpp/build/cmpp$(BUILD_EXEEXT)'])
+diff --git a/src/frontend/com_sysinfo.c b/src/frontend/com_sysinfo.c
+index 7e92a6cd0..6412472ba 100644
+--- a/src/frontend/com_sysinfo.c
++++ b/src/frontend/com_sysinfo.c
+@@ -166,7 +166,7 @@ static void fprintmem(FILE *stream, unsigned long long memory)
+ 
+ 
+ /*** Get processor and memory information as appropriate for the system ***/
+-#ifdef HAVE__PROC_MEMINFO
++#if defined(__linux__) || defined(__CYGWIN__)
+ 
+ /* Get memory information */
+ static int get_sysmem(struct sys_memory *memall)
+diff --git a/src/frontend/get_avail_mem_size.c b/src/frontend/get_avail_mem_size.c
+index c40702baa..e77168c36 100644
+--- a/src/frontend/get_avail_mem_size.c
++++ b/src/frontend/get_avail_mem_size.c
+@@ -1,7 +1,7 @@
+ /*
+  * Author:  Holger Vogt
+  * License: 3-clause BSD License
+- * 
++ *
+  */
+ 
+ #include "ngspice/ngspice.h"
+@@ -9,7 +9,7 @@
+ 
+ #if defined(_WIN32)
+ #undef BOOLEAN
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+ #include <unistd.h>
+@@ -26,13 +26,9 @@
+ #error "Unable to define getMemorySize( ) for an unknown OS."
+ #endif
+ 
+-
+-/**
+- * Returns the size of available memory (RAM) in bytes.
+- */
+-unsigned long long getAvailableMemorySize(void)
++#if defined(__linux__) || defined(__CYGWIN__)
++static unsigned long long readProcMemInfoMemFree(void)
+ {
+-#if defined(HAVE__PROC_MEMINFO)
+     /* Cygwin , Linux--------------------------------- */
+     /* Search for string "MemFree" */
+     FILE *fp;
+@@ -56,8 +52,19 @@ unsigned long long getAvailableMemorySize(void)
+         return 0L;
+     sscanf(match, "MemFree: %llu", &mem_got);
+     return mem_got * 1024L;
++}
++#endif
++
++#if defined(__unix__) || defined(__unix) || defined(unix)
++extern unsigned long long getTotalMemorySizeSyscall(void);
++#endif
+ 
+-#elif defined(_WIN32)
++/**
++ * Returns the size of available memory (RAM) in bytes.
++ */
++unsigned long long getAvailableMemorySize(void)
++{
++#if defined(_WIN32)
+     /* Windows. ------------------------------------------------- */
+     MEMORYSTATUSEX status;
+     status.dwLength = sizeof(status);
+@@ -87,55 +94,23 @@ unsigned long long getAvailableMemorySize(void)
+     return (unsigned long long)(vm_stat.free_count * pagesize);
+ //    natural_t mem_total = mem_used + mem_free;
+ 
+-#elif defined(__unix__) || defined(__unix) || defined(unix)
+-    /* Linux/UNIX variants. ------------------------------------------- */
+-    /* Prefer sysctl() over sysconf() except sysctl() HW_REALMEM and HW_PHYSMEM */
+-
+-#if defined(CTL_HW) && (defined(HW_MEMSIZE) || defined(HW_PHYSMEM64))
+-    int mib[2];
+-    mib[0] = CTL_HW;
+-#if defined(HW_MEMSIZE)
+-    mib[1] = HW_MEMSIZE;            /* OSX. --------------------- */
+-#elif defined(HW_PHYSMEM64)
+-    mib[1] = HW_PHYSMEM64;          /* NetBSD, OpenBSD. --------- */
+-#endif
+-    int64_t size = 0;               /* 64-bit */
+-    size_t len = sizeof( size );
+-    if ( sysctl( mib, 2, &size, &len, NULL, 0 ) == 0 )
+-        return (size_t)size;
+-    return 0L;          /* Failed? */
+-
+-#elif defined(_SC_AIX_REALMEM)
+-    /* AIX. ----------------------------------------------------- */
+-    return (size_t)sysconf( _SC_AIX_REALMEM ) * (size_t)1024L;
+-
+-#elif defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+-    /* FreeBSD, Linux, OpenBSD, and Solaris. -------------------- */
+-    return (size_t)sysconf( _SC_PHYS_PAGES ) *
+-        (size_t)sysconf( _SC_PAGESIZE );
+-
+-#elif defined(_SC_PHYS_PAGES) && defined(_SC_PAGE_SIZE)
+-    /* Legacy. -------------------------------------------------- */
+-    return (size_t)sysconf( _SC_PHYS_PAGES ) *
+-        (size_t)sysconf( _SC_PAGE_SIZE );
+-
+-#elif defined(CTL_HW) && (defined(HW_PHYSMEM) || defined(HW_REALMEM))
+-    /* DragonFly BSD, FreeBSD, NetBSD, OpenBSD, and OSX. -------- */
+-    int mib[2];
+-    mib[0] = CTL_HW;
+-#if defined(HW_REALMEM)
+-    mib[1] = HW_REALMEM;        /* FreeBSD. ----------------- */
+-#elif defined(HW_PYSMEM)
+-    mib[1] = HW_PHYSMEM;        /* Others. ------------------ */
++#else
++
++#if defined(__CYGWIN__) || defined(__linux__)
++    unsigned long memfree = readProcMemInfoMemFree();
++    if (memfree != 0L) {
++        return memfree;
++    }
++    // Else (if /proc is not mounted) fall through
+ #endif
+-    unsigned int size = 0;      /* 32-bit */
+-    size_t len = sizeof( size );
+-    if ( sysctl( mib, 2, &size, &len, NULL, 0 ) == 0 )
+-        return (size_t)size;
+-    return 0L;          /* Failed? */
+-#endif /* sysctl and sysconf variants */
+ 
++#if defined(__unix__) || defined(__unix) || defined(unix)
++    // We don't know how to get the available memory, but maybe we can get
++    // the total amount of memory, which is hopefully close enough.
++    return getTotalMemorySizeSyscall();
+ #else
+     return 0L;          /* Unknown OS. */
+ #endif
++
++#endif
+ }
+diff --git a/src/frontend/get_phys_mem_size.c b/src/frontend/get_phys_mem_size.c
+index 378f7115d..59797cd8a 100644
+--- a/src/frontend/get_phys_mem_size.c
++++ b/src/frontend/get_phys_mem_size.c
+@@ -11,7 +11,7 @@
+ 
+ #if defined(_WIN32)
+ #undef BOOLEAN
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+ #include <unistd.h>
+@@ -26,13 +26,9 @@
+ #endif
+ 
+ 
+-
+-/**
+- * Returns the size of physical memory (RAM) in bytes.
+- */
+-unsigned long long getMemorySize(void)
++#if defined(__linux__) || defined(__CYGWIN__)
++static unsigned long long readProcMemInfoMemTotal(void)
+ {
+-#if defined(HAVE__PROC_MEMINFO)
+     /* Cygwin , Linux--------------------------------- */
+     FILE *fp;
+     char buffer[2048];
+@@ -56,17 +52,14 @@ unsigned long long getMemorySize(void)
+         return 0;
+     sscanf(match, "MemTotal: %llu", &mem_got);
+     return mem_got * 1024L;
++}
++#endif
+ 
+-#elif defined(_WIN32)
+-    /* Windows. ------------------------------------------------- */
+-    /* Use new 64-bit MEMORYSTATUSEX, not old 32-bit MEMORYSTATUS */
+-    MEMORYSTATUSEX status;
+-    status.dwLength = sizeof(status);
+-    GlobalMemoryStatusEx( &status );
+-    return (unsigned long long) status.ullTotalPhys;
+-
+-#elif defined(__unix__) || defined(__unix) || defined(unix) ||  \
+-        (defined(__APPLE__) && defined(__MACH__))
++#if defined(__unix__) || defined(__unix) || defined(unix) ||  \
++    (defined( __APPLE__) && defined(__MACH__))
++extern unsigned long long getTotalMemorySizeSyscall(void);
++unsigned long long getTotalMemorySizeSyscall(void)
++{
+     /* UNIX variants. ------------------------------------------- */
+     /* Prefer sysctl() over sysconf() except sysctl() HW_REALMEM and HW_PHYSMEM */
+ 
+@@ -112,9 +105,40 @@ unsigned long long getMemorySize(void)
+     if ( sysctl( mib, 2, &size, &len, NULL, 0 ) == 0 )
+         return (unsigned long long) size;
+     return 0L;          /* Failed? */
++#else
++    return 0L;
+ #endif /* sysctl and sysconf variants */
++}
++#endif
++
++/**
++ * Returns the size of physical memory (RAM) in bytes.
++ */
++unsigned long long getMemorySize(void)
++{
++#if defined(_WIN32)
++    /* Windows. ------------------------------------------------- */
++    /* Use new 64-bit MEMORYSTATUSEX, not old 32-bit MEMORYSTATUS */
++    MEMORYSTATUSEX status;
++    status.dwLength = sizeof(status);
++    GlobalMemoryStatusEx( &status );
++    return (unsigned long long) status.ullTotalPhys;
+ 
+ #else
+-    return 0L;          /* Unknown OS. */
++    #if defined(__linux__) || defined(__CYGWIN__)
++        unsigned long long memtotal = readProcMemInfoMemTotal();
++        if (memtotal != 0) {
++            return memtotal;
++        }
++        // Else (if /proc is not mounted) fall through to legacy behavior
++    #endif
++
++    #if defined(__unix__) || defined(__unix) || defined(unix) ||  \
++        (defined( __APPLE__) && defined(__MACH__))
++
++        return getTotalMemorySizeSyscall();
++    #else
++        return 0L;          /* Unknown OS. */
++    #endif
+ #endif
+ }
+diff --git a/src/frontend/get_resident_set_size.c b/src/frontend/get_resident_set_size.c
+index aeff60558..0082baffb 100644
+--- a/src/frontend/get_resident_set_size.c
++++ b/src/frontend/get_resident_set_size.c
+@@ -42,22 +42,23 @@
+  */
+ unsigned long long getPeakRSS(void)
+ {
+-#if defined(HAVE__PROC_MEMINFO)
++#if defined(__linux__) || defined(__CYGWIN__)
+     /* Linux ---------------------------------------------------- */
+     unsigned long long rss = 0L;
+     FILE* fp = NULL;
+-    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+-            return (unsigned long long) 0L; /* Can't open? */
+-    if ( fscanf( fp, "%llu", &rss ) != 1 )
+-    {
++    if ( (fp = fopen( "/proc/self/statm", "r" )) != NULL ) {
++        if ( fscanf( fp, "%llu", &rss ) == 1 )
++        {
++            fclose( fp );
++            return rss * (unsigned long long) sysconf(_SC_PAGESIZE);
++        }
+         fclose( fp );
+-        return 0L;      /* Can't read? */
+     }
+-    fclose( fp );
+-        return rss * (unsigned long long) sysconf(_SC_PAGESIZE);
+-        
+-#elif defined(HAVE_GETRUSAGE)
+-    /* BSD, Linux, and OSX -------------------------------------- 
++    // If /proc is not mounted, fall through
++#endif
++
++#if defined(HAVE_GETRUSAGE)
++    /* BSD, Linux, and OSX --------------------------------------
+      * not (yet) available with CYGWIN */
+     struct rusage rusage;
+     getrusage(RUSAGE_SELF, &rusage);
+@@ -118,8 +119,7 @@ unsigned long long getCurrentRSS(void)
+         return 0L;      /* Can't access? */
+         return (unsigned long long) info.resident_size;
+ 
+-//#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+-#elif defined(HAVE__PROC_MEMINFO)
++#elif defined(__linux__) || defined(__CYGWIN__)
+     /* Linux ---------------------------------------------------- */
+     unsigned long long rss = 0L;
+     FILE* fp = NULL;
+@@ -131,7 +131,7 @@ unsigned long long getCurrentRSS(void)
+         return 0L;      /* Can't read? */
+     }
+     fclose( fp );
+-        return rss * (unsigned long long) sysconf(_SC_PAGESIZE);
++    return rss * (unsigned long long) sysconf(_SC_PAGESIZE);
+ 
+ #else
+     /* AIX, BSD, Solaris, and Unknown OS ------------------------ */
+diff --git a/src/frontend/resource.c b/src/frontend/resource.c
+index b8013eec9..c328564c9 100644
+--- a/src/frontend/resource.c
++++ b/src/frontend/resource.c
+@@ -59,7 +59,7 @@ Author: 1985 Wayne A. Christopher, U. C. Berkeley CAD Group
+ static void printres(char *name);
+ static void fprintmem(FILE *stream, unsigned long long memory);
+ 
+-#if defined(HAVE_WIN32) || defined(HAVE__PROC_MEMINFO)
++#if defined(HAVE_WIN32) || defined(__linux__) || defined(__CYGWIN__)
+ static int get_procm(struct proc_mem *memall);
+ 
+ struct sys_mem mem_t, mem_t_act;
+@@ -268,12 +268,12 @@ printres(char *name)
+         fprintmem(cp_out, mem);
+         fprintf(cp_out, ".\n");
+ 
+-#if defined(HAVE__PROC_MEMINFO)
++#if defined(__linux__) || defined(__CYGWIN__)
+         get_procm(&mem_ng_act);
+ //        fprintf(cp_out, "Resident set size = ");
+ //        fprintmem(cp_out, mem_ng_act.resident);
+ //        fprintf(cp_out, ".\n");
+-        fprintf(cp_out, "\n");  
++        fprintf(cp_out, "\n");
+         fprintf(cp_out, "Shared ngspice pages = ");
+         fprintmem(cp_out, mem_ng_act.shared);
+         fprintf(cp_out, ".\n");
+@@ -415,7 +415,7 @@ fprintmem(FILE *stream, unsigned long long memory) {
+ }
+ 
+ 
+-#if defined(HAVE_WIN32) || defined(HAVE__PROC_MEMINFO)
++#if defined(HAVE_WIN32) || defined(__linux__) || defined(__CYGWIN__)
+ 
+ static int get_procm(struct proc_mem *memall) {
+ 
+diff --git a/visualc/src/include/ngspice/config.h b/visualc/src/include/ngspice/config.h
+index 7fb19e47e..5b3609447 100644
+--- a/visualc/src/include/ngspice/config.h
++++ b/visualc/src/include/ngspice/config.h
+@@ -416,9 +416,6 @@
+ /* Define to 1 if the system has the type `_Bool'. */
+ /* #undef HAVE__BOOL */
+ 
+-/* Define to 1 if you have the </proc/meminfo> header file. */
+-/* #undef HAVE__PROC_MEMINFO */
+-
+ /* Client-Server only via stdio. */
+ #define IPC_DEBUG_VIA_STDIO 1
+ 
