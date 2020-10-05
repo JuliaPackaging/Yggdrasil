@@ -1,0 +1,31 @@
+commit a84097257d31063869ee2764e499509136ac5b48
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Oct 5 04:08:42 2020 -0400
+
+    autogen.sh: Allow setting LIBTOOLIZE as an env var
+    
+    The autogen.sh script changes the name of LIBTOOLIZE based on whether
+    or not the current host is Darwin. That's a reasonable thing to do,
+    since libtoolize is traditionally called glibtoolize on Darwin to
+    indicate that it is a GNU tool. However, it is possible to target
+    Darwin with a GNU userland, in which case the tool would just be
+    called `libtoolize`. Fix autogen.sh to respect the LIBTOOLIZE env
+    var if it is set, such that the build driver can select the appropriate
+    tool name for the build environment.
+
+diff --git a/autogen.sh b/autogen.sh
+index 02301d938..cb487ae9b 100755
+--- a/autogen.sh
++++ b/autogen.sh
+@@ -25,9 +25,9 @@ DIE=0
+ # Check for Mac OS X
+ uname -a | grep -q "Darwin"
+ if [ $? -eq 0 ]; then
+-    LIBTOOLIZE=glibtoolize
++    LIBTOOLIZE=${LIBTOOLIZE:-glibtoolize}
+ else
+-    LIBTOOLIZE=libtoolize
++    LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
+ fi
+ 
+ help()

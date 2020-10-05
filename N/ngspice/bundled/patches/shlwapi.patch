@@ -1,0 +1,19 @@
+commit 8f46d095a250833f4e93d115e548d2cfc2da6076
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Oct 5 06:40:59 2020 -0400
+
+    Drop shlwapi from cross compile invocation
+
+diff --git a/src/xspice/cmpp/Makefile.am b/src/xspice/cmpp/Makefile.am
+index f7444d577..e155d4627 100644
+--- a/src/xspice/cmpp/Makefile.am
++++ b/src/xspice/cmpp/Makefile.am
+@@ -53,7 +53,7 @@ BUILD_CMPP_FILES = main.c file_buffer.c \
+ 
+ build/cmpp$(BUILD_EXEEXT) : $(BUILD_CMPP_FILES)
+ 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) \
+-		$(AM_CPPFLAGS) $(LDFLAGS_FOR_BUILD) -o $@ $^ -lshlwapi
++		$(AM_CPPFLAGS) $(LDFLAGS_FOR_BUILD) -o $@ $^ $(cmpp_LDADD)
+ 
+ distclean-local:
+ 	-rm -rf build
