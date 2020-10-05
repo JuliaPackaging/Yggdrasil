@@ -12,11 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libCEED
-sed -i "s/MEMCHK :=.*/MEMCHK := 0/g" Makefile 
-sed -i "s/CC_VENDOR :=.*/CC_VENDOR := gcc/g" Makefile 
-make -j$ncore
+cd $WORKSPACE/srcdir/libCEED
+make -j${nproc} MEMCHK=0 CC_VENDOR=gcc
 make install
 """
 
