@@ -7,7 +7,7 @@ version = v"8.3.61"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Keno/magic.git", "677b176b2fdf8b623e81b8b09b598bdf56d3c130")
+    GitSource("https://github.com/Keno/magic.git", "a58100a14cdb57462cf75691532d01c5733fb59b")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,7 @@ dependencies = [
     Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
     Dependency(PackageSpec(name="Cairo_jll"))
     Dependency(PackageSpec(name="Tk_jll"))
-    Dependency(PackageSpec(name="Xorg_xorgproto_jll"))
+    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
