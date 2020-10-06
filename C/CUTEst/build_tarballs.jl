@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CUTEst"
-version = v"2.0.3"
+version = v"2.0.4"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.3x.tar.gz",
-                  "6583e27f84338447767bbdf4335514c8836ae4ad54f5e66280307e8b57189cff"),
+    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.4x.tar.gz",
+                  "c9465129952d10a4e6fd049c4741b6e968421c1825c8fc924c1402042e2edb50"),
     ArchiveSource("https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz",
                   "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2"),
     ArchiveSource("https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz",
@@ -23,10 +23,10 @@ echo "building for ${target}"
 mkdir -p ${prefix}/libexec
 mkdir -p ${bindir}
 mkdir -p ${libdir}
-cp -r ARCHDefs-2.0.3x ${prefix}/libexec/
+cp -r ARCHDefs-2.0.4x ${prefix}/libexec/
 cp -r SIFDecode-2.0.3 ${prefix}/libexec/
 cp -r CUTEst-2.0.3 ${prefix}/libexec/
-export ARCHDEFS=${prefix}/libexec/ARCHDefs-2.0.3x
+export ARCHDEFS=${prefix}/libexec/ARCHDefs-2.0.4x
 export SIFDECODE=${prefix}/libexec/SIFDecode-2.0.3
 export CUTEST=${prefix}/libexec/CUTEst-2.0.3
 
@@ -36,7 +36,7 @@ cd $SIFDECODE
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "6" > sifdecode.opts   # PC64
   echo "2" >> sifdecode.opts  # Linux
-  echo "5" >> sifdecode.opts  # gfortran
+  echo "6" >> sifdecode.opts  # gfortran
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > sifdecode.opts  # macOS
   echo "2" >> sifdecode.opts  # gfortran
@@ -55,9 +55,9 @@ cd $CUTEST
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "6" > cutest.opts   # PC64
   echo "2" >> cutest.opts  # Linux
-  echo "5" >> cutest.opts  # gfortran
+  echo "6" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "7" >> cutest.opts  # gcc
+  echo "8" >> cutest.opts  # gcc
   export MYARCH=pc64.lnx.gfo
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
