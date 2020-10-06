@@ -18,7 +18,7 @@ cd p4est-2.2/
 if [[ "${target}" == *-freebsd* ]]; then
   export LIBS="-lm"
 fi
-CFLAGS="-I${prefix}/include" LDFLAGS="-L${prefix}/lib" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-blas
+CPPFLAGS="-I${includedir}" LDFLAGS="-L${libdir}" BLAS_LIBS="${libdir}/libopenblas.${dlext}" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
@@ -32,7 +32,6 @@ platforms = [
     Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
     Linux(:powerpc64le, libc=:glibc),
     Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
     Linux(:aarch64, libc=:musl),
     Linux(:armv7l, libc=:musl, call_abi=:eabihf),
     MacOS(:x86_64),
@@ -49,6 +48,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
