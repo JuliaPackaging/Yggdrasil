@@ -22,15 +22,16 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:aarch64, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:powerpc64le, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:i686, libc=:musl, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:aarch64, libc=:musl, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64, compiler_abi=CompilerABI(cxxstring_abi=:cxx11))
+    Platform("i686", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("powerpc64le", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("i686", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("aarch64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("armv7l", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("x86_64", "macos"; cxxstring_abi="cxx11")
 ]
 
 
