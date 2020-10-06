@@ -13,30 +13,28 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd p4est-2.2/
+cd $WORKSPACE/srcdir/p4est-2.2/
 if [[ "${target}" == *-freebsd* ]]; then
   export LIBS="-lm"
+elif [[ "${target}" == x86_64-linux-musl ]]; then
+    # We can't run Fortran programs for the native platform, so a check that the
+    # Fortran compiler works would fail.  Small hack: swear that we're
+    # cross-compiling.  See:
+    # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/50.
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' sc/configure
 fi
-CPPFLAGS="-I${includedir}" LDFLAGS="-L${libdir}" BLAS_LIBS="${libdir}/libopenblas.${dlext}" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
+export BLAS_LIBS="${libdir}/libopenblas.${dlext}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 
 # The products that we will ensure are always built
