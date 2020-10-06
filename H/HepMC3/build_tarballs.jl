@@ -22,18 +22,18 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("powerpc64le", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("i686", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("aarch64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("armv7l", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("x86_64", "macos"; cxxstring_abi="cxx11")
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos";)
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
