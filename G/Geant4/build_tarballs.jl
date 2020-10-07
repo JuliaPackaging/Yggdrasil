@@ -60,9 +60,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
-    "Xorg_libXmu_jll",
-    "Libglvnd_jll"
+    Dependency("Expat_jll"),
+    Dependency("Xorg_libXmu_jll"),
+    Dependency("Libglvnd_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
