@@ -45,7 +45,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.2"))
     Dependency("GMP_jll", v"6.1.2"),
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
+    Dependency("MPFR_jll", v"4.0.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
