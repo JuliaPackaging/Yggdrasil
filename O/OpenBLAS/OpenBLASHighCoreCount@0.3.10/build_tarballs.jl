@@ -3,7 +3,7 @@ using BinaryBuilder
 include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
-name = "OpenBLAS"
+name = "OpenBLASHighCoreCount"
 version = v"0.3.10"
 
 sources = openblas_sources(version)
