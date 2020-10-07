@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build
 sources = [
@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGEANT4_USE_OPENGL_X11=ON ..
 make -j${nproc}
 make install
 """
@@ -61,6 +61,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     "Expat_jll",
+    "Xorg_libXmu_jll",
+    "Libglvnd_jll"
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
