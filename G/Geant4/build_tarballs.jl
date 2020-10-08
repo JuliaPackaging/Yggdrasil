@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build
 sources = [
@@ -15,14 +15,22 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+FLAGS=()
+if [[ "${target}" != *-apple-* ]]; then
+    FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+     "${FLAGS[@]}" \
+    ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = expand_cxxstring_abis(filter(!Sys.iswindows, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -60,7 +68,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
+    Dependency("Expat_jll"),
+    Dependency("Xorg_libXmu_jll"),
+    Dependency("Libglvnd_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
