@@ -20,7 +20,7 @@ cd Enzyme
 CMAKE_FLAGS=()
 
 # Release build for best performance
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
