@@ -15,7 +15,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGEANT4_USE_OPENGL_X11=ON ..
+FLAGS=()
+if [[ "${target}" != *-apple-* ]]; then
+    FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+     "${FLAGS[@]}" \
+    ..
 make -j${nproc}
 make install
 """
