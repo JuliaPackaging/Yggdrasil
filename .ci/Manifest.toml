@@ -28,7 +28,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "ed2e0b64094a8c5110c312b8ef166ebbb6ea3ba1"
+git-tree-sha1 = "31d794f9d0c0afa03a0cc2c22d3a7fe4fa0605e2"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -36,7 +36,7 @@ version = "0.3.0"
 
 [[BinaryBuilderBase]]
 deps = ["CodecZlib", "Downloads", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "SimpleBufferStream", "Tar", "UUIDs", "p7zip_jll"]
-git-tree-sha1 = "21421810cf8a97cae3fff5af294b4f449b189b04"
+git-tree-sha1 = "fca2c8812254ecdc304249278c34dd0b84def420"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
@@ -144,9 +144,9 @@ version = "0.3.2"
 
 [[Lazy]]
 deps = ["MacroTools"]
-git-tree-sha1 = "ead48f10ad295afe72046ab0f2b9d704466452a0"
+git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
 uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
-version = "0.14.0"
+version = "0.15.1"
 
 [[LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -212,9 +212,9 @@ version = "1.0.6"
 
 [[Mux]]
 deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "Lazy", "Pkg", "Sockets", "WebSockets"]
-git-tree-sha1 = "0f3a0c7e6ee65b7cc096feac8748f6ee03ea487f"
+git-tree-sha1 = "8e917fbe96da22628feae3f01b4f100e709ab746"
 uuid = "a975b10e-0019-58db-a62f-e48ff68538c9"
-version = "0.7.2"
+version = "0.7.3"
 
 [[ObjectFile]]
 deps = ["Reexport", "StructIO", "Test"]
@@ -233,10 +233,10 @@ uuid = "6c11c7d4-943b-4e2b-80de-f2cfc2930a8c"
 version = "0.1.0"
 
 [[Parsers]]
-deps = ["Dates", "Test"]
-git-tree-sha1 = "8077624b3c450b15c087944363606a6ba12f925e"
+deps = ["Dates"]
+git-tree-sha1 = "6fa4202675c05ba0f8268a6ddf07606350eda3ce"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "1.0.10"
+version = "1.0.11"
 
 [[Pidfile]]
 deps = ["FileWatching", "Test"]
@@ -331,7 +331,7 @@ deps = ["ArgTools", "Logging", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
 
 [[Test]]
-deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
+deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TextWrap]]
