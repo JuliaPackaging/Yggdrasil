@@ -94,7 +94,7 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
- MacOS(:x86_64, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+ MacOS(:x86_64),
  Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
 ]
 
