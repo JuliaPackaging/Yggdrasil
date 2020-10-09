@@ -3,17 +3,21 @@
 using BinaryBuilder
 
 name = "hsakmt_roct"
-version = v"3.7.0"
+version = v"3.8.0"
 
 # Collection of sources required to build ROCT-Thunk-Interface
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
-                  "b357fe7f425996c49f41748923ded1a140933de7564a70a828ed6ded6d896458")
+                  "cd5440f31f592737b5d05448704bd01f91f73cfcab8a7829922e81332575cfe8"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/ROCT-Thunk-Interface*/
+
+# fix for musl (but works on glibc too)
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-Build-correctly-on-musl.patch"
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -29,7 +33,8 @@ make install
 # platforms are passed in on the command line
 # ROCT-Thunk-Interface only supports Linux, seemingly only 64bit
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 
 # The products that we will ensure are always built
