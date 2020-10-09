@@ -38,7 +38,7 @@ jobs:
               SKIP_BUILD="true"
           fi
       else
-          if [[ "${BUILD_SOURCEVERSIONMESSAGE}" == *"${SKIP_BUILD_COOKIE}"* ]]; then
+          if [[ "$(git show -s --format=%B)" == *"${SKIP_BUILD_COOKIE}"* ]]; then
               SKIP_BUILD="true"
           fi
       fi
