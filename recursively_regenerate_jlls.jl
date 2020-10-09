@@ -193,8 +193,8 @@ function open_jll_bump_pr(dep_name::String)
             It was generated via the `recursively_regenerate_jlls.jl` script.
             """
         )
-        pr = BinaryBuilder.create_or_update_pull_request("JuliaPackaging/Yggdrasil", params, auth=gh_auth)
-        println("https://github.com/$(fork.full_name)/pull/new/$(BinaryBuilder.HTTP.escapeuri(branch_name))?expand=1")
+        pr = BinaryBuilder.Wizard.create_or_update_pull_request("JuliaPackaging/Yggdrasil", params, auth=gh_auth)
+        println("https://github.com/$(fork.full_name)/pull/new/$(BinaryBuilder.Wizard.HTTP.escapeuri(branch_name))?expand=1")
     end
 end
 
