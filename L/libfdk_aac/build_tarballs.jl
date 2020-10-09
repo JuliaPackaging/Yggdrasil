@@ -7,7 +7,7 @@ version = v"0.1.6"
 
 # Collection of sources required to build libfdk
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/opencore-amr/fdk-aac-$(version).tar.gz",
+    ArchiveSource("https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-$(version).tar.gz",
                   "aab61b42ac6b5953e94924c73c194f08a86172d63d39c5717f526ca016bed3ad"),
 ]
 
@@ -35,4 +35,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
