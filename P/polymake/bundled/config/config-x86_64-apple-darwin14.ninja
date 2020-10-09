@@ -2,7 +2,7 @@
 configure.command=/workspace/srcdir/polymake/configure CXX=clang++ --with-libcxx --with-lrs-include=/workspace/destdir/include/lrslib
 root=/workspace/srcdir/polymake
 core.includes=-I${root}/include/core-wrappers -I${root}/include/core
-app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/include/external/permlib -I${root}/include/external/TOSimplex
+app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/include/external/permlib -I${root}/include/external/TOSimplex -I${root}/include/external/Miniball
 
 CC = clang -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
 CXX = clang++ -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
@@ -23,7 +23,7 @@ LDsharedFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/w
 LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong  -mmacosx-version-min=10.8 -fstack-protector-strong
 LDsonameFLAGS = -install_name /workspace/destdir/lib/
 LIBS =  -lc++ -lflint -lmpfr -lgmp -lpthread
-ExternalHeaders =  permlib TOSimplex
+ExternalHeaders =  permlib TOSimplex Miniball
 Arch = darwin.x86_64
 BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
 BuildModes = Opt Debug

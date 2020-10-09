@@ -3,16 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "polymake"
-version = v"4.1.0"
+version = v"4.2.0"
 
 # Collection of sources required to build polymake
 sources = [
-    GitSource("https://github.com/polymake/polymake.git", "8704ebbba9f8cc2b07f824a283ffed49a8c036be")
+    ArchiveSource("https://github.com/polymake/polymake/archive/V$(version.major).$(version.minor).tar.gz", "d308f551ef4c9f490a3a848d45a1ab41ae6461b1daf5be3deeaebad7df3816d4")
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# the prepared config files for non-native architectures
+# assume a fixed source directory
+mv $WORKSPACE/srcdir/{polymake-*,polymake}
 cd $WORKSPACE/srcdir/polymake
 
 perl_version=5.30.3
@@ -24,7 +27,12 @@ for dir in FLINT GMP MPFR PPL Perl bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
+# adjust for hardcoded /workspace dirs
 atomic_patch -p1 ../patches/relocatable.patch
+
+# to unbreak ctrl+c in julia
+atomic_patch -p1 ../patches/sigint.patch
+
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
@@ -86,9 +94,10 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
- MacOS(:x86_64, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
- Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -100,17 +109,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
-    Dependency("FLINT_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FLINT_jll"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("PPL_jll")
-    Dependency(PackageSpec(name="Perl_jll", uuid="83958c19-0796-5285-893e-a1267f8ec499", version=v"5.30.3"))
-    Dependency("bliss_jll")
-    Dependency("boost_jll")
-    Dependency("cddlib_jll")
-    Dependency("lrslib_jll")
-    Dependency("normaliz_jll")
+    Dependency("PPL_jll"),
+    Dependency(PackageSpec(name="Perl_jll", uuid="83958c19-0796-5285-893e-a1267f8ec499", version=v"5.30.3")),
+    Dependency("bliss_jll"),
+    Dependency("boost_jll"),
+    Dependency("cddlib_jll"),
+    Dependency("lrslib_jll"),
+    Dependency("normaliz_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
