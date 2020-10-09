@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.34.17727"
+version = v"20.39.17972"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "49f450e09447099e052f7c462941cd58d4431c72"),
+              "d1e0768cf5913ba98270496062ae5ff5ec01b8ce"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,7 +56,7 @@ ninja -C build -j ${nproc} install
 platforms = [
     # NEO is 64-bit only: https://github.com/intel/compute-runtime/issues/179
     # and does not support musl: https://github.com/intel/compute-runtime/issues/265
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -69,8 +69,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.2.4")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.4756")),
+    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.2.5")),
+    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.5064")),
     Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=v"1.0")),
 ]
 
