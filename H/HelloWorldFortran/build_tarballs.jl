@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldFortran"
-version = v"1.1.0"
+version = v"1.0.2"
 
 # No sources, we're just building the testsuite
 sources = [
