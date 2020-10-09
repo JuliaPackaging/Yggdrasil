@@ -7,7 +7,7 @@ version = v"2.18.1"
 
 # Collection of sources required to complete build
 sources = [
-           ArchiveSource("https://github.com/fredrik-johansson/arb/archive/2.18.1.tar.gz",
+           ArchiveSource("https://github.com/fredrik-johansson/arb/archive/$(version).tar.gz",
                          "9c5c6128c2e7bdc6e7e8d212f2b301068b87b956e1a238fe3b8d69d10175ceec")
               
 ]
@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.2"))
+    Dependency("FLINT_jll"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
