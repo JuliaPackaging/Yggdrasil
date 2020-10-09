@@ -36,8 +36,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
+    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("MPFR_jll", v"4.0.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

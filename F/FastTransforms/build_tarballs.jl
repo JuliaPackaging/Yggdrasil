@@ -55,7 +55,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll"),
+    Dependency("MPFR_jll", v"4.0.2"),
     Dependency("OpenBLAS_jll"),
 ]
 

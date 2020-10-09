@@ -45,7 +45,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll", v"6.1.2"),
     Dependency("Nettle_jll"),
 ]
 

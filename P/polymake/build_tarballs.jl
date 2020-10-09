@@ -102,8 +102,8 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll")
     Dependency("FLINT_jll")
-    Dependency("GMP_jll")
-    Dependency("MPFR_jll")
+    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("MPFR_jll", v"4.0.2"),
     Dependency("PPL_jll")
     Dependency(PackageSpec(name="Perl_jll", uuid="83958c19-0796-5285-893e-a1267f8ec499", version=v"5.30.3"))
     Dependency("bliss_jll")
