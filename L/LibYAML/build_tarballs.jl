@@ -17,11 +17,6 @@ cd ${WORKSPACE}/srcdir/yaml-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
-# Move library on Windows
-if [[ "${target}" == *-mingw* ]]; then
-    mv "${libdir}"/libyaml-*.${dlext} "${libdir}/libyaml.${dlext}"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,7 +25,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libyaml", :libyaml)
+    LibraryProduct(["libyaml", "libyaml-0"], :libyaml)
 ]
 
 # Dependencies that must be installed before this package can be built
