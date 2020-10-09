@@ -1,6 +1,6 @@
-From 202a4ac1460f8ff898d83bb45b82d3b660b5b95b Mon Sep 17 00:00:00 2001
+From 945fa720e2426328288943ced2510671be5e59b9 Mon Sep 17 00:00:00 2001
 From: Keno Fischer <keno@juliacomputing.com>
-Date: Fri, 9 Oct 2020 13:47:07 -0400
+Date: Fri, 9 Oct 2020 15:02:37 -0400
 Subject: [PATCH] [SCEV] Record NI types in add exprs
 
 This fixes a case where loop-reduce introduces ptrtoint/inttoptr for
@@ -70,17 +70,17 @@ pattern for non-integral pointers seems to work ok.
 
 Differential Revision: https://reviews.llvm.org/D75072
 ---
- llvm/include/llvm/Analysis/ScalarEvolution.h  | 26 +++++--
- .../Analysis/ScalarEvolutionExpressions.h     | 70 ++++++++++++++++---
- llvm/lib/Analysis/ScalarEvolution.cpp         | 44 +++++++++---
- .../LoopStrengthReduce/nonintegral.ll         | 35 +++++++++-
- 4 files changed, 150 insertions(+), 25 deletions(-)
+ llvm/include/llvm/Analysis/ScalarEvolution.h  | 26 ++++--
+ .../Analysis/ScalarEvolutionExpressions.h     | 81 ++++++++++++++++---
+ llvm/lib/Analysis/ScalarEvolution.cpp         | 44 +++++++---
+ .../LoopStrengthReduce/nonintegral.ll         | 35 +++++++-
+ 4 files changed, 159 insertions(+), 27 deletions(-)
 
 diff --git llvm/include/llvm/Analysis/ScalarEvolution.h llvm/include/llvm/Analysis/ScalarEvolution.h
-index 5286f6a220e..f27fceb70d2 100644
+index 81c5fc93258..964f57e940e 100644
 --- llvm/include/llvm/Analysis/ScalarEvolution.h
 +++ llvm/include/llvm/Analysis/ScalarEvolution.h
-@@ -118,6 +118,19 @@ public:
+@@ -119,6 +119,19 @@ public:
      NoWrapMask = (1 << 3) - 1
    };
  
@@ -100,7 +100,7 @@ index 5286f6a220e..f27fceb70d2 100644
    explicit SCEV(const FoldingSetNodeIDRef ID, unsigned SCEVTy,
                  unsigned short ExpressionSize)
        : FastID(ID), SCEVType(SCEVTy), ExpressionSize(ExpressionSize) {}
-@@ -154,6 +167,10 @@ public:
+@@ -155,6 +168,10 @@ public:
      return ExpressionSize;
    }
  
@@ -111,7 +111,7 @@ index 5286f6a220e..f27fceb70d2 100644
    /// Print out the internal representation of this scalar to the specified
    /// stream.  This should really only be used for debugging purposes.
    void print(raw_ostream &OS) const;
-@@ -719,9 +736,8 @@ public:
+@@ -720,9 +737,8 @@ public:
    unsigned getSmallConstantTripMultiple(const Loop *L,
                                          BasicBlock *ExitingBlock);
  
@@ -122,7 +122,7 @@ index 5286f6a220e..f27fceb70d2 100644
    /// has executed before the loop is exited.
    enum ExitCountKind {
      /// An expression exactly describing the number of times the backedge has
-@@ -732,11 +748,11 @@ public:
+@@ -733,11 +749,11 @@ public:
    };
  
    /// Return the number of times the backedge executes before the given exit
@@ -136,7 +136,7 @@ index 5286f6a220e..f27fceb70d2 100644
    const SCEV *getExitCount(const Loop *L, BasicBlock *ExitingBlock,
                             ExitCountKind Kind = Exact);
  
-@@ -765,7 +781,7 @@ public:
+@@ -766,7 +782,7 @@ public:
    /// SCEVCouldNotCompute object.
    const SCEV *getConstantMaxBackedgeTakenCount(const Loop *L) {
      return getBackedgeTakenCount(L, ConstantMaximum);
@@ -146,7 +146,7 @@ index 5286f6a220e..f27fceb70d2 100644
    /// Return true if the backedge taken count is either the value returned by
    /// getConstantMaxBackedgeTakenCount or zero.
 diff --git llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
-index 876d68438ef..b9ea23c0086 100644
+index 0076e02ae1b..1d0a6d20b26 100644
 --- llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
 +++ llvm/include/llvm/Analysis/ScalarEvolutionExpressions.h
 @@ -188,6 +188,13 @@ class Type;
@@ -163,30 +163,35 @@ index 876d68438ef..b9ea23c0086 100644
      /// Methods for support type inquiry through isa, cast, and dyn_cast:
      static bool classof(const SCEV *S) {
        return S->getSCEVType() == scAddExpr || S->getSCEVType() == scMulExpr ||
-@@ -222,24 +229,54 @@ class Type;
-   class SCEVAddExpr : public SCEVCommutativeExpr {
-     friend class ScalarEvolution;
+@@ -224,19 +231,16 @@ class Type;
+ 
+     Type *Ty;
  
 +  protected:
-     SCEVAddExpr(const FoldingSetNodeIDRef ID,
-                 const SCEV *const *O, size_t N)
-       : SCEVCommutativeExpr(ID, scAddExpr, O, N) {}
+     SCEVAddExpr(const FoldingSetNodeIDRef ID, const SCEV *const *O, size_t N)
+         : SCEVCommutativeExpr(ID, scAddExpr, O, N) {
+-      auto *FirstPointerTypedOp = find_if(operands(), [](const SCEV *Op) {
+-        return Op->getType()->isPointerTy();
+-      });
+-      if (FirstPointerTypedOp != operands().end())
+-        Ty = (*FirstPointerTypedOp)->getType();
+-      else
+-        Ty = getOperand(0)->getType();
++
+     }
  
    public:
--    Type *getType() const {
--      // Use the type of the last operand, which is likely to be a pointer
--      // type, if there is one. This doesn't usually matter, but it can help
--      // reduce casts when the expressions are expanded.
--      return getOperand(getNumOperands() - 1)->getType();
-+    /// Returns the type of the add expression, by looking either at the last
-+    /// operand or deferring to the SCEVAddNIExpr subclass for non-integral
-+    /// pointers.
+-    Type *getType() const { return Ty; }
++    // Returns the type of the add expression, by looking either at the last operand
++    // or deferring to the SCEVAddNIExpr subclass.
 +    Type *getType() const;
-+
-+    /// Methods for support type inquiry through isa, cast, and dyn_cast:
-+    static bool classof(const SCEV *S) { return S->getSCEVType() == scAddExpr; }
-+  };
-+
+ 
+     /// Methods for support type inquiry through isa, cast, and dyn_cast:
+     static bool classof(const SCEV *S) {
+@@ -244,6 +248,46 @@ class Type;
+     }
+   };
+ 
 +  /// This node represents an addition of some number of SCEVs, one which
 +  /// is a non-integral pointer type, requiring us to know the type exactly for
 +  /// correctness.
@@ -198,18 +203,17 @@ index 876d68438ef..b9ea23c0086 100644
 +                  PointerType *NIType)
 +        : SCEVAddExpr(ID, O, N), NIType(NIType) {
 +      SubclassData |= FlagHasNIPointers;
-     }
- 
++    }
++
 +  public:
 +    Type *getType() const { return NIType; }
 +
-     /// Methods for support type inquiry through isa, cast, and dyn_cast:
-     static bool classof(const SCEV *S) {
--      return S->getSCEVType() == scAddExpr;
++    /// Methods for support type inquiry through isa, cast, and dyn_cast:
++    static bool classof(const SCEV *S) {
 +      return S->getSCEVType() == scAddExpr && S->hasNonIntegralPointers();
-     }
-   };
- 
++    }
++  };
++
 +  inline Type *SCEVAddExpr::getType() const {
 +    // In general, use the type of the last operand, which is likely to be a
 +    // pointer type, if there is one. This doesn't usually matter, but it can
@@ -218,13 +222,20 @@ index 876d68438ef..b9ea23c0086 100644
 +    // that stores that type explicitly.
 +    if (hasNonIntegralPointers())
 +      return cast<SCEVAddNIExpr>(this)->getType();
-+    return getOperand(getNumOperands() - 1)->getType();
++
++    auto *FirstPointerTypedOp = find_if(operands(), [](const SCEV *Op) {
++      return Op->getType()->isPointerTy();
++    });
++    if (FirstPointerTypedOp != operands().end())
++      return (*FirstPointerTypedOp)->getType();
++    else
++      return  getOperand(0)->getType();
 +  }
 +
    /// This node represents multiplication of some number of SCEVs.
    class SCEVMulExpr : public SCEVCommutativeExpr {
      friend class ScalarEvolution;
-@@ -249,6 +286,18 @@ class Type;
+@@ -253,6 +297,18 @@ class Type;
        : SCEVCommutativeExpr(ID, scMulExpr, O, N) {}
  
    public:
@@ -243,7 +254,7 @@ index 876d68438ef..b9ea23c0086 100644
      /// Methods for support type inquiry through isa, cast, and dyn_cast:
      static bool classof(const SCEV *S) {
        return S->getSCEVType() == scMulExpr;
-@@ -475,9 +524,12 @@ class Type;
+@@ -479,9 +535,12 @@ class Type;
      /// instances owned by a ScalarEvolution.
      SCEVUnknown *Next;
  
@@ -260,7 +271,7 @@ index 876d68438ef..b9ea23c0086 100644
      // Implement CallbackVH.
      void deleted() override;
 diff --git llvm/lib/Analysis/ScalarEvolution.cpp llvm/lib/Analysis/ScalarEvolution.cpp
-index cd74815a895..09e98345d0f 100644
+index 3c96b3f2046..8197d368b40 100644
 --- llvm/lib/Analysis/ScalarEvolution.cpp
 +++ llvm/lib/Analysis/ScalarEvolution.cpp
 @@ -369,12 +369,13 @@ Type *SCEV::getType() const {
@@ -278,7 +289,7 @@ index cd74815a895..09e98345d0f 100644
    case scAddExpr:
      return cast<SCEVAddExpr>(this)->getType();
    case scUDivExpr:
-@@ -2449,8 +2450,9 @@ const SCEV *ScalarEvolution::getAddExpr(SmallVectorImpl<const SCEV *> &Ops,
+@@ -2193,8 +2194,9 @@ const SCEV *ScalarEvolution::getAddExpr(SmallVectorImpl<const SCEV *> &Ops,
    }
  
    // Limit recursion calls depth.
@@ -287,9 +298,9 @@ index cd74815a895..09e98345d0f 100644
      return getOrCreateAddExpr(Ops, Flags);
 +  }
  
-   // Okay, check to see if the same value occurs in the operand list more than
-   // once.  If so, merge them together into an multiply expression.  Since we
-@@ -2791,16 +2793,27 @@ ScalarEvolution::getOrCreateAddExpr(ArrayRef<const SCEV *> Ops,
+   if (SCEV *S = std::get<0>(findExistingSCEVInCache(scAddExpr, Ops))) {
+     static_cast<SCEVAddExpr *>(S)->setNoWrapFlags(Flags);
+@@ -2540,16 +2542,27 @@ ScalarEvolution::getOrCreateAddExpr(ArrayRef<const SCEV *> Ops,
                                      SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scAddExpr);
@@ -321,7 +332,7 @@ index cd74815a895..09e98345d0f 100644
      UniqueSCEVs.InsertNode(S, IP);
      addToLoopUseLists(S);
    }
-@@ -2813,8 +2826,10 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
+@@ -2562,8 +2575,10 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
                                         const Loop *L, SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scAddRecExpr);
@@ -333,7 +344,7 @@ index cd74815a895..09e98345d0f 100644
    ID.AddPointer(L);
    void *IP = nullptr;
    SCEVAddRecExpr *S =
-@@ -2828,6 +2843,7 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
+@@ -2577,6 +2592,7 @@ ScalarEvolution::getOrCreateAddRecExpr(ArrayRef<const SCEV *> Ops,
      addToLoopUseLists(S);
    }
    S->setNoWrapFlags(Flags);
@@ -341,7 +352,7 @@ index cd74815a895..09e98345d0f 100644
    return S;
  }
  
-@@ -2836,8 +2852,11 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
+@@ -2585,8 +2601,11 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
                                      SCEV::NoWrapFlags Flags) {
    FoldingSetNodeID ID;
    ID.AddInteger(scMulExpr);
@@ -354,7 +365,7 @@ index cd74815a895..09e98345d0f 100644
    void *IP = nullptr;
    SCEVMulExpr *S =
      static_cast<SCEVMulExpr *>(UniqueSCEVs.FindNodeOrInsertPos(ID, IP));
-@@ -2850,6 +2869,7 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
+@@ -2599,6 +2618,7 @@ ScalarEvolution::getOrCreateMulExpr(ArrayRef<const SCEV *> Ops,
      addToLoopUseLists(S);
    }
    S->setNoWrapFlags(Flags);
@@ -362,7 +373,7 @@ index cd74815a895..09e98345d0f 100644
    return S;
  }
  
-@@ -3673,8 +3693,11 @@ const SCEV *ScalarEvolution::getMinMaxExpr(unsigned Kind,
+@@ -3456,8 +3476,11 @@ const SCEV *ScalarEvolution::getMinMaxExpr(unsigned Kind,
      return ExistingSCEV;
    const SCEV **O = SCEVAllocator.Allocate<const SCEV *>(Ops.size());
    std::uninitialized_copy(Ops.begin(), Ops.end(), O);
@@ -375,7 +386,7 @@ index cd74815a895..09e98345d0f 100644
  
    UniqueSCEVs.InsertNode(S, IP);
    addToLoopUseLists(S);
-@@ -3751,8 +3774,9 @@ const SCEV *ScalarEvolution::getUnknown(Value *V) {
+@@ -3540,8 +3563,9 @@ const SCEV *ScalarEvolution::getUnknown(Value *V) {
             "Stale SCEVUnknown in uniquing map!");
      return S;
    }
