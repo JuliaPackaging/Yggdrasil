@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ThriftJuliaCompiler"
-version = v"0.11.0"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tanmaykm/thrift.git", "ef6de66707eb6135402a73520deec3478d9e1ec7")
+    GitSource("https://github.com/tanmaykm/thrift.git", "5fa011a2b55a5fdffaa5b5674772b18c82b8a320")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd thrift/
 ./bootstrap.sh 
-if [ $target != "x86_64-apple-darwin14" ] && [ $target != "x86_64-unknown-freebsd11.1" ]; then     LDFLAGS="-static-libgcc -static-libstdc++";     export LDFLAGS; fi
+if [ $target != "x86_64-apple-darwin14" ] && [ $target != "x86_64-unknown-freebsd11.1" ]; then LDFLAGS="-static-libgcc -static-libstdc++"; export LDFLAGS; fi
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-tutorial=no --enable-tests=no --enable-libs=no --disable-werror
 make -j${nproc}
 make install
