@@ -7,7 +7,7 @@ version = v"3.100"
 
 # Collection of sources required to build liblame
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/lame/lame-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://downloads.sourceforge.net/project/lame/lame/$(version.major).$(version.minor)/lame-$(version.major).$(version.minor).tar.gz",
                   "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"),
 ]
 
@@ -40,4 +40,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
