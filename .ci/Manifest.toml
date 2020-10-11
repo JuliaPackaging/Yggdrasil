@@ -28,7 +28,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "GitHub", "HTTP", "InteractiveUtils", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "228dc6735c7ff8280dca567d47d0f57e79bb8df9"
+git-tree-sha1 = "af5c10db7e9e7225b956368c2b620de748ddafb5"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -73,7 +73,7 @@ deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Downloads]]
-deps = ["LibCURL"]
+deps = ["ArgTools", "LibCURL"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 
 [[FileIO]]
@@ -129,6 +129,11 @@ deps = ["CodecZlib", "DataStructures", "FileIO", "Mmap", "Pkg", "Printf", "UUIDs
 git-tree-sha1 = "9353b717ee4e27beab4e902c92a06bb5f160d2cf"
 uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 version = "0.1.14"
+
+[[JLLWrappers]]
+git-tree-sha1 = "dbc0967f6403829a6682493fdb4ec7c0ebfd2e68"
+uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+version = "1.1.1"
 
 [[JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
@@ -327,7 +332,7 @@ uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 version = "1.1.0"
 
 [[Tar]]
-deps = ["ArgTools", "Logging", "SHA"]
+deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
 
 [[Test]]
@@ -377,10 +382,10 @@ uuid = "8f1865be-045e-5c20-9c9f-bfbfb0764568"
 version = "4.3.2+4"
 
 [[Zlib_jll]]
-deps = ["Libdl", "Pkg"]
-git-tree-sha1 = "fdd89e5ab270ea0f2a0174bd9093e557d06d4bfa"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "ded43825988ace7a311ee7e1d0f09571822509c4"
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.11+16"
+version = "1.2.11+17"
 
 [[ghr_jll]]
 deps = ["Libdl", "Pkg"]
