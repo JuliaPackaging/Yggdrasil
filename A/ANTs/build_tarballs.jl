@@ -12,10 +12,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir antsbin
-cd antsbin
+mkdir build install
+cd build
 cmake ../ANTs -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
+cd ANTS-build
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -24,6 +26,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
+    ExecutableProduct("ANTS", :ants),
+    ExecutableProduct("antsRegistration", :antsRegistration),
+    ExecutableProduct("antsMotionCorr", :antsMotionCorr)
 ]
 
 # Dependencies that must be installed before this package can be built
