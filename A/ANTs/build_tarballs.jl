@@ -48,7 +48,6 @@ products = Product[
     ExecutableProduct("ANTSUseDeformationFieldToGetAffineTransform", :ANTSUseDeformationFieldToGetAffineTransform),
     ExecutableProduct("ANTSUseLandmarkImagesToGetAffineTransform", :ANTSUseLandmarkImagesToGetAffineTransform),
     ExecutableProduct("ANTSUseLandmarkImagesToGetBSplineDisplacementField", :ANTSUseLandmarkImagesToGetBSplineDisplacementField),
-    ExecutableProduct("ANTSpexec.sh", :ANTSpexec.sh),
     ExecutableProduct("AddNoiseToImage", :AddNoiseToImage),
     ExecutableProduct("Atropos", :Atropos),
     ExecutableProduct("AverageAffineTransform", :AverageAffineTransform),
