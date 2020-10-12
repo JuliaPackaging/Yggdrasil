@@ -2,18 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 import Pkg: PackageSpec
+import Pkg.Types: VersionSpec
 
-const name = "libpolymake_julia"
-const version = v"0.1.2"
+name = "libpolymake_julia"
+version = v"0.2.0"
 
 # Collection of sources required to build libpolymake_julia
-const sources = [
+sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "5da5c5d78a8c55354227f49ff5d7a4c99b0f74da5e9bd8898278a771965f671b"),
+                  "2ad38e380ae52d9f1c72374fe785ab0253bad9bfd8eaa078da82eaed14f3e83c"),
 ]
 
 # Bash recipe for building across all platforms
-const script = raw"""
+script = raw"""
 # remove $libdir from LD_LIBRARY_PATH as this causes issues with perl
 if [[ -n "$LD_LIBRARY_PATH" ]]; then
 LD_LIBRARY_PATH=$(echo -n $LD_LIBRARY_PATH | sed -e "s|[:^]$libdir\w*|:|g")
@@ -33,24 +34,24 @@ install_license $WORKSPACE/srcdir/libpolymake-j*/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-const platforms = expand_cxxstring_abis([
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-])
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "macos"),
+]
 
 # The products that we will ensure are always built
-const products = [
+products = [
     ExecutableProduct("polymake_run_script", :polymake_run_script),
     LibraryProduct("libpolymake_julia", :libpolymake_julia),
     FileProduct("share/libpolymake_julia/type_translator.jl",:type_translator),
 ]
 
 # Dependencies that must be installed before this package can be built
-const dependencies = [
+dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("polymake_jll"),
+    Dependency(PackageSpec(name="polymake_jll", version=VersionSpec("4.2.0-4.2"))),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
