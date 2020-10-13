@@ -13,6 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ANTs
+
+if [[ $target == *apple* ]]; then
+    sed -i -e 's/-Wl,-soname,/-Wl,-install_name,/' makefile
+fi
+
 mkdir install
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
