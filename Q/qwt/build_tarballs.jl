@@ -27,8 +27,8 @@ cd $WORKSPACE/srcdir
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Windows(:x86_64),
-    Linux(:x86_64, libc=:glibc)
+    Platform("x86_64", "windows"),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 
 
