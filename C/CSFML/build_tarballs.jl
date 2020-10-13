@@ -13,12 +13,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd CSFML
+cd $WORKSPACE/srcdir/CSFML
 mkdir build && cd build
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
 if [[ "${target}" == *mingw* ]]; then
-CMAKE_FLAGS="${CMAKE_FLAGS} -DCSFML_LINK_SFML_STATICALLY=false"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DCSFML_LINK_SFML_STATICALLY=false"
 fi
 cmake .. ${CMAKE_FLAGS}
 make -j${nproc}
@@ -31,7 +30,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("x86_64", "macos"),
     Platform("i686", "windows"),
-    Platform("x86_64", "windows")
+    Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.iswindows)
 
@@ -42,11 +41,11 @@ products = [
     LibraryProduct(["libcsfml-system", "csfml-system"], :libcsfml_system),
     LibraryProduct(["libcsfml-network", "csfml-network"], :libcsfml_network),
     LibraryProduct(["libcsfml-window", "csfml-window"], :libcsfml_window),
-    LibraryProduct(["libcsfml-audio", "csfml-audio"], :libcsfml_audio)
+    LibraryProduct(["libcsfml-audio", "csfml-audio"], :libcsfml_audio),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("SFML_jll", v"2.5.1")
 ]
 
