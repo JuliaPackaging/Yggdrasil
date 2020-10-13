@@ -12,16 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd qwt
+cd $WORKSPACE/srcdir/qwt
 qmake
-make -j 
+make -j${nproc}
 make install
-cp $prefix/lib/qwt.dll $prefix/bin/qwt.dll
-cp $prefix/lib/qwt.dll $prefix/bin/libqwt.dll
-cp $prefix/lib/qwtd.dll $prefix/bin/qwtd.dll
-cp $prefix/lib/qwtd.dll $prefix/bin/libqwtd.dll
-cd $WORKSPACE/srcdir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,7 +28,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libqwt", :qwt)
+    LibraryProduct(["libqwt", "qwt"], :qwt),
 ]
 
 # Dependencies that must be installed before this package can be built
