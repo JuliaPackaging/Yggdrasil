@@ -29,7 +29,9 @@ make -j${nproc}
 cd ANTS-build
 make install
 
-install_license LICENSE.md COPYING.*
+cd ../..
+
+install_license COPYING.txt
 """
 
 # script mostly taken from https://github.com/cookpa/antsInstallExample/blob/master/installANTs.sh
