@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "WaveFD"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/WaveFD.jl.git",
-        "52105fc62f8a52ade84365f403a352a47e3909d6"
+        "35509bfaf81f10c9a38bb0652f81573d5f19245a"
     )
 ]
 
@@ -51,4 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", allow_unsafe_flags=true)
