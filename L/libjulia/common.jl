@@ -219,7 +219,13 @@ function configure(version)
         Dependency("Zlib_jll"),
         Dependency("p7zip_jll"),
     ]
-    if version.major == 1 && version.minor == 4
+    if version.major == 1 && version.minor == 3
+        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
+        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"6.0.1")))
+        push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
+        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
+        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+    elseif version.major == 1 && version.minor == 4
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
