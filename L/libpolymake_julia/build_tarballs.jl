@@ -49,11 +49,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
+    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency(PackageSpec(name="polymake_jll", version=VersionSpec("4.2.0-4.2"))),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
+    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
