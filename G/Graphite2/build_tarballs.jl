@@ -39,4 +39,3 @@ dependencies = [
 # We require gcc 5+ so that mingw defines __MINGW_INTSAFE_WORKS, which allows `intsafe.h` to actually
 # have an effect.  Otherwise, we get a bevvy of errors around `SizeTMult` not being defined.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
-
