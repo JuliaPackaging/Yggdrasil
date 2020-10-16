@@ -217,24 +217,20 @@ function configure(version)
         Dependency("LibCURL_jll"),
         Dependency("Zlib_jll"),
         Dependency("p7zip_jll"),
+        Dependency("MPFR_jll"),
+        Dependency("GMP_jll"),
     ]
     if version.major == 1 && version.minor == 4
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 5
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 6
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
     end
 
