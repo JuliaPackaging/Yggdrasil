@@ -10,7 +10,7 @@ llvm_tags = Dict(
     v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
 )
 
-function llvm_sources(;version = "v8.0.1", kwargs...)
+function llvm_sources(;version = v"8.0.1", kwargs...)
     return [
         "https://github.com/llvm/llvm-project.git" =>
         llvm_tags[version],

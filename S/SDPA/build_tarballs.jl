@@ -113,7 +113,7 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
+    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
     BuildDependency(MUMPS_seq_packagespec),
     BuildDependency(METIS_packagespec),
 ]

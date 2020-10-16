@@ -19,7 +19,7 @@ sources = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
+    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
 
     Dependency("CGAL_jll"),
     Dependency("libcxxwrap_julia_jll"),

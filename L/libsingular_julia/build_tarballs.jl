@@ -53,9 +53,11 @@ const products = [
 # Dependencies that must be installed before this package can be built
 const dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
+    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Singular_jll"),
+    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
+    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
