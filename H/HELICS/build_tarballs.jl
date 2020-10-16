@@ -43,7 +43,7 @@ products = [
     LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
 ]
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude = [FreeBSD(:x86_64)]))
+platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
 
 dependencies = [
     Dependency("ZeroMQ_jll"),
