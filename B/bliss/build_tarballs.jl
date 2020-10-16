@@ -31,9 +31,7 @@ install -p libbliss.$dlext $libdir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# no sys/times.h on windows
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [
