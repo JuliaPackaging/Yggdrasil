@@ -83,4 +83,3 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 ENV["FONTCONFIG_FILE"] = get(ENV, "FONTCONFIG_FILE", fonts_conf)
     ENV["FONTCONFIG_PATH"] = get(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
 """)
-
