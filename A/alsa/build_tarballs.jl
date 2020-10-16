@@ -7,7 +7,7 @@ version = v"1.2.1-1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.2.1.1.tar.bz2",
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.1.1.tar.bz2",
                   "c95ac63c0aad43a6ac457d960569096b0b2ef72dc4e3737e77e3e2de87022cec"),
 ]
 
@@ -35,3 +35,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+
