@@ -51,16 +51,28 @@ function download_cached_binaries(download_dir, platforms)
 end
 
 function download_binaries_from_release(download_dir)
-    probe_platform_engines!(;verbose=verbose)
 
-    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
-    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
-    for artifact in artifacts[name]
-        info = artifact["download"][1]
+    function do_download(download_dir, info)
         url = info["url"]
         hash = info["sha256"]
         filename = basename(url)
         PlatformEngines.download_verify(url, hash, joinpath(download_dir, filename); verbose=verbose)
+    end
+
+    probe_platform_engines!(;verbose=verbose)
+
+    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
+    if artifacts isa Dict
+        # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
+        info = artifacts[name]["download"]
+        do_download(download_dir, info)
+    else
+        # Otherwise, it's a Vector, and we must iterate over all platforms.
+        for artifact in artifacts[name]
+            info = artifact["download"][1]
+            do_download(download_dir, info)
+        end
     end
 end
 
@@ -80,7 +92,7 @@ mktempdir() do download_dir
         # out of the cache while they're hot.
         download_cached_binaries(download_dir, merged["platforms"])
     end
-    
+
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
     tag = "$(name)-v$(build_version)"
     upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
