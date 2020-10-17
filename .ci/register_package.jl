@@ -65,7 +65,7 @@ function download_binaries_from_release(download_dir)
     artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
     if artifacts isa Dict
         # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
-        info = artifacts[name]["download"]
+        info = artifacts[name]["download"][1]
         do_download(download_dir, info)
     else
         # Otherwise, it's a Vector, and we must iterate over all platforms.
