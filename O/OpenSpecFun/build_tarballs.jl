@@ -35,7 +35,7 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libopenspecfun", :libopenspecfun)
+    LibraryProduct("libopenspecfun", :libopenspecfun),
 ]
 
 # Dependencies that must be installed before this package can be built
