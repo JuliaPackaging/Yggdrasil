@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.20.1"
+version = v"0.20.2"
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version).tar.xz",
-                  "53f02fbbec9e798b0faaf7c73272f83608e835c6288dd58be6c9bb54624a3800"),
+                  "b22b818e644c37f6e3d1643a1943c32c3a9bff726d601e53047d2682019ceaba"),
 ]
 
 # Bash recipe for building across all platforms
