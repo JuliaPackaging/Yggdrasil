@@ -11,14 +11,24 @@ sources = [
         "https://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz",
         "b3a7a6221c3dc916085f0d205abf6b8e1ba443d4dd965118da364a1dc1cb3a26",
     ),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/diffutils-*/
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/win_signal_handling.patch
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j$(nproc)
-make install
+# skip gnulib-tests on mingw
+if [[ "${target}" == *-mingw* ]]; then
+    make -j${nproc} SUBDIRS="lib src tests doc man po"
+    make install SUBDIRS="lib src tests doc man po"
+else
+    make -j${nproc}
+    make install
+fi
 """
 
 # These are the platforms we will build for by default, unless further
