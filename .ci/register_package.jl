@@ -62,14 +62,14 @@ function download_binaries_from_release(download_dir)
     probe_platform_engines!(;verbose=verbose)
 
     # Doownload the tarballs reading the information in the current `Artifacts.toml`.
-    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
+    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))[name]
     if artifacts isa Dict
         # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
-        info = artifacts[name]["download"][1]
+        info = artifacts["download"][1]
         do_download(download_dir, info)
     else
         # Otherwise, it's a Vector, and we must iterate over all platforms.
-        for artifact in artifacts[name]
+        for artifact in artifacts
             info = artifact["download"][1]
             do_download(download_dir, info)
         end
