@@ -1,0 +1,69 @@
+diff --git before/word2vec/makefile after/word2vec/makefile
+index 24ce917..851d0db 100644
+--- before/word2vec/makefile
++++ after/word2vec/makefile
+@@ -1,6 +1,5 @@
+ CC = gcc
+ #Using -Ofast instead of -O3 might result in faster code, but is supported only by newer GCC versions
+-CFLAGS = -lm -pthread -O3 -march=native -Wall -funroll-loops -Wno-unused-result
+ 
+ all: word2vec word2phrase distance word-analogy compute-accuracy
+ 
+@@ -17,4 +16,4 @@ compute-accuracy : compute-accuracy.c
+ 	chmod +x *.sh
+ 
+ clean:
+-	rm -rf word2vec word2phrase distance word-analogy compute-accuracy
+\ No newline at end of file
++	rm -rf word2vec word2phrase distance word-analogy compute-accuracy
+diff --git before/word2vec/word2phrase.c after/word2vec/word2phrase.c
+index db58809..bd7ff6a 100644
+--- before/word2vec/word2phrase.c
++++ after/word2vec/word2phrase.c
+@@ -42,7 +42,7 @@ unsigned long long next_random = 1;
+ void ReadWord(char *word, FILE *fin, char *eof) {
+   int a = 0, ch;
+   while (1) {
+-    ch = fgetc_unlocked(fin);
++    ch = getc_unlocked(fin);
+     if (ch == EOF) {
+       *eof = 1;
+       break;
+@@ -246,7 +246,7 @@ void TrainModel() {
+     if (eof) break;
+     if (word[0] == '\n') {
+       //fprintf(fo, "\n");
+-      fputc_unlocked('\n', fo);
++      putc_unlocked('\n', fo);
+       continue;
+     }
+     cn++;
+@@ -286,12 +286,12 @@ void TrainModel() {
+     next_random = next_random * (unsigned long long)25214903917 + 11;
+     //if (next_random & 0x10000) score = 0;
+     if (score > threshold) {
+-      fputc_unlocked('_', fo);
++      putc_unlocked('_', fo);
+       pb = 0;
+-    } else fputc_unlocked(' ', fo);
++    } else putc_unlocked(' ', fo);
+     a = 0;
+     while (word[a]) {
+-      fputc_unlocked(word[a], fo);
++      putc_unlocked(word[a], fo);
+       a++;
+     }
+     pa = pb;
+diff --git before/word2vec/word2vec.c after/word2vec/word2vec.c
+index 9d6fffd..01e455a 100644
+--- before/word2vec/word2vec.c
++++ after/word2vec/word2vec.c
+@@ -71,7 +71,7 @@ void InitUnigramTable() {
+ void ReadWord(char *word, FILE *fin, char *eof) {
+   int a = 0, ch;
+   while (1) {
+-    ch = fgetc_unlocked(fin);
++    ch = getc_unlocked(fin);
+     if (ch == EOF) {
+       *eof = 1;
+       break;
