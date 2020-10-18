@@ -43,6 +43,7 @@ rm -f ${prefix}/lib/*.la
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
     --with-libz=$prefix \
+    --with-expat=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -92,6 +93,7 @@ dependencies = [
     Dependency("SQLite_jll"),
     Dependency("LibCURL_jll"),
     Dependency("OpenJpeg_jll"),
+    Dependency("Expat_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
