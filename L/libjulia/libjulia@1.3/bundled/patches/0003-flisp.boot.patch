@@ -1,0 +1,31 @@
+From 242ff9a084fe790ac589c55045efc1d5c5f95f4b Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Wed, 23 Sep 2020 18:28:01 -0400
+Subject: [PATCH] stage flisp.boot into host
+
+---
+ src/flisp/Makefile | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/flisp/Makefile b/src/flisp/Makefile
+index 42c4e11ed4..50566a0258 100644
+--- a/src/flisp/Makefile
++++ b/src/flisp/Makefile
+@@ -115,9 +115,13 @@ $(BUILDDIR)/host/Makefile:
+ 	@echo 'BUILDING_HOST_TOOLS=1' >> $@
+ 	@echo 'include $(SRCDIR)/Makefile' >> $@
+ 
+-$(BUILDDIR)/host/$(EXENAME): $(BUILDDIR)/host/Makefile
++$(BUILDDIR)/host/$(EXENAME): $(BUILDDIR)/host/Makefile | ${BUILDDIR}/host/flisp.boot
+ 	make -C $(BUILDDIR)/host $(EXENAME)
+ 
++
++$(BUILDDIR)/host/flisp.boot: $(SRCDIR)/flisp.boot | $(BUILDDIR)/host/Makefile
++	cp $< $@
++
+ ifneq ($(BUILDDIR)$(BUILDING_HOST_TOOLS),.)
+ $(BUILDDIR)/flisp.boot: $(SRCDIR)/flisp.boot | $(BUILDDIR)
+ 	cp $< $@
+-- 
+2.28.0
+

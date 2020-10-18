@@ -7,6 +7,7 @@ function configure(version)
     name = "libjulia"
 
     checksums = Dict(
+        v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
         v"1.5.1" => "1f138205772eb1e565f1d7ccd6f237be8a4d18713a3466e3b8d3a6aad6483fd9",
     )
@@ -71,7 +72,9 @@ function configure(version)
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
     else
-        if [[ "${version}" == 1.4.* ]]; then
+        if [[ "${version}" == 1.3.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-6.0"
+        elif [[ "${version}" == 1.4.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-8jl"
         else
             LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
@@ -175,6 +178,10 @@ function configure(version)
     platforms = supported_platforms()
     # For now skip FreeBSD...
     filter!(!Sys.isfreebsd, platforms)
+    if version < v"1.4"
+        # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
+        filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
+    end
     if version < v"1.5"
         # in Julia <= 1.4 skip all musl builds
         filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
@@ -220,7 +227,12 @@ function configure(version)
         Dependency("MPFR_jll"),
         Dependency("GMP_jll"),
     ]
-    if version.major == 1 && version.minor == 4
+    if version.major == 1 && version.minor == 3
+        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
+        # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
+        push!(dependencies, Dependency(PackageSpec(name="LLVM_jll", version=v"6.0.1")))
+        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+    elseif version.major == 1 && version.minor == 4
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
