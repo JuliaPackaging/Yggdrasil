@@ -27,9 +27,7 @@ script = raw"""
 # zipname=tetgen1.6.0
 # cd $WORKSPACE/srcdir/$zipname
 
-libdir="lib"
-if [[ ${target} == *-mingw32 ]]; then     libdir="bin"; else     libdir="lib"; fi
-mkdir ${prefix}/${libdir}
+mkdir -p ${libdir}
 
 cd $WORKSPACE/srcdir/tetgen
 
@@ -44,7 +42,7 @@ sed -e "s/class tetgenio {/class tetgenio { void * operator new(size_t n) {  ret
 ${CXX} -c -fPIC -std=c++11 -O3 -c -DTETLIBRARY -I. ${WORKSPACE}/srcdir/cwrapper/cwrapper.cxx -o cwrapper.o
 ${CXX} -c -fPIC -std=c++11 -O3 -c -DTETLIBRARY tetgen.cxx -o tetgen.o
 ${CXX} -c -fPIC -std=c++11 -O3 -c -DTETLIBRARY predicates.cxx -o predicates.o
-${CXX} $LDFLAGS -shared -fPIC tetgen.o predicates.o  cwrapper.o -o ${prefix}/${libdir}/libtet.${dlext} 
+${CXX} $LDFLAGS -shared -fPIC tetgen.o predicates.o  cwrapper.o -o ${libdir}/libtet.${dlext}
 
 install_license LICENSE
 """
@@ -56,4 +54,3 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
