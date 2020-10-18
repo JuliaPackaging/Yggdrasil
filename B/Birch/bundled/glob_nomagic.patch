@@ -1,0 +1,11 @@
+--- driver/src/build/misc.cpp.orig
++++ driver/src/build/misc.cpp
+@@ -36,7 +36,7 @@
+ std::list<fs::path> birch::glob(const std::string& pattern) {
+   std::list<fs::path> results;
+   glob_t matches;
+-  glob(pattern.c_str(), GLOB_NOMAGIC, 0, &matches);
++  glob(pattern.c_str(), 0, 0, &matches);
+   for (int i = 0; i < matches.gl_pathc; ++i) {
+     results.push_back(matches.gl_pathv[i]);
+   }
