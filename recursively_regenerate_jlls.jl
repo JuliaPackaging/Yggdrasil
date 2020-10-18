@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using BinaryBuilder, LibGit2, SHA, Pkg
+using BinaryBuilder, LibGit2, SHA, Pkg, REPL.Terminals, REPL.TerminalMenus
 using BinaryBuilder.Wizard: yn_prompt, WizardState
 
 function de_jll(name::String)
@@ -12,12 +12,6 @@ end
 
 function build_tarballs_path(dep_name::String, base::String = @__DIR__)
     return joinpath(base, uppercase(dep_name[1:1]), de_jll(dep_name), "build_tarballs.jl")
-end
-
-
-if !isfile(build_tarballs_path(get(Sys.ARGS, 1, "")))
-    println(stderr, "usage: recursively_regenerate_jlls.jl <jll name>")
-    exit(1)
 end
 
 json_objs = Dict()
@@ -198,18 +192,30 @@ function open_jll_bump_pr(dep_name::String)
     end
 end
 
-toplevel_dep_name = Sys.ARGS[1]
-deps = recursively_collect_dependencies(toplevel_dep_name)
-push!(deps, toplevel_dep_name)
-println("Discovered dependencies: $(collect(deps))")
+function recursively_regenerate_jlls(toplevel_dep_name)
+    deps = sort!(collect(recursively_collect_dependencies(toplevel_dep_name)))
+    push!(deps, toplevel_dep_name)
+    sort!(deps)
+    terminal = TTYTerminal("xterm", stdin, stdout, stderr)
+    selected_deps = request(terminal,
+                            "Discovered dependencies:",
+                            MultiSelectMenu(deps; selected=eachindex(deps)))
+    deps = deps[collect(selected_deps)]
+    println("Selected dependencies: $(collect(deps))")
 
-if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :n) == :y
-    for dep in deps
-	open_jll_bump_pr(dep)
-    end
-elseif yn_prompt(WizardState(), "Generate new JLLs locally?", :y) == :y
-    for dep in deps
-        regenerate_jll(dep)
+    if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :n) == :y
+        for dep in deps
+	    open_jll_bump_pr(dep)
+        end
+    elseif yn_prompt(WizardState(), "Generate new JLLs locally?", :y) == :y
+        for dep in deps
+            regenerate_jll(dep)
+        end
     end
 end
 
+if !isfile(build_tarballs_path(get(Sys.ARGS, 1, "")))
+    println(stderr, "usage: recursively_regenerate_jlls.jl <jll name>")
+    exit(1)
+end
+recursively_regenerate_jlls(Sys.ARGS[1])
