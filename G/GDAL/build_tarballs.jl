@@ -31,7 +31,7 @@ elif [[ "${target}" == *-linux-* ]]; then
         export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
         export EXTRA_SQLITE3_LIBS="-lm"
         # libpthread and libldl are needed for libgdal, so let's always use them
-        export LDFLAGS="-lpthread -ldl"
+        export LDFLAGS="-lpthread -ldl -lstdc++"
     fi
     autoreconf -vi
 fi
