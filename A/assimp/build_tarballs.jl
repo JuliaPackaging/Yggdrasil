@@ -27,8 +27,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p != Linux(:i686, libc=:musl) &&
-                                                 p != Linux(:armv7l, libc=:musl, call_abi=:eabihf)
+platforms = [p for p in supported_platforms() if p != Platform("i686", "linux"; libc="musl") &&
+                                                 p != Platform("armv7l", "linux"; libc="musl")
             ]
 platforms = expand_cxxstring_abis(platforms)
 

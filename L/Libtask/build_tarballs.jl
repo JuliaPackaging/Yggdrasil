@@ -24,14 +24,14 @@ script = read(script_file, String)
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:powerpc64le, libc=:glibc),
-    # Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:aarch64),
-    MacOS(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64)
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    # Platform("armv7l", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "macos"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows")
 ]
 
 # The products that we will ensure are always built

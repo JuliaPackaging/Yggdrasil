@@ -21,9 +21,9 @@ install_license ../doc/copying.txt
 
 # Bootstrapping problem; only do natively-runnable platforms
 platforms = [
-    Linux(:x86_64),
-    Linux(:i686),
-    Linux(:x86_64; libc=:musl),
+    Platform("x86_64", "linux"),
+    Platform("i686", "linux"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 

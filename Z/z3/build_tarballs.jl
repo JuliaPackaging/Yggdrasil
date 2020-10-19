@@ -44,10 +44,10 @@ install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms_libcxxwrap = [
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:x86_64, libc=:glibc),
-    MacOS(:x86_64),
-    Windows(:x86_64)
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows")
 ]
 
 platforms = filter(x->!(x in platforms_libcxxwrap), supported_platforms())

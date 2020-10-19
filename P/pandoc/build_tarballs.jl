@@ -31,10 +31,10 @@ install_license COPYING.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64),
-    MacOS(),
-    Windows(:x86_64),
-    Windows(:i686),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 # The products that we will ensure are always built

@@ -35,7 +35,7 @@ install_license ${WORKSPACE}/srcdir/connect4/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 
 platforms = expand_cxxstring_abis(platforms)

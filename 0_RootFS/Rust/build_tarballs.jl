@@ -50,7 +50,7 @@ ${CARGO_HOME}/bin/cargo install cargo-edit
 """
 
 # We assemble this giant tarball, then will split it up immediately after this:
-platforms = [Linux(:x86_64; libc=:glibc)]
+platforms = [Platform("x86_64", "linux"; libc="glibc")]
 products = [
     ExecutableProduct("cargo", :cargo),
 ]
@@ -65,7 +65,7 @@ rm(joinpath("products", first(values(build_info))[1]))
 
 # Take the hash of the unpacked MegaRust artifact, then split it into a bunch of smaller ones
 mega_rust_path = artifact_path(first(values(build_info))[3])
-rust_host = Linux(:x86_64; libc=:glibc)
+rust_host = Platform("x86_64", "linux"; libc="glibc")
 rust_host_triplet = BinaryBuilder.map_rust_target(rust_host)
 
 for target_platform in supported_platforms()

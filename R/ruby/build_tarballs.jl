@@ -42,7 +42,7 @@ done
 # so this might be a problem when trying to get those to work.
 platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 # TODO: fix armv7l musl. Probably an upstream issue though
-filter!(!=(Linux(:armv7l, libc=:musl, call_abi=:eabihf)), platforms)
+filter!(!=(Platform("armv7l", "linux"; libc="musl")), platforms)
 
 # The products that we will ensure are always built
 products = [

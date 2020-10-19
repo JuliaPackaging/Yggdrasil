@@ -30,15 +30,15 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 if @isdefined(sources_linux_x64) && should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_x64, script,
-                   [Linux(:x86_64)], products, dependencies)
+                   [Platform("x86_64", "linux")], products, dependencies)
 end
 
 if @isdefined(sources_linux_ppc64le) && should_build_platform("powerpc64le-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
-                   [Linux(:powerpc64le)], products, dependencies)
+                   [Platform("powerpc64le", "linux")], products, dependencies)
 end
 
 if @isdefined(sources_windows) && should_build_platform("x86_64-w64-mingw32")
     build_tarballs(ARGS, name, version, sources_windows, script,
-                   [Windows(:x86_64)], products, dependencies)
+                   [Platform("x86_64", "windows")], products, dependencies)
 end

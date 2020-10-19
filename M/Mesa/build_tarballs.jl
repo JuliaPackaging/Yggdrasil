@@ -25,8 +25,8 @@ install_license ../mesa*/docs/license.html
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Windows(:x86_64),
-    Windows(:i686)
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows")
 ]
 
 # The products that we will ensure are always built

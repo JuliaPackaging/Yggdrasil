@@ -27,15 +27,15 @@ install_license ${WORKSPACE}/srcdir/license.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# platforms = [Linux(:x86_64)]
+# platforms = [Platform("x86_64", "linux")]
 platforms = [
-     Linux(:x86_64, libc=:glibc),
-     Linux(:aarch64, libc=:glibc),
-     Linux(:x86_64, libc=:musl),
-     Linux(:aarch64, libc=:musl),
-     MacOS(:x86_64),
-     # FreeBSD(:x86_64),
-     Windows(:x86_64),
+     Platform("x86_64", "linux"; libc="glibc"),
+     Platform("aarch64", "linux"; libc="glibc"),
+     Platform("x86_64", "linux"; libc="musl"),
+     Platform("aarch64", "linux"; libc="musl"),
+     Platform("x86_64", "macos"),
+     # Platform("x86_64", "freebsd"),
+     Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built

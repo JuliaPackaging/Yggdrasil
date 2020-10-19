@@ -118,13 +118,13 @@ install_license ${WORKSPACE}/srcdir/hdf5-arm-linux-gnueabihf-*/share/COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64),
-    Linux(:i686),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:aarch64, libc=:glibc),
-    MacOS(),
-    Windows(:x86_64),
-    Windows(:i686),
+    Platform("x86_64", "linux"),
+    Platform("i686", "linux"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 # The products that we will ensure are always built

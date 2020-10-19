@@ -18,7 +18,7 @@ mv ${WORKSPACE}/srcdir/go ${prefix}/
 # We only build for Linux x86_64
 platforms = [
     # TODO: Switch to musl once https://github.com/rust-lang/rustup.rs/pull/1882 is released
-    Linux(:x86_64; libc=:musl),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 
 # Dependencies that must be installed before this package can be built
