@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GDAL"
-version = v"3.0.4"
+version = v"3.1.3"
 
 # Collection of sources required to build GDAL
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz",
-        "fc15d2b9107b250305a1e0bd8421dd9ec1ba7ac73421e4509267052995af5e83"),
+        "3156036cd71e54932a4043111793c0d4257d46ca2c1c33ebae7be80665bdc403"),
     DirectorySource("./bundled"),
 ]
 
