@@ -11,7 +11,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd $WORKSPACE/srcdir/libzmq
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from
@@ -51,7 +50,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

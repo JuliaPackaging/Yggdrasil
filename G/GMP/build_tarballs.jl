@@ -46,7 +46,7 @@ install_license COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([supported_platforms(); MacOS(:aarch64)])
+platforms = expand_cxxstring_abis([supported_platforms(); Platform("aarch64", "macos")])
 
 # The products that we will ensure are always built
 products = [
@@ -59,4 +59,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
