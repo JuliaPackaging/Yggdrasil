@@ -40,6 +40,7 @@ fi
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
+./configure --help
 ./configure --prefix=$prefix --host=$target \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
@@ -47,6 +48,7 @@ rm -f ${prefix}/lib/*.la
     --with-expat=$prefix \
     --with-zstd=$prefix \
     --with-webp=$prefix \
+    --with-pg=yes \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -57,6 +59,9 @@ rm -f ${prefix}/lib/*.la
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
 grep "CURL_SETTING='yes'" config.log
+grep "ZSTD_SETTING='yes'" config.log
+grep "HAVE_PG='yes'" config.log
+grep "HAVE_EXPAT='yes'" config.log
 
 make -j${nproc}
 make install
@@ -99,6 +104,7 @@ dependencies = [
     Dependency("Expat_jll"),
     Dependency("Zstd_jll"),
     Dependency("libwebp_jll"),
+    Dependency("LibPQ_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll"),
