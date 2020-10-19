@@ -55,13 +55,13 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    FreeBSD(:x86_64),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:aarch64, libc=:musl)
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="musl")
 ]
 
 # Fix incompatibilities across the GCC 4/5 version boundary due to std::string,

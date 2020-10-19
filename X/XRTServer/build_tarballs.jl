@@ -111,7 +111,7 @@ done
 """
 
 # We attempt to build for only x86_64-linux-gnu
-platforms = [Linux(:x86_64)]
+platforms = [Platform("x86_64", "linux")]
 
 products(prefix) = [
     ExecutableProduct(prefix, "xrt_server", :xrt_server),

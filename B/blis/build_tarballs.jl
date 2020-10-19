@@ -78,13 +78,13 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:musl),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Windows(:x86_64),
-    MacOS(:x86_64),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    FreeBSD(:x86_64)
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd")
 ]
 
 

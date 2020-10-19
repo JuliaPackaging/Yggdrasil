@@ -28,8 +28,8 @@ dependencies = [
     "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GnuTLS-v3.6.5-0/build_GnuTLS.v3.6.5.jl",
 ]
 
-platform32 = Linux(:i686; libc=:musl)
-platform64 = Linux(:x86_64; libc=:musl)
+platform32 = Platform("i686", "linux"; libc="musl")
+platform64 = Platform("x86_64", "linux"; libc="musl")
 
 wine64_build_script = raw"""
 # First, build wine64, making the actual build directory itself the thing we will install.

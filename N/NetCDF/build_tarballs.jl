@@ -47,7 +47,7 @@ elif [[ "${target}" == *-apple-* ]]; then
    ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}  --disable-utilities --enable-shared --disable-static
    make -j${nproc}
 else
-    # do not exist on Linux(:x86_64)
+    # do not exist on Platform("x86_64", "linux")
     if [ ! -f ${libdir}/libhdf5.so ]; then
         ln -s ${libdir}/libhdf5.so.* ${libdir}/libhdf5.so
     fi
@@ -68,16 +68,16 @@ nc-config --all
 # platforms are passed in on the command line
 # Set equal to the supported platforms in HDF5
 platforms = [
-    Linux(:x86_64),
-    Linux(:i686),
+    Platform("x86_64", "linux"),
+    Platform("i686", "linux"),
     # HDF5_jll on armv7l should use the same glibc as the root filesystem
     # before it can be used
     # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
-    # Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:aarch64, libc=:glibc),
-    MacOS(),
-    Windows(:x86_64),
-    Windows(:i686),
+    # Platform("armv7l", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 # The products that we will ensure are always built

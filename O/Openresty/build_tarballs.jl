@@ -29,10 +29,10 @@ install_license $prefix/COPYRIGHT
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl)
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl")
 ]
 
 

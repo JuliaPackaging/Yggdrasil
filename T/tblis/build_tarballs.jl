@@ -86,11 +86,11 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
     Linux(:x86_64, libc=:musl, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64),
-    Windows(:x86_64)
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
 

@@ -25,7 +25,7 @@ cp out/libscs*.${dlext} ${libdir}
 # platforms are passed in on the command line
 
 platforms = [
-    Linux(:x86_64),
+    Platform("x86_64", "linux"),
 ]
 
 # The products that we will ensure are always built

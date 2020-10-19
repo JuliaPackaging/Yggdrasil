@@ -30,7 +30,7 @@ make install
 # platforms are passed in on the command line
 # Only supports Linux, seemingly only 64bit
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 

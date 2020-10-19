@@ -22,19 +22,19 @@ cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
 platforms = [
-    FreeBSD(:x86_64),
-    Linux(:aarch64, libc=:glibc),
-    # Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    # Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    Linux(:i686, libc=:glibc),
-    # Linux(:i686, libc=:musl),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    # Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64),
-    # Windows(:i686),
-    Windows(:x86_64),
+    Platform("x86_64", "freebsd"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    # Platform("armv7l", "linux"; libc="musl"),
+    Platform("i686", "linux"; libc="glibc"),
+    # Platform("i686", "linux"; libc="musl"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    # Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
+    # Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 

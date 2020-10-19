@@ -27,10 +27,10 @@ fi
 """
 
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    MacOS(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built
@@ -46,8 +46,8 @@ dependencies = [
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
-no_autofix_platforms = [Windows(:i686), Windows(:x86_64), MacOS(:x86_64)]
-autofix_platforms = [Linux(:x86_64)]
+no_autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "macos")]
+autofix_platforms = [Platform("x86_64", "linux")]
 if any(should_build_platform.(triplet.(no_autofix_platforms)))
     # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
     # macOS causes runtime issues:

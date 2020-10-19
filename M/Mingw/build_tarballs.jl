@@ -62,8 +62,8 @@ make install DESTDIR=${sysroot}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Windows(:i686),
-    Windows(:x86_64),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built

@@ -110,12 +110,12 @@ install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms_linux = [
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:x86_64, libc=:glibc),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
-platforms_win = expand_cxxstring_abis([Windows(:x86_64)])
-platforms_macos = [ MacOS(:x86_64) ]
+platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows")])
+platforms_macos = [ Platform("x86_64", "macos") ]
 
 # The products that we will ensure are always built
 products = [

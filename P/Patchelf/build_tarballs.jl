@@ -23,7 +23,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64; libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
 ]
 
 # The products that we will ensure are always built
