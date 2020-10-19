@@ -43,6 +43,7 @@ rm -f ${prefix}/lib/*.la
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
     --with-libz=$prefix \
+    --with-expat=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -92,6 +93,12 @@ dependencies = [
     Dependency("SQLite_jll"),
     Dependency("LibCURL_jll"),
     Dependency("OpenJpeg_jll"),
+    Dependency("Expat_jll"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("nghttp2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
