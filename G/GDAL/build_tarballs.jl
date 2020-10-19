@@ -44,6 +44,8 @@ rm -f ${prefix}/lib/*.la
     --with-proj=$prefix \
     --with-libz=$prefix \
     --with-expat=$prefix \
+    --with-zstd=$prefix \
+    --with-webp=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -94,6 +96,8 @@ dependencies = [
     Dependency("LibCURL_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"),
+    Dependency("Zstd_jll"),
+    Dependency("libwebp_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll"),
