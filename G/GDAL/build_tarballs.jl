@@ -26,16 +26,16 @@ elif [[ "${target}" == *-linux-* ]]; then
      atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_curl_libs.patch"
     export EXTRA_GEOS_LIBS="-lstdc++"
     export EXTRA_CURL_LIBS="-lstdc++"
+    export LDFLAGS="$LDFLAGS -lstdc++"
     if [[ "${target}" == powerpc64le-* ]]; then
         atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
         export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
         export EXTRA_SQLITE3_LIBS="-lm"
         # libpthread and libldl are needed for libgdal, so let's always use them
-        export LDFLAGS="-lpthread -ldl"
+        export LDFLAGS="$LDFLAGS -lpthread -ldl"
     fi
     autoreconf -vi
 fi
-export LDFLAGS="$LDFLAGS -lstdc++"
 
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
