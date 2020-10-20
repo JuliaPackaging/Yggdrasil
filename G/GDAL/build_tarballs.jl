@@ -48,7 +48,6 @@ rm -f ${prefix}/lib/*.la
     --with-expat=$prefix \
     --with-zstd=$prefix \
     --with-webp=$prefix \
-    --with-pg=yes \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -60,7 +59,6 @@ grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
 grep "CURL_SETTING='yes'" config.log
 grep "ZSTD_SETTING='yes'" config.log
-grep "HAVE_PG='yes'" config.log
 grep "HAVE_EXPAT='yes'" config.log
 
 make -j${nproc}
