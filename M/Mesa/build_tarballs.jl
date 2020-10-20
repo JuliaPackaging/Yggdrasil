@@ -7,7 +7,7 @@ version = v"20.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.freedesktop.org/pub/mesa/mesa-$version.tar.xz", "fac1861e6e0bf1aec893f8d86dbfb9d8a0f426ff06b05256df10e3ad7e02c69b"),
+    ArchiveSource("https://archive.mesa3d.org/mesa-$version.tar.xz", "fac1861e6e0bf1aec893f8d86dbfb9d8a0f426ff06b05256df10e3ad7e02c69b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,4 +41,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
