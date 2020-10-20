@@ -5,7 +5,7 @@ version = v"1.1.33"
 
 # Collection of sources required to build XSLT
 sources = [
-    ArchiveSource("ftp://xmlsoft.org/libxslt/libxslt-$(version).tar.gz",
+    ArchiveSource("http://xmlsoft.org/sources/libxslt-1.1.33.tar.gz",
                   "8e36605144409df979cab43d835002f63988f3dc94d5d3537c12796db90e38c8"),
 ]
 
@@ -39,4 +39,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
