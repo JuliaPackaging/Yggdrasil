@@ -102,7 +102,6 @@ dependencies = [
     Dependency("Expat_jll"),
     Dependency("Zstd_jll"),
     Dependency("libwebp_jll"),
-    Dependency("LibPQ_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll"),
