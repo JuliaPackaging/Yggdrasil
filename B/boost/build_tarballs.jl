@@ -28,6 +28,11 @@ toolset=gcc
 targetos=linux
 extraargs=
 
+# BinaryBuilderBase compiler wrappers don't like it when we use -march=ANYTHING.
+# So we patch that out. However, we cannot just insert an empty string; so we instead
+# add another "harmless" option; we choose `-Wall` which is already passed anyway
+sed -i "s/-march=i686/-Wall/g" tools/build/src/tools/gcc.*
+
 if [[ $target == *apple* ]]; then
     targetos=darwin
     toolset=darwin-6.0
@@ -98,4 +103,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
