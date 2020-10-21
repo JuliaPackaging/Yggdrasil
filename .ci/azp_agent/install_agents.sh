@@ -9,7 +9,7 @@ for TOOL in ${REQUIRED_TOOLS}; do
     fi
 done
 
-NUM_AGENTS=8
+NUM_AGENTS=16
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir -p ${HOME}/.config/systemd/user
 source .env
