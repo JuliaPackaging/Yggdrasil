@@ -5,7 +5,7 @@ version = v"2.2.3"
 
 # Collection of sources required to build dSFMT
 sources = [
-    GitSource("https://github.com/MersenneTwister-Lab/dSFMT",
+    GitSource("https://github.com/MersenneTwister-Lab/dSFMT.git",
               "92822573b490d7ff0f3bea72a94870aadae289ea"),
     DirectorySource("./bundled"),
 ]
