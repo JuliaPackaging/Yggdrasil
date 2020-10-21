@@ -212,6 +212,9 @@ if [[ "${target}" == *freebsd* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
 
+CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=/opt/bin/${target}-gcc)
+CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER=/opt/bin/${target}-g++)
+
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
 ninja -j${nproc} -vv
@@ -328,6 +331,12 @@ function configure_build(ARGS, version)
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
+    end
+    if version == v"6.0.1"
+        config *= raw"""
+        export CC=/opt/bin/${target}-gcc
+        export CXX=/opt/bin/${target}-g++
+        """
     end
     # Dependencies that must be installed before this package can be built
     # TODO: Zlib, LibXML2
