@@ -7,11 +7,14 @@ version = v"2.24.0"
 sources = [
     GitSource("https://github.com/ARMmbed/mbedtls.git",
               "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mbedtls
+
+atomic_patch -p1 ../patches/fix_incorrect_EOF_check.patch
 
 # llvm-ranlib gets confused, use the binutils one
 if [[ "${target}" == *apple* ]]; then
