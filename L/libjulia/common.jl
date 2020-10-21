@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg.Types
 
 # Collection of sources required to build Julia
-function configure(version)
+function build_julia(version)
     name = "libjulia"
 
     checksums = Dict(
@@ -64,7 +64,8 @@ function configure(version)
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
-    CXXFLAGS="-I${prefix}/include"
+    # -NDEBUG below fixes the FreeBSD build of Julia 1.4 and 1.5
+    CXXFLAGS="-I${prefix}/include -DNDEBUG"
     if [[ "${target}" == *mingw* ]]; then
         LLVMLINK="-L${prefix}/bin -lLLVM"
         LLVM_LDFLAGS="-L${prefix}/bin"
@@ -120,7 +121,7 @@ function configure(version)
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
 
-    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
     override USE_BINARYBUILDER=1
 
     prefix=${prefix}
@@ -137,6 +138,11 @@ function configure(version)
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
     EOM
+    fi
+
+    # avoid linker errors related to atomic support in 32bit ARM builds
+    if [[ "${bb_full_target}" == armv7l-* ]]; then
+        echo "MARCH=armv7-a" >>Make.user
     fi
 
     # Add file to one of the `STD_LIB_PATH`
@@ -158,7 +164,7 @@ function configure(version)
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} CFLAGS=${CFLAGS} CXXFLAGS=${CXXFLAGS} -j${nproc} VERBOSE=1 julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
@@ -176,20 +182,14 @@ function configure(version)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
-    # For now skip FreeBSD...
-    filter!(!Sys.isfreebsd, platforms)
+
+    # skip 32bit musl builds; they fail with this error:
+    #    libunwind.so.8: undefined reference to `setcontext'
+    filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+
+    # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
     if version < v"1.4"
-        # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
-    end
-    if version < v"1.5"
-        # in Julia <= 1.4 skip all musl builds
-        filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
-        # in Julia <= 1.4 skip 32bit ARM builds
-        filter!(p -> !(Sys.islinux(p) && arch(p) == "armv7l"), platforms)
-    else
-        # in Julia >= 1.5 skip 32bit musl builds
-        filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
     end
 
     # While the "official" Julia kernel ABI itself does not involve any C++
@@ -226,6 +226,7 @@ function configure(version)
         Dependency("p7zip_jll"),
         Dependency("MPFR_jll"),
         Dependency("GMP_jll"),
+        Dependency("Objconv_jll"),
     ]
     if version.major == 1 && version.minor == 3
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
@@ -246,5 +247,6 @@ function configure(version)
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
     end
 
-    return name, version, sources, script, platforms, products, dependencies
+    global ARGS
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
 end
