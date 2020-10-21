@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/dSFMT
 FLAGS=(
     -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing -Wmissing-prototypes -Wall -std=c99
     -DNDEBUG -DDSFMT_MEXP=19937
-    -fPIC -shared -DDSFMT_SHLIB -DDSFMT_DO_NOT_USE_OLD_NAMES 
+    -fPIC -shared -DDSFMT_SHLIB -DDSFMT_DO_NOT_USE_OLD_NAMES
 )
 
 if [[ ${target} == x86_64* ]]; then
