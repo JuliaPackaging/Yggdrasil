@@ -41,7 +41,6 @@ function download_cached_binaries(download_dir, platforms)
     # Grab things out of the aether for maximum consistency
     bb_hash = ENV["BB_HASH"]
     proj_hash = ENV["PROJ_HASH"]
-    probe_platform_engines!(;verbose=verbose)
 
     for platform in platforms
         url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
@@ -57,8 +56,6 @@ function download_binaries_from_release(download_dir)
         filename = basename(url)
         BinaryBuilderBase.download_verify(url, hash, joinpath(download_dir, filename))
     end
-
-    probe_platform_engines!(;verbose=verbose)
 
     # Doownload the tarballs reading the information in the current `Artifacts.toml`.
     artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))[name]
