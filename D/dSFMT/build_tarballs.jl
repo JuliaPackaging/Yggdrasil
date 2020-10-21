@@ -6,21 +6,17 @@ version = v"2.2.3"
 # Collection of sources required to build dSFMT
 sources = [
     GitSource("https://github.com/MersenneTwister-Lab/dSFMT.git",
-              "92822573b490d7ff0f3bea72a94870aadae289ea"),
-    DirectorySource("./bundled"),
+              "5a02974a257ae74dbab12bde3ef6a5ffc0cfbbc2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/dSFMT*/
-
-atomic_patch -p1 $WORKSPACE/srcdir/patches/dSFMT.h.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/dSFMT.c.patch
+cd $WORKSPACE/srcdir/dSFMT
 
 FLAGS=(
-    -DNDEBUG -DDSFMT_MEXP=19937 -fPIC -DDSFMT_DO_NOT_USE_OLD_NAMES
-    -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing
-    --param max-inline-insns-single=1800 -Wmissing-prototypes -Wall -std=c99 -shared
+    -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing -Wmissing-prototypes -Wall -std=c99
+    -DNDEBUG -DDSFMT_MEXP=19937
+    -fPIC -shared -DDSFMT_DO_NOT_USE_OLD_NAMES
 )
 
 if [[ ${target} == x86_64* ]]; then
