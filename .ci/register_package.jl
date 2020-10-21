@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg, Pkg.PlatformEngines
+using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
 verbose = "--verbose" in ARGS
 
@@ -46,17 +46,16 @@ function download_cached_binaries(download_dir, platforms)
     for platform in platforms
         url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
         filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
-        PlatformEngines.download(url, joinpath(download_dir, filename); verbose=verbose)
+        Downloads.download(url, joinpath(download_dir, filename))
     end
 end
 
 function download_binaries_from_release(download_dir)
-
     function do_download(download_dir, info)
         url = info["url"]
         hash = info["sha256"]
         filename = basename(url)
-        PlatformEngines.download_verify(url, hash, joinpath(download_dir, filename); verbose=verbose)
+        BinaryBuilderBase.download_verify(url, hash, joinpath(download_dir, filename))
     end
 
     probe_platform_engines!(;verbose=verbose)
