@@ -25,13 +25,12 @@ make -j${nproc} V=1
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libuv", :libuv)
+    LibraryProduct("libuv", :libuv),
 ]
 
 # Dependencies that must be installed before this package can be built
