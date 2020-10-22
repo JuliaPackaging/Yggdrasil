@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "HelFEM"
 version = v"0.0.1"
 sources = [
-    GitSource("https://github.com/mortenpi/HelFEM.git", "0a04c67770529ee9551ae03fab473969e38d94d6")
+    GitSource("https://github.com/mortenpi/HelFEM.git", "d3b9ce4d34fcce3296a80aef0ed9b60ce45319c9")
 ]
 
 script = raw"""
@@ -18,6 +18,13 @@ if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
     OPENBLAS="${libdir}/libopenblas64_.${dlext}"
 else
     OPENBLAS="${libdir}/libopenblas.${dlext}"
+fi
+
+# On i686, it seems that we need to explicitly tell GCC that we want SSE2. Refs:
+#   https://github.com/JuliaLang/julia/blob/v1.4.1/src/atomics.h#L8-L10
+#   https://stackoverflow.com/questions/16410149/error-sse2-instruction-set-not-enabled-when-including-emmintrin-h
+if [[ "${target}" == i686* ]]; then
+    export CXXFLAGS="-msse -msse2 -msse3"
 fi
 
 # Compile libhelfem as a static library
