@@ -78,6 +78,6 @@ dependencies = [
 ]
 
 build_tarballs(
-    args, name, version, sources, script, platforms, products, dependencies,
+    ARGS, name, version, sources, script, platforms, products, dependencies,
     preferred_gcc_version = v"7.1.0",
 )
