@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg, LibGit2
 include("../../fancy_toys.jl")
 
 # Everybody is just going to use the same set of platforms
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
