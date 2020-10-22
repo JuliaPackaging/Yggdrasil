@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.4"
+version = v"0.3.5"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -18,7 +18,7 @@ for d in /opt/${target}/${target}/lib*; do
 done
 """
 
-extraction_platforms = supported_platforms()
+extraction_platforms = supported_platforms(;experimental=true)
 extraction_products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgomp", :libgomp),
@@ -98,7 +98,7 @@ install_license /usr/share/licenses/GPL3
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 common_products = [
