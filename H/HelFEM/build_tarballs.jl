@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "HelFEM"
 version = v"0.0.1"
 sources = [
-    GitSource("https://github.com/mortenpi/HelFEM.git", "97467946bb44c970c94436ed896840227e4b599f")
+    GitSource("https://github.com/mortenpi/HelFEM.git", "aeb49aad6319094f3129c3d81e4e9c7431d95d76")
 ]
 
 script = raw"""
