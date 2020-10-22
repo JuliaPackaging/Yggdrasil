@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "HelFEM"
 version = v"0.0.1"
 sources = [
-    GitSource("https://github.com/mortenpi/HelFEM", "97467946bb44c970c94436ed896840227e4b599f")
+    GitSource("https://github.com/mortenpi/HelFEM.git", "97467946bb44c970c94436ed896840227e4b599f")
 ]
 
 script = raw"""
@@ -45,24 +45,24 @@ make -C build/ install
 """
 
 # These are the platforms the libcxxwrap_julia_jll is built on.
-pfkwarg = (; compiler_abi = CompilerABI(cxxstring_abi=:cxx11))
+pfkwarg = (; cxxstring_abi = "cxx11")
 platforms = [
     # x86_64-linux-gnu-cxx11
-    Linux(:x86_64; libc=:glibc, pfkwarg...),
+    Platform("x86_64", "linux"; libc="glibc", pfkwarg...),
     # i686-linux-gnu-cxx11
-    Linux(:i686; libc=:glibc, pfkwarg...),
+    Platform("i686", "linux"; libc="glibc", pfkwarg...),
     # armv7l-linux-gnueabihf-cxx11
-    Linux(:armv7l; libc=:glibc, pfkwarg...),
+    Platform("armv7l", "linux"; libc="glibc", pfkwarg...),
     # aarch64-linux-gnu-cxx11
-    Linux(:aarch64; libc=:glibc, pfkwarg...),
+    Platform("aarch64", "linux"; libc="glibc", pfkwarg...),
     # x86_64-apple-darwin14-cxx11
-    MacOS(:x86_64; pfkwarg...),
+    Platform("x86_64", "macos"; pfkwarg...),
     # x86_64-w64-mingw32-cxx11
-    Windows(:x86_64; pfkwarg...),
+    Platform("x86_64", "windows"; pfkwarg...),
     # i686-w64-mingw32-cxx11
-    Windows(:i686; pfkwarg...),
+    Platform("i686"; pfkwarg...),
     # x86_64-unknown-freebsd11.1-cxx11
-    FreeBSD(:x86_64; pfkwarg...),
+    Platform("x86_64", "freebsd"; pfkwarg...),
 ]
 
 products = [
