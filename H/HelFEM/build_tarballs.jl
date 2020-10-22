@@ -7,7 +7,7 @@ sources = [
 ]
 
 script = raw"""
-cp -v ${WORKSPACE}/srcdir/julia/CMake.system ${WORKSPACE}/srcdir/CMake.system
+cp -v ${WORKSPACE}/srcdir/HelFEM/julia/CMake.system ${WORKSPACE}/srcdir/HelFEM/CMake.system
 
 # Set up some platform specific CMake configuration. This is more or less borrowed from
 # the Armadillo build_tarballs.jl script:
@@ -21,7 +21,7 @@ else
 fi
 
 # Compile libhelfem as a static library
-cd ${WORKSPACE}/srcdir
+cd ${WORKSPACE}/HelFEM/srcdir
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
@@ -34,7 +34,7 @@ make -C build/ install
 install_license LICENSE
 
 # Compile the CxxWrap wrapper as a shared library
-cd ${WORKSPACE}/srcdir/julia
+cd ${WORKSPACE}/HelFEM/srcdir/julia
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
     -DBLAS_LIBRARIES=${OPENBLAS} \
