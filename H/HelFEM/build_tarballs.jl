@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "HelFEM"
 version = v"0.0.1"
 sources = [
-    GitSource("https://github.com/mortenpi/HelFEM.git", "aeb49aad6319094f3129c3d81e4e9c7431d95d76")
+    GitSource("https://github.com/mortenpi/HelFEM.git", "0a04c67770529ee9551ae03fab473969e38d94d6")
 ]
 
 script = raw"""
@@ -45,23 +45,18 @@ make -C build/ install
 """
 
 # These are the platforms the libcxxwrap_julia_jll is built on.
+#
+# The libgfortran constraint is necessary because the default is libgfortran 3, but the
+# Julia_jll is only available for libgfortran 4.
 platforms = [
-    # x86_64-linux-gnu-cxx11
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    # i686-linux-gnu-cxx11
-    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    # armv7l-linux-gnueabihf-cxx11
-    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    # aarch64-linux-gnu-cxx11
-    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    # x86_64-apple-darwin14
-    Platform("x86_64", "macos"),
-    # x86_64-w64-mingw32-cxx11
-    Platform("x86_64", "windows"; cxxstring_abi = "cxx11"),
-    # i686-w64-mingw32-cxx11
-    Platform("i686", "windows"; cxxstring_abi = "cxx11"),
-    # x86_64-unknown-freebsd
-    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("x86_64", "macos", libgfortran_version=v"4"),
+    Platform("x86_64", "windows"; cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("i686", "windows"; cxxstring_abi = "cxx11", libgfortran_version=v"4"),
+    Platform("x86_64", "freebsd", libgfortran_version=v"4"),
 ]
 
 products = [
@@ -69,14 +64,11 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name = "Julia_jll",version = "1.4.1")),
+    BuildDependency(PackageSpec(name = "Julia_jll", version = "1.4.1")),
     Dependency(PackageSpec(name = "libcxxwrap_julia_jll", version = "0.8.0")),
     Dependency(PackageSpec(name = "armadillo_jll", version = "9.850.1")),
     Dependency(PackageSpec(name = "GSL_jll", version = "2.6.0")),
     Dependency(PackageSpec(name = "OpenBLAS_jll", version = "0.3.9")),
 ]
 
-build_tarballs(
-    ARGS, name, version, sources, script, platforms, products, dependencies,
-    preferred_gcc_version = v"7.1.0",
-)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
