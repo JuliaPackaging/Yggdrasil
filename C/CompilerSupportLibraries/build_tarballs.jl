@@ -90,7 +90,7 @@ done
 # libgcc_s.X.dylib receives special treatment for now.  We need to reset the dylib id,
 # but we don't want to run a full audit, so we do it ourselves.
 if [[ ${target} == *apple* ]]; then
-    LIBGCC_NAME=$(echo ${libdir}/libgcc_s.*.dylib)
+    LIBGCC_NAME=$(basename $(echo ${libdir}/libgcc_s.*.dylib))
     install_name_tool -id @rpath/${LIBGCC_NAME} ${libdir}/${LIBGCC_NAME}
 fi
 
