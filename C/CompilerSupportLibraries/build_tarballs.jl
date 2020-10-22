@@ -87,9 +87,11 @@ for l in ${libdir}/*; do
     chmod 0755 "${l}"
 done
 
-# libgcc_s.1.dylib receives special treatment for now
+# libgcc_s.X.dylib receives special treatment for now.  We need to reset the dylib id,
+# but we don't want to run a full audit, so we do it ourselves.
 if [[ ${target} == *apple* ]]; then
-    install_name_tool -id @rpath/libgcc_s.1.dylib ${libdir}/libgcc_s.1.dylib
+    LIBGCC_NAME=$(echo ${libdir}/libgcc_s.*.dylib)
+    install_name_tool -id @rpath/${LIBGCC_NAME} ${libdir}/${LIBGCC_NAME}
 fi
 
 # Install license (we license these all as GPL3, since they're from GCC)
