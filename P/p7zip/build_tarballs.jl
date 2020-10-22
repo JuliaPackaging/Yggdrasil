@@ -49,6 +49,7 @@ else
             arm-*linux*)         echo makefile.linux_cross_arm;;
             x86_64-*freebsd*)    echo makefile.freebsd6+;;
             x86_64-*darwin*)     echo makefile.macosx_llvm_64bits;;
+            aarch64-*darwin*)    echo makefile.macosx_llvm_64bits;;
         esac
     }
     cp $(target_makefile) makefile.machine
@@ -57,6 +58,8 @@ else
     if [[ "${target}" == *darwin* ]] || [[ "${target}" == *freebsd* ]]; then
         CXXFLAGS="${CXXFLAGS} -Wno-c++11-narrowing"
     fi
+
+    install_license DOC/License.txt
 
     make -j${nproc} 7za CC="${CC} ${CFLAGS}" CXX="${CXX} ${CXXFLAGS}"
     mkdir -p ${prefix}/bin
