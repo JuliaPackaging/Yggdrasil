@@ -162,7 +162,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 end
 
 # Nothing complicated here; we build for everywhere
-openblas_platforms(;kwargs...) = expand_gfortran_versions(supported_platforms())
+openblas_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental))
 
 # The products that we will ensure are always built
 function openblas_products(;kwargs...)
