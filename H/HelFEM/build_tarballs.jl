@@ -60,7 +60,7 @@ platforms = [
     # x86_64-w64-mingw32-cxx11
     Platform("x86_64", "windows"; pfkwarg...),
     # i686-w64-mingw32-cxx11
-    Platform("i686"; pfkwarg...),
+    Platform("i686", "windows"; pfkwarg...),
     # x86_64-unknown-freebsd11.1-cxx11
     Platform("x86_64", "freebsd"; pfkwarg...),
 ]
