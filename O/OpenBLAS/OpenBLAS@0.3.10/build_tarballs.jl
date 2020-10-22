@@ -8,7 +8,7 @@ version = v"0.3.10"
 
 sources = openblas_sources(version)
 script = openblas_script()
-platforms = openblas_platforms()
+platforms = openblas_platforms(;experimental=true)
 products = openblas_products()
 dependencies = openblas_dependencies()
 
