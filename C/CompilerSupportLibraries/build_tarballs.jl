@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.4"
+version = v"0.3.5"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -18,7 +18,7 @@ for d in /opt/${target}/${target}/lib*; do
 done
 """
 
-extraction_platforms = supported_platforms()
+extraction_platforms = supported_platforms(;experimental=true)
 extraction_products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgomp", :libgomp),
@@ -87,9 +87,11 @@ for l in ${libdir}/*; do
     chmod 0755 "${l}"
 done
 
-# libgcc_s.1.dylib receives special treatment for now
+# libgcc_s.X.dylib receives special treatment for now.  We need to reset the dylib id,
+# but we don't want to run a full audit, so we do it ourselves.
 if [[ ${target} == *apple* ]]; then
-    install_name_tool -id @rpath/libgcc_s.1.dylib ${libdir}/libgcc_s.1.dylib
+    LIBGCC_NAME=$(basename $(echo ${libdir}/libgcc_s.*.dylib))
+    install_name_tool -id @rpath/${LIBGCC_NAME} ${libdir}/${LIBGCC_NAME}
 fi
 
 # Install license (we license these all as GPL3, since they're from GCC)
@@ -98,7 +100,7 @@ install_license /usr/share/licenses/GPL3
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 common_products = [
