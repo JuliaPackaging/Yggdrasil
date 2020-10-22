@@ -45,24 +45,23 @@ make -C build/ install
 """
 
 # These are the platforms the libcxxwrap_julia_jll is built on.
-pfkwarg = (; cxxstring_abi = "cxx11")
 platforms = [
     # x86_64-linux-gnu-cxx11
-    Platform("x86_64", "linux"; libc="glibc", pfkwarg...),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     # i686-linux-gnu-cxx11
-    Platform("i686", "linux"; libc="glibc", pfkwarg...),
+    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     # armv7l-linux-gnueabihf-cxx11
-    Platform("armv7l", "linux"; libc="glibc", pfkwarg...),
+    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     # aarch64-linux-gnu-cxx11
-    Platform("aarch64", "linux"; libc="glibc", pfkwarg...),
-    # x86_64-apple-darwin14-cxx11
-    Platform("x86_64", "macos"; pfkwarg...),
+    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    # x86_64-apple-darwin14
+    Platform("x86_64", "macos"),
     # x86_64-w64-mingw32-cxx11
-    Platform("x86_64", "windows"; pfkwarg...),
+    Platform("x86_64", "windows"; cxxstring_abi = "cxx11"),
     # i686-w64-mingw32-cxx11
-    Platform("i686", "windows"; pfkwarg...),
-    # x86_64-unknown-freebsd11.1-cxx11
-    Platform("x86_64", "freebsd"; pfkwarg...),
+    Platform("i686", "windows"; cxxstring_abi = "cxx11"),
+    # x86_64-unknown-freebsd
+    Platform("x86_64", "freebsd"),
 ]
 
 products = [
