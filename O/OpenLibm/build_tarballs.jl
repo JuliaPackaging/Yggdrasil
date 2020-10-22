@@ -34,9 +34,8 @@ make "${flags[@]}" install
 install_license ./LICENSE.md
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 products = [
     LibraryProduct("libopenlibm", :libopenlibm),
