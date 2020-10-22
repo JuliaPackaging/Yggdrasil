@@ -27,8 +27,8 @@ make install -j${nproc}
 install_license ../README
 """
 
-# Build for all platforms
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
