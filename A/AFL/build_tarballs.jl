@@ -68,8 +68,8 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "macos"),
+    #Platform("x86_64", "freebsd"),
+    #Platform("x86_64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
