@@ -26,26 +26,26 @@ fi
 cd qemu_mode/qemu-3.1.0/
 
 # apply patches from AFL's qemu_mode
-atomic_patch -p1 <../patches/elfload.diff
-atomic_patch -p1 <../patches/mips-fpu.diff
-atomic_patch -p1 <../patches/bsd-elfload.diff
-atomic_patch -p1 <../patches/cpu-exec.diff
-atomic_patch -p1 <../patches/syscall.diff
-atomic_patch -p1 <../patches/translate-all.diff
-atomic_patch -p1 <../patches/tcg.diff
-atomic_patch -p1 <../patches/i386-translate.diff
-atomic_patch -p1 <../patches/arm-translate.diff
-atomic_patch -p1 <../patches/arm-translate-a64.diff
-atomic_patch -p1 <../patches/i386-ops_sse.diff
-atomic_patch -p1 <../patches/i386-fpu_helper.diff
-atomic_patch -p1 <../patches/softfloat.diff
-atomic_patch -p1 <../patches/configure.diff
-atomic_patch -p1 <../patches/tcg-runtime.diff
-atomic_patch -p1 <../patches/tcg-runtime-head.diff
-atomic_patch -p1 <../patches/translator.diff
-atomic_patch -p1 <../patches/__init__.py.diff
-atomic_patch -p1 <../patches/make_strncpy_safe.diff
-atomic_patch -p1 <../patches/mmap_fixes.diff
+atomic_patch -p1 ../patches/elfload.diff
+atomic_patch -p1 ../patches/mips-fpu.diff
+atomic_patch -p1 ../patches/bsd-elfload.diff
+atomic_patch -p1 ../patches/cpu-exec.diff
+atomic_patch -p1 ../patches/syscall.diff
+atomic_patch -p1 ../patches/translate-all.diff
+atomic_patch -p1 ../patches/tcg.diff
+atomic_patch -p1 ../patches/i386-translate.diff
+atomic_patch -p1 ../patches/arm-translate.diff
+atomic_patch -p1 ../patches/arm-translate-a64.diff
+atomic_patch -p1 ../patches/i386-ops_sse.diff
+atomic_patch -p1 ../patches/i386-fpu_helper.diff
+atomic_patch -p1 ../patches/softfloat.diff
+atomic_patch -p1 ../patches/configure.diff
+atomic_patch -p1 ../patches/tcg-runtime.diff
+atomic_patch -p1 ../patches/tcg-runtime-head.diff
+atomic_patch -p1 ../patches/translator.diff
+atomic_patch -p1 ../patches/__init__.py.diff
+atomic_patch -p1 ../patches/make_strncpy_safe.diff
+atomic_patch -p1 ../patches/mmap_fixes.diff
 
 ./configure --disable-system \
     --enable-linux-user --disable-gtk --disable-sdl --disable-vnc --enable-capstone=internal \
