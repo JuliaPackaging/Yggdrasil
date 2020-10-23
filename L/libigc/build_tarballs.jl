@@ -110,3 +110,4 @@ dependencies = Dependency[]
 # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", lock_microarchitecture=false)
+
