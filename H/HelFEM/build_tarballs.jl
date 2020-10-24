@@ -51,7 +51,7 @@ make -C build/ -j${nproc}
 make -C build/ install
 """
 
-# These are the platforms the libcxxwrap_julia_jll is built on.
+# These are the platforms libcxxwrap_julia_jll is built on.
 #
 # The libgfortran constraint is necessary because the default is libgfortran 3, but the
 # Julia_jll is only available for libgfortran 4.
