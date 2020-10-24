@@ -16,9 +16,9 @@ make PREFIX=$prefix PROGS="afl-gcc" SH_PROGS= install
 
 # afl-gcc can only compile instrumention code into x86[_64] programs, just build a stub on other platforms
 if [[ ${proc_family} = "intel" ]]; then
-	AFL_PATH=$prefix/lib/afl $prefix/bin/afl-gcc test-instr.c -o $prefix/bin/afl-test-instr
+	AFL_PATH=$libdir/afl $bindir/afl-gcc test-instr.c -o $bindir/afl-test-instr
 else
-	$CC test-instr.c -o $prefix/bin/afl-test-instr
+	$CC test-instr.c -o $bindir/afl-test-instr
 fi
 
 # next is compilation of qemu_mode
@@ -53,23 +53,21 @@ atomic_patch -p1 ../patches/mmap_fixes.diff
     
 make -j${nproc}
 
-install i386-linux-user/qemu-i386 $prefix/bin/afl-qemu-trace-i386
-install x86_64-linux-user/qemu-x86_64 $prefix/bin/afl-qemu-trace-x86_64
-install arm-linux-user/qemu-arm $prefix/bin/afl-qemu-trace-arm
-install aarch64-linux-user/qemu-aarch64 $prefix/bin/afl-qemu-trace-aarch64
-install ppc-linux-user/qemu-ppc $prefix/bin/afl-qemu-trace-ppc
+install i386-linux-user/qemu-i386 $bindir/afl-qemu-trace-i386
+install x86_64-linux-user/qemu-x86_64 $bindir/afl-qemu-trace-x86_64
+install arm-linux-user/qemu-arm $bindir/afl-qemu-trace-arm
+install aarch64-linux-user/qemu-aarch64 $bindir/afl-qemu-trace-aarch64
+install ppc-linux-user/qemu-ppc $bindir/afl-qemu-trace-ppc
 """
 
 # AFL does not support Windows
-# QEMU 3.1.0 fails to build with musl
+# QEMU 3.1.0 fails to build on FreeBSD, macOS and with musl on Linux
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
-    #Platform("x86_64", "freebsd"),
-    #Platform("x86_64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
