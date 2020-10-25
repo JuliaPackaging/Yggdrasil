@@ -82,6 +82,9 @@ function build_julia(version)
         fi
     fi
 
+    # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
+    shopt -s extglob
+
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
     # USE_SYSTEM_LIBUNWIND=1
