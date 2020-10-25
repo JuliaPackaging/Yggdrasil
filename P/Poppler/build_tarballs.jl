@@ -30,7 +30,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_GTK_TESTS=OFF \
     -DENABLE_CMS=lcms2 \
-    -DENABLE_GLIB=OFF \
+    -DENABLE_GLIB=ON \
     -DENABLE_QT5=OFF \
     -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
     -DWITH_GObjectIntrospection=OFF \
@@ -46,6 +46,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpoppler-cpp", :libpoppler_cpp),
+    LibraryProduct("libpoppler-glib", :libpoppler_glib),
     LibraryProduct("libpoppler", :libpoppler),
     ExecutableProduct("pdfattach", :pdfattach),
     ExecutableProduct("pdfdetach", :pdfdetach),
@@ -64,14 +65,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("JpegTurbo_jll"),
     Dependency("Cairo_jll"),
-    #Dependency("gdk_pixbuf_jll"),
-    #Dependency("GTK3_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("libpng_jll"),
-    Dependency("OpenJpeg_jll"),
     Dependency("Fontconfig_jll"),
+    # Dependency("GTK3_jll"),
+    Dependency("Glib_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libtiff_jll"),
+    Dependency("OpenJpeg_jll"),
+    # Dependency("gdk_pixbuf_jll"),
+    Dependency("libpng_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
