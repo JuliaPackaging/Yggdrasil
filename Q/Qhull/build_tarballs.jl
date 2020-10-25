@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"2019.1"
+version = v"2020.2"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
         "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz", # URL
-        "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f"                 # sha256 hash
+        "59356b229b768e6e2b09a701448bfa222c37b797a84f87f864f97462d8dbc7c5"                 # sha256 hash
     ),
 ]
 
@@ -55,7 +55,8 @@ products = [
     # Libraries
     # reentrant Qhull
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
-    LibraryProduct(["libqhull", "qhull"], :libqhull),
+    # non-reentrant Qhull is not supported any more
+    # LibraryProduct(["libqhull", "qhull"], :libqhull),
     
     # Files
     # Reentrant Qhull header files
