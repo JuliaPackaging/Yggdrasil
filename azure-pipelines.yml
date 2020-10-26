@@ -167,7 +167,7 @@ jobs:
 
                   # Here, we hit the build cache to see if we can skip this particular combo
                   CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
-                  CURL_HTTP_CODE=$(curl --output /tmp/curl_${PROJ_HASH}_${PLATFORM}.log --silent --include --fail --HEAD "${CACHE_URL}" --write-output '%{http_code}')
+                  CURL_HTTP_CODE=$(curl --output /tmp/curl_${PROJ_HASH}_${PLATFORM}.log --silent --include --fail --HEAD "${CACHE_URL}" --write-out '%{http_code}')
                   if [[ "${CURL_HTTP_CODE}" == "200" ]]; then
                       echo "    ${PLATFORM}: skipping, existant"
                       continue;
