@@ -16,11 +16,13 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd assimp/
 mkdir build && cd build
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DASSIMP_BUILD_ASSIMP_TOOLS=false"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DASSIMP_BUILD_TESTS=false"
-CMAKE_FLAGS="${CMAKE_FLAGS} -DASSIMP_INSTALL_PDB=false"
-cmake ${CMAKE_FLAGS} ..
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DASSIMP_BUILD_ASSIMP_TOOLS=false \
+    -DASSIMP_BUILD_TESTS=false \
+    -DASSIMP_INSTALL_PDB=false \
+    -DASSIMP_DOUBLE_PRECISION=false \
+
 make -j${nproc}
 make install
 """
@@ -39,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")
+    Dependency("Zlib_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
