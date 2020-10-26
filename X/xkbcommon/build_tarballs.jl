@@ -37,6 +37,7 @@ platforms = [p for p in supported_platforms() if Sys.islinux(p)]
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libxkbcommon", :libxkbcommon),
+    LibraryProduct("libxkbcommon-x11", :libxkbcommon_x11),
 ]
 
 # Dependencies that must be installed before this package can be built
