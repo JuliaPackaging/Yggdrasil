@@ -174,7 +174,7 @@ jobs:
                   echo "    ${PLATFORM}: building"
 
                   # Debugging: let's see why `curl` failed:
-                  tail -n 30 /tmp/curl_${PROJ_HASH}_${PLATFORM}.log
+                  tail -n 30 /tmp/curl_${PROJ_HASH}_${PLATFORM}.log || true
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
