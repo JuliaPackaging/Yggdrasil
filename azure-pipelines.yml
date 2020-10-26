@@ -167,11 +167,14 @@ jobs:
 
                   # Here, we hit the build cache to see if we can skip this particular combo
                   CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
-                  if curl --output /dev/null --silent --fail --HEAD "${CACHE_URL}"; then
+                  if curl --output /tmp/curl_${PROJ_HASH}_${PLATFORM}.log --silent --fail --HEAD "${CACHE_URL}"; then
                       echo "    ${PLATFORM}: skipping, existant"
                       continue;
                   fi
                   echo "    ${PLATFORM}: building"
+
+                  # Debugging: let's see why `curl` failed:
+                  tail -n 30 /tmp/curl_${PROJ_HASH}_${PLATFORM}.log
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
@@ -182,6 +185,7 @@ jobs:
                       'BB_HASH':'${BB_HASH}' \
                   }, "
               done
+              rm -f /tmp/curl_${PROJ_HASH}*.log
           done
           # Add closing parens
           VAR_PROJECTS="${VAR_PROJECTS} }"
