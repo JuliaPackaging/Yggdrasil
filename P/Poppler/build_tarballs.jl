@@ -14,9 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/poppler-*/
 
-# Create link ${bindir} before starting.  `OpenJPEGTargets.cmake` will try to
-# look for some executables in `sys-root/usr/local/bin`
-ln -s ${bindir} /opt/${target}/${target}/sys-root/usr/local/bin
 export CXXFLAGS="-I${prefix}/include/openjpeg-2.3"
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
