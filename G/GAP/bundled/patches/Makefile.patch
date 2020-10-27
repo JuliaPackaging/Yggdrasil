@@ -1,0 +1,40 @@
+diff --git a/Makefile.rules b/Makefile.rules
+index 43bce8df9..110172810 100644
+--- a/Makefile.rules
++++ b/Makefile.rules
+@@ -570,7 +570,7 @@ EXTERN_FILES += $(GMP_FILES)
+ gmp: $(GMP_FILES)
+ $(GMP_FILES):
+ 	touch "$(abs_srcdir)/extern/gmp/doc/gmp.info"
+-	MAKE=$(MAKE) $(srcdir)/cnf/build-extern.sh gmp "$(abs_srcdir)/extern/gmp" ABI=$(ABI) --disable-static --enable-shared
++	MAKE=$(MAKE) $(srcdir)/cnf/build-extern.sh gmp "$(abs_srcdir)/extern/gmp" CC=$(CC) CXX=$(CXX) --build=$(build) --host=$(host) ABI=$(ABI) --disable-static --enable-shared
+ 
+ .PHONY: gmp
+ 
+@@ -607,7 +607,7 @@ $(ZLIB_FILES):
+ else
+ 
+ $(ZLIB_FILES):
+-	MAKE=$(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" $(srcdir)/cnf/build-extern.sh zlib "$(abs_srcdir)/extern/zlib"
++	MAKE=$(MAKE) CC="$(CC)" CFLAGS="$(CFLAGS)" $(srcdir)/cnf/build-extern.sh zlib "$(abs_srcdir)/extern/zlib" CC=$(CC) CXX=$(CXX) --build=$(build) --host=$(host)
+ 
+ endif # SYS_IS_CYGWIN32
+ 
+@@ -640,7 +640,7 @@ EXTERN_FILES += $(LIBATOMIC_OPS_FILES)
+ libatomic_ops: $(LIBATOMIC_OPS_FILES)
+ $(LIBATOMIC_OPS_FILES):
+ 	MAKE=$(MAKE) CC="$(CC)"  \
+-	$(srcdir)/cnf/build-extern.sh libatomic_ops "$(abs_srcdir)/hpcgap/extern/libatomic_ops" --disable-static --enable-shared
++	$(srcdir)/cnf/build-extern.sh libatomic_ops "$(abs_srcdir)/hpcgap/extern/libatomic_ops" CC=$(CC) CXX=$(CXX) --build=$(build) --host=$(host) --disable-static --enable-shared
+ 
+ # TODO: MAKEFLAGS=-j1
+ 
+@@ -681,7 +681,7 @@ $(BOEHM_GC_FILES):
+ 	CC="$(CC)" \
+ 	ATOMIC_OPS_CFLAGS=$(LIBATOMIC_OPS_CPPFLAGS) \
+ 	ATOMIC_OPS_LIBS=$(LIBATOMIC_OPS_LDFLAGS) \
+-	$(srcdir)/cnf/build-extern.sh gc "$(abs_srcdir)/hpcgap/extern/gc" --disable-static --enable-shared --enable-large-config
++	$(srcdir)/cnf/build-extern.sh gc "$(abs_srcdir)/hpcgap/extern/gc" CC=$(CC) CXX=$(CXX) --build=$(build) --host=$(host) --disable-static --enable-shared --enable-large-config
+ 
+ ifeq ($(BUILD_LIBATOMIC_OPS),yes)
+ $(BOEHM_GC_FILES): $(LIBATOMIC_OPS_FILES)
