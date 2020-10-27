@@ -27,7 +27,7 @@ jobs:
       # Keyword to be used in the commit message to skip a rebuild
       SKIP_BUILD_COOKIE="[skip build]"
       # This variable will tell us whether we want to skip the build
-      SKIP_BUILD="false"
+      export SKIP_BUILD="false"
 
       if [[ $(Build.Reason) == "PullRequest" ]]; then
           # If we're on a PR though, we look at the entire branch at once
@@ -113,12 +113,8 @@ jobs:
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
               $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
 
-              if [[ "${SKIP_BUILD}" != "true" ]]; then
-                  echo "Downloading sources..."
-                  $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
-              else
-                  echo "Not downloading source, as [skip build] detected"
-              fi
+              echo "Downloading sources..."
+              $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
 
               # Pop back up to the overworld
               popd >/dev/null

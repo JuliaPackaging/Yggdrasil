@@ -1,5 +1,5 @@
 using BinaryBuilder, Pkg
-using BinaryBuilder: download_source, sourcify, init_jll_package
+using BinaryBuilder: download_source
 
 # Read in input `.json` file
 json = String(read(ARGS[1]))
@@ -13,13 +13,14 @@ end
 merged = BinaryBuilder.merge_json_objects(objs)
 BinaryBuilder.cleanup_merged_object!(merged)
 
-# Download all sources
-download_source.(merged["sources"]; verbose=true)
+# Download all sources, unless we're in a skip build situation
+if get(ENV, "SKIP_BUILD", "false") != "true"
+    download_source.(merged["sources"]; verbose=true)
+end
 
 # Also initialize JLL package directories
 src_name = merged["name"]
 code_dir = joinpath(Pkg.devdir(), "$(src_name)_jll")
-deploy_repo = "JuliaBinaryWrappers/$(src_name)_jll.jl"
 # Always start from a clean slate
 rm(code_dir; recursive=true, force=true)
 
