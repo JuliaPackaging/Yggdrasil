@@ -112,8 +112,13 @@ jobs:
               echo "Generating meta.json..."
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
               $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
-              echo "Downloading sources..."
-              $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
+
+              if [[ "${SKIP_BUILD}" != "true" ]]; then
+                  echo "Downloading sources..."
+                  $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
+              else
+                  echo "Not downloading source, as [skip build] detected"
+              fi
 
               # Pop back up to the overworld
               popd >/dev/null
