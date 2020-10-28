@@ -175,9 +175,9 @@ jobs:
                   fi
                   echo "    ${PLATFORM}: building"
 
-                  # Debugging: let's see why `curl` failed:
-                  echo "CACHE_URL: ${CACHE_URL}"
-                  cat /tmp/curl_${PROJ_HASH}_${PLATFORM}.log || true
+                  # # Debugging: let's see why `curl` failed:
+                  # echo "CACHE_URL: ${CACHE_URL}"
+                  # cat /tmp/curl_${PROJ_HASH}_${PLATFORM}.log || true
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
