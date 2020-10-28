@@ -7,7 +7,7 @@ version = v"4.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plougher/squashfs-tools.git", "c570c6188811088b12ffdd9665487a2960c997a0")
+    GitSource("https://github.com/plougher/squashfs-tools.git", "c570c6188811088b12ffdd9665487a2960c997a0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,7 @@ platforms = filter(p -> Sys.islinux(p) && libc(p) == "glibc", supported_platform
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("unsquashfs", :unsquashfs),
-    ExecutableProduct("mksquashfs", :mksquashfs)
+    ExecutableProduct("mksquashfs", :mksquashfs),
 ]
 
 # Dependencies that must be installed before this package can be built
