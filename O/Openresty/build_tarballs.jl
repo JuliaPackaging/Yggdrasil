@@ -15,14 +15,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd openresty-1.15.8.3/
-./configure --prefix=$prefix --with-cc=$CC --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t --with-pcre=$WORKSPACE/srcdir/pcre-8.43 --with-pcre-jit
+cd $WORKSPACE/srcdir/openresty-*/
+./configure --prefix=${prefix} \
+    --with-cc=$CC \
+    --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 \
+    --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t \
+    --with-pcre=$WORKSPACE/srcdir/pcre-8.43 \
+    --with-pcre-jit
 make -j${nproc}
 make install
-rm $prefix/bin/openresty 
-cd $prefix/bin/
-ln -fs ../nginx/sbin/nginx ./openresty
+rm ${bindir}/openresty
+ln -s ../nginx/sbin/nginx ${bindir}/openresty
 install_license $prefix/COPYRIGHT
 """
 
@@ -32,9 +35,8 @@ platforms = [
     Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl")
+    Platform("x86_64", "linux"; libc="musl"),
 ]
-
 
 # The products that we will ensure are always built
 products = [
@@ -52,4 +54,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lock_microarchitecture=false)
