@@ -46,7 +46,6 @@ products = [
     FileProduct("luajit", :luajit_dir),
     FileProduct("lualib", :lualib_dir),
     FileProduct("nginx", :nginx_dir),
-    FileProduct("site", :site_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
