@@ -7,20 +7,21 @@ version = v"1.16.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mongodb/mongo-c-driver/releases/download/1.16.2/mongo-c-driver-1.16.2.tar.gz", "0a722180e5b5c86c415b9256d753b2d5552901dc5d95c9f022072c3cd336887e")
+    ArchiveSource("https://github.com/mongodb/mongo-c-driver/releases/download/$(version)/mongo-c-driver-$(version).tar.gz",
+                  "0a722180e5b5c86c415b9256d753b2d5552901dc5d95c9f022072c3cd336887e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd mongo-c-driver-1.16.2/
+cd mongo-c-driver-*
 sed -i "s/Windows.h/windows.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/WinDNS.h/windns.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/Mstcpip.h/mstcpip.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/Mstcpip.h/mstcpip.h/" src/libmongoc/src/mongoc/mongoc-socket.c
 sed -i "s/Dnsapi/dnsapi/" build/cmake/FindResSearch.cmake
 mkdir cmake-build
-cd cmake-build/
+cd cmake-build
 
 if [[ "${nbits}" == 32 ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
