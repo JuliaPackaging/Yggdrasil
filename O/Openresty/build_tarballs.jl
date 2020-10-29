@@ -16,13 +16,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openresty-*/
+export SUPER_VERBOSE=1
 ./configure --prefix=${prefix} \
     --with-cc=$CC \
     --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 \
     --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t \
     --with-pcre=$WORKSPACE/srcdir/pcre-8.43 \
     --with-pcre-jit
-make -j${nproc}
+make
 make install
 rm ${bindir}/openresty
 ln -s ../nginx/sbin/nginx ${bindir}/openresty
@@ -46,7 +47,6 @@ products = [
     FileProduct("luajit", :luajit_dir),
     FileProduct("lualib", :lualib_dir),
     FileProduct("nginx", :nginx_dir),
-    FileProduct("site", :site_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
