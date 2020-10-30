@@ -35,10 +35,10 @@ install_license $WORKSPACE/srcdir/libsingular-j*/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 const platforms = expand_cxxstring_abis([
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    #Linux(:i686, libc=:glibc; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)), # Wrapper code is buggy
-    #FreeBSD(:x86_64, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
+    #Platform("i686", "linux"; libc="glibc", cxxstring_abi="cxx11"), # Wrapper code is buggy
+    #Platform("x86_64", "freebsd"; cxxstring_abi = "cxx11"),
 ])
 
 #platforms = supported_platforms()
