@@ -1,0 +1,165 @@
+diff --git a/llvm_mode/GNUmakefile b/llvm_mode/GNUmakefile
+index c14e8b4e..403c0620 100644
+--- a/llvm_mode/GNUmakefile
++++ b/llvm_mode/GNUmakefile
+@@ -30,26 +30,18 @@ VERSION     = $(shell grep '^$(HASH)define VERSION ' ../config.h | cut -d '"' -f
+ 
+ BUILD_DATE  ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "+%Y-%m-%d" 2>/dev/null || date -u -r "$(SOURCE_DATE_EPOCH)" "+%Y-%m-%d" 2>/dev/null || date -u "+%Y-%m-%d")
+ 
+-ifeq "$(shell uname)" "OpenBSD"
+-  LLVM_CONFIG ?= $(BIN_PATH)/llvm-config
+-  HAS_OPT = $(shell test -x $(BIN_PATH)/opt && echo 0 || echo 1)
+-  ifeq "$(HAS_OPT)" "1"
+-    $(error llvm_mode needs a complete llvm installation (versions 3.4 up to 12) -> e.g. "pkg_add llvm-7.0.1p9")
+-  endif
+-else
+-  LLVM_CONFIG ?= llvm-config
+-endif
++LLVMVER  = 9.0.1
++LLVM_UNSUPPORTED = 0
++LLVM_NEW_API = 0 # LLVM 10+
++LLVM_HAVE_LTO = 0 # LLVM 11+
++LLVM_TOO_OLD = 0
++LLVM_MAJOR = 11
++LLVM_BINDIR = $(PREFIX)/tools
++LLVM_LIBDIR = $(PREFIX)/lib
++LLVM_STDCXX = c++11
++LLVM_APPLE_XCODE = 0
++LLVM_LTO = 0
+ 
+-LLVMVER  = $(shell $(LLVM_CONFIG) --version 2>/dev/null | sed 's/git//' )
+-LLVM_UNSUPPORTED = $(shell $(LLVM_CONFIG) --version 2>/dev/null | egrep -q '^3\.[0-3]|^19' && echo 1 || echo 0 )
+-LLVM_NEW_API = $(shell $(LLVM_CONFIG) --version 2>/dev/null | egrep -q '^1[0-9]' && echo 1 || echo 0 )
+-LLVM_HAVE_LTO = $(shell $(LLVM_CONFIG) --version 2>/dev/null | egrep -q '^1[1-9]' && echo 1 || echo 0 )
+-LLVM_MAJOR = $(shell $(LLVM_CONFIG) --version 2>/dev/null | sed 's/\..*//')
+-LLVM_BINDIR = $(shell $(LLVM_CONFIG) --bindir 2>/dev/null)
+-LLVM_LIBDIR = $(shell $(LLVM_CONFIG) --libdir 2>/dev/null)
+-LLVM_STDCXX = gnu++11
+-LLVM_APPLE_XCODE = $(shell clang -v 2>&1 | grep -q Apple && echo 1 || echo 0)
+-LLVM_LTO   = 0
+ 
+ ifeq "$(LLVMVER)" ""
+   $(warning [!] llvm_mode needs llvm-config, which was not found)
+@@ -91,12 +83,14 @@ ifeq "$(LLVM_APPLE_XCODE)" "1"
+   $(warning llvm_mode will not compile with Xcode clang...)
+ endif
+ 
++LLVM_CXXFLAGS = -I${PREFIX}/include -std=${LLVM_STDCXX} -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
++
+ # We were using llvm-config --bindir to get the location of clang, but
+ # this seems to be busted on some distros, so using the one in $PATH is
+ # probably better.
+ 
+-CC         = $(LLVM_BINDIR)/clang
+-CXX        = $(LLVM_BINDIR)/clang++
++CC         = $(REAL_CC)
++CXX        = $(REAL_CXX)
+ 
+ # llvm-config --bindir may not providing a valid path, so ...
+ ifeq "$(shell test -e $(CC) || echo 1 )" "1"
+@@ -147,18 +141,9 @@ else
+   CXX_SAVE := $(CXX)
+ endif
+ 
+-CLANG_BIN := $(CC_SAVE)
+-CLANGPP_BIN := $(CXX_SAVE)
+-
+-ifeq "$(CC_SAVE)" "$(LLVM_BINDIR)/clang"
+-  USE_BINDIR = 1
+-else
+-  ifeq "$(CXX_SAVE)" "$(LLVM_BINDIR)/clang++"
+-    USE_BINDIR = 1
+-  else
+-    USE_BINDIR = 0
+-  endif
+-endif
++CLANG_BIN := /opt/bin/clang
++CLANGPP_BIN := /opt/bin/clang++
++USE_BINDIR = 0
+ 
+ # On old platform we cannot compile with clang because std++ libraries are too
+ # old. For these we need to use gcc/g++, so if we find REAL_CC and REAL_CXX
+@@ -232,8 +217,7 @@ CFLAGS_SAFE     := -Wall -g -Wno-pointer-sign -I ../include/ \
+                    -DAFL_REAL_LD=\"$(AFL_REAL_LD)\" \
+                    -DAFL_CLANG_LDPATH=\"$(AFL_CLANG_LDPATH)\" \
+                    -DAFL_CLANG_FUSELD=\"$(AFL_CLANG_FUSELD)\" \
+-                   -DCLANG_BIN=\"$(CLANG_BIN)\" -DCLANGPP_BIN=\"$(CLANGPP_BIN)\" -DUSE_BINDIR=$(USE_BINDIR) -Wno-unused-function \
+-                   $(AFL_CLANG_DEBUG_PREFIX)
++                   -DCLANG_BIN=\"$(CLANG_BIN)\" -DCLANGPP_BIN=\"$(CLANGPP_BIN)\" -DUSE_BINDIR=$(USE_BINDIR) -Wno-unused-function
+ override CFLAGS += $(CFLAGS_SAFE)
+ 
+ ifdef AFL_TRACE_PC
+@@ -244,14 +228,9 @@ CXXFLAGS          ?= -O3 -funroll-loops -fPIC -D_FORTIFY_SOURCE=2
+ override CXXFLAGS += -Wall -g -I ../include/ \
+                      -DVERSION=\"$(VERSION)\" -Wno-variadic-macros
+ 
+-ifneq "$(shell $(LLVM_CONFIG) --includedir) 2> /dev/null" ""
+-  CLANG_CFL  = -I$(shell $(LLVM_CONFIG) --includedir)
+-endif
+-ifneq "$(LLVM_CONFIG)" ""
+-  CLANG_CFL += -I$(shell dirname $(LLVM_CONFIG))/../include
+-endif
+-CLANG_CPPFL  = `$(LLVM_CONFIG) --cxxflags` -fno-rtti -fPIC $(CXXFLAGS) -Wno-deprecated-declarations
+-CLANG_LFL    = `$(LLVM_CONFIG) --ldflags` $(LDFLAGS)
++CLANG_CFL  = -I$(PREFIX)/include
++CLANG_CPPFL  = $(LLVM_CXXFLAGS) -fno-rtti -fPIC $(CXXFLAGS) -Wno-deprecated-declarations
++CLANG_LFL    = -L$(PREFIX)/lib $(LDFLAGS)
+ 
+ 
+ # User teor2345 reports that this is required to make things work on MacOS X.
+@@ -262,7 +241,7 @@ else
+ endif
+ 
+ ifeq "$(shell uname)" "OpenBSD"
+-  CLANG_LFL += `$(LLVM_CONFIG) --libdir`/libLLVM.so
++  CLANG_LFL += $(LLVM_LIBDIR)/libLLVM.so
+   CLANG_CPPFL += -mno-retpoline
+   CFLAGS += -mno-retpoline
+   # Needed for unwind symbols
+@@ -321,21 +300,7 @@ no_build:
+ 	@printf "%b\\n" "\\033[0;31mPrerequisites are not met, skipping build llvm_mode\\033[0m"
+ 
+ test_deps:
+-	@echo "[*] Checking for working 'llvm-config'..."
+- ifneq "$(LLVM_APPLE_XCODE)" "1"
+-	@type $(LLVM_CONFIG) >/dev/null 2>&1 || ( echo "[-] Oops, can't find 'llvm-config'. Install clang or set \$$LLVM_CONFIG or \$$PATH beforehand."; echo "    (Sometimes, the binary will be named llvm-config-3.5 or something like that.)"; exit 1 )
+- endif
+-	@echo "[*] Checking for working '$(CC)'..."
+-	@type $(CC) >/dev/null 2>&1 || ( echo "[-] Oops, can't find '$(CC)'. Make sure that it's in your \$$PATH (or set \$$CC and \$$CXX)."; exit 1 )
+-	@echo "[*] Checking for matching versions of '$(CC)' and '$(LLVM_CONFIG)'"
+-ifneq "$(CLANGVER)" "$(LLVMVER)"
+-	@echo "[!] WARNING: we have llvm-config version $(LLVMVER) and a clang version $(CLANGVER)"
+-else
+-	@echo "[*] We have llvm-config version $(LLVMVER) with a clang version $(CLANGVER), good."
+-endif
+-	@echo "[*] Checking for '../afl-showmap'..."
+-	@test -f ../afl-showmap || ( echo "[-] Oops, can't find '../afl-showmap'. Be sure to compile AFL first."; exit 1 )
+-	@echo "[+] All set and ready to build."
++	@echo "Skipping dependency test"
+ 
+ afl-common.o: ../src/afl-common.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ $(LDFLAGS)
+@@ -351,7 +316,7 @@ endif
+ endif
+ 
+ afl-llvm-common.o: afl-llvm-common.cc afl-llvm-common.h
+-	$(CXX) $(CFLAGS) $(CPPFLAGS) `$(LLVM_CONFIG) --cxxflags` -fno-rtti -fPIC -std=$(LLVM_STDCXX) -c $< -o $@ 
++	$(CXX) $(CFLAGS) $(CPPFLAGS) $(LLVM_CXXFLAGS) -fno-rtti -fPIC -std=$(LLVM_STDCXX) -c $< -o $@ 
+ 
+ ../libLLVMInsTrim.so: LLVMInsTrim.so.cc MarkNodes.cc afl-llvm-common.o | test_deps
+ 	-$(CXX) $(CLANG_CPPFL) -DLLVMInsTrim_EXPORTS -fno-rtti -fPIC -std=$(LLVM_STDCXX) -shared $< MarkNodes.cc -o $@ $(CLANG_LFL) afl-llvm-common.o
+@@ -417,13 +382,7 @@ document:
+ 	@$(CLANG_BIN) $(CLANG_CFL) $(CFLAGS_SAFE) $(CPPFLAGS) -O3 -Wno-unused-result -m64 -fPIC -c $< -o $@ 2>/dev/null; if [ "$$?" = "0" ]; then echo "success!"; else echo "failed (that's fine)"; fi
+ 
+ test_build: $(PROGS)
+-	@echo "[*] Testing the CC wrapper and instrumentation output..."
+-	unset AFL_USE_ASAN AFL_USE_MSAN AFL_INST_RATIO; AFL_QUIET=1 AFL_PATH=. AFL_LLVM_LAF_SPLIT_SWITCHES=1 AFL_LLVM_LAF_TRANSFORM_COMPARES=1 AFL_LLVM_LAF_SPLIT_COMPARES=1 ../afl-clang-fast $(CFLAGS) ../test-instr.c -o test-instr $(LDFLAGS)
+-	ASAN_OPTIONS=detect_leaks=0 ../afl-showmap -m none -q -o .test-instr0 ./test-instr < /dev/null
+-	echo 1 | ASAN_OPTIONS=detect_leaks=0 ../afl-showmap -m none -q -o .test-instr1 ./test-instr
+-	@rm -f test-instr
+-	@cmp -s .test-instr0 .test-instr1; DR="$$?"; rm -f .test-instr0 .test-instr1; if [ "$$DR" = "0" ]; then echo; echo "Oops, the instrumentation does not seem to be behaving correctly!"; echo; echo "Please post to https://github.com/AFLplusplus/AFLplusplus/issues to troubleshoot the issue."; echo; exit 1; fi
+-	@echo "[+] All right, the instrumentation seems to be working!"
++	@echo "[+] Skipping test build"
+ 
+ all_done: test_build
+ 	@echo "[+] All done! You can now use '../afl-clang-fast' to compile programs."
