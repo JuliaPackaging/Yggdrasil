@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/AFLplusplus-2.68c
 
-# Patch the makefile to not use llvm-config. The llvm-config binary from Clang_jll cannot be used when cross compiling
+# Patch the makefile to not use llvm-config. The llvm-config binary from LLVM_jll cannot be used when cross compiling
 atomic_patch -p1 ${WORKSPACE}/srcdir/llvm_mode_makefile.patch
 
 export REAL_CC="clang"
@@ -29,7 +29,7 @@ install_license ${WORKSPACE}/srcdir/AFLplusplus-2.68c/LICENSE
 
 # QEMU mode is only working on Linux glibc platforms
 if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]] && [[ "${target}" != *-*-musl ]]; then
-	cd ../qemu_mode/qemu-3.1.0/
+    cd ../qemu_mode/qemu-3.1.0/
 
 	# apply patches from AFL's qemu_mode
 	atomic_patch -p1 ../patches/elfload.diff
@@ -59,15 +59,15 @@ if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]] && [[ "${ta
 
 	make -j${nproc}
 
-	install i386-linux-user/qemu-i386 $prefix/bin/afl-qemu-trace-i386
-	install x86_64-linux-user/qemu-x86_64 $prefix/bin/afl-qemu-trace-x86_64
-	install arm-linux-user/qemu-arm $prefix/bin/afl-qemu-trace-arm
-	install aarch64-linux-user/qemu-aarch64 $prefix/bin/afl-qemu-trace-aarch64
-	install ppc-linux-user/qemu-ppc $prefix/bin/afl-qemu-trace-ppc
+	install i386-linux-user/qemu-i386 $bindir/afl-qemu-trace-i386
+	install x86_64-linux-user/qemu-x86_64 $bindir/afl-qemu-trace-x86_64
+	install arm-linux-user/qemu-arm $bindir/afl-qemu-trace-arm
+	install aarch64-linux-user/qemu-aarch64 $bindir/afl-qemu-trace-aarch64
+	install ppc-linux-user/qemu-ppc $bindir/afl-qemu-trace-ppc
 fi
 """
 
-# Windows is not supported by AFL
+# Windows is not supported by AFL, ARMv7l musl won't build
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
@@ -77,7 +77,6 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     Platform("i686", "linux"; libc="musl"),
     Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="musl"),
     Platform("x86_64", "freebsd"),
     Platform("x86_64", "macos"),
 ]
@@ -89,10 +88,9 @@ products = [
 ]
 
 dependencies = [
-	# Newer clang is incomptabile with c++ std library from rootfs
-	Dependency(PackageSpec(name="Clang_jll", version=v"9.0.1")),
+	Dependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.0")),
 	Dependency("Glib_jll"),
 	Dependency("Pixman_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
