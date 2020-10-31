@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "SharedMimeInfo"
-version = v"1.12"
+version = v"1.15"
 
 sources = [
-    ArchiveSource("https://gitlab.freedesktop.org/xdg/shared-mime-info/uploads/80c7f1afbcad2769f38aeb9ba6317a51/shared-mime-info-$(version.major).$(version.minor).tar.xz",
-                  "18b2f0fe07ed0d6f81951a5fd5ece44de9c8aeb4dc5bb20d4f595f6cc6bd403e"),
+    ArchiveSource("https://gitlab.freedesktop.org/xdg/shared-mime-info/uploads/b27eb88e4155d8fccb8bb3cd12025d5b/shared-mime-info-$(version.major).$(version.minor).tar.xz",
+                  "f482b027437c99e53b81037a9843fccd549243fd52145d016e9c7174a4f5db90"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/shared-mime-info-*/
-apk add intltool
+apk add itstool
 
-./configure --prefix=$prefix --host=$target
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-update-mimedb
 make -j${nproc}
 make install
 """
