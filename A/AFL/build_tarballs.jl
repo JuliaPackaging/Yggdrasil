@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/AFLplusplus-2.68c
 
-# Patch the makefile to not use llvm-config. The llvm-config binary from LLVM_jll cannot be used when cross compiling
+# Patch the makefile to not use llvm-config. The llvm-config binary from Clang_jll cannot be used when cross compiling
 atomic_patch -p1 ${WORKSPACE}/srcdir/llvm_mode_makefile.patch
 
 export REAL_CC="clang"
@@ -88,9 +88,9 @@ products = [
 ]
 
 dependencies = [
-	Dependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.0")),
+	Dependency(PackageSpec(name="Clang_jll", version=v"9.0.1")),
 	Dependency("Glib_jll"),
 	Dependency("Pixman_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
