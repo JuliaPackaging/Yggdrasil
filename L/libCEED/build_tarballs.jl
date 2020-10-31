@@ -7,7 +7,7 @@ version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/CEED/libCEED.git", "6134893e0067dc2a87bbbe22a551ae134ad5b885")
+    GitSource("https://github.com/CEED/libCEED.git", "06988bf74cc6ac18eacafe7930f080803395ba29")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,5 +31,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
