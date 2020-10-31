@@ -52,10 +52,10 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux"; libc=:glibc),
-    Platform("x86_64", "linux"; libc=:glibc),
-    Platform("aarch64", "linux"; libc=:glibc),
-    Platform("armv7l", "linux"; libc=:glibc),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)

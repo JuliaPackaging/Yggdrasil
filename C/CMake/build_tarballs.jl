@@ -27,9 +27,9 @@ make install
 # the C++03 string ABI it seems to ignore our request, so let's just build for
 # the C++11 string ABI.
 platforms = [
-    Linux(:i686, libc = :glibc, compiler_abi = CompilerABI(cxxstring_abi = :cxx11)),
-    Linux(:x86_64, libc = :glibc, compiler_abi = CompilerABI(cxxstring_abi = :cxx11)),
-    Linux(:x86_64, libc = :musl, compiler_abi = CompilerABI(cxxstring_abi = :cxx11)),
+    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
 ]
 
 # platforms = expand_cxxstring_abis(platforms)

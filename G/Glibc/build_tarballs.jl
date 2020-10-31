@@ -35,7 +35,7 @@ make install install_root=${prefix}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if libc(p) == :glibc]
+platforms = [p for p in supported_platforms() if libc(p) == "glibc"]
 
 # The products that we will ensure are always built
 products = [
