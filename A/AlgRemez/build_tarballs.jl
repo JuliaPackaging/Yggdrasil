@@ -14,8 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd AlgRemez/src/
-CPLUS_INCLUDE_PATH=/workspace/destdir/include make
-cp test $prefix/algremez
+make CPLUS_INCLUDE_PATH=${includedir}
+mkdir -p ${bindir}
+cp test ${bindir}/algremez${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
