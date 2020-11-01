@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg.Types
 
-name = "AFL"
+name = "AFLplusplus"
 version = v"2.68"
 sources = [
     ArchiveSource("https://github.com/AFLplusplus/AFLplusplus/archive/2.68c.tar.gz", "862e155c97737770baa26ffedf324a7fa255b757c85b0c9a6f312264f2ca29c5"),
