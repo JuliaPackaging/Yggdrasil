@@ -29,10 +29,9 @@ fi
 if [[ ${target} != aarch64* ]] && [[ ${target} != arm* ]]; then
     flags="${flags} -m${nbits}";
 fi
-${FC} ${LDFLAGS} ${flags} glmnet5dpclean.f wls.f pb.f -o libglmnet.${dlext}
-
-mkdir -p $libdir
-mv libglmnet.${dlext} $libdir/
+mkdir -p ${libdir}
+${FC} ${LDFLAGS} ${flags} glmnet5dpclean.f wls.f pb.f -o ${libdir}/libglmnet.${dlext}
+install_license DESCRIPTION
 """
 
 # These are the platforms we will build for by default, unless further
