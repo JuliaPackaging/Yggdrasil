@@ -58,6 +58,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=gcc_version)
