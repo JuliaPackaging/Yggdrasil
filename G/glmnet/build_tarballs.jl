@@ -31,7 +31,7 @@ if [[ ${target} != aarch64* ]] && [[ ${target} != arm* ]]; then
 fi
 mkdir -p ${libdir}
 ${FC} ${LDFLAGS} ${flags} glmnet5dpclean.f wls.f pb.f -o ${libdir}/libglmnet.${dlext}
-install_license DESCRIPTION
+install_license ../DESCRIPTION
 """
 
 # These are the platforms we will build for by default, unless further
