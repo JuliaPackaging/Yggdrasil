@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/glmnet/src
 
-# Add stub for `setpb`, which normally comes from `pb.c` to connects the 
+# Add stub for `setpb`, which normally comes from `pb.c` to connect the 
 # progress meter to R, but we don't need that
 echo "
       subroutine setpb(val)
@@ -46,6 +46,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
