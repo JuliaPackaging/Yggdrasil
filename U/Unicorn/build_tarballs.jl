@@ -2,20 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libunicorn"
-version = v"1.1.0"
+name = "Unicorn"
+version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oblivia-simplex/unicorn.git", "cb2c6c18e713806aeedbc4a71e18f541b77cd903")
+    GitSource("https://github.com/oblivia-simplex/unicorn.git", "cda971566980d3a051a730f63019e74eeeb44703")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd unicorn/
-export PREFIX=$prefix
-make && make install
+ln -s /usr/bin/make /usr/bin/gmake
+cd ${WORKSPACE}/srcdir/unicorn
+make -j $(nproc)
+make PREFIX=${prefix} install
+install_license COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -29,7 +30,9 @@ platforms = [
     Linux(:i686, libc=:musl),
     Linux(:x86_64, libc=:musl),
     Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf)
+    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    MacOS(:x86_64),
+    FreeBSD(:x86_64)
 ]
 
 
