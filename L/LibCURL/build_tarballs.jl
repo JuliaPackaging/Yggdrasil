@@ -34,10 +34,10 @@ if [[ ${target} == *mingw* ]]; then
     # We need to tell it where to find libssh2 on windows
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/bin")
 
-    # We also need to tell it to link against schannel (buildin TLS library)
+    # We also need to tell it to link against schannel (native TLS library)
     FLAGS+=(--with-schannel)
 elif [[ ${target} == *darwin* ]]; then
-    # On Darwin, we need to use SecureTransport
+    # On Darwin, we need to use SecureTransport (native TLS library)
     FLAGS+=(--with-secure-transport)
 else
     # On all other systems, we use MbedTLS
