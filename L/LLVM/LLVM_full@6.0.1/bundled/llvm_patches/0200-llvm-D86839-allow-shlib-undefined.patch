@@ -1,8 +1,9 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f8da6cf9211..9f5d8d7d431 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -969,16 +969,6 @@
-           add_definitions("-D_FILE_OFFSET_BITS=64")
+@@ -776,16 +776,6 @@ if(APPLE AND DARWIN_LTO_LIBRARY)
+     "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-lto_library -Wl,${DARWIN_LTO_LIBRARY}")
  endif()
  
 -# Work around a broken bfd ld behavior. When linking a binary with a
@@ -10,7 +11,7 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 -# check its symbols. This is wasteful (the check was done when foo.so
 -# was created) and can fail since it is not the dynamic linker and
 -# doesn't know how to handle search paths correctly.
--if (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "SunOS|AIX|OS390")
+-if (UNIX AND NOT APPLE AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "SunOS|AIX")
 -  set(CMAKE_EXE_LINKER_FLAGS
 -      "${CMAKE_EXE_LINKER_FLAGS} -Wl,-allow-shlib-undefined")
 -endif()
@@ -18,4 +19,3 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
  set(CMAKE_INCLUDE_CURRENT_DIR ON)
  
  include_directories( ${LLVM_INCLUDE_DIR} ${LLVM_MAIN_INCLUDE_DIR})
-
