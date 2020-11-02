@@ -79,5 +79,7 @@ products = [
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"16.02.1"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
