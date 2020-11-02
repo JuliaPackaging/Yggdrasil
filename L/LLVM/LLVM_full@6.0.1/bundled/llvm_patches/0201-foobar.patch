@@ -1,0 +1,13 @@
+diff --git a/cmake/modules/HandleLLVMOptions.cmake b/cmake/modules/HandleLLVMOptions.cmake
+index f77600a4830..b47d09f1a16 100644
+--- a/cmake/modules/HandleLLVMOptions.cmake
++++ b/cmake/modules/HandleLLVMOptions.cmake
+@@ -144,7 +144,7 @@ endif()
+ 
+ # Pass -Wl,-z,defs. This makes sure all symbols are defined. Otherwise a DSO
+ # build might work on ELF but fail on MachO/COFF.
+-if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR WIN32 OR CYGWIN OR
++if(NOT (APPLE OR WIN32 OR CYGWIN OR
+         ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR
+         ${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD") AND
+    NOT LLVM_USE_SANITIZER)
