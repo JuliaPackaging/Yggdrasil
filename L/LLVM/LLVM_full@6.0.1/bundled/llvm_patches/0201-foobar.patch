@@ -1,9 +1,14 @@
 diff --git a/cmake/modules/HandleLLVMOptions.cmake b/cmake/modules/HandleLLVMOptions.cmake
-index f77600a4830..b47d09f1a16 100644
+index f77600a4830..10c9e24203e 100644
 --- a/cmake/modules/HandleLLVMOptions.cmake
 +++ b/cmake/modules/HandleLLVMOptions.cmake
-@@ -144,7 +144,7 @@ endif()
+@@ -142,9 +142,12 @@ if(APPLE)
+   set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-flat_namespace -Wl,-undefined -Wl,suppress")
+ endif()
  
++message(FATAL_ERROR "CMAKE_SYSTEM_NAME is set to ${CMAKE_SYSTEM_NAME}")
++
++
  # Pass -Wl,-z,defs. This makes sure all symbols are defined. Otherwise a DSO
  # build might work on ELF but fail on MachO/COFF.
 -if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR WIN32 OR CYGWIN OR
