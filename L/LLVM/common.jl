@@ -5,7 +5,7 @@ include("../../fancy_toys.jl")
 
 # Everybody is just going to use the same set of platforms
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = [ Platform("x86_64", "macos") ]
+platforms = [ Platform("x86_64", "macos") ] # HACK
 
 const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
@@ -173,6 +173,9 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${target})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${target})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${target})
 
+CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=gcc)
+CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER=g++)
+
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
@@ -211,9 +214,6 @@ if [[ "${target}" == *freebsd* ]]; then
     # On FreeBSD, we must force even statically-linked code to have -fPIC
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
-
-CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=/opt/bin/${target}-gcc)
-CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER=/opt/bin/${target}-g++)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
@@ -331,12 +331,6 @@ function configure_build(ARGS, version)
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
-    end
-    if version == v"6.0.1"
-        config *= raw"""
-        export CC=/opt/bin/${target}-gcc
-        export CXX=/opt/bin/${target}-g++
-        """
     end
     # Dependencies that must be installed before this package can be built
     # TODO: Zlib, LibXML2
