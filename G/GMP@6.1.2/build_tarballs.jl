@@ -57,6 +57,9 @@ products = [
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="~1.0, ~1.1, ~1.2, ~1.3, ~1.4, ~1.5")
-
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.  Also note that this version
+# of GMP will never be seen "in the wild", only within BB, because Julia
+# ships with a locked version of GMP that will never match this one.
+version = v"6.1.3"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
