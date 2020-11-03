@@ -11,6 +11,8 @@ pool: Native
 
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
+    # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
+    BINARYBUILDER_NPROC: 64
 
 jobs:
 - job: generator
@@ -279,6 +281,7 @@ jobs:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
       S3KEY: $(S3KEY)
       S3SECRET: $(S3SECRET)
+      BINARYBUILDER_NPROC: $(BINARYBUILDER_NPROC)
     displayName: "run build_tarballs.jl"
     condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
 
@@ -307,4 +310,3 @@ jobs:
     displayName: "register JLL package"
     # We only register if this is on `master`; same as setting `${DEPLOY}` above.
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
-
