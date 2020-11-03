@@ -1,0 +1,127 @@
+From d696e7d91e42a190d06760279d2e396392143454 Mon Sep 17 00:00:00 2001
+From: Nayna Jain <nayna@linux.ibm.com>
+Date: Thu, 13 Aug 2020 19:17:53 +0000
+Subject: [PATCH 1/3] programs/ssl: Fix incorrect EOF check in
+ ssl_context_info.c
+
+In `read_next_b64_code()`, the result of fgetc() is stored into a char,
+but later compared against EOF, which is generally -1.  On platforms
+where char is unsigned, this generates a compiler warning/error that the
+comparison will never be true (causing a build failure).  The value will
+never match, with the function ultimately bailing with a "Too many bad
+symbols are detected" error.
+
+On platforms with signed char, EOF is detected, but a file containing a
+0xFF character will causes a premature end of file exit of the loop.
+
+Fix this by changing the result to an int.
+
+Fixes #3794.
+
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+Signed-off-by: David Brown <david.brown@linaro.org>
+---
+ ChangeLog.d/bugfix_3794.txt     | 4 ++++
+ programs/ssl/ssl_context_info.c | 4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+ create mode 100644 ChangeLog.d/bugfix_3794.txt
+
+diff --git a/ChangeLog.d/bugfix_3794.txt b/ChangeLog.d/bugfix_3794.txt
+new file mode 100644
+index 0000000000..a483ea76ae
+--- /dev/null
++++ b/ChangeLog.d/bugfix_3794.txt
+@@ -0,0 +1,4 @@
++Bugfix
++  * Fix handling of EOF against 0xff bytes and on platforms with
++    unsigned chars.  Fixes a build failure on platforms where char is
++    unsigned.  Fixes #3794.
+diff --git a/programs/ssl/ssl_context_info.c b/programs/ssl/ssl_context_info.c
+index df8819a804..d109c1e6f7 100644
+--- a/programs/ssl/ssl_context_info.c
++++ b/programs/ssl/ssl_context_info.c
+@@ -377,13 +377,13 @@ size_t read_next_b64_code( uint8_t **b64, size_t *max_len )
+     int valid_balance = 0;  /* balance between valid and invalid characters */
+     size_t len = 0;
+     char pad = 0;
+-    char c = 0;
++    int c = 0;
+ 
+     while( EOF != c )
+     {
+         char c_valid = 0;
+ 
+-        c = (char) fgetc( b64_file );
++        c = fgetc( b64_file );
+ 
+         if( pad > 0 )
+         {
+
+From 3bea9f61e61ed3307b2471634afcfc9b80fd3706 Mon Sep 17 00:00:00 2001
+From: David Brown <david.brown@linaro.org>
+Date: Fri, 16 Oct 2020 13:15:59 -0600
+Subject: [PATCH 2/3] Add a context-info.sh test for 0xFF chars
+
+Add a non-regression test for ssl_context_info to ensure the base64
+decoder doesn't stop processing when it encounters a 0xFF character.
+
+Signed-off-by: David Brown <david.brown@linaro.org>
+---
+ tests/context-info.sh                  | 5 +++++
+ tests/data_files/base64/def_b64_ff.bin | 5 +++++
+ 2 files changed, 10 insertions(+)
+ create mode 100644 tests/data_files/base64/def_b64_ff.bin
+
+diff --git a/tests/context-info.sh b/tests/context-info.sh
+index 150584b5db..68614ff408 100755
+--- a/tests/context-info.sh
++++ b/tests/context-info.sh
+@@ -430,6 +430,11 @@ run_test "Binary file instead of text file" \
+          -u "Too many bad symbols detected. File check aborted" \
+          -n "Deserializing"
+ 
++run_test "Decoder continues past 0xff character" \
++         "def_b64_ff.bin" \
++         -n "No valid base64" \
++         -u "ciphersuite.* TLS-"
++
+ 
+ # End of tests
+ 
+diff --git a/tests/data_files/base64/def_b64_ff.bin b/tests/data_files/base64/def_b64_ff.bin
+new file mode 100644
+index 0000000000..66aa8271c7
+--- /dev/null
++++ b/tests/data_files/base64/def_b64_ff.bin
+@@ -0,0 +1,5 @@
++// Ensure that the b64 parser continues after encountering a 0xFF
++// character.  Note that this byte is invalid UTF-8, making this
++// entire file invalid UTF-8.  Use care when editing.
++// -> ÿ <-
++AhUAAH8AAA4AAABtAAAAAF6HQx3MqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACG2QbHbUj8eGpdx5KVIebiwk0jvRj9/3m6BOSzpA7qBXeEunhqr3D11NE7ciGjeHMAAACAAAAAAAAAAAAAAAAAAV6HQx248L77RH0Z973tSYNQ8zBsz861CZG5/T09TJz3XodDHe/iJ+cgXb5An3zTdnTBtw3EWAb68T+gCE33GN8AAAAAAAAAAAAAAAEAAAAAAAAAAwAAAQAAAAAAAgAAAA==
+
+From c74441802ad5359ba7fbf8151b4bd0280c735d5a Mon Sep 17 00:00:00 2001
+From: David Brown <david.brown@linaro.org>
+Date: Fri, 16 Oct 2020 13:19:49 -0600
+Subject: [PATCH 3/3] Add context-info.sh to linked tests
+
+Add context-info.sh to the test scripts linked into the cmake build
+directory, so that these tests are available as well.
+
+Signed-off-by: David Brown <david.brown@linaro.org>
+---
+ tests/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index cc6866309f..7d85adb29f 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -166,6 +166,7 @@ if (NOT ${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+         link_to_source(seedfile)
+     endif()
+     link_to_source(compat.sh)
++    link_to_source(context-info.sh)
+     link_to_source(data_files)
+     link_to_source(scripts)
+     link_to_source(ssl-opt.sh)
