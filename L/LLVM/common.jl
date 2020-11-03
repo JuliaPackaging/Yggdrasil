@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg, LibGit2
 include("../../fancy_toys.jl")
 
 # Everybody is just going to use the same set of platforms
-platforms = expand_cxxstring_abis(supported_platforms())
 
 const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
@@ -297,7 +296,7 @@ rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 """
 
-function configure_build(ARGS, version)
+function configure_build(ARGS, version; experimental_platforms=false)
     # Parse out some args
     assert = false
     if "--assert" in ARGS
@@ -309,6 +308,7 @@ function configure_build(ARGS, version)
         DirectorySource("./bundled"),
     ]
 
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
@@ -334,7 +334,7 @@ function configure_build(ARGS, version)
     return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing, experimental_platforms=false)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -362,6 +362,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("llc", :llc, "tools"),
         ]
     end
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
     dependencies = BinaryBuilder.AbstractDependency[]
     if "--assert" in ARGS
@@ -380,5 +381,3 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     return name, version, [], script, platforms, products, dependencies
 end
-
-
