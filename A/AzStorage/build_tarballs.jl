@@ -40,7 +40,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("LibCURL_jll")
+    # libcurl changed compatibility version for macOS from v7.71 to v7.73 (v11
+    # to v12)
+    Dependency("LibCURL_jll", v"7.71.1"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("nghttp2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
