@@ -101,13 +101,19 @@ mktempdir() do download_dir
         BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
     end
 
+    # Restore Artifacts.toml
     if skip_build
-        # Restore Artifacts.toml
         write(joinpath(code_dir, "Artifacts.toml"), artifacts_toml)
-    else
+    end
+
+    # Push JLL package _before_ uploading to GitHub releases, so that this version of the code is what gets tagged
+    BinaryBuilder.push_jll_package(name, build_version)
+
+    if !skip_build
         # Upload the tarballs to GitHub releases
         BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
     end
 end
-BinaryBuilder.push_jll_package(name, build_version)
+
+# Sub off to Registrator to create a PR to General
 BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat)
