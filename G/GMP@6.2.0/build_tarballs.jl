@@ -54,10 +54,5 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
-
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"6.2.0"
+dependencies = []
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
