@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Objconv"
-version = v"2.49.0"
+version = v"2.49.1"
 
 # Collection of sources required to build CMake
 sources = [
@@ -21,7 +21,7 @@ ${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${exeext} 
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -33,4 +33,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
