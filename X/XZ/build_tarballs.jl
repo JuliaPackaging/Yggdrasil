@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.2.4"
+version = v"5.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.gz",
-                  "b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145"),
+    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.xz",
+                  "3e1e518ffc912f86608a8cb35e4bd41ad1aec210df2a47aaa1f95e7f5576ef56"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -37,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
