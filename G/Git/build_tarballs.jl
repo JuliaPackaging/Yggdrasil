@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.27.0"
+version = v"2.29.2"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "73ca9774d7fa226e1d87c1909401623f96dca6a044e583b9a762e84d7d1a73f9"),
+                  "f2fc436ebe657821a1360bcd1e5f4896049610082419143d60f6fa13c2f607c1"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "96bcfb93c7fbb34bbd4c5c9ba14a2a6ae8f58b299688278e38db1dacad180df2"; unpack_target = "i686-w64-mingw32"),
+                  "d09f6986300e38f326e3e0e8cc5d03ebb16780d62cd5d99a7bdcc3907e009c3c"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "a653c41999e4c80eebde8de046dd92a5a9e38a77f60466120daab2f31d3d0935"; unpack_target = "x86_64-w64-mingw32"),
+                  "220464737ee8bb8bc1d42c281ed6d21e9b029679a3ba42186d2bd747605d7b8f"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -67,7 +67,8 @@ dependencies = [
     Dependency("OpenSSL_jll"),
     Dependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"),
+    # We explicitly ask for an older PCRE2_jll so that we can be compatible with Julia 1.3+
+    Dependency("PCRE2_jll", v"10.31"),
     Dependency("Zlib_jll"),
 ]
 
