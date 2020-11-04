@@ -7,7 +7,7 @@ Core.eval(BinaryBuilderBase, :(bootstrap_list = [:rootfs, :platform_support]))
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
     # Since we can build a variety of GCC versions, track them and their hashes here.
     # We download GCC, MPFR, MPC, ISL and GMP.
-    gcc_version_sources = Dict(
+    gcc_version_sources = Dict{VersionNumber,Vector}(
         v"4.8.5" => [
             ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2",
                           "22fb1e7e0f68a63cee631d85b20461d1ea6bda162f03096350e38c8d427ecf23"),
@@ -78,23 +78,24 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
-        v"11.0.0-iains" => [
+    )
+
+    # Map from GCC version and platform -> binutils sources
+    if Sys.isapple(compiler_target)
+        # The WIP branch by Iain Sandoe, who is working his toolchain magic to give us aarch64-darwin compilers
+        # Build this targeting aarch64-apple-darwin
+        gcc_version_sources[v"11.0.0-iains"] = [
             GitSource("https://github.com/iains/gcc-darwin-arm64.git",
-                  "03d8ff79b7a2d408db953667f81f76c0b8da26f0"),
+                      "03d8ff79b7a2d408db953667f81f76c0b8da26f0"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
                           "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
                           "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
             ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
                           "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
-            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
-                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
+                          "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
         ]
-    )
-
-
-    # Map from GCC version and platform -> binutils sources
-    if isa(compiler_target, MacOS)
         # MacOS doesn't actually use binutils, it uses cctools
         binutils_sources = [
             GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
@@ -103,6 +104,21 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                       "a2e02aad90a98ac034b8d0286496450d136ebfcd"),
         ]
     else
+        # This is a prerelease version of 11.0.0, only here as a pairing with `11.0.0-iains`.
+        # We choose the gitsha that corresponds to the branching point from upstream for Iain's work.
+        # Build this targeting x86_64-linux-musl
+        gcc_version_sources[v"11.0.0-iains"] = [
+            GitSource("https://github.com/iains/gcc-darwin-arm64.git",
+                      "617695cdc2b3d950f1e4deb5ea85d5cc302943f4"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
+                          "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
+                          "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
+        ]
         # Different versions of GCC should be pared with different versions of Binutils
         binutils_gcc_version_mapping = Dict(
             v"4.8.5" => v"2.24",
@@ -111,6 +127,8 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"7.1.0" => v"2.27",
             v"8.1.0" => v"2.31",
             v"9.1.0" => v"2.33.1",
+            v"11.0.0" => v"2.35.1",
+            v"11.0.0-iains" => v"2.35.1",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -139,6 +157,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz",
                               "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf"),
             ],
+            v"2.35.1" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.35.1.tar.xz",
+                              "3ced91db9bf01182b7e420eab68039f2083aed0a214c0424e257eae3ddee8607"),
+            ]
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
         binutils_sources = binutils_version_sources[binutils_version]
@@ -170,7 +192,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
                           "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
-    elseif Sys.isapple(copmiler_target)
+    elseif Sys.isapple(compiler_target)
         if gcc_version == v"11.0.0-iains"
             libc_sources = [
                 DirectorySource(joinpath(@__DIR__, "DarwinSDKs"))
@@ -332,7 +354,8 @@ function gcc_script(compiler_target::Platform)
 
     # Disable any non-POSIX usage of TLS for musl
     if [[ "${COMPILER_TARGET}" == *musl* ]]; then
-        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch
+        # This is allowed to fail as on GCC 11 it doesn't cleanly apply
+        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch || true
     fi
 
 
