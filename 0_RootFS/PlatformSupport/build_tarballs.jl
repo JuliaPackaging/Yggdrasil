@@ -1,16 +1,22 @@
-using BinaryBuilder, Dates, Pkg
+using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
 Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
 
-compiler_target = platform_key_abi(ARGS[end])
-if isa(compiler_target, UnknownPlatform)
+compiler_target = try
+    parse(Platform, ARGS[end])
+catch
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
 deleteat!(ARGS, length(ARGS))
 name = "PlatformSupport"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
+
+# Add check that FreeBSD and MacOS shards have version numbers embedded
+if (Sys.isapple(compiler_target) || Sys.isfreebsd(compiler_target)) && os_version(compiler_target) === nothing
+    error("Compiler target $(triplet(compiler_target)) does not have an `os_version` tag!")
+end
 
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
@@ -24,7 +30,7 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-if compiler_target isa MacOS && compiler_target.arch == :aarch64
+if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
     push!(sources, DirectorySource(joinpath(@__DIR__, "..", "DarwinSDKs")))
 else
     push!(sources, ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
