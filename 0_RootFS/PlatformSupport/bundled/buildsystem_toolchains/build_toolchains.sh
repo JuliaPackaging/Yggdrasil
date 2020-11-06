@@ -126,6 +126,7 @@ function all_targets()
 {
     simple_targets
     echo -n "x86_64-apple-darwin14 "
+    echo -n "aarch64-apple-darwin20 "
 }
 
 ENABLED_TARGETS="${1:-$(all_targets)}"
@@ -139,7 +140,7 @@ for TARGET in ${ENABLED_TARGETS}; do
 
     # MacOS has a special toolchain template
     CMAKE_SRC="cmake_simple"
-    if [[ ${TARGET} == x86_64-apple-darwin14 ]]; then
+    if [[ ${TARGET} == *darwin* ]]; then
         CMAKE_SRC="cmake_macos"
     fi
 

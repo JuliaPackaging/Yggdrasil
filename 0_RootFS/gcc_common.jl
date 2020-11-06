@@ -86,7 +86,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         # Build this targeting aarch64-apple-darwin
         gcc_version_sources[v"11.0.0-iains"] = [
             GitSource("https://github.com/iains/gcc-darwin-arm64.git",
-                      "03d8ff79b7a2d408db953667f81f76c0b8da26f0"),
+                      "ccc57f4ed3feed697f17d3230786389b1b410af9"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
                           "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
@@ -101,24 +101,9 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
                       "a66284251b46d591ee4a0cb4cf561b92a0c138d8"),
             GitSource("https://github.com/tpoechtrager/cctools-port.git",
-                      "a2e02aad90a98ac034b8d0286496450d136ebfcd"),
+                      "634a084377ee2e2932c66459b0396edf76da2e9f"),
         ]
     else
-        # This is a prerelease version of 11.0.0, only here as a pairing with `11.0.0-iains`.
-        # We choose the gitsha that corresponds to the branching point from upstream for Iain's work.
-        # Build this targeting x86_64-linux-musl
-        gcc_version_sources[v"11.0.0-iains"] = [
-            GitSource("https://github.com/iains/gcc-darwin-arm64.git",
-                      "617695cdc2b3d950f1e4deb5ea85d5cc302943f4"),
-            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
-                          "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
-            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
-                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
-            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
-                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
-            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
-                          "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
-        ]
         # Different versions of GCC should be pared with different versions of Binutils
         binutils_gcc_version_mapping = Dict(
             v"4.8.5" => v"2.24",
@@ -127,8 +112,6 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"7.1.0" => v"2.27",
             v"8.1.0" => v"2.31",
             v"9.1.0" => v"2.33.1",
-            v"11.0.0" => v"2.35.1",
-            v"11.0.0-iains" => v"2.35.1",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -315,6 +298,7 @@ function gcc_script(compiler_target::Platform)
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
         export LD_FOR_TARGET=${prefix}/bin/${COMPILER_TARGET}-ld
+        export AS_FOR_TARGET=${prefix}/bin/llvm-as
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
@@ -322,6 +306,7 @@ function gcc_script(compiler_target::Platform)
         # GCC build doesn't pay attention to DSYMUTIL or DSYMUTIL_FOR_TARGET, tsk tsk
         mkdir -p ${prefix}/bin
         ln -s llvm-dsymutil ${prefix}/bin/dsymutil
+        ln -s llvm-${prefix}/bin/${COMPILER_TARGET}-as
 
         # GCC build needs a little exdtra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
@@ -357,7 +342,6 @@ function gcc_script(compiler_target::Platform)
         # This is allowed to fail as on GCC 11 it doesn't cleanly apply
         patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch || true
     fi
-
 
     # If we're on MacOS, we need to install cctools first, separately.
     if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
@@ -412,7 +396,6 @@ function gcc_script(compiler_target::Platform)
         make -j${nproc}
         make install
     fi
-
 
     # GCC won't build (crti.o: no such file or directory) unless these directories exist.
     # They can be empty though.
@@ -585,6 +568,7 @@ function gcc_script(compiler_target::Platform)
         cd ${WORKSPACE}/srcdir/MacOSX*.sdk
         mkdir -p "${sysroot}"
         rsync -a usr "${sysroot}/"
+        rsync -a SDKSettings.* "${sysroot}/"
 
         # Clean out libssl and libcrypto, as we never want to link against those old versions included with MacOS
         rm -rfv ${sysroot}/usr/lib/libssl.*
@@ -737,8 +721,9 @@ end
 
 function build_and_upload_gcc(version, ARGS=ARGS)
     name = "GCCBootstrap"
-    compiler_target = platform_key_abi(ARGS[end])
-    if isa(compiler_target, UnknownPlatform)
+    compiler_target = try
+        parse(Platform, ARGS[end])
+    catch
         error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
     end
     deleteat!(ARGS, length(ARGS))

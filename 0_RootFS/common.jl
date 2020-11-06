@@ -1,4 +1,4 @@
-using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
+using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
 host_platform = Platform("x86_64", "linux"; libc="musl")
