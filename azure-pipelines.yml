@@ -101,8 +101,13 @@ jobs:
           # Next, we're going to ensure that our BB is up to date and precompiled
           $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
 
-          # We're going to snarf out the BB tree hash, to be used later in our build cache
-          BB_HASH=$($(JULIA) -e "using Pkg; print(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\")].tree_hash)")
+          # We're going to snarf out the BB and BBB tree hashes and combine them to be used later in our build cache
+          BB_HASH=$($(JULIA) -e "using Pkg, SHA; \
+                                 gethash(uuid) = collect(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(uuid)].tree_hash.bytes); \
+                                 print(bytes2hex(sha256(vcat( \
+                                     gethash(\"7f725544-6523-48cd-82d1-3fa08ff4056e\"), \
+                                     gethash(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\"), \
+                                 ))));")
 
           # Next, for each project, download its sources. We do this by generating meta.json
           # files, then parsing them with `download_sources.jl`
