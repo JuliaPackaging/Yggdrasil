@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 gcc_version = v"6"
 
 # Versions of various Coin-OR libraries
-Cbc_version = v"2.10.5"
-Cbc_gitsha = "7b5ccc016f035f56614c8018b20d700978144e9f"
+Cbc_version = v"2.10.3"
+Cbc_gitsha = "6fe3addaa76436d479d4431add67b371e11d3e83"
 
-Cgl_version = v"0.60.3"
-Cgl_gitsha = "31797b2997219934db02a40d501c4b6d8efa7398"
+Cgl_version = v"0.60.2"
+Cgl_gitsha = "6377b88754fafacf24baac28bb27c0623cc14457"
 Cgl_packagespec = PackageSpec(; name = "Cgl_jll",
                               uuid = "3830e938-1dd0-5f3e-8b8e-b3ee43226782",
                               version = Cgl_version)
@@ -19,14 +19,14 @@ Clp_packagespec = PackageSpec(; name = "Clp_jll",
                               uuid = "06985876-5285-5a41-9fcb-8948a742cc53",
                               version = Clp_version)
 
-Osi_version = v"0.108.6"
-Osi_gitsha = "dfa6449d6756fdd96912cf96e168d0be07b1d37c"
+Osi_version = v"0.108.5"
+Osi_gitsha = "2bd34ae6b8c93d342d54fd19d4d773f07194583c"
 Osi_packagespec = PackageSpec(; name = "Osi_jll",
                               uuid = "7da25872-d9ce-5375-a4d3-7a845f58efdd",
                               version = Osi_version)
 
-CoinUtils_version = v"2.11.4"
-CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
+CoinUtils_version = v"2.11.3"
+CoinUtils_gitsha = "ea66474879246f299e977802c94a0e45334e7afb"
 CoinUtils_packagespec = PackageSpec(; name = "CoinUtils_jll",
                                     uuid = "be027038-0da8-5614-b30d-e42594cb92df",
                                     version = CoinUtils_version)
