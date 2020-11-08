@@ -7,7 +7,7 @@ version = v"4.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gap-system/gap.git", "a20c8f40883c8656a240317d732229dbe7c3b5ab"),
+    GitSource("https://github.com/gap-system/gap.git", "069a6497424113dc5e5ffe133be9da5bfe6acb24"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(version)/gap-$(version)-core.tar.bz2",
 #                  "6637f66409bc91af21eaa38368153270b71b13b55b75cc1550ed867c629901d1"),
     DirectorySource("./bundled"),
@@ -35,12 +35,15 @@ make -j${nproc}
 # install GAP binaries
 make install-bin install-headers install-libgap
 
-# get rid of the wrapper shell script, which is useless for us
-mv ${WORKSPACE}/destdir/bin/gap.real ${WORKSPACE}/destdir/bin/gap
+# FIXME: also install config.h
+#cp gen/config.h ${prefix}/include/gap
 
-# install sysinfo.gap but patch out
-mkdir -p ${WORKSPACE}/destdir/share/gap/
-sed -e 's;$PWD;@GAPROOT@;g' sysinfo.gap > ${WORKSPACE}/destdir/share/gap/sysinfo.gap
+# get rid of the wrapper shell script, which is useless for us
+mv ${prefix}/bin/gap.real ${prefix}/bin/gap
+
+# install gac and sysinfo.gap
+mkdir -p ${prefix}/share/gap/
+cp gac sysinfo.gap ${prefix}/share/gap/
 
 # We deliberately do NOT install the GAP library, documentation, etc. because
 # they are identical across all platforms; instead, we use another platform
