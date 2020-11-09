@@ -23,7 +23,7 @@ make install
 platforms = supported_platforms()
 
 # Disable FreeBSD for now, because hogweed needs alloca()?
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
