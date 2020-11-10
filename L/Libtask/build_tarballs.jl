@@ -1,52 +1,58 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using Pkg
-using BinaryBuilder
+using BinaryBuilder, Pkg
+
+julia_version = v"1.3.1"
 
 name = "Libtask"
-version = v"0.3.2"
-commit_id = "fbe338053f402d76524d0a01f3796dd7da90b781"
+version = VersionNumber("0.4.0-julia.$(julia_version.major).$(julia_version.minor)")
 
-# see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/336
-# ENV["CI_COMMIT_TAG"] = ENV["TRAVIS_TAG"] = "v" * string(version)
-
+# Collection of sources required to build Libtask
 sources = [
-    "https://github.com/TuringLang/Libtask.jl.git" => commit_id,
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
-script_file = joinpath(@__DIR__, "build_dylib.sh")
-if !isfile(script_file) # when run generate_buildjl.jl
-    script_file = joinpath(@__DIR__, "L/Libtask/build_dylib.sh")
-end
-script = read(script_file, String)
+script = raw"""
+# create output directory
+mkdir -p "${libdir}"
+
+# compile library
+cd "${WORKSPACE}/srcdir/"
+export CFLAGS="-I${includedir} -I${includedir}/julia -O2 -shared -std=gnu99 -fPIC"
+if [[ "${target}" == *-mingw* ]]; then
+  export LDFLAGS="-ljulia -lopenlibm"
+else
+  export LDFLAGS="-ljulia"
+fi
+$CC $CFLAGS $LDFLAGS task.c -o "${libdir}/libtask_julia.${dlext}"
+
+# install license
+install_license LICENSE.md
+"""
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    # Platform("armv7l", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"),
-    Platform("x86_64", "macos"),
-    Platform("i686", "windows"),
-    Platform("x86_64", "windows")
-]
+platforms = supported_platforms()
+
+# skip i686 musl builds (not supported by libjulia_jll)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+
+# skip PowerPC builds in Julia 1.3 (not supported by libjulia_jll)
+if julia_version < v"1.4"
+    filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
+end
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtask_v1_0", :libtask_v1_0)
-    LibraryProduct("libtask_v1_1", :libtask_v1_1)
-    LibraryProduct("libtask_v1_2", :libtask_v1_2)
-    LibraryProduct("libtask_v1_3", :libtask_v1_3)
+    LibraryProduct("libtask_julia", :libtask_julia),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# build_file = "products/build_$(name).v$(version).jl"
-build_tarballs(ARGS, name, version, sources,
-               script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "~$(julia_version.major).$(julia_version.minor)")
