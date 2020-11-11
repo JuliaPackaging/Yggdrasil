@@ -4,14 +4,14 @@ name = "MUMPS_seq"
 version = v"5.2.1"
 
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.2.1.tar.gz",
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
                 "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/MUMPS_5.2.1
+cd $WORKSPACE/srcdir/MUMPS*
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
