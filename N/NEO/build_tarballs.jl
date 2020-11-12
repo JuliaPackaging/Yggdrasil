@@ -43,6 +43,9 @@ CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 # we don't care about cl_intel_va_api_media_sharing
 CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
+# enable support for the DG1
+CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+
 # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
 # FIXME: shouldn't BinaryBuilder do this?
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
