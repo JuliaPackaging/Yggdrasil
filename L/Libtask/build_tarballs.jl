@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_version = v"1.3.1"
 
 name = "Libtask"
-version = VersionNumber("0.4.0-julia.$(julia_version.major).$(julia_version.minor)")
+version = VersionNumber("1.$(julia_version.minor).0")
 
 # Collection of sources required to build Libtask
 sources = [
@@ -19,12 +19,22 @@ mkdir -p "${libdir}"
 
 # compile library
 cd "${WORKSPACE}/srcdir/"
-export CFLAGS="-I${includedir} -I${includedir}/julia -O2 -shared -std=gnu99 -fPIC"
-if [[ "${target}" == *-mingw* ]]; then
-  export LDFLAGS="-ljulia -lopenlibm"
-else
-  export LDFLAGS="-ljulia"
+
+CFLAGS="-I${includedir} -I${includedir}/julia -O2 -shared -std=gnu99 -fPIC"
+if [[ "${target}" == i686-* ]]; then
+  CFLAGS="${CFLAGS} -march=pentium4"
 fi
+if [[ "${target}" == *-mingw* ]]; then
+  CFLAGS="${CFLAGS} -Wl,--export-all-symbols"
+elif [[ "${target}" == *-linux-* ]]; then
+  CFLAGS="${CFLAGS} -Wl,--export-dynamic"
+fi
+
+LDFLAGS="-L${libdir} -ljulia"
+if [[ "${target}" == *-mingw* ]]; then
+  LDFLAGS="${LDFLAGS} -lopenlibm"
+fi
+
 $CC $CFLAGS $LDFLAGS task.c -o "${libdir}/libtask_julia.${dlext}"
 
 # install license
@@ -55,4 +65,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "~$(julia_version.major).$(julia_version.minor)")
+               julia_compat = "~$(julia_version.major).$(julia_version.minor)",
+               lock_microarchitecture = false)
