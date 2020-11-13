@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "polymake"
-version = v"4.2.0"
+version = v"4.2.1"
 
 # Collection of sources required to build polymake
 sources = [
@@ -72,7 +72,7 @@ ninja -v -C build/Opt install
 if [[ $target == *darwin* ]]; then
   atomic_patch -R -p1 ../patches/polymake-cross-build.patch
 fi
-install -m 444 -D support/*.pl $prefix/share/polymake/support/
+install -m 644 -D support/*.pl $prefix/share/polymake/support/
 
 # replace miniperl
 sed -i -e "s/miniperl-for-build/perl/" ${libdir}/polymake/config.ninja ${bindir}/polymake*
@@ -87,6 +87,9 @@ sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/po
 
 # cleanup symlink tree
 rm -rf ${prefix}/deps
+
+# copy julia script to generate dependency-tree at load time
+cp ../patches/generate_deps_tree.jl $prefix/share/polymake
 
 install_license COPYING
 """
@@ -105,6 +108,7 @@ products = [
     LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt; dont_dlopen=true)
     ExecutableProduct("polymake", :polymake)
     ExecutableProduct("polymake-config", Symbol("polymake_config"))
+    FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -123,31 +127,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", init_block="""
-
-   mutable_artifacts_toml = joinpath(dirname(@__DIR__), "MutableArtifacts.toml")
-   polymake_tree = "polymake_tree"
-   polymake_tree_hash = artifact_hash(polymake_tree, mutable_artifacts_toml)
-
-   # create a directory tree for polymake with links to dependencies
-   # looking similiar to the tree in the build environment
-   # for compiling wrappers at run-time
-   polymake_tree_hash = create_artifact() do art_dir
-      mkpath(joinpath(art_dir,"deps"))
-      for dep in [FLINT_jll, GMP_jll, MPFR_jll, PPL_jll, Perl_jll, bliss_jll, boost_jll, cddlib_jll, lrslib_jll, normaliz_jll]
-         symlink(dep.artifact_dir, joinpath(art_dir,"deps","\$dep"))
-      end
-      for dir in readdir(polymake_jll.artifact_dir)
-         symlink(joinpath(polymake_jll.artifact_dir,dir), joinpath(art_dir,dir))
-      end
-   end
-   bind_artifact!(mutable_artifacts_toml,
-      polymake_tree,
-      polymake_tree_hash;
-      force=true
-   )
-
-   # Point polymake to our custom tree
-   ENV["POLYMAKE_DEPS_TREE"] = artifact_path(polymake_tree_hash)
-""")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
 
