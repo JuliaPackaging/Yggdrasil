@@ -36,7 +36,7 @@ make -j${nproc} && make install
 if [[ "${target}" == *mingw* ]]; then
     # For some reason, the build system doesn't set the `.dll` files as
     # executable, which prevents them from being loaded.
-    chmod +x ${bindir}/*.dll
+    chmod +x ${libdir}/*.dll
 fi
 """
 
