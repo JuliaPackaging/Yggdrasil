@@ -35,7 +35,6 @@ atomic_patch -p1 ../patches/gmp.patch
 # Patch to fix compilation on mingw32: add missing #include <time.h>
 atomic_patch -p1 ../patches/time.patch
 
-
 ./configure \
     --prefix=$prefix \
     --build=${MACHTYPE} \
@@ -111,3 +110,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+

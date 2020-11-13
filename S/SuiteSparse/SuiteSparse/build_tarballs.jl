@@ -57,11 +57,11 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
         if [[ ${target} == *-apple-* ]]; then
-            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep ${BLAS_NAME} | awk '{ print $1 }')
-            install_name_tool -change ${OPENBLAS_LINK} @rpath/${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+            install_name_tool -change ${OPENBLAS_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
-            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep ${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${OPENBLAS_LINK} ${BLAS_NAME}.so ${libdir}/${nm}.so
+            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${OPENBLAS_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
         fi
     done
 fi
@@ -79,9 +79,8 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -106,5 +105,7 @@ dependencies = [
 #    Dependency("METIS_jll"),
 ]
 
-# Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"5.4.1"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

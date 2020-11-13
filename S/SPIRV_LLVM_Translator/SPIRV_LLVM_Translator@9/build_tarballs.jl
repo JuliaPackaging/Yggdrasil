@@ -3,7 +3,7 @@ include("../common.jl")
 version = v"9.0"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "17b72562e002a4653e31829e89cf14ce35892896")]
+sources = [GitSource(repo, "8442f41802d8afaff9fd2b95396e9f82c8b5bf05")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

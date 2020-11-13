@@ -7,16 +7,23 @@ version = v"1.1.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/snappy/archive/1.1.8.tar.gz", "16b677f07832a612b0836178db7f374e414f94657c138e6993cbfc5dcc58651f")
+    ArchiveSource("https://github.com/google/snappy/archive/$(version).tar.gz",
+                  "16b677f07832a612b0836178db7f374e414f94657c138e6993cbfc5dcc58651f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd snappy-1.1.8/
+cd snappy-*
 mkdir cmake-build
-cd cmake-build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DSNAPPY_BUILD_TESTS=OFF ..
+cd cmake-build
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DSNAPPY_BUILD_TESTS=OFF \
+    ..
 make -j${nproc}
 make install
 """

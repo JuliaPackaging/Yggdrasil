@@ -26,7 +26,7 @@ FLAGS=(
 # When all you have is a hammer...
 make -j${nproc} "${FLAGS[@]}"
 
-# Manual installation as the osxunwind `Makefile` doesnt' even know how to do this
+# Manual installation as the osxunwind `Makefile` doesn't even know how to do this
 mkdir -p ${libdir}
 cp libosxunwind.dylib ${libdir}/
 cp libosxunwind.a ${libdir}/
@@ -35,7 +35,7 @@ cp -aR include ${prefix}/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.isdarwin, supported_platforms())
+platforms = filter(Sys.isapple, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -47,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

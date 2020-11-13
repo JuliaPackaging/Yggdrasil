@@ -5,8 +5,8 @@ version = v"0.13.0"
 
 # Collection of sources required to build ghr
 sources = [
-    "https://github.com/tcnksm/ghr.git" =>
-    "d43a5d2dae1573e03dec545a2103f1bc61a3e0d6",
+    GitSource("https://github.com/tcnksm/ghr.git",
+              "d43a5d2dae1573e03dec545a2103f1bc61a3e0d6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,8 +26,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])

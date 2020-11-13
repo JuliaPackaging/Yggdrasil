@@ -61,16 +61,16 @@ install_license $jlcgaldir/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    FreeBSD(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:aarch64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Platform("x86_64", "freebsd"; cxxstring_abi = "cxx11"),
+    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     # generates plentiful warnings about parameter passing ABI changes, better
     # safe than sorry
-    # Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:i686; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Windows(:i686; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    Windows(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    # Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
+    Platform("i686", "windows"; cxxstring_abi = "cxx11"),
+    Platform("x86_64", "windows"; cxxstring_abi = "cxx11"),
 ]
 
 # The products that we will ensure are always built

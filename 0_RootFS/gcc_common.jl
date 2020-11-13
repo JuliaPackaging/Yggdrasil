@@ -7,7 +7,7 @@ Core.eval(BinaryBuilderBase, :(bootstrap_list = [:rootfs, :platform_support]))
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
     # Since we can build a variety of GCC versions, track them and their hashes here.
     # We download GCC, MPFR, MPC, ISL and GMP.
-    gcc_version_sources = Dict(
+    gcc_version_sources = Dict{VersionNumber,Vector}(
         v"4.8.5" => [
             ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-4.8.5/gcc-4.8.5.tar.bz2",
                           "22fb1e7e0f68a63cee631d85b20461d1ea6bda162f03096350e38c8d427ecf23"),
@@ -78,29 +78,30 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
-        v"11.0.0-iains" => [
+    )
+
+    # Map from GCC version and platform -> binutils sources
+    if Sys.isapple(compiler_target)
+        # The WIP branch by Iain Sandoe, who is working his toolchain magic to give us aarch64-darwin compilers
+        # Build this targeting aarch64-apple-darwin
+        gcc_version_sources[v"11.0.0-iains"] = [
             GitSource("https://github.com/iains/gcc-darwin-arm64.git",
-                  "03d8ff79b7a2d408db953667f81f76c0b8da26f0"),
+                      "ccc57f4ed3feed697f17d3230786389b1b410af9"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
                           "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
                           "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
             ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
                           "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
-            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
-                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
+                          "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
         ]
-    )
-
-
-    # Map from GCC version and platform -> binutils sources
-    if isa(compiler_target, MacOS)
         # MacOS doesn't actually use binutils, it uses cctools
         binutils_sources = [
             GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
                       "a66284251b46d591ee4a0cb4cf561b92a0c138d8"),
             GitSource("https://github.com/tpoechtrager/cctools-port.git",
-                      "a2e02aad90a98ac034b8d0286496450d136ebfcd"),
+                      "634a084377ee2e2932c66459b0396edf76da2e9f"),
         ]
     else
         # Different versions of GCC should be pared with different versions of Binutils
@@ -139,6 +140,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz",
                               "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf"),
             ],
+            v"2.35.1" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.35.1.tar.xz",
+                              "3ced91db9bf01182b7e420eab68039f2083aed0a214c0424e257eae3ddee8607"),
+            ]
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
         binutils_sources = binutils_version_sources[binutils_version]
@@ -170,7 +175,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
                           "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
-    elseif Sys.isapple(copmiler_target)
+    elseif Sys.isapple(compiler_target)
         if gcc_version == v"11.0.0-iains"
             libc_sources = [
                 DirectorySource(joinpath(@__DIR__, "DarwinSDKs"))
@@ -293,6 +298,7 @@ function gcc_script(compiler_target::Platform)
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
         export LD_FOR_TARGET=${prefix}/bin/${COMPILER_TARGET}-ld
+        export AS_FOR_TARGET=${prefix}/bin/llvm-as
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
@@ -300,6 +306,7 @@ function gcc_script(compiler_target::Platform)
         # GCC build doesn't pay attention to DSYMUTIL or DSYMUTIL_FOR_TARGET, tsk tsk
         mkdir -p ${prefix}/bin
         ln -s llvm-dsymutil ${prefix}/bin/dsymutil
+        ln -s llvm-${prefix}/bin/${COMPILER_TARGET}-as
 
         # GCC build needs a little exdtra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
@@ -330,6 +337,11 @@ function gcc_script(compiler_target::Platform)
         atomic_patch -p1 "${p}" || true
     done
 
+    # Disable any non-POSIX usage of TLS for musl
+    if [[ "${COMPILER_TARGET}" == *musl* ]]; then
+        # This is allowed to fail as on GCC 11 it doesn't cleanly apply
+        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch || true
+    fi
 
     # If we're on MacOS, we need to install cctools first, separately.
     if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
@@ -384,7 +396,6 @@ function gcc_script(compiler_target::Platform)
         make -j${nproc}
         make install
     fi
-
 
     # GCC won't build (crti.o: no such file or directory) unless these directories exist.
     # They can be empty though.
@@ -557,6 +568,7 @@ function gcc_script(compiler_target::Platform)
         cd ${WORKSPACE}/srcdir/MacOSX*.sdk
         mkdir -p "${sysroot}"
         rsync -a usr "${sysroot}/"
+        rsync -a SDKSettings.* "${sysroot}/"
 
         # Clean out libssl and libcrypto, as we never want to link against those old versions included with MacOS
         rm -rfv ${sysroot}/usr/lib/libssl.*
@@ -649,7 +661,7 @@ function gcc_script(compiler_target::Platform)
 
     elif [[ "${COMPILER_TARGET}" == *freebsd* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
-       
+
     # On mingw32 override native system header directories
     elif [[ "${COMPILER_TARGET}" == *mingw* ]]; then
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --enable-languages=c,c++,fortran"
@@ -709,8 +721,9 @@ end
 
 function build_and_upload_gcc(version, ARGS=ARGS)
     name = "GCCBootstrap"
-    compiler_target = platform_key_abi(ARGS[end])
-    if isa(compiler_target, UnknownPlatform)
+    compiler_target = try
+        parse(Platform, ARGS[end])
+    catch
         error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
     end
     deleteat!(ARGS, length(ARGS))

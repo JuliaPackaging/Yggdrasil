@@ -70,11 +70,11 @@ install_license pathlib-*/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64; libc=:glibc),
-    Linux(:i686; libc=:glibc),
-    MacOS(),
-    Windows(:x86_64),
-    Windows(:i686),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 platforms = expand_gfortran_versions(platforms)
 

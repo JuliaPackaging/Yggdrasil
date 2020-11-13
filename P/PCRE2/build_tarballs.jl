@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PCRE2"
-version = v"10.34.0"
+version = v"10.35"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
+                  "8fdcef8c8f4cd735169dd0225fd010487970c1bcadd49e9b90e26c7250a33dc9")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,7 +40,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -54,5 +54,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 

@@ -19,8 +19,8 @@ platforms = supported_platforms()
 # First, FreeBSD has -fPIC problems when linking in `crt.o`
 filter!(!Sys.isfreebsd, platforms)
 
-# Next, :musl libcs have a hard time linking
-filter!(p -> libc(p) != :musl, platforms)
+# Next, musl libcs have a hard time linking
+filter!(p -> libc(p) != "musl", platforms)
 
 # Finally, windows seems to be broken
 # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/499

@@ -2,13 +2,20 @@
 
 set -e
 
-NUM_AGENTS=8
+REQUIRED_TOOLS="debootstrap jq"
+for TOOL in ${REQUIRED_TOOLS}; do
+    if [[ -z $(which "${TOOL}") ]]; then
+        echo "Must install '${TOOL}'"
+    fi
+done
+
+NUM_AGENTS=16
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir -p ${HOME}/.config/systemd/user
 source .env
 
 # Create a nice little rootfs for our agents
-if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
+if [[ ! -d "${STORAGE_DIR}/rootfs" ]] || [[ ! -d "${STORAGE_DIR}/rootfs/etc" ]]; then
     echo "Setting up rootfs..."
     mkdir -p "${STORAGE_DIR}/rootfs"
     sudo debootstrap --variant=minbase --include=ssh,curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,zstd,expect,locales,libgomp1 buster "${STORAGE_DIR}/rootfs"

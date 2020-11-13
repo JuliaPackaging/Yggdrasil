@@ -33,7 +33,7 @@ install_license LICENSE
 """
 
 # musl is broken, same with ppc64le
-platforms = filter(p -> arch(p) != :powerpc64le && libc(p) != :musl, supported_platforms())
+platforms = filter(p -> arch(p) != "powerpc64le" && libc(p) != "musl", supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built

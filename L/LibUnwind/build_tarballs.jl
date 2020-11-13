@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibUnwind"
-version = v"1.3.1"
+version = v"1.3.2"
 
 # Collection of sources required to build libffi
 sources = [
     ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
-                  "43997a3939b6ccdf2f669b50fdb8a4d3205374728c2923ddc2354c65260214f8"),
+                  "0a4b5a78d8c0418dfa610245f75fa03ad45d8e5e4cc091915d2dbed34c01178e"),
     DirectorySource("./bundled"),
 ]
 
@@ -41,7 +41,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [p for p in supported_platforms(;experimental=true) if Sys.islinux(p) || Sys.isfreebsd(p)]
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

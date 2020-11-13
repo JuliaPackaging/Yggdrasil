@@ -97,5 +97,5 @@ The [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl) Jul
 ```julia
 Pkg.add("BinaryBuilder")
 using BinaryBuilder
-BinaryBuilder.runshell(Linux(:x86_64))
+BinaryBuilder.runshell(Platform("x86_64", "linux"))
 ```

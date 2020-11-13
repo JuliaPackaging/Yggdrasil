@@ -25,18 +25,19 @@ make -j${nproc} V=1
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libuv", :libuv)
+    LibraryProduct("libuv", :libuv),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"2.0.1"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -41,7 +41,7 @@ products = [
 ]
 
 platforms = [
-    Linux(:x86_64; libc=:glibc)
+    Platform("x86_64", "linux"; libc="glibc")
 ]
 
 dependencies = [

@@ -11,6 +11,8 @@ pool: Native
 
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
+    # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
+    BINARYBUILDER_NPROC: 64
 
 jobs:
 - job: generator
@@ -27,7 +29,7 @@ jobs:
       # Keyword to be used in the commit message to skip a rebuild
       SKIP_BUILD_COOKIE="[skip build]"
       # This variable will tell us whether we want to skip the build
-      SKIP_BUILD="false"
+      export SKIP_BUILD="false"
 
       if [[ $(Build.Reason) == "PullRequest" ]]; then
           # If we're on a PR though, we look at the entire branch at once
@@ -99,8 +101,13 @@ jobs:
           # Next, we're going to ensure that our BB is up to date and precompiled
           $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
 
-          # We're going to snarf out the BB tree hash, to be used later in our build cache
-          BB_HASH=$($(JULIA) -e "using Pkg; print(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\")].tree_hash)")
+          # We're going to snarf out the BB and BBB tree hashes and combine them to be used later in our build cache
+          BB_HASH=$($(JULIA) -e "using Pkg, SHA; \
+                                 gethash(uuid) = collect(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(uuid)].tree_hash.bytes); \
+                                 print(bytes2hex(sha256(vcat( \
+                                     gethash(\"7f725544-6523-48cd-82d1-3fa08ff4056e\"), \
+                                     gethash(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\"), \
+                                 ))));")
 
           # Next, for each project, download its sources. We do this by generating meta.json
           # files, then parsing them with `download_sources.jl`
@@ -112,6 +119,7 @@ jobs:
               echo "Generating meta.json..."
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
               $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
+
               echo "Downloading sources..."
               $(JULIA) $(Build.SourcesDirectory)/.ci/download_sources.jl "${JSON_PATH}" $(Agent.TempDirectory)/${NAME}.platforms.list
 
@@ -167,11 +175,16 @@ jobs:
 
                   # Here, we hit the build cache to see if we can skip this particular combo
                   CACHE_URL="https://julia-bb-buildcache.s3.amazonaws.com/${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
-                  if curl --output /dev/null --silent --fail --HEAD "${CACHE_URL}"; then
+                  CURL_HTTP_CODE=$(curl --output /tmp/curl_${PROJ_HASH}_${PLATFORM}.log --silent --include --HEAD "${CACHE_URL}" --write-out '%{http_code}')
+                  if [[ "${CURL_HTTP_CODE}" == "200" ]]; then
                       echo "    ${PLATFORM}: skipping, existant"
                       continue;
                   fi
                   echo "    ${PLATFORM}: building"
+
+                  # # Debugging: let's see why `curl` failed:
+                  # echo "CACHE_URL: ${CACHE_URL}"
+                  # cat /tmp/curl_${PROJ_HASH}_${PLATFORM}.log || true
 
                   # Otherwise, emit the build
                   VAR_PROJPLATFORMS="${VAR_PROJPLATFORMS} '${NAME}-${PLATFORM}':{ \
@@ -182,6 +195,7 @@ jobs:
                       'BB_HASH':'${BB_HASH}' \
                   }, "
               done
+              rm -f /tmp/curl_${PROJ_HASH}*.log
           done
           # Add closing parens
           VAR_PROJECTS="${VAR_PROJECTS} }"
@@ -201,6 +215,7 @@ jobs:
   cancelTimeoutInMinutes: 2
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
+    maxParallel: 1
   variables:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
@@ -272,6 +287,7 @@ jobs:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
       S3KEY: $(S3KEY)
       S3SECRET: $(S3SECRET)
+      BINARYBUILDER_NPROC: $(BINARYBUILDER_NPROC)
     displayName: "run build_tarballs.jl"
     condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
 
@@ -300,4 +316,3 @@ jobs:
     displayName: "register JLL package"
     # We only register if this is on `master`; same as setting `${DEPLOY}` above.
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
-

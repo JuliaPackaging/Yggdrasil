@@ -6,10 +6,10 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.4.1"
+version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
-                  "05a20818477894b64726441fa98301a0334e36ded8c84380d2d0f800a961ad21")
+                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171")
 ]
 
 script = raw"""

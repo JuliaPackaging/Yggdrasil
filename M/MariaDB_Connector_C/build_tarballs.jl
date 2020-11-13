@@ -62,8 +62,8 @@ install_license ../COPYING.LIB
 
 # MariaDB doesn't support non *86 platforms with Musl, see
 # https://gitlab.alpinelinux.org/alpine/aports/commit/ad7c54bd9b6d8e60e88a313a92c83d083f196db8
-platforms = supported_platforms(; exclude = [Linux(:aarch64, libc=:musl),
-                                             Linux(:armv7l, libc=:musl, call_abi=:eabihf)])
+platforms = supported_platforms(; exclude = [Platform("aarch64", "linux"; libc="musl"),
+                                             Platform("armv7l", "linux"; libc="musl")])
 
 # The products that we will ensure are always built
 products = [

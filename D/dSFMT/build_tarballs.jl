@@ -1,26 +1,22 @@
 using BinaryBuilder
 
 name = "dSFMT"
-version = v"2.2.3"
+version = v"2.2.4"
 
 # Collection of sources required to build dSFMT
 sources = [
-    ArchiveSource("http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-src-$(version).tar.gz",
-                  "82344874522f363bf93c960044b0a6b87b651c9565b6312cf8719bb8e4c26a0e"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/MersenneTwister-Lab/dSFMT.git",
+              "5a02974a257ae74dbab12bde3ef6a5ffc0cfbbc2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/dSFMT*/
-
-atomic_patch -p1 $WORKSPACE/srcdir/patches/dSFMT.h.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/dSFMT.c.patch
+cd $WORKSPACE/srcdir/dSFMT
 
 FLAGS=(
-    -DNDEBUG -DDSFMT_MEXP=19937 -fPIC -DDSFMT_DO_NOT_USE_OLD_NAMES
-    -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing
-    --param max-inline-insns-single=1800 -Wmissing-prototypes -Wall -std=c99 -shared
+    -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing -Wmissing-prototypes -Wall -std=c99
+    -DNDEBUG -DDSFMT_MEXP=19937
+    -fPIC -shared -DDSFMT_SHLIB -DDSFMT_DO_NOT_USE_OLD_NAMES
 )
 
 if [[ ${target} == x86_64* ]]; then
@@ -33,7 +29,7 @@ ${CC} ${FLAGS[@]} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o "${libdir}/libdSFMT.${dlex
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -45,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

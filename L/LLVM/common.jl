@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg, LibGit2
 include("../../fancy_toys.jl")
 
 # Everybody is just going to use the same set of platforms
-platforms = expand_cxxstring_abis(supported_platforms())
 
 const llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
@@ -167,10 +166,8 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.cmake)
 # `ld -v`, which is hilariously wrong.
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${target})
 
-# Tell LLVM which compiler target to use, because it loses track for some reason
-CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${target})
-CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${target})
-CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${target})
+# Most targets use the actual target string, but we disagree on `aarch64-darwin` and `arm64-darwin`
+CMAKE_TARGET=${target}
 
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
@@ -183,6 +180,12 @@ if [[ "${target}" == *apple* ]]; then
 
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
+
+    # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
+    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
+    if [[ "${target}" == aarch64* ]]; then
+        CMAKE_TARGET=arm64-${target#*-}
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -210,6 +213,12 @@ if [[ "${target}" == *freebsd* ]]; then
     # On FreeBSD, we must force even statically-linked code to have -fPIC
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
+
+
+# Tell LLVM which compiler target to use, because it loses track for some reason
+CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
+CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
+CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 cmake -LA || true
@@ -297,7 +306,7 @@ rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 """
 
-function configure_build(ARGS, version)
+function configure_build(ARGS, version; experimental_platforms=false)
     # Parse out some args
     assert = false
     if "--assert" in ARGS
@@ -309,6 +318,7 @@ function configure_build(ARGS, version)
         DirectorySource("./bundled"),
     ]
 
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
@@ -334,7 +344,7 @@ function configure_build(ARGS, version)
     return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -362,6 +372,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("llc", :llc, "tools"),
         ]
     end
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
     dependencies = BinaryBuilder.AbstractDependency[]
     if "--assert" in ARGS
@@ -380,5 +391,3 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     return name, version, [], script, platforms, products, dependencies
 end
-
-

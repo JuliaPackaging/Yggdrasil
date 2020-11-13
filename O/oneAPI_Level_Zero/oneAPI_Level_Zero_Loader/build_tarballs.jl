@@ -21,8 +21,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc)
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -43,8 +43,10 @@ dependencies = [
     #
     # Users of these packages, e.g. oneAPI.jl, should only depend on the loader and an
     # implementation, but will need to make sure to load one before the other.
-    Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=v"1.0")),
+    Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=api_version)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"5")
+
+# bump counter: 1

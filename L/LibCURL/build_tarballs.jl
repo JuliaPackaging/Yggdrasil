@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "LibCURL"
-version = v"7.71.1"
+version = v"7.73.0"
 
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d"),
+                  "ba98332752257b47b9dea6d8c0ad25ec1745c20424f1dd3ff2c99ab59e97cf91"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,14 +25,26 @@ FLAGS=(
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
     --disable-static
 
-    # Two things we actually enable
-    --with-libssh2=${prefix} --with-mbedtls=${prefix} --with-zlib=${prefix}
-    --with-nghttp2=${prefix}
+    # A few things we actually enable
+    --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
 )
 
-# We need to tell it where to find libssh2 on windows
+
 if [[ ${target} == *mingw* ]]; then
+    # We need to tell it where to find libssh2 on windows
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/bin")
+
+    # We also need to tell it to link against schannel (native TLS library)
+    FLAGS+=(--with-schannel)
+elif [[ ${target} == *darwin* ]]; then
+    # On Darwin, we need to use SecureTransport (native TLS library)
+    FLAGS+=(--with-secure-transport)
+
+    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't 
+    export CFLAGS=-mmacosx-version-min=10.11
+else
+    # On all other systems, we use MbedTLS
+    FLAGS+=(--with-mbedtls=${prefix})
 fi
 
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
@@ -43,7 +55,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -54,10 +66,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll"),
     Dependency("Zlib_jll"),
     Dependency("nghttp2_jll"),
+    # Note that while we unconditionally list MbedTLS as a dependency,
+    # we default to schannel/SecureTransport on Windows/MacOS.
+    Dependency("MbedTLS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")

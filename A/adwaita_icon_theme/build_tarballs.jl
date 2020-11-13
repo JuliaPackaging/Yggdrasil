@@ -34,9 +34,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "hicolor_icon_theme_jll",
+    Dependency("hicolor_icon_theme_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-

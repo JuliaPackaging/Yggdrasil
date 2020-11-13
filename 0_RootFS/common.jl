@@ -1,4 +1,4 @@
-using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
+using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
 
 host_platform = Platform("x86_64", "linux"; libc="musl")
@@ -104,8 +104,12 @@ end
 
 function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
     # Upload them both to GH releases on Yggdrasil
-    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
-    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    unpacked_dl_info = nothing
+    squashfs_dl_info = nothing
+    if repo != "local"
+        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    end
 
     # Insert these final versions into BB
     insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)

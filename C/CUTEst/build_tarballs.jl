@@ -90,6 +90,7 @@ gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o
 cd $CUTEST/objects/$MYARCH/single
 gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_single.${dlext}
 
+ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
 ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
 ln -s $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/
 ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/

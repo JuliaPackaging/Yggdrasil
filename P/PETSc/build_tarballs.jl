@@ -73,7 +73,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Windows(:i686)]))
+platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
 
 products = [
     LibraryProduct("libpetsc", :libpetsc),

@@ -15,26 +15,29 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd openresty-1.15.8.3/
-./configure --prefix=$prefix --with-cc=$CC --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t --with-pcre=$WORKSPACE/srcdir/pcre-8.43 --with-pcre-jit
-make -j${nproc}
+cd $WORKSPACE/srcdir/openresty-*/
+export SUPER_VERBOSE=1
+./configure --prefix=${prefix} \
+    --with-cc=$CC \
+    --with-zlib=$WORKSPACE/srcdir/zlib-1.2.11 \
+    --with-openssl=$WORKSPACE/srcdir/openssl-1.0.2t \
+    --with-pcre=$WORKSPACE/srcdir/pcre-8.43 \
+    --with-pcre-jit
+make
 make install
-rm $prefix/bin/openresty 
-cd $prefix/bin/
-ln -fs ../nginx/sbin/nginx ./openresty
+rm ${bindir}/openresty
+ln -s ../nginx/sbin/nginx ${bindir}/openresty
 install_license $prefix/COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl)
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
-
 
 # The products that we will ensure are always built
 products = [
@@ -44,7 +47,6 @@ products = [
     FileProduct("luajit", :luajit_dir),
     FileProduct("lualib", :lualib_dir),
     FileProduct("nginx", :nginx_dir),
-    FileProduct("site", :site_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -52,4 +54,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lock_microarchitecture=false)

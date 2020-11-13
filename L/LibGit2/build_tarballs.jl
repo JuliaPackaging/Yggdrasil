@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.0.1"
+version = v"1.1.0"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "0ced29612dacb67eefe0c562a5c1d3aab21cce96"),
+              "7f4fa178629d559c037a1f72f79f79af9c1ef8ce"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,6 +30,9 @@ if [[ ${target} == *-mingw* ]]; then
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
+
+    # For some reason, CMake fails to find libssh2 using pkg-config.
+    BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
 elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
@@ -45,7 +48,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -59,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

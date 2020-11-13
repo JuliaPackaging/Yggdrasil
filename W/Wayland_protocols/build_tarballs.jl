@@ -23,6 +23,7 @@ make install
 # platforms are passed in on the command line
 platforms = [AnyPlatform()]
 
+
 # The products that we will ensure are always built
 products = Product[
 ]
@@ -32,6 +33,5 @@ dependencies = [
     Dependency("Wayland_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-

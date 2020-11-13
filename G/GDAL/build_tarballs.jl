@@ -26,12 +26,13 @@ elif [[ "${target}" == *-linux-* ]]; then
      atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_curl_libs.patch"
     export EXTRA_GEOS_LIBS="-lstdc++"
     export EXTRA_CURL_LIBS="-lstdc++"
+    export LDFLAGS="$LDFLAGS -lstdc++"
     if [[ "${target}" == powerpc64le-* ]]; then
         atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
         export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
         export EXTRA_SQLITE3_LIBS="-lm"
         # libpthread and libldl are needed for libgdal, so let's always use them
-        export LDFLAGS="-lpthread -ldl"
+        export LDFLAGS="$LDFLAGS -lpthread -ldl"
     fi
     autoreconf -vi
 fi
@@ -39,10 +40,14 @@ fi
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
+./configure --help
 ./configure --prefix=$prefix --host=$target \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
     --with-libz=$prefix \
+    --with-expat=$prefix \
+    --with-zstd=$prefix \
+    --with-webp=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -53,6 +58,8 @@ rm -f ${prefix}/lib/*.la
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
 grep "CURL_SETTING='yes'" config.log
+grep "ZSTD_SETTING='yes'" config.log
+grep "HAVE_EXPAT='yes'" config.log
 
 make -j${nproc}
 make install
@@ -92,6 +99,14 @@ dependencies = [
     Dependency("SQLite_jll"),
     Dependency("LibCURL_jll"),
     Dependency("OpenJpeg_jll"),
+    Dependency("Expat_jll"),
+    Dependency("Zstd_jll"),
+    Dependency("libwebp_jll"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("nghttp2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

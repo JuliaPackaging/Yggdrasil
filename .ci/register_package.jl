@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg, Pkg.PlatformEngines
+using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
 verbose = "--verbose" in ARGS
 
@@ -41,26 +41,34 @@ function download_cached_binaries(download_dir, platforms)
     # Grab things out of the aether for maximum consistency
     bb_hash = ENV["BB_HASH"]
     proj_hash = ENV["PROJ_HASH"]
-    probe_platform_engines!(;verbose=verbose)
 
     for platform in platforms
         url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
         filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
-        PlatformEngines.download(url, joinpath(download_dir, filename); verbose=verbose)
+        Downloads.download(url, joinpath(download_dir, filename))
     end
 end
 
 function download_binaries_from_release(download_dir)
-    probe_platform_engines!(;verbose=verbose)
-
-    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
-    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))
-    for artifact in artifacts[name]
-        info = artifact["download"][1]
+    function do_download(download_dir, info)
         url = info["url"]
         hash = info["sha256"]
         filename = basename(url)
-        PlatformEngines.download_verify(url, hash, joinpath(download_dir, filename); verbose=verbose)
+        BinaryBuilderBase.download_verify(url, hash, joinpath(download_dir, filename))
+    end
+
+    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))[name]
+    if artifacts isa Dict
+        # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
+        info = artifacts["download"][1]
+        do_download(download_dir, info)
+    else
+        # Otherwise, it's a Vector, and we must iterate over all platforms.
+        for artifact in artifacts
+            info = artifact["download"][1]
+            do_download(download_dir, info)
+        end
     end
 end
 
@@ -80,7 +88,7 @@ mktempdir() do download_dir
         # out of the cache while they're hot.
         download_cached_binaries(download_dir, merged["platforms"])
     end
-    
+
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
     tag = "$(name)-v$(build_version)"
     upload_prefix = "https://github.com/$(repo)/releases/download/$(tag)"
@@ -93,13 +101,19 @@ mktempdir() do download_dir
         BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
     end
 
+    # Restore Artifacts.toml
     if skip_build
-        # Restore Artifacts.toml
         write(joinpath(code_dir, "Artifacts.toml"), artifacts_toml)
-    else
+    end
+
+    # Push JLL package _before_ uploading to GitHub releases, so that this version of the code is what gets tagged
+    BinaryBuilder.push_jll_package(name, build_version)
+
+    if !skip_build
         # Upload the tarballs to GitHub releases
         BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
     end
 end
-BinaryBuilder.push_jll_package(name, build_version)
+
+# Sub off to Registrator to create a PR to General
 BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat)

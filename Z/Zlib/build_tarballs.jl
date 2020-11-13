@@ -27,8 +27,8 @@ make install -j${nproc}
 install_license ../README
 """
 
-# Build for all platforms
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -39,5 +39,7 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"1.2.12"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

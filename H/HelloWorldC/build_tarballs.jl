@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # No sources, we're just building the testsuite
 sources = [
