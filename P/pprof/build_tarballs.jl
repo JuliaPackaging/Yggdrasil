@@ -6,8 +6,8 @@ name = "pprof"
 # so we use Go's pseudo version
 # `TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd" $hash`
 
-hash = "f9b734f9ee64d0f5b63636a45cc77ed2744997ab"
-timestamp = "20191205061153"
+hash = "20978b51388db0648809a2c5cc88b494c7945ec1"
+timestamp = "20201109224723"
 version = Base.VersionNumber("0.0.0-$timestamp")
 
 # Collection of sources required to build pprof
