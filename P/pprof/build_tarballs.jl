@@ -2,12 +2,11 @@ using BinaryBuilder
 
 name = "pprof"
 
-# PProf doesn't have proper versions yet
-# so we use Go's pseudo version
-# `TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd" $hash`
+# Note that google/pprof doesn't have proper release versions. We are
+# identifying a version by a specific commit hash, off of `pprof`'s
+# main branch.
 
 hash = "20978b51388db0648809a2c5cc88b494c7945ec1"
-timestamp = "20201109224723"
 version = v"0.1.0"
 
 # Collection of sources required to build pprof
