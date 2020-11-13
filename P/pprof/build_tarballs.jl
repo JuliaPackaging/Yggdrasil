@@ -8,7 +8,7 @@ name = "pprof"
 
 hash = "20978b51388db0648809a2c5cc88b494c7945ec1"
 timestamp = "20201109224723"
-version = Base.VersionNumber("0.0.0-$timestamp")
+version = v"0.1.0"
 
 # Collection of sources required to build pprof
 sources = [
