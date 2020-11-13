@@ -11,8 +11,8 @@ version = v"0.1.0"
 
 # Collection of sources required to build pprof
 sources = [
-    "https://github.com/google/pprof.git" =>
-    hash,
+    GitSource("https://github.com/google/pprof.git",
+              hash),
 ]
 
 # Bash recipe for building across all platforms
