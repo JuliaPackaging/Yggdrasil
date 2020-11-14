@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_version = v"1.3.1"
 
 name = "Libtask"
-version = VersionNumber("1.$(julia_version.minor).0")
+version = v"0.4.0"
 
 # Collection of sources required to build Libtask
 sources = [
