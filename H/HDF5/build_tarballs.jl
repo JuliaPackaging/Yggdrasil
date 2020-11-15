@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
