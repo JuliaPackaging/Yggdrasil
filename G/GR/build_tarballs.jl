@@ -3,11 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.52.0"
+version = v"0.53.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "90ee73c741271d964f241f098b0dd3ba18eae271"),
+    GitSource("https://github.com/sciapp/gr.git", "b490cbfacc6f4dc08c2a2de52c6f6594e8c7c5f9"),
+    FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
+               "60b856b8bb834d30612653da42eebef56e4e329d3a73d52c303684ee42b027f1", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +33,7 @@ cd build
 cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ../gr*
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/gr*/LICENSE.md
+cp ../gr.js $libdir/
 
 if [[ $target == *"apple-darwin"* ]]; then
     cd $prefix/lib
