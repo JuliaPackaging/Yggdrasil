@@ -16,6 +16,8 @@ cd $WORKSPACE/srcdir/proj-*/
 # sqlite needed to build proj.db, so this should not be the
 # cross-compiled one since it needs to be executed on the host
 apk add sqlite
+# Get rid of target sqlite3, to avoid it's picked up by the build system
+rm "${bindir}/sqlite3${exeext}"
 
 if [[ ${target} == *mingw* ]]; then
     SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
