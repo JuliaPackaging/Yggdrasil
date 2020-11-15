@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-version = v"7.0.1"
+version = v"7.2.0"
 
 # Collection of sources required to build PROJ
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$version.tar.gz",
-        "a7026d39c9c80d51565cfc4b33d22631c11e491004e19020b3ff5a0791e1779f"),
+        "2957798e5fe295ff96a2af1889d0428e486363d210889422f76dd744f7885763"),
 ]
 
 # Bash recipe for building across all platforms
