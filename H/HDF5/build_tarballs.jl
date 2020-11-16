@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
@@ -28,7 +28,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p ${libdir} ${includedir}
 
-if [[ ${target} == *-mingw32 ]]; then
+if [[ ${target} == *mingw* ]]; then
     cd ${target}/mingw${nbits}
 
     rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
