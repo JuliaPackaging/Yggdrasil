@@ -26,6 +26,7 @@ else
 fi
 
 make -C gr/3rdparty/qhull -j${nproc}
+make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}" -j${nproc}
 
 mkdir build
 cd build
@@ -43,6 +44,7 @@ if [[ $target == *"apple-darwin"* ]]; then
     ln -s libGKS.so libGKS.dylib
     cd ../bin
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
 
