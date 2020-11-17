@@ -15,6 +15,9 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir
+
+sed -i 's/-march=core-avx2//' ./qt-everywhere-src-*/qtbase/mkspecs/common/gcc-base.conf
+
 mkdir build
 cd build/
 
@@ -95,6 +98,8 @@ EOT
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
         export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
         export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
+
+        sed -i 's/^QMAKE_C.*FLAGS.*//' ../qt-everywhere-src-*/qtbase/mkspecs/devices/linux-rasp-pi3-g++/qmake.conf
         
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi3-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
