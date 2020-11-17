@@ -69,7 +69,6 @@ nc-config --all
 # Set equal to the supported platforms in HDF5
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("i686", "linux"),
     # HDF5_jll on armv7l should use the same glibc as the root filesystem
     # before it can be used
     # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
@@ -87,7 +86,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll", v"1.12.0"),
     Dependency("Zlib_jll"),
     Dependency("LibCURL_jll"),
 ]
