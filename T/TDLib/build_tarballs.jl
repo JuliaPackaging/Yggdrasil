@@ -25,7 +25,7 @@ do
     sed -i ' 1 s/$/ -lz/' $f
 done
 cmake --build . -j${nproc}
-cp libtdjson.so $libdir
+cp libtdjson.${dlext} $libdir/libtdjson.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
