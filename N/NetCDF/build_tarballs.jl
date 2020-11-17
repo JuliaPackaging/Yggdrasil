@@ -94,7 +94,6 @@ dependencies = [
     Dependency("LibSSH2_jll"),
     Dependency("MbedTLS_jll"),
     Dependency("nghttp2_jll"),
-    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
