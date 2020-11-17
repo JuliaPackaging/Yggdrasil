@@ -104,6 +104,19 @@ EOT
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi3-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+        ;;
+        
+    *aarch64-linux*)
+        apk add g++ linux-headers
+        export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
+        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
+        export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
+
+        sed -i 's/^QMAKE_C.*FLAGS.*//' ../qt-everywhere-src-*/qtbase/mkspecs/devices/linux-rasp-pi4-v3d-g++/qmake.conf
+        
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi4-v3d-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
 esac
 
@@ -115,6 +128,7 @@ install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms_linux = [
+    Platform("aarch64", "linux"; libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
 ]
