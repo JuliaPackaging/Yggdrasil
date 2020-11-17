@@ -30,7 +30,7 @@ cp libtdjson.so $libdir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p) && (libc(p) == "glibc" || arch(p) == "x86_64"), supported_platforms())
+platforms = filter(p -> Sys.islinux(p) && (libc(p) == "glibc" && arch(p) == "i686" || arch(p) == "x86_64"), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 
