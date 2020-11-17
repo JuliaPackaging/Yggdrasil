@@ -3,40 +3,70 @@
 using BinaryBuilder, Pkg
 
 name = "Mesa"
-version = v"20.1.5"
+version = v"20.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://archive.mesa3d.org/mesa-$version.tar.xz", "fac1861e6e0bf1aec893f8d86dbfb9d8a0f426ff06b05256df10e3ad7e02c69b"),
+    ArchiveSource("https://mesa.freedesktop.org/archive/mesa-$version.tar.xz", "1f93eb1090cf71490cd0e204e04f8427a82b6ed534b7f49ca50cea7dcc89b861"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add py3-mako
+if [[ "${target}" == *-linux-* ]]; then
+  apk add wayland-dev
+
+  #remove wayland-scanner
+  rm -r ${prefix}/bin/wayland-scanner
+  mkdir -p ${prefix}/usr/bin
+  ln -s /usr/bin/wayland-scanner ${prefix}/usr/bin/wayland-scanner
+fi
+
 mkdir build
 cd build
-apk add py3-mako
-meson -D b_ndebug=true -D buildtype=release -D strip=true -D llvm=false ../mesa* --cross-file="${MESON_TARGET_TOOLCHAIN}"
+
+# Excluding nouveau since we need LLVM build with RTTI 
+meson ../mesa* --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+  -D dri-drivers=i915,i965,r100,r200 \
+  -D gallium-drivers=r300,r600,radeonsi,virgl,svga,swrast,swr,iris \
+  -D osmesa=gallium \
+  -D b_ndebug=true \
+  -D platforms=x11,wayland \
+  -D vulkan-drivers=[]
+
 ninja -j${nproc}
 ninja install
-mv $prefix/bin/opengl32.dll $prefix/bin/opengl32sw.dll
-install_license ../mesa*/docs/license.html
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
-]
+platforms = filter(Sys.islinux, supported_platforms())
+
+# Allegedly mesa builds for amc and windows
+
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("opengl32sw", :opengl32sw; dont_dlopen=true)
+    LibraryProduct("libdrm", :libdrm)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
   Dependency("Zlib_jll")
+  Dependency("Zstd_jll")
+  Dependency("XML2_jll")
+  Dependency("Xorg_libX11_jll")
+  Dependency("Xorg_xorgproto_jll")
+  Dependency("Xorg_libxshmfence_jll")
+  Dependency("Xorg_libXrandr_jll")
+  Dependency("Wayland_jll")
+  Dependency("Wayland_protocols_jll")
+  Dependency("Libglvnd_jll")
+  Dependency("libdrm_jll")
+  Dependency("Elfutils_jll")
+  Dependency("glslang_jll")
+
+  BuildDependency("LLVM_full_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
