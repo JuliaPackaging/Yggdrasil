@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-version = v"7.0.1"
+version = v"7.2.0"
 
 # Collection of sources required to build PROJ
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$version.tar.gz",
-        "a7026d39c9c80d51565cfc4b33d22631c11e491004e19020b3ff5a0791e1779f"),
+        "2957798e5fe295ff96a2af1889d0428e486363d210889422f76dd744f7885763"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +16,8 @@ cd $WORKSPACE/srcdir/proj-*/
 # sqlite needed to build proj.db, so this should not be the
 # cross-compiled one since it needs to be executed on the host
 apk add sqlite
+# Get rid of target sqlite3, to avoid it's picked up by the build system
+rm "${bindir}/sqlite3${exeext}"
 
 if [[ ${target} == *mingw* ]]; then
     SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
@@ -78,8 +80,16 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8")),
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0")),
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
+    # libcurl changed compatibility version for macOS from v7.71 to v7.73 (v11
+    # to v12)
+    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"), v"7.71.1"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("nghttp2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
