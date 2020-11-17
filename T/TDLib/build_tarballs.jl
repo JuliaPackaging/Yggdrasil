@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tdlib"
+name = "TDLib"
 version = v"1.6.10"
 
 # Collection of sources required to complete build
