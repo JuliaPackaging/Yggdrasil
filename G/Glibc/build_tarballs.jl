@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glibc"
-version = v"2.29"
+version = v"2.31"
 
 # sources to build, such as glibc, linux kernel headers, our patches, etc....
 sources = [
     ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-$(version.major).$(version.minor).tar.xz",
-                  "f3eeb8d57e25ca9fc13c2af3dae97754f9f643bc69229546828e3a240e2af04b"),
+                  "9246fe44f68feeec8c666bb87973d590ce0137cca145df014c72ec95be9ffd17"),
     DirectorySource("./bundled"),
 ]
 
