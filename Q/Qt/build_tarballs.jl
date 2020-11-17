@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Qt"
-version = v"5.15.0"
+version = v"5.15.1"
 
 # Collection of sources required to build qt5
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/5.15/$version/single/qt-everywhere-src-$version.tar.xz",
-                  "22b63d7a7a45183865cc4141124f12b673e7a17b1fe2b91e433f6547c5d548c3"),
+                  "44da876057e21e1be42de31facd99be7d5f9f07893e1ea762359bcee0ef64ee9"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
