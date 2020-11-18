@@ -12,7 +12,6 @@ dep_llvm = declare_dependency(
   include_directories : include_directories('/workspace/destdir/include'),
   dependencies : _deps,
   version : '9.0.1',
-  static: false,
 )
 
 has_rtti = false

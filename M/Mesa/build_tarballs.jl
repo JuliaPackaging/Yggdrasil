@@ -41,6 +41,9 @@ if [[ ${target} == *linux* ]]; then
   DRI=r100,r200 #nouveau
   GALLIUM=r300,r600,radeonsi,virgl,swrast #zink,nouveau,freedreno
   SWR=
+  DRI3=enabled
+  EGL=enabled
+  OSMESA=gallium
 
   # We live in an Intel world
   if [[ ${target} == *x86_64* ]] || [[ ${target} == *i686* ]]; then
@@ -62,25 +65,28 @@ if [[ ${target} == *linux* ]]; then
   fi
 
 else
-    PLATFORMS=
+    PLATFORMS=windows
     DRI=
-    GALLIUM=
+    GALLIUM=swrast
     SWR=
+    DRI3=disabled
+    EGL=disabled
+    OSMESA=none
 fi
 
 meson build --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-  -D shared-llvm=enabled \
-  -D dri-drivers=${DRI} \
-  -D gallium-drivers=${GALLIUM} \
-  -D osmesa=gallium \
   -D b_ndebug=true \
   -D buildtype=release \
   -D strip=true \
+  -D shared-llvm=enabled \
+  -D dri-drivers=${DRI} \
+  -D gallium-drivers=${GALLIUM} \
+  -D osmesa=${OSMESA} \
   -D platforms=${PLATFORMS} \
   -D vulkan-drivers=[] \
   -D swr-arches=${SWR_ARCHES} \
-  -D dri3=enabled \
-  -D egl=enabled \
+  -D dri3=${DRI3} \
+  -D egl=${EGL} \
 
 ninja -C build -j${nproc}
 ninja -C build install
@@ -91,17 +97,17 @@ install_license docs/license.rst
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # Elfutils is missing on musl platforms
-platforms = filter(p->Sys.islinux(p) && libc(p) != "musl", supported_platforms())
+platforms = filter(p->libc(p) != "musl", supported_platforms())
 
 # Allegedly mesa builds for amc and windows
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGL", :libGL),
-    LibraryProduct("libEGL", :libEGL),
-    LibraryProduct("libGLX", :libGLX),
-    LibraryProduct("libOSMesa", :libOSMesa),
+    LibraryProduct(["libGL", "opengl32"], :libGL),
+    # LibraryProduct("libEGL", :libEGL),
+    # LibraryProduct("libGLX", :libGLX),
+    # LibraryProduct("libOSMesa", :libOSMesa),
 ]
 
 # Dependencies that must be installed before this package can be built
