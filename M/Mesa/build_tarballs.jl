@@ -86,7 +86,8 @@ ninja -C build install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms())
+# Elfutils is missing on musl platforms
+platforms = filter(p->Sys.islinux(p) && libc(p) != "musl", supported_platforms())
 
 # Allegedly mesa builds for amc and windows
 
