@@ -110,5 +110,4 @@ dependencies = [
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
-#version = v"5.4.1"
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
