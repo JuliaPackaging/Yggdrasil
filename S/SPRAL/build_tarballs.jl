@@ -13,10 +13,12 @@ script = raw"""
 # ===== BUILD SPRAL =====
 # Follow the instruction: https://github.com/lanl-ansi/spral/blob/master/COMPILE.md
 cd ${WORKSPACE}/srcdir/spral*
+update_configure_scripts
+
 mkdir build
 ./autogen.sh
 CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
-    ./configure --prefix=${PWD}/build \
+    ./configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" \
     --with-metis-inc-dir="-I${prefix}/include"
