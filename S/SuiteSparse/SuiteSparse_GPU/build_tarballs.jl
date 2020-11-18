@@ -30,7 +30,7 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
-# OpenBLAS configuration
+# OpenBLAS 
 #if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 #    BLAS_64="-DSUN64 -DBLAS64 -DLONGBLAS='long long'"
 #    BLAS_NAME=openblas64_
@@ -44,7 +44,7 @@ fi
 FLAGS+=(MKLROOT="${prefix}")
 
 # CUDA
-FLAGS+=(CUDA="auto")
+FLAGS+=(CUDA_PATH="$prefix/cuda")
 
 # METIS
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
