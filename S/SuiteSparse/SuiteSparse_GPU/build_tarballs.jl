@@ -30,19 +30,23 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    BLAS_64="-DSUN64 -DBLAS64 -DLONGBLAS='long long'"
-    BLAS_NAME=openblas64_
-else
-    BLAS_NAME=openblas
-fi
+# OpenBLAS configuration
+#if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+#    BLAS_64="-DSUN64 -DBLAS64 -DLONGBLAS='long long'"
+#    BLAS_NAME=openblas64_
+#else
+#    BLAS_NAME=openblas
+#fi
+#FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
+#FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64" SPQR_CONFIG="$BLAS_64")
 
-FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
+# MKL
+FLAGS+=(UMFPACK_CONFIG="MKLROOT=${prefix}" CHOLMOD_CONFIG+="MKLROOT=${prefix}" SPQR_CONFIG="MKLROOT=${prefix}")
 
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+# METIS
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64" SPQR_CONFIG="$BLAS_64")
-#FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64 -DNPARTITION" SPQR_CONFIG="$BLAS_64")
+# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+#FLAGS+=(CHOLMOD_CONFIG+="-DNPARTITION")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
@@ -81,7 +85,9 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
-platforms = supported_platforms()
+platforms = [
+    Platform("x86_64", "linux"),
+]
 
 # The products that we will ensure are always built
 products = [
@@ -97,15 +103,18 @@ products = [
     LibraryProduct("libumfpack",             :libumfpack),
     LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
+    LibraryProduct("libsliplu",              :libsliplu),
     LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
 ]
 
 # Dependencies that must be installed before this package can be built
+cuda_version = v"9.0.176"
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    Dependency("MKL_jll"),
     Dependency("METIS_jll"),
     Dependency("MPFR_jll"),
     Dependency("GMP_jll"),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
 ]
 
 # Note: we explicitly lie about this because we don't have the new
