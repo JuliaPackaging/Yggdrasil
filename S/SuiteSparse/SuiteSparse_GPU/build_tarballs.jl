@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "SuiteSparse"
+name = "SuiteSparse_GPU"
 version = v"5.8.1"
 
 # Collection of sources required to build SuiteSparse
