@@ -1,4 +1,5 @@
 using BinaryBuilder
+using Pkg
 
 name = "SPRAL"
 version = v"0.1.0"
@@ -19,7 +20,7 @@ cd build
 make && make install
 export METISDIR=${PWD}
 # Install Dependenices
-# TODO: FIX 
+# TODO: FIX
 # sudo apt-get install hwloc libhwloc-dev
 # sudo apt install libopenblas-dev
 if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
