@@ -31,7 +31,7 @@ else
 fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    BLAS_64="-DBLAS64 -DLONGBLAS='long long'"
+    BLAS_64="-DSUN64 -DBLAS64 -DLONGBLAS='long long'"
     BLAS_NAME=openblas64_
 else
     BLAS_NAME=openblas
