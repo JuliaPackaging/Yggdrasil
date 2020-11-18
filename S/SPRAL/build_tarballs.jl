@@ -1,5 +1,4 @@
-using BinaryBuilder
-using Pkg
+using BinaryBuilder, Pkg
 
 name = "SPRAL"
 version = v"0.1.0"
@@ -13,15 +12,13 @@ script = raw"""
 # ===== BUILD SPRAL =====
 # Follow the instruction: https://github.com/lanl-ansi/spral/blob/master/COMPILE.md
 cd ${WORKSPACE}/srcdir/spral*
-update_configure_scripts
-
-mkdir build
 ./autogen.sh
+update_configure_scripts
 CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" \
-    --with-metis-inc-dir="-I${prefix}/include"
+    --with-metis-inc-dir="${prefix}/include"
 make && make install
 """
 
