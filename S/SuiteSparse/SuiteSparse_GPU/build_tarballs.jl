@@ -94,20 +94,23 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsuitesparseconfig",   :libsuitesparseconfig),
-    LibraryProduct("libamd",                 :libamd),
-    LibraryProduct("libbtf",                 :libbtf),
-    LibraryProduct("libcamd",                :libcamd),
-    LibraryProduct("libccolamd",             :libccolamd),
-    LibraryProduct("libcolamd",              :libcolamd),
-    LibraryProduct("libcholmod",             :libcholmod),
-    LibraryProduct("libldl",                 :libldl),
-    LibraryProduct("libklu",                 :libklu),
-    LibraryProduct("libumfpack",             :libumfpack),
-    LibraryProduct("librbio",                :librbio),
-    LibraryProduct("libspqr",                :libspqr),
-    LibraryProduct("libsliplu",              :libsliplu),
-    LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
+    LibraryProduct("libsuitesparseconfig",      :libsuitesparseconfig),
+    LibraryProduct("libamd",                    :libamd),
+    LibraryProduct("libbtf",                    :libbtf),
+    LibraryProduct("libcamd",                   :libcamd),
+    LibraryProduct("libccolamd",                :libccolamd),
+    LibraryProduct("libcolamd",                 :libcolamd),
+    LibraryProduct("libcholmod",                :libcholmod),
+    LibraryProduct("libldl",                    :libldl),
+    LibraryProduct("libklu",                    :libklu),
+    LibraryProduct("libumfpack",                :libumfpack),
+    LibraryProduct("librbio",                   :librbio),
+    LibraryProduct("libspqr",                   :libspqr),
+    LibraryProduct("libsliplu",                 :libsliplu),
+    LibraryProduct("libmongoose",               :libmongoose),
+    LibraryProduct("libGPUQRengine",            :libGPUQRengine),
+    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),    
+    LibraryProduct("libsuitesparse_wrapper",    :libsuitesparse_wrapper),
 ]
 
 # Dependencies that must be installed before this package can be built
