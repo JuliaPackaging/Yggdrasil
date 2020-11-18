@@ -111,12 +111,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+cuda_version = v"9.0.176"
 dependencies = [
     Dependency("MKL_jll"),
     Dependency("METIS_jll"),
     Dependency("MPFR_jll"),
     Dependency("GMP_jll"),
-    Dependency("CUDA_full_jll"),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
 ]
 
 # Note: we explicitly lie about this because we don't have the new
