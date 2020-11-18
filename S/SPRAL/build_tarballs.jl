@@ -18,7 +18,7 @@ update_configure_scripts
 mkdir build
 ./autogen.sh
 CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
-    ./configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
+    ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" \
     --with-metis-inc-dir="-I${prefix}/include"
@@ -29,7 +29,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-     LibraryProduct("spral_ssids", :spral_ssids)
+    FileProduct("bin/spral_ssids", :spral_ssids)
+    FileProduct("lib/libspral.a",  :libspral_a)
 ]
 
 # Dependencies that must be installed before this package can be built
