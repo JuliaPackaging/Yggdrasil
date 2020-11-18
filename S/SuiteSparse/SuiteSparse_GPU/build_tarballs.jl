@@ -53,7 +53,7 @@ FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU; do
+for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU Mongoose; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
