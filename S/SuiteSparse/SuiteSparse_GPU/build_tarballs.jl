@@ -1,12 +1,12 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SuiteSparse"
-version = v"5.4.0"
+version = v"5.8.1"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    ArchiveSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
-                  "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
+    GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+              "1869379f464f0f8dac471edb4e6d010b2b0e639d"),
     DirectorySource("./bundled"),
 ]
 
@@ -39,12 +39,12 @@ fi
 FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+#FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
+for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
@@ -79,8 +79,7 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
-# We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -102,10 +101,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenBLAS_jll"),
-#    Dependency("METIS_jll"),
+    Dependency("METIS_jll"),
+    Dependency("MPFR_jll"),
+    Dependency("GMP_jll"),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
-version = v"5.4.1"
+#version = v"5.4.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
