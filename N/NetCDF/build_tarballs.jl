@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "NetCDF"
 version = v"4.7.4"
@@ -69,7 +69,6 @@ nc-config --all
 # Set equal to the supported platforms in HDF5
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("i686", "linux"),
     # HDF5_jll on armv7l should use the same glibc as the root filesystem
     # before it can be used
     # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
@@ -87,9 +86,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("HDF5_jll"),
+    Dependency(PackageSpec(name="HDF5_jll", version="1.12.0")),
     Dependency("Zlib_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll", v"7.71.1"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"),
+    Dependency("nghttp2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
