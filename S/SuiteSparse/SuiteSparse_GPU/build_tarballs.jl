@@ -43,6 +43,9 @@ fi
 # MKL
 FLAGS+=(MKLROOT="${prefix}")
 
+# CUDA
+FLAGS+=(CUDA="auto")
+
 # METIS
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
