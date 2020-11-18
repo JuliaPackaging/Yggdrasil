@@ -69,18 +69,19 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
 #     LibraryProduct("libipopt", :libipopt),
-     LibraryProduct("spral_ssids", :spral_ssids)
+#     LibraryProduct("spral_ssids", :spral_ssids)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Product[
-    Dependency("OpenBLAS_jll"),
-    Dependency("Hwloc_jll"),
     BuildDependency(PackageSpec(; name = "METIS_jll",
                                 uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
                                 version = v"4.0.3")),
-#     Dependency("CompilerSupportLibraries_jll")
+    Dependency("OpenBLAS_jll"),
+    Dependency("Hwloc_jll"),
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"6")
