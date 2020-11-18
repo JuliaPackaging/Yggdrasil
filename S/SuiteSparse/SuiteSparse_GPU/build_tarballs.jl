@@ -107,8 +107,8 @@ products = [
     LibraryProduct("librbio",                   :librbio),
     LibraryProduct("libspqr",                   :libspqr),
     LibraryProduct("libsliplu",                 :libsliplu),
-    LibraryProduct("libmongoose",               :libmongoose),
-    LibraryProduct("libGPUQRengine",            :libGPUQRengine),
+#    LibraryProduct("libmongoose",               :libmongoose),
+    LibraryProduct("libGPUQREngine",            :libGPUQREngine),
     LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),    
     LibraryProduct("libsuitesparse_wrapper",    :libsuitesparse_wrapper),
 ]
