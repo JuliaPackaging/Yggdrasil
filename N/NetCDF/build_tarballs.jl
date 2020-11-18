@@ -86,7 +86,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("HDF5_jll", v"1.12.0"),
+    Dependency(PackageSpec(name="HDF5_jll", version="1.12.0")),
     Dependency("Zlib_jll"),
     Dependency("LibCURL_jll", v"7.71.1"),
     # The following libraries are dependencies of LibCURL_jll which is now a
