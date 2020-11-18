@@ -46,8 +46,7 @@ FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64" SPQR_CONFIG="$BLAS_
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-#for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU; do
-for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
+for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
