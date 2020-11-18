@@ -22,8 +22,7 @@ make -j${nproc}
 make install
 """
 
-# There's a problem on ppc64le that I don't understand yet, we'll tackle this when it's necessary
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p) && arch(p) != :powerpc64le]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
 
 products = Product[
     LibraryProduct("libXxf86vm", :libXxf86vm),
