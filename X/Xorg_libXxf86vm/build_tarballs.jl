@@ -14,9 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXxf86vm-*/
-CPPFLAGS="-I${prefix}/include"
+CPPFLAGS="-I${includedir}"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
+# Fix powerpc linker emulation option.  Ideally we would do
+# `update_configure_scripts --reconf`, but we're missing something:
+#
+#     configure.ac:16: error: must install xorg-macros 1.8 or later before running autoconf/autogen
+#
+# and I don't have the time to investigate it.
+sed -i -e 's/elf64ppc/elf64lppc/g' configure
 ./configure --prefix=${prefix} --host=${target} --enable-malloc0returnsnull=no
 make -j${nproc}
 make install
