@@ -85,7 +85,7 @@ meson build --cross-file="${MESON_TARGET_TOOLCHAIN}" \
 ninja -C build -j${nproc}
 ninja -C build install
 
-install_license docs/license.html
+install_license docs/license.rst
 """
 
 # These are the platforms we will build for by default, unless further
