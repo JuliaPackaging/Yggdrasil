@@ -31,7 +31,7 @@ else
 fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    SUN="-DSUN64 -DLONGBLAS='long long'"
+    BLAS_64="-DBLAS64 -DLONGBLAS='long long'"
     BLAS_NAME=openblas64_
 else
     BLAS_NAME=openblas
@@ -41,7 +41,7 @@ FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-#FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64 -DNPARTITION" SPQR_CONFIG="$BLAS_64")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
