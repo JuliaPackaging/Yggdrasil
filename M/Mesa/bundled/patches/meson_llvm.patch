@@ -1,0 +1,50 @@
+From e32e96bc663ac4fa07143288c2bb3342601abf0c Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 17 Nov 2020 23:00:10 -0500
+Subject: [PATCH] force llvm subproject
+
+---
+ meson.build | 20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index fbd3c4b8e8d..8c81dc8d6d0 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1462,11 +1462,7 @@ elif _shared_llvm == 'false'
+   _shared_llvm = 'disabled'
+   warning('shared_llvm option "false" deprecated, please use "disabled" instead.')
+ endif
+-if _shared_llvm == 'auto'
+-  _shared_llvm = (host_machine.system() != 'windows')
+-else
+-  _shared_llvm = (_shared_llvm == 'enabled')
+-endif
++_shared_llvm = (_shared_llvm == 'enabled')
+ _llvm = get_option('llvm')
+ if _llvm == 'true'
+   _llvm = 'enabled'
+@@ -1489,19 +1485,7 @@ endif
+ dep_llvm = null_dep
+ with_llvm = false
+ if _llvm != 'disabled'
+-  dep_llvm = dependency(
+-    'llvm',
+-    version : _llvm_version,
+-    modules : llvm_modules,
+-    optional_modules : llvm_optional_modules,
+-    required : (
+-      with_amd_vk or with_gallium_radeonsi or with_gallium_swr or
+-      with_gallium_opencl or _llvm == 'enabled'
+-    ),
+-    static : not _shared_llvm,
+-    method : _llvm_method,
+-    fallback : ['llvm', 'dep_llvm'],
+-  )
++  dep_llvm = subproject('llvm').get_variable('dep_llvm')
+   with_llvm = dep_llvm.found()
+ endif
+ if with_llvm
+-- 
+2.29.2
+
