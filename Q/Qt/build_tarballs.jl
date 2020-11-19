@@ -133,7 +133,7 @@ platforms_linux = [
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
