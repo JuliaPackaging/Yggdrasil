@@ -98,10 +98,8 @@ EOT
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
         export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
         export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
-
-        sed -i 's/^QMAKE_C.*FLAGS.*//' ../qt-everywhere-src-*/qtbase/mkspecs/devices/linux-rasp-pi3-g++/qmake.conf
         
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi3-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-arm-gnueabi-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
@@ -111,10 +109,8 @@ EOT
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
         export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
         export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
-
-        sed -i 's/^QMAKE_C.*FLAGS.*//' ../qt-everywhere-src-*/qtbase/mkspecs/devices/linux-rasp-pi4-v3d-g++/qmake.conf
         
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi4-v3d-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
