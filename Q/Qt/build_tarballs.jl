@@ -7,7 +7,7 @@ version = v"5.15.1"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/5.15/$version/single/qt-everywhere-src-$version.tar.xz",
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major)$(version.minor)/$version/single/qt-everywhere-src-$version.tar.xz",
                   "44da876057e21e1be42de31facd99be7d5f9f07893e1ea762359bcee0ef64ee9"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
@@ -32,7 +32,6 @@ commonoptions=" \
 case "$target" in
 
 	*86*linux*)
-        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
         ../qt-everywhere-src-*/configure -L $prefix/lib -I $prefix/include \
             -prefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig
@@ -96,8 +95,8 @@ EOT
     *arm-linux*)
         apk add g++ linux-headers
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
-        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
-        export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
+
+        sed -i 's/linux-gnueabi/linux-gnueabihf/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-arm-gnueabi-g++/qmake.conf
         
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-arm-gnueabi-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
@@ -107,8 +106,6 @@ EOT
     *aarch64-linux*)
         apk add g++ linux-headers
         export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
-        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
-        export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
         
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
