@@ -123,6 +123,10 @@ EOT
         sed -i 's/load(qt_config)//' ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
         grep -A11 QMAKE_CC ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++/qmake.conf | sed -e 's/aarch64-linux-gnu/x86_64-unknown-freebsd11.1/' >> ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
         sed -i 's/stat64/stat/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/fopen64/fopen/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/ftello64/ftello/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/fseeko64/fseeko/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/freopen64/freopen/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
 
         ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
