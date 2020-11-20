@@ -99,14 +99,14 @@ dependencies = [
     Dependency(PackageSpec(name="PROJ_jll", version="7.2")),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll", v"7.71.1"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"),
     Dependency("Zstd_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll"),
+    Dependency("LibSSH2_jll", v"1.9.0"),
+    Dependency("MbedTLS_jll", v"2.16.8"),
     Dependency("nghttp2_jll", v"1.40.0"),
 ]
 
