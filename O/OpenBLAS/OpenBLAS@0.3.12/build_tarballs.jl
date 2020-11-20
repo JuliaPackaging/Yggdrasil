@@ -4,7 +4,7 @@ include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLAS"
-version = v"0.3.10"
+version = v"0.3.12"
 
 sources = openblas_sources(version)
 script = openblas_script()
