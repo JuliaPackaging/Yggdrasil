@@ -122,6 +122,7 @@ EOT
     *x86_64-unknown-freebsd*)
         sed -i 's/load(qt_config)//' ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
         grep -A11 QMAKE_CC ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++/qmake.conf | sed -e 's/aarch64-linux-gnu/x86_64-unknown-freebsd11.1/' >> ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
+        sed -i 's/stat64/stat/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
 
         ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
@@ -132,7 +133,7 @@ EOT
         cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-ppc64-bb
         sed -i 's/aarch64-/powerpc64le-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb/qmake.conf
 
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS="-liconv -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64" -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
