@@ -3,20 +3,25 @@
 using BinaryBuilder
 
 name = "Qt"
-version = v"5.15.0"
+version = v"5.15.1"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/5.15/$version/single/qt-everywhere-src-$version.tar.xz",
-                  "22b63d7a7a45183865cc4141124f12b673e7a17b1fe2b91e433f6547c5d548c3"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major)$(version.minor)/$version/single/qt-everywhere-src-$version.tar.xz",
+                  "44da876057e21e1be42de31facd99be7d5f9f07893e1ea762359bcee0ef64ee9"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir
+
+sed -i 's/-march=core-avx2//' ./qt-everywhere-src-*/qtbase/mkspecs/common/gcc-base.conf
+
 mkdir build
 cd build/
+
+qtsrcdir=`ls -d ../qt-everywhere-src-*`
 
 commonoptions=" \
 -opensource -confirm-license \
@@ -26,10 +31,15 @@ commonoptions=" \
 -skip qtwebglplugin -skip qtwebsockets -skip qtwebview  -skip qttools -nomake examples -release \
 "
 
+apk add g++ linux-headers
+
+if [[ $target != x86_64-linux* ]]; then
+    export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
+fi
+
 case "$target" in
 
-	*86*linux*)
-        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
+	*x86_64*linux*)
         ../qt-everywhere-src-*/configure -L $prefix/lib -I $prefix/include \
             -prefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig
@@ -69,8 +79,7 @@ EOT
         sed -i 's!-fuse-ld=x86_64-apple-darwin14!-fuse-ld=/opt/bin/x86_64-apple-darwin14-ld!g' /opt/bin/x86_64-apple-darwin14-clang
         
         cd $WORKSPACE/srcdir/build
-        apk add g++ linux-headers
-        export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
+        
         export QT_MAC_SDK_NO_VERSION_CHECK=1
         ../qt-everywhere-src-*/configure \
             QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks \
@@ -81,22 +90,54 @@ EOT
             -skip qtwinextras
         ;;
         
-    *w64-mingw*)
-        apk add g++ linux-headers
-        export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
-        
+    *mingw*)        
         ../qt-everywhere-src-*/configure -I $WORKSPACE/srcdir/qt-everywhere-src-*/qtbase/include/QtANGLE -platform linux-g++ -xplatform win32-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -prefix $prefix $commonoptions \
             -opengl dynamic
 		;;
 
     *arm-linux*)
-        apk add g++ linux-headers
-        export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
-        export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$prefix/share/pkgconfig
-        export PKG_CONFIG_LIBDIR=$prefix/lib/pkgconfig
+        sed -i 's/linux-gnueabi/linux-gnueabihf/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-arm-gnueabi-g++/qmake.conf
         
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -device linux-rasp-pi3-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-arm-gnueabi-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+        ;;
+        
+    *aarch64-linux*)
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+        ;;
+    
+    *i686-linux*)
+        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-i686-bb
+        sed -i 's/aarch64-/i686-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-i686-bb/qmake.conf
+
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-i686-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+        ;;
+    
+    *x86_64-unknown-freebsd*)
+        sed -i 's/load(qt_config)//' ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
+        grep -A11 QMAKE_CC ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++/qmake.conf | sed -e 's/aarch64-linux-gnu/x86_64-unknown-freebsd11.1/' >> ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
+        sed -i 's/stat64/stat/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/fopen64/fopen/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/ftello64/ftello/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/fseeko64/fseeko/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+        sed -i 's/freopen64/freopen/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
+
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+		;;
+    
+    *powerpc64le-linux*)
+        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-ppc64-bb
+        sed -i 's/aarch64-/powerpc64le-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb/qmake.conf
+
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS="-liconv -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64" -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
@@ -110,11 +151,15 @@ install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms_linux = [
+    Platform("aarch64", "linux"; libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
-platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows")])
+platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
 platforms_macos = [ Platform("x86_64", "macos") ]
 
 # The products that we will ensure are always built
