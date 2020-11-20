@@ -141,6 +141,10 @@ function build_julia(version)
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
     EOM
+    else
+        cat << EOM >>Make.user
+        USECLANG=1
+    EOM
     fi
 
     # avoid linker errors related to atomic support in 32bit ARM builds
