@@ -44,10 +44,6 @@ dependencies = [
     Dependency(PackageSpec(name="qwt_jll", uuid="ed0789fa-10db-50b3-94da-03266d70be0f"))
 ]
 
-Pkg.add("Qt_jll")
-using Qt_jll
-ENV["QT_PLUGIN_PATH"]=Qt_jll.artifact_dir*"/plugins"
-ENV["LD_LIBRARY_PATH"] = string(Qt_jll.LIBPATH) * ":" * ENV["LD_LIBRARY_PATH"]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
