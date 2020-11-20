@@ -109,13 +109,23 @@ EOT
         ;;
     
     *i686-linux*)
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-g++-32 -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-g++-32 -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
     
     *x86_64-unknown-freebsd*)
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+		;;
+    
+    *powerpc64le-linux*)
+        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb
+        sed -i 's/aarch64-/powerpc64le-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb/qmake.conf
+
+
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
@@ -134,6 +144,7 @@ platforms_linux = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "freebsd"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
