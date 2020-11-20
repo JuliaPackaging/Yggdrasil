@@ -5,9 +5,9 @@ version = v"5.0.4"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
-    "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v$(version).tar.bz2" =>
-	"5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803",
-    "patches",
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v$(version).tar.bz2",
+                  "5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -67,13 +67,14 @@ platforms = [
 ]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libc", :libc),
+products = [
+    LibraryProduct("libc", :libc),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/staticfloat/KernelHeadersBuilder/releases/download/v4.12.0-0/build_KernelHeaders.v4.12.0.jl",
+    Dependency("KernelHeaders_jll"), # TODO does not exist
+    #"https://github.com/staticfloat/KernelHeadersBuilder/releases/download/v4.12.0-0/build_KernelHeaders.v4.12.0.jl",
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

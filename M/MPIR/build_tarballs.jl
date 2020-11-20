@@ -7,8 +7,8 @@ version = v"3.0.0"
 
 # Collection of sources required to build MPFRBuilder
 sources = [
-    "http://mpir.org/mpir-$(version).tar.bz2" =>
-    "52f63459cf3f9478859de29e00357f004050ead70b45913f2c2269d9708675bb",
+    ArchiveSource("http://mpir.org/mpir-$(version).tar.bz2",
+                  "52f63459cf3f9478859de29e00357f004050ead70b45913f2c2269d9708675bb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,12 +28,12 @@ make install
 platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p)]
 
 # The products that we will ensure are always built
-products(prefix) = [
-    LibraryProduct(prefix, "libmpir", :libmpir)
+products = [
+    LibraryProduct("libmpir", :libmpir)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

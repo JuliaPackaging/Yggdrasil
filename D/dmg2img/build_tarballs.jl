@@ -4,8 +4,7 @@ using BinaryBuilder
 name = "dmg2img"
 version = v"1.6.7"
 sources = [
-    "https://github.com/Lekensteyn/dmg2img.git" =>
-    "f16f247d30f868e84f31e24792b4464488f1c009",
+    GitSource("https://github.com/Lekensteyn/dmg2img.git", "f16f247d30f868e84f31e24792b4464488f1c009"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,15 +23,15 @@ filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
-products(prefix) = [
-    ExecutableProduct(prefix, "dmg2img", :dmg2img)
+products = [
+    ExecutableProduct("dmg2img", :dmg2img)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.3/build_Zlib.v1.2.11.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/Bzip2-v1.0.6-2/build_Bzip2.v1.0.6.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/OpenSSL-v1.1.1%2Bc%2B0/build_OpenSSL.v1.1.1+c.jl",
+    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("OpenSSL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
