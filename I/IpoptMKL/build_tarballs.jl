@@ -30,6 +30,8 @@ fi
 ./configure --enable-shared \
             --prefix=${prefix} \
             --with-lapack="${libmkl[*]}" \
+            --with-mumps-cflags="-I$prefix/include/mumps_seq" \
+            --with-mumps-lflags="-L${libdir} -ldmumps -lmpiseq -lmumps_common ${libmkl[@]} -lpord" \
             --with-asl-cflags="-I${prefix}/include" \
             --with-asl-lflags="${LIBASL[*]}" \
             --host=${target}
@@ -59,6 +61,7 @@ products = [
 dependencies = [
     Dependency("ASL_jll"),
     Dependency("MKL_jll"),
+    Dependency("MUMPS_seq_MKL_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
