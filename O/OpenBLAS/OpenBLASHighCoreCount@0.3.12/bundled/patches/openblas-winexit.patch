@@ -1,16 +1,8 @@
-From f919c3301fabbaa5d965dcc7b1c3d6892a8c730a Mon Sep 17 00:00:00 2001
-From: Keno Fischer <keno@juliacomputing.com>
-Date: Sat, 14 Mar 2020 12:05:19 +0100
-
----
- driver/others/memory.c | 131 +----------------------------------------
- 1 file changed, 2 insertions(+), 129 deletions(-)
-
 diff --git a/driver/others/memory.c b/driver/others/memory.c
-index 62a5a021..23f8fe65 100644
+index f0521ab2..3408921d 100644
 --- a/driver/others/memory.c
 +++ b/driver/others/memory.c
-@@ -1510,7 +1510,7 @@ void CONSTRUCTOR gotoblas_init(void) {
+@@ -1534,7 +1534,7 @@ void CONSTRUCTOR gotoblas_init(void) {
  
  }
  
@@ -19,11 +11,10 @@ index 62a5a021..23f8fe65 100644
  
    if (gotoblas_initialized == 0) return;
  
-@@ -1547,74 +1547,12 @@ void DESTRUCTOR gotoblas_quit(void) {
- #endif
+@@ -1572,71 +1572,11 @@ void DESTRUCTOR gotoblas_quit(void) {
  }
  
--#if defined(_MSC_VER) && !defined(__clang__)
+ #if defined(_MSC_VER) && !defined(__clang__)
 -BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 -{
 -  switch (ul_reason_for_call)
@@ -57,15 +48,15 @@ index 62a5a021..23f8fe65 100644
 -*/
 -static int on_process_term(void)
 -{
--	gotoblas_quit();
--	return 0;
+-  gotoblas_quit();
+-  return 0;
 -}
  #ifdef _WIN64
  #pragma comment(linker, "/INCLUDE:_tls_used")
  #else
  #pragma comment(linker, "/INCLUDE:__tls_used")
  #endif
- 
+-
 -#ifdef _WIN64
 -#pragma const_seg(".CRT$XLB")
 -#else
@@ -89,12 +80,10 @@ index 62a5a021..23f8fe65 100644
 -#else
 -#pragma data_seg()
 -#endif
--#endif
--
+ #endif
+ 
  #if (defined(C_PGI) || (!defined(C_SUN) && defined(F_INTERFACE_SUN))) && (defined(ARCH_X86) || defined(ARCH_X86_64))
- /* Don't call me; this is just work around for PGI / Sun bug */
- void gotoblas_dummy_for_PGI(void) {
-@@ -3104,7 +3042,7 @@ void CONSTRUCTOR gotoblas_init(void) {
+@@ -3136,7 +3076,7 @@ void CONSTRUCTOR gotoblas_init(void) {
  
  }
  
@@ -103,7 +92,7 @@ index 62a5a021..23f8fe65 100644
  
    if (gotoblas_initialized == 0) return;
  
-@@ -3133,71 +3071,6 @@ void DESTRUCTOR gotoblas_quit(void) {
+@@ -3165,71 +3105,6 @@ void DESTRUCTOR gotoblas_quit(void) {
  #endif
  }
  
@@ -138,8 +127,8 @@ index 62a5a021..23f8fe65 100644
 -*/
 -static int on_process_term(void)
 -{
--	gotoblas_quit();
--	return 0;
+-  gotoblas_quit();
+-  return 0;
 -}
 -#ifdef _WIN64
 -#pragma comment(linker, "/INCLUDE:_tls_used")
