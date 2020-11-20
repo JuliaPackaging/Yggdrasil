@@ -3,11 +3,11 @@ using BinaryBuilder
 include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
-name = "OpenBLAS32"
-version = v"0.3.10"
+name = "OpenBLASHighCoreCount"
+version = v"0.3.12"
 
 sources = openblas_sources(version)
-script = openblas_script(openblas32=true)
+script = openblas_script(num_64bit_threads=128)
 platforms = openblas_platforms()
 products = openblas_products()
 dependencies = openblas_dependencies()
