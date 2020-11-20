@@ -21,6 +21,8 @@ sed -i 's/-march=core-avx2//' ./qt-everywhere-src-*/qtbase/mkspecs/common/gcc-ba
 mkdir build
 cd build/
 
+qtsrcdir=`ls -d ../qt-everywhere-src-*`
+
 commonoptions=" \
 -opensource -confirm-license \
 -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdatavis3d -skip qtdoc -skip qtgamepad \
@@ -109,21 +111,26 @@ EOT
         ;;
     
     *i686-linux*)
-        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-g++-32 -device-option CROSS_COMPILE=/opt/bin/$target- \
+        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-i686-bb
+        sed -i 's/aarch64-/i686-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-i686-bb/qmake.conf
+
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-i686-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
     
     *x86_64-unknown-freebsd*)
+        sed -i 's/load(qt_config)//' ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
+        grep -A11 QMAKE_CC ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++/qmake.conf | sed -e 's/aarch64-linux-gnu/x86_64-unknown-freebsd11.1/' >> ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
+
         ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
     
     *powerpc64le-linux*)
-        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb
+        cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-ppc64-bb
         sed -i 's/aarch64-/powerpc64le-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb/qmake.conf
-
 
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
             -extprefix $prefix $commonoptions \
