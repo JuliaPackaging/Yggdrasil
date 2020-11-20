@@ -107,7 +107,7 @@ dependencies = [
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll"),
     Dependency("MbedTLS_jll"),
-    Dependency("nghttp2_jll"),
+    Dependency("nghttp2_jll", v"1.40.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
