@@ -60,7 +60,7 @@ function build_julia(version)
     override OS=Linux
     EOM
 
-    LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
@@ -115,7 +115,7 @@ function build_julia(version)
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
 
     # just nop this
-    override LLVM_CONFIG_HOST=
+    override LLVM_CONFIG_HOST=true
 
     # we only run flisp and we built that for Linux
     override spawn = \$(1)
@@ -140,6 +140,10 @@ function build_julia(version)
         LIBBLASNAME=libopenblas
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
+    EOM
+    else
+        cat << EOM >>Make.user
+        USECLANG=1
     EOM
     fi
 
