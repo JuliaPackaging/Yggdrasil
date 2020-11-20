@@ -115,7 +115,7 @@ function build_julia(version)
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
 
     # just nop this
-    override LLVM_CONFIG_HOST=
+    override LLVM_CONFIG_HOST=true
 
     # we only run flisp and we built that for Linux
     override spawn = \$(1)
