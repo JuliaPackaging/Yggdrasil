@@ -107,6 +107,13 @@ EOT
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
+
+    *powerpc64le-linux*)
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-powerpc64le-gnu-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+            -extprefix $prefix $commonoptions \
+            -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
+        ;;
+
     
     *i686-linux*)
         ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-g++-32 -device-option CROSS_COMPILE=/opt/bin/$target- \
@@ -133,6 +140,7 @@ platforms_linux = [
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("x86_64", "freebsd"),
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
