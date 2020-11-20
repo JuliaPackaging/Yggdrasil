@@ -60,7 +60,7 @@ function build_julia(version)
     override OS=Linux
     EOM
 
-    LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
