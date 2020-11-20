@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.1.15"
+version = v"0.3.3"
 
 # Collection of sources required to build tar
 sources = [
     ArchiveSource(
         "https://github.com/tectonic-typesetting/tectonic/archive/tectonic@$(version).tar.gz",
-        "0e55188eafc1b58f3660a303fcdd6adc071051b9eb728119837fbeed2309914f"
+        "c0aa60186f2e7f37af67dafbdccfc7a99ca5ce084651d8fcabe7561b941dcb97"
     )
 ]
 
