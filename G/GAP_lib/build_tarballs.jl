@@ -7,7 +7,7 @@ version = v"4.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gap-system/gap.git", "069a6497424113dc5e5ffe133be9da5bfe6acb24"),
+    GitSource("https://github.com/gap-system/gap.git", "9ec24ed6221b2429bc0a79457814c1b1bda09df4"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(version)/gap-$(version)-core.tar.bz2",
 #                  "6637f66409bc91af21eaa38368153270b71b13b55b75cc1550ed867c629901d1"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(version)/packages-required-v$(version).tar.gz",
