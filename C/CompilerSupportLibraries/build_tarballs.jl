@@ -62,9 +62,11 @@ rm -f ${prefix}/logs/LatestLibraries.log.gz
 # Make sure expansions aren't empty
 shopt -s nullglob
 
-# copy out all the libraries we can find, not clobbering stuff from LL
+# copy out all the libraries we can find, excepting libstdc++ and libgomp.
+# which we copied out in the extraction step above.
 for d in /opt/${target}/${target}/lib*; do
-    cp -uav ${d}/*.${dlext}* ${libdir}/ || true
+    NON_LATEST_LIBS=$(ls ${d}/*.${dlext}* | grep -v libstdc++ | grep -v libgomp)
+    cp -uav ${NON_LATEST_LIBS} ${libdir}/ || true
 done
 
 # libwinpthread is a special snowflake and is only within `bin` for some reason
