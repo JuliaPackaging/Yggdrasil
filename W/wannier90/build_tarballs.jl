@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/wannier90-*/
 
 cat > make.inc << EOF
     F90    = $FC
-    FCOPTS = $FFLAGS -fPIC -O2
+    FCOPTS = $FFLAGS -fPIC -O3
     LDOPTS = $LDFLAGS -fPIC
     LIBS   = -lopenblas -L${libdir}
     DYNLIBRARYEXTENSION = $dlext
