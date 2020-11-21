@@ -65,15 +65,24 @@ else
 fi
 
 # We need to be able to access `libhdf5` and `libhdf5_hl` directly, so symlink it from the hashed filename from manylinux pypi
+if [[ ${target} == *86*linux* ]]; then
+    libhdf5name=$(basename ${libdir}/libhdf5-*.${dlext}*)
+    base="${libhdf5name%%.*}"
+    ext="${libhdf5name#$base}"
+    ln -s ${libhdf5name} ${libdir}/libhdf5${ext}
+    libhdf5_hlname=$(basename ${libdir}/libhdf5_hl-*.${dlext}*)
+    base="${libhdf5_hlname%%.*}"
+    ext="${libhdf5_hlname#$base}"
+    ln -s ${libhdf5_hlname} ${libdir}/libhdf5_hl${ext}
+fi
+
 if [[ ! ${target} == *-mingw* ]]; then
     if [[ ! -f ${libdir}/libhdf5${dlext} ]]; then
-        libhdf5name=$(basename ${libdir}/libhdf5-*.${dlext}*)
-        ln -s ${libhdf5name} ${libdir}/libhdf5${dlext}
+        ln -s ${libdir}/libhdf5.*${dlext} ${libdir}/libhdf5${dlext}
     fi
 
     if [[ ! -f ${libdir}/libhdf5_hl${dlext} ]]; then
-        libhdf5_hlname=$(basename ${libdir}/libhdf5_hl-*.${dlext}*)
-        ln -s ${libhdf5_hlname} ${libdir}/libhdf5_hl${dlext}
+        ln -s ${libdir}/libhdf5_hl.*${dlext} ${libdir}/libhdf5_hl${dlext}
     fi
 fi
 
