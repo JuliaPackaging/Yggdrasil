@@ -40,9 +40,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# GLOB_NOMAGIC is not supported by musl
-filter!(p -> libc(p) != "musl", platforms)
-
 # Native support for Windows is not yet provided
 filter!(!Sys.iswindows, platforms)
 
