@@ -19,12 +19,12 @@ if [[ "${target}" == *-apple-* ]]; then
     shared="-dynamiclib"
 fi
 cat > make.inc << EOF
-    F90 = $FC
-    FCOPTS = $FFLAGS -fPIC -O3 -march=${MACHTYPE}
+    F90    = $FC
+    FCOPTS = $FFLAGS -fPIC -O2
     LDOPTS = $LDFLAGS -fPIC
-    LIBS = -lopenblas -L$prefix/lib/
+    LIBS   = -lopenblas -L$prefix/lib/
     DYNLIBRARYEXTENSION = $dlext
-    SHAREDLIBFLAGS = $shared
+    SHAREDLIBFLAGS      = $shared
 EOF
 
 make -j${nproc} wannier dynlib
@@ -41,8 +41,7 @@ done
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
