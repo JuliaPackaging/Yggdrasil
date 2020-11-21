@@ -22,7 +22,7 @@ cat > make.inc << EOF
     F90    = $FC
     FCOPTS = $FFLAGS -fPIC -O2
     LDOPTS = $LDFLAGS -fPIC
-    LIBS   = -lopenblas -L$prefix/lib/
+    LIBS   = -lopenblas -L${libdir}
     DYNLIBRARYEXTENSION = $dlext
     SHAREDLIBFLAGS      = $shared
 EOF
@@ -30,12 +30,12 @@ EOF
 make -j${nproc} wannier dynlib
 
 # Installation in the Makefile is broken
-install -d $prefix/bin $prefix/lib
+install -d ${bindir} ${libdir}
 for exe in wannier90; do
-    install -m755 ${exe}.x $prefix/bin/${exe}${exeext}
+    install -m755 ${exe}.x ${bindir}/${exe}${exeext}
 done
 for lib in libwannier.*; do
-    install -m644 $lib $prefix/lib/$lib
+    install -m644 $lib ${libdir}/$lib
 done
 """
 
