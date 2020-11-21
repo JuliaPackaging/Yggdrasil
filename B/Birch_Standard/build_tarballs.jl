@@ -16,6 +16,7 @@ script = raw"""
 apk add boost-dev yaml-dev
 
 # build and install driver on host system
+cd ${WORKSPACE}/srcdir/Birch/driver/
 mkdir -p ${WORKSPACE}/srcdir/build_host
 autoreconf -vi
 bb_target=${MACHTYPE} CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib ./configure --prefix=${WORKSPACE}/srcdir/build_host --build=${MACHTYPE} --host=${MACHTYPE}
