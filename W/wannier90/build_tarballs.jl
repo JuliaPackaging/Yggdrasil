@@ -14,17 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wannier90-*/
 
-shared="-shared"
-if [[ "${target}" == *-apple-* ]]; then
-    shared="-dynamiclib"
-fi
 cat > make.inc << EOF
     F90    = $FC
     FCOPTS = $FFLAGS -fPIC -O2
     LDOPTS = $LDFLAGS -fPIC
     LIBS   = -lopenblas -L${libdir}
     DYNLIBRARYEXTENSION = $dlext
-    SHAREDLIBFLAGS      = $shared
 EOF
 
 make -j${nproc} wannier dynlib
