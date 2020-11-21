@@ -55,7 +55,7 @@ dependencies = [
     Dependency("boost_jll"),
     Dependency("Eigen_jll"),
     Dependency("LibYAML_jll"),
-    BuildDependency("LibBirch_jll"),
+    Dependency("LibBirch_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
