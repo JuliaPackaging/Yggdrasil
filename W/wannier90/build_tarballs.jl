@@ -31,8 +31,8 @@ make -j${nproc} wannier dynlib
 
 # Installation in the Makefile is broken
 install -d $prefix/bin $prefix/lib
-for exe in wannier90.x; do
-    install -m755 $exe $prefix/bin/$exe
+for exe in wannier90; do
+    install -m755 ${exe}.x $prefix/bin/${exe}${exeext}
 done
 for lib in libwannier.*; do
     install -m644 $lib $prefix/lib/$lib
@@ -46,7 +46,7 @@ platforms = expand_gfortran_versions(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libwannier", :libwannier),
-    ExecutableProduct("wannier90.x", :wannier90)
+    ExecutableProduct("wannier90", :wannier90)
 ]
 
 # Dependencies that must be installed before this package can be built
