@@ -48,7 +48,7 @@ products = [
 dependencies = [
     Dependency("ASL_jll"),
     Dependency("OpenBLAS32_jll"),  # Ipopt uses 32-bit ints
-    Dependency("MUMPS_seq_jll"),
+    Dependency("MUMPS_seq_jll", v"5.2.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
