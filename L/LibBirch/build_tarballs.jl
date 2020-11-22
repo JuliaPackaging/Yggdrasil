@@ -3,7 +3,9 @@
 using BinaryBuilder, Pkg
 
 name = "LibBirch"
-version = v"1.0.0"
+# Birch's version is `(git describe --long || echo) | sed -E 's/v([0-9]+)-([0-9]+)-g[0-9a-f]+/\1.\2/'`
+# (see https://github.com/JuliaPackaging/Yggdrasil/pull/2156#discussion_r528224861)
+version = v"1.75"
 
 # Collection of sources required to complete build
 sources = [
