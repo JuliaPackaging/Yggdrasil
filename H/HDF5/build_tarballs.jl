@@ -64,20 +64,28 @@ else
     install_license aarch64-*/info/licenses/COPYING
 fi
 
-# We need to be able to access `libhdf5` and `libhdf5_hl` directly, so symlink it from the hashed filename from manylinux pypi
-if [[ ${target} == *86*linux* ]]; then
-    libhdf5name=$(basename ${libdir}/libhdf5-*.${dlext}*)
-    base="${libhdf5name%%.*}"
-    ext="${libhdf5name#$base}"
-    ln -s ${libhdf5name} ${libdir}/libhdf5${ext}
+# We want to have the files with the simple name lib.extension, without
+# soversion, to make linking to these libraries easier
+if [[ ! ${target} == *-mingw* ]]; then
+    for lib in libhdf5 libhdf5_hl; do
+        # We also need to be able to access `libhdf5` and `libhdf5_hl` directly,
+        # so symlink it from the hashed filename from manylinux pypi
+        if [[ ${target} == *86*linux* ]]; then
+            name=$(basename ${libdir}/${lib}-*.${dlext}*)
+            base="${name%%.*}"
+            ext="${name#$base}"
+            ln -s "${name}" "${libdir}/${lib}${ext}"
+        fi
 
-    libhdf5_hlname=$(basename ${libdir}/libhdf5_hl-*.${dlext}*)
-    base="${libhdf5_hlname%%.*}"
-    ext="${libhdf5_hlname#$base}"
-    ln -s ${libhdf5_hlname} ${libdir}/libhdf5_hl${ext}
+        dest="${libdir}/${lib}.${dlext}"
+        if [[ ! -f "${dest}" ]]; then
+            link_target=$(find ${libdir} -name "${lib}.*.${dlext}" -or -name "${lib}.${dlext}.*")
+            ln -s $(basename "${link_target}") "${dest}"
+        fi
+        # Double check that the file links to an existing file
+        [ -f $(realpath "${dest}") ]
+    done
 fi
-
-
 """
 
 # These are the platforms we will build for by default, unless further
