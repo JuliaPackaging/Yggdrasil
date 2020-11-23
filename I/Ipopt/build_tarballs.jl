@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Ipopt"
 version = v"3.13.2"
@@ -47,8 +47,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("ASL_jll"),
-    Dependency("OpenBLAS32_jll"),  # Ipopt uses 32-bit ints
-    Dependency("MUMPS_seq_jll"),
+    Dependency("OpenBLAS32_jll", v"0.3.9"),  # Ipopt uses 32-bit ints
+    Dependency(PackageSpec(; name="MUMPS_seq_jll", version=v"5.2.1")),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
