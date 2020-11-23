@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/utf8proc-*
+cd $WORKSPACE/srcdir/utf8proc*
 
 if [[ "${target}" == *-mingw* ]]; then
     make -j${nproc} libutf8proc.a
