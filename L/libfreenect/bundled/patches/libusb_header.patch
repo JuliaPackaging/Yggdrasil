@@ -1,0 +1,10 @@
+--- a/src/usb_libusb10.c
++++ b/src/usb_libusb10.c
+@@ -28,6 +28,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <limits.h>
+ #include <libusb.h>
+ #include "freenect_internal.h"
+ #include "loader.h"
