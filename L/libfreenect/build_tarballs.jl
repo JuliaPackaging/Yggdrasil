@@ -43,7 +43,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfreenect_sync", :libfreenect_sync),
-    LibraryProduct("libfreenect", :lifreenect)
+    LibraryProduct("libfreenect", :libfreenect)
 ]
 
 # Dependencies that must be installed before this package can be built
