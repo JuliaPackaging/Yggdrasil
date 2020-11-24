@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd MPSolve/
+cd $WORKSPACE/srcdir/MPSolve/
 export CPPFLAGS="-I${prefix}/include"
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -24,7 +23,6 @@ exit
 """
 
 platforms = supported_platforms() 
-
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
