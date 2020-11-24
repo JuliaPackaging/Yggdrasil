@@ -16,6 +16,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/libfreenect/
 atomic_patch -p1 ../patches/libusb_header.patch
 mkdir build && cd build/
+FLAGS=()
+if [[ "${target}" == *-mingw* ]]; then
+    # Give a hint about where to find pthread library
+    FLAGS+=(-DTHREADS_PTHREADS_WIN32_LIBRARY="/opt/${target}/${target}/sys-root/bin/libwinpthread-1.dll")
+fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -23,6 +28,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_FAKENECT=OFF \
     -DBUILD_REDIST_PACKAGE=OFF \
+    "${FLAGS[@]}" \
     ..
 make -j${nproc}
 make install
