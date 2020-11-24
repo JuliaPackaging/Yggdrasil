@@ -10,6 +10,7 @@ version = v"1.75"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/lawmurray/Birch.git", "a533990b59b04ef4cd20f8d4fe91c4a220df1cfa"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,6 +31,7 @@ make install
 cd ${WORKSPACE}/srcdir/Birch/libraries/Standard/
 export BIRCH_PREFIX=${WORKSPACE}/srcdir/build_host
 export PATH=${WORKSPACE}/srcdir/build_host/bin:$PATH
+atomic_patch -p3 ${WORKSPACE}/srcdir/stdio.patch
 birch bootstrap
 CPPFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-debug --enable-release
 make -j${nproc}
