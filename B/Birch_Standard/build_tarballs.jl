@@ -22,7 +22,7 @@ apk add boost-dev yaml-dev
 cd ${WORKSPACE}/srcdir/Birch/driver/
 mkdir -p ${WORKSPACE}/srcdir/build_host
 autoreconf -vi
-bb_target=${MACHTYPE} CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib ./configure --prefix=${WORKSPACE}/srcdir/build_host --build=${MACHTYPE} --host=${MACHTYPE}
+CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib ./configure --prefix=${WORKSPACE}/srcdir/build_host --build=${MACHTYPE} --host=${MACHTYPE}
 make clean
 make -j${nproc}
 make install
