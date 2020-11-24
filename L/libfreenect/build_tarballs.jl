@@ -12,19 +12,18 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libfreenect/
+cd $WORKSPACE/srcdir/libfreenect/
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_CPP=OFF -DBUILD_EXAMPLES=OFF -DBUILD_FAKENECT=OFF -DBUILD_REDIST_PACKAGE=OFF ..
 make
 make install
-exit
+install_license APACHE20 GPL2
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p), supported_platforms())
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
