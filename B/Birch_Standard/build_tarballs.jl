@@ -31,7 +31,10 @@ make install
 cd ${WORKSPACE}/srcdir/Birch/libraries/Standard/
 export BIRCH_PREFIX=${WORKSPACE}/srcdir/build_host
 export PATH=${WORKSPACE}/srcdir/build_host/bin:$PATH
-atomic_patch -p3 ${WORKSPACE}/srcdir/stdio.patch
+# musl c library does not define stdin, stdout, and stderr macros as objects
+if [[ "${target}" == *-musl* ]]; then
+  atomic_patch -p3 ${WORKSPACE}/srcdir/stdio.patch
+fi
 birch bootstrap
 CPPFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-debug --enable-release
 make -j${nproc}
