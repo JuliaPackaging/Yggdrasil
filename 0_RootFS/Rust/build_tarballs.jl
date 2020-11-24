@@ -25,7 +25,7 @@ export CARGO_HOME=${prefix}
 export RUSTUP_HOME=${prefix}
 chmod +x rustup-init
 ./rustup-init -y --no-modify-path --default-host=${rust_host} --default-toolchain 1.48.0
- 
+
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
     aarch64-unknown-linux-gnu
@@ -118,9 +118,12 @@ unpacked_hash = create_artifact() do dir
         # Configuration file for `cargo`
         """)
         for platform in supported_platforms()
+            # Use `aatriplet` for the linker to match how the wrappers are
+            # written in
+            # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/30d056ef68f81dca9cb91ededcce6b68c6466b37/src/Runner.jl#L599.
             write(io, """
             [target.$(map_rust_target(platform))]
-            linker = "$(triplet(platform))-gcc"
+            linker = "$(BinaryBuilderBase.aatriplet(platform))-gcc"
             """)
         end
     end
