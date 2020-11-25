@@ -9,7 +9,7 @@ function build_julia(version)
     checksums = Dict(
         v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
-        v"1.5.1" => "1f138205772eb1e565f1d7ccd6f237be8a4d18713a3466e3b8d3a6aad6483fd9",
+        v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
     )
     sources = [
         ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
@@ -87,7 +87,7 @@ function build_julia(version)
 
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
-    # USE_SYSTEM_LIBUNWIND=1
+    USE_SYSTEM_LIBUNWIND=1
 
     USE_SYSTEM_PCRE=1
     USE_SYSTEM_OPENLIBM=1
@@ -144,6 +144,10 @@ function build_julia(version)
     else
         cat << EOM >>Make.user
         USECLANG=1
+
+        # need to static link libosxunwind, see https://github.com/JuliaPackaging/Yggdrasil/pull/2164
+        LIBUNWIND:=${libdir}/libosxunwind.a
+        JCPPFLAGS+=-DLIBOSXUNWIND
     EOM
     fi
 
@@ -218,8 +222,8 @@ function build_julia(version)
 
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
-        # Dependency("LibUnwind_jll"),
-        # Dependency("LibOSXUnwind_jll"),
+        Dependency("LibUnwind_jll"),
+        BuildDependency("LibOSXUnwind_jll"),
         Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
         Dependency("OpenLibm_jll"),
         Dependency("dSFMT_jll"),
