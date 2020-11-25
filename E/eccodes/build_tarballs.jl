@@ -13,21 +13,28 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd eccodes-*-Source
-if [[ ${target} = *-mingw* ]] ; then 
-    chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
+cd $WORKSPACE/srcdir/eccodes-*-Source
+if [ ${target} = *-mingw* ] ; then
+    chmod +x cmake/ecbuild_windows_replace_symlinks.sh
     atomic_patch -p1 /workspace/srcdir/patches/windows.patch
 else
     atomic_patch -p1 /workspace/srcdir/patches/unix.patch
 fi
-cd ..
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF -DENABLE_ECCODES_THREADS=ON ../eccodes-*-Source/
+export CFLAGS="-I${includedir}"
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_NETCDF=OFF \
+    -DENABLE_PNG=ON \
+    -DENABLE_PYTHON=OFF \
+    -DENABLE_FORTRAN=OFF \
+    -DENABLE_ECCODES_THREADS=ON \
+    ..
 make -j${nproc}
 make install
-install_license ../eccodes-*-Source/LICENSE
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
