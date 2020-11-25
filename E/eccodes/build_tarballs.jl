@@ -3,36 +3,43 @@
 using BinaryBuilder, Pkg
 
 name = "eccodes"
-version = v"2.18.0"
+version = v"2.19.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-2.18.0-Source.tar.gz", "d88943df0f246843a1a062796edbf709ef911de7269648eef864be259e9704e3"),
+    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-$version-Source.tar.gz", "9964bed5058e873d514bd4920951122a95963128b12f55aa199d9afbafdd5d4b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd eccodes-2.18.0-Source
-if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32" ] ; then 
-    chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
+cd $WORKSPACE/srcdir/eccodes-*-Source
+if [[ ${target} = *-mingw* ]] ; then
+    chmod +x cmake/ecbuild_windows_replace_symlinks.sh
     atomic_patch -p1 /workspace/srcdir/patches/windows.patch
 else
     atomic_patch -p1 /workspace/srcdir/patches/unix.patch
 fi
-cd ..
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF ../eccodes-2.18.0-Source/
+export CFLAGS="-I${includedir}"
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_NETCDF=OFF \
+    -DENABLE_PNG=ON \
+    -DENABLE_PYTHON=OFF \
+    -DENABLE_FORTRAN=OFF \
+    -DENABLE_ECCODES_THREADS=ON \
+    ..
 make -j${nproc}
 make install
-install_license ../eccodes-2.18.0-Source/LICENSE
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() 
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
