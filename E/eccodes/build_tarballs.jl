@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd eccodes-*-Source
-if [ ${target} = "*-mingw*" ] ; then 
+if [[ ${target} = *-mingw* ]] ; then 
     chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
     atomic_patch -p1 /workspace/srcdir/patches/windows.patch
 else
