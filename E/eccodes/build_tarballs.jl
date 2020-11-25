@@ -13,10 +13,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-version=2.19.1
 cd $WORKSPACE/srcdir
-cd eccodes-${version}-Source
-if [ ${target} = "x86_64-w64-mingw32" ] || [ ${target} = "i686-w64-mingw32" ] ; then 
+cd eccodes-*-Source
+if [[ ${target} = "*-mingw*" ]] ; then 
     chmod +x cmake/ecbuild_windows_replace_symlinks.sh 
     atomic_patch -p1 /workspace/srcdir/patches/windows.patch
 else
@@ -25,10 +24,10 @@ fi
 cd ..
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF -DENABLE_ECCODES_THREADS=ON ../eccodes-${version}-Source/
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_NETCDF=OFF -DENABLE_PNG=ON -DENABLE_PYTHON=OFF -DENABLE_FORTRAN=OFF -DENABLE_ECCODES_THREADS=ON ../eccodes-*-Source/
 make -j${nproc}
 make install
-install_license ../eccodes-${version}-Source/LICENSE
+install_license ../eccodes-*-Source/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
