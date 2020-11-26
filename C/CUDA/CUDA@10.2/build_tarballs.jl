@@ -67,8 +67,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -114,8 +115,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
+    mv bin/cuda-memcheck.exe ${bindir}
 fi
 """
 
