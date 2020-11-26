@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.4.2"
+julia_version = v"1.5.3"
 
 name = "libcxxwrap_julia"
-version = v"0.8.4"
+version = v"0.8.5"
 
 const is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/JuliaInterop/libcxxwrap-julia.git" : joinpath(ENV["HOME"], "src/julia/libcxxwrap-julia/")
@@ -59,4 +59,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"7", julia_compat = "~$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version = v"7", julia_compat = "^$(julia_version.major).$(julia_version.minor)")
