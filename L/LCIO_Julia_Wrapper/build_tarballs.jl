@@ -4,7 +4,6 @@ using BinaryBuilder
 using Pkg
 
 julia_version = v"1.5.3"
-
 name = "LCIO_Julia_Wrapper"
 version = v"0.13.0"
 
