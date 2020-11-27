@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "hidapi"
-version = v"0.10.0"
+version = v"0.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libusb/hidapi.git", "302d1f24018d5a4a480f92a72307616f88d97651")
+    GitSource("https://github.com/libusb/hidapi.git", "f6d0073fcddbdda24549199445e844971d3c9cef")
 ]
 
 # Script template (structure is the same for all platforms, directory for make differs)
