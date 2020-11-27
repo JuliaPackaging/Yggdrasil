@@ -1,0 +1,57 @@
+--- a/tests/test_common.c
++++ b/tests/test_common.c
+@@ -58,10 +58,10 @@
+ int rand_int(){
+   int val;
+   int i;
+-  val = (random() & 0x000000ff);
++  val = (rand() & 0x000000ff);
+   for(i=0; i<(sizeof(int)); i++){
+     val = val << 8;
+-    val += (random() & 0x000000ff ); /* we keep only 8 bits */
++    val += (rand() & 0x000000ff ); /* we keep only 8 bits */
+   }
+   return val;
+ }
+--- a/tests/test_perf.c
++++ b/tests/test_perf.c
+@@ -114,7 +114,7 @@
+ 
+ static void fill_and_flush(int seed, int args) {
+   int i;
+-  srandom(seed);
++  srand(seed);
+   for (i=0; i<TESTSIZE; i++){
+     if (args==1) {
+       inputs[i] = randfun();
+@@ -434,7 +434,7 @@
+   if (doSubnormals) lowBound = 0; else lowBound = 0x00100000;
+ 
+   /* Find first a random index to the midpoint-value table */
+-  while ((index = (random() & 0xffff)) > 55442);
++  while ((index = (rand() & 0xffff)) > 55442);
+ 
+   /* Read (raw) values from the table */
+   xraw = midpointValues[index].x;
+@@ -449,10 +449,10 @@
+ 
+   */
+   while (1) {
+-    offset = random() & 0x7ff;
++    offset = rand() & 0x7ff;
+     offset >>= congruence;
+     offset <<= congruence;
+-    if (random() & 1) offset = -offset;
++    if (rand() & 1) offset = -offset;
+     if ((-1074 <= offset) && (offset <= 1023)) {
+       offset1 = offset >> 1;
+       offset2 = offset - offset1;
+@@ -589,7 +589,7 @@
+ #endif /* TEST_CACHE*/
+ 
+   /************  TESTS WITHOUT CACHES  *******************/
+-  srandom(n);
++  srand(n);
+ #if EVAL_PERF==1  
+   crlibm_second_step_taken=0; 
+ #endif
