@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name="Cubature"
-version=v"1.0.3"
+version=v"1.0.4"
 
 # Collection of sources required to build Cubature
 sources = [
     GitSource("https://github.com/stevengj/cubature.git",
-              "a61dd32094bcf925fbc4a93d02e0f0f147f8b734"), # v1.0.3
+              "03d4af5f3ec30d2400e129bdb17739808c92dfd9"), # v1.0.4
 ]
 
 # Bash recipe for building across all platforms
