@@ -32,6 +32,14 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
     ..
 make -j${nproc} && make install
+
+if [[ "${target}" == *mingw* ]]; then
+    # For some reason, the build system doesn't set the `.dll` files as
+    # executable, which prevents them from being loaded.  Also, we need
+    # to explicitly use `${prefix}/lib` here because the build system
+    # is a simple one, and blindly uses `/lib`, even on Windows.
+    chmod +x ${prefix}/lib/*.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further

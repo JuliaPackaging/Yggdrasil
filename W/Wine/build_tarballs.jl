@@ -12,20 +12,20 @@ SAFE_ARGS = [a for a in ARGS if startswith(a, "-")]
 
 version = v"3.21"
 sources = [
-    "https://github.com/wine-mirror/wine.git" => "ea9253d6d3c9bb60d98b0d917292fc0b4babb3dd",
+    GitSource("https://github.com/wine-mirror/wine.git", "ea9253d6d3c9bb60d98b0d917292fc0b4babb3dd"),
 ]
 
 # The products that we will ensure are always built
-products(prefix) = Product[
-    ExecutableProduct(prefix, "wine64", :wine64),
+products = Product[
+    ExecutableProduct("wine64", :wine64),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.2/build_Zlib.v1.2.11.jl",
-    "https://github.com/SimonDanisch/LibpngBuilder/releases/download/v1.0.1/build_libpng.v1.6.31.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/JpegTurbo-v2.0.1-0/build_JpegTurbo.v2.0.1.jl",
-    "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GnuTLS-v3.6.5-0/build_GnuTLS.v3.6.5.jl",
+    Dependency("Zlib_jll"),
+    Dependency("libpng_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("GnuTLS_jll"),
 ]
 
 platform32 = Platform("i686", "linux"; libc="musl")

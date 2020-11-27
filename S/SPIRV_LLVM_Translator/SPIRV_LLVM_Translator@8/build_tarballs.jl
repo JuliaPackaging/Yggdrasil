@@ -3,7 +3,7 @@ include("../common.jl")
 version = v"8.0"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "20240c9e4284a839337a04fb6001d8bf6b26fb62")]
+sources = [GitSource(repo, "343490ebc2a56c12d434233ceb8fba3aa1fbee98")]
 
 # LLVM 8's add_llvm_library does not work on Windows
 platforms = filter(!Sys.iswindows, platforms)
@@ -16,4 +16,5 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7")
+               preferred_gcc_version=v"7", julia_compat="~1.4")
+

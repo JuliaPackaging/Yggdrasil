@@ -35,8 +35,11 @@ make -j${nproc}
 # install GAP binaries
 make install-bin install-headers install-libgap
 
-# FIXME: also install config.h
-#cp gen/config.h ${prefix}/include/gap
+# also install config.h
+cp gen/config.h ${prefix}/include/gap
+
+# get rid of *.la files, they just cause trouble
+rm ${prefix}/lib/*.la
 
 # get rid of the wrapper shell script, which is useless for us
 mv ${prefix}/bin/gap.real ${prefix}/bin/gap

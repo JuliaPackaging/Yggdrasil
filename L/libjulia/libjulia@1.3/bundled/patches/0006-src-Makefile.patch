@@ -1,0 +1,63 @@
+commit 059ae5b178bcc8534e98da2a6d0e28914e7d9d31
+Author: Max Horn <max@quendi.de>
+Date:   2020-11-20 18:09:33 +0100
+
+    Backport LLVM_LDFLAGS and LLVM_CXXFLAGS
+
+diff --git a/src/Makefile b/src/Makefile
+index ce846ca5a0..cad108b26e 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -91,16 +91,19 @@ UV_HEADERS += uv/*.h
+ endif
+ PUBLIC_HEADER_TARGETS := $(addprefix $(build_includedir)/julia/,$(notdir $(PUBLIC_HEADERS)) $(UV_HEADERS))
+ 
++LLVM_LDFLAGS := $(shell $(LLVM_CONFIG_HOST) --ldflags)
++LLVM_CXXFLAGS := $(shell $(LLVM_CONFIG_HOST) --cxxflags)
++
+ ifeq ($(JULIACODEGEN),LLVM)
+ ifneq ($(USE_SYSTEM_LLVM),0)
+-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags --libs --system-libs)
++LLVMLINK += $(LLVM_LDFLAGS) $(shell $(LLVM_CONFIG_HOST) --libs --system-libs)
+ # HACK: llvm-config doesn't correctly point to shared libs on all platforms
+ #       https://github.com/JuliaLang/julia/issues/29981
+ else
+ ifneq ($(USE_LLVM_SHLIB),1)
+-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags) $(shell $(LLVM_CONFIG_HOST) --libs $(LLVM_LIBS)) $(shell $(LLVM_CONFIG_HOST) --ldflags) $(shell $(LLVM_CONFIG_HOST) --system-libs 2> /dev/null)
++LLVMLINK += $(LLVM_LDFLAGS) $(shell $(LLVM_CONFIG_HOST) --libs $(LLVM_LIBS)) $(LLVM_LDFLAGS) $(shell $(LLVM_CONFIG_HOST) --system-libs 2> /dev/null)
+ else
+-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags) -lLLVM
++LLVMLINK += $(LLVM_LDFLAGS) -lLLVM
+ endif
+ endif
+ ifeq ($(USE_LLVM_SHLIB),1)
+@@ -150,9 +153,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(HEADERS) | $(BUILDDIR)
+ $(BUILDDIR)/%.dbg.obj: $(SRCDIR)/%.c $(HEADERS) | $(BUILDDIR)
+ 	@$(call PRINT_CC, $(CC) $(JCPPFLAGS) $(JCFLAGS) $(DEBUGFLAGS) -c $< -o $@)
+ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(SRCDIR)/llvm-version.h $(HEADERS) $(LLVM_CONFIG_ABSOLUTE) | $(BUILDDIR)
+-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(JCPPFLAGS) $(JCXXFLAGS) $(SHIPFLAGS) $(CXX_DISABLE_ASSERTION) -c $< -o $@)
++	@$(call PRINT_CC, $(CXX) $(LLVM_CXXFLAGS) $(JCPPFLAGS) $(JCXXFLAGS) $(SHIPFLAGS) $(CXX_DISABLE_ASSERTION) -c $< -o $@)
+ $(BUILDDIR)/%.dbg.obj: $(SRCDIR)/%.cpp $(SRCDIR)/llvm-version.h $(HEADERS) $(LLVM_CONFIG_ABSOLUTE) | $(BUILDDIR)
+-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(JCPPFLAGS) $(JCXXFLAGS) $(DEBUGFLAGS) -c $< -o $@)
++	@$(call PRINT_CC, $(CXX) $(LLVM_CXXFLAGS) $(JCPPFLAGS) $(JCXXFLAGS) $(DEBUGFLAGS) -c $< -o $@)
+ 
+ # public header rules
+ $(eval $(call dir_target,$(build_includedir)/julia))
+@@ -192,7 +195,7 @@ endif
+ 	$(INSTALL_NAME_CMD)libccalltest.$(SHLIB_EXT) $@
+ 
+ $(build_shlibdir)/libllvmcalltest.$(SHLIB_EXT): $(SRCDIR)/llvmcalltest.cpp $(LLVM_CONFIG_ABSOLUTE)
+-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(JCXXFLAGS) $(JCPPFLAGS) $(DEBUGFLAGS) -O3 $< $(fPIC) -shared -o $@ $(JLDFLAGS) -L$(build_shlibdir) -L$(build_libdir) $(NO_WHOLE_ARCHIVE) $(LLVMLINK))
++	@$(call PRINT_CC, $(CXX) $(LLVM_CXXFLAGS) $(JCXXFLAGS) $(JCPPFLAGS) $(DEBUGFLAGS) -O3 $< $(fPIC) -shared -o $@ $(JLDFLAGS) -L$(build_shlibdir) -L$(build_libdir) $(NO_WHOLE_ARCHIVE) $(LLVMLINK))
+ 
+ julia_flisp.boot.inc.phony: $(BUILDDIR)/julia_flisp.boot.inc
+ 
+@@ -336,7 +339,7 @@ clean-support:
+ cleanall: clean clean-flisp clean-support clean-analyzegc
+ 
+ $(build_shlibdir)/libGCCheckerPlugin.$(SHLIB_EXT): $(SRCDIR)/clangsa/GCChecker.cpp
+-	@$(call PRINT_CC, $(CXX) -g -shared -o $@ -DCLANG_PLUGIN -I$(build_includedir) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(CPPFLAGS) $(CFLAGS) $< $(shell $(LLVM_CONFIG_HOST) --ldflags) $(LDFLAGS) -L$(build_libdir) -lclangAnalysis -lclangStaticAnalyzerCore -lclangASTMatchers -lclangAST -lclangLex -lclangBasic)
++	@$(call PRINT_CC, $(CXX) -g -shared -o $@ -DCLANG_PLUGIN -I$(build_includedir) $(LLVM_CXXFLAGS) $(CPPFLAGS) $(CFLAGS) $< $(LLVM_LDFLAGS) $(LDFLAGS) -L$(build_libdir) -lclangAnalysis -lclangStaticAnalyzerCore -lclangASTMatchers -lclangAST -lclangLex -lclangBasic)
+ 
+ # Throw an error if a proper version of `clang` is not available.
+ # Note that for a default install, you will need to have run the following

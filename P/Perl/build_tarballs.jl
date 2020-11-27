@@ -45,6 +45,9 @@ atomic_patch -p1 ../patches/allow-relocate.patch
 # with the required values
 atomic_patch -p1 ../patches/cross-nolibchecks.patch
 
+# avoid touching the SIGFPE handler
+atomic_patch -p1 ../patches/perlfpe.patch
+
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
    # cross build with supplied config.sh
    # build native miniperl
@@ -69,7 +72,8 @@ else
       cp ../patches/config.arch.gnu config.arch
    fi
 
-   ./Configure -des -Dcc="$CC" -Dprefix=$prefix -Duserelocatableinc -Dprocselfexe -Duseshrplib -Dsysroot=/opt/$target/$target/sys-root -Dccflags="-I${prefix}/include" -Dldflags="-L${libdir} -Wl,-rpath,${libdir}" -Dlddlflags="-shared -L${libdir} -Wl,-rpath,${libdir}"
+   # setting PERL_FPU_INIT stops the perl init function from changing the SIGFPE handler
+   ./Configure -des -Dcc="$CC" -Dprefix=$prefix -Duserelocatableinc -Dprocselfexe -Duseshrplib -Dsysroot=/opt/$target/$target/sys-root -Dccflags="-DPERL_FPU_INIT -I${prefix}/include" -Dldflags="-L${libdir} -Wl,-rpath,${libdir}" -Dlddlflags="-shared -L${libdir} -Wl,-rpath,${libdir}"
 fi
 
 make -j${nproc} depend

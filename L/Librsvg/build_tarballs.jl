@@ -60,10 +60,6 @@ fi
 (cd rust && PKG_CONFIG_ALLOW_CROSS=1 cargo build --release)
 
 RUST_LIB="$(pwd)/rust/target/${rust_target}/release/librsvg_internals.a"
-if [[ ${target} == *mingw32* ]]; then
-    mv "$(pwd)/rust/target/${rust_target}/release/rsvg_internals.lib" "${RUST_LIB}"
-fi
-
 make RUST_LIB="${RUST_LIB}" -j${nproc}
 make RUST_LIB="${RUST_LIB}" install
 """

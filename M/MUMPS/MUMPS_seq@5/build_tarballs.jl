@@ -1,17 +1,19 @@
 using BinaryBuilder
 
 name = "MUMPS_seq"
-version = v"5.2.1"
+version = v"5.3.5"
 
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
-                "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
+                "e5d665fdb7043043f0799ae3dbe3b37e5b200d1ab7a6f7b2a4e463fd89507fa4"),
+  "./bundled",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc

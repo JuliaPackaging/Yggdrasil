@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "NetCDF"
 version = v"4.7.4"
@@ -16,50 +16,28 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/netcdf-c-*
 
-export CPPFLAGS="-I$prefix/include"
+export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+export LDFLAGS_MAKE="${LDFLAGS}"
 
 if [[ ${target} == *-mingw* ]]; then
-   export LDFLAGS="-L${libdir} -lhdf5-0 -lhdf5_hl-0 -lcurl-4"
-
-   if [ ! -f ${WORKSPACE}/destdir/bin/libzlib1.dll ]; then
-       ln -s ${WORKSPACE}/destdir/bin/libz.dll ${WORKSPACE}/destdir/bin/libzlib1.dll
-   fi
-
-   ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}  --disable-utilities --enable-shared --disable-static
-
-   # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
-   # unless -no-undefined is added to LDFLAGS
-   make LDFLAGS="-no-undefined -L$prefix/bin -lhdf5-0 -lhdf5_hl-0 -lcurl-4" -j${nproc}
+    export LIBS="-lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz"
+    # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
+    # unless -no-undefined is added to LDFLAGS
+    LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined"
 
 elif [[ "${target}" == *-apple-* ]]; then
     # this file is referenced by hdf.h by not installed
-    touch /workspace/destdir/include/features.h
-
-    if [ ! -f ${libdir}/libhdf5.dylib ]; then
-        ln -s ${libdir}/libhdf5.*.dylib ${libdir}/libhdf5.dylib
-    fi
-
-    if [ ! -f ${libdir}/libhdf5_hl.dylib ]; then
-        ln -s ${libdir}/libhdf5_hl.*.dylib ${libdir}/libhdf5_hl.dylib
-    fi
-
-   ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}  --disable-utilities --enable-shared --disable-static
-   make -j${nproc}
-else
-    # do not exist on Platform("x86_64", "linux")
-    if [ ! -f ${libdir}/libhdf5.so ]; then
-        ln -s ${libdir}/libhdf5.so.* ${libdir}/libhdf5.so
-    fi
-
-    if [ ! -f ${libdir}/libhdf5_hl.so ]; then
-        ln -s ${libdir}/libhdf5_hl.so.* ${libdir}/libhdf5_hl.so
-    fi
-
-   ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}  --disable-utilities --enable-shared --disable-static
-   make -j${nproc}
+    touch ${includedir}/features.h
 fi
 
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-utilities \
+    --enable-shared \
+    --disable-static
+make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 make install
 nc-config --all
 """
@@ -69,7 +47,6 @@ nc-config --all
 # Set equal to the supported platforms in HDF5
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("i686", "linux"),
     # HDF5_jll on armv7l should use the same glibc as the root filesystem
     # before it can be used
     # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
@@ -87,9 +64,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("HDF5_jll"),
+    Dependency(PackageSpec(name="HDF5_jll", version="1.12.0")),
     Dependency("Zlib_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll", v"7.71.1"),
+    # The following libraries are dependencies of LibCURL_jll which is now a
+    # stdlib, but the stdlib doesn't explicitly list its dependencies
+    Dependency("LibSSH2_jll", v"1.9.0"),
+    Dependency("MbedTLS_jll", v"2.16.8"),
+    Dependency("nghttp2_jll", v"1.40.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

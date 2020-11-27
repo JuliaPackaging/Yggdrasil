@@ -5,12 +5,12 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "2ad38e380ae52d9f1c72374fe785ab0253bad9bfd8eaa078da82eaed14f3e83c"),
+                  "937d1a6e4d8146bb92e8e71c0fad4a8de782362c9b4e51ced3158aab908b1e07"),
 ]
 
 # Bash recipe for building across all platforms
@@ -51,7 +51,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="polymake_jll", version=VersionSpec("4.2.0-4.2"))),
+    Dependency(PackageSpec(name="polymake_jll", version=v"4.2.1")),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]

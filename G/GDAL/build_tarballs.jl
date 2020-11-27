@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "GDAL"
 version = v"3.0.4"
@@ -19,7 +19,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_7_0"
+    export PROJ_LIBS="proj_7_2"
 elif [[ "${target}" == *-linux-* ]]; then
     # Make sure GEOS is linked against libstdc++
      atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
@@ -47,7 +47,6 @@ rm -f ${prefix}/lib/*.la
     --with-libz=$prefix \
     --with-expat=$prefix \
     --with-zstd=$prefix \
-    --with-webp=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
@@ -94,19 +93,21 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"),
-    Dependency("PROJ_jll"),
+    # fix to minor PROJ version; also update PROJ_LIBS above
+    # needed for Windows because of https://github.com/OSGeo/PROJ/blob/949171a6e/cmake/ProjVersion.cmake#L40-L46
+    # to avoid this problem https://github.com/JuliaGeo/GDAL.jl/pull/102
+    Dependency(PackageSpec(name="PROJ_jll", version="7.2")),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll", v"7.71.1"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"),
     Dependency("Zstd_jll"),
-    Dependency("libwebp_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll"),
-    Dependency("nghttp2_jll"),
+    Dependency("LibSSH2_jll", v"1.9.0"),
+    Dependency("MbedTLS_jll", v"2.16.8"),
+    Dependency("nghttp2_jll", v"1.40.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

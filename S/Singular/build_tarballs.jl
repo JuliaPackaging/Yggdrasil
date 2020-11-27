@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Singular"
-version = v"4.1.3"  # this is actually 4.1.3p5 with some extra patches
+version = v"4.1.4"  # this is actually a snapshot made after 4.1.3p5
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Sources.git", "17f0567a82824601e71ff151ecb63d656719b866"),
+    GitSource("https://github.com/Singular/Singular.git", "acbd65cb88b23a4271a7494672f740318bcc2bc6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd Sources
+cd Singular
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \

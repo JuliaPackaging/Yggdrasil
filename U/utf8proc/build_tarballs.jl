@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "utf8proc"
-version = v"2.5.0"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/JuliaStrings/utf8proc/archive/v$(version).tar.gz",
-                  "d4e8dfc898cfd062493cb7f42d95d70ccdd3a4cd4d90bec0c71b47cca688f1be"),
+    GitSource("https://github.com/JuliaStrings/utf8proc.git",
+              "df2997a300792b8efd6a1ea9281c14dfe986d6f9"), # v2.6.0
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/utf8proc-*
+cd $WORKSPACE/srcdir/utf8proc*
 
 if [[ "${target}" == *-mingw* ]]; then
     make -j${nproc} libutf8proc.a
