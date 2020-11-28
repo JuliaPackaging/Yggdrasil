@@ -215,7 +215,6 @@ jobs:
   cancelTimeoutInMinutes: 2
   strategy:
     matrix: $[ dependencies.generator.outputs['mtrx.projects'] ]
-    maxParallel: 1
   variables:
     projects: $[ dependencies.generator.outputs['mtrx.projects'] ]
   steps:
