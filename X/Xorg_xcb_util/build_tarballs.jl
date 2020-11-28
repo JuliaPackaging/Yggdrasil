@@ -7,8 +7,8 @@ version = v"0.4.0"
 
 # Collection of sources required to build xcb-util
 sources = [
-    "https://xcb.freedesktop.org/dist/xcb-util-$(version).tar.bz2" =>
-    "46e49469cb3b594af1d33176cd7565def2be3fa8be4371d62271fabb5eae50e9",
+    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-$(version).tar.bz2",
+                  "46e49469cb3b594af1d33176cd7565def2be3fa8be4371d62271fabb5eae50e9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Xorg_libxcb_jll"
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Xorg_libxcb_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
