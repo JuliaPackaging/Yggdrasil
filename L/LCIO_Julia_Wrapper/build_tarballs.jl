@@ -5,11 +5,11 @@ using Pkg
 
 julia_version = v"1.5.3"
 name = "LCIO_Julia_Wrapper"
-version = v"0.13.0"
+version = v"0.13.1"
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "d0841c089dcb0a006a6f241a1716369760020e52")
+	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "e28132bfdc0664faf9724a74b2ae33803c26dc5a")
 ]
 
 # Bash recipe for building across all platforms
