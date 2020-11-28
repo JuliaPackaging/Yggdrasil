@@ -32,7 +32,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["liblaszip", "liblaszip3"], :liblaszip)
+    LibraryProduct(["liblaszip", "liblaszip3"], :liblaszip),
+    ExecutableProduct("laszip", :laszip_path),
 ]
 
 # Dependencies that must be installed before this package can be built
