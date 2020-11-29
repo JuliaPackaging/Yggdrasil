@@ -35,7 +35,7 @@ cp -aR include ${prefix}/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.isapple, supported_platforms(;experimental=true))
+platforms = filter(Sys.isapple, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -47,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.5.1")
