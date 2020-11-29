@@ -142,11 +142,16 @@ function build_julia(version)
         LIBLAPACKNAME=libopenblas
     EOM
     else
+        if [[ "${version}" == 1.[0-4].* ]]; then
+            # remove broken dylib placeholder to force static linking
+            rm -f ${prefix}/lib/libosxunwind.dylib
+        fi
         cat << EOM >>Make.user
         USECLANG=1
 
-        # need to static link libosxunwind, see https://github.com/JuliaPackaging/Yggdrasil/pull/2164
-        LIBUNWIND:=${libdir}/libosxunwind.a
+        # link against libosxunwind, see https://github.com/JuliaPackaging/Yggdrasil/pull/2164
+        # and https://github.com/JuliaPackaging/Yggdrasil/pull/2190
+        LIBUNWIND:=-losxunwind
         JCPPFLAGS+=-DLIBOSXUNWIND
     EOM
     fi
@@ -212,7 +217,7 @@ function build_julia(version)
     platforms = expand_cxxstring_abis(platforms)
 
     for p in platforms
-        p["julia_version"] = "$(version.major).$(version.minor)"
+        p["julia_version"] = string(version)
     end
 
     # The products that we will ensure are always built
@@ -223,7 +228,6 @@ function build_julia(version)
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
         Dependency("LibUnwind_jll"),
-        BuildDependency("LibOSXUnwind_jll"),
         Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
         Dependency("OpenLibm_jll"),
         Dependency("dSFMT_jll"),
@@ -239,6 +243,11 @@ function build_julia(version)
         Dependency("GMP_jll"),
         Dependency("Objconv_jll"),
     ]
+    if version < v"1.5.1"
+        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.5")))
+    else
+        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.6")))
+    end
     if version.major == 1 && version.minor == 3
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
