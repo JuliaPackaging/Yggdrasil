@@ -20,12 +20,13 @@ ${CC} -shared -o ${libdir}/libblst.${dlext} ${CFLAGS} src/server.c build/assembl
 """
 
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    MacOS(:x86_64),
-    Windows(:x86_64),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
+    # Platform("x86_64", "freebsd"),
+    Platform("x86_64", "windows"),    
 ]
 
 products = [
