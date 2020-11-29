@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.38.4"
+version = v"0.40.0"
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "da66d6fd6e40aee70f7bd02e4f8f76fc3f006ec879d346bae6a723025cfbdde7"),
+                  "6d200dec3740d9ec4ec8d1180e25779c00bc749f94278c8b9021f5534db223fc"),
 ]
 
 # Bash recipe for building across all platforms
