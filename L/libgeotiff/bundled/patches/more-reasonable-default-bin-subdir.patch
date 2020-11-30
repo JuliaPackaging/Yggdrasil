@@ -1,0 +1,29 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -246,22 +246,14 @@
+ 
+ #    ${PROJECT_BINARY_DIR}/geotiff_version.h
+ 
++SET(DEFAULT_BIN_SUBDIR bin)
++SET(DEFAULT_DATA_SUBDIR share)
++SET(DEFAULT_INCLUDE_SUBDIR include)
+ IF(WIN32)
+-    SET(DEFAULT_LIB_SUBDIR lib)
+-    SET(DEFAULT_DATA_SUBDIR .)
+-    SET(DEFAULT_INCLUDE_SUBDIR include)
+-
+-    IF(MSVC)
+-        SET(DEFAULT_BIN_SUBDIR bin)
+-    ELSE()
+-        SET(DEFAULT_BIN_SUBDIR .)
+-    ENDIF()
++    SET(DEFAULT_LIB_SUBDIR bin)
+ ELSE()
+     # Common locatoins for Unix and Mac OS X
+-    SET(DEFAULT_BIN_SUBDIR bin)
+     SET(DEFAULT_LIB_SUBDIR lib)
+-    SET(DEFAULT_DATA_SUBDIR share)
+-    SET(DEFAULT_INCLUDE_SUBDIR include)
+ ENDIF()
+ 
+ # Locations are changeable by user to customize layout of GeoTIFF installation
