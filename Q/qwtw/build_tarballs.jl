@@ -11,6 +11,7 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+apk add g++
 script = raw"""
 cd $WORKSPACE/srcdir
 cd qwtw
