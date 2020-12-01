@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "LibOSXUnwind"
-version = v"0.0.6"
+version = v"0.0.7"
 
 # Collection of sources required to build libosxunwind
 sources = [
-    ArchiveSource("https://github.com/JuliaLang/libosxunwind/archive/v$(version).tar.gz",
+    ArchiveSource("https://github.com/JuliaLang/libosxunwind/archive/v0.0.6.tar.gz",
                   "c3943fdd063c2c8c249778326cbfecdc62c804a0509c4ae4799604e1817f9058"),
 ]
 
@@ -35,7 +35,7 @@ cp -aR include ${prefix}/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.isapple, supported_platforms())
+platforms = filter(Sys.isapple, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -47,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.5.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
