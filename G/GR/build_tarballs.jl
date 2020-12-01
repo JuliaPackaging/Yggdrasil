@@ -22,7 +22,6 @@ if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
     tifflags=""
     update_configure_scripts
-    update_configure_scripts
 else
     tifflags=-DTIFF_LIBRARY=$libdir/libtiff.$dlext
 fi
