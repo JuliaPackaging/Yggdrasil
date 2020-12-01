@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gr
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/zeromq-build.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/zeromq-build.patch
 
 if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
     sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
