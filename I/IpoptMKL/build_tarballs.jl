@@ -15,7 +15,6 @@ cd Ipopt-releases-*
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
 
 LIBASL=(-L${libdir} -lasl)
 if [[ "${target}" == *-linux-* ]]; then

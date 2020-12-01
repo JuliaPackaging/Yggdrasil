@@ -13,10 +13,6 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich-*
 
-# Remove wrong libtool files
-rm -f /opt/${target}/${target}/lib64/*.la
-rm -f /opt/${target}/${target}/lib/*.la
-
 if [[ "${target}" == powerpc64le-* ]]; then
     # I don't understand why, but the extra link flags we append in the gfortran
     # wrapper confuse the build system: the rule to build libmpifort has an

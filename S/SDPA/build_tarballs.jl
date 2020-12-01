@@ -26,7 +26,6 @@ cd $WORKSPACE/srcdir/sdpa-*
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
 # Apply patches

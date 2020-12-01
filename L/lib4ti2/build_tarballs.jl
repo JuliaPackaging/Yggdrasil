@@ -20,8 +20,6 @@ cd ${WORKSPACE}/srcdir/4ti2-*
 
 # Remove misleading libtool files 
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
-rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
 
 # Patch #1 for fixing cross-compilation: The correctness of the patch
 # relies on us using clang or GCC (in a new enough version) as compiler;
