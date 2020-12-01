@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libzmq
+cd $WORKSPACE/srcdir/zeromq-*
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from
     # https://github.com/msys2/MINGW-packages/blob/350ace4617661a4df7b9474c573b08325fa716c3/mingw-w64-zeromq/001-mingw-__except-fixes.patch
