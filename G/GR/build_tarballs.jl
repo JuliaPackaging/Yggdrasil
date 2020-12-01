@@ -56,8 +56,8 @@ platforms = [
     Platform("armv7l",  "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64",  "linux"; libc="glibc"),
-    Platform("x86_64",  "windows")
-    Platform("x86_64",  "macos")
+    Platform("x86_64",  "windows"),
+    Platform("x86_64",  "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
