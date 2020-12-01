@@ -27,7 +27,7 @@ else
 fi
 
 make -C gr/3rdparty/qhull -j${nproc}
-make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--build=${MACHTYPE} --host=${target}"
+make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 
 mkdir build
 cd build
