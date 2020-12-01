@@ -38,7 +38,6 @@ export LDFLAGS="-lstdc++"
     --disable-eventfd \
     --without-gcov \
     --disable-curve-keygen \
-    --enable-static \
     --disable-shared \
     --with-pic \
     CXXFLAGS="-O2 -fms-extensions"
