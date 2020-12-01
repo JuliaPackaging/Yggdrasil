@@ -32,6 +32,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
       ..
 
 make -j${nproc}
@@ -44,6 +45,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libgeotiff", :libgeotiff),
     ExecutableProduct("makegeo", :makegeo),
     ExecutableProduct("geotifcp", :geotifcp),
     ExecutableProduct("listgeo", :listgeo),
