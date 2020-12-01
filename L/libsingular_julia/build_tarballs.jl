@@ -9,7 +9,7 @@ const version = v"0.2.2"
 # Collection of sources required to build libsingular-julia
 const sources = [
     ArchiveSource("https://github.com/oscar-system/libsingular-julia/archive/v$(version).tar.gz",
-                  "4db87f8c8d68989dff577d602f8888ae3bbffd5f1b06a78fa5b535b9187d3e61"),
+                  "7de191972c8f116e70715808c96857de64140dd610aeb7d0b69fc869cf49593a"),
 ]
 
 # Bash recipe for building across all platforms
