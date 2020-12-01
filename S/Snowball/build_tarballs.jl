@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libstemmer_c/
 cp ../CMakeLists.txt .
 rm Makefile
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=/opt/$target/$target.cmake
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 make -j${nproc}
 make install
 install_license COPYING

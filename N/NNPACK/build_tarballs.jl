@@ -46,9 +46,9 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 
 # On ARM/AArch64, use `clang` instead of `gcc`.
-TOOLCHAIN="/opt/${target}/${target}.cmake"
+TOOLCHAIN="${CMAKE_TARGET_TOOLCHAIN}"
 if [[ "${target}" == arm-* ]] || [[ "${target}" == aarch64-* ]]; then
-    TOOLCHAIN="/opt/${target}/${target}_clang.cmake"
+    TOOLCHAIN="${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake"
 fi
 
 # NNPACK wants "armv7l", not just "arm", so GIVE IT WHAT IT WANTS
