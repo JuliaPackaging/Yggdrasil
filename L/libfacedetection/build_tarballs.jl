@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libfacedetect"
+name = "libfacedetection"
 # I guess it's v3 https://github.com/ShiqiYu/libfacedetection/blob/master/ChangeLog#L3
 # but doesn't really have any versions
 version = v"3"
@@ -14,12 +14,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DDEMO=OFF
+cd ${WORKSPACE}/srcdir/libfacedetection
+cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DDEMO=OFF
 cmake --build . --config Release
 cmake --build . --config Release --target install
-cd ..
 install_license LICENSE
 """
 
@@ -29,7 +27,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libfacedetect", :libfacedetect),
+    LibraryProduct("libfacedetection", :libfacedetection),
 ]
 
 # Dependencies that must be installed before this package can be built
