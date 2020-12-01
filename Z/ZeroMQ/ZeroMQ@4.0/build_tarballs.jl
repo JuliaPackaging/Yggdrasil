@@ -40,6 +40,7 @@ export LDFLAGS="-lstdc++"
     --disable-curve-keygen \
     --enable-static \
     --disable-shared \
+    --with-pic \
     CXXFLAGS="-O2 -fms-extensions"
 make -j${nproc}
 make install
@@ -58,5 +59,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
