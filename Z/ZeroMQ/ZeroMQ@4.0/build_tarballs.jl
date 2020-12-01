@@ -19,6 +19,8 @@ sh autogen.sh
 update_configure_scripts
 
 export LDFLAGS="-lstdc++"
+export CFLAGS="-DZMQ_STATIC"
+export CXXFLAGS="-DZMQ_STATIC"
 ./configure --prefix=$prefix \
     --host=${target} \
     --without-docs \
