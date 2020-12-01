@@ -4,12 +4,12 @@ using BinaryBuilder
 import Pkg: PackageSpec
 
 const name = "libsingular_julia"
-const version = v"0.2.0"
+const version = v"0.2.2"
 
 # Collection of sources required to build libsingular-julia
 const sources = [
     ArchiveSource("https://github.com/oscar-system/libsingular-julia/archive/v$(version).tar.gz",
-                  "ee4e5ef96caf9d18553600d87f922e5d40cb1c7d30a1697c92b23b493498db1a"),
+                  "4db87f8c8d68989dff577d602f8888ae3bbffd5f1b06a78fa5b535b9187d3e61"),
 ]
 
 # Bash recipe for building across all platforms
