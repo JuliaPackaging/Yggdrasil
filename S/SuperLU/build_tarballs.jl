@@ -12,16 +12,28 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [ "${dlext}" == "dll" ]; then
-    openblas="$prefix/lib/libopenblas.dll.a"
-else
-    openblas="$prefix/lib/libopenblas.$dlext"
+cd $WORKSPACE/srcdir/superlu*
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -Denable_internal_blaslib=OFF \
+    -Denable_matlabmex=OFF \
+    -Denable_tests=OFF \
+    -Denable_doc=OFF \
+    -Denable_single=ON \
+    -Denable_double=ON \
+    -Denable_complex=ON \
+    -Denable_complex16=ON \
+    -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+    ..
+make -j${nproc}
+make install
+if [[ "${target}" == *-mingw* ]]; then
+    # Manually install the library
+    cp "SRC/libsuperlu.${dlext}" "${libdir}/libsuperlu.${dlext}"
 fi
-cd $WORKSPACE/srcdir/superlu-5.2.2
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -Denable_internal_blaslib=OFF -Denable_matlabmex=OFF -Denable_tests=OFF -Denable_doc=OFF -Denable_single=ON -Denable_double=ON -Denable_complex=ON -Denable_complex16=ON -DTPL_BLAS_LIBRARIES="$openblas"
-cmake --build build
-cmake --build build --target install
-install_license License.txt
 """
 
 # These are the platforms we will build for by default, unless further
