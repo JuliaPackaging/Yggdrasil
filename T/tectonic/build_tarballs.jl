@@ -16,6 +16,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
+# This should help when building with Musl as host with Rust v1.43:
+# https://github.com/rust-lang/rust/issues/59302
+export RUSTFLAGS="-C target-feature=-crt-static"
 cargo build --release -j${nproc}
 cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
