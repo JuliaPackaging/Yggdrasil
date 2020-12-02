@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.0.0"
+version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "b9451c91004de517e97429cd762caaad206f6014")
+    GitSource("https://github.com/ig-or/qwtw.git", "478bb8a91ddf6dfdd9f22fa8d65717348104ef3f")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,8 +25,11 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
+    Windows(:x86_64),
+    Linux(:x86_64; libc=:glibc),
 ]
+
+#platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
@@ -45,4 +48,4 @@ dependencies = [
 
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
