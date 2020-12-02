@@ -132,11 +132,6 @@ case "${COMPILER_TARGET}" in
         ;;
 esac
 
-# Install cmake templates
-cd ${WORKSPACE}/srcdir/buildsystem_toolchains
-./build_toolchains.sh ${COMPILER_TARGET}
-mv ${COMPILER_TARGET}/* ${prefix}
-
 # We create a link from ${COMPILER_TARGET}/sys-root/usr/local to ${prefix}.
 # This is the most reliable way for our sysroot'ed compilers to find destination
 # libraries so far, hopefully this changes in the future.
