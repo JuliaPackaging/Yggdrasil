@@ -20,27 +20,24 @@ if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
     sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
 fi
 
+update_configure_scripts
+
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
     tifflags=""
-    update_configure_scripts
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.$dlext
+    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 fi
 
-make -C gr/3rdparty/qhull -j${nproc}
-if [[ $target == *"mingw"* ]]; then
-    make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
-fi
+make -C 3rdparty/qhull -j${nproc}
 
 mkdir build
 cd build
+cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
 
-cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ../gr*
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-install_license $WORKSPACE/srcdir/gr*/LICENSE.md
-
-cp ../gr.js ${libdir}/
+cp ../../gr.js ${libdir}/
 
 if [[ $target == *"apple-darwin"* ]]; then
     cd $prefix/lib
