@@ -20,11 +20,10 @@ if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
     sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
 fi
 
-update_configure_scripts
-
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
     tifflags=""
+    update_configure_scripts
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.$dlext
     make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
