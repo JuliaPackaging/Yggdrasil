@@ -9,7 +9,7 @@ version = v"3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ShiqiYu/libfacedetection", "36783e346c596968f6648bdfdc76efc8c6f082a9"),
+    GitSource("https://github.com/ShiqiYu/libfacedetection.git", "36783e346c596968f6648bdfdc76efc8c6f082a9"),
 ]
 
 # Bash recipe for building across all platforms
