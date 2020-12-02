@@ -39,6 +39,8 @@ cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -D
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
 
+install_license $WORKSPACE/srcdir/gr/LICENSE.md
+
 if [[ $target == *"apple-darwin"* ]]; then
     cd $prefix/lib
     ln -s libGR.so libGR.dylib
