@@ -26,10 +26,12 @@ if [[ $target == *"mingw"* ]]; then
     update_configure_scripts
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.$dlext
-    make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 fi
 
 make -C gr/3rdparty/qhull -j${nproc}
+if [[ $target == *"mingw"* ]]; then
+    make -C gr/3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
+fi
 
 mkdir build
 cd build
