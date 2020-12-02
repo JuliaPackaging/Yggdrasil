@@ -22,15 +22,18 @@ fi
 
 update_configure_scripts
 
+make -C 3rdparty/qhull -j${nproc}
+
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
 else
-    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
 fi
 
-make -C 3rdparty/qhull -j${nproc}
+if [[ "${target}" == *apple* ]]; then
+    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
+fi
 
 mkdir build
 cd build
