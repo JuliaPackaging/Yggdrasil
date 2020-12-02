@@ -24,12 +24,12 @@ update_configure_scripts
 
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
-    tifflags=""
+#    tifflags=""
 else
-    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.$dlext
     make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 fi
 
+tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.$dlext
 make -C 3rdparty/qhull -j${nproc}
 
 mkdir build
