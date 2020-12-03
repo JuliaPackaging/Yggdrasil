@@ -160,7 +160,7 @@ CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 
 # Explicitly use our cmake toolchain file
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=/opt/${target}/${target}.cmake)
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
 # Manually set the host triplet, as otherwise on some platforms it tries to guess using
 # `ld -v`, which is hilariously wrong.

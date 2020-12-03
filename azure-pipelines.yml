@@ -99,7 +99,7 @@ jobs:
           fi
 
           # Next, we're going to ensure that our BB is up to date and precompiled
-          $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
+          $(JULIA) -e "import Pkg; Pkg.instantiate(); Pkg.precompile()"
 
           # We're going to snarf out the BB and BBB tree hashes and combine them to be used later in our build cache
           BB_HASH=$($(JULIA) -e "using Pkg, SHA; \

@@ -16,8 +16,6 @@ cd $WORKSPACE/srcdir/gperftools*/
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
-rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
 
 if [[ "${target}" == *-linux-* ]]; then
     # https://github.com/gperftools/gperftools/blob/e5f77d6485bd2f6ce43862e3e57118b1bb97d30a/README

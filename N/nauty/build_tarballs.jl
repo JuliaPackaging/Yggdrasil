@@ -18,8 +18,6 @@ cd ${WORKSPACE}/srcdir/nauty*
 
 # Remove misleading libtool files 
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
-rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
 
 # Patch based on one from Debian: add autotools build system which creates a
 # shared library; compared to the Debian version, a bunch of things we don't

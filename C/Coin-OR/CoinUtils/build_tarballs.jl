@@ -15,7 +15,6 @@ cd $WORKSPACE/srcdir/CoinUtils*
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
 update_configure_scripts
 
 # Without fixing this configure reports that we can't build shared
