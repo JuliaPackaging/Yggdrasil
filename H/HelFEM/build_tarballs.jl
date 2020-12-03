@@ -1,9 +1,9 @@
 using BinaryBuilder, Pkg
 
 name = "HelFEM"
-version = v"0.0.2"
+version = v"0.0.3"
 sources = [
-    GitSource("https://github.com/mortenpi/HelFEM.git", "f2a1dcd456ab1c6c530ff9ae3b916bde2ebf9ae6")
+    GitSource("https://github.com/mortenpi/HelFEM.git", "a4d3b2e6f16f7f7953afd5f69a44257a65c5b131")
 ]
 
 script = raw"""
