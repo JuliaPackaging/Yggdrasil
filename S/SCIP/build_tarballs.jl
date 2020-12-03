@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd scipoptsuite-7.0.1/
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=OFF -DGCG=0 -DGMP=OFF -DREADLINE=OFF -DBOOST=off ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=OFF -DGCG=0 -DIPOPT=0 -DGMP=OFF -DREADLINE=OFF -DBOOST=off ..
 make -j${nproc}
 make install
 """
@@ -49,7 +49,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"))
-    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
