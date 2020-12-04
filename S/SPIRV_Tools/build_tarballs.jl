@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
 version = v"2020.6"
@@ -65,7 +65,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("SPIRV_Headers_jll")
+    BuildDependency(PackageSpec(name="SPIRV_Headers_jll", version=v"1.5.4"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
