@@ -35,6 +35,10 @@ if [[ "${target}" == *apple* ]]; then
     make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 fi
 
+if [[ "${target}" == arm-* ]]; then
+    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+fi
+
 mkdir build
 cd build
 cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
