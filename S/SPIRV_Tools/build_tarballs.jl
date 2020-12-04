@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "SPIRV_Tools"
-version = v"2020.2"
+version = v"2020.6"
 
-# Collection of sources required to build IGC
+# Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "fd8e130510a6b002b28eee5885a9505040a9bdc9"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "4c2f34a504817cc96d3e8b0435265a743cb2038a"),
     # vendored dependencies
-    GitSource("https://github.com/google/effcee.git", "6fa2a03cebb4fb18fbad086d53d1054928bef54e"), # 2019.0
-    GitSource("https://github.com/google/re2.git", "209eda1b607909cf3c9ad084264039546155aeaa"), # 2020-04-01
+    GitSource("https://github.com/google/effcee.git", "33d438fb1939e94e5507d38dee9d999f60a03d96"), # 2019.1
+    GitSource("https://github.com/google/re2.git", "166dbbeb3b0ab7e733b278e8f42a84f6882b8a25"), # 2020-11-01
 ]
 
 # Bash recipe for building across all platforms
