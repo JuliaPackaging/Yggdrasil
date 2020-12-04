@@ -8,7 +8,7 @@ version = v"1.5.4"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
-              "7845730cab6ebbdeb621e7349b7dc1a59c3377be"),
+              "f027d53ded7e230e008d37c8b47ede7cd308e19d"),
 ]
 
 # Bash recipe for building across all platforms
