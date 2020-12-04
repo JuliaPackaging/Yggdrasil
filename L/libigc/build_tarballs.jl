@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.5353"
+version = v"1.0.5699"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -13,11 +13,11 @@ version = v"1.0.5353"
 # Collection of sources required to build IGC
 # NOTE: these hashes are taken from the release notes in GitHub
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "411ba3aa9373136ffd6e475005f94ba7c10a4f3a"),
-    GitSource("https://github.com/intel/llvm-patches.git", "cfc800519a71522194efcaa9a5dd67ecbff43ffa"),
-    GitSource("https://github.com/intel/opencl-clang.git", "fdcfda343f493efdd262f0b6f2fae99809030c2f"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "0db501ebb43a5eec03469a226dc1822940e640b1"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "eabcd2022cf868a658b257b8ea6ad62acbbe7dc5"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "c59cb6f02b12fd4cc2549707985c6015b4928c1a"),
+    GitSource("https://github.com/intel/llvm-patches.git", "9cbc7cfb9bc374be22e1bb2418c5e9385000d755"),
+    GitSource("https://github.com/intel/opencl-clang.git", "4e83bbfb67047d0a836739982264a007a4d418ef"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "424e375edc4b915218ab5d1f08670a8d1e92c9d3"),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "a08fe5bc81963c569c3920557c1fbe0caa40840c"),
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"),
     # patches
     DirectorySource("./bundled"),
@@ -30,32 +30,12 @@ export HOME=$(pwd)
 git config --global user.name "Binary Builder"
 git config --global user.email "your@email.com"
 
-# apply opencl-clang's patches ourself, which is more robust than letting the build system do it
-if [[ -d opencl-clang/patches/clang ]]; then
-    pushd llvm-project
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-if [[ -d opencl-clang/patches/spirv ]]; then
-    pushd SPIRV-LLVM-Translator
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-
 # move everything in places where it will get detected by the IGC build system
-mv llvm-project/clang llvm-project/llvm/tools/
 mv opencl-clang llvm-project/llvm/projects/opencl-clang
 mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 mv llvm-patches llvm_patches
 
 # Work around compilation failures
-atomic_patch -p0 patches/cmake.patch
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
 
