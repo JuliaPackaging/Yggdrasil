@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "SPIRV_Headers"
-version = v"1.5.3"
+version = v"1.5.4"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
-              "c0df742ec0b8178ad58c68cff3437ad4b6a06e26"),
+              "7845730cab6ebbdeb621e7349b7dc1a59c3377be"),
 ]
 
 # Bash recipe for building across all platforms
