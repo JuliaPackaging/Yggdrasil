@@ -274,6 +274,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 include("../../fancy_toys.jl")
