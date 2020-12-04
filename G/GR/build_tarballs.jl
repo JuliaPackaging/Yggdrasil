@@ -3,28 +3,50 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.52.0"
+version = v"0.53.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "90ee73c741271d964f241f098b0dd3ba18eae271"),
+    GitSource("https://github.com/sciapp/gr.git", "b490cbfacc6f4dc08c2a2de52c6f6594e8c7c5f9"),
+    FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
+               "60b856b8bb834d30612653da42eebef56e4e329d3a73d52c303684ee42b027f1", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/gr
+
 if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
     sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
 fi
 
+update_configure_scripts
+
+make -C 3rdparty/qhull -j${nproc}
+
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
+    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
+else
+    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
+fi
+
+if [[ "${target}" == *apple* ]]; then
+    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
+fi
+
+if [[ "${target}" == arm-* ]]; then
+    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
 fi
 
 mkdir build
 cd build
-cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../gr*
+cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
+
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-install_license $WORKSPACE/srcdir/gr*/LICENSE.md
+cp ../../gr.js ${libdir}/
+
+install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
 if [[ $target == *"apple-darwin"* ]]; then
     cd $prefix/lib
@@ -34,18 +56,20 @@ if [[ $target == *"apple-darwin"* ]]; then
     ln -s libGKS.so libGKS.dylib
     cd ../bin
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "windows")
+    Platform("armv7l",  "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("x86_64",  "windows"),
+    Platform("x86_64",  "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
-push!(platforms, Platform("x86_64", "macos"))
 
 # The products that we will ensure are always built
 products = [
@@ -67,7 +91,6 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
-    Dependency("Qhull_jll"),
     Dependency("Qt_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
@@ -76,4 +99,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"8")
