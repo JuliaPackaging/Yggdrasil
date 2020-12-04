@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 name = "Birch_Standard"
 # Birch's version is `(git describe --long || echo) | sed -E 's/v([0-9]+)-([0-9]+)-g[0-9a-f]+/\1.\2/'`
 # (see https://github.com/JuliaPackaging/Yggdrasil/pull/2156#discussion_r528224861)
-version = v"1.75"
+version = v"1.104"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lawmurray/Birch.git", "a533990b59b04ef4cd20f8d4fe91c4a220df1cfa"),
+    GitSource("https://github.com/lawmurray/Birch.git", "25154eac433bdeaf55dffda2432c666659286350"),
     DirectorySource("./bundled"),
 ]
 
