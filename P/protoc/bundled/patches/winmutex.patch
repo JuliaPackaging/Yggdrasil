@@ -1,0 +1,24 @@
+commit bc6851288c2d7404ef98de36e0d49350b03983e9
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Fri Dec 4 22:32:59 2020 -0500
+
+    Backport windows fix to v3.14.0
+    
+    This backports https://github.com/protocolbuffers/protobuf/pull/8098 to the latest stable release.
+
+diff --git a/src/google/protobuf/stubs/mutex.h b/src/google/protobuf/stubs/mutex.h
+index b222ff746..4eea84993 100644
+--- a/src/google/protobuf/stubs/mutex.h
++++ b/src/google/protobuf/stubs/mutex.h
+@@ -104,9 +104,9 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
+ 
+  private:
+ #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+-  std::mutex mu_;
++  std::mutex mu_ {};
+ #else  // ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+-  CriticalSectionLock mu_;
++  CriticalSectionLock mu_ {};
+ #endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+ };
+ 
