@@ -45,7 +45,6 @@ case "$target" in
         ../qt-everywhere-src-*/configure -L ${libdir} -I ${includedir} \
             -prefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig
-#        ln -s /lib64/libc.so.6 /lib64/libc.so
         ;;
 
 	*apple-darwin*)
