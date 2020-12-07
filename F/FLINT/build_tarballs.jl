@@ -2,8 +2,31 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+#
+# FLINT_jll versions are decoupled from the upstream versions.
+# Whenever we package a new official FLINT release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using FLINT_jll use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version (except when FLINT itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
+#
+#
+# WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
+# coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
+# and possibly other packages.
 name = "FLINT"
-version = v"2.6.999"
+version = v"200.690.000"  # WARNING: don't change this
 
 # Collection of sources required to build FLINT
 sources = [
