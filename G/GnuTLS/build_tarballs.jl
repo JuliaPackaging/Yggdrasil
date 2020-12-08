@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.6.13"
+version = v"3.6.15"
 
 # Collection of sources required to build GnuTLS
 sources = [
-    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.13.tar.xz",
-                  "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"),
+    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-$(version).tar.xz",
+                  "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,11 +31,8 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Wimp out of doing FreeBSD since we don't have that for some targets
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-
 # Disable windows because O_NONBLOCK isn't defined
-platforms = [p for p in platforms if !(typeof(p) <: Windows)]
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -50,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", lock_microarchitecture=false)
