@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.0.1"
+version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "478bb8a91ddf6dfdd9f22fa8d65717348104ef3f")
+    GitSource("https://github.com/ig-or/qwtw.git", "b8119478c38050cd55e01711c8b5867a1932c990")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,18 +24,20 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+
 platforms = [
     Platform("x86_64", "windows"),
     Platform("x86_64", "linux"; libc="glibc"),
+
 ]
 
-#platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libqwtw", :qwtw),
-    ExecutableProduct("qwproc", :qwproc)
+    ExecutableProduct("qwproc", :qwproc),
+    ExecutableProduct("qttest", :qttest)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -44,6 +46,8 @@ dependencies = [
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
     Dependency(PackageSpec(name="Qt_jll", uuid="ede63266-ebff-546c-83e0-1c6fb6d0efc8"))
     Dependency(PackageSpec(name="qwt_jll", uuid="ed0789fa-10db-50b3-94da-03266d70be0f"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"))
 ]
 
 
