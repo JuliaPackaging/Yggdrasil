@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using GitHub, BinaryBuilder, Pkg, Pkg.PlatformEngines, SHA
+using GitHub, BinaryBuilder, Pkg, Pkg.PlatformEngines, SHA, Pkg.BinaryPlatforms
 
 """
     extract_platform_key(path::AbstractString)
@@ -37,7 +37,7 @@ end
 function product_hashes_from_github_release(repo_name::AbstractString, tag_name::AbstractString;
                                             verbose::Bool = true)
     # Get list of files within this release
-    release = GitHub.gh_get_json(GitHub.DEFAULT_API, "/repos/$(repo_name)/releases/tags/$(tag_name)", auth=BinaryBuilder.github_auth())
+    release = GitHub.gh_get_json(GitHub.DEFAULT_API, "/repos/$(repo_name)/releases/tags/$(tag_name)", auth=BinaryBuilder.Wizard.github_auth())
 
     # Try to extract the platform key from each, use that to find all tarballs
     function can_extract_platform(filename)
@@ -69,7 +69,7 @@ function product_hashes_from_github_release(repo_name::AbstractString, tag_name:
             end
 
             # Then fit it into our product_hashes
-            file_triplet = triplet(extract_platform_key(asset["name"]))
+            file_triplet = BinaryBuilder.triplet(extract_platform_key(asset["name"]))
             product_hashes[file_triplet] = (asset["name"], hash)
 
             if verbose
@@ -87,10 +87,42 @@ function _repr(p::Product)
     return replace(repr(p), "(" => "(prefix, ")
 end
 
+function compat_string_of_platform_key_abi(platform)
+     if platform == "aarch64-linux-gnu"
+         return "Linux(:aarch64, libc=:glibc)"
+     elseif  platform == "aarch64-linux-musl"
+         return "Linux(:aarch64, libc=:musl)"
+     elseif platform == "armv7l-linux-gnueabihf"
+         return "Linux(:armv7l, libc=:glibc, call_abi=:eabihf)"
+     elseif platform == "armv7l-linux-musleabihf"
+         return "Linux(:armv7l, libc=:musl, call_abi=:eabihf)"
+     elseif platform == "i686-linux-gnu"
+         return "Linux(:i686, libc=:glibc)"
+     elseif platform == "i686-linux-musl"
+         return "Linux(:i686, libc=:musl)"
+     elseif platform == "powerpc64le-linux-gnu"
+         return "Linux(:powerpc64le, libc=:glibc)"
+     elseif platform == "x86_64-apple-darwin"
+         return "MacOS(:x86_64)"
+     elseif  platform == "x86_64-linux-gnu"
+         return "Linux(:x86_64, libc=:glibc)"
+     elseif platform == "x86_64-linux-musl"
+         return "Linux(:x86_64, libc=:musl)"
+     elseif platform == "x86_64-unknown-freebsd"
+         return "FreeBSD(:x86_64)"
+     elseif platform == "x86_64-w64-mingw32"
+         return "Windows(:x86_64)"
+     elseif platform == "i686-w64-mingw32"
+         return "Windows(:i686)"
+     else
+         error("Platform $platform not known")
+     end
+end
+
 # `Pkg.CompilerABI` has diverged from `BinaryProvider.CompilerABI`.
 # This function fixes common differences.
 function _pkey(platform)
-    pkey = string(platform_key_abi(platform))
+    pkey = string(compat_string_of_platform_key_abi(platform))
     for (i, j) in [(3, 4), (4, 7), (5, 8)]
         pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\")" => "CompilerABI(:gcc$j)")
     end
