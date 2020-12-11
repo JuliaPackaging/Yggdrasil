@@ -8,7 +8,7 @@ rustup_name = "RustStage1"
 rustup_version = v"1.22.0"
 
 # This is the version of the Rust toolchain we install
-version = v"1.48.0"
+version = v"1.43.0"
 
 sources = [
     # We'll use rustup v1.22.0 to install rust
@@ -24,7 +24,7 @@ cd ${WORKSPACE}/srcdir
 export CARGO_HOME=${prefix}
 export RUSTUP_HOME=${prefix}
 chmod +x rustup-init
-./rustup-init -y --no-modify-path --default-host=${rust_host} --default-toolchain 1.48.0
+./rustup-init -y --no-modify-path --default-host=${rust_host} --default-toolchain ${version}
 
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
