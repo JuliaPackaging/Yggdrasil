@@ -1,5 +1,5 @@
 name = "libLLVM"
-version = v"11.0.0+7"
+version = v"11.0.0+8"
 
 # Include common tools
 include("../common.jl")
