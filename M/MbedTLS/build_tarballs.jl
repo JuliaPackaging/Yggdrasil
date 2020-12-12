@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "MbedTLS"
-version = v"2.24.0"
+version = v"2.25.0"
 
 # Collection of sources required to build MbedTLS
 sources = [
     GitSource("https://github.com/ARMmbed/mbedtls.git",
-              "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8"),
+              "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
     DirectorySource("./bundled"),
 ]
 
