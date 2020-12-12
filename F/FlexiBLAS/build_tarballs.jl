@@ -5,7 +5,7 @@ version = v"3.0.4"
 
 # Collection of sources required to build Sundials
 sources = [
-    GitSource("https://github.com/mpimd-csc/flexiblas",
+    GitSource("https://github.com/mpimd-csc/flexiblas.git",
               "fae1b3c4d546ddae73b369570ff6fecd8127fcbf"),
 ]
 
