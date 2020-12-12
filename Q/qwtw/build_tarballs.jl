@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.0.4"
+version = v"2.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "b8119478c38050cd55e01711c8b5867a1932c990")
+    GitSource("https://github.com/ig-or/qwtw.git", "b1aab8873cfb38abc9e35d1dd9ffb8c9497eb80b")
 ]
 
 # Bash recipe for building across all platforms
