@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "FlexiBLAS"
+name = "flexiblas"
 version = v"3.0.4"
 
 # Collection of sources required to build Sundials
