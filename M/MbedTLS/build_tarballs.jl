@@ -14,12 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mbedtls
 
-atomic_patch -p1 ../patches/fix_incorrect_EOF_check.patch
-
 # llvm-ranlib gets confused, use the binutils one
 if [[ "${target}" == *apple* ]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
+    atomic_patch -p1 ../patches/0001-Remove-flags-not-sopported-by-ranlib.patch
 fi
 
 # enable MD4
@@ -31,7 +30,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
     ..
-make -j${nproc} && make install
+make -j${nproc}
+make install
 
 if [[ "${target}" == *mingw* ]]; then
     # For some reason, the build system doesn't set the `.dll` files as
