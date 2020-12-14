@@ -31,11 +31,11 @@ install_license $WORKSPACE/srcdir/fasttransformsc/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64),
-    Windows(:x86_64)
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "windows"),
 ]
 
 
