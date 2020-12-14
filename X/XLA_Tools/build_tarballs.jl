@@ -1,6 +1,3 @@
-# Bazel can't deal with `ccache`
-ENV["BINARYBUILDER_USE_CCACHE"] = "false"
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
@@ -35,10 +32,27 @@ export TF_ENABLE_XLA=1
 export TF_NEED_JEMALLOC=0
 yes "" | ./configure
 
-bazel --output_user_root=/workspace/bazel_root build \
-    -c opt \
-    --jobs ${nproc} \
-    --verbose_failures \
+BAZEL_FLAGS=()
+BAZEL_BUILD_FLAGS=()
+
+# don't run out of temporary space
+BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
+
+# disable the sandbox and forward environment variables
+BAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
+while read name; do
+    # FIXME: this still doesn't expose the vars to the configure phase, or external projects
+    BAZEL_BUILD_FLAGS+=(--action_env=$name)
+done <<<"$(compgen -v)"
+
+# start with the 'opt' config
+BAZEL_BUILD_FLAGS+=(-c opt)
+
+BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
+
+BAZEL_BUILD_FLAGS+=(--verbose_failures)
+
+bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} \
     //tensorflow/compiler/xla/tools:show_signature \
     //tensorflow/compiler/xla/tools:show_literal \
     //tensorflow/compiler/xla/tools:convert_computation \
