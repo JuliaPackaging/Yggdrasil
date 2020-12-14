@@ -19,17 +19,21 @@ install_license LICENSE
 apk update && apk add nss
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
-# our Bazel is v2.2, so sufficient for TF 2.2, but it doesn't realize that.
+# our Bazel is v2.2, but TensorFlow 2.2 really wants 2.0...
 rm .bazelversion
 export TF_IGNORE_MAX_BAZEL_VERSION=1
 
 # the build requires numpy (really), which is only available for python3
-apk del python2 # have bazel pick up python3 instead?
-ln -s /usr/bin/python3 /usr/bin/python
 apk add py3-numpy py3-numpy-dev
 
+export PYTHON_BIN_PATH=/usr/bin/python3
+export TF_NEED_OPENCL_SYCL=0
+export TF_NEED_ROCM=0
+export TF_NEED_CUDA=0
+export TF_DOWNLOAD_CLANG=0
+export TF_SET_ANDROID_WORKSPACE=0
 export TF_ENABLE_XLA=1
-export TF_NEED_JEMALLOC=0
+# use defaults for other options (python lib path, and compiler flags)
 yes "" | ./configure
 
 BAZEL_FLAGS=()
