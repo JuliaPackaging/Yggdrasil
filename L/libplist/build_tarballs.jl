@@ -19,13 +19,7 @@ autoreconf -f -i
 
 # Build without python bindings
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-            --without-cython --enable-shared \
-            ac_cv_fmin_builtin=no
-
-
-# For some reason, I can't convince `configure` to not 
-# add `-m elf_x86_64` onto the end of `ld`, even when it shouldn't:
-sed -i -e 's/$LD = (.*) -m [^ ]+/LD = \1/' Makefile
+            --without-cython --enable-shared
 
 make -j${nproc}
 make install
