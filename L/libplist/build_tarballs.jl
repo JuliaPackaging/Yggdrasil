@@ -1,0 +1,47 @@
+using BinaryBuilder
+
+name = "libplist"
+version = v"2.2.0"
+
+# Collection of sources required to build LibSSH2
+sources = [
+    GitSource("https://github.com/libimobiledevice/libplist.git",
+              "c5a30e9267068436a75b5d00fcbf95cb9c1f4dcd"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/libplist*/
+
+# This project uses bash-isms in its configuration
+export CONFIG_SHELL=/bin/bash
+autoreconf -f -i
+
+# Build without python bindings
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+            --without-cython --enable-shared \
+            ac_cv_fmin_builtin=no
+
+
+# For some reason, I can't convince `configure` to not 
+# add `-m elf_x86_64` onto the end of `ld`, even when it shouldn't:
+sed -i -e 's/$LD = (.*) -m [^ ]+/LD = \1/' Makefile
+
+make -j${nproc}
+make install
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+# The products that we will ensure are always built
+products = [
+    ExecutableProduct("plistutil", :plistutil),
+    LibraryProduct(["libplist", "libplist-2", "libplist-2.0"], :libplist),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+]
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
