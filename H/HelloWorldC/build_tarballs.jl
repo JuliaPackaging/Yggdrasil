@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -23,7 +23,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental_platforms=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
