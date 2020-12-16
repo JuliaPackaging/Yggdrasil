@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Antic"
-version = v"0.2.2"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/0.2.2.tar.gz",
-                  "9e8d518fc9b27807d5bfd173cc81d779a6a1e07ae37bc59427c5223283e9e4d4"),
+    ArchiveSource("https://github.com/wbhart/antic/archive/0.2.3.tar.gz",
+                  "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"),
 ]
 
 # Bash recipe for building across all platforms
