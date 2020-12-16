@@ -3,15 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.0.5"
+version = v"2.0.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "b1aab8873cfb38abc9e35d1dd9ffb8c9497eb80b")
+    GitSource("https://github.com/ig-or/qwtw.git", "ca79480ec11855c9f2c09df39eb5a9f4cbb62657")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk del ninja
 apk add g++
 cd $WORKSPACE/srcdir
 cd qwtw
