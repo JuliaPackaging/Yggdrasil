@@ -25,11 +25,8 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = Platform[
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos")
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfastjetwrap", :libfastjetwrap)
