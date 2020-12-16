@@ -28,6 +28,8 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 platforms = expand_cxxstring_abis(supported_platforms())
 # skip i686 musl builds (not supported by libjulia_jll)
 filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+# the plugins aren't found on win. Disable for now, but this is not a fundamental limitation.
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
