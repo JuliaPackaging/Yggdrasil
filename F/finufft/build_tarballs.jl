@@ -7,7 +7,7 @@ version = v"2.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v2.0.2.zip", "fe83dbc22a1d13799e9db48568d8417d3028e7b831800f2a626ea19b4f0461fe")
+    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "fe83dbc22a1d13799e9db48568d8417d3028e7b831800f2a626ea19b4f0461fe")
 ]
 
 # Bash recipe for building across all platforms
