@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 # Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
 # Make use of the -DFFTW_PLAN_SAFE flag to allow for multiple threads using finufft at the same time.
-make lib CFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude" CXXFLAGS="-fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude -std=c++14 -DFFTW_PLAN_SAFE" LIBSFFT="-lfftw3 -lfftw3f -lm"
+make lib CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude" CXXFLAGS="-fopenmp -fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude -std=c++14 -DFFTW_PLAN_SAFE" LIBSFFT="-lfftw3 -lfftw3f -lm"
 mv lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
 """
 
