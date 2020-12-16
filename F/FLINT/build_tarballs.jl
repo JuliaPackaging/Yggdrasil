@@ -26,11 +26,11 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
 # and possibly other packages.
 name = "FLINT"
-version = v"200.690.000"  # WARNING: don't change this
+version = v"200.691.000"  # WARNING: don't change this
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "60401a410e335f3c243ec069f5c72a2d8365a626"),
+    GitSource("https://github.com/wbhart/flint2.git", "12c069ea98cd8d2c1b556bbd85568c4891f126fa"),
 #    ArchiveSource("http://www.flintlib.org/flint-$(version).tar.gz",
 #                  "ce1a750a01fa53715cad934856d4b2ed76f1d1520bac0527ace7d5b53e342ee3")
 ]
