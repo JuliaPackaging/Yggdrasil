@@ -7,7 +7,7 @@ version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/v0.2.3.tar.gz",
+    ArchiveSource("https://github.com/wbhart/antic/archive/v$(version).tar.gz",
                   "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
