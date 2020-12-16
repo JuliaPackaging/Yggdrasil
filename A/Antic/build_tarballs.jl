@@ -7,8 +7,8 @@ version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/0.2.3.tar.gz",
-                  "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"),
+    ArchiveSource("https://github.com/wbhart/antic/archive/v0.2.3.tar.gz",
+                  "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
 # Bash recipe for building across all platforms
