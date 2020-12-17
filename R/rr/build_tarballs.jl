@@ -40,7 +40,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # This is really a build dependency
 dependencies = [
-    Dependency("capnproto_jll"),
+    BuildDependency("capnproto_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
