@@ -71,7 +71,8 @@ products = Product[# not sure yet
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Zlib_jll"))
+    Dependency(PackageSpec(name="Zlib_jll")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
