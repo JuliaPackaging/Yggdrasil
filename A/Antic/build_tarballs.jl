@@ -1,9 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+import Pkg.Types: VersionSpec
 
 name = "Antic"
-version = v"0.2.3"
+version = v"0.200.300"
+upstream_version = v"0.2.3"
 
 # Antic_jll versions are decoupled from the upstream versions.
 # Whenever we package a new official Antic release, we initially map its
@@ -25,7 +27,7 @@ version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/v$(version).tar.gz",
+    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
                   "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
