@@ -32,7 +32,7 @@ upstream_version = v"2.7.0"
 # Collection of sources required to build FLINT
 sources = [
 #    GitSource("https://github.com/wbhart/flint2.git", "12c069ea98cd8d2c1b556bbd85568c4891f126fa"),
-    ArchiveSource("https://github.com/wbhart/flint2/archive/flint-$(upstream_version).tar.gz",
+    ArchiveSource("https://github.com/wbhart/flint2/archive/$(upstream_version).tar.gz",
                   "c1885e64faf0eccc0d48e0a4346ae7c862e858dcb6809890232cbba0b917d2e3")
 ]
 
