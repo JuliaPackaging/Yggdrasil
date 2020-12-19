@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    cd cmake/tpl
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
