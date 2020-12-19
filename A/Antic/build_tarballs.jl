@@ -1,13 +1,33 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+import Pkg.Types: VersionSpec
 
 name = "Antic"
-version = v"0.2.3"
+version = v"0.200.300"
+upstream_version = v"0.2.3"
+
+# Antic_jll versions are decoupled from the upstream versions.
+# Whenever we package a new official Antic release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using Antic_jll use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version (except when Antic itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/v$(version).tar.gz",
+    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
                   "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
@@ -37,7 +57,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82")),
+    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
