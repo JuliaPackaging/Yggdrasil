@@ -1,9 +1,9 @@
 using BinaryBuilder
 
 name = "BLST"
-version = v"0.3.1"
+version = v"0.3.2"
 sources = [
-    ArchiveSource("https://github.com/supranational/blst/archive/v0.3.1.tar.gz", "39f649843b8a394fd026d4945365c2065d521a82be3162cf46f3654b3227a373"),
+    ArchiveSource("https://github.com/supranational/blst/archive/v0.3.2.tar.gz", "075f7c7f22cdf93de528ca7fa9aab53d255bf9f4e51155088d10d28e605715d9"),
 ]
 
 script = raw"""
@@ -26,7 +26,7 @@ platforms = [
     Platform("aarch64", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
     # Platform("x86_64", "freebsd"),
-    Platform("x86_64", "windows"),    
+    Platform("x86_64", "windows"),
 ]
 
 products = [
