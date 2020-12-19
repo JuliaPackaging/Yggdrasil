@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Sundials32"
-version = v"5.5.0"
+version = v"5.6.1"
 
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "348b60f4317787de28587e8386575f1897f993ba"),
+              "6ddce5d90084d8d1cbb8e12bb5a4402168325efe"),
     DirectorySource("../bundled@5"),
 ]
 
@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
+    cd cmake/tpl
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
@@ -32,7 +33,9 @@ elif [[ "${target}" == powerpc64le-* ]]; then
 fi
 
 # Fix the SuperLU_MT library name
-atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_SuperLU_MT.patch
+cd cmake/tpl
+atomic_patch $WORKSPACE/srcdir/patches/Sundials_SuperLU_MT.patch
+cd ../..
 
 # Use GCC on Apple/FreeBSD
 toolchain="$CMAKE_TARGET_TOOLCHAIN"
