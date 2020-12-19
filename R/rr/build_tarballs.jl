@@ -8,7 +8,7 @@ version = v"5.4.1"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "3f6beec28c4edcc37861b5da279bfb874a6c33c1")
+              "b91bee6f02a7988c407b28beabb23849a74b1d63")
 ]
 
 # Bash recipe for building across all platforms
