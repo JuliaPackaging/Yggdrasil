@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "Qt"
-version = v"5.15.1"
+version = v"5.15.2"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major)$(version.minor)/$version/single/qt-everywhere-src-$version.tar.xz",
-                  "44da876057e21e1be42de31facd99be7d5f9f07893e1ea762359bcee0ef64ee9"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/single/qt-everywhere-src-$version.tar.xz",
+                  "3a530d1b243b5dec00bc54937455471aaa3e56849d2593edb8ded07228202240"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir
+
+BIN_DIR="/opt/bin/${bb_full_target}"
 
 sed -i 's/-march=core-avx2//' ./qt-everywhere-src-*/qtbase/mkspecs/common/gcc-base.conf
 
@@ -34,26 +36,25 @@ commonoptions=" \
 apk add g++ linux-headers
 
 if [[ $target != x86_64-linux* ]]; then
-    export PATH=$(echo "$PATH" | sed -e 's!/opt/bin:!!')
+    export PATH=$(echo "$PATH" | sed -e "s?${BIN_DIR}:??")
 fi
 
 case "$target" in
 
 	*x86_64*linux*)
-        ../qt-everywhere-src-*/configure -L $prefix/lib -I $prefix/include \
+        ../qt-everywhere-src-*/configure -L ${libdir} -I ${includedir} \
             -prefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig
-        ln -s /lib64/libc.so.6 /lib64/libc.so
         ;;
-        
+
 	*apple-darwin*)
         cd $WORKSPACE/srcdir/MacOSX10.14.sdk
         rm -rf /opt/$target/$target/sys-root/System
         rsync -a usr/* /opt/$target/$target/sys-root/usr/
         cp -a System /opt/$target/$target/sys-root/
-        
+
         cd $WORKSPACE/srcdir/qt-everywhere-src-*/qtbase
-        
+
         cat <<EOT > mkspecs/features/mac/default_pre.prf
 CONFIG = asset_catalogs rez \$\$CONFIG
 load(default_pre)
@@ -69,56 +70,56 @@ xcode_copy_phase_strip_setting.name = COPY_PHASE_STRIP
 xcode_copy_phase_strip_setting.value = NO
 QMAKE_MAC_XCODE_SETTINGS += xcode_copy_phase_strip_setting
 EOT
-        
+
         sed -i '1s;^;QMAKE_MAC_SDK.macosx.Path = '"/opt/$target/$target/sys-root"'\
         QMAKE_MAC_SDK.macosx.SDKVersion = '"10.14"'\
         QMAKE_MAC_SDK.macosx.PlatformPath = '"/opt/$target"'\n;' 'mkspecs/features/mac/sdk.prf'
         echo "" >  mkspecs/features/mac/no_warn_empty_obj_files.prf
-        
-        sed -i 's!-fuse-ld=x86_64-apple-darwin14!-fuse-ld=/opt/bin/x86_64-apple-darwin14-ld!g' /opt/bin/x86_64-apple-darwin14-clang++
-        sed -i 's!-fuse-ld=x86_64-apple-darwin14!-fuse-ld=/opt/bin/x86_64-apple-darwin14-ld!g' /opt/bin/x86_64-apple-darwin14-clang
-        
+
+        sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang++
+        sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang
+
         cd $WORKSPACE/srcdir/build
-        
+
         export QT_MAC_SDK_NO_VERSION_CHECK=1
         ../qt-everywhere-src-*/configure \
             QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks \
-            QMAKE_RANLIB=/opt/bin/ranlib \
+            QMAKE_RANLIB=${BIN_DIR}/ranlib \
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.14 \
-            -platform linux-g++ -xplatform macx-clang -device-option CROSS_COMPILE=/opt/bin/$target- \
-            -prefix $prefix $commonoptions \
+            -platform linux-g++ -xplatform macx-clang -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
+            -prefix ${prefix} $commonoptions \
             -skip qtwinextras
         ;;
-        
-    *mingw*)        
-        ../qt-everywhere-src-*/configure -I $WORKSPACE/srcdir/qt-everywhere-src-*/qtbase/include/QtANGLE -platform linux-g++ -xplatform win32-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+
+    *mingw*)
+        ../qt-everywhere-src-*/configure -I $WORKSPACE/srcdir/qt-everywhere-src-*/qtbase/include/QtANGLE -platform linux-g++ -xplatform win32-g++ -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
             -prefix $prefix $commonoptions \
             -opengl dynamic
 		;;
 
     *arm-linux*)
         sed -i 's/linux-gnueabi/linux-gnueabihf/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-arm-gnueabi-g++/qmake.conf
-        
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-arm-gnueabi-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-arm-gnueabi-g++ -device-option CROSS_COMPILE=${BIN_DIR}/${target}- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
-        
+
     *aarch64-linux*)
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS=-liconv -platform linux-g++ -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=${BIN_DIR}/${target}- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
-    
+
     *i686-linux*)
         cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-i686-bb
         sed -i 's/aarch64-/i686-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-i686-bb/qmake.conf
 
-        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-i686-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform linux-i686-bb -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
         ;;
-    
+
     *x86_64-unknown-freebsd*)
         sed -i 's/load(qt_config)//' ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
         grep -A11 QMAKE_CC ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++/qmake.conf | sed -e 's/aarch64-linux-gnu/x86_64-unknown-freebsd11.1/' >> ../qt-everywhere-src-*/qtbase/mkspecs/freebsd-g++/qmake.conf
@@ -128,16 +129,16 @@ EOT
         sed -i 's/fseeko64/fseeko/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
         sed -i 's/freopen64/freopen/' ../qt-everywhere-src-*/qt3d/src/3rdparty/assimp/contrib/zip/src/miniz.h
 
-        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure -platform linux-g++ -xplatform freebsd-g++ -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
-    
+
     *powerpc64le-linux*)
         cp -a ../qt-everywhere-src-*/qtbase/mkspecs/linux-aarch64-gnu-g++ $qtsrcdir/qtbase/mkspecs/linux-ppc64-bb
         sed -i 's/aarch64-/powerpc64le-/g' ../qt-everywhere-src-*/qtbase/mkspecs/linux-ppc64-bb/qmake.conf
 
-        ../qt-everywhere-src-*/configure QMAKE_LFLAGS="-liconv -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64" -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=/opt/bin/$target- \
+        ../qt-everywhere-src-*/configure QMAKE_LFLAGS="-liconv -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64" -platform linux-g++ -xplatform linux-ppc64-bb -device-option CROSS_COMPILE=${BIN_DIR}/${target}- \
             -extprefix $prefix $commonoptions \
             -skip qtwinextras -fontconfig -sysroot /opt/$target/bin/../$target/sys-root
 		;;
@@ -274,6 +275,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 include("../../fancy_toys.jl")

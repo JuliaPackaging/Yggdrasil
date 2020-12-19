@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.3.2"
+version = v"5.4.1"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "cfd27dec0f7ae4fa677b0b1c9d3babd36c3ded8a")
+              "e92140c22806fb10bc8e6d6e55798e1bf5011418")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ cd ${WORKSPACE}/srcdir/rr/
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -Ddisable32bit=ON -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF ..
+      -Ddisable32bit=ON -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF -Dstaticlibs=ON ..
 make -j${nproc}
 make install
 """
@@ -40,7 +40,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # This is really a build dependency
 dependencies = [
-    Dependency("capnproto_jll"),
+    BuildDependency("capnproto_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

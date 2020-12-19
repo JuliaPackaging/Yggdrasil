@@ -25,11 +25,12 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = Platform[
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos")
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
+# skip i686 musl builds (not supported by libjulia_jll)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+# the plugins aren't found on win. Disable for now, but this is not a fundamental limitation.
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfastjetwrap", :libfastjetwrap)
@@ -43,4 +44,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"7", julia_compat = "^$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version=v"8", julia_compat = "^$(julia_version.major).$(julia_version.minor)")

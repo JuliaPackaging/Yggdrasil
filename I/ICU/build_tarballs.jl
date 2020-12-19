@@ -16,6 +16,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/icu/
 
+# Apply patch to link `libicudata` against the default standard libraries
+# to avoid toolchain weirdness when you have a dynamic library that has
+# _no_ dependencies (not even `libc`).  See this bug report for more:
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
+atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
+
 # Do the native build
 (
     cp -r source/ native_build/
@@ -62,7 +68,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libicudata", "icudt$(version.major)"], :libicudata),
+    LibraryProduct(["libicudata", "icudt$(version.major)"], :libicudata; dont_dlopen=true),
     LibraryProduct(["libicui18n", "icuin$(version.major)"], :libicui18n),
     LibraryProduct(["libicuio", "icuio$(version.major)"], :libicuio),
     LibraryProduct(["libicutest", "icutest$(version.major)"], :libicutest),
