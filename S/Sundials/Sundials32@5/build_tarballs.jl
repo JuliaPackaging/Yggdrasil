@@ -14,9 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
+cd cmake/tpl
+
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    atomic_patch $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
 elif [[ "${target}" == powerpc64le-* ]]; then
@@ -32,9 +34,7 @@ elif [[ "${target}" == powerpc64le-* ]]; then
 fi
 
 # Fix the SuperLU_MT library name
-cd cmake/tpl
 atomic_patch $WORKSPACE/srcdir/patches/Sundials_SuperLU_MT.patch
-cd ../..
 
 # Use GCC on Apple/FreeBSD
 toolchain="$CMAKE_TARGET_TOOLCHAIN"
@@ -48,6 +48,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Build
+cd $WORKSPACE/srcdir/sundials*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
