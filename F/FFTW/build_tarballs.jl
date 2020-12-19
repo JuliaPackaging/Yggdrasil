@@ -2,8 +2,8 @@ using BinaryBuilder
 
 # Collection of sources required to build ZMQ
 sources = [
-    ArchiveSource("http://fftw.org/~stevenj/fftw-3.3.9.tar.gz",
-                  "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042"),
+    ArchiveSource("http://fftw.org/fftw-3.3.9.tar.gz",
+                  "bf2c7ce40b04ae811af714deb512510cc2c17b9ab9d6ddcf49fe4487eea7af3d"),
 ]
 
 name = "FFTW"
