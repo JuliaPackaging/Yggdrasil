@@ -56,14 +56,15 @@ done
 # Set up not only lowercase symbol remappings, but uppercase as well:
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
-FFLAGS="${FFLAGS} -O2 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
+FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 LIBOPENBLAS=openblas
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     LIBOPENBLAS=openblas64_
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
-cd ${WORKSPACE}/srcdir/arpack-build
+mkdir build
+cd build
 export LDFLAGS="${EXE_LINK_FLAGS[@]} -L$prefix/lib -lpthread"
 cmake ../arpack-ng-* -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
