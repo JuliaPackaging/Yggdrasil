@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir ${WORKSPACE}/srcdir/arpack-ng*
+cd ${WORKSPACE}/srcdir/arpack-ng*
 
 # arpack tests require finding libgfortran when linking with C linkers,
 # and gcc doesn't automatically add that search path.  So we do it for it with `rpath-link`.
