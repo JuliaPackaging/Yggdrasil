@@ -2,15 +2,15 @@ using BinaryBuilder
 
 # Collection of sources required to build Arpack
 name = "Arpack"
-version = v"3.5.0"
+version = v"3.8.0"
 sources = [
-    ArchiveSource("https://github.com/opencollab/arpack-ng/archive/$(version).tar.gz",
-                  "50f7a3e3aec2e08e732a487919262238f8504c3ef927246ec3495617dde81239"),
+    GitSource("https://github.com/opencollab/arpack-ng.git",
+              "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir ${WORKSPACE}/srcdir/arpack-build
+mkdir ${WORKSPACE}/srcdir/arpack-ng*
 
 # arpack tests require finding libgfortran when linking with C linkers,
 # and gcc doesn't automatically add that search path.  So we do it for it with `rpath-link`.
@@ -56,7 +56,7 @@ done
 # Set up not only lowercase symbol remappings, but uppercase as well:
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
-FFLAGS="${FFLAGS} -O2 -fPIC -ffixed-line-length-none -cpp"
+FFLAGS="${FFLAGS} -O2 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 LIBOPENBLAS=openblas
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     LIBOPENBLAS=openblas64_
