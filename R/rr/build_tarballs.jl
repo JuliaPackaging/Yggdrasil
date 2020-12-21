@@ -16,10 +16,15 @@ script = raw"""
 pip3 install pexpect
 cd ${WORKSPACE}/srcdir/rr/
 
+CMAKE_ARGS=()
+if [[ ${nbits} == 64 ]]; then
+    CMAKE_ARGS+=( -Ddisable32bit=ON )
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -Ddisable32bit=ON -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF -Dstaticlibs=ON ..
+      -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF -Dstaticlibs=ON ${CMAKE_ARGS[@]} ..
 make -j${nproc}
 make install
 """
@@ -29,6 +34,7 @@ make install
 # rr only supports Linux
 platforms = [
     Platform("x86_64", "linux", libc="glibc"),
+    Platform("i686", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
