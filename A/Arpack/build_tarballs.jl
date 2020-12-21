@@ -98,7 +98,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenBLAS_jll",
+    Dependency("OpenBLAS_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
