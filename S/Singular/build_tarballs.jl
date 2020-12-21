@@ -29,11 +29,11 @@ import Pkg.Types: VersionSpec
 # coordinated with corresponding changes to FLINT_jll.jl, LoadFlint.jl, Nemo.jl,
 # libsingular_julia_jll, Singular.jl, and possibly other packages.
 name = "Singular"
-version = v"401.390.000"  # a snapshot of 4.1.4-DEV
+version = v"401.990.000"  # a snapshot of 4.2.0-DEV
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "eaa7752eb5d84ef7620492a274dcf88b30f152de"),
+    GitSource("https://github.com/Singular/Singular.git", "ef7108cf70d3c663cd35f085ab1b5445ae4f65b9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -81,7 +81,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.690"))), # snapshot of 2.7.0-DEV
+    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
