@@ -5,8 +5,8 @@ version = v"3.3.9"
 
 # Collection of sources required to build FFTW
 sources = [
-    GitSource("https://github.com/FFTW/fftw3.git",
-              "34082eb5d6ed7dc9436915df69f376c06fc39762"),
+   ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
+                  "bf2c7ce40b04ae811af714deb512510cc2c17b9ab9d6ddcf49fe4487eea7af3d"),
 ]
 
 # Bash recipe for building across all platforms
