@@ -1,17 +1,17 @@
 using BinaryBuilder
 
-# Collection of sources required to build ZMQ
-sources = [
-    ArchiveSource("http://fftw.org/~stevenj/fftw-3.3.9.tar.gz",
-                  "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042"),
-]
-
 name = "FFTW"
 version = v"3.3.9"
 
+# Collection of sources required to build FFTW
+sources = [
+   ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
+                  "bf2c7ce40b04ae811af714deb512510cc2c17b9ab9d6ddcf49fe4487eea7af3d"),
+]
+
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fftw-*
+cd $WORKSPACE/srcdir/fftw*
 
 # Base configure flags
 FLAGS=(
@@ -52,7 +52,7 @@ build_fftw()
     mkdir "${WORKSPACE}/srcdir/build_${1}"
     cd "${WORKSPACE}/srcdir/build_${1}"
 
-    ${WORKSPACE}/srcdir/fftw-*/configure "${FLAGS[@]}" $2
+    ${WORKSPACE}/srcdir/fftw*/configure "${FLAGS[@]}" $2
     perl -pi -e "s/tools m4/m4/" Makefile # work around FFTW/fftw3#146
     make -j${nproc}
     make install
@@ -64,7 +64,7 @@ build_fftw double
 build_fftw single --enable-single
 
 # Install both COPYING and COPYRIGHT in the license directory
-cd ${WORKSPACE}/srcdir/fftw-*
+cd ${WORKSPACE}/srcdir/fftw*
 install_license COPYING COPYRIGHT
 """
 
