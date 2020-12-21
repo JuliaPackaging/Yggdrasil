@@ -66,8 +66,9 @@ fi
 mkdir build
 cd build
 export LDFLAGS="${EXE_LINK_FLAGS[@]} -L$prefix/lib -lpthread"
-cmake ../arpack-ng-* -DCMAKE_INSTALL_PREFIX="$prefix" \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
+    -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
     -DBLAS_LIBRARIES="-l${LIBOPENBLAS}" \
     -DLAPACK_LIBRARIES="-l${LIBOPENBLAS}" \
