@@ -3,12 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "normaliz"
-version = v"3.8.5"
+version = v"300.800.900"
+upstream_version = v"3.8.9"
 
-# Collection of sources required to build normaliz
+# Normaliz_jll versions are decoupled from the upstream versions.
+# Whenever we package a new official Normaliz release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using Normaliz_jll use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version (except when Normaliz itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
+
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$version/normaliz-$version.tar.gz",
-                  "cf4fdaaa6ffcd8d268b1f16dd4b64cf86f1eab55177e611f8ef672e7365435a0")
+    ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
+                  "a4c3eda39ffe42120adfd3bda9433b01d9965516e3f98e401b62752a54bee5dd")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,8 +56,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
-    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82")),
+    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
     Dependency(PackageSpec(name="nauty_jll", uuid="55c6dc9b-343a-50ca-8ff2-b71adb3733d5")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
