@@ -17,7 +17,7 @@ pip3 install pexpect
 cd ${WORKSPACE}/srcdir/rr/
 
 CMAKE_ARGS=()
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} != 32 ]]; then
     CMAKE_ARGS+=( -Ddisable32bit=ON )
 fi
 
