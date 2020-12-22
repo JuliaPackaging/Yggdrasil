@@ -5,16 +5,17 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 const name = "libsingular_julia"
-const version = VersionNumber(0, 3, julia_version.minor)
+const version = VersionNumber(0, 4, julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
 const sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia", "b63a76c1634dc680485f5b7d4c81235e39d714bd"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "b63a76c1634dc680485f5b7d4c81235e39d714bd"),
 ]
 
 # Bash recipe for building across all platforms
 const script = raw"""
-cmake libsingular-j*/ -B build \
+cd libsingular-julia
+cmake . -B build \
    -DJulia_PREFIX="$prefix" \
    -DSingular_PREFIX="$prefix" \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -25,7 +26,7 @@ cmake libsingular-j*/ -B build \
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
-install_license libsingular-j*/LICENSE.md
+install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -52,7 +53,7 @@ const products = [
 const dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("401.390"))), # require 4.1.4-DEV snapshot
+    Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("402.000"))),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
