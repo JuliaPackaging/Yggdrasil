@@ -1,7 +1,7 @@
 //
 // cwrapper for tetgen copied from JuliaGeometry/tetgenbuilder
 //
-// (c) Simon Danisch
+// (c) Simon Danisch, Jürgen Fuhrmann
 
 // Permission is hereby granted, free  of charge, to any person obtaining
 // a  copy  of this  software  and  associated documentation  files  (the
@@ -168,6 +168,8 @@ void copy_tetio(TetGenIOf64* in, tetgenio* out)
 
 extern "C"
 {
+  // Keep this for backward compatibility in the process of
+  // bumping up  TetGen.jl versions
   TetGenIOf64 tetrahedralizef64(TetGenIOf64 jl_in, char* command)
   {
     tetgenio in, out;
@@ -179,5 +181,88 @@ extern "C"
     out.initialize();
     return jl_out;
   }
+  
+
+
+  // Unsuitable function type for cwrapper
+  typedef int (*unsuitable_func)(double*pa, double*pb, double*pc, double*pd);
+  
+  // Trivial unsuitable function
+  static int trivial_jl_tetunsuitable(double*pa, double*pb, double*pc, double*pd)
+  {
+    return 0;
+  }
+  
+  // Function pointer holding current unsuitable function
+  static unsuitable_func jl_tetunsuitable=trivial_jl_tetunsuitable;
+
+  // Set unsuitable function (called from Julia)
+  void tetunsuitable_callback(unsuitable_func f)
+  {
+    jl_tetunsuitable=f;
+  }
+  
+  // Tetrahedralize with error and unsuitable handing
+  TetGenIOf64 tetrahedralize2_f64(TetGenIOf64 jl_in, char* command, int *rc)
+  {
+    tetgenio in, out;
+    
+    copy_tetio(&jl_in, &in);
+    
+    // If a tetunsuitable function was set as jl_tetunsuitable
+    // we pass a tetunsuitable function wrapping this to TetGen
+    if (jl_tetunsuitable!=trivial_jl_tetunsuitable)
+    {
+      // Here we use a lambda without capture  which however sees the
+      // global variable jl_tetunsuitable.
+      //
+      // Passing instead a  function pointer as part of jl_in would seem to be the
+      // cleaner solution. However then we would need a lambda with capture here which
+      // cannot (at least not without higher level C++11) assigned to a function pointer.
+      // 
+      // In any case we need to store jl_tetunsuitable somewhere and make the intermediate
+      // call as C has no bool.
+      //
+      // We also probably could patch TetGen to allow int here, but let's wait for 1.6.1
+      // before delving into this. 
+      in.tetunsuitable=[](double*pa, double*pb, double*pc, double*pd, double*elen,double vol)
+                       { return (bool)jl_tetunsuitable(pa,pb,pc,pd);};
+    }
+    
+
+    // On error termination tetgen throws a positive integer value
+    // as an error code, see terminatetetgen() in tetgen.h.
+    // We catch this here and pass it to the caller via rc
+
+    *rc=0;
+    
+    try
+    {
+      tetrahedralize(command, &in, &out);
+    }
+    catch(int errorcode)
+    {
+      *rc=errorcode;
+    }
+
+    // Reset the tetunsuitale functio to
+    // to the dummy version - unlike with Triangle,
+    // there is no `-u` flag to control this otherwise
+    jl_tetunsuitable=trivial_jl_tetunsuitable;
+
+    in.initialize();
+
+    TetGenIOf64 jl_out;
+
+    // Copy to output only on TetGen success
+    if ((*rc)==0)
+    {
+      copy_tetio(&out, &jl_out);
+      out.initialize();
+    }
+    
+    return jl_out;
+  }
+  
 }
 
