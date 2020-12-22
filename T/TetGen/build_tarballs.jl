@@ -16,7 +16,7 @@ version = v"1.5.1"
 # Tentative upstream source for 1.6:
 # "http://www.tetgen.org/1.5/src/tetgen1.6.0.zip" => "e7bbbb4fb8f47f0adc3b46b26ab172557ebb90808c06e21b902b2166717af582"
 sources = [
-    GitSource("https://github.com/ufz/tetgen.git","9c4b70d479c6f67cb9e16dbe65f81ec3b821acad"),
+    GitSource("https://github.com/ufz/tetgen.git","150223d9416b5b75f5c1e50fda1ff7ba6f96871d"),
     DirectorySource("cwrapper",target="cwrapper")
 ]
 
