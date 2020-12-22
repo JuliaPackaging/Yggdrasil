@@ -29,17 +29,20 @@ import Pkg.Types: VersionSpec
 # coordinated with corresponding changes to FLINT_jll.jl, LoadFlint.jl, Nemo.jl,
 # libsingular_julia_jll, Singular.jl, and possibly other packages.
 name = "Singular"
-version = v"401.990.000"  # a snapshot of 4.2.0-DEV
+version = v"402.000.000"  # a snapshot of 4.2.0-DEV
+upstream_version = v"4.2.0"
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "ef7108cf70d3c663cd35f085ab1b5445ae4f65b9"),
+    #GitSource("https://github.com/Singular/Singular.git", "8cf4d31bb708e264c0e6082a13985538a2acd84f"),
+    ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
+                  "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd Singular
-./autogen.sh
+cd [Ss]ingular*
+#./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
     --with-libparse \
