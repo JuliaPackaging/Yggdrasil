@@ -18,18 +18,8 @@ mkdir -p ${bindir}
 
 install_license LICENSE.txt
 
-if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    mv kubectl.exe ${bindir}/kubectl.exe
-    chmod +x ${bindir}/kubectl.exe
-
-elif [[ ${target} == x86_64-apple* ]]; then
-    mv kubectl.darwin ${bindir}/kubectl
-    chmod +x ${bindir}/kubectl
-
-else
-    mv kubectl.linux ${bindir}/kubectl
-    chmod +x ${bindir}/kubectl
-fi
+mv "${target}-kubectl" "${bindir}/kubectl${exeext}"
+chmod 755 "${bindir}/kubectl${exeext}"
 
 """
 
