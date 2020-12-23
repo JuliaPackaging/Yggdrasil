@@ -3,33 +3,31 @@
 using BinaryBuilder, Pkg
 import Pkg.Types: VersionSpec
 
-# Singular_jll versions are decoupled from the upstream versions. Whenever we
-# package a new official Singular release, we initially map its version
-# X.Y.ZpN to X0Y.Z00.N00. So for example version 4.1.3p5 becomes 401.300.500.
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.ZpN to X0Y.Z00.N00. So for example version 4.1.3p5 becomes 401.300.500.
 #
 # This reflects the fact that 4.2.0 will only be made if there is a change to
 # Singular language itself, i.e., this is a pretty major change. The third digit
 # is changed for regular interim releases, and corresponds roughly to a semver
 # minor release; and the `p5` truly is a patch level.
 #
-# Moreover, all our packages using Singular_jll use `~` in their compat
-# ranges. Together, this allows us to increment the patch level of the JLL for
-# minor tweaks. If a rebuild of the JLL is needed which keeps the upstream
-# version identical but breaks ABI compatibility for any reason, we can
-# increment the minor version e.g. go from 401.300.500 to 401.301.500.
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor
+# tweaks. If a rebuild of the JLL is needed which keeps the upstream version
+# identical but breaks ABI compatibility for any reason, we can increment the
+# minor version e.g. go from 401.300.500 to 401.301.500.
 #
 # To package prerelease versions, we can also adjust the minor version; e.g. we may
 # map a prerelease of 4.1.4 to 401.390.000.
 #
-# There is currently no plan to change the major version, except when Singular itself
+# There is currently no plan to change the major version, except when upstream itself
 # changes its major version. It simply seemed sensible to apply the same transformation
 # to all components.
 #
-# WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to FLINT_jll.jl, LoadFlint.jl, Nemo.jl,
-# libsingular_julia_jll, Singular.jl, and possibly other packages.
 name = "Singular"
-version = v"402.000.000"  # a snapshot of 4.2.0-DEV
+version = v"402.000.000"
 upstream_version = v"4.2.0"
 
 # Collection of sources required to build normaliz
