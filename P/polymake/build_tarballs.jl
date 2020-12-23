@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-version = v"400.200.100"
-upstream_version = v"4.2.1"
+version = v"400.300.000"
+upstream_version = v"4.3.0"
 
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "d308f551ef4c9f490a3a848d45a1ab41ae6461b1daf5be3deeaebad7df3816d4")
+                  "1f0ef1c022a214c935189b72e8ac67e6c6315bf9dff5fc87c3d704d3e76cb994")
     DirectorySource("./bundled")
 ]
 
@@ -149,4 +149,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
-
