@@ -3,16 +3,12 @@
 using BinaryBuilder, Pkg
 import Pkg.Types: VersionSpec
 
-name = "Antic"
-version = v"0.200.300"
-upstream_version = v"0.2.3"
-
-# Antic_jll versions are decoupled from the upstream versions.
-# Whenever we package a new official Antic release, we initially map its
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
 # version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
 # So for example version 2.6.3 would become 200.600.300.
 #
-# Moreover, all our packages using Antic_jll use `~` in their compat ranges.
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
 #
 # Together, this allows us to increment the patch level of the JLL for minor tweaks.
 # If a rebuild of the JLL is needed which keeps the upstream version identical
@@ -21,9 +17,13 @@ upstream_version = v"0.2.3"
 # To package prerelease versions, we can also adjust the minor version; e.g. we may
 # map a prerelease of 2.7.0 to 200.690.000.
 #
-# There is currently no plan to change the major version (except when Antic itself
+# There is currently no plan to change the major version, except when upstream itself
 # changes its major version. It simply seemed sensible to apply the same transformation
 # to all components.
+
+name = "Antic"
+version = v"0.200.300"
+upstream_version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
