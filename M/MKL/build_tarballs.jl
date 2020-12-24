@@ -1,17 +1,19 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2020.2.254"
+version = v"2021.1.1"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/linux-64/mkl-2020.2-intel_254.tar.bz2",
-                  "930d67bb4298c6da2dabb8ea068170e69e9304fc0ce1b4fc094af01851102a35"; unpack_target = "mkl-x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/osx-64/mkl-2020.2-intel_258.tar.bz2",
-                  "628c54329ab3c088b4c55d047ccb58feeb2ade7d6e50bf982aa51ac088cccd45"; unpack_target = "mkl-x86_64-apple-darwin14"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/win-32/mkl-2020.2-intel_254.tar.bz2",
-                  "19dfae9402e764e507ee143b2c22cbf091fd6b778b03620504addc2b8135f987"; unpack_target = "mkl-i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2020.2/download/win-64/mkl-2020.2-intel_254.tar.bz2",
-                  "99efbdd8014668f1683aec61ea190aa7182a90e14969439a7dfb7b3dfef55693"; unpack_target = "mkl-x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2021.1.1/download/linux-64/mkl-2021.1.1-intel_52.tar.bz2",
+                  "bfb0fd056576cad99ae1d9c69ada2745420da9f9cf052551d5b91f797538bda2"; unpack_target = "mkl-x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2021.1.1/download/linux-32/mkl-2021.1.1-intel_52.tar.bz2",
+                  "7b6f55a30886154bd96d4b4c6b7428494a59397b87779b58e5b3de00250343f9"; unpack_target = "mkl-i686-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2021.1.1/download/osx-64/mkl-2021.1.1-intel_50.tar.bz2",
+                  "819fb8875909d4d024e2a936c54b561aebd1e3aebe58fc605c70aa1ad9a66b70"; unpack_target = "mkl-x86_64-apple-darwin14"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2021.1.1/download/win-32/mkl-2021.1.1-intel_52.tar.bz2",
+                  "dba6a12a481407ec55fba9895b68afacb15f044905dcb5e185db341b688e6177"; unpack_target = "mkl-i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2021.1.1/download/win-64/mkl-2021.1.1-intel_52.tar.bz2",
+                  "4024391b8a45836d5a7ee92405b7767874b3c3bbf2f490349fda042db3b60dfd"; unpack_target = "mkl-x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,6 +30,7 @@ fi
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
@@ -47,7 +50,7 @@ dependencies = [
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 no_autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "macos")]
-autofix_platforms = [Platform("x86_64", "linux")]
+autofix_platforms = [Platform("x86_64", "linux"), Platform("i686", "linux")]
 if any(should_build_platform.(triplet.(no_autofix_platforms)))
     # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
     # macOS causes runtime issues:
