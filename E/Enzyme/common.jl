@@ -3,10 +3,10 @@ using BinaryBuilder, Pkg
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-version = v"0.0.4"
+version = v"0.0.5"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "f86dc1b68d1d29b95912ee260810f2806657240a")]
+sources = [GitSource(repo, "8035dc70ba5523df3e58fab067a00de44cdcb276")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -43,5 +43,5 @@ ninja -C build -j ${nproc} install
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["LLVMEnzyme-9", "LLVMEnzyme"], :libEnzyme),
+    LibraryProduct(["libEnzyme-9", "libEnzyme"], :libEnzyme),
 ]
