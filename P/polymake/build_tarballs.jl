@@ -1,13 +1,34 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+import Pkg.Types: VersionSpec
+
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version, except when upstream itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
 
 name = "polymake"
-version = v"4.2.1"
+version = v"400.300.000"
+upstream_version = v"4.3.0"
 
 # Collection of sources required to build polymake
 sources = [
-    ArchiveSource("https://github.com/polymake/polymake/archive/V$(version.major).$(version.minor).tar.gz", "d308f551ef4c9f490a3a848d45a1ab41ae6461b1daf5be3deeaebad7df3816d4")
+    ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
+                  "1f0ef1c022a214c935189b72e8ac67e6c6315bf9dff5fc87c3d704d3e76cb994")
     DirectorySource("./bundled")
 ]
 
@@ -114,7 +135,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll"),
+    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
     Dependency("PPL_jll"),
@@ -128,4 +149,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
-
