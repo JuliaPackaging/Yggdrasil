@@ -38,8 +38,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libmkl_core", "mkl_core"], :libmkl_core),
-    LibraryProduct(["libmkl_rt", "mkl_rt"], :libmkl_rt),
+    LibraryProduct(["libmkl_core", "mkl_core", "mkl_core.1"], :libmkl_core),
+    LibraryProduct(["libmkl_rt", "mkl_rt", "mkl_rt.1"], :libmkl_rt),
 ]
 
 # Dependencies that must be installed before this package can be built
