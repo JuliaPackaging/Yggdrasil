@@ -5,13 +5,13 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
-version = VersionNumber(0, 4, julia_version.minor)
-upstream_version = v"0.3.0"
+upstream_version = v"0.4.0"
+version = VersionNumber(upstream_version.major, upstream_version.minor, julia_version.minor)
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
-                  "937d1a6e4d8146bb92e8e71c0fad4a8de782362c9b4e51ced3158aab908b1e07"),
+                  "004380813658ba218092ba526a8acf884796fe9afa581552523bd302210293af"),
 ]
 
 # Bash recipe for building across all platforms
