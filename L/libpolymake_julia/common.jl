@@ -5,11 +5,12 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
-version = v"0.3.0"
+version = VersionNumber(0, 4, julia_version.minor)
+upstream_version = v"0.3.0"
 
 # Collection of sources required to build libpolymake_julia
 sources = [
-    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
+    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
                   "937d1a6e4d8146bb92e8e71c0fad4a8de782362c9b4e51ced3158aab908b1e07"),
 ]
 
@@ -49,12 +50,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.1")),
+    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="polymake_jll", version=v"4.2.1")),
+    Dependency(PackageSpec(name="polymake_jll", version=v"400.300.000")),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"8",
+    julia_compat = "$(julia_version.major).$(julia_version.minor)")
