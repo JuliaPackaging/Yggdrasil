@@ -23,6 +23,7 @@ if [[ ${target} == arm* ]]; then
 fi
 export CFLAGS="-O2"
 export CXXFLAGS="-O2"
+autoreconf -vi
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
