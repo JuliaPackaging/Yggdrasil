@@ -7,8 +7,8 @@ version = v"3.9.0"
 
 # Collection of sources required to build GEOS
 sources = [
-    "http://download.osgeo.org/geos/geos-$version.tar.bz2" =>
-    "bd8082cf12f45f27630193c78bdb5a3cba847b81e72b20268356c2a4fc065269",
+    ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
+                  "bd8082cf12f45f27630193c78bdb5a3cba847b81e72b20268356c2a4fc065269")
 ]
 
 
@@ -40,8 +40,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
