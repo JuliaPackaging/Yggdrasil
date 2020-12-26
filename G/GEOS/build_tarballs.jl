@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.8.1"
+version = v"3.9.0"
 
 # Collection of sources required to build GEOS
 sources = [
     "http://download.osgeo.org/geos/geos-$version.tar.bz2" =>
-    "4258af4308deb9dbb5047379026b4cd9838513627cb943a44e16c40e42ae17f7",
+    "bd8082cf12f45f27630193c78bdb5a3cba847b81e72b20268356c2a4fc065269",
 ]
 
 
