@@ -1,6 +1,6 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -4014,7 +4014,7 @@ if test "$LIBCURL_CONFIG" != "no" ; then
+@@ -1348,7 +1348,7 @@ if test "$LIBCURL_CONFIG" != "no" ; then
  
    AC_MSG_RESULT([        found libcurl version $CURL_VER])
  
