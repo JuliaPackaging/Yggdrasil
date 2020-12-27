@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.8.1"
+version = v"3.9.0"
 
 # Collection of sources required to build GEOS
 sources = [
-    "http://download.osgeo.org/geos/geos-$version.tar.bz2" =>
-    "4258af4308deb9dbb5047379026b4cd9838513627cb943a44e16c40e42ae17f7",
+    ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
+                  "bd8082cf12f45f27630193c78bdb5a3cba847b81e72b20268356c2a4fc065269")
 ]
 
 
@@ -23,6 +23,7 @@ if [[ ${target} == arm* ]]; then
 fi
 export CFLAGS="-O2"
 export CXXFLAGS="-O2"
+autoreconf -vi
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
 make -j${nproc}
 make install
@@ -39,8 +40,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
