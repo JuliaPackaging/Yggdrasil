@@ -11,14 +11,6 @@ sources = [
                   "e5a3672e35e5e92e3c1b4452cd3c1d554f3177dc512bd98b29edf21866a4288c"),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("boost_jll"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("Zlib_jll"),
-]
-
 # Bash recipe for building across all platforms
 script = raw"""
 ## pre-build setup
@@ -46,11 +38,20 @@ install_license CGAL-*/LICENSE*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libCGAL", :libCGAL),
     LibraryProduct("libCGAL_Core", :libCGAL_Core),
     LibraryProduct("libCGAL_ImageIO", :libCGAL_ImageIO),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("boost_jll"),
+    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs.
