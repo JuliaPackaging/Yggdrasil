@@ -3,24 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "Minuit2"
-version = v"6.18.04"
+version = v"6.22.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/root-project/root/archive/v6-18-04.tar.gz", "82421a5f0486a2c66170300285dce49a961e3459cb5290f6fa579ef617dc8b0a"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/root-project/root/archive/v6-22-06.tar.gz", "81fe6403a3cf51bb1c411f240d9c233473a833e5738b3abf68ed55d0d27ce1cd")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/root-*/math/minuit2
 
-# Apply patch to add `project` command to CMake file
-atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake-add-project.patch
-
 sed -i '/^add_library(Minuit2$/a SHARED' src/CMakeLists.txt
+sed -i '/^add_library(Minuit2Math$/a SHARED' src/math/CMakeLists.txt
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-DMATHCORE_STANDALONE=1 ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Dminuit2_standalone=ON ..
 make -j ${nproc}
 make install
 
@@ -30,6 +27,9 @@ if [[ "${target}" == *-mingw* ]]; then
     cd "${prefix}/lib"
     ar x libMinuit2.dll.a
     cc -shared -o "${libdir}/libMinuit2.dll" *.o
+    rm *.o
+    ar x libMinuit2Math.dll.a
+    cc -shared -o "${libdir}/libMinuit2Math.dll" *.o
     rm *.o
 fi
 """
@@ -41,6 +41,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libMinuit2", :libMinuit2)
+    LibraryProduct("libMinuit2Math", :libMinuit2Math)
 ]
 
 # Dependencies that must be installed before this package can be built
