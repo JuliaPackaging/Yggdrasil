@@ -21,7 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_BUILD_DYNAMIC=1 \
       ..
-make
+make -j${nproc}
 make install
 """
 
@@ -40,5 +40,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,  preferred_gcc_version=v"5.3")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,  preferred_gcc_version=v"7")
 
