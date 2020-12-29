@@ -1,10 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
-import Pkg: PackageSpec
+using BinaryBuilder, Pkg
+
+julia_version = v"1.5.3"
 
 name = "libcgal_julia"
-version = v"0.15"
+version = v"0.15.1"
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
@@ -15,14 +16,6 @@ sources = [
         GitSource("https://github.com/rgcv/$rname.git",
                   "64587dbe445f3c6f7bff5ffd67e367e4131c7300") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
-
-    Dependency("CGAL_jll"),
-    Dependency("libcxxwrap_julia_jll"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,15 +35,14 @@ case $target in
 esac
 """ * """
 ## configure build
-cmake $jlcgaldir -B /tmp/build """ * raw"""\
-  `# cmake specific` \
-  -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+cmake $jlcgaldir """ * raw"""\
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_FIND_ROOT_PATH=$prefix \
-  -DCMAKE_INSTALL_PREFIX=$prefix \
+  -DCMAKE_FIND_ROOT_PATH=${prefix} \
+  -DCMAKE_INSTALL_PREFIX=${prefix} \
+  -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+  -DJulia_PREFIX=${prefix} \
   $macosflags \
-  `# tell jlcxx where julia is` \
-  -DJulia_PREFIX=$prefix
+  -B /tmp/build
 
 ## and away we go..
 VERBOSE=ON cmake --build /tmp/build --config Release --target install -- -j$nproc
@@ -60,18 +52,9 @@ install_license $jlcgaldir/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "freebsd"; cxxstring_abi = "cxx11"),
-    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    # generates plentiful warnings about parameter passing ABI changes, better
-    # safe than sorry
-    # Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
-    Platform("i686", "windows"; cxxstring_abi = "cxx11"),
-    Platform("x86_64", "windows"; cxxstring_abi = "cxx11"),
-]
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -79,5 +62,14 @@ products = [
     LibraryProduct("libcgal_julia_inexact", :libcgal_julia_inexact),
 ]
 
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("CGAL_jll"),
+    Dependency("libcxxwrap_julia_jll"),
+    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+]
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"8",
+    julia_compat = "$(julia_version.major).$(julia_version.minor)")
