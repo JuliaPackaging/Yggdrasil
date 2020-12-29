@@ -4,16 +4,16 @@ using BinaryBuilder
 import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
-const name = "libsingular_julia"
-const version = VersionNumber(0, 4, julia_version.minor)
+name = "libsingular_julia"
+version = VersionNumber(0, 4, julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
-const sources = [
+sources = [
     GitSource("https://github.com/oscar-system/libsingular-julia.git", "b63a76c1634dc680485f5b7d4c81235e39d714bd"),
 ]
 
 # Bash recipe for building across all platforms
-const script = raw"""
+script = raw"""
 cd libsingular-julia
 cmake . -B build \
    -DJulia_PREFIX="$prefix" \
@@ -37,12 +37,12 @@ platforms = filter!(!Sys.iswindows, platforms) # Singular does not support Windo
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-const products = [
+products = [
     LibraryProduct("libsingular_julia", :libsingular_julia),
 ]
 
 # Dependencies that must be installed before this package can be built
-const dependencies = [
+dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
     Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("402.000"))),
