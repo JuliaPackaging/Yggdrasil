@@ -34,16 +34,8 @@ install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
-# skip i686 musl builds (not supported by libjulia_jll)
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
-
-# skip PowerPC builds in Julia 1.3 (not supported by libjulia_jll)
-if julia_version < v"1.4"
-    filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
-end
-
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built

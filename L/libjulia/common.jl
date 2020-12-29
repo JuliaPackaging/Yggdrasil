@@ -1,6 +1,22 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg.Types
+using BinaryBuilder, Pkg
+
+# return the platforms supported by libjulia
+function libjulia_platforms(julia_version)
+    platforms = supported_platforms()
+
+    # skip 32bit musl builds; they fail with this error:
+    #    libunwind.so.8: undefined reference to `setcontext'
+    filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
+
+    # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
+    if julia_version < v"1.4"
+        filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
+    end
+
+    return platforms
+end
 
 # Collection of sources required to build Julia
 function build_julia(version)
@@ -196,16 +212,7 @@ function build_julia(version)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = supported_platforms()
-
-    # skip 32bit musl builds; they fail with this error:
-    #    libunwind.so.8: undefined reference to `setcontext'
-    filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
-
-    # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
-    if version < v"1.4"
-        filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
-    end
+    platforms = libjulia_platforms(version)
 
     # While the "official" Julia kernel ABI itself does not involve any C++
     # symbols on the linker level, `libjulia` still exports "unofficial" symbols
