@@ -24,12 +24,11 @@ install_license $WORKSPACE/srcdir/LCIO_Julia_Wrapper/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
-# skip i686 musl builds (not supported by libjulia_jll)
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && arch(p) == "i686"), platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
