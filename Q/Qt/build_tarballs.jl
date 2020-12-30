@@ -14,6 +14,7 @@ sources = [
 ]
 
 script = raw"""
+apk del ninja
 cd $WORKSPACE/srcdir
 
 BIN_DIR="/opt/bin/${bb_full_target}"
