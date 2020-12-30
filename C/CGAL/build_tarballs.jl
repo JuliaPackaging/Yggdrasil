@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name    = "CGAL"
-version = v"5.0.3"
+version = v"5.2"
+rversion = version.patch != 0 ? "$version" : "$(version.major).$(version.minor)"
 
 # Collection of sources required to build CGAL
 sources = [
-    ArchiveSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
-                  "e5a3672e35e5e92e3c1b4452cd3c1d554f3177dc512bd98b29edf21866a4288c"),
+    ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion.tar.xz",
+                  "744c86edb6e020ab0238f95ffeb9cf8363d98cde17ebb897d3ea93dac4145923"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,10 +20,10 @@ set -eu
 
 cmake -B build \
   `# cmake specific` \
-  -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_FIND_ROOT_PATH=$prefix \
+  -DCMAKE_INSTALL_PREFIX=$prefix \
+  -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
   `# cgal specific` \
   -DCGAL_HEADER_ONLY=OFF \
   -DWITH_CGAL_Core=ON \
@@ -49,8 +50,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("boost_jll"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("GMP_jll"),
+    Dependency("MPFR_jll"),
     Dependency("Zlib_jll"),
 ]
 
