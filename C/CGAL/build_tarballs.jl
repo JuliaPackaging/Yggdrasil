@@ -13,10 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-## pre-build setup
-# exit on error
-set -eu
-
 cmake -B build \
   `# cmake specific` \
   -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
