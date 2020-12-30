@@ -30,7 +30,7 @@ commonoptions=" \
 -skip qtactiveqt -skip qtandroidextras -skip qtcanvas3d -skip qtconnectivity -skip qtdatavis3d -skip qtdoc -skip qtgamepad \
 -skip qtnetworkauth -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtscxml -skip qtsensors -skip qtserialbus \
 -skip qtserialport -skip qtspeech -skip qtvirtualkeyboard -skip qtlocation -skip qtwayland -skip qtwebchannel -skip qtwebengine \
--skip qtwebglplugin -skip qtwebsockets -skip qtwebview  -skip qttools -nomake examples -release \
+-skip qtwebglplugin -skip qtwebsockets -skip qtwebview  -skip qttools  -openssl-linked  -nomake examples -release \
 "
 
 apk add g++ linux-headers
@@ -276,6 +276,7 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("OpenSSL_jll")
 ]
 
 include("../../fancy_toys.jl")
