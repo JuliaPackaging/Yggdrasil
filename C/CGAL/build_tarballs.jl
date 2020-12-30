@@ -2,9 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name    = "CGAL"
-version = v"5.2"
-rversion = version.patch != 0 ? "$version" : "$(version.major).$(version.minor)"
+name     = "CGAL"
+rversion = "5.2"
+version  = VersionNumber(rversion)
 
 # Collection of sources required to build CGAL
 sources = [
