@@ -34,6 +34,8 @@ commonoptions=" \
 -skip qtwebglplugin -skip qtwebsockets -skip qtwebview  -skip qttools  -openssl-linked  -nomake examples -release \
 "
 
+export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
+
 apk add g++ linux-headers
 
 if [[ $target != x86_64-linux* ]]; then
@@ -272,7 +274,7 @@ dependencies = [
     Dependency("Xorg_xcb_util_keysyms_jll"),
     Dependency("Xorg_xcb_util_renderutil_jll"),
     Dependency("xkbcommon_jll"),
-    BuildDependency("Libglvnd_jll"),
+    Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
