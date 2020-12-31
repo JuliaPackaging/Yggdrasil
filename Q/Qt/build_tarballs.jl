@@ -279,7 +279,7 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"),
 ]
 
 include("../../fancy_toys.jl")
