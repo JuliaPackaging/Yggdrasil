@@ -5,7 +5,8 @@ version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-2.3.0/libgd-2.3.0.tar.gz", "32590e361a1ea6c93915d2448ab0041792c11bae7b18ee812514fe08b2c6a342")
+    ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-$(version)/libgd-$(version).tar.gz",
+                  "32590e361a1ea6c93915d2448ab0041792c11bae7b18ee812514fe08b2c6a342")
 ]
 
 # Bash recipe for building across all platforms
