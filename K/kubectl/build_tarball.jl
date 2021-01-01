@@ -1,6 +1,5 @@
 using BinaryBuilder
 
-# Collection of sources required to build HDF5
 name = "kubectl"
 version = v"1.20.0"
 
