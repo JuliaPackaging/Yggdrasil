@@ -11,7 +11,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgd-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix="${prefix}"
+./configure --with-libiconv-prefix="${prefix}" --prefix=${prefix} --build=${MACHTYPE} --host=${target} 
 make -j${nproc}
 make install
 """
