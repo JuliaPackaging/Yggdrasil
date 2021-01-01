@@ -30,6 +30,8 @@ products = [
     ExecutableProduct("gd2topng", :gd2topng),
     ExecutableProduct("gdparttopng", :gdparttopng),
     ExecutableProduct("gd2copypal", :gd2copypal),
+    ExecutableProduct("gd2togif", :gd2togif),
+    ExecutableProduct("giftogd2", :giftogd2),
     LibraryProduct("libgd", :libgd),
 ]
 
@@ -38,6 +40,7 @@ dependencies = [
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
+    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
