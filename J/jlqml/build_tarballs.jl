@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 julia_version = v"1.5.3"
 
 name = "jlqml"
-version = v"0.1.4"
+version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/barche/jlqml.git", "1e2fb83a7805b7ee7048b6cb1d22fa4bcf59095b"),
+    GitSource("https://github.com/barche/jlqml.git", "a36226c77ad712611ae142b9a5855e33eaddbb53"),
 ]
 
 # Bash recipe for building across all platforms
