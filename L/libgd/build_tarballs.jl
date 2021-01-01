@@ -43,6 +43,8 @@ dependencies = [
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid = "1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2")),
+    BuildDependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
+    Dependency(PackageSpec(name="libwebp_jll", uuid = "c5f90fcd-3b7e-5836-afba-fc50a0988cb2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
