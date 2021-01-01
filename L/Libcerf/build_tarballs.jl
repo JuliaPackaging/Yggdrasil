@@ -7,7 +7,7 @@ version = v"1.14"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://jugit.fz-juelich.de/mlz/libcerf/-/archive/v$version/libcerf-v$version.tar.gz", "065346b3360943c9961517f8c49ae13fe956835f6fc3b53e9d307e41feec3a34")
+    ArchiveSource("https://jugit.fz-juelich.de/mlz/libcerf/-/archive/v1.14/libcerf-v1.14.tar.gz", "065346b3360943c9961517f8c49ae13fe956835f6fc3b53e9d307e41feec3a34")
 ]
 
 # Bash recipe for building across all platforms
