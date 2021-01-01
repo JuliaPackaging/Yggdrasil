@@ -23,13 +23,13 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pngtogd2", :pngtogd2),
-    ExecutableProduct("webpng", :webpng)
-    ExecutableProduct("pngtogd", :pngtogd)
-    ExecutableProduct("gdtopng", :gdtopng)
-    ExecutableProduct("gdcmpgif", :gdcmpgif)
-    ExecutableProduct("gd2topng", :gd2topng)
-    ExecutableProduct("gdparttopng", :gdparttopng)
-    ExecutableProduct("gd2copypal", :gd2copypal)
+    ExecutableProduct("webpng", :webpng),
+    ExecutableProduct("pngtogd", :pngtogd),
+    ExecutableProduct("gdtopng", :gdtopng),
+    ExecutableProduct("gdcmpgif", :gdcmpgif),
+    ExecutableProduct("gd2topng", :gd2topng),
+    ExecutableProduct("gdparttopng", :gdparttopng),
+    ExecutableProduct("gd2copypal", :gd2copypal),
     LibraryProduct("libgd.so.3.0.8", :libgd),
 ]
 
