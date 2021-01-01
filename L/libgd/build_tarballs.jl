@@ -30,7 +30,7 @@ products = [
     ExecutableProduct("gd2topng", :gd2topng),
     ExecutableProduct("gdparttopng", :gdparttopng),
     ExecutableProduct("gd2copypal", :gd2copypal),
-    LibraryProduct("libgd.so.3.0.8", :libgd),
+    LibraryProduct("libgd", :libgd.so.3.0.8),
 ]
 
 # Dependencies that must be installed before this package can be built
