@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "libgd"
+name = "LibGD"
 version = v"2.3.0"
 
 # Collection of sources required to complete build
