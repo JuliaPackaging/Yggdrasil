@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgd-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix="${prefix}"
-make
+make -j${nproc}
 make install
 """
 
