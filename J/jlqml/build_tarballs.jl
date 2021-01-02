@@ -2,16 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+julia_version = v"1.5.3"
+
 name = "jlqml"
-version = v"0.1.4"
+version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/barche/jlqml.git", "1e2fb83a7805b7ee7048b6cb1d22fa4bcf59095b"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.x86_64-linux-gnu-libgfortran4-cxx11.tar.gz", "378b6a23ce4363eeb7afd5bd8092f902caa512f2f987dfc47fc51ae6bdff0e56"; unpack_target="julia-x86_64-linux-gnu"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.x86_64-w64-mingw32-libgfortran4-cxx11.tar.gz", "621029838e895bf5f201d0858fdbd31f1bb7f458aa0bc0646b4b30185a7d8e7c"; unpack_target="julia-x86_64-w64-mingw32"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.armv7l-linux-gnueabihf-libgfortran4-cxx11.tar.gz", "0d733c2e0147d6ffb731b638a8b1bd4225069c5735df22bc3a953dffce663d74"; unpack_target="julia-arm-linux-gnueabihf"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/Julia_jll.jl/releases/download/Julia-v1.4.1+1/Julia.v1.4.1.x86_64-apple-darwin14-libgfortran4-cxx11.tar.gz", "f6d94a3184b0241f20f78523de581949afa038f3e320fb9fd20a83019968adca"; unpack_target="julia-x86_64-apple-darwin14"),
+    GitSource("https://github.com/barche/jlqml.git", "a36226c77ad712611ae142b9a5855e33eaddbb53"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,23 +23,31 @@ if [[ $target == *"apple-darwin"* ]]; then
   macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
 fi
 
-Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target
-
 mkdir build
 cd build
-cmake -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_FIND_ROOT_PATH=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DQt5Core_DIR=$prefix/lib/cmake/Qt5Core -DQt5Quick_DIR=$prefix/lib/cmake/Qt5Quick -DQt5Svg_DIR=$prefix/lib/cmake/Qt5Svg -DQt5Widgets_DIR=$prefix/lib/cmake/Qt5Widgets -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} $macos_extra_flags -DCMAKE_BUILD_TYPE=Release ../jlqml/
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DJulia_PREFIX=${prefix} \
+    -DQt5Core_DIR=$prefix/lib/cmake/Qt5Core \
+    -DQt5Quick_DIR=$prefix/lib/cmake/Qt5Quick \
+    -DQt5Svg_DIR=$prefix/lib/cmake/Qt5Svg \
+    -DQt5Widgets_DIR=$prefix/lib/cmake/Qt5Widgets \
+    $macos_extra_flags \
+    ../jlqml/
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/jlqml*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
-    Platform("x86_64", "windows"; cxxstring_abi = "cxx11"),
-]
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
+platforms = expand_cxxstring_abis(platforms)
+
+filter!(p -> libc(p) != "musl", platforms) # Qt_jll is currently not available for muslc
 
 # The products that we will ensure are always built
 products = [
@@ -53,7 +59,10 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Qt_jll"),
     BuildDependency("Libglvnd_jll"),
+    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"8",
+    julia_compat = "$(julia_version.major).$(julia_version.minor)")
