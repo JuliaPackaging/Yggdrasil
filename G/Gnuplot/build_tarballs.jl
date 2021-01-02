@@ -6,15 +6,19 @@ version = v"5.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://excellmedia.dl.sourceforge.net/project/gnuplot/gnuplot/$version/gnuplot-$version.tar.gz", 
-        "6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e"),
+    ArchiveSource("https://excellmedia.dl.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
+                  "6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
+# Make uic happy to use `libc.so` ¯\_(ツ)_/¯
+apk add g++ linux-headers samurai
+export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
+export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc} CFLAGS="-I${prefix}/include/cairo -I${prefix}/include/glib-2.0 -I${prefix}/lib/glib-2.0/include/"
+make -j${nproc}
 make install
 """
 
@@ -30,6 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Libcerf_jll", uuid="af83a40a-c4c4-57a0-81df-2309fbd279e3")),
     Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f")),
     Dependency(PackageSpec(name="Qt_jll", uuid="ede63266-ebff-546c-83e0-1c6fb6d0efc8")),
