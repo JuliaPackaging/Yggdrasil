@@ -12,8 +12,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgd-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix="${prefix}"
-make -j${nproc}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# For some reasons (something must be off in the configure script), on some
+# platforms the build system tries to use iconv but without adding the `-liconv`
+# flag.  Give a hint to make to use the right flag everywhere
+make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
 make install
 """
 
