@@ -1,20 +1,20 @@
 --- a/m4/geos.m4
 +++ b/m4/geos.m4
-@@ -121,7 +121,7 @@
- 
+@@ -122,7 +122,7 @@
        HAVE_GEOS="no"
  
--      GEOS_LIBS="`${GEOS_CONFIG} --ldflags` -lgeos_c"
-+      GEOS_LIBS="`${GEOS_CONFIG} --ldflags` -lgeos_c ${EXTRA_GEOS_LIBS}"
-       GEOS_CFLAGS="`${GEOS_CONFIG} --cflags`"
+       GEOS_LIBS="`${GEOS_CONFIG} --ldflags` -lgeos_c"
+-      GEOS_CFLAGS="`${GEOS_CONFIG} --cflags`"
++      GEOS_CFLAGS="`${GEOS_CONFIG} --cflags` ${EXTRA_GEOS_CFLAGS}"
        GEOS_VERSION="`${GEOS_CONFIG} --version`"
  
+       ax_save_LIBS="${LIBS}"
 @@ -134,7 +134,7 @@
          [GEOSversion],
          [HAVE_GEOS="yes"],
          [HAVE_GEOS="no"],
 -        []
-+        [${EXTRA_GEOS_LIBS}]
++        [${EXTRA_GEOS_CFLAGS}]
        )
  
        if test x"$HAVE_GEOS" = "xno"; then
