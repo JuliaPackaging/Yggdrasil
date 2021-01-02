@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd qttools/
+# Make uic happy to use `libc.so` ¯\_(ツ)_/¯
+apk add g++ linux-headers samurai
 qmake PREFIX=${prefix}
 make -j${nproc}
 make install
