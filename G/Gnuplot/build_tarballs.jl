@@ -6,7 +6,8 @@ version = v"5.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://excellmedia.dl.sourceforge.net/project/gnuplot/gnuplot/5.4.1/gnuplot-5.4.1.tar.gz", "6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e"),
+    ArchiveSource("https://excellmedia.dl.sourceforge.net/project/gnuplot/gnuplot/$version/gnuplot-$version.tar.gz", 
+        "6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e"),
 ]
 
 # Bash recipe for building across all platforms
