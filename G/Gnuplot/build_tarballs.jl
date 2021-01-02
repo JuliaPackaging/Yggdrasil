@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
+make -j${nproc} CFLAGS=-I${prefix}/include/cairo
 make install
 """
 
