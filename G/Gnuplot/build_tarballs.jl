@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc} CFLAGS="-I${prefix}/include/cairo -I${prefix}/include/glib-2.0"
+make -j${nproc} CFLAGS="-I${prefix}/include/cairo -I${prefix}/include/glib-2.0 -I${prefix}/lib/glib-2.0/include/"
 make install
 """
 
