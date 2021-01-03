@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
+make -j${nproc}
 make install
 """
 
@@ -27,16 +27,16 @@ products = [
     LibraryProduct("libwx_baseu-$(version.major)", :libwx_baseu),
     LibraryProduct("libwx_baseu_net-$(version.major)", :libwx_baseu_net),
     LibraryProduct("libwx_baseu_xml-$(version.major)", :libwx_baseu_xml),
-    LibraryProduct("libwx_gtk3u_adv-$(version.major)", :libwx_gtk3u_adv),
-    LibraryProduct("libwx_gtk3u_aui-$(version.major)", :libwx_gtk3u_aui),
-    LibraryProduct("libwx_gtk3u_core-$(version.major)", :libwx_gtk3u_core),
-    LibraryProduct("libwx_gtk3u_html-$(version.major)", :libwx_gtk3u_html),
-    LibraryProduct("libwx_gtk3u_propgrid-$(version.major)", :libwx_gtk3u_propgrid),
-    LibraryProduct("libwx_gtk3u_qa-$(version.major)", :libwx_gtk3u_qa),
-    LibraryProduct("libwx_gtk3u_ribbon-$(version.major)", :libwx_gtk3u_ribbon),
-    LibraryProduct("libwx_gtk3u_richtext-$(version.major)", :libwx_gtk3u_richtext),
-    LibraryProduct("libwx_gtk3u_stc-$(version.major)", :libwx_gtk3u_stc),
-    LibraryProduct("libwx_gtk3u_xrc-$(version.major)", :libwx_gtk3u_xrc),
+    #LibraryProduct("libwx_gtk3u_adv-$(version.major)", :libwx_gtk3u_adv),
+    #LibraryProduct("libwx_gtk3u_aui-$(version.major)", :libwx_gtk3u_aui),
+    #LibraryProduct("libwx_gtk3u_core-$(version.major)", :libwx_gtk3u_core),
+    #LibraryProduct("libwx_gtk3u_html-$(version.major)", :libwx_gtk3u_html),
+    #LibraryProduct("libwx_gtk3u_propgrid-$(version.major)", :libwx_gtk3u_propgrid),
+    #LibraryProduct("libwx_gtk3u_qa-$(version.major)", :libwx_gtk3u_qa),
+    #LibraryProduct("libwx_gtk3u_ribbon-$(version.major)", :libwx_gtk3u_ribbon),
+    #LibraryProduct("libwx_gtk3u_richtext-$(version.major)", :libwx_gtk3u_richtext),
+    #LibraryProduct("libwx_gtk3u_stc-$(version.major)", :libwx_gtk3u_stc),
+    #LibraryProduct("libwx_gtk3u_xrc-$(version.major)", :libwx_gtk3u_xrc),
 ]
 
 # Dependencies that must be installed before this package can be built
