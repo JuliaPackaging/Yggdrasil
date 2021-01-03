@@ -1,7 +1,7 @@
 
 using BinaryBuilder, Pkg
 
-name = "gnuplot"
+name = "Gnuplot"
 version = v"5.4.1"
 
 # Collection of sources required to complete build
