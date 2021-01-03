@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
+make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
 make install
 """
 
@@ -43,6 +43,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")),
     Dependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
+    Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
