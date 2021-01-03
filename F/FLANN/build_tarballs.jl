@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/flann-*
 
 #CMake doesn't work straight from clone, see https://github.com/mariusmuja/flann/issues/369 for source of workaround
 
-atomic_patch -p1 "$WORKSPACE/srcdir/patches/cmake_empty_target2.patch"
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/cmake_empty_target.patch"
 
 touch src/cpp/empty.cpp
 
