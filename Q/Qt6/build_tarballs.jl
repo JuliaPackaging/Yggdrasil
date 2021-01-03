@@ -235,11 +235,11 @@ dependencies = [
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"9")
 end
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"9")
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies)
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9")
 end
