@@ -6,19 +6,16 @@ import BinaryBuilderBase: nbits
 julia_version = v"1.5.3"
 
 name = "ConnectFourSolver"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/findmyway/connect4.git", "db9b13d14951d35e4f3f21e4f2ecaa93a906f277"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/findmyway/connect4.git", "d84c8a48b6c2d2cabe0a780d51758980f8084992"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd connect4*
-
-atomic_patch -p1 ../patches/generator.patch
 
 install_license LICENSE
 mkdir build
