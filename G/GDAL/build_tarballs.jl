@@ -47,6 +47,8 @@ rm -f ${prefix}/lib/*.la
 ./configure --prefix=$prefix --host=$target \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
+    --with-tiff=$prefix \
+    --with-geotiff=$prefix \
     --with-libz=$prefix \
     --with-expat=$prefix \
     --with-zstd=$prefix \
@@ -106,6 +108,8 @@ dependencies = [
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"),
     Dependency("Zstd_jll"),
+    Dependency("Libtiff_jll"),
+    Dependency("libgeotiff_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll", v"1.9.0"),
