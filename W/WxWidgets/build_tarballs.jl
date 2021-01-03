@@ -23,10 +23,10 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("wxrc-$(version.major)", :wxrc),
-    LibraryProduct("libwx_baseu-$(version.major)", :libwx_baseu),
-    LibraryProduct("libwx_baseu_net-$(version.major)", :libwx_baseu_net),
-    LibraryProduct("libwx_baseu_xml-$(version.major)", :libwx_baseu_xml),
+    ExecutableProduct("wxrc-3", :wxrc),
+    LibraryProduct("libwx_baseu-3", :libwx_baseu),
+    LibraryProduct("libwx_baseu_net-3", :libwx_baseu_net),
+    LibraryProduct("libwx_baseu_xml-3", :libwx_baseu_xml),
     #LibraryProduct("libwx_gtk3u_adv-$(version.major)", :libwx_gtk3u_adv),
     #LibraryProduct("libwx_gtk3u_aui-$(version.major)", :libwx_gtk3u_aui),
     #LibraryProduct("libwx_gtk3u_core-$(version.major)", :libwx_gtk3u_core),
@@ -41,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GTK3", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")),
+    Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")),
     Dependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
 ]
 
