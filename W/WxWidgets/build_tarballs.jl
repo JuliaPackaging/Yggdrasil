@@ -5,7 +5,7 @@ version = v"3.1.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v${version}/wxWidgets-${version}.tar.bz2",
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$(version)/wxWidgets-$(version}.tar.bz2",
                   "3ca3a19a14b407d0cdda507a7930c2e84ae1c8e74f946e0144d2fa7d881f1a94")
 ]
 
