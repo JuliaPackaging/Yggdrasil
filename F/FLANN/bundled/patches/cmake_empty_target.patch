@@ -1,7 +1,7 @@
-diff --git before/flann-1.9.1/src/cpp/CMakeLists.txt after/flann-1.9.1/src/cpp/CMakeLists.txt
+diff --git before/src/cpp/CMakeLists.txt after/src/cpp/CMakeLists.txt
 index 49c53f0..b453b27 100644
---- before/flann-1.9.1/src/cpp/CMakeLists.txt
-+++ after/flann-1.9.1/src/cpp/CMakeLists.txt
+--- before/src/cpp/CMakeLists.txt
++++ after/src/cpp/CMakeLists.txt
 @@ -29,7 +29,7 @@ if (BUILD_CUDA_LIB)
  endif()
  
