@@ -23,10 +23,10 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("wxrc-3", :wxrc),
-    #LibraryProduct("libwx_baseu-3", :libwx_baseu),
-    #LibraryProduct("libwx_baseu_net-3", :libwx_baseu_net),
-    #LibraryProduct("libwx_baseu_xml-3", :libwx_baseu_xml),
+    ExecutableProduct("wxrc", :wxrc),
+    LibraryProduct("libwx_baseu", :libwx_baseu),
+    LibraryProduct("libwx_baseu", :libwx_baseu_net),
+    LibraryProduct("libwx_baseu_xml", :libwx_baseu_xml),
     #LibraryProduct("libwx_gtk3u_adv-$(version.major)", :libwx_gtk3u_adv),
     #LibraryProduct("libwx_gtk3u_aui-$(version.major)", :libwx_gtk3u_aui),
     #LibraryProduct("libwx_gtk3u_core-$(version.major)", :libwx_gtk3u_core),
