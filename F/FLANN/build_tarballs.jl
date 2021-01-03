@@ -17,8 +17,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/flann-*
 
 #CMake doesn't work straight from clone, see https://github.com/mariusmuja/flann/issues/369 for source of workaround
-touch src/cpp/empty.cpp
+
 atomic_patch -p1 ../patches/cmake_empty_target.patch
+
+touch src/cpp/empty.cpp
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
