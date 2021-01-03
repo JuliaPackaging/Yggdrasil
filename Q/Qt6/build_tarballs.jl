@@ -241,5 +241,5 @@ if any(should_build_platform.(triplet.(platforms_win)))
     build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"9")
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies)
 end
