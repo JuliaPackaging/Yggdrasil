@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "wxWidgets"
-version = v"3.0.5.1"
+version = v"3.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$(version)/wxWidgets-$(version).tar.bz2",
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$(version).1/wxWidgets-$(version).1.tar.bz2",
                   "440f6e73cf5afb2cbf9af10cec8da6cdd3d3998d527598a53db87099524ac807")
 ]
 
