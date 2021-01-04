@@ -18,9 +18,11 @@ if [[ "${target}" == *-linux-musl ]]; then
 fi
 
 if [[ "${target}" == *-unknown-freebsd ]]; then
-    export LDFLAGS="-liconv"
+    .if empty(ICONV_LIB) || ! ${PORT_OPTIONS:MICONV}
+        CONFIGURE_ARGS+=ac_cv_search_libiconv_open=no
+    .endif
 fi
-
+#export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
