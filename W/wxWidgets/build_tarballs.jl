@@ -16,9 +16,11 @@ if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
 fi
-if [[ "${target}" == *-freebsd ]]; then
+
+if [[ "${target}" == *-unknown-freebsd ]]; then
     export LDFLAGS="-liconv"
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
