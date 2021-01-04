@@ -12,6 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
+apk add g++ linux-headers samurai
 if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
