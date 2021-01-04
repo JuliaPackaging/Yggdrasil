@@ -19,7 +19,6 @@ fi
 if [[ "${target}" == *-freebsd ]]; then
     export LDFLAGS="-liconv"
 fi
-export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
