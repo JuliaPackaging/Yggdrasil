@@ -47,14 +47,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
+    BuildDependency(PackageSpec(name="Xorg_xproto_jll", uuid = "46797783-dccc-5433-be59-056c4bde8513")),
     Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
-    Dependency(PackageSpec(name="SDL2_jll", uuid = "ab825dc5-c88e-5901-9575-1e5e20358fcf")),
-    Dependency(PackageSpec(name="Libtiff_jll", uuid = "89763e89-9b03-5906-acba-b20f662cd828")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="libpng_jll", uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8")),
+    #Dependency(PackageSpec(name="SDL2_jll", uuid = "ab825dc5-c88e-5901-9575-1e5e20358fcf")),
+    #Dependency(PackageSpec(name="Libtiff_jll", uuid = "89763e89-9b03-5906-acba-b20f662cd828")),
+    #Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a")),
+    #Dependency(PackageSpec(name="libpng_jll", uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
+    #Dependency(PackageSpec(name="JpegTurbo_jll", uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
