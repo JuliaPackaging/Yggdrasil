@@ -36,68 +36,15 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libastro", :astro),
-    LibraryProduct("libCycleStreetsPlugin", :CycleStreetsPlugin, "plugins"),
-    LibraryProduct("libNominatimSearchPlugin", :NominatimSearchPlugin, "plugins"),
-    LibraryProduct("libPn2Plugin", :Pn2Plugin, "plugins"),
-    LibraryProduct("libHostipPlugin", :HostipPlugin, "plugins"),
-    LibraryProduct("libStarsPlugin", :StarsPlugin, "plugins"),
-    LibraryProduct("libOpenLocationCodeSearchPlugin", :OpenLocationCodeSearchPlugin, "plugins"),
-    LibraryProduct("libLicense", :License, "plugins"),
-    LibraryProduct("libCachePlugin", :CachePlugin, "plugins"),
-    LibraryProduct("libYoursPlugin", :YoursPlugin, "plugins"),
-    LibraryProduct("libGosmoreRoutingPlugin", :GosmoreRoutingPlugin, "plugins"),
-    LibraryProduct("libElevationProfileFloatItem", :ElevationProfileFloatItem, "plugins"),
-    LibraryProduct("libLocalOsmSearchPlugin", :LocalOsmSearchPlugin, "plugins"),
-    LibraryProduct("libMapQuestPlugin", :MapQuestPlugin, "plugins"),
-    LibraryProduct("libGeoUriPlugin", :GeoUriPlugin, "plugins"),
-    LibraryProduct("libRoutinoPlugin", :RoutinoPlugin, "plugins"),
-    LibraryProduct("libJsonPlugin", :JsonPlugin, "plugins"),
-    LibraryProduct("libMeasureTool", :MeasureTool, "plugins"),
-    LibraryProduct("libFoursquarePlugin", :FoursquarePlugin, "plugins"),
-    LibraryProduct("libPostalCode", :PostalCode, "plugins"),
-    LibraryProduct("libOsmPlugin", :OsmPlugin, "plugins"),
     LibraryProduct("libmarblewidget-qt5", :marblewidget),
-    LibraryProduct("libNavigationFloatItem", :NavigationFloatItem, "plugins"),
-    LibraryProduct("libOverviewMap", :OverviewMap, "plugins"),
-    LibraryProduct("libEclipsesPlugin", :EclipsesPlugin, "plugins"),
-    LibraryProduct("libLocalDatabasePlugin", :LocalDatabasePlugin, "plugins"),
-    ExecutableProduct("marble-qt", :marble_qt),
-    LibraryProduct("libPntPlugin", :PntPlugin, "plugins"),
-    LibraryProduct("libSpeedometer", :Speedometer, "plugins"),
-    LibraryProduct("libLogPlugin", :LogPlugin, "plugins"),
-    LibraryProduct("libProgressFloatItem", :ProgressFloatItem, "plugins"),
-    LibraryProduct("libNotesPlugin", :NotesPlugin, "plugins"),
-    LibraryProduct("libAtmospherePlugin", :AtmospherePlugin, "plugins"),
-    LibraryProduct("libCompassFloatItem", :CompassFloatItem, "plugins"),
-    LibraryProduct("libOpenRouteServicePlugin", :OpenRouteServicePlugin, "plugins"),
-    LibraryProduct("libMapScaleFloatItem", :MapScaleFloatItem, "plugins"),
-    LibraryProduct("libmarbledeclarative", :marbledeclarative),
-    LibraryProduct("libNominatimReverseGeocodingPlugin", :NominatimReverseGeocodingPlugin, "plugins"),
-    LibraryProduct("libMonavPlugin", :MonavPlugin, "plugins"),
-    LibraryProduct("libPositionMarker", :PositionMarker, "plugins"),
-    LibraryProduct("libEarthquakePlugin", :EarthquakePlugin, "plugins"),
-    LibraryProduct("libFlightGearPositionProviderPlugin", :FlightGearPositionProviderPlugin, "plugins"),
-    LibraryProduct("libGpsInfo", :GpsInfo, "plugins"),
-    LibraryProduct("libCrosshairsPlugin", :CrosshairsPlugin, "plugins"),
-    LibraryProduct("libGosmoreReverseGeocodingPlugin", :GosmoreReverseGeocodingPlugin, "plugins"),
-    LibraryProduct("libRoutingPlugin", :RoutingPlugin, "plugins"),
-    LibraryProduct("libGpsbabelPlugin", :GpsbabelPlugin, "plugins"),
-    LibraryProduct("libAprsPlugin", :AprsPlugin, "plugins"),
-    LibraryProduct("libGraticulePlugin", :GraticulePlugin, "plugins"),
-    LibraryProduct("libSatellitesPlugin", :SatellitesPlugin, "plugins"),
-    LibraryProduct("libLatLonPlugin", :LatLonPlugin, "plugins"),
-    LibraryProduct("libAnnotatePlugin", :AnnotatePlugin, "plugins"),
-    LibraryProduct("libGpxPlugin", :GpxPlugin, "plugins"),
-    LibraryProduct("libKmlPlugin", :KmlPlugin, "plugins"),
-    LibraryProduct("libSunPlugin", :SunPlugin, "plugins"),
-    LibraryProduct("libOSRMPlugin", :OSRMPlugin, "plugins"),
-    LibraryProduct("libElevationProfileMarker", :ElevationProfileMarker, "plugins")
+    ExecutableProduct("marble-qt", :marble_qt)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Qt_jll", uuid="ede63266-ebff-546c-83e0-1c6fb6d0efc8"))
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
