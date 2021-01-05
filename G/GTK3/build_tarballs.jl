@@ -16,8 +16,17 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gtk+-*/
 
+# Temporary workaround #1 issue with apk
+apk add samurai
+
+# Temporary workaround #2: `util-linux` has a file, `/usr/bin/wall`, owned by
+# `root:tty`, but `apk` can't chown the file to the `tty` group because it
+# doesn't exist in our environment.  New `apk` has the option `--no-chown`, so
+# let's upgrade `apk` before going on
+apk add --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+
 # We need to run some commands with a native Glib
-apk add glib-dev gtk+3.0
+apk add --no-chown glib-dev gtk+3.0
 
 if [[ "${target}" == *-linux-* ]]; then
     # We need to run `wayland-scanner` on the build system only when Wayland is
@@ -34,6 +43,8 @@ rm -f ${prefix}/bin/wayland-scanner
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/gdkwindow-quartz_c.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build.patch
+# The `meson.build` file has the wrong version number in 3.24.11.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build_version_3.24.11.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then

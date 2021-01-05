@@ -1,0 +1,24 @@
+From 70c4b66d99f66b9da27ded63f2c26e3c13ce07f8 Mon Sep 17 00:00:00 2001
+From: Emmanuele Bassi <ebassi@gnome.org>
+Date: Sat, 7 Sep 2019 17:44:18 +0100
+Subject: [PATCH] Bump up the version in the Meson build file
+
+We already released 3.24.11.
+---
+ meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index 6d6a4d1db7..0029920675 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,5 +1,5 @@
+ project('gtk+-3.0', 'c',
+-        version: '3.24.10',
++        version: '3.24.11',
+         default_options: [
+           'buildtype=debugoptimized',
+           'warning_level=1'
+-- 
+GitLab
+
