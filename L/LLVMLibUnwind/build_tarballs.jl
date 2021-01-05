@@ -32,8 +32,8 @@ make install
 
 # Move over the DLL. TODO: There may be a CMAKE flag for this.
 if [[ ${target} == *mingw32* ]]; then
-    mkdir -p $prefix/bin
-    mv -v lib/libunwind.dll $prefix/bin/
+    mkdir -p "${libdir}"
+    mv -v lib/libunwind.dll "${libdir}"
 fi
 """
 
@@ -52,4 +52,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0", julia_compat="1.6")
