@@ -12,18 +12,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
+FLAGS=()
 if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
+elif [[ "${target}" == *-freebsd* ]]; then
+    FLAGS+=(ac_cv_search_libiconv_open=no)
 fi
-
-if [[ "${target}" == *-unknown-freebsd ]]; then
-    .if empty(ICONV_LIB) || ! ${PORT_OPTIONS:MICONV}
-        CONFIGURE_ARGS+=ac_cv_search_libiconv_open=no
-    .endif
-fi
-#export LDFLAGS="-liconv"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 cd docs
