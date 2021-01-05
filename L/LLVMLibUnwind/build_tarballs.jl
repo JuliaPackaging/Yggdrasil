@@ -7,12 +7,13 @@ version = v"11.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/libunwind-11.0.0.src.tar.xz", "8455011c33b14abfe57b2fd9803fb610316b16d4c9818bec552287e2ba68922f")
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/libunwind-$(version).src.tar.xz",
+                  "8455011c33b14abfe57b2fd9803fb610316b16d4c9818bec552287e2ba68922f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libunwind-11.0.0.src
+cd $WORKSPACE/srcdir/libunwind*
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$prefix)
@@ -21,12 +22,13 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
 CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
 
-# TODO: Work around to build on Windows 64-bit
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_THREADS=OFF)
+    # Support for threading requires Windows Vista.
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-cmake ${CMAKE_FLAGS[@]}
+mkdir build && cd build
+cmake "${CMAKE_FLAGS[@]}" ..
 make -j${nprocs}
 make install
 
@@ -40,7 +42,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;experimental=true)
-
 
 # The products that we will ensure are always built
 products = [
