@@ -12,12 +12,12 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.12/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz"
-rootfs_hash = "0beb54cf9bf69d085f9fcd291ff28b3335184d08b706d535f425e8180851edc9"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.12/x86_64/alpine-minirootfs-3.12.3-x86_64.tar.gz"
+rootfs_hash = "1770f9f2214497f3c1caccc6b9e692c34e2dce00924bab5102e76388f770a64c"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
-download_verify(rootfs_url, rootfs_hash, rootfs_targz_path; verbose=verbose, force=true)
+Pkg.PlatformEngines.download_verify(rootfs_url, rootfs_hash, rootfs_targz_path; verbose=verbose, force=true)
 
 # Unpack the rootfs (using `tar` on the local machine), then pack it up again (again using tools on the local machine) and squashify it:
 rootfs_extracted = joinpath(@__DIR__, "build", "rootfs_extracted")
@@ -134,8 +134,11 @@ NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
+# Install a more recent version of `apk`, which understands `--no-chown`.
+# TODO: remove this when we move to Alpine v3.13+.
+apk add --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # chgrp and chown should be no-ops since we run in a single-user mode
 rm -f ./bin/chown ./bin/chgrp
@@ -159,6 +162,7 @@ cp -vd ${WORKSPACE}/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp -vd ${WORKSPACE}/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
 cp -vd ${WORKSPACE}/srcdir/utils/flagon ./usr/local/bin/flagon
 cp -vd ${WORKSPACE}/srcdir/utils/fake_uname.sh ./usr/bin/uname
+cp -vd ${WORKSPACE}/srcdir/utils/apk_wrapper.sh ./usr/local/bin/apk
 mv ./sbin/sysctl ./sbin/_sysctl
 cp -vd ${WORKSPACE}/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
 cp -vd ${WORKSPACE}/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
