@@ -19,7 +19,7 @@ if [[ "${target}" == *-linux-musl ]]; then
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(ac_cv_search_libiconv_open=no)
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} # "${FLAGS[@]}"
 make -j${nproc}
 make install
 cd docs
