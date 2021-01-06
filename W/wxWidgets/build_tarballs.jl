@@ -55,8 +55,9 @@ dependencies = [
     Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
     #Dependency(PackageSpec(name="SDL2_jll", uuid = "ab825dc5-c88e-5901-9575-1e5e20358fcf")),
     #Dependency(PackageSpec(name="Libtiff_jll", uuid = "89763e89-9b03-5906-acba-b20f662cd828")),
-    #Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a")),
-    #Dependency(PackageSpec(name="libpng_jll", uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
+    Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="libpng_jll", uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
+    Dependency(PackageSpec(name="Pango_jll", uuid = "36c8627f-9965-5494-a995-c6b170f724f3"))
     #Dependency(PackageSpec(name="JpegTurbo_jll", uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8")),
 ]
 
