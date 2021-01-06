@@ -20,7 +20,7 @@ elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(ac_cv_search_libiconv_open=no)
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
-make -j${nproc} -Diconv=external
+make -j${nproc} 
 make install
 cd docs
 install_license preamble.txt licence.txt licendoc.txt gpl.txt lgpl.txt xserver.txt
