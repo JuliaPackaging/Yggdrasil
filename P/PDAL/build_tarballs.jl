@@ -16,34 +16,38 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/PDAL-*/
 
+if [[ "${target}" == x86_64-linux-musl ]]; then
+    # Delete libexpat to prevent it from being picked up by mistake
+    rm /usr/lib/libexpat.so*
+fi
+
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
 
 mkdir build && cd build
 
 cmake .. -G Ninja \
--DCMAKE_INSTALL_PREFIX=$prefix \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_LIBRARY_PATH:FILEPATH="$prefix/lib" \
--DCMAKE_INCLUDE_PATH:FILEPATH="$prefix/include" \
--DCMAKE_BUILD_TYPE=Release \
--DBUILD_PLUGIN_I3S=OFF \
--DBUILD_PLUGIN_NITF=OFF \
--DBUILD_PLUGIN_TILEDB=OFF \
--DBUILD_PLUGIN_ICEBRIDGE=OFF \
--DBUILD_PLUGIN_HDF=OFF \
--DBUILD_PLUGIN_PGPOINTCLOUD=OFF \
--DBUILD_PLUGIN_E57=OFF \
--DBUILD_PGPOINTCLOUD_TESTS=OFF \
--DWITH_LAZPERF=OFF \
--DBUILD_PGPOINTCLOUD_TESTS=OFF \
--DWITH_LASZIP=ON \
--DWITH_ZSTD=ON \
--DWITH_ZLIB=ON \
--DWITH_TESTS=OFF
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_LIBRARY_PATH:FILEPATH="${libdir}" \
+    -DCMAKE_INCLUDE_PATH:FILEPATH="${includedir}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_PLUGIN_I3S=OFF \
+    -DBUILD_PLUGIN_NITF=OFF \
+    -DBUILD_PLUGIN_TILEDB=OFF \
+    -DBUILD_PLUGIN_ICEBRIDGE=OFF \
+    -DBUILD_PLUGIN_HDF=OFF \
+    -DBUILD_PLUGIN_PGPOINTCLOUD=OFF \
+    -DBUILD_PLUGIN_E57=OFF \
+    -DBUILD_PGPOINTCLOUD_TESTS=OFF \
+    -DWITH_LAZPERF=OFF \
+    -DBUILD_PGPOINTCLOUD_TESTS=OFF \
+    -DWITH_LASZIP=ON \
+    -DWITH_ZSTD=ON \
+    -DWITH_ZLIB=ON \
+    -DWITH_TESTS=OFF
 
-ninja
+ninja -j${nproc}
 ninja install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -60,7 +64,7 @@ products = [
     LibraryProduct("libpdal_util", :libpdal_util),
     LibraryProduct("libpdal_base", :libpdal_base),
     LibraryProduct("libpdal_plugin_kernel_fauxplugin", :libpdal_plugin_kernel_fauxplugin),
-    ExecutableProduct("pdal", :pdal)
+    ExecutableProduct("pdal", :pdal),
 ]
 
 # Dependencies that must be installed before this package can be built
