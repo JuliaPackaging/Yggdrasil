@@ -80,7 +80,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpdal_util", :libpdal_util),
-    LibraryProduct("libpdal_base", :libpdal_base),
+    LibraryProduct(["libpdal_base", "libpdalcpp"], :libpdal_base),
     LibraryProduct("libpdal_plugin_kernel_fauxplugin", :libpdal_plugin_kernel_fauxplugin),
     ExecutableProduct("pdal", :pdal),
 ]
