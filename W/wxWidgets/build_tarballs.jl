@@ -12,15 +12,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
-FLAGS=()
+#FLAGS=()
 if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
 elif [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(ac_cv_search_libiconv_open=no)
+    #FLAGS+=(ac_cv_search_libiconv_open=no)
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
-make -j${nproc}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} # "${FLAGS[@]}"
+make -j${nproc} -Diconv=external
 make install
 cd docs
 install_license preamble.txt licence.txt licendoc.txt gpl.txt lgpl.txt xserver.txt
