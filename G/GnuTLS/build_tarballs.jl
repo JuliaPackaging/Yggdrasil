@@ -14,9 +14,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/gnutls-*/
 
 # Grumble-grumble apple grumble-grumble broken linkers...
-#if [[ ${target} == *-apple-* ]]; then
-#    export AR=/opt/${target}/bin/ar
-#fi
+if [[ ${target} == *-apple-* ]]; then
+    export AR=/opt/${target}/bin/ar
+fi
 
 GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target} \
     --with-included-libtasn1 \
