@@ -22,9 +22,27 @@ if [[ "${target}" == x86_64-linux-musl ]]; then
 fi
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
+# We'll build `dimbuilder` separately.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
 
-mkdir build && cd build
+mkdir -p build/dimbuilder && cd build/dimbuilder
 
+# Build dimbuilder with the host compiler.
+(
+
+    # For some reason, CMake seems to ignore the toolchain file, let's force the
+    # compiler with the CXX environment variable
+    export CXX=${HOST_CXX}
+    cmake ../../dimbuilder -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+        -DNLOHMANN_INCLUDE_DIR="$(realpath ../../vendor/nlohmann)" \
+        -DCMAKE_BUILD_TYPE=Release
+    ninja -j${nproc}
+    mkdir -p ../bin
+    mv dimbuilder ../bin/.
+)
+
+cd ..
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
