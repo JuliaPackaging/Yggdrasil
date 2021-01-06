@@ -5,7 +5,7 @@ version = v"3.6.15"
 
 # Collection of sources required to build GnuTLS
 sources = [
-    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-$(version).tar.xz",
+    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
                   "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558"),
 ]
 
@@ -13,9 +13,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnutls-*/
 
-# Grumble-grumble apple grumble-grumble broken linkers...
-if [[ ${target} == *-apple-* ]]; then
-    export AR=/opt/${target}/bin/ar
+if [[ ${target} == *darwin* ]]; then
+     # We need to explicitly request a higher `-mmacosx-version-min` to avoid
+     # errors about undefined symbol "___isOSVersionAtLeast"; see also
+     # https://github.com/JuliaPackaging/Yggdrasil/pull/2079
+     export CFLAGS=-mmacosx-version-min=10.11
 fi
 
 GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target} \
