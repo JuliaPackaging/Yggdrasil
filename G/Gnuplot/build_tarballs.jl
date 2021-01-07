@@ -30,7 +30,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    LibraryProduct("libiconv", :libiconv),
+    LibraryProduct("libiconv-*", :libiconv),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -44,6 +44,7 @@ dependencies = [
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
     Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
