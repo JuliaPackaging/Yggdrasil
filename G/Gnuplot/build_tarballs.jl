@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 # Make uic happy to use `libc.so` ¯\_(ツ)_/¯
-apk add g++ linux-headers samurai gnutls readline musl
+apk add g++ linux-headers samurai
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -42,6 +42,7 @@ dependencies = [
     #Dependency(PackageSpec(name="WxWidgets_jll", uuid="")),
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
     Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
