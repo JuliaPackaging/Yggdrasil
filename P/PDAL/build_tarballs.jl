@@ -24,6 +24,11 @@ fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
 # We'll build `dimbuilder` separately.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Replace-non-standard-endian-functions-with-alternati.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Use-consistent-lowercase-for-Windows-header-files.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Fix-type-of-arguments-of-ifstream-ofstream.patch
+fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
 

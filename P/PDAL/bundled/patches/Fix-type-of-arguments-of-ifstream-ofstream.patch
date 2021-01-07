@@ -1,0 +1,36 @@
+From e4f2ca25113bb40e5eb32a69af638f71ff5bfea7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Thu, 7 Jan 2021 18:24:44 +0000
+Subject: [PATCH 1/1] Fix type of arguments of `ifstream`/`ofstream`
+
+The first argument of `ifstream`/`ofstream` must be `string`, not `wstring`:
+https://en.cppreference.com/w/cpp/io/basic_ifstream.
+---
+ pdal/util/FileUtils.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pdal/util/FileUtils.cpp b/pdal/util/FileUtils.cpp
+index 883cb06b2..e68684bf4 100644
+--- a/pdal/util/FileUtils.cpp
++++ b/pdal/util/FileUtils.cpp
+@@ -119,7 +119,7 @@ std::istream *openFile(std::string const& filename, bool asBinary)
+     if (asBinary)
+         mode |= std::ios::binary;
+ 
+-    ifs = new std::ifstream(toNative(name), mode);
++    ifs = new std::ifstream(name, mode);
+     if (!ifs->good())
+     {
+         delete ifs;
+@@ -138,7 +138,7 @@ std::ostream *createFile(std::string const& name, bool asBinary)
+     if (asBinary)
+         mode |= std::ios::binary;
+ 
+-    std::ostream *ofs = new std::ofstream(toNative(name), mode);
++    std::ostream *ofs = new std::ofstream(name, mode);
+     if (!ofs->good())
+     {
+         delete ofs;
+-- 
+2.29.2
+

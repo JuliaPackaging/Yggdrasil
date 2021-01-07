@@ -1,0 +1,89 @@
+From 306d54056e087a463499001b9c30d39f316df808 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Thu, 7 Jan 2021 17:48:10 +0000
+Subject: [PATCH 1/1] Use consistent lowercase for Windows header files
+
+Windows header files are used with inconsistent cases in the codebase.  When
+building on a case-insensitive file system (common when doing native compilation
+on Windows) this doesn't matter, but when using case-sensitive file
+system (e.g., when cross-compiling on Linux) this leads to errors.
+---
+ pdal/DynamicLibrary.cpp       | 2 +-
+ pdal/util/FileUtils.hpp       | 2 +-
+ vendor/arbiter/arbiter.cpp    | 2 +-
+ vendor/kazhdan/MemoryUsage.h  | 4 ++--
+ vendor/kazhdan/PoissonRecon.h | 4 ++--
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/pdal/DynamicLibrary.cpp b/pdal/DynamicLibrary.cpp
+index eccbc2a3a..c599a8381 100755
+--- a/pdal/DynamicLibrary.cpp
++++ b/pdal/DynamicLibrary.cpp
+@@ -38,7 +38,7 @@
+ // The original work was released under the Apache License v2.
+ 
+ #ifdef _WIN32
+-  #include <Windows.h>
++  #include <windows.h>
+ #else
+   #include <dlfcn.h>
+ #endif
+diff --git a/pdal/util/FileUtils.hpp b/pdal/util/FileUtils.hpp
+index 4bceba8cd..2e993bb84 100644
+--- a/pdal/util/FileUtils.hpp
++++ b/pdal/util/FileUtils.hpp
+@@ -44,7 +44,7 @@
+ #include <vector>
+ 
+ #ifdef _WIN32
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ #include "pdal_util_export.hpp"
+diff --git a/vendor/arbiter/arbiter.cpp b/vendor/arbiter/arbiter.cpp
+index 5ad2affa3..68f9d4076 100644
+--- a/vendor/arbiter/arbiter.cpp
++++ b/vendor/arbiter/arbiter.cpp
+@@ -893,7 +893,7 @@ const drivers::Http& Endpoint::getHttpDriver() const
+ #include <sys/stat.h>
+ #else
+ #define UNICODE
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #include <iterator>
+ #include <locale>
+ #include <codecvt>
+diff --git a/vendor/kazhdan/MemoryUsage.h b/vendor/kazhdan/MemoryUsage.h
+index e11973cc6..93372dca2 100644
+--- a/vendor/kazhdan/MemoryUsage.h
++++ b/vendor/kazhdan/MemoryUsage.h
+@@ -31,8 +31,8 @@ DAMAGE.
+ 
+ #if defined( _WIN32 ) || defined( _WIN64 )
+ 
+-#include <Windows.h>
+-#include <Psapi.h>
++#include <windows.h>
++#include <ssapi.h>
+ struct MemoryInfo
+ {
+ 	static size_t Usage( void )
+diff --git a/vendor/kazhdan/PoissonRecon.h b/vendor/kazhdan/PoissonRecon.h
+index dbb165f31..2f761fe69 100644
+--- a/vendor/kazhdan/PoissonRecon.h
++++ b/vendor/kazhdan/PoissonRecon.h
+@@ -34,8 +34,8 @@ DAMAGE.
+ //ABELL - Necessary?
+ /**
+ #if defined( _WIN32 ) || defined( _WIN64 )
+-#include <Windows.h>
+-#include <Psapi.h>
++#include <windows.h>
++#include <psapi.h>
+ #endif // _WIN32 || _WIN64
+ **/
+ 
+-- 
+2.29.2
+

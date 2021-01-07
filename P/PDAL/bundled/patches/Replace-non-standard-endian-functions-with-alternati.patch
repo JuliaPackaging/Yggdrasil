@@ -1,0 +1,33 @@
+From 4c1fc84aa30473827338714c9f65fd1875c88153 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Thu, 7 Jan 2021 17:53:10 +0000
+Subject: [PATCH 1/1] Replace non-standard endian functions with alternative
+ implementations
+
+`htonll` and `ntohll` aren't part of any standard and aren't provided by MinGW,
+which prevents cross-compiling the library for Windows using this runtime.  For
+the alternative implementations, see
+https://stackoverflow.com/a/49167531/2442087.
+---
+ pdal/util/portable_endian.hpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pdal/util/portable_endian.hpp b/pdal/util/portable_endian.hpp
+index b0e753f32..1883ad881 100644
+--- a/pdal/util/portable_endian.hpp
++++ b/pdal/util/portable_endian.hpp
+@@ -65,9 +65,9 @@
+ #       define be32toh ntohl
+ #       define le32toh(x) (x)
+                         
+-#       define htobe64 htonll
++#       define htobe64(x) ((((uint64_t)htonl(x&0xFFFFFFFF)) << 32) + htonl(x >> 32))
+ #       define htole64(x) (x)
+-#       define be64toh ntohll
++#       define be64toh(x) ((((uint64_t)ntohl(x&0xFFFFFFFF)) << 32) + ntohl(x >> 32))
+ #       define le64toh(x) (x)
+                          
+ #   elif BYTE_ORDER == BIG_ENDIAN
+-- 
+2.29.2
+
