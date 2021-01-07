@@ -12,12 +12,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gnuplot-*/src/
+cd $WORKSPACE/srcdir/gnuplot-*/
 # Make uic happy to use `libc.so` ¯\_(ツ)_/¯
 apk add g++ linux-headers samurai
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd src
 make -j${nproc}
 make install
 """
