@@ -1,3 +1,28 @@
+### Instructions for adding a new version
+#
+# * add the sources, GCC and its dependencies.  For the dependencies you can use
+#   the highest between the version used in our preceding build of GCC and the
+#   versions listed in the file
+#   [`contrib/download_prerequisites`](https://gcc.gnu.org/git/?p=gcc.git;a=blob;f=contrib/download_prerequisites;hb=HEAD)
+# * add the relevant entry to the mapping gcc -> binutils, and add the binutils
+#   source if necessary.  The version of binutils to use depends on what works
+#   during the build.  A good initial value can be found in
+#   https://wiki.osdev.org/Cross-Compiler_Successful_Builds
+# * create the directory `0_RootFS/GCCBootstrap@X`.  You can copy the
+#   `build_tarballs.jl` file from `0_RootFS/GCCBootstrap@X-1` and change the
+#   version to build.  In order to reduce patches duplication, we want to use as
+#   many symlinks as possible, so link to previously existing patches whenever
+#   possible.  This shell command should be useful:
+#
+#      for p in ../../../GCCBootstrap@XYZ/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
+#
+# * you can build only one platform at the time.  To deploy the compiler shards
+#   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
+#   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
+#   deploy the compilers one by one or run something like
+#
+#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd11.1 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
+
 include("./common.jl")
 
 using BinaryBuilder
@@ -78,6 +103,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
+        v"10.2.0" => [
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz",
+                          "b8dd4368bb9c7f0b98188317ee0254dd8cc99d1e3a18d0ff146c855fe16c1d8c"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz",
+                          "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
+                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+        ],
     )
 
     # Map from GCC version and platform -> binutils sources
@@ -112,6 +149,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"7.1.0" => v"2.27",
             v"8.1.0" => v"2.31",
             v"9.1.0" => v"2.33.1",
+            v"10.2.0" => v"2.34",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -139,6 +177,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.33.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.xz",
                               "ab66fc2d1c3ec0359b8e08843c9f33b63e8707efdff5e4cc5c200eae24722cbf"),
+            ],
+            v"2.34" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.34.tar.xz",
+                              "f00b0e8803dc9bab1e2165bd568528135be734df3fabf8d0161828cd56028952"),
             ],
             v"2.35.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.35.1.tar.xz",
@@ -209,14 +251,14 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     ]
 end
 
-function gcc_script(compiler_target::Platform) 
+function gcc_script(compiler_target::Platform)
     script = raw"""
     cd ${WORKSPACE}/srcdir
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
 
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
-    apk add build-base gettext-dev gcc-objc clang
+    apk add build-base gettext-dev gcc-objc clang texinfo
 
     # We like to refer to things with their full triplets, so symlink our host tools
     # (which have no prefix) to have the machtype prefix.
@@ -302,7 +344,7 @@ function gcc_script(compiler_target::Platform)
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
-        
+
         # GCC build doesn't pay attention to DSYMUTIL or DSYMUTIL_FOR_TARGET, tsk tsk
         mkdir -p ${prefix}/bin
         ln -s llvm-dsymutil ${prefix}/bin/dsymutil
@@ -338,9 +380,8 @@ function gcc_script(compiler_target::Platform)
     done
 
     # Disable any non-POSIX usage of TLS for musl
-    if [[ "${COMPILER_TARGET}" == *musl* ]]; then
-        # This is allowed to fail as on GCC 11 it doesn't cleanly apply
-        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt $WORKSPACE/srcdir/patches/musl_disable_tls.patch || true
+    if [[ "${COMPILER_TARGET}" == *musl* ]] && [[ -f "${WORKSPACE}/srcdir/patches/musl_disable_tls.patch" ]]; then
+        patch -p1 $WORKSPACE/srcdir/gcc-*/libgomp/configure.tgt ${WORKSPACE}/srcdir/patches/musl_disable_tls.patch
     fi
 
     # If we're on MacOS, we need to install cctools first, separately.
@@ -380,7 +421,7 @@ function gcc_script(compiler_target::Platform)
 
         # Patch to make `dlltool` use deterministic mode when building static libraries
         atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_deterministic_dlltool.patch
-        
+
         # Patch for building binutils 2.30+ against FreeBSD
         atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_freebsd_symbol_versioning.patch || true
 
@@ -454,8 +495,11 @@ function gcc_script(compiler_target::Platform)
 
         # patch glibc's stupid gcc/make version checks (we don't require these,
         # as if it doesn't apply cleanly, it's probably fine).  We also keep them
-        # separate, as some glibc versions require one or not the other.  :(
+        # separate, as some glibc versions require one or not the other.  BTW,
+        # the three versions of glibc we use require three different patches :(
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc217_gcc_version.patch || true
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc219_gcc_version.patch || true
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
 
         # patch older glibc's 32-bit assembly to withstand __i686 definition of
@@ -535,7 +579,7 @@ function gcc_script(compiler_target::Platform)
 
         # Install headers
         make install-headers DESTDIR=${sysroot}
-        
+
         # Make CRT
         make lib/{crt1,crti,crtn}.o
         mkdir -p ${sysroot}/usr/lib
@@ -560,7 +604,7 @@ function gcc_script(compiler_target::Platform)
             --host=${COMPILER_TARGET} \
             --with-sysroot=${sysroot} \
             ${MINGW_CONF_ARGS}
-        make -j${nproc} 
+        make -j${nproc}
         make install DESTDIR=${sysroot}
 
     elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then
@@ -632,7 +676,7 @@ function gcc_script(compiler_target::Platform)
         # Fix broken symlink
         ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
 
-    elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then    
+    elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
         cd $WORKSPACE/srcdir/mingw_crt_build
 
         # Build winpthreads
