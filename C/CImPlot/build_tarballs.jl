@@ -3,15 +3,15 @@
 using BinaryBuilder
 using Pkg
 name = "CImPlot"
-version = v"0.4.0" # tracking tags of epezent/implot
+version = v"0.8.0" # tracking tags of epezent/implot
 
 # Collection of sources required to build CImGui
 sources = [
     GitSource("https://github.com/cimgui/cimplot.git",
-              "e797b3f3a537f8d9efb83c6df3c1a6cdb0833013"),
+              "5672fa2a16dcd6cd93a4faa8a72f3f14f986bb48"),
 
     GitSource("https://github.com/epezent/implot.git",
-              "5c9679c2abf77825c5c7a2b228a773a506754c50"),
+              "a9d334791563cdaf9bd0bf7f9899a67bcd03179b"),
 
     DirectorySource("./bundled"),
 ]
@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-                Dependency(PackageSpec(name="CImGui_jll", version=v"1.77.0")),
+                Dependency(PackageSpec(name="CImGui_jll", version=v"1.79.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
