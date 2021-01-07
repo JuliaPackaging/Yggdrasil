@@ -30,7 +30,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    LibraryProduct("libiconv*", :libiconv),
+    LibraryProduct("libiconv", :libiconv),
 ]
 
 # Dependencies that must be installed before this package can be built
