@@ -46,6 +46,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp -a integration/Sanitizer/* ${prefix}/cuda/bin
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+    apk del ninja   # hack
     apk add p7zip
 
     7z x installer.exe -o${temp}
@@ -75,7 +76,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv nvtx_installer/*.h ${prefix}/cuda/include
 
     # fixup
-    chmod +x ${prefix}/cuda/bin/*.exe
+    chmod +x ${prefix}/cuda/bin/*.{exe,dll}
 
     # clean-up
     rm ${prefix}/cuda/*.nvi
