@@ -32,7 +32,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgmsh", "gmsh"], :libgmsh),
-    FileProduct("gmsh/api/gmsh.jl",:gmsh_api)
+    FileProduct("api/gmsh.jl",:gmsh_api)
 ]
 
 # Dependencies that must be installed before this package can be built
