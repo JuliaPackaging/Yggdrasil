@@ -27,7 +27,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.000.000"
+version = v"402.000.001"
 upstream_version = v"4.2.0"
 
 # Collection of sources required to build normaliz
@@ -35,11 +35,17 @@ sources = [
     #GitSource("https://github.com/Singular/Singular.git", "8cf4d31bb708e264c0e6082a13985538a2acd84f"),
     ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
                   "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd [Ss]ingular*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
 #./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
