@@ -116,4 +116,4 @@ mktempdir() do download_dir
 end
 
 # Sub off to Registrator to create a PR to General
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; lazy_artifacts=json_obj["lazy_artifacts"])
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; lazy_artifacts=lazy_artifacts)
