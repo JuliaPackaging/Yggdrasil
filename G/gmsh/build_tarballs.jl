@@ -32,7 +32,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgmsh", "gmsh"], :libgmsh),
-    FileProduct("api/gmsh.jl",:gmsh_api)
+    FileProduct("lib/gmsh.jl",:gmsh_api)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -42,4 +42,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,  preferred_gcc_version=v"7")
-
