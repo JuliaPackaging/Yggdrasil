@@ -71,5 +71,5 @@ dependencies = [
 
 # preferred_gcc_version = v"8" is a requirement from libcxxwrap_julia_jll
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+               preferred_gcc_version=v"8",
+               julia_compat = "$(julia_version.major).$(julia_version.minor)")
