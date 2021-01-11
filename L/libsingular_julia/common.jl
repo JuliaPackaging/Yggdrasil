@@ -5,11 +5,11 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libsingular_julia"
-version = VersionNumber(0, 4, julia_version.minor)
+version = VersionNumber(0, 5, julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "b63a76c1634dc680485f5b7d4c81235e39d714bd"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "703e72fee5746b5c4841d086a2f16e0c1ef27b0a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,7 +45,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("402.000"))),
+    Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("402.000.001"))),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
