@@ -156,6 +156,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
     mv bin/cuda-memcheck.exe ${bindir}
+
+    # Fix permissions
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
