@@ -13,7 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk del ninja
 apk add g++
 cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do

@@ -16,10 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gtk+-*/
 
-# Temporary workaround #1 issue with apk
-apk add samurai
-
-# Temporary workaround #2: `util-linux` has a file, `/usr/bin/wall`, owned by
+# Temporary workaround: `util-linux` has a file, `/usr/bin/wall`, owned by
 # `root:tty`, but `apk` can't chown the file to the `tty` group because it
 # doesn't exist in our environment.  New `apk` has the option `--no-chown`, so
 # let's upgrade `apk` before going on

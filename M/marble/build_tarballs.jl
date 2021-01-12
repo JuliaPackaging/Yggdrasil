@@ -18,7 +18,6 @@ cd marble-20.12.0/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/win32.patch"
 mkdir build
 cd build/
-apk del ninja
 apk add g++
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../.
 make -j${nproc}
