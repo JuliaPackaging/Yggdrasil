@@ -138,7 +138,7 @@ BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmak
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 # Install a more recent version of `apk`, which understands `--no-chown`.
 # TODO: remove this when we move to Alpine v3.13+.
-apk add --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+apk add --root $prefix --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # chgrp and chown should be no-ops since we run in a single-user mode
 rm -f ./bin/chown ./bin/chgrp
