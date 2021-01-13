@@ -5,7 +5,7 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libsingular_julia"
-version = VersionNumber(0, 5, julia_version.minor)
+version = VersionNumber(0, 6, julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
 sources = [
