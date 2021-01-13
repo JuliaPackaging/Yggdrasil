@@ -3,20 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "OSQP"
-version = v"0.6.0"
+version = v"0.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dl.bintray.com/bstellato/generic/OSQP/0.6.0/osqp-0.6.0.tar.gz", "79ae6905a71bc8241f75733adfe6a74114aa7fff1e89e0d5c88a1d1e1cc50165")
+    ArchiveSource("https://dl.bintray.com/bstellato/generic/OSQP/$(version)/osqp-$(version).tar.gz",
+                  "2026ec67784344fbe062708947a68420911f8feb040e07ff09fba35254032b1f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd osqp-0.6.0/
+cd osqp-*
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make
 make install
 """
