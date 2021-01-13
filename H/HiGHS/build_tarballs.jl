@@ -23,7 +23,6 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-apk del ninja
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
 make -j${nproc} highs
