@@ -34,7 +34,7 @@ function build_julia(version)
 
     # Bash recipe for building across all platforms
     script = raw"""
-    apk add coreutils libuv-dev utf8proc samurai
+    apk add coreutils libuv-dev utf8proc
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
