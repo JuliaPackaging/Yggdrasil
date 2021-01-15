@@ -24,17 +24,16 @@ make install
 
 # Move dll on windows
 if [[ ${target} == *-mingw32 ]]; then 
-    cp -L *.dll $WORKSPACE/destdir/bin
-    rm -f *.dll
+    cp -L *.${dlext} ${libdir}
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Windows(:x86_64),
-    MacOS(:x86_64)
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
+    Platform("x86_64", "macos"),
 ]
 
 
