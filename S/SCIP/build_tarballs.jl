@@ -8,10 +8,8 @@ version = v"0.1.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://scip.zib.de/download/release/scipoptsuite-7.0.2.tgz", "f81b5a2c1c0eb949cf06bd50f42826e55284fa1269a6f28a92ac1a06d9c93a03"),
-    GitSource("https://github.com/ds4dm/bliss.git", "69210dc6cd2d76ef914ecc525b61965e3e153385"),
 ]
 
-# Bash recipe for building across all platforms
 
 # bliss script, ignored for now
 script_bliss = raw"""
@@ -25,6 +23,7 @@ make install
 cd $WORKSPACE/srcdir
 """
 
+# Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
 mkdir build
