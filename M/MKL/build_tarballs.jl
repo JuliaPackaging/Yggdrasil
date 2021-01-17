@@ -19,7 +19,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mkl-${target}
-if [[ ${target} == *mingw* ]]; then
+if [[ ${target} == *-mingw* ]]; then
     cp -r Library/bin/* ${libdir}
 else
     cp -r lib/* ${libdir}
