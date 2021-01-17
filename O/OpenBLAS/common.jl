@@ -130,6 +130,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
     # Install the library
     make "${flags[@]}" "PREFIX=$prefix" install
+    install_license LICENSE
 
     # Force the library to be named the same as in Julia-land.
     # Move things around, fix symlinks, and update install names/SONAMEs.
