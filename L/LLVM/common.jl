@@ -344,7 +344,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -375,13 +375,19 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
     dependencies = BinaryBuilder.AbstractDependency[]
+    
+    # Parse out some args
     if "--assert" in ARGS
+        assert = true
+        deleteat!(ARGS, findfirst(ARGS .== "--assert"))
+    end
+
+    if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
         if name in ("Clang", "LLVM")
             push!(dependencies, Dependency(get_addable_spec("libLLVM_assert_jll", libLLVM_version)))
         end
         name = "$(name)_assert"
-        deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
         if name in ("Clang", "LLVM")
