@@ -113,6 +113,13 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Enter the fun zone
     cd ${WORKSPACE}/srcdir/OpenBLAS*/
 
+    # Patch GCC header
+    # https://github.com/gcc-mirror/gcc/commit/23bce99cbe7016a04e14c2163ed3fe6a5a64f4e2#diff-c3bbd1dcd7c953ef6d719969fb187e31209ef3d7851a84448aad949aea2e8106
+    if [[ ${target} == x86_64* ]] && [[ $(gcc --version | head -1 | awk '{ print $3 }') =~ (7|8).* ]] && [[ -f ${WORKSPACE}/srcdir/gcc-patches/avx512fintrin.patch ]]; then
+        gcc_version=$(gcc --version | head -1 | awk '{ print $3 }')
+        atomic_patch -p4 -d /opt/${target}/lib/gcc/${target}/${gcc_version}/include ${WORKSPACE}/srcdir/gcc-patches/avx512fintrin.patch
+    fi
+
     # Apply any patches this version of OpenBLAS requires
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
