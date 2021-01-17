@@ -307,9 +307,8 @@ rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 """
 
-function configure_build(ARGS, version; experimental_platforms=false)
+function configure_build(ARGS, version; experimental_platforms=false, assert=false)
     # Parse out some args
-    assert = false
     if "--assert" in ARGS
         assert = true
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
