@@ -12,7 +12,9 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
+
+# bliss script, ignored for now
+script_bliss = raw"""
 cd $WORKSPACE/srcdir
 cd bliss
 mkdir build
@@ -20,10 +22,14 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
-cd ../../scipoptsuite*
+cd ../..
+"""
+
+script = raw"""
+cd scipoptsuite*
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=OFF -DGCG=0 -DREADLINE=OFF -DBOOST=off -DSYM=bliss ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DPAPILO=0 -DZIMPL=OFF -DGCG=0 -DIPOPT=0 -DREADLINE=OFF -DBOOST=off ..
 make -j${nproc}
 make install
 """
@@ -55,6 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7")),
