@@ -66,12 +66,12 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="HDF5_jll", version="1.12.0")),
     Dependency("Zlib_jll"),
-    Dependency("LibCURL_jll", v"7.71.1"),
+    Dependency("LibCURL_jll", v"7.73.0"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll", v"1.9.0"),
-    Dependency("MbedTLS_jll", v"2.16.8"),
-    Dependency("nghttp2_jll", v"1.40.0"),
+    Dependency("LibSSH2_jll", v"1.9.1"),
+    Dependency("MbedTLS_jll", v"2.24.0"),
+    Dependency("nghttp2_jll", v"1.41.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
