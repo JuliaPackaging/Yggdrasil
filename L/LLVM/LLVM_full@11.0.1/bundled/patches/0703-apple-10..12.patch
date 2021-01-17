@@ -1,0 +1,25 @@
+From 9ca484f80dc51bc76665c7af1dbd87e46a93a2f7 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Mon, 21 Sep 2020 08:12:39 -0400
+Subject: [PATCH] disable OSX 10.12 optimization
+
+---
+ llvm/lib/Support/Unix/Path.inc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/llvm/lib/Support/Unix/Path.inc b/llvm/lib/Support/Unix/Path.inc
+index 2a03dc682bc..a15a52c430c 100644
+--- a/llvm/lib/Support/Unix/Path.inc
++++ b/llvm/lib/Support/Unix/Path.inc
+@@ -1222,7 +1222,7 @@ namespace fs {
+ /// implementation.
+ std::error_code copy_file(const Twine &From, const Twine &To) {
+   uint32_t Flag = COPYFILE_DATA;
+-#if __has_builtin(__builtin_available) && defined(COPYFILE_CLONE)
++#if __has_builtin(__builtin_available) && defined(COPYFILE_CLONE) && 0
+   if (__builtin_available(macos 10.12, *)) {
+     bool IsSymlink;
+     if (std::error_code Error = is_symlink_file(From, IsSymlink))
+-- 
+2.28.0
+
