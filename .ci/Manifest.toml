@@ -28,7 +28,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "1b89750427831f51daa1894148d5ff73a1518b7f"
+git-tree-sha1 = "f4fa4c4080b7b226bc832346596a5b07f463be53"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -171,9 +171,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[LoggingExtras]]
 deps = ["Dates"]
-git-tree-sha1 = "03289aba73c0abc25ff0229bed60f2a4129cd15c"
+git-tree-sha1 = "70518b2cce1fea30c5e9dd0c44407a90f394de47"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "0.4.2"
+version = "0.4.4"
 
 [[MacroTools]]
 deps = ["Markdown", "Random"]
