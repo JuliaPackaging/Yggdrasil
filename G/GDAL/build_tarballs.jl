@@ -101,7 +101,7 @@ dependencies = [
     # fix to minor PROJ version; also update PROJ_LIBS above
     # needed for Windows because of https://github.com/OSGeo/PROJ/blob/949171a6e/cmake/ProjVersion.cmake#L40-L46
     # to avoid this problem https://github.com/JuliaGeo/GDAL.jl/pull/102
-    Dependency(PackageSpec(name="PROJ_jll", version="7.2")),
+    Dependency(PackageSpec(name="PROJ_jll", version="7.2.1")),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("LibCURL_jll", v"7.71.1"),
