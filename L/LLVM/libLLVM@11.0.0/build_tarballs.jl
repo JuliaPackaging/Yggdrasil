@@ -1,6 +1,6 @@
 name = "libLLVM"
-version = v"11.0.0+9"
+version = v"11.0.0+10"
 
-# Include common tools
+# Include common tools.
 include("../common.jl")
 build_tarballs(ARGS, configure_extraction(ARGS, version, name; experimental_platforms=true)...; skip_audit=true, julia_compat="1.6")

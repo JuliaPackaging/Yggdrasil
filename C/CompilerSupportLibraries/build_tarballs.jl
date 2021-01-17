@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.6"
+version = v"0.3.7"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -64,9 +64,10 @@ shopt -s nullglob
 
 # copy out all the libraries we can find, excepting libstdc++ and libgomp.
 # which we copied out in the extraction step above.
-for d in /opt/${target}/${target}/lib*; do
-    NON_LATEST_LIBS=$(ls ${d}/*.${dlext}* | grep -v libstdc++ | grep -v libgomp)
-    cp -uav ${NON_LATEST_LIBS} ${libdir}/ || true
+for lib in /opt/${target}/${target}/lib*/*.${dlext}*; do
+    if [[ "${lib}" != *libstdc++* ]] && [[ "${lib}" != *libgomp* ]]; then
+        cp -uav "${lib}" "${libdir}/"
+    fi
 done
 
 # libwinpthread is a special snowflake and is only within `bin` for some reason

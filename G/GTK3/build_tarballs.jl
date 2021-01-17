@@ -16,17 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gtk+-*/
 
-# Temporary workaround #1 issue with apk
-apk add samurai
-
-# Temporary workaround #2: `util-linux` has a file, `/usr/bin/wall`, owned by
-# `root:tty`, but `apk` can't chown the file to the `tty` group because it
-# doesn't exist in our environment.  New `apk` has the option `--no-chown`, so
-# let's upgrade `apk` before going on
-apk add --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-
 # We need to run some commands with a native Glib
-apk add --no-chown glib-dev gtk+3.0
+apk add glib-dev gtk+3.0
 
 if [[ "${target}" == *-linux-* ]]; then
     # We need to run `wayland-scanner` on the build system only when Wayland is

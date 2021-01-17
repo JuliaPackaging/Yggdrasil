@@ -25,7 +25,6 @@ cd ${WORKSPACE}/srcdir
 temp=${WORKSPACE}/tmpdir
 mkdir ${temp}
 
-apk del ninja   # hack
 apk add p7zip
 
 mkdir ${prefix}/cuda
