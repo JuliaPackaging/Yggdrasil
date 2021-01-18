@@ -26,6 +26,7 @@ cd HiGHS/build
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
 make -j${nproc} highs
+make -j${nproc} FortranHighs
 make install/strip/fast
 """
 
