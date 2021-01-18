@@ -28,14 +28,6 @@ fi
 install_license ${target}/info/*.txt
 """
 
-platforms = [
-    Platform("i686", "windows"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"),
-]
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libiomp5", "libiomp5md"], :libiomp),
@@ -45,4 +37,16 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+include("../../fancy_toys.jl")
+no_autofix_platforms = [Platform("x86_64", "macos")]
+autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "linux"), Platform("i686", "linux")]
+if any(should_build_platform.(triplet.(no_autofix_platforms)))
+    # Need to disable autofix: setting the soname on libiomp breaks it:
+    # https://github.com/JuliaMath/FFTW.jl/pull/178#issuecomment-761904389
+    build_tarballs(non_reg_ARGS, name, version, sources, script, no_autofix_platforms, products, dependencies; autofix = false)
+end
+if any(should_build_platform.(triplet.(autofix_platforms)))
+    # Let's try to run autofix on the other platforms
+    build_tarballs(ARGS, name, version, sources, script, autofix_platforms, products, dependencies)
+end
