@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "PCRE2"
-version = v"10.35"
+version = v"10.36"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "8fdcef8c8f4cd735169dd0225fd010487970c1bcadd49e9b90e26c7250a33dc9")
+                  "b95ddb9414f91a967a887d69617059fb672b914f56fa3d613812c1ee8e8a1a37"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +21,9 @@ update_configure_scripts
 
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
+
+# Apply patches
+atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-apple-silicon-support.patch
 
 ./configure --prefix=${prefix} --host=${target} \
     --disable-static \
