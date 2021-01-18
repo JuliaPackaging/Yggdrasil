@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "e5c38174da3c75e2673c001f7b270a4ec210f9e5")
+    GitSource("https://github.com/ig-or/qwtw.git", "443551eeb9930a977d4321e77ac2106a4cbde990")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,8 +35,6 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     LibraryProduct("libqwtw", :qwtw),
     ExecutableProduct("qwproc", :qwproc),
-    ExecutableProduct("qttest", :qttest),
-    ExecutableProduct("qwtest2", :qwtest2)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -49,6 +47,7 @@ dependencies = [
     Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"))
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
     Dependency(PackageSpec(name="marble_jll", uuid="678d7417-9a84-558b-a975-2deb8d71bebc"))
+    Dependency(PackageSpec(name="MathGL_jll", uuid="6834ddeb-87f2-5bbb-bfa4-c37572f854d4"))
 ]
 
 
