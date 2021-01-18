@@ -2,12 +2,18 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+
 name = "NetCDF"
-version = v"4.7.4"
+version = v"400.700.400"
+upstream_version = v"4.7.4"
 
 # Collection of sources required to build NetCDF
 sources = [
-    ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(version).zip",
+    ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(upstream_version).zip",
                   "170c9c9020f8909811b06e1034d5ea9288b3d5bd90793e3dd27490191faa7566")
 ]
 
