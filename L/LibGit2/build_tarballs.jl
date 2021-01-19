@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to build libgit2
 sources = [
@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
