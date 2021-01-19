@@ -58,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version="2.24.0")),
+    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
     Dependency("LibSSH2_jll"),
 ]
 
