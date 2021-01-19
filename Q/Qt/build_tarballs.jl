@@ -14,7 +14,6 @@ sources = [
 ]
 
 script = raw"""
-apk del ninja
 cd $WORKSPACE/srcdir
 
 BIN_DIR="/opt/bin/${bb_full_target}"
@@ -36,6 +35,7 @@ commonoptions=" \
 
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
+rm `which llvm-config`
 apk add g++ linux-headers
 
 if [[ $target != x86_64-linux* ]]; then
@@ -282,10 +282,12 @@ dependencies = [
     Dependency("OpenSSL_jll"),
 ]
 
+dependencies_linux = [dependencies..., BuildDependency("Clang_jll")]
+
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies_linux; preferred_gcc_version = v"7")
 end
 if any(should_build_platform.(triplet.(platforms_win)))
     build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
