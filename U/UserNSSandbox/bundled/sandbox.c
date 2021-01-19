@@ -27,14 +27,12 @@ within user namespaces.  Arch Linux is a great example of this.
 
 To test this executable, compile it with:
 
-    gcc -std=c99 -o /tmp/sandbox ./sandbox.c
+    gcc -O2 -static -static-libgcc -std=c99 -o /tmp/sandbox ./sandbox.c
 
-Then run it, mounting in a rootfs with a workspace and a single map:
+Then run it, mounting in a rootfs with a workspace and no other read-only maps:
 
-    BB=$(echo ~/.julia/v0.6/BinaryBuilder/deps)
-    P=/usr/local/bin:/usr/bin:/bin:/opt/x86_64-linux-gnu/bin
     mkdir -p /tmp/workspace
-    PATH=$P /tmp/sandbox --verbose --rootfs $BB/root --workspace /tmp/workspace:/workspace --cd /workspace --map $BB/shards/x86_64-linux-gnu:/opt/x86_64-linux-gnu /bin/bash
+    /tmp/sandbox --verbose --rootfs $rootfs_dir --workspace /tmp/workspace:/workspace --cd /workspace /bin/bash
 */
 
 
@@ -445,7 +443,7 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
       fprintf(stderr, "\n");
     }
     execve(sandbox_argv[0], sandbox_argv, environ);
-    fprintf(stderr, "ERROR: Failed to run %s!\n", sandbox_argv[0]);
+    fprintf(stderr, "ERROR: Failed to run %s: %d (%s)\n", sandbox_argv[0], errno, strerror(errno));
 
     // Flush to make sure we've said all we're going to before we _exit()
     fflush(stdout);
@@ -477,27 +475,11 @@ static void print_help() {
   fputs("Usage: sandbox --rootfs <dir> [--cd <dir>] ", stderr);
   fputs("[--map <from>:<to>, --map <from>:<to>, ...] ", stderr);
   fputs("[--workspace <from>:<to>, --workspace <from>:<to>, ...] ", stderr);
+  fputs("[--entrypoint <exe_path>] ", stderr);
   fputs("[--verbose] [--help] <cmd>\n", stderr);
   fputs("\nExample:\n", stderr);
-  fputs("  BB=$(echo ~/.julia/v0.6/BinaryBuilder/deps)\n", stderr);
-  fputs("  P=/usr/local/bin:/usr/bin:/bin:/opt/x86_64-linux-gnu/bin\n", stderr);
   fputs("  mkdir -p /tmp/workspace\n", stderr);
-  fputs("  PATH=$P /tmp/sandbox --verbose --rootfs $BB/root --workspace /tmp/workspace:/workspace --cd /workspace --map $BB/shards/x86_64-linux-gnu:/opt/x86_64-linux-gnu /bin/bash\n", stderr);
-}
-
-// Helper function to read from the serial file descriptor, blocking until we
-// can read the requested number of bytes.
-void read_blocking(int fd, char * buff, int num_bytes) {
-  int bytes_read = 0;
-
-  // Keep reading until we have num_bytes
-  while(bytes_read != num_bytes) {
-    usleep(1);
-    int b = read(fd, buff + bytes_read, num_bytes - bytes_read);
-    if( b != -1 ) {
-      bytes_read += b;
-    }
-  }
+  fputs("  /tmp/sandbox --verbose --rootfs $rootfs_path --workspace /tmp/workspace:/workspace --cd /workspace /bin/bash\n", stderr);
 }
 
 static void sigint_handler() { _exit(0); }
@@ -506,9 +488,9 @@ static void sigint_handler() { _exit(0); }
  * Let's get this party started.
  */
 int main(int sandbox_argc, char **sandbox_argv) {
-  int status;
+  int status = 0;
   pid_t pgrp = getpgid(0);
-  int cmdline_fd = -1;
+  char * entrypoint = NULL;
 
   // First, determine our execution mode based on pid and euid (allowing for override)
   const char * forced_mode = getenv("FORCE_SANDBOX_MODE");
@@ -528,8 +510,8 @@ int main(int sandbox_argc, char **sandbox_argv) {
       execution_mode = UNPRIVILEGED_CONTAINER_MODE;
     }
 
-    // Once we're inside the sandbox, we can always use "unprivileged" mode, since
-    // we've got mad permissions inside; so just always do that.
+    // Once we're inside the sandbox, we can always use "unprivileged" mode
+    // since we've got mad permissions inside; so just always do that.
     setenv("FORCE_SANDBOX_MODE", "unprivileged", 0);
   }
 
@@ -555,12 +537,13 @@ int main(int sandbox_argc, char **sandbox_argv) {
   // Parse out options
   while(1) {
     static struct option long_options[] = {
-      {"help",      no_argument,       NULL, 'h'},
-      {"verbose",   no_argument,       NULL, 'v'},
-      {"rootfs",    required_argument, NULL, 'r'},
-      {"workspace", required_argument, NULL, 'w'},
-      {"cd",        required_argument, NULL, 'c'},
-      {"map",       required_argument, NULL, 'm'},
+      {"help",       no_argument,       NULL, 'h'},
+      {"verbose",    no_argument,       NULL, 'v'},
+      {"rootfs",     required_argument, NULL, 'r'},
+      {"workspace",  required_argument, NULL, 'w'},
+      {"entrypoint", required_argument, NULL, 'e'},
+      {"cd",         required_argument, NULL, 'c'},
+      {"map",        required_argument, NULL, 'm'},
       {0, 0, 0, 0}
     };
 
@@ -636,6 +619,9 @@ int main(int sandbox_argc, char **sandbox_argv) {
                   entry->outside_path, entry->map_path);
         }
       } break;
+      case 'e':
+        entrypoint = strdup(optarg);
+        break;
       default:
         fputs("getoptlong defaulted?!\n", stderr);
         return 1;
@@ -645,6 +631,15 @@ int main(int sandbox_argc, char **sandbox_argv) {
   // Skip past those arguments
   sandbox_argv += optind;
   sandbox_argc -= optind;
+
+  // If we were given an entrypoint, push that onto the front of `sandbox_argv`
+  if (entrypoint != NULL) {
+    // Yes, we clobber sandbox_argv[-1] here; but we already know that `optind` >= 2
+    // since `entrypoint != NULL`, so this is acceptable.
+    sandbox_argv -= 1;
+    sandbox_argc += 1;
+    sandbox_argv[0] = entrypoint;
+  }
 
   // If we don't have a command, die
   if (sandbox_argc == 0) {
