@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "libAMGX"
+name = "AMGX"
 version = v"2.1.0"
 sources = [
     ArchiveSource("https://github.com/NVIDIA/AMGX/archive/v2.1.0.tar.gz", "6245112b768a1dc3486b2b3c049342e232eb6281a6021fffa8b20c11631f63cc"),
