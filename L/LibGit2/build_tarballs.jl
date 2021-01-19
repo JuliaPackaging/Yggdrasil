@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.2.0"
+version = v"1.2.1"
 
 # Collection of sources required to build libgit2
 sources = [
@@ -58,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"),
+    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version="2.24.0")),
     Dependency("LibSSH2_jll"),
 ]
 
