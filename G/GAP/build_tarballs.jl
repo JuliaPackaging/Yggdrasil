@@ -21,12 +21,12 @@ using BinaryBuilder, BinaryBuilderBase, Pkg
 # to all components.
 
 name = "GAP"
-version = v"400.1100.0"
+version = v"400.1100.1"
 upstream_version = v"4.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gap-system/gap.git", "7a2dfbec79d3d20a4ac4d5f174eaf35aa34387d7"),
+    GitSource("https://github.com/gap-system/gap.git", "42b0b58709ccb7272de7ad467ecd6f05f570c817"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.bz2",
 #                  "6637f66409bc91af21eaa38368153270b71b13b55b75cc1550ed867c629901d1"),
     DirectorySource("./bundled"),
@@ -101,4 +101,9 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"7",
+               init_block = """
+    sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
+    ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__), C_NULL)
+""")
