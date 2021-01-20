@@ -249,6 +249,9 @@ if [[ "${target}" == *darwin* ]]; then
     ln -s libLLVM.dylib ${prefix}/lib/libLLVM-${LLVM_VER##*-}.dylib
 fi
 
+# Validate llvm-config works
+${prefix}/tools/llvm-config --version
+
 # Lit is a python dependency and there is no proper install target
 cp -r ${LLVM_SRCDIR}/utils/lit ${prefix}/tools/
 
