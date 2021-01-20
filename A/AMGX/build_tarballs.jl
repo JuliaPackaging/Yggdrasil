@@ -56,7 +56,8 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name = "CUDA_full_jll", version = "10.0"))
+    BuildDependency(PackageSpec(name = "CUDA_full_jll", version = "10.0")),
+    Dependency(PackageSpec(name = "CUDA_jll", version = "10.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
