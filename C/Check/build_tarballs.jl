@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd check-0.15.2
+cd check-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
