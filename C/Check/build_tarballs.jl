@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Check"
-version = v"0.15.1"
+version = v"0.15.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libcheck/check/releases/download/0.15.1/check-0.15.1.tar.gz", "c1cc3d64975c0edd8042ab90d881662f1571278f8ea79d8e3c2cc877dac60001")
+    ArchiveSource("https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz", "a8de4e0bacfb4d76dd1c618ded263523b53b85d92a146d8835eb1a52932fa20a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd check-0.15.1
+cd check-0.15.2
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
