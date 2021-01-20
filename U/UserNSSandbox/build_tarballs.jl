@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2021.01.15"
+version = v"2021.01.19"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/
 mkdir -p ${bindir}
-$CC -std=c99 -O2 -g -o ${bindir}/sandbox ./sandbox.c
+$CC -std=c99 -O2 -static -static-libgcc -g -o ${bindir}/sandbox ./sandbox.c
 install_license /usr/share/licenses/MIT
 """
 
