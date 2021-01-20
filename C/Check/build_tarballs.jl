@@ -7,7 +7,7 @@ version = v"0.15.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libcheck/check/releases/download/0.15.2/check-0.15.2.tar.gz", "a8de4e0bacfb4d76dd1c618ded263523b53b85d92a146d8835eb1a52932fa20a")
+    ArchiveSource("https://github.com/libcheck/check/releases/download/$(version)/check-$(version).tar.gz", "a8de4e0bacfb4d76dd1c618ded263523b53b85d92a146d8835eb1a52932fa20a")
 ]
 
 # Bash recipe for building across all platforms
