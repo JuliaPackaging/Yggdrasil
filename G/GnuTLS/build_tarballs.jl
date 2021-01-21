@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.6.15"
+version = v"3.6.13"
 
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "0ea8c3283de8d8335d7ae338ef27c53a916f15f382753b174c18b45ffd481558"),
+                  "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"),
 ]
 
 # Bash recipe for building across all platforms
