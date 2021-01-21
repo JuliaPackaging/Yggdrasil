@@ -5,7 +5,7 @@ version = v"3.6.13"
 
 # Collection of sources required to build GnuTLS
 sources = [
-    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.13.tar.xz",
+    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
                   "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"),
 ]
 
@@ -31,11 +31,8 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Wimp out of doing FreeBSD since we don't have that for some targets
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
-
 # Disable windows because O_NONBLOCK isn't defined
-platforms = [p for p in platforms if !(typeof(p) <: Windows)]
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -50,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", lock_microarchitecture=false)
