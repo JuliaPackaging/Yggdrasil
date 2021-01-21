@@ -13,12 +13,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnutls-*/
 
-if [[ ${target} == *darwin* ]]; then
-     # We need to explicitly request a higher `-mmacosx-version-min` to avoid
-     # errors about undefined symbol "___isOSVersionAtLeast"; see also
-     # https://github.com/JuliaPackaging/Yggdrasil/pull/2079
-     export CFLAGS=-mmacosx-version-min=10.11
-fi
+# Grumble-grumble apple grumble-grumble broken linkers...
+#if [[ ${target} == *-apple-* ]]; then
+#    export AR=/opt/${target}/bin/ar
+#fi
 
 GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target} \
     --with-included-libtasn1 \
