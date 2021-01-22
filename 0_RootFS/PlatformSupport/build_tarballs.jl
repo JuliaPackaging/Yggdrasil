@@ -127,8 +127,7 @@ case "${COMPILER_TARGET}" in
                  -DCMAKE_INSTALL_PREFIX="${sysroot}/usr" \
                  -DCMAKE_CROSSCOMPILING=True \
                  -DLLVM_HOST_TRIPLE=${COMPILER_TARGET} \
-                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}" \
-                 -DDARWIN_osx_ARCHS=x86_64
+                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}"
         make install-cxx-headers
         ;;
     *)
