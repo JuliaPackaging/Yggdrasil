@@ -7,32 +7,24 @@ version = v"1.20.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget-1.20.3.tar.gz", "31cccfc6630528db1c8e3a06f6decf2a370060b982841cfab2b8677400a5092e")
+    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget-$(version).tar.gz",
+                  "31cccfc6630528db1c8e3a06f6decf2a370060b982841cfab2b8677400a5092e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wget-1.20.3/
+cd $WORKSPACE/srcdir/wget-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j4
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="musl"),
-    Platform("x86_64", "macos")
-]
+platforms = supported_platforms()
 
+# Disable windows because GnuTLS_jll is not available there
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -41,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"))
+    Dependency("GnuTLS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
