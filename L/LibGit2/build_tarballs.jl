@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibGit2"
-version = v"1.2.1"
+version = v"1.2.2"
 
 # Collection of sources required to build libgit2
 sources = [
