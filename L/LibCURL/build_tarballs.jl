@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LibCURL"
 version = v"7.73.0"
@@ -40,8 +40,13 @@ elif [[ ${target} == *darwin* ]]; then
     # On Darwin, we need to use SecureTransport (native TLS library)
     FLAGS+=(--with-secure-transport)
 
-    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't 
-    export CFLAGS=-mmacosx-version-min=10.11
+    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
+    # complain about: `Symbol not found: ___isOSVersionAtLeast`
+    if [[ "${target}" == aarch64* ]]; then
+        export CFLAGS=-mmacosx-version-min=11.0
+    else
+        export CFLAGS=-mmacosx-version-min=10.11
+    fi
 else
     # On all other systems, we use MbedTLS
     FLAGS+=(--with-mbedtls=${prefix})
@@ -70,7 +75,7 @@ dependencies = [
     Dependency("nghttp2_jll"),
     # Note that while we unconditionally list MbedTLS as a dependency,
     # we default to schannel/SecureTransport on Windows/MacOS.
-    Dependency("MbedTLS_jll"),
+    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
