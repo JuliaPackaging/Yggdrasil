@@ -30,12 +30,17 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
-    push!(sources, DirectorySource(joinpath(@__DIR__, "..", "DarwinSDKs")))
+macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
+    # MacOSX11.1 is not yet available on phracker/MacOSX-SDKs
+    # https://github.com/phracker/MacOSX-SDKs/pull/32#issuecomment-749230532
+    ArchiveSource("https://github.com/larskanis/MacOSX-SDKs/releases/download/11.1/MacOSX11.1.sdk.tar.xz",
+                  "97f44b22949cea4522408ccca9a8d87f2d09779b2878423d2d7a2cb805c3d42d")
 else
-    push!(sources, ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-        "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"))
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                  "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774")
 end
+
+push!(sources, macos_sdk)
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
@@ -122,8 +127,7 @@ case "${COMPILER_TARGET}" in
                  -DCMAKE_INSTALL_PREFIX="${sysroot}/usr" \
                  -DCMAKE_CROSSCOMPILING=True \
                  -DLLVM_HOST_TRIPLE=${COMPILER_TARGET} \
-                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}" \
-                 -DDARWIN_osx_ARCHS=x86_64
+                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}"
         make install-cxx-headers
         ;;
     *)

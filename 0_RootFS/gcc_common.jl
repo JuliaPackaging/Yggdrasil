@@ -219,13 +219,16 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         ]
     elseif Sys.isapple(compiler_target)
         if gcc_version == v"11.0.0-iains"
+            # MacOSX11.1 is not yet available on phracker/MacOSX-SDKs
+            # https://github.com/phracker/MacOSX-SDKs/pull/32#issuecomment-749230532
             libc_sources = [
-                DirectorySource(joinpath(@__DIR__, "DarwinSDKs"))
+                ArchiveSource("https://github.com/larskanis/MacOSX-SDKs/releases/download/11.1/MacOSX11.1.sdk.tar.xz",
+                              "97f44b22949cea4522408ccca9a8d87f2d09779b2878423d2d7a2cb805c3d42d"),
             ]
         else
             libc_sources = [
                 ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-                          "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
+                              "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
             ]
         end
     elseif Sys.isfreebsd(compiler_target)
