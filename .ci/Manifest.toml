@@ -28,7 +28,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "f4fa4c4080b7b226bc832346596a5b07f463be53"
+git-tree-sha1 = "055073dbad06b81963bb883dc82bc131f3773c04"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
@@ -193,9 +193,9 @@ version = "1.0.3"
 
 [[MbedTLS_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "bf50d4a1911612ee8f662d0038fc05dda1bea57d"
+git-tree-sha1 = "47e19f64fc939b86dea2b9b5e38c29c787f0d581"
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.25.0+0"
+version = "2.24.0+1"
 
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
@@ -330,9 +330,9 @@ version = "1.0.0"
 
 [[Tables]]
 deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "TableTraits", "Test"]
-git-tree-sha1 = "240d19b8762006ff04b967bdd833269ad642d550"
+git-tree-sha1 = "8dc2bb7d3548e315d890706547b24502ed79504f"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.2.2"
+version = "1.3.1"
 
 [[Tar]]
 deps = ["ArgTools", "SHA"]
