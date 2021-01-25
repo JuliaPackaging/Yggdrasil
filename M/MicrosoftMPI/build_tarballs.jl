@@ -28,8 +28,6 @@ fi
 cd ${WORKSPACE}/destdir/
 
 chmod +x *.exe
-chmod +x *.dll
-
 mkdir -p bin
 mv *.exe *.dll bin
 mkdir -p lib
