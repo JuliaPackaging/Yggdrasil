@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.7.0"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "68b88aca6692c75a9f686187e6c4a4e196ae60a9")
+    GitSource("https://github.com/flame/blis.git", "9b387f6d5a010969727ec583c0cdd067a5274ed8")
 ]
 
 # Bash recipe for building across all platforms
