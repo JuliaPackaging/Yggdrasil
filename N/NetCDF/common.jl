@@ -91,7 +91,7 @@ nc-config --all
             # The following libraries are dependencies of LibCURL_jll which is now a
             # stdlib, but the stdlib doesn't explicitly list its dependencies
             Dependency("LibSSH2_jll"),
-            Dependency("MbedTLS_jll"),
+            Dependency("MbedTLS_jll", v"2.24.0"),
             Dependency("nghttp2_jll"),
         ]
     )
