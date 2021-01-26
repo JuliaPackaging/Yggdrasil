@@ -102,8 +102,8 @@ sources = [
                   "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32"),
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.i686-linux-musl-cxx11.tar.gz",
-                  "367e7d47bb07d8188b51a9d651f8845dd7da2daba66c46a4774a068c9fa5fd36",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
+                  "960ebcd32842f81d140293157d90e4e829fd16241bf5b0a23929e4938256a572",
                   unpack_target="ldid"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.0%2B0/libplist.v2.2.0.x86_64-linux-musl.tar.gz",
                   "1b02d6fd8b77b71eaf672f15fecd8b38ef1e167baf469399b7d52435c11d414b",
