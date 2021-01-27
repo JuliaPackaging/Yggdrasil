@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libxc"
-version = v"5.0.0"
+version = v"5.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/5.0.0/libxc-5.0.0.tar.gz",
-                  "6b3be3cf6daf6b3eddf32d4077276eb9169531b42f98c2ca28ac85b9ea408493"),
+    ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/5.1.0/libxc-5.1.0.tar.gz",
+                  "e8d2b6eb2b46b356a27f0367a7665ff276d7f295da7c734e774ee66f82e56297"),
 ]
 
 # Bash recipe for building across all platforms
