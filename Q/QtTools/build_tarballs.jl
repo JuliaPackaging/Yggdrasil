@@ -30,7 +30,7 @@ make -j${nproc}
 make INSTALL_ROOT=$PWD/dummyroot install
 rsync -ua dummyroot/workspace/artifacts/*/* $prefix
 
-install_license $qtsrcdir/LICENSE.LGPL3_
+install_license $qtsrcdir/LICENSE.LGPL3
 """
 
 # These are the platforms we will build for by default, unless further
