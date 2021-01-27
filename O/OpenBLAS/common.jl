@@ -82,12 +82,13 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(BINARY=64)
     fi
 
-    # On Intel architectures, engage DYNAMIC_ARCH
+    # On Intel and most aarch64 architectures, engage DYNAMIC_ARCH.
+    # When using DYNAMIC_ARCH the TARGET specifies the minimum architecture requirement.
     if [[ ${proc_family} == intel ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
-    # Otherwise, engage a specific target
+        flags+=(TARGET=GENERIC DYNAMIC_ARCH=1)
     elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
+        flags+=(TARGET=ARMV8 DYNAMIC_ARCH=1)
+    # Otherwise, engage a specific target
     elif [[ ${bb_full_target} == aarch64*-libgfortran3* ]]; then
         # Old GCC versions, with libgfortran3, can't build for newer
         # microarchitectures, let's just use the generic one
