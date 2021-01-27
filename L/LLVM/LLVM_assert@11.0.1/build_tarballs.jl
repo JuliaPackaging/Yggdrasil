@@ -1,6 +1,6 @@
 name = "LLVM"
-llvm_full_version = v"11.0.1+0"
-libllvm_version = v"11.0.1+0"
+llvm_full_version = v"11.0.1+1"
+libllvm_version = v"11.0.1+1"
 
 # Include common LLVM stuff
 include("../common.jl")
