@@ -12,11 +12,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd DGGRID/src/
-make
-if [ -f apps/dggrid/dggrid.exe ]; then cp apps/dggrid/dggrid.exe /workspace/destdir/bin/; else cp apps/dggrid/dggrid /workspace/destdir/bin/; fi
-exit
+cd $WORKSPACE/srcdir/DGGRID/src/
+if [[ "${target}" == x86_64-linux-musl ]]; then
+    # Remove libexpat to avoid it being picked up by mistake
+    rm /usr/lib/libexpat.so*
+fi
+make -j${nproc}
+cp "apps/dggrid/dggrid${exeext}" "${bindir}/."
 """
 
 # These are the platforms we will build for by default, unless further
