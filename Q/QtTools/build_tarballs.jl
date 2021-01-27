@@ -51,7 +51,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("lrelease", :lrelease),
+    FileProduct("bin/lrelease", :lrelease),
 ]
 
 # Dependencies that must be installed before this package can be built
