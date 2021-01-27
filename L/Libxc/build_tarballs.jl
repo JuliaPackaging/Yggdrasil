@@ -26,10 +26,10 @@ if [[ "${target}" = *-mingw* ]]; then
         -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
 else
     autoreconf -vi
+    export CFLAGS="$CFLAGS -std=c99"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran \
         --disable-static --enable-shared \
         --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
-    export CFLAGS="$CFLAGS -std=c99"
 fi
 
 make -j${nproc}
