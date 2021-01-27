@@ -15,12 +15,14 @@ script = raw"""
 install_license ${WORKSPACE}/srcdir/pigz-*/README
 
 cd ${WORKSPACE}/srcdir/pigz-*
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 make -j${nproc}
 
 # Install
-mkdir -p ${prefix}/bin
-cp pigz unpigz ${prefix}/bin/
+mkdir -p ${bindir}
+for bin in pigz unpigz; do
+    cp "${bin}" "${bindir}/${exe}${exeext}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,4 +42,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
