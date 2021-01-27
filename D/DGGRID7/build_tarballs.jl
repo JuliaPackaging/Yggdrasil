@@ -17,7 +17,7 @@ if [[ "${target}" == x86_64-linux-musl ]]; then
     # Remove libexpat to avoid it being picked up by mistake
     rm /usr/lib/libexpat.so*
 fi
-make -j${nproc}
+make -j${nproc} CCOMP="${CC}" CPPCOMP="${CXX}"
 cp "apps/dggrid/dggrid${exeext}" "${bindir}/."
 """
 
