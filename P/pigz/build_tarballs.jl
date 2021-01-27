@@ -21,7 +21,7 @@ make -j${nproc}
 # Install
 mkdir -p ${bindir}
 for bin in pigz unpigz; do
-    cp "${bin}" "${bindir}/${exe}${exeext}"
+    cp "${bin}" "${bindir}/${bin}${exeext}"
 done
 """
 
