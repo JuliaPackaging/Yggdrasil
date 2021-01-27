@@ -744,6 +744,9 @@ function gcc_script(compiler_target::Platform)
 
     # Remove misleading libtool archives
     rm -f ${prefix}/${COMPILER_TARGET}/lib*/*.la
+
+    # Remove heavy doc directories
+    rm -rf ${sysroot}/usr/share/man
     """
 
     return script
