@@ -348,12 +348,7 @@ function gcc_script(compiler_target::Platform)
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
 
-        # GCC build doesn't pay attention to DSYMUTIL or DSYMUTIL_FOR_TARGET, tsk tsk
-        mkdir -p ${prefix}/bin
-        ln -s llvm-dsymutil ${prefix}/bin/dsymutil
-        ln -s llvm-${prefix}/bin/${COMPILER_TARGET}-as
-
-        # GCC build needs a little exdtra help finding our binutils
+        # GCC build needs a little extra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-as=${prefix}/bin/${COMPILER_TARGET}-as"
 
