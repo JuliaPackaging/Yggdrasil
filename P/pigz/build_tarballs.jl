@@ -11,18 +11,24 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# License is embedded at the end of the README
-install_license ${WORKSPACE}/srcdir/pigz-*/README
-
 cd ${WORKSPACE}/srcdir/pigz-*
+
 export CPPFLAGS="-I${includedir}"
-make -j${nproc}
+if [[ "${target}" == *-freebsd* ]]; then
+    # Without this, `__XSI_VISIBLE`, `S_IFMT`, `S_IFREG`, `S_IFMT`,
+    # `S_IFREG`, `S_IFIFO`, and `S_IFDIR` are all undefined
+    CPPFLAGS="${CPPFLAGS} -D_XOPEN_SOURCE=700"
+fi
+make -j${nproc} CC=${CC}
 
 # Install
 mkdir -p ${bindir}
 for bin in pigz unpigz; do
     cp "${bin}" "${bindir}/${bin}${exeext}"
 done
+
+# License is embedded at the end of the README
+install_license README
 """
 
 # These are the platforms we will build for by default, unless further
