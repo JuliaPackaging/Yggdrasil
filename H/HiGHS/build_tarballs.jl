@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.1.4"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "0b4cb7f882a6c5d208fbb2edb4d8c416291ed4f5"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "72523038995877307d9309354a77cd39e2388033"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,8 +24,14 @@ fi
 mkdir -p HiGHS/build
 cd HiGHS/build
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF ..
-make -j${nproc} highs
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DFAST_BUILD=ON \
+    -DJULIA=ON \
+    -DIPX=OFF ..
+cmake --build . --config Release --parallel
 make install highs
 """
 
@@ -39,7 +45,6 @@ filter!(!Sys.iswindows, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libhighs", :libhighs),
-    LibraryProduct("libipx", :libipx)
 ]
 
 # Dependencies that must be installed before this package can be built
