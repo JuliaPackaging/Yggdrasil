@@ -4,10 +4,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Cuba
 name = "Cuba"
-version = v"4.2"
+version = v"4.2.1"
 sources = [
     GitSource("https://github.com/giordano/cuba.git",
-              "6a1b2d4e38908370f190077657215715c23ae138"),
+              "41396231713b1d77de713b7103aa567cc7dee99e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/cuba/
 ./configure --prefix=${prefix} --host=${target}
 make shared
 make install
+rm "${prefix}/lib/libcuba.a" "${prefix}/share/cuba.pdf"
 """
 
 # These are the platforms we will build for by default, unless further
