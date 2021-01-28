@@ -32,7 +32,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DJULIA=ON \
     -DIPX=OFF ..
 cmake --build . --config Release --parallel
-make install highs
+make install
 """
 
 # These are the platforms we will build for by default, unless further
