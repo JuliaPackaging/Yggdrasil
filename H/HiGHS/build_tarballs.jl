@@ -33,10 +33,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DIPX=OFF ..
 cmake --build . --config Release --parallel
 make install
-if [[ ${target} == *mingw* ]]; then
-    # On Windows, we need to move our .dll files.
-    mv ${prefix}/lib/*.dll ${prefix}/bin
-fi
 """
 
 # These are the platforms we will build for by default, unless further
