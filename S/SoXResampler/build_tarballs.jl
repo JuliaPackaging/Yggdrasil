@@ -3,19 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "SoXResampler"
-version = v"0.1.3"
+version = v"0.1.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://sourceforge.net/code-snapshots/git/s/so/soxr/code.git/soxr-code-945b592b70470e29f917f4de89b4281fbbd540c0.zip", 
-        "b797a5d23078be234e520af1041b5e11b49864696d56f0d0b022a0349d1e8d1b"
-    )
+    ArchiveSource("https://pilotfiber.dl.sourceforge.net/project/soxr/soxr-$(version)-Source.tar.xz", "b111c15fdc8c029989330ff559184198c161100a59312f5dc19ddeb9b5a15889")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/soxr-code-*
+cd $WORKSPACE/srcdir
+apk add libgomp
+cd soxr-*
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make
 make install
@@ -33,7 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="OpenMPI_jll", uuid="fe0851c0-eecd-5654-98d4-656369965a5c"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
