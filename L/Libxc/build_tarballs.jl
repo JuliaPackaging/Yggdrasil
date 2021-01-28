@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libxc"
-version = v"5.0.0"
+version = v"5.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/5.0.0/libxc-5.0.0.tar.gz",
-                  "6b3be3cf6daf6b3eddf32d4077276eb9169531b42f98c2ca28ac85b9ea408493"),
+    ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/$(version)/libxc-$(version).tar.gz",
+                  "e8d2b6eb2b46b356a27f0367a7665ff276d7f295da7c734e774ee66f82e56297"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,6 +26,7 @@ if [[ "${target}" = *-mingw* ]]; then
         -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
 else
     autoreconf -vi
+    export CFLAGS="$CFLAGS -std=c99"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran \
         --disable-static --enable-shared \
         --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
