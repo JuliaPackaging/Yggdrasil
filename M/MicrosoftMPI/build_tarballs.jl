@@ -54,4 +54,6 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
+# We manually bump the version up to `v10.1.3` here to avoid compat-changing issues
+# X-ref: https://github.com/JuliaRegistries/General/pull/28956
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
