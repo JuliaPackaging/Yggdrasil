@@ -8,6 +8,7 @@ llvm_tags = Dict(
     v"7.1.0" => "4856a9330ee01d30e9e11b6c2f991662b4c04b07",
     v"8.0.1" => "19a71f6bdf2dddb10764939e7f0ec2b98dba76c9",
     v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
+    v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -26,7 +27,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     LLVM_BUILD_TYPE=$(llvm_build_type)
     """ *
     raw"""
-    apk add build-base python-dev linux-headers musl-dev zlib-dev
+    apk add build-base python3 python3-dev linux-headers musl-dev zlib-dev
 
     # We need the XML2, iconv, Zlib libraries in our LLVMBootstrap artifact,
     # and we also need them in target-prefixed directories, so they stick
@@ -90,7 +91,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)
 
     # tell libcxx to use compiler-rt
-    if [[ "${LLVM_MAJ_VER}" == "9" ]]; then
+    if [[ "${LLVM_MAJ_VER}" -ge "9" ]]; then
         CMAKE_FLAGS+=(-DLIBCXX_USE_COMPILER_RT=ON)
     fi
 
