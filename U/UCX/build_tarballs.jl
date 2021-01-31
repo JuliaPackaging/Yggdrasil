@@ -17,10 +17,10 @@ cd $WORKSPACE/srcdir/ucx-*
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-logging \
     --disable-debug \
     --disable-assertions \
     --disable-params-check \
+    --enable-mt \
     --disable-static
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
@@ -48,9 +48,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# -
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
+    Dependency(PackageSpec(name="rdma_core_jll", uuid="69dc3629-5c98-505f-8bcd-225213cebe70")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
