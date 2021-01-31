@@ -15,6 +15,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ucx-*
+
+update_configure_scripts
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
