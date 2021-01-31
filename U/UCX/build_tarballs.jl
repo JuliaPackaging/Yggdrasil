@@ -3,14 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "UCX"
-version = v"1.10.0-rc1"
-_version = v"1.10.0"
+version = v"1.8.1"
 
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(_version).tar.gz",
-                  "4f40f917a14c3cd3bcaabf8a6aba30dcb2e9a5e95e2b0afb18d6c238e02dc283"),
+    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(version).tar.gz",
+                  "a48820cb8d0761b5ccf3e7ba03a7c8c1dde6276017657178829e07ffc35b556a"),
 ]
 
 # Bash recipe for building across all platforms
