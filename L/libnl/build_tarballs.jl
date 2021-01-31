@@ -36,7 +36,7 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libnl-3", :libnl)
-    LibraryProduct("libnl-route-3", :libnl_route),
+    LibraryProduct("libnl-route-3", :libnl_route)
 ]
 
 # Dependencies that must be installed before this package can be built
