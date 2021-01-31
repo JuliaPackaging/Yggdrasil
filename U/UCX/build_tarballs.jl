@@ -23,6 +23,7 @@ cd $WORKSPACE/srcdir/ucx-*
     --disable-params-check \
     --disable-static \
     --disable-profiling \
+    --enable-shared \
     --enable-mt \
     --enable-frame-pointer \
     --enable-cma \
