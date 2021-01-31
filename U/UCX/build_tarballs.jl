@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ucx-*
 
-update_configure_scripts
+update_configure_scripts --reconf
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
