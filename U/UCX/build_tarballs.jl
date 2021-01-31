@@ -21,6 +21,7 @@ cd $WORKSPACE/srcdir/ucx-*
     --disable-assertions \
     --disable-params-check \
     --disable-static \
+    --disable-profiling \
     --enable-mt \
     --enable-frame-pointer \
     --enable-cma \
