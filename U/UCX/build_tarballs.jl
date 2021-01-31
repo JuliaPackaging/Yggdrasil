@@ -20,8 +20,12 @@ cd $WORKSPACE/srcdir/ucx-*
     --disable-debug \
     --disable-assertions \
     --disable-params-check \
+    --disable-static \
     --enable-mt \
-    --disable-static
+    --enable-frame-pointer \
+    --enable-cma \
+    --with-rdmacm=${prefix}
+
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
 make -j${nproc} V=1
@@ -32,6 +36,7 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="glibc"), https://github.com/openucx/ucx/issues/6239
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
@@ -48,7 +53,14 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# -
+# - librdmacm -> provided through rdma-core, need glic 2.15
+# - libibcm   -> legacy libibverbs
+# - knem  -> kernel module
+# - xpmem -> kernel module
+# - CUDA -> TODO
+#   - gdrcopy -> kernel module
+# - ROCM -> TODO
+
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
