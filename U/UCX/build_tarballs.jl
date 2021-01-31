@@ -36,7 +36,7 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="glibc"), https://github.com/openucx/ucx/issues/6239
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
@@ -53,7 +53,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# - librdmacm -> should be provided through rdma-core
+# - librdmacm -> provided through rdma-core, need glic 2.15
 # - libibcm   -> legacy libibverbs
 # - knem  -> kernel module
 # - xpmem -> kernel module
