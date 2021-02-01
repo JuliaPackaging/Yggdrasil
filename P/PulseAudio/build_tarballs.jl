@@ -1,57 +1,24 @@
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "SoXResampler"
-version = v"0.1.3"
+name = "PulseAudio"
+version = v"14.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource(
-        "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-14.2.tar.gz"
-    )
+    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-14.2.tar.gz", "902dd1928801bb5dc7b121754aa4110ce55768b5dff94a700e7bd58d3f597970")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add alsa-lib
-apk add alsa-lib-dev
-apk add alsa-utils
-apk add check
-apk add check-dev
-apk add dbus
-apk add dbus-dev
-apk add fftw 
-apk add fftw-dev 
-apk add gdbm
-apk add gdbm-dev
-apk add gettext
-apk add gettext-dev
-apk add glib
-apk add glib-dev
-apk add gnu-libiconv
-apk add gnu-libiconv-dev
-apk add libasyncns 
-apk add libasyncns-dev
-apk add libcap 
-apk add libcap-dev 
-apk add libgomp
-apk add libintl
-apk add libtool
-apk add openssl 
-apk add openssl-dev 
-apk add orc
-apk add orc-dev
-apk add orc-compiler
+cd $WORKSPACE/srcdir
+apk del ninja
+apk add ninja
 apk add perl-xml-parser
-apk add sbc 
-apk add sbc-dev 
-apk add soxr 
-apk add soxr-dev
-apk add speex 
-apk add speexdsp-dev
-apk add udev
+apk add gettext
+apk add glib
+apk add orc-compiler
 hash -r
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e 's/c_link_args = .*/c_link_args = ["-lrt",]/' ${MESON_TARGET_TOOLCHAIN}
@@ -71,34 +38,44 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Linux(:i686, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
+]
+
 
 # The products that we will ensure are always built
 products = [
-    ...
+    LibraryProduct("libpulse-simple", :libpulse_simple),
+    ExecutableProduct("pasuspender", :pasuspender),
+    ExecutableProduct("pacmd", :pacmd),
+    ExecutableProduct("pactl", :pactl),
+    ExecutableProduct("pulseaudio", :pulseaudio),
+    LibraryProduct("libpulse", :libpulse),
+    LibraryProduct("libpulse-mainloop-glib", :libpulse_mainloop_glib),
+    ExecutableProduct("pacat", :pacat)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="alsa_jll")),
-    Dependency(PackageSpec(name="Check_jll")),
-    Dependency(PackageSpec(name="Dbus_jll")),
-    Dependency(PackageSpec(name="FFTW_jll")),
-    Dependency(PackageSpec(name="Gdbm_jll")),
-    Dependency(PackageSpec(name="Gettext_jll")),
-    Dependency(PackageSpec(name="Glib_jll")),
-    Dependency(PackageSpec(name="ICU_jll")),
-    Dependency(PackageSpec(name="libasyncns_jll")),
-    Dependency(PackageSpec(name="libcap_jll")),
-    Dependency(PackageSpec(name="Libiconv_jll")),
-    Dependency(PackageSpec(name="Libtool_jll")),
-    Dependency(PackageSpec(name="OpenMPI_jll")),
-    Dependency(PackageSpec(name="OpenSSL_jll")),
-    Dependency(PackageSpec(name="ORC_jll")),
-    Dependency(PackageSpec(name="SBC_jll")),
-    Dependency(PackageSpec(name="SoXResampler_jll")),
-    Dependency(PackageSpec(name="SpeexDSP_jll"))
-    
+    Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
+    Dependency(PackageSpec(name="Check_jll", uuid="491db154-c145-5abe-9c32-446728d60cce"))
+    Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"))
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
+    Dependency(PackageSpec(name="Gdbm_jll", uuid="54ca2031-c8dd-5cab-9ed4-295edde1660f"))
+    Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"))
+    Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
+    Dependency(PackageSpec(name="libasyncns_jll", uuid="ed080073-db63-57db-a029-74e11ae80737"))
+    Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"))
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
+    Dependency(PackageSpec(name="Libtool_jll", uuid="a76c16ae-fb8f-5ff0-8826-da3b7a640f0b"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
+    Dependency(PackageSpec(name="SBC_jll", uuid="da37f231-8920-5702-a09a-bdd970cb6ddc"))
+    Dependency(PackageSpec(name="SoXResampler_jll", uuid="fbe68eb6-6641-54c6-99e3-f7c7c4d73a57"))
+    Dependency(PackageSpec(name="SpeexDSP_jll", uuid="f2f9631b-9a4e-5b48-9975-88f638ec36a7"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
