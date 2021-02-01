@@ -29,7 +29,8 @@ update_configure_scripts --reconf
     --enable-mt \
     --enable-frame-pointer \
     --enable-cma \
-    --with-rdmacm=${prefix}
+    --with-rdmacm=${prefix} \
+    --with-cuda=${prefix}
 
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
@@ -66,7 +67,7 @@ products = [
 #   - gdrcopy -> kernel module
 # - ROCM -> TODO
 
-cuda_version = v"10.0"
+cuda_version = v"11.2.0"
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
