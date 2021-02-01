@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "XML2"
 version = v"2.9.10"
+bb_version = v"2.9.11"
 
 # Collection of sources required to build XML2Builder
 sources = [
@@ -44,5 +45,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, bb_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
