@@ -30,7 +30,7 @@ update_configure_scripts --reconf
     --enable-frame-pointer \
     --enable-cma \
     --with-rdmacm=${prefix} \
-    --with-cuda=${prefix}
+    --with-cuda=${prefix}/cuda
 
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
