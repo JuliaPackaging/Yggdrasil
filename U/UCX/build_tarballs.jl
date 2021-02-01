@@ -58,18 +58,21 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# - librdmacm -> provided through rdma-core, need glic 2.15
+# - librdmacm -> provided through rdma-core, need glibc 2.15
 # - libibcm   -> legacy libibverbs
 # - knem  -> kernel module
 # - xpmem -> kernel module
-# - CUDA -> TODO
+# - CUDA -> Figure out how version dependent we are
 #   - gdrcopy -> kernel module
 # - ROCM -> TODO
+
+cuda_version = v"10.0"
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
     Dependency(PackageSpec(name="rdma_core_jll", uuid="69dc3629-5c98-505f-8bcd-225213cebe70")),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
