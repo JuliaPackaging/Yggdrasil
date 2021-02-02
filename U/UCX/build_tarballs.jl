@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/ucx-*
 if [ -d $WORKSPACE/srcdir/patches ]; then
 for f in $WORKSPACE/srcdir/patches/*.patch; do
     echo "Applying patch ${f}"
-    atomic_patch -p1 ${f}
+    atomic_patch -p0 ${f}
 done
 fi
 
