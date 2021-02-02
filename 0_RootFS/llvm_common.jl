@@ -1,3 +1,23 @@
+### Instructions for adding a new version
+#
+# * add the version/commit SHA to `llvm_tags`.  Commit SHAs can be found
+#   by viewing: https://github.com/llvm/llvm-project/releases
+# * create the directory `0_RootFS/LLVMBootstrap@X`.  You can copy the
+#   `build_tarballs.jl` file from `0_RootFS/LLVMBootstrap@X-1` and change the
+#   version to build.  Typically, to reduce patch duplication, we want to use
+#   symlinks if possible for patches.  Unfortunately, symlinks don't work
+#   with LLVMBootstrap so you'll need to copy all of the previous patches:
+#
+#      cp ../LLVMBootstrap@X-1/bundled .
+#
+# * you only need to build the platform `x86_64-linux-musl`. To deploy the shard
+#   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
+#   `--deploy` flag to the `build_tarballs.jl` script.  You can build & deploy
+#   by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy x86_64-linux-musl
+#
+
 include("./common.jl")
 
 using BinaryBuilder
