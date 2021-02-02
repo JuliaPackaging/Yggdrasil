@@ -157,14 +157,14 @@ function find_deploy_arg(ARGS)
 
     # No deployment
     if length(dargs) == 0
-        return (ARGS, false, "")
+        return (ARGS, nothing)
     end
 
     ndARGS = filter(arg->!startswith(arg, "--deploy"), ARGS)
     if dargs[] == "--deploy"
-        return (ndARGS, true, "JuliaPackaging/Yggdrasil")
+        return (ndARGS, "JuliaPackaging/Yggdrasil")
     elseif dargs[] == "--deploy=local"
-        return (ndARGS, true, "local")
+        return (ndARGS, "local")
     else
         error("--deploy argument must be --deploy or --deploy=local")
     end
