@@ -1,21 +1,32 @@
-diff --git a/src/ucs/configure.m4 b/src/ucs/configure.m4
-index 153eb0d78..8ed448b14 100644
---- a/src/ucs/configure.m4
-+++ b/src/ucs/configure.m4
-@@ -214,10 +214,12 @@ case ${host} in
+From eac430815135c1d6953eeae7bc5b85fe0528c47d Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 2 Feb 2021 12:01:19 -0500
+Subject: [PATCH] backport aarch64 patch to 1.9
+
+---
+ config/m4/ucs.m4 | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/config/m4/ucs.m4 b/config/m4/ucs.m4
+index 6722a70d5..69ca12e55 100644
+--- a/config/m4/ucs.m4
++++ b/config/m4/ucs.m4
+@@ -213,10 +213,11 @@ case ${host} in
+     AC_RUN_IFELSE([AC_LANG_PROGRAM(
                    [[#include <stdint.h>]],
                    [[uint64_t tmp; asm volatile("mrs %0, cntvct_el0" : "=r" (tmp));]])],
-                   [AC_MSG_RESULT([yes])]
--                 [AC_DEFINE([HAVE_HW_TIMER], [1], [high-resolution hardware timer enabled])],
--                 [AC_MSG_RESULT([no])]
--                 [AC_DEFINE([HAVE_HW_TIMER], [0], [high-resolution hardware timer disabled])]
--                 );;
+-                  [AC_MSG_RESULT([yes])]
+-		  [AC_DEFINE([HAVE_HW_TIMER], [1], [high-resolution hardware timer enabled])],
+-		  [AC_MSG_RESULT([no])]
+-		  [AC_DEFINE([HAVE_HW_TIMER], [0], [high-resolution hardware timer disabled])]
 +                  [AC_DEFINE([HAVE_HW_TIMER], [1], [high-resolution hardware timer enabled])],
 +                  [AC_MSG_RESULT([no])]
 +                  [AC_DEFINE([HAVE_HW_TIMER], [0], [high-resolution hardware timer disabled])],
 +                  [AC_MSG_RESULT([no - cross-compiling detected])]
 +                  [AC_DEFINE([HAVE_HW_TIMER], [0], [high-resolution hardware timer disabled])]
-+                  );;
+                  );;
      *)
      # HW timer is supported for all other architectures
-     AC_DEFINE([HAVE_HW_TIMER], [1], [high-resolution hardware timer enabled])
+-- 
+2.30.0
+
