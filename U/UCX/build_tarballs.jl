@@ -9,28 +9,43 @@ version = v"1.9.0"
 sources = [
     ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(version).tar.gz",
                   "a7a2c8841dc0d5444088a4373dc9b9cc68dbffcd917c1eba92ca8ed8e5e635fb"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ucx-*
 
+# Apply all our patches
+if [ -d $WORKSPACE/srcdir/patches ]; then
+for f in $WORKSPACE/srcdir/patches/*.patch; do
+    echo "Applying patch ${f}"
+    atomic_patch -p1 ${f}
+done
+fi
+
 update_configure_scripts --reconf
 
-./configure --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --disable-debug \
-    --disable-assertions \
-    --disable-params-check \
-    --disable-static \
-    --disable-profiling \
-    --enable-shared \
-    --enable-mt \
-    --enable-frame-pointer \
-    --enable-cma \
-    --with-rdmacm=${prefix} \
-    --with-cuda=${prefix}/cuda
+FLAGS=()
+FLAGS+=(--prefix=${prefix})
+FLAGS+=(--build=${MACHTYPE})
+FLAGS+=(--host=${target})
+FLAGS+=(--disable-debug)
+FLAGS+=(--disable-assertions)
+FLAGS+=(--disable-params-check)
+FLAGS+=(--disable-static)
+FLAGS+=(--disable-profiling)
+FLAGS+=(--enable-shared)
+FLAGS+=(--enable-mt)
+FLAGS+=(--enable-frame-pointer)
+FLAGS+=(--enable-cma)
+FLAGS+=(--with-rdmacm=${prefix})
+
+if [[ "${target}" != *aarch64* ]]; then
+    FLAGS+=(--with-cuda=${prefix}/cuda)
+fi
+
+./configure ${FLAGS[@]}
 
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
@@ -42,7 +57,7 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    # Platform("aarch64", "linux"; libc="glibc"), https://github.com/openucx/ucx/issues/6239
+    Platform("aarch64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
@@ -78,4 +93,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-	       preferred_gcc_version=v"5")
+               preferred_gcc_version=v"5")
