@@ -42,7 +42,7 @@ FLAGS+=(--enable-cma)
 FLAGS+=(--with-rdmacm=${prefix})
 
 if [[ "${target}" != *aarch64* ]]; then
-FLAGS+=(--with-cuda=${prefix}/cuda)
+    FLAGS+=(--with-cuda=${prefix}/cuda)
 fi
 
 ./configure ${FLAGS[@]}
