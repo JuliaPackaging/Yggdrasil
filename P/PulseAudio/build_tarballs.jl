@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk del ninja
 apk add ninja
+apk add bash-completion
 apk add perl-xml-parser
 apk add gettext
 apk add glib
@@ -27,6 +28,10 @@ cd pulseaudio-*
 sed -i -e "s/cc.has_function('iconv_open')/false/" meson.build
 # Disable ffast-math; I repented
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
+if [[ "${target}" == powerpc64le-* ]]; then
+    # seems to exist but not be functional
+    sed -i -e "s~'sys/capability.h'~~,"  meson.build
+fi
 mkdir build
 cd build
 # I can't figure out how to build tdb, use gdbm instead
