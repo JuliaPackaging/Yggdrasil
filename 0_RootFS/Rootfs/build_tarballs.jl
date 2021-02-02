@@ -276,8 +276,8 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
-if deploy
+if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info)
 end
