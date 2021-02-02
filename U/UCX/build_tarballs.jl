@@ -41,7 +41,7 @@ FLAGS+=(--enable-frame-pointer)
 FLAGS+=(--enable-cma)
 FLAGS+=(--with-rdmacm=${prefix})
 
-if [[ "${target}" == *aarch64* ]]; then
+if [[ "${target}" != *aarch64* ]]; then
 FLAGS+=(--with-cuda=${prefix}/cuda)
 fi
 
