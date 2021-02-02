@@ -26,20 +26,26 @@ fi
 
 update_configure_scripts --reconf
 
-./configure --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --disable-debug \
-    --disable-assertions \
-    --disable-params-check \
-    --disable-static \
-    --disable-profiling \
-    --enable-shared \
-    --enable-mt \
-    --enable-frame-pointer \
-    --enable-cma \
-    --with-rdmacm=${prefix} \
-    --with-cuda=${prefix}/cuda
+FLAGS=()
+FLAGS+=(--prefix=${prefix})
+FLAGS+=(--build=${MACHTYPE})
+FLAGS+=(--host=${target})
+FLAGS+=(--disable-debug)
+FLAGS+=(--disable-assertions)
+FLAGS+=(--disable-params-check)
+FLAGS+=(--disable-static)
+FLAGS+=(--disable-profiling)
+FLAGS+=(--enable-shared)
+FLAGS+=(--enable-mt)
+FLAGS+=(--enable-frame-pointer)
+FLAGS+=(--enable-cma)
+FLAGS+=(--with-rdmacm=${prefix})
+
+if [[ "${target}" == *aarch64* ]]; then
+FLAGS+=(--with-cuda=${prefix}/cuda)
+fi
+
+./configure ${FLAGS[@]}
 
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
 # into, we have to build with `V=1`
