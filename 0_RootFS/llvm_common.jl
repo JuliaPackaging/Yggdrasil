@@ -15,7 +15,7 @@
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can build & deploy
 #   by running:
 #
-#      julia build_tarballs.jl --debug --verbose --deploy x86_64-linux-musl
+#      julia build_tarballs.jl --debug --verbose --deploy
 #
 
 include("./common.jl")
