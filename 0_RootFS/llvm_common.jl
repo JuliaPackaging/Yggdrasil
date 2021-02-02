@@ -4,11 +4,11 @@
 #   by viewing: https://github.com/llvm/llvm-project/releases
 # * create the directory `0_RootFS/LLVMBootstrap@X`.  You can copy the
 #   `build_tarballs.jl` file from `0_RootFS/LLVMBootstrap@X-1` and change the
-#   version to build.  Typically, to reduce patch duplication, we want to use
-#   symlinks if possible for patches.  Unfortunately, symlinks don't work
-#   with LLVMBootstrap so you'll need to copy all of the previous patches:
+#   version to build.  In order to reduce patches duplication, we want to use as
+#   many symlinks as possible, so link to previously existing patches whenever
+#   possible.  This shell command should be useful:
 #
-#      cp ../LLVMBootstrap@X-1/bundled .
+#      for p in ../../../LLVMBootstrap@X-1/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
 #
 # * you only need to build the platform `x86_64-linux-musl`. To deploy the shard
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
@@ -33,9 +33,8 @@ llvm_tags = Dict(
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
     return [
-        "https://github.com/llvm/llvm-project.git" =>
-        llvm_tags[version],
-        "./bundled",
+        GitSource("https://github.com/llvm/llvm-project.git", llvm_tags[version]),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ]
 end
 
