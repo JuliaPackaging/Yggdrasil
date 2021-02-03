@@ -14,9 +14,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd qr_mumps-3.0/
+cd qr_mumps*
 mkdir build
-cd build/
+cd build
 cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=OFF -DQRM_ORDERING_METIS=OFF -DQRM_ORDERING_SCOTCH=OFF -DQRM_WITH_STARPU=OFF -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 make -j${nproc}
 make install
