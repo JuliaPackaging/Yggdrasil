@@ -45,6 +45,10 @@ if [[ "${target}" != *aarch64* ]]; then
     FLAGS+=(--with-cuda=${prefix}/cuda)
 fi
 
+if [[ "${target}" == *x86_64* ]]; then
+    FLAGS+=(--with-rocm=${prefix})
+fi
+
 ./configure ${FLAGS[@]}
 
 # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
@@ -83,12 +87,14 @@ products = [
 # - ROCM -> TODO
 
 cuda_version = v"11.2.0"
+rocm_version = v"3.7.0"
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
     Dependency(PackageSpec(name="rdma_core_jll", uuid="69dc3629-5c98-505f-8bcd-225213cebe70")),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version)),
+    BuildDependency(PackageSpec(name="hsa_rocr_jll", version=rocm_version))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
