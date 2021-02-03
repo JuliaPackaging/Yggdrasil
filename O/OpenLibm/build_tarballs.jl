@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenLibm"
-version = v"0.7.3"
+version = v"0.7.4"
 sources = [
     ArchiveSource("https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz",
-                  "d3bcc4ef21c033a0cc408a30186bb3dbe21219e0c52d328ca70eb688cf867354"),
+                  "eb585204d6c995691e5545ea4ffcb887c159bf05cc5ee1bbf92a6fcdde2fccae"),
 ]
 
 script = raw"""
