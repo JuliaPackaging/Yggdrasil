@@ -3,25 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Trilinos"
-version = v"12.12.1"
+version = v"13.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
+    GitSource("https://github.com/trilinos/Trilinos.git", "4796b92fb0644ba8c531dd9953e7a4878b05c62d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build; cd build
-cmake /workspace/srcdir/Trilinos -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_Fortran_FLAGS="$FLAGS" -DCMAKE_MAKE_PROGRAM="make" -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_LOCA=ON -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON -DTrilinos_ENABLE_TrilinosCouplings=ON -DTrilinos_ENABLE_Ifpack=ON -DTrilinos_ENABLE_Isorropia=ON -DTrilinos_ENABLE_AztecOO=ON -DTrilinos_ENABLE_Belos=ON -DTrilinos_ENABLE_Teuchos=ON -DTeuchos_ENABLE_COMPLEX=ON -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON -DTrilinos_ENABLE_Sacado=ON -DTrilinos_ENABLE_Kokkos=OFF -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF -DTrilinos_ENABLE_CPACK_PACKAGING=ON -DTrilinos_ENABLE_CXX11=ON -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS="/$prefix/lib" -DTPL_AMD_INCLUDE_DIRS="/$prefix/include/SuiteSparseQR_C" -DTPL_BLAS_LIBRARIES='/${prefix}/lib/libopenblas.so;${prefix}/lib/libopenblas64_.so;${prefix}/lib/libopenblas.so.0;${prefix}/lib/libopenblas64_.so.0;${prefix}/lib/libopenblas.0.3.9.so' -DTPL_LAPACK_LIBRARIES="/$prefix/bin/libopenblas" -DTPL_BLAS_INCLUDE_DIRS='/${prefix}/include/cblas;/${prefix}/include/f77blas' -DTPL_LAPACK_INCLUDE_DIRS="/$prefix/include/lapack" -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
-make install
-cd ..; cd Trilinos/packages/zoltan
-autoreconf -fiv
-cd ../../..
-cd build
-/workspace/srcdir/Trilinos/packages/zoltan/./configure --disable-mpi --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+FLAGS="-O3 -fPIC"
+cmake /workspace/srcdir/Trilinos -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_Fortran_FLAGS="$FLAGS" -DCMAKE_MAKE_PROGRAM="make" -DBUILD_SHARED_LIBS=ON -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_LOCA=ON -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON -DTrilinos_ENABLE_TrilinosCouplings=ON -DTrilinos_ENABLE_Ifpack=ON -DTrilinos_ENABLE_Isorropia=ON -DTrilinos_ENABLE_AztecOO=ON -DTrilinos_ENABLE_Teuchos=ON -DTeuchos_ENABLE_COMPLEX=ON -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON -DTrilinos_ENABLE_Sacado=ON -DTrilinos_ENABLE_Kokkos=OFF -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF -DTrilinos_ENABLE_CXX11=ON -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS="/$prefix/lib" -DTPL_AMD_INCLUDE_DIRS="$prefix/include/" -DTPL_BLAS_LIBRARIES='${prefix}/lib/' -DTPL_LAPACK_LIBRARIES="/$prefix/bin/" -DTPL_BLAS_INCLUDE_DIRS='${prefix}/include/cblas;${prefix}/include/f77blas' -DTPL_LAPACK_INCLUDE_DIRS="$prefix/include/lapack" -DTrilinos_SET_INSTALL_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=FALSE -DCMAKE_INSTALL_RPATH=$prefix/lib -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
 make -j${nprocs}
 make install
 """
@@ -34,19 +28,48 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc", call_abi="eabihf"),
     Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="musl", call_abi="eabihf"),
 ]
 
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mpirun", :mpirun)
-]
+    LibraryProduct("libaztecoo", :libaztecoo),
+    LibraryProduct("libnoxepetra", :libnoxepetra),
+    LibraryProduct("libloca", :libloca),
+    LibraryProduct("liblocalapack", :liblocalapack),
+    LibraryProduct("liblocaepetra", :liblocaepetra),
+    LibraryProduct("libepetra", :libepetra),
+    LibraryProduct("libteuchosremainder", :libteuchosremainder),
+    LibraryProduct("libsimpi", :libsimpi),
+    LibraryProduct("libnoxlapack", :libnoxlapack),
+    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
+    LibraryProduct("libteuchoscore", :libteuchoscore),
+    LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
+    LibraryProduct("libnox", :libnox),
+    LibraryProduct("libteuchosparser", :libteuchosparser),
+    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
+    LibraryProduct("libtrilinosss", :libtrilinosss),
+    LibraryProduct("libisorropia", :libisorropia),
+    LibraryProduct("libzoltan", :libzoltan),
+    LibraryProduct("libepetraext", :libepetraext),
+    LibraryProduct("libifpack", :libifpack),
+    LibraryProduct("libtriutils", :libtriutils),
+    LibraryProduct("libsacado", :libsacado),
+    LibraryProduct("libteuchoscomm", :libteuchoscomm),
+    LibraryProduct("libamesos", :libamesos)
+    ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
-]
+    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
