@@ -1,0 +1,56 @@
+commit 1140981204803cfa4742eb2e83f985dae730dda9
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sat Feb 6 18:13:16 2021 -0500
+
+    x86_64: Stop aliasing RSP and CFA
+    
+    RSP and CFA are different concepts. RSP refers to the physical
+    register, CFA is a virtual register that serves as the base
+    address for various other saved registers. It is true that
+    in many frames these are set to alias, however this is not
+    a requirement. For example, a function that performs a stack
+    switch would likely change the rsp in the middle of the function,
+    but would keep the CFA at the original RSP such that saved registers
+    may be appropriately recovered.
+    
+    We are seeing incorrect unwinds in the Julia runtime when running
+    julia under rr. This is because injects code (with correct CFI)
+    that performs just such a stack switch [1]. GDB manages to unwind
+    this correctly, but libunwind incorrectly sets the rsp to the CFA
+    address, causing a misunwind.
+    
+    [1] https://github.com/rr-debugger/rr/blob/469c22059a4a1798d33a8a224457faf22b2c178c/src/preload/syscall_hook.S#L454
+
+diff --git a/include/dwarf.h b/include/dwarf.h
+index 175c419b..f005608c 100644
+--- a/include/dwarf.h
++++ b/include/dwarf.h
+@@ -313,7 +313,7 @@ typedef struct dwarf_cursor
+     void *as_arg;               /* argument to address-space callbacks */
+     unw_addr_space_t as;        /* reference to per-address-space info */
+ 
+-    unw_word_t cfa;     /* canonical frame address; aka frame-/stack-pointer */
++    unw_word_t cfa;     /* canonical frame address; aka frame-pointer */
+     unw_word_t ip;              /* instruction pointer */
+     unw_word_t args_size;       /* size of arguments */
+     unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
+diff --git a/src/x86_64/Gregs.c b/src/x86_64/Gregs.c
+index baf8a24f..dff5bcbe 100644
+--- a/src/x86_64/Gregs.c
++++ b/src/x86_64/Gregs.c
+@@ -79,7 +79,6 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
+       break;
+ 
+     case UNW_X86_64_CFA:
+-    case UNW_X86_64_RSP:
+       if (write)
+         return -UNW_EREADONLYREG;
+       *valp = c->dwarf.cfa;
+@@ -107,6 +106,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
+     case UNW_X86_64_RCX: loc = c->dwarf.loc[RCX]; break;
+     case UNW_X86_64_RBX: loc = c->dwarf.loc[RBX]; break;
+ 
++    case UNW_X86_64_RSP: loc = c->dwarf.loc[RSP]; break;
+     case UNW_X86_64_RBP: loc = c->dwarf.loc[RBP]; break;
+     case UNW_X86_64_RSI: loc = c->dwarf.loc[RSI]; break;
+     case UNW_X86_64_RDI: loc = c->dwarf.loc[RDI]; break;
