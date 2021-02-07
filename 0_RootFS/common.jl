@@ -1,5 +1,6 @@
 using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
+using BinaryBuilderBase: archive_artifact
 
 host_platform = Platform("x86_64", "linux"; libc="musl")
 
