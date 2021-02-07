@@ -1,22 +1,33 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "PulseAudio"
+version = v"14.2.0"
+
+# Collection of sources required to complete build
+sources = [
+    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-14.2.tar.gz", "902dd1928801bb5dc7b121754aa4110ce55768b5dff94a700e7bd58d3f597970")
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
 cd $WORKSPACE/srcdir
-apk del ninja
-apk add ninja
 apk add gettext
-apk add glib # pkg-config!
+apk add glib
 apk add orc-compiler
 apk add perl-xml-parser
-apk add bash-completion # pkg-config
-hash -r
+apk add bash-completion
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
-sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt',]~" ${MESON_TARGET_TOOLCHAIN}
+sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt', '-rpath=${includedir}']~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
 # Disable ffast-math; I repented
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
+# pulseaudio seems to check for iconv_open but use libiconv_open?
 sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" meson.build
 # Force meson to use some libraries
-if [[ "${target}" == powerpc64le-* ]]; then
-    sed -i -e "s~'sys/capability.h',~~"  meson.build; fi
+if [[ "${target}" == powerpc64le-* ]]; then     sed -i -e "s~'sys/capability.h',~~"  meson.build; fi
 mkdir build
 cd build
 # I can't figure out how to build tdb, use gdbm instead
@@ -60,6 +71,7 @@ dependencies = [
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
     Dependency(PackageSpec(name="Check_jll", uuid="491db154-c145-5abe-9c32-446728d60cce"))
     Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"))
+    Dependency(PackageSpec(name="eudev_jll", uuid="35ca27e7-8b34-5b7f-bca9-bdc33f59eb06"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="Gdbm_jll", uuid="54ca2031-c8dd-5cab-9ed4-295edde1660f"))
     Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"))
