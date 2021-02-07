@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd eudev-*
+apk add gperf
+hash -r
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
@@ -22,16 +24,22 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl)
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
 
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("udevd", :udevd, "sbin"),
     LibraryProduct("libudev", :libudev),
+    ExecutableProduct("udevd", :udevd, "sbin"),
     ExecutableProduct("udevadm", :udevadm)
 ]
 
