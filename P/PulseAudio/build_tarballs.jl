@@ -1,42 +1,29 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "PulseAudio"
-version = v"14.2.0"
-
-# Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-14.2.tar.gz", "902dd1928801bb5dc7b121754aa4110ce55768b5dff94a700e7bd58d3f597970")
-]
-
-# Bash recipe for building across all platforms
-script = raw"""
 cd $WORKSPACE/srcdir
 apk del ninja
 apk add ninja
-apk add bash-completion
-apk add perl-xml-parser
 apk add gettext
-apk add glib
+apk add glib # pkg-config!
 apk add orc-compiler
+apk add perl-xml-parser
+apk add bash-completion # pkg-config
 hash -r
 # For some reason, librt fails to get linked correctly, so add a flag
-sed -i -e 's/c_link_args = .*/c_link_args = ["-lrt",]/' ${MESON_TARGET_TOOLCHAIN}
+sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
+sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt',]~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
-# This version of iconv seems to be incomplete, so prevent pulse audio from detecting it?
-sed -i -e "s/cc.has_function('iconv_open')/false/" meson.build
 # Disable ffast-math; I repented
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
+sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" meson.build
+# Force meson to use some libraries
 if [[ "${target}" == powerpc64le-* ]]; then
-    # seems to exist but not be functional
-    sed -i -e "s~'sys/capability.h'~~,"  meson.build
-fi
+    sed -i -e "s~'sys/capability.h',~~"  meson.build; fi
 mkdir build
 cd build
 # I can't figure out how to build tdb, use gdbm instead
 # BlueZ requires systemd, which I'm also stuck on
 meson ..  -Ddatabase="gdbm" -Dbluez5="false" --cross-file=${MESON_TARGET_TOOLCHAIN}
+# on musl, meson seems to be able to find dependencies, but isn't passing that info on to ninja?
+sed -i -e "s~/opt/bin/x86_64-linux-musl-cc~/opt/bin/x86_64-linux-musl-cc -I${includedir} -L${libdir}~" build.ninja
 ninja
 ninja install
 """
@@ -47,7 +34,12 @@ platforms = [
     Linux(:i686, libc=:glibc),
     Linux(:x86_64, libc=:glibc),
     Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    Linux(:powerpc64le, libc=:glibc),
+    Linux(:i686, libc=:musl),
+    Linux(:x86_64, libc=:musl),
+    Linux(:aarch64, libc=:musl),
+    Linux(:armv7l, libc=:musl, call_abi=:eabihf)
 ]
 
 
@@ -72,12 +64,12 @@ dependencies = [
     Dependency(PackageSpec(name="Gdbm_jll", uuid="54ca2031-c8dd-5cab-9ed4-295edde1660f"))
     Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"))
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
+    Dependency(PackageSpec(name="libsndfile_jll", uuid="5bf562c0-5a39-5b4f-b979-f64ac885830c"))
     Dependency(PackageSpec(name="libasyncns_jll", uuid="ed080073-db63-57db-a029-74e11ae80737"))
     Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"))
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
     Dependency(PackageSpec(name="Libtool_jll", uuid="a76c16ae-fb8f-5ff0-8826-da3b7a640f0b"))
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
-    Dependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
     Dependency(PackageSpec(name="SBC_jll", uuid="da37f231-8920-5702-a09a-bdd970cb6ddc"))
     Dependency(PackageSpec(name="SoXResampler_jll", uuid="fbe68eb6-6641-54c6-99e3-f7c7c4d73a57"))
     Dependency(PackageSpec(name="SpeexDSP_jll", uuid="f2f9631b-9a4e-5b48-9975-88f638ec36a7"))
