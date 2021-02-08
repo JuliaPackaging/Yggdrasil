@@ -23,6 +23,12 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       ..
 make -j${nproc}
 make install
+mv ${prefix}/lib/gmsh.jl ${prefix}/lib/gmsh.jl.bak
+sed ${prefix}/lib/gmsh.jl.bak \
+  -e 's/^\(import Libdl\)/#\1/g' \
+  -e 's/^\(const lib.*\)/#\1/g' \
+  -e 's/^\(module gmsh\)$/\1\nusing gmsh_jll: libgmsh\nconst lib = libgmsh/g' \
+  > ${prefix}/lib/gmsh.jl
 """
 
 # These are the platforms we will build for by default, unless further
