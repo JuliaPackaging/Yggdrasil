@@ -1,0 +1,24 @@
+From eff02e9fe73c4e3703562eb51b5c942b7da72d8d Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 9 Feb 2021 00:55:19 -0500
+Subject: [PATCH] Include signal.h for test/bulk-exec.c
+
+---
+ src/modules/job-exec/test/bulk-exec.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/modules/job-exec/test/bulk-exec.c b/src/modules/job-exec/test/bulk-exec.c
+index 44d39ec78..d8a818230 100644
+--- a/src/modules/job-exec/test/bulk-exec.c
++++ b/src/modules/job-exec/test/bulk-exec.c
+@@ -15,6 +15,7 @@
+ #define _GNU_SOURCE 1
+ #include <unistd.h>
+ #include <assert.h>
++#include <signal.h>
+ 
+ #include <flux/core.h>
+ #include <flux/idset.h>
+-- 
+2.30.0
+

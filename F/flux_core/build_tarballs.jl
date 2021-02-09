@@ -15,6 +15,7 @@ apk add python3
 
 cd $WORKSPACE/srcdir/flux-core
 atomic_patch -p1 ../patches/zeromq_cc.patch
+atomic_patch -p1 ../patches/signal-h.patch
 
 sh autogen.sh
 
