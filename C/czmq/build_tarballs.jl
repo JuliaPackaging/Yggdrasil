@@ -33,7 +33,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -42,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("ZeroMQ_jll", v"4.3")
+    Dependency("ZeroMQ_jll", v"4.3.2")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
