@@ -6,6 +6,7 @@ version = v"4.2.1"
 # Collection of sources required to build ZMQ
 sources = [
     GitSource("https://github.com/zeromq/czmq.git", "4a50c2153586cf510d6cc3fcfbb9f5ea2e02c419"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +22,8 @@ if [[ "${target}" == *-linux-* ]]; then
         export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
     fi
 fi
+
+atomic_patch -p1 ../patches/ntohll.patch
 
 ./configure --prefix=$prefix \
     --host=${target} \

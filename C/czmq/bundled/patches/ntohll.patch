@@ -1,0 +1,30 @@
+From 245ea2b2e9e86af79cf963c2880f5f2dad303432 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Mon, 8 Feb 2021 21:59:29 -0500
+Subject: [PATCH] Fix ntohll/htonll on FreeBSD and Mingw
+
+---
+ src/zosc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/zosc.c b/src/zosc.c
+index 6080c113..e0abfc1e 100644
+--- a/src/zosc.c
++++ b/src/zosc.c
+@@ -21,8 +21,12 @@
+ #ifdef WIN32
+ #include <winsock2.h>           //  needed for ntohll/htonll
+ #endif
++#ifdef __MINGW32__
++#define htonll(x) ((((uint64_t)htonl(x&0xFFFFFFFF)) << 32) + htonl(x >> 32))
++#define ntohll(x) ((((uint64_t)ntohl(x&0xFFFFFFFF)) << 32) + ntohl(x >> 32))
++#endif
+ #include "czmq_classes.h"
+-#if __unix__ && !__APPLE__
++#if __unix__ && !__APPLE__ && !__FREEBSD__
+ #include <endian.h>
+ #define htonll(x) htobe64(x)
+ #define ntohll(x) be64toh(x)
+-- 
+2.30.0
+
