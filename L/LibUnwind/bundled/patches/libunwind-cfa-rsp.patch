@@ -1,4 +1,4 @@
-commit 60f1b223e9979a24aaba2d3ec7ae44fdbe345114
+commit 66f68ab50d35bb17a7ae3ac47f17e1ba5913760c
 Author: Keno Fischer <keno@juliacomputing.com>
 Date:   Sat Feb 6 18:13:16 2021 -0500
 
@@ -69,6 +69,18 @@ index 7d255aee..986c4a89 100644
          case DWARF_WHERE_CFAREL:
            new_loc[i] = DWARF_MEM_LOC (c, cfa + rs->reg.val[i]);
            break;
+diff --git a/src/x86/Gos-freebsd.c b/src/x86/Gos-freebsd.c
+index 7dd01404..1b251d02 100644
+--- a/src/x86/Gos-freebsd.c
++++ b/src/x86/Gos-freebsd.c
+@@ -138,6 +138,7 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
+     c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+   } else if (c->sigcontext_format == X86_SCF_FREEBSD_SYSCALL) {
+     c->dwarf.loc[EIP] = DWARF_LOC (c->dwarf.cfa, 0);
++    c->dwarf.loc[ESP] = DWARF_VAL_LOC (c, c->dwarf.cfa + 4);
+     c->dwarf.loc[EAX] = DWARF_NULL_LOC;
+     c->dwarf.cfa += 4;
+     c->dwarf.use_prev_instr = 1;
 diff --git a/src/x86/Gregs.c b/src/x86/Gregs.c
 index 4a959261..9446d6c6 100644
 --- a/src/x86/Gregs.c
@@ -90,7 +102,7 @@ index 4a959261..9446d6c6 100644
      case UNW_X86_ESI: loc = c->dwarf.loc[ESI]; break;
      case UNW_X86_EDI: loc = c->dwarf.loc[EDI]; break;
 diff --git a/src/x86/Gstep.c b/src/x86/Gstep.c
-index 129b739a..e7722418 100644
+index 129b739a..061dcbaa 100644
 --- a/src/x86/Gstep.c
 +++ b/src/x86/Gstep.c
 @@ -47,7 +47,7 @@ unw_step (unw_cursor_t *cursor)
@@ -106,7 +118,7 @@ index 129b739a..e7722418 100644
                   c->dwarf.cfa);
  
            ebp_loc = DWARF_LOC (c->dwarf.cfa, 0);
-+          esp_loc = DWARF_VAL_LOC (c, c->dwarf.cfa);
++          esp_loc = DWARF_VAL_LOC (c, c->dwarf.cfa + 8);
            eip_loc = DWARF_LOC (c->dwarf.cfa + 4, 0);
            c->dwarf.cfa += 8;
  
@@ -118,6 +130,18 @@ index 129b739a..e7722418 100644
            c->dwarf.loc[EIP] = eip_loc;
            c->dwarf.use_prev_instr = 1;
          }
+diff --git a/src/x86_64/Gos-freebsd.c b/src/x86_64/Gos-freebsd.c
+index 883025c8..8bb101ea 100644
+--- a/src/x86_64/Gos-freebsd.c
++++ b/src/x86_64/Gos-freebsd.c
+@@ -133,6 +133,7 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
+     c->dwarf.loc[RCX] = c->dwarf.loc[R10];
+     /*  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);       */
+     /*  rbp_loc = c->dwarf.loc[RBP];                    */
++    c->dwarf.loc[RSP] = DWARF_VAL_LOC (c, c->dwarf.cfa + 8);
+     c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
+     ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+     Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
 diff --git a/src/x86_64/Gregs.c b/src/x86_64/Gregs.c
 index baf8a24f..dff5bcbe 100644
 --- a/src/x86_64/Gregs.c
@@ -139,7 +163,7 @@ index baf8a24f..dff5bcbe 100644
      case UNW_X86_64_RSI: loc = c->dwarf.loc[RSI]; break;
      case UNW_X86_64_RDI: loc = c->dwarf.loc[RDI]; break;
 diff --git a/src/x86_64/Gstep.c b/src/x86_64/Gstep.c
-index 10498170..963c60c2 100644
+index 10498170..5425e3db 100644
 --- a/src/x86_64/Gstep.c
 +++ b/src/x86_64/Gstep.c
 @@ -160,7 +160,7 @@ unw_step (unw_cursor_t *cursor)
@@ -147,7 +171,7 @@ index 10498170..963c60c2 100644
                unw_word_t rbp1 = 0;
                rbp_loc = DWARF_LOC(rbp, 0);
 -              rsp_loc = DWARF_NULL_LOC;
-+              rsp_loc = DWARF_VAL_LOC(c, rbp);
++              rsp_loc = DWARF_VAL_LOC(c, rbp + 16);
                rip_loc = DWARF_LOC (rbp + 8, 0);
                ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
                Debug (1, "[RBP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx\n",
