@@ -28,7 +28,7 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 
 export LUA=${host_bindir}/lua
-export LUA_INCLUDE=${prefix}/include
+export LUA_INCLUDE=-I${prefix}/include
 export LUA_LIB=-llua
 
 export PYTHON=python3
