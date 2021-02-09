@@ -5,7 +5,7 @@ version = v"0.3.1"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
-                      "16aaea36649f556bae5a5ee972c247f58a0de1c4")
+              "16aaea36649f556bae5a5ee972c247f58a0de1c4")
 ]
 
 # Bash recipe for building across all platforms
