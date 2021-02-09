@@ -8,7 +8,7 @@ version = v"68.2"
 # Collection of sources required to build ICU
 sources = [
     ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
-                  "94a80cd6f251a53bd2a997f6f1b5ac6653fe791dfab66e1eb0227740fb86d5dc"),
+                  "c79193dee3907a2199b8296a93b52c5cb74332c26f3d167269487680d479d625"),
     DirectorySource("./bundled"),
 ]
 
