@@ -45,8 +45,14 @@ platforms = supported_platforms()
 
 # - MacOS: https://github.com/flux-framework/flux-core/issues/2892
 # - Windows: Non-goal
-# - FreeBSD: Lua_jll (and unlikely)
-filter!(Sys.islinux, platforms)
+# - FreeBSD: unlikely
+platforms = [
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+]
 
 # The products that we will ensure are always built
 products = [
