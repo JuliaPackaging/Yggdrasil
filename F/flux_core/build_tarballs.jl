@@ -43,8 +43,10 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# https://github.com/flux-framework/flux-core/issues/2892
-filter!(!Sys.isapple, platforms)
+# - MacOS: https://github.com/flux-framework/flux-core/issues/2892
+# - Windows: Non-goal
+# - FreeBSD: Lua_jll (and unlikely)
+filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
 products = [
