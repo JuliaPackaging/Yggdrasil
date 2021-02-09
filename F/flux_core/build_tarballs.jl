@@ -6,16 +6,32 @@ version = v"0.23.1"
 # Collection of sources required to build ZMQ
 sources = [
     GitSource("https://github.com/flux-framework/flux-core.git", "5ca51ac62b36b83598c5c2c4c06bff4948e389fa"),
+    DirectorySource("./bundled/"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add python3
+
 cd $WORKSPACE/srcdir/flux-core
+atomic_patch -p1 ../patches/zeromq_cc.patch
+
 sh autogen.sh
+
+# Hint to find libstc++, required to link against C++ libs when using C compiler
+if [[ "${target}" == *-linux-* ]]; then
+    if [[ "${nbits}" == 32 ]]; then
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+    else
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    fi
+fi
 
 export LUA=${host_bindir}/lua
 export LUA_INCLUDE=${prefix}/include
 export LUA_LIB=-llua
+
+export PYTHON=python3
 
 ./configure --prefix=$prefix --host=${target} --without-python
 
@@ -27,9 +43,12 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# https://github.com/flux-framework/flux-core/issues/2892
+filter!(!Sys.isapple, platforms)
+
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libflux_core", :libczmq),
+    LibraryProduct("libflux-core", :libflux_core),
     ExecutableProduct("flux", :flux),
 ]
 

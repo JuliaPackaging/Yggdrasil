@@ -1,0 +1,25 @@
+From fe174622343dcf9c7b4256bdebd15bf268ef379d Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 9 Feb 2021 00:10:42 -0500
+Subject: [PATCH] [CrossCompilation] Default to true for ZMQ CURVE check
+
+---
+ config/x_ac_zeromq.m4 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/x_ac_zeromq.m4 b/config/x_ac_zeromq.m4
+index c42655c51..56a2b448c 100644
+--- a/config/x_ac_zeromq.m4
++++ b/config/x_ac_zeromq.m4
+@@ -24,7 +24,7 @@ AC_DEFUN([X_AC_ZEROMQ], [
+ ]])],
+     ac_cv_curve_support=yes,
+     ac_cv_curve_support=no,
+-    ac_cv_curve_support=no))
++    ac_cv_curve_support=yes))
+ 
+     AC_MSG_RESULT($ac_cv_curve_support)
+     if test "x$ac_cv_curve_support" = "xno"; then
+-- 
+2.30.0
+
