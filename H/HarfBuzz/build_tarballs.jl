@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "HarfBuzz"
 version = v"2.6.1"
@@ -49,7 +49,7 @@ dependencies = [
     Dependency("Gettext_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
-    Dependency("ICU_jll"),
+    Dependency(PackageSpec(; name="ICU_jll", version=v"67.1.0")),
     BuildDependency("Xorg_xorgproto_jll")
 ]
 
