@@ -12,11 +12,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+install_license ${WORKSPACE}/srcdir/licensecheck/LICENSE
 cd $WORKSPACE/srcdir/licensecheck/
 mkdir clib
 cp $WORKSPACE/srcdir/main.go clib/main.go
 mkdir -p ${libdir}
-go build -buildmode=c-shared -o ${libdir}/licensecheck.${dlext} clib/main.go 
+CGO_ENABLED=1 go build -buildmode=c-shared -o ${libdir}/licensecheck.${dlext} clib/main.go 
 """
 
 # These are the platforms we will build for by default, unless further
