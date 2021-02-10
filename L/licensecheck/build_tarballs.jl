@@ -5,14 +5,18 @@ version = v"0.3.1"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
-              "16aaea36649f556bae5a5ee972c247f58a0de1c4")
+              "16aaea36649f556bae5a5ee972c247f58a0de1c4"),
+    DirectorySource("./bundled")
+
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/licensecheck/
-mkdir -p ${bindir}
-go build -o ${bindir}
+mkdir clib
+cp $WORKSPACE/srcdir/main.go clib/main.go
+mkdir -p ${libdir}
+go build -buildmode=c-shared -o ${libdir}/licensecheck.${dlext} clib/main.go 
 """
 
 # These are the platforms we will build for by default, unless further
@@ -21,7 +25,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("licensecheck", :licensecheck),
+    LibraryProduct("licensecheck", :licensecheck),
 ]
 
 # Dependencies that must be installed before this package can be built
