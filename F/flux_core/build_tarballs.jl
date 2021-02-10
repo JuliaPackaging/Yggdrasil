@@ -16,6 +16,7 @@ apk add python3
 cd $WORKSPACE/srcdir/flux-core
 atomic_patch -p1 ../patches/zeromq_cc.patch
 atomic_patch -p1 ../patches/signal-h.patch
+atomic_patch -p1 ../patches/32bit.patch
 
 sh autogen.sh
 
@@ -44,9 +45,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# - MacOS: https://github.com/flux-framework/flux-core/issues/2892
+# - MacO/BSDS: https://github.com/flux-framework/flux-core/issues/2892
 # - Windows: Non-goal
-# - FreeBSD: unlikely
+# - MUSL: https://github.com/flux-framework/flux-core/issues/2891
 platforms = [
     Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),

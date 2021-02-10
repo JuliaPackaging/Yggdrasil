@@ -1,25 +1,79 @@
-From fe174622343dcf9c7b4256bdebd15bf268ef379d Mon Sep 17 00:00:00 2001
+From 22787ee845ebd3a715567a16485586ceeed920b8 Mon Sep 17 00:00:00 2001
 From: Valentin Churavy <v.churavy@gmail.com>
 Date: Tue, 9 Feb 2021 00:10:42 -0500
-Subject: [PATCH] [CrossCompilation] Default to true for ZMQ CURVE check
+Subject: [PATCH 1/3] build: drop check for libzmq curve support
 
+Problem: autoconf check for curve encryption fails in a cross
+compilation environment needed for julia bindings.
+
+Since zeromq now includes an internal fallback curve implementation,
+this check is no longer needed. Drop it.
+
+Fixes #3502
 ---
- config/x_ac_zeromq.m4 | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ config/x_ac_zeromq.m4 | 39 ---------------------------------------
+ configure.ac          |  2 +-
+ 2 files changed, 1 insertion(+), 40 deletions(-)
+ delete mode 100644 config/x_ac_zeromq.m4
 
 diff --git a/config/x_ac_zeromq.m4 b/config/x_ac_zeromq.m4
-index c42655c51..56a2b448c 100644
+deleted file mode 100644
+index c42655c51..000000000
 --- a/config/x_ac_zeromq.m4
-+++ b/config/x_ac_zeromq.m4
-@@ -24,7 +24,7 @@ AC_DEFUN([X_AC_ZEROMQ], [
- ]])],
-     ac_cv_curve_support=yes,
-     ac_cv_curve_support=no,
++++ /dev/null
+@@ -1,39 +0,0 @@
+-AC_DEFUN([X_AC_ZEROMQ], [
+-
+-    PKG_CHECK_MODULES([ZMQ], [libczmq >= 3.0.0 libzmq >= 4.0.4])
+-
+-    ac_save_LIBS="$LIBS"
+-    LIBS="$LIBS $ZMQ_LIBS"
+-    ac_save_CFLAGS="$CFLAGS"
+-    CFLAGS="$CFLAGS $ZMQ_CFLAGS"
+-
+-    AC_MSG_CHECKING([For CURVE encryption support in libzmq])
+-    AC_CACHE_VAL(ac_cv_curve_support,
+-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
+-#include <zmq.h>
+-#include <zmq_utils.h>
+-  main()
+-  {
+-    char x[[41]], y[[41]];
+-    /*
+-     * Check for CURVE support in current version of libzmq
+-     */
+-    int rc = zmq_curve_keypair (x, y);
+-    exit (rc >= 0 ? 0 : 1);
+-  }
+-]])],
+-    ac_cv_curve_support=yes,
+-    ac_cv_curve_support=no,
 -    ac_cv_curve_support=no))
-+    ac_cv_curve_support=yes))
- 
-     AC_MSG_RESULT($ac_cv_curve_support)
-     if test "x$ac_cv_curve_support" = "xno"; then
+-
+-    AC_MSG_RESULT($ac_cv_curve_support)
+-    if test "x$ac_cv_curve_support" = "xno"; then
+-      AC_MSG_ERROR([
+- Failed to detect CURVE support in libzmq!
+- Perhaps you need to compile with libsodium?])
+-    fi
+-    LIBS="$ac_save_LIBS"
+-    CFLAGS="$ac_save_CFLAGS"
+-
+-  ]
+-)
+diff --git a/configure.ac b/configure.ac
+index 5d930f25a..1bf2502d8 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -326,7 +326,7 @@ AM_CONDITIONAL([ENABLE_PYLINT], [test "x$PYLINT" = "xpylint"])
+ AX_PROG_LUA([5.1],[5.5])
+ AX_LUA_HEADERS
+ AX_LUA_LIBS
+-X_AC_ZEROMQ
++PKG_CHECK_MODULES([ZMQ], [libczmq >= 3.0.0 libzmq >= 4.0.4])
+ X_AC_JANSSON
+ PKG_CHECK_MODULES([HWLOC], [hwloc >= 1.11.1], [], [])
+ PKG_CHECK_MODULES([LZ4], [liblz4], [], [])
 -- 
 2.30.0
 
