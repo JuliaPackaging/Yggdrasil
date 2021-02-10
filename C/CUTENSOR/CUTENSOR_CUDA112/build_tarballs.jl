@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-cuda_version = v"11.0.2"   # NOTE: could be less specific
+cuda_version = v"11.2.0"   # NOTE: could be less specific
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -30,4 +30,3 @@ fi
 """
 
 include("../common.jl")
-
