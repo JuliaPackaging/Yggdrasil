@@ -12,6 +12,7 @@ version = v"0.1"
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/Minuit2_Julia_Wrapper/
 mkdir build && cd build
 cmake -DJulia_PREFIX=${prefix} -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_FIND_ROOT_PATH=${prefix} ..
 VERBOSE=ON cmake --build . --config Release --target install
