@@ -74,7 +74,7 @@ end
 
 # Filter out build-time dependencies also here
 for json_obj in [merged, objs_unmerged...]
-    json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if !(isa(dep, BuildDependency) || isa(dep, HostBuildDependency))]
+    json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if BinaryBuilderBase.is_runtime_dependency(dep)]
 end
 skip_build = get(ENV, "SKIP_BUILD", "false") == "true"
 mktempdir() do download_dir
