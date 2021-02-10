@@ -16,7 +16,6 @@ apk add python3
 cd $WORKSPACE/srcdir/flux-core
 atomic_patch -p1 ../patches/zeromq_cc.patch
 atomic_patch -p1 ../patches/signal-h.patch
-atomic_patch -p1 ../patches/32bit.patch
 
 sh autogen.sh
 
@@ -49,10 +48,10 @@ platforms = supported_platforms()
 # - Windows: Non-goal
 # - MUSL: https://github.com/flux-framework/flux-core/issues/2891
 platforms = [
-    Platform("i686", "linux"; libc="glibc"),
+    # Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
+    # Platform("armv7l", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
