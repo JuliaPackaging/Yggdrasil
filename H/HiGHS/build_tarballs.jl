@@ -21,6 +21,7 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
     atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
     popd
 fi
+
 mkdir -p HiGHS/build
 cd HiGHS/build
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
@@ -33,6 +34,10 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DIPX=OFF ..
 cmake --build . --config Release --parallel
 make install
+if [[ ${target} == *mingw* ]]; then
+    # On Windows, we need to move our .dll files.
+    mv ${prefix}/lib/*.dll ${prefix}/bin
+fi
 """
 
 # These are the platforms we will build for by default, unless further
