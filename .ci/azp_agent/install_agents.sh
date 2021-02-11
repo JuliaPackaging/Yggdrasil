@@ -51,9 +51,7 @@ fi
 if [[ ! -f "${STORAGE_DIR}/rootfs/usr/local/bin/julia" ]]; then
     # Install Julia into the rootfs
     echo "Installing Julia..."
-    # RIGHT INTO THE DANGEEERRR ZOOOOOONE
-    JULIA_URL="https://julialangnightlies-s3.julialang.org/bin/linux/x64/julia-latest-linux64.tar.gz"
-    #JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.1-linux-x86_64.tar.gz"
+    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.0-rc1-linux-x86_64.tar.gz"
     curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs/usr/local"
 fi
 
