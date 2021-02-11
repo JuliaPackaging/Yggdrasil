@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/janet-*/
-export PREFIX = $WORKSPACE/w-*/usr/local
+export PREFIX=$WORKSPACE/w-*/usr/local
 make 
 make install
 """
