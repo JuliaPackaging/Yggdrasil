@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "HarfBuzz"
-version = v"2.6.1"
+version = v"2.7.4"
 
 # Collection of sources required to build Harfbuzz
 sources = [
@@ -49,7 +49,7 @@ dependencies = [
     Dependency("Gettext_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
-    Dependency(PackageSpec(; name="ICU_jll", version=v"67.1.0")),
+    Dependency(PackageSpec(; name="ICU_jll", version=v"68.2.0")),
     BuildDependency("Xorg_xorgproto_jll")
 ]
 
