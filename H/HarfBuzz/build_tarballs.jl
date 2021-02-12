@@ -7,7 +7,7 @@ version = v"2.7.4"
 
 # Collection of sources required to build Harfbuzz
 sources = [
-    ArchiveSource("https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$(version).tar.xz",
+    ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
                   "1316959c13d70d14443c68510129432a1e32f5e01a3526dec11b7834978809cb"),
     DirectorySource("./bundled"),
 ]
