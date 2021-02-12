@@ -15,7 +15,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
-atomic_patch -p1 ../patches/Remove-HB_ICU_STMT.patch
 autoreconf -i -f
 ./configure --prefix=$prefix --host=$target \
     --with-gobject=yes \
