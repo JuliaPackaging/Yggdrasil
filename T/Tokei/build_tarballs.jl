@@ -11,7 +11,8 @@ sources = [
 script = raw"""
 mkdir -p ${prefix}/bin
 cd $WORKSPACE/srcdir/tokei*/
-cargo build --all-features --release
+# https://github.com/rust-lang/rust/issues/59302#issue-422994250
+RUSTFLAGS="-C target-feature=-crt-static" cargo build --all-features --release
 cp target/${rust_target}/release/tokei${exeext} ${bindir}/
 """
 
