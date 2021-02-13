@@ -19,7 +19,7 @@ cp ../julia/JSBSim.jl $prefix/.
 """
 
 # Skip platforms with GCC 4.x because it does not support C++14
-platforms = [p for p in supported_platforms() if compiler_abi(p).gcc_version != :gcc4]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -31,5 +31,5 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"5")
