@@ -8,7 +8,7 @@ version = v"1.0.0"
 # Collection of sources required to build Libtiff
 sources = [
     GitSource("https://github.com/staticfloat/libblastrampoline",
-              "e7dbfa85fc2a720d630828b7c1270fd10a411c6a")
+              "0c723926f96ba431713c4873b46e81a5fd600d0c")
 ]
 
 # Bash recipe for building across all platforms
