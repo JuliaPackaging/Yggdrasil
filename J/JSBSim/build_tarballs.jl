@@ -41,6 +41,8 @@ include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
 platforms = expand_cxxstring_abis(supported_platforms())
 
+filter!(p -> libc(p) != "musl", platforms) # muslc is not supported
+
 # The products that we will ensure are always built
 products = [
     FileProduct("JSBSim.jl", :JSBSim),
