@@ -27,8 +27,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DJulia_PREFIX="$prefix" \
     "${FLAGS[@]}" \
     ..
-make -j${nproc}
-cp julia/*JSBSimJL* $prefix/.
+cmake --build . --target libJSBSim
+cp julia/*JSBSimJL*.$dlext $libdir/.
 cp ../julia/JSBSim.jl $prefix/.
 """
 
