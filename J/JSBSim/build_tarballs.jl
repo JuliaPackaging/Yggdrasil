@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/jsbsim
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-DCMAKE_CXXFLAGS_RELEASE="-D_POSIX_C_SOURCE")
+    FLAGS+=(-DCMAKE_CXX_FLAGS_RELEASE="-D_POSIX_C_SOURCE")
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
