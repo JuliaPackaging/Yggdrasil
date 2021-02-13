@@ -19,6 +19,7 @@ if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DCMAKE_CXX_FLAGS_RELEASE="-D_POSIX_C_SOURCE")
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_DOCS=OFF \
@@ -27,7 +28,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DJulia_PREFIX="$prefix" \
     "${FLAGS[@]}" \
     ..
-cmake --build . --target libJSBSim
+cmake --build . --target libJSBSim -- -j${nproc}
+install_license $WORKSPACE/srcdir/jsbsim/COPYING
 cp julia/*JSBSimJL*.$dlext $libdir/.
 cp ../julia/JSBSim.jl $prefix/.
 """
