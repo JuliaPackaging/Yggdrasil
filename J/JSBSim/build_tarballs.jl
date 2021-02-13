@@ -28,7 +28,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("libcxxwrap_julia_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
