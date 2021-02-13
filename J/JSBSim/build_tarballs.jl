@@ -7,7 +7,7 @@ julia_version = v"1.5.3"
 # Collection of sources required to build JSBSim
 sources = [
     GitSource("https://github.com/bcoconni/jsbsim.git",
-              "f3911ba6354f271d7ecaeb0078d7bc7fe8eccb65"),
+              "d699c3bcd90bf9ce2a64c1fe3091fcf39714ccfd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,6 @@ FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DCMAKE_CXX_FLAGS_RELEASE="-D_POSIX_C_SOURCE")
 fi
-export PATH=$PATH:$prefix
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -26,9 +25,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_DOCS=OFF \
     -DBUILD_PYTHON_MODULE=OFF \
     -DBUILD_JULIA_PACKAGE=ON \
+    -DJulia_PREFIX=${prefix} \
     "${FLAGS[@]}" \
     ..
-cmake --build . --target libJSBSim -- -j${nproc}
+cmake --build . --target JSBSimJL -- -j${nproc}
 install_license $WORKSPACE/srcdir/jsbsim/COPYING
 cp julia/*JSBSimJL*.$dlext $libdir/.
 cp ../julia/JSBSim.jl $prefix/.
