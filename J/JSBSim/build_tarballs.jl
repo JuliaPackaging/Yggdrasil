@@ -7,7 +7,7 @@ julia_version = v"1.5.3"
 # Collection of sources required to build JSBSim
 sources = [
     GitSource("https://github.com/bcoconni/jsbsim.git",
-              "a31ecb8727361aa74dee4ea7158c944848f78fb6"),
+              "f3911ba6354f271d7ecaeb0078d7bc7fe8eccb65"),
 ]
 
 # Bash recipe for building across all platforms
@@ -55,4 +55,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7")
+               preferred_gcc_version=v"5")
