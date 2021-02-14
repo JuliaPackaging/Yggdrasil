@@ -22,9 +22,6 @@ function configure(version_offset, min_julia_version)
     script = raw"""
     cd $WORKSPACE/srcdir/proj-*/
 
-    # sqlite needed to build proj.db, so this should not be the
-    # cross-compiled one since it needs to be executed on the host
-    apk add sqlite
     # Get rid of target sqlite3, to avoid it's picked up by the build system
     rm "${bindir}/sqlite3${exeext}"
 
@@ -40,16 +37,16 @@ function configure(version_offset, min_julia_version)
 
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
         -DBUILD_TESTING=OFF \
-        -DSQLITE3_INCLUDE_DIR=$prefix/include \
+        -DSQLITE3_INCLUDE_DIR=${includedir} \
         -DSQLITE3_LIBRARY=$SQLITE3_LIBRARY \
-        -DCURL_INCLUDE_DIR=$prefix/include \
+        -DCURL_INCLUDE_DIR=${includedir} \
         -DCURL_LIBRARY=$CURL_LIBRARY \
-        -DTIFF_INCLUDE_DIR=$prefix/include \
+        -DTIFF_INCLUDE_DIR=${includedir} \
         -DTIFF_LIBRARY_RELEASE=$TIFF_LIBRARY_RELEASE \
         ..
     make -j${nproc}
@@ -88,6 +85,8 @@ function configure(version_offset, min_julia_version)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
+        # Host SQLite needed to build proj.db
+        HostBuildDependency("SQLite_jll"),
         Dependency("SQLite_jll"),
         Dependency("Libtiff_jll"),
         Dependency("Zlib_jll"),
