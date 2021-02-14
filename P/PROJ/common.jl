@@ -14,7 +14,7 @@ function configure(version_offset, min_julia_version)
 
     # Collection of sources required to build PROJ
     sources = [
-        ArchiveSource("https://download.osgeo.org/proj/proj-$version.tar.gz",
+        ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
             "b384f42e5fb9c6d01fe5fa4d31da2e91329668863a684f97be5d4760dbbf0a14"),
     ]
 
@@ -60,7 +60,7 @@ function configure(version_offset, min_julia_version)
 
     # The products that we will ensure are always built
     products = [
-        LibraryProduct(["libproj", "libproj_$(version.major)_$(version.minor)"], :libproj),
+        LibraryProduct(["libproj", "libproj_$(upstream_version.major)_$(upstream_version.minor)"], :libproj),
 
         # Excecutables
         ExecutableProduct("cct", :cct),
