@@ -39,7 +39,7 @@ ARGS
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(platforms)
 
 filter!(p -> libc(p) != "musl", platforms) # muslc is not supported
 
