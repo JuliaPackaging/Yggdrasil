@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "SuiteSparse"
+name = "SuiteSparse_LBT"
 version = v"5.4.0"
 
 # Collection of sources required to build SuiteSparse
