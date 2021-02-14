@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "JSBSim"
-version = v"1.1.6"
+version = v"1.1.5"
 julia_version = v"1.5.3"
 
 # Collection of sources required to build JSBSim
 sources = [
     GitSource("https://github.com/bcoconni/jsbsim.git",
-              "d699c3bcd90bf9ce2a64c1fe3091fcf39714ccfd"),
+              "d528f8b38effb54ee035b572ee1beebdea7d2eb8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +31,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . --target JSBSimJL -- -j${nproc}
 install_license $WORKSPACE/srcdir/jsbsim/COPYING
 cp julia/*JSBSimJL*.$dlext $libdir/.
-cp ../julia/JSBSim.jl $prefix/.
 """
 
 ARGS
@@ -41,7 +40,7 @@ include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
 platforms = expand_cxxstring_abis(platforms)
 
-filter!(p -> libc(p) != "musl", platforms) # muslc is not supported
+#filter!(p -> libc(p) != "musl", platforms) # muslc is not supported
 
 # The products that we will ensure are always built
 products = [
