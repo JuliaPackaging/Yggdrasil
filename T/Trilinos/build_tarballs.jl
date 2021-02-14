@@ -27,8 +27,8 @@ cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAK
     -DTeuchos_ENABLE_COMPLEX=ON -DTrilinos_ENABLE_Amesos=ON   -DAmesos_ENABLE_KLU=ON -DTrilinos_ENABLE_Sacado=ON \
     -DTrilinos_ENABLE_Kokkos=OFF -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF -DTrilinos_ENABLE_CXX11=ON \
     -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS="/${libdir}" -DTPL_ENABLE_BLAS=ON -DTPL_ENABLE_LAPACK=ON \
-    -DBLAS_LIBRARY_DIRS="${prefix}/lib" -DBLAS_LIBRARY_NAMES="libopenblas" -DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
-    -DLAPACK_LIBRARY_NAMES="libopenblas" -DTrilinos_SET_INSTALL_RPATH=FALSE \
+    -DBLAS_LIBRARY_DIRS="${prefix}/lib" -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" -DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
+    -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" -DTrilinos_SET_INSTALL_RPATH=FALSE \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=FALSE -DCMAKE_INSTALL_RPATH=$prefix -DCMAKE_BUILD_TYPE=Release $SRCDIR
 make -j${nprocs}
 make install
