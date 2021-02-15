@@ -7,7 +7,7 @@ version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "25c112b29520b4ecb1224e33c1f42471dbe51cbe"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "cd28bffa8936a72f45b87b2802b85abf4e614349"),
     DirectorySource("./bundled"),
 ]
 
