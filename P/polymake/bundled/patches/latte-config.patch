@@ -1,0 +1,25 @@
+commit 049cc21d1071d6c7a55627d11c93656638d51bbc
+Author: Benjamin Lorenz <lorenz@math.tu-berlin.de>
+Date:   Sat Feb 13 17:05:52 2021 +0100
+
+    polytope/latte: check if the 'count' binary really belongs to latte
+
+diff --git a/apps/polytope/rules/latte.rules b/apps/polytope/rules/latte.rules
+index c3c09e7bd8..ffac7eeeae 100644
+--- a/apps/polytope/rules/latte.rules
++++ b/apps/polytope/rules/latte.rules
+@@ -24,7 +24,13 @@ CREDIT latte
+ custom $latte_count;
+ 
+ CONFIGURE {
+-   find_program($latte_count, "count", { prompt => "the program `count' from the LattE package" });
++   find_program($latte_count, "count", {
++                   prompt => "the program `count' from the LattE package",
++                   check => sub { `$_[0] 2>&1` !~ /LattE/ && "this is not LattE's count" }
++                }) or return;
++   `$latte_count 2>&1` =~ /LattE/ or die <<".";
++'$latte_count' is not the count binary from LattE.
++.
+ }
+ 
+ # additional parameters for calling LattE's "count". See the manual of LattE for details, recommended options are
