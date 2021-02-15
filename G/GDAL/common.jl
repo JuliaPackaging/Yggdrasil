@@ -16,7 +16,7 @@ function configure(version_offset, min_julia_version, proj_jll_version)
     sources = [
         ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
             "43d40ba940e3927e38f9e98062ff62f9fa993ceade82f26f16fab7e73edb572e"),
-        DirectorySource("./bundled"),
+        DirectorySource("../bundled"),
     ]
 
     # Bash recipe for building across all platforms
