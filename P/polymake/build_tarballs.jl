@@ -54,6 +54,9 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
+# avoid latte autoconfiguration picking up count from llvm
+atomic_patch -p1 ../patches/latte-config.patch
+
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
