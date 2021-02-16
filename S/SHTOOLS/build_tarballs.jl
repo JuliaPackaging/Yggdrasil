@@ -12,7 +12,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
 perl -pi -e 's/-ffast-math//' Makefile
-make fortran -j${nproc} LIBTOOL=/usr/bin/libtool LIBTOOLFLAGS="--mode=link --tag=FC gfortran"
+perl -pi -e 's/	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)/	# $(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)/' src/Makefile
+perl -pi -e 's/#	$(AR) $(ARFLAGS) $(PROG) $(OBJS)/	$(AR) $(ARFLAGS) $(PROG) $(OBJS)/' src/Makefile
+perl -pi -e 's/#	$(RLIB) $(RLIBFLAGS) $(PROG)/	$(RLIB) $(RLIBFLAGS) $(PROG)/'' src/Makefile
+make fortran -j${nproc}
 make install PREFIX=${prefix}
 gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a
 """
