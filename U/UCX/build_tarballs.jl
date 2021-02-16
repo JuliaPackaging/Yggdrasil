@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "UCX"
-version = v"1.9.0"
+version = v"1.10.0-rc3"
+base_version = VersionNumber(version.major, version.minor, version.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(version).tar.gz",
-                  "a7a2c8841dc0d5444088a4373dc9b9cc68dbffcd917c1eba92ca8ed8e5e635fb"),
+    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(base_version).tar.gz",
+                  "cb9dcc6b53ab141a2dd4cd121e32a35a1537fd73d44164f41f5da956e6c099ec"),
     DirectorySource("./bundled"),
 ]
 
