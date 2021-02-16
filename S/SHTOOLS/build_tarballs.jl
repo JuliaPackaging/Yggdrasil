@@ -12,8 +12,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
 perl -pi -e 's/-ffast-math//' Makefile
-make fortran
-make install PREFIX=$prefix
+make fortran -j${nproc} LIBTOOL=/usr/bin/libtool LIBTOOLFLAGS="--mode=link --tag=FC gfortran"
+make install PREFIX=${prefix}
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a
 """
 
 platforms = supported_platforms()
