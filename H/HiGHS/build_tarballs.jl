@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.2.0"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
