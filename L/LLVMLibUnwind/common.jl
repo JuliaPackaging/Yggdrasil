@@ -11,8 +11,8 @@ function configure(version; experimental::Bool=false)
 
     # Collection of sources required to complete build
     sources = [
-        ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/libunwind-$(version).src.tar.xz",
-                      hash[version])
+        ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/libunwind-$(version).src.tar.xz", hash[version]),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ]
 
     # Bash recipe for building across all platforms
@@ -29,6 +29,14 @@ CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
 if [[ ${target} == x86_64-w64-mingw32 ]]; then
     # Support for threading requires Windows Vista.
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+fi
+
+# Apply all our patches
+if [ -d $WORKSPACE/srcdir/patches ]; then
+    for f in $WORKSPACE/srcdir/patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p2 ${f}
+    done
 fi
 
 mkdir build && cd build
