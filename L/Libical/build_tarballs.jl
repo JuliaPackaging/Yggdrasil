@@ -47,7 +47,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GLib_jll"),
+    Dependency("Glib_jll"),
     Dependency("XML2_jll"),
     Dependency("ICU_jll")
 ]
