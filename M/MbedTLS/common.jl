@@ -7,12 +7,12 @@ sources_by_version = Dict(
     v"2.24.0" => [
         GitSource("https://github.com/ARMmbed/mbedtls.git",
                   "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8"),
-        DirectorySource("./bundled"),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.25.0" => [
         GitSource("https://github.com/ARMmbed/mbedtls.git",
                   "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
-        DirectorySource("./bundled"),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ]
 )
 sources = sources_by_version[version]
