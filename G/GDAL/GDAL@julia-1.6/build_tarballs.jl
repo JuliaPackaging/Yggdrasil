@@ -11,7 +11,7 @@ min_julia_version = v"1.6"
 # Note that this currently fixes it to the exact JLL version that is used,
 # this is issue https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/89.
 # Ideally we could by default allow any version X??.Y?? here, i.e. the PROJ minor version.
-proj_jll_version = "700.202"
+proj_jll_version = "700.202.100"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, configure(version_offset, min_julia_version, proj_jll_version)...;
