@@ -376,6 +376,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
+        if version >= v"8"
+            push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+        end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
