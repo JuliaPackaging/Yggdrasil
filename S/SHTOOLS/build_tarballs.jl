@@ -38,8 +38,8 @@ make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
 make install PREFIX=${prefix}
 
 # Create shared libraries
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
-gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lfftw3 -lopenblas -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lfftw3 -lopenblas -lm
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
