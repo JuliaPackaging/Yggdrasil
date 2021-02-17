@@ -32,7 +32,7 @@ EOF
 make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make fortran-mp -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make install PREFIX=${prefix}
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
 """
 
 platforms = supported_platforms()
@@ -40,6 +40,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libSHTOOLS", :libSHTOOLS),
+    LibraryProduct("libSHTOOLS-mp", :libSHTOOLS_mp),
 ]
 
 # Dependencies that must be installed before this package can be built
