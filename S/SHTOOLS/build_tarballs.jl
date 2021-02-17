@@ -32,7 +32,11 @@ EOF
 make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make fortran-mp -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make install PREFIX=${prefix}
+ls -ld $prefix/lib*
+ls -l $prefix/lib*
+find $prefix
 gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
 """
 
 platforms = supported_platforms()
