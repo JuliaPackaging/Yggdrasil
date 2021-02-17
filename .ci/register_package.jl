@@ -55,10 +55,7 @@ function download_cached_binaries(download_dir, platforms)
         filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
         reset_downloader()
         println("Downloading $url...")
-        Downloads.download(url, joinpath(download_dir, filename);
-                           progress=(total,now)->print("$(round(100*now/total, digits=1))%",
-                                                       " ($(Base.format_bytes(now))/$(Base.format_bytes(total)))",
-                                                       "          \r"))
+        Downloads.download(url, joinpath(download_dir, filename))
         println()
     end
 end
