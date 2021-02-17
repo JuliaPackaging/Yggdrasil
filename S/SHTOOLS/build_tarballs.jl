@@ -30,6 +30,7 @@ patch -p0 <<'EOF'
  #	@rm -f $(OBJS)
 EOF
 make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
+make fortran-mp -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make install PREFIX=${prefix}
 gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a
 """
