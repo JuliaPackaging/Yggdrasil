@@ -12,14 +12,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
 
-# Examine build system
-# This definition of OPENBLAS is copied from OpenBLAS_jll
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    OPENBLAS=openblas64_
-else
-    OPENBLAS=openblas
-fi
-
 # Patch source code
 patch -p0 <<'EOF'
 --- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
@@ -46,8 +38,8 @@ make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
 make install PREFIX=${prefix}
 
 # Create shared libraries
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${OPENBLAS} -lm
-gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${OPENBLAS} -lm
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
 """
 
 #TODO: platforms = expand_gfortran_versions(supported_platforms())
@@ -63,7 +55,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
