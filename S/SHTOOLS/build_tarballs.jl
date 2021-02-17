@@ -11,6 +11,18 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
+
+# Examine build system
+# This definition of OPENBLAS is copied from OpenBLAS_jll
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+    flags='-fdefault-integer-8 -Dint32=int64 -Ddgels=dgels_64'
+    OPENBLAS=openblas64_
+else
+    flags=''
+    OPENBLAS=openblas
+fi
+
+# Patch source code
 patch -p0 <<'EOF'
 --- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
 +++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
@@ -29,21 +41,18 @@ patch -p0 <<'EOF'
  	@echo "--> Creation of static library successful"
  #	@rm -f $(OBJS)
 EOF
-make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
-make fortran-mp -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
+
+# Build and install static libraries
+make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu ${flags}"
+make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu ${flags}"
 make install PREFIX=${prefix}
-# This definition of BLAS is copied from OpenBLAS_jll
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    BLAS=openblas64_
-else
-    BLAS=openblas
-fi
-nm $prefix/lib/lib$BLAS.so | grep dgels
-nm -D $prefix/lib/lib$BLAS.so | grep dgels
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
-gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
+
+# Create shared libraries
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${OPENBLAS} -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${OPENBLAS} -lm
 """
 
+#TODO: platforms = expand_gfortran_versions(supported_platforms())
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
