@@ -8,7 +8,7 @@ version = v"5.54"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/bluetooth/bluez-$(version).tar.xz", "68cdab9e63e8832b130d5979dc8c96fdb087b31278f342874d992af3e56656dc")
+    ArchiveSource("https://www.kernel.org/pub/linux/bluetooth/bluez-$(version.major).$(version.minor).tar.xz", "68cdab9e63e8832b130d5979dc8c96fdb087b31278f342874d992af3e56656dc")
 ]
 
 # Bash recipe for building across all platforms
