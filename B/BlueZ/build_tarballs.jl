@@ -8,7 +8,7 @@ version = v"5.54"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.kernel.org/pub/linux/bluetooth/bluez-$(version).tar.xz", "68cdab9e63e8832b130d5979dc8c96fdb087b31278f342874d992af3e56656dc")
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/bluetooth/bluez-$(version).tar.xz", "68cdab9e63e8832b130d5979dc8c96fdb087b31278f342874d992af3e56656dc")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +16,7 @@ script = raw"""
 # I think a target version is actually needed, but this gets you pretty far
 apk add libical-dev
 cd bluez-*
+# dooesn't seem to work, prevent configure from finding it
 sed -i -e "s~ linux/if_alg.h~~" configure.ac 
 autoconf
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-systemd
