@@ -32,11 +32,14 @@ EOF
 make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make fortran-mp -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make install PREFIX=${prefix}
-ls -ld $prefix/lib*
-ls -l $prefix/lib*
-find $prefix
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas64_ -lm
-gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas64_ -lm
+# This definition of BLAS is copied from OpenBLAS_jll
+if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+    BLAS=openblas64_
+else
+    BLAS=openblas
+fi
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
 """
 
 platforms = supported_platforms()
