@@ -38,6 +38,8 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 else
     BLAS=openblas
 fi
+nm $prefix/lib/lib$BLAS.so | grep dgels
+nm -D $prefix/lib/lib$BLAS.so | grep dgels
 gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
 gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -l${BLAS} -lm
 """
