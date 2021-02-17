@@ -11,10 +11,24 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
-# perl -pi -e 's/-ffast-math//' Makefile
-perl -pi -e 's/	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)/	# $(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)/' src/Makefile
-perl -pi -e 's/#	$(AR) $(ARFLAGS) $(PROG) $(OBJS)/	$(AR) $(ARFLAGS) $(PROG) $(OBJS)/' src/Makefile
-perl -pi -e 's/#	$(RLIB) $(RLIBFLAGS) $(PROG)/	$(RLIB) $(RLIBFLAGS) $(PROG)/' src/Makefile
+patch -p0 <EOF
+--- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
++++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
+@@ -80,10 +80,10 @@
+ 	@echo "--> Compilation of source files successful"
+ 	@echo
+ 	@rm -f $(PROG)
+-	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)
++#	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)
+ #	If you prefer to use libtool, uncomment the above line, and comment the two lines below (AR and RLIB)
+-#	$(AR) $(ARFLAGS) $(PROG) $(OBJS)
+-#	$(RLIB) $(RLIBFLAGS) $(PROG)
++	$(AR) $(ARFLAGS) $(PROG) $(OBJS)
++	$(RLIB) $(RLIBFLAGS) $(PROG)
+ 	@echo
+ 	@echo "--> Creation of static library successful"
+ #	@rm -f $(OBJS)
+EOF
 make fortran -j${nproc} F95FLAGS='-fPIC -O3 -std=gnu'
 make install PREFIX=${prefix}
 gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a
