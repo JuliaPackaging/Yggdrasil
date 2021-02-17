@@ -15,10 +15,8 @@ cd $WORKSPACE/srcdir/SHTOOLS-*
 # Examine build system
 # This definition of OPENBLAS is copied from OpenBLAS_jll
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    flags='-fdefault-integer-8 -Dint32=int64 -Ddgels=dgels_64'
     OPENBLAS=openblas64_
 else
-    flags=''
     OPENBLAS=openblas
 fi
 
@@ -43,8 +41,8 @@ patch -p0 <<'EOF'
 EOF
 
 # Build and install static libraries
-make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu ${flags}"
-make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu ${flags}"
+make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
+make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
 make install PREFIX=${prefix}
 
 # Create shared libraries
