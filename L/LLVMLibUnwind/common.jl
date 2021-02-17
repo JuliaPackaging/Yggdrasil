@@ -45,6 +45,9 @@ cmake "${CMAKE_FLAGS[@]}" ..
 make -j${nprocs}
 make install
 
+# Install header files. Required to access patched in functions
+cp -aR ../include ${prefix}/
+
 # Move over the DLL. TODO: There may be a CMAKE flag for this.
 if [[ ${target} == *mingw32* ]]; then
     mkdir -p "${libdir}"
