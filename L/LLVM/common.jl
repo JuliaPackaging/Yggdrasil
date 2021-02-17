@@ -266,7 +266,7 @@ const libllvmscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `llvm-config`, `libLLVM` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
@@ -282,7 +282,7 @@ const clangscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
