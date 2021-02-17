@@ -28,6 +28,12 @@ if [[ "${target}" == *apple* ]]; then
     atomic_patch -p1 ../patches/0001-Remove-flags-not-sopported-by-ranlib.patch
 fi
 
+# MbedTLS 2.24.0 needs a patch for platforms where `char` is unsigned
+P=${WORKSPACE}/srcdir/patches/0002-fix-incorrect-eof-check.patch
+if [[ -f ${P} ]]; then
+    atomic_patch -p1 ${P}
+fi
+
 # enable MD4
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
