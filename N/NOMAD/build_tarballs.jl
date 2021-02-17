@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "NOMAD"
 version = v"4.0.1"
