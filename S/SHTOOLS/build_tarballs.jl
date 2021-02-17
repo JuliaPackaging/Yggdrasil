@@ -11,7 +11,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
-patch -p0 <<EOF
+patch -p0 <<'EOF'
 --- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
 +++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
 @@ -80,10 +80,10 @@
