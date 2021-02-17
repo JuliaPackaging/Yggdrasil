@@ -41,7 +41,7 @@ rm -r native_build
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [
+products = Product[
     # TBD
 ]
 
