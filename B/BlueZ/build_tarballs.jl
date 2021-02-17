@@ -36,7 +36,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Dbus_jll"),
-    Dependency("eudev"),
+    Dependency("eudev_jll"),
     Dependency("Glib_jll"),
     # Dependency("Libical_jll"),
     Dependency("Readline_jll")
