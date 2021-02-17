@@ -1,14 +1,21 @@
 using BinaryBuilder
 
 name = "MbedTLS"
-version = v"2.25.0"
 
 # Collection of sources required to build MbedTLS
-sources = [
-    GitSource("https://github.com/ARMmbed/mbedtls.git",
-              "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
-    DirectorySource("./bundled"),
-]
+sources_by_version = Dict(
+    v"2.24.0" => [
+        GitSource("https://github.com/ARMmbed/mbedtls.git",
+                  "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8"),
+        DirectorySource("./bundled"),
+    ],
+    v"2.25.0" => [
+        GitSource("https://github.com/ARMmbed/mbedtls.git",
+                  "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
+        DirectorySource("./bundled"),
+    ]
+)
+sources = sources_by_version[version]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -57,5 +64,3 @@ products = [
 dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
