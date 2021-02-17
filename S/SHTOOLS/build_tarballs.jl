@@ -35,8 +35,8 @@ make install PREFIX=${prefix}
 ls -ld $prefix/lib*
 ls -l $prefix/lib*
 find $prefix
-gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
-gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas -lm
+gfortran -shared -o ${libdir}/libSHTOOLS.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas64_ -lm
+gfortran -fopenmp -shared -o ${libdir}/libSHTOOLS-mp.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libSHTOOLS-mp.a -Wl,$(flagon --no-whole-archive) -lfftw3 -lopenblas64_ -lm
 """
 
 platforms = supported_platforms()
