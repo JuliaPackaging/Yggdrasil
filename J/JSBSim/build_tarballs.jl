@@ -33,7 +33,6 @@ install_license $WORKSPACE/srcdir/jsbsim/COPYING
 cp julia/*JSBSimJL*.$dlext $libdir/.
 """
 
-ARGS
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
