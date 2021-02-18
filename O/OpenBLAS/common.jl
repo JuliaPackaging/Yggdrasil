@@ -34,11 +34,12 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
     OPENBLAS32=$(openblas32)
+    AARCH64_ILP64=$(aarch64_ilp64)
     """
     # Bash recipe for building across all platforms
     script *= raw"""
@@ -54,15 +55,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Slim the binaries by not shipping static libs
     flags+=(NO_STATIC=1)
 
-    if [[ ${nbits} == 64 ]]; then
-        if [[ "${OPENBLAS32}" == "true" ]]; then
-            # We're building an LP64 BLAS with 32-bit BlasInt on a 64-bit platform
-            LIBPREFIX=libopenblas
-        else
-            # We're building an ILP64 BLAS with 64-bit BlasInt
-            LIBPREFIX=libopenblas64_
-            flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
-        fi
+    if [[ ${nbits} == 64 ]] && [[ "${OPENBLAS32}" != "true" ]] && [[ "${AARCH64_ILP64}${target}" != "falseaarch64-"* ]]; then
+        # We're building an ILP64 BLAS with 64-bit BlasInt
+        LIBPREFIX=libopenblas64_
+        flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
     else
         LIBPREFIX=libopenblas
     fi
