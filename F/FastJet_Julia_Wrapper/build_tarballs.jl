@@ -25,7 +25,6 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-ARGS
 include("../../L/libjulia/common.jl")
 platforms = expand_cxxstring_abis(libjulia_platforms(julia_version))
 
