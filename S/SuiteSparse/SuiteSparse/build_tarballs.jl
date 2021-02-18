@@ -29,7 +29,7 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
-if [[ ${nbits} == 64 ]] then
+if [[ ${nbits} == 64 ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
     BLAS_NAME=openblas64_
 else
