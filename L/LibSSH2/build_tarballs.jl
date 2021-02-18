@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LibSSH2"
 version = v"1.9.0"
@@ -42,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "MbedTLS_jll",
+    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
