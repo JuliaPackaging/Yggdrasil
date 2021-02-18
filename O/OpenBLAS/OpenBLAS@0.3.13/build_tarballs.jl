@@ -7,7 +7,7 @@ name = "OpenBLAS"
 version = v"0.3.13"
 
 sources = openblas_sources(version)
-script = openblas_script()
+script = openblas_script(;aarch64_ilp64=true)
 platforms = openblas_platforms(;experimental=true)
 products = openblas_products()
 dependencies = openblas_dependencies()
