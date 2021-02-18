@@ -1,3 +1,2 @@
 include("../common.jl")
-build_julia(v"1.3.1")
-
+build_julia(ARGS, v"1.3.1")
