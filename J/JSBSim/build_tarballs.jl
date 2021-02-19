@@ -6,13 +6,14 @@ julia_version = v"1.5.3"
 
 # Collection of sources required to build JSBSim
 sources = [
-    GitSource("https://github.com/bcoconni/jsbsim.git",
-              "d528f8b38effb54ee035b572ee1beebdea7d2eb8"),
+    GitSource("https://github.com/JSBSim-Team/jsbsim.git",
+              "9bc866713431d3296441697a91517b32c9c017d3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/jsbsim
+sed -ri 's/PROJECT_VERSION_PATCH\s\"6\"/PROJECT_VERSION_PATCH \"5\"/g' CMakeLists.txt
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
