@@ -2,7 +2,7 @@ include("../common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SuiteSparse-*
+cd $WORKSPACE/srcdir/SuiteSparse*
 
 # Apply Jameson's shlib patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
@@ -66,32 +66,8 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
-# We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
-
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("libsuitesparseconfig",   :libsuitesparseconfig),
-    LibraryProduct("libamd",                 :libamd),
-    LibraryProduct("libbtf",                 :libbtf),
-    LibraryProduct("libcamd",                :libcamd),
-    LibraryProduct("libccolamd",             :libccolamd),
-    LibraryProduct("libcolamd",              :libcolamd),
-    LibraryProduct("libcholmod",             :libcholmod),
-    LibraryProduct("libldl",                 :libldl),
-    LibraryProduct("libklu",                 :libklu),
-    LibraryProduct("libumfpack",             :libumfpack),
-    LibraryProduct("librbio",                :librbio),
-    LibraryProduct("libspqr",                :libspqr),
-    LibraryProduct("libsuitesparse_wrapper", :libsuitesparse_wrapper),
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("libblastrampoline_jll"),
-#    Dependency("METIS_jll"),
-]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
+#version = 5.4.1
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
