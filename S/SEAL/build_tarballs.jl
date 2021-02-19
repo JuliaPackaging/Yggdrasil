@@ -56,13 +56,13 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64; libc=:glibc),
-    Linux(:x86_64; libc=:musl),
-    Linux(:aarch64; libc=:glibc),
-    Linux(:aarch64; libc=:musl),
-    Linux(:powerpc64le; libc=:glibc),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="musl")
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd"),
 ]
 
 # Fix incompatibilities across the GCC 4/5 version boundary due to std::string,
