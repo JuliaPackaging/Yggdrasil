@@ -13,6 +13,45 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
 
 # Patch source code
+
+# Add missing C interface for MakeGradientDH
+atomic_patch -p1 <<'EOF'
+diff --git a/src/cWrapper.f95 b/src/cWrapper.f95
+index 6bfc7adc..01b2fe18 100644
+--- a/src/cWrapper.f95
++++ b/src/cWrapper.f95
+@@ -292,6 +292,27 @@
+                                ,lmax_calc=lmax_calc,extend=extend,exitstatus=exitstatus)
+     end subroutine cMakeGridDHC
+
++    subroutine cMakeGradientDH(cilm,cilm_dim,lmax,theta,phi,theta_d0,theta_d1,n,sampling&
++                                   ,lmax_calc,extend,exitstatus)  bind(c, name="MakeGradientDH")
++        use, intrinsic :: iso_c_binding
++        use shtools, only: MakeGradientDH
++        implicit none
++        integer(kind=c_int), value,intent(in) :: cilm_dim
++        real(kind=c_double), dimension(2,cilm_dim,cilm_dim),intent(in) :: cilm
++        integer(kind=c_int), value,intent(in) :: theta_d0
++        integer(kind=c_int), value,intent(in) :: theta_d1
++        real(kind=c_double), dimension(theta_d0,theta_d1),intent(out) :: theta
++        real(kind=c_double), dimension(theta_d0,theta_d1),intent(out) :: phi
++        integer(kind=c_int), value,intent(in) :: lmax
++        integer(kind=c_int), intent(out) :: n
++        integer(kind=c_int), optional,intent(in) :: sampling
++        integer(kind=c_int), optional,intent(in) :: lmax_calc
++        integer(kind=c_int), optional,intent(in) :: extend
++        integer(kind=c_int), optional,intent(out) :: exitstatus
++        call MakeGradientDH(cilm,lmax,theta,phi,n,sampling=sampling&
++                                ,lmax_calc=lmax_calc,extend=extend,exitstatus=e
+xitstatus)
++    end subroutine cMakeGradientDH
++
+     subroutine cSHGLQ(lmax,zero,w,plx,norm,csphase,cnorm,exitstatus)  bind(c, name="SHGLQ")
+         use, intrinsic :: iso_c_binding
+         use shtools, only: SHGLQ
+EOF
+
+# Don't use libtool
 atomic_patch -p0 <<'EOF'
 --- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
 +++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
