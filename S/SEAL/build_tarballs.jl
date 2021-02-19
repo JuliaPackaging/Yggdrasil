@@ -59,10 +59,10 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="musl"),
     Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="musl")
+    Platform("aarch64", "linux"; libc="musl"),
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "freebsd")
 ]
 
 # Fix incompatibilities across the GCC 4/5 version boundary due to std::string,
