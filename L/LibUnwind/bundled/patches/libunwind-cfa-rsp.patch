@@ -1,4 +1,4 @@
-commit 66f68ab50d35bb17a7ae3ac47f17e1ba5913760c
+commit c71298423c26b2143dc6f6ce554ec910ed882f8a
 Author: Keno Fischer <keno@juliacomputing.com>
 Date:   Sat Feb 6 18:13:16 2021 -0500
 
@@ -45,20 +45,209 @@ index fab93c61..b845e2eb 100644
      unw_word_t ip;              /* instruction pointer */
      unw_word_t args_size;       /* size of arguments */
      unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
+diff --git a/include/libunwind_i.h b/include/libunwind_i.h
+index 36cf7a14..dcec1683 100644
+--- a/include/libunwind_i.h
++++ b/include/libunwind_i.h
+@@ -351,6 +351,10 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
+ 
+ #include "tdep/libunwind_i.h"
+ 
++#ifndef TDEP_DWARF_SP
++#define TDEP_DWARF_SP UNW_TDEP_SP
++#endif
++
+ #ifndef tdep_get_func_addr
+ # define tdep_get_func_addr(as,addr,v)          (*(v) = addr, 0)
+ #endif
+diff --git a/include/tdep-x86/dwarf-config.h b/include/tdep-x86/dwarf-config.h
+index f76f9c1c..11398e4e 100644
+--- a/include/tdep-x86/dwarf-config.h
++++ b/include/tdep-x86/dwarf-config.h
+@@ -43,9 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+ typedef struct dwarf_loc
+   {
+     unw_word_t val;
+-#ifndef UNW_LOCAL_ONLY
+     unw_word_t type;            /* see X86_LOC_TYPE_* macros.  */
+-#endif
+   }
+ dwarf_loc_t;
+ 
+diff --git a/include/tdep-x86/libunwind_i.h b/include/tdep-x86/libunwind_i.h
+index 5231189a..1b59fe34 100644
+--- a/include/tdep-x86/libunwind_i.h
++++ b/include/tdep-x86/libunwind_i.h
+@@ -88,14 +88,28 @@ dwarf_get_uc(const struct dwarf_cursor *cursor)
+ 
+ #define DWARF_GET_LOC(l)        ((l).val)
+ 
+-#ifdef UNW_LOCAL_ONLY
++
++#define DWARF_GET_LOC(l)        ((l).val)
++# define DWARF_LOC_TYPE_MEM     (0 << 0)
++# define DWARF_LOC_TYPE_FP      (1 << 0)
++# define DWARF_LOC_TYPE_REG     (1 << 1)
++# define DWARF_LOC_TYPE_VAL     (1 << 2)
++
++# define DWARF_IS_REG_LOC(l)    (((l).type & DWARF_LOC_TYPE_REG) != 0)
++# define DWARF_IS_FP_LOC(l)     (((l).type & DWARF_LOC_TYPE_FP) != 0)
++# define DWARF_IS_MEM_LOC(l)    ((l).type == DWARF_LOC_TYPE_MEM)
++# define DWARF_IS_VAL_LOC(l)    (((l).type & DWARF_LOC_TYPE_VAL) != 0)
++
++# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r), .type = (t) })
+ # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
+-# define DWARF_IS_NULL_LOC(l)   (DWARF_GET_LOC (l) == 0)
+-# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r) })
+-# define DWARF_IS_REG_LOC(l)    0
++# define DWARF_IS_NULL_LOC(l)                                           \
++                ({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
++# define DWARF_VAL_LOC(c,v)     DWARF_LOC ((v), DWARF_LOC_TYPE_VAL)
++# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), DWARF_LOC_TYPE_MEM)
++
++#ifdef UNW_LOCAL_ONLY
+ # define DWARF_REG_LOC(c,r)     (DWARF_LOC((unw_word_t)                      \
+                                  tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
+-# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
+ # define DWARF_FPREG_LOC(c,r)   (DWARF_LOC((unw_word_t)                      \
+                                  tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
+ 
+@@ -117,35 +131,8 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
+   return 0;
+ }
+ 
+-static inline int
+-dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+-{
+-  if (!DWARF_GET_LOC (loc))
+-    return -1;
+-  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
+-                                   0, c->as_arg);
+-}
+-
+-static inline int
+-dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+-{
+-  if (!DWARF_GET_LOC (loc))
+-    return -1;
+-  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val,
+-                                   1, c->as_arg);
+-}
+-
+ #else /* !UNW_LOCAL_ONLY */
+-# define DWARF_LOC_TYPE_FP      (1 << 0)
+-# define DWARF_LOC_TYPE_REG     (1 << 1)
+-# define DWARF_NULL_LOC         DWARF_LOC (0, 0)
+-# define DWARF_IS_NULL_LOC(l)                                           \
+-                ({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
+-# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r), .type = (t) })
+-# define DWARF_IS_REG_LOC(l)    (((l).type & DWARF_LOC_TYPE_REG) != 0)
+-# define DWARF_IS_FP_LOC(l)     (((l).type & DWARF_LOC_TYPE_FP) != 0)
+ # define DWARF_REG_LOC(c,r)     DWARF_LOC((r), DWARF_LOC_TYPE_REG)
+-# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
+ # define DWARF_FPREG_LOC(c,r)   DWARF_LOC((r), (DWARF_LOC_TYPE_REG      \
+                                                 | DWARF_LOC_TYPE_FP))
+ 
+@@ -195,38 +182,33 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
+                                    1, c->as_arg);
+ }
+ 
++#endif /* !UNW_LOCAL_ONLY */
++
+ static inline int
+ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+ {
+   if (DWARF_IS_NULL_LOC (loc))
+     return -UNW_EBADREG;
+ 
+-  /* If a code-generator were to save a value of type unw_word_t in a
+-     floating-point register, we would have to support this case.  I
+-     suppose it could happen with MMX registers, but does it really
+-     happen?  */
+-  assert (!DWARF_IS_FP_LOC (loc));
+-
+   if (DWARF_IS_REG_LOC (loc))
+     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
+                                      0, c->as_arg);
+-  else
++  if (DWARF_IS_MEM_LOC (loc))
+     return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
+                                      0, c->as_arg);
++  assert(DWARF_IS_VAL_LOC (loc));
++  *val = DWARF_GET_LOC (loc);
++  return 0;
+ }
+ 
+ static inline int
+ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+ {
++  assert(!DWARF_IS_VAL_LOC (loc));
++
+   if (DWARF_IS_NULL_LOC (loc))
+     return -UNW_EBADREG;
+ 
+-  /* If a code-generator were to save a value of type unw_word_t in a
+-     floating-point register, we would have to support this case.  I
+-     suppose it could happen with MMX registers, but does it really
+-     happen?  */
+-  assert (!DWARF_IS_FP_LOC (loc));
+-
+   if (DWARF_IS_REG_LOC (loc))
+     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), &val,
+                                      1, c->as_arg);
+@@ -235,7 +217,9 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+                                      1, c->as_arg);
+ }
+ 
+-#endif /* !UNW_LOCAL_ONLY */
++// For historical reasons, the DWARF numbering does not match the libunwind
++// numbering, necessitating this override
++#define TDEP_DWARF_SP 4
+ 
+ #define tdep_getcontext_trace           unw_getcontext
+ #define tdep_init_done                  UNW_OBJ(init_done)
 diff --git a/src/dwarf/Gparser.c b/src/dwarf/Gparser.c
-index 7d255aee..986c4a89 100644
+index 7d255aee..b1308d3c 100644
 --- a/src/dwarf/Gparser.c
 +++ b/src/dwarf/Gparser.c
-@@ -500,6 +500,8 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
-   memset (sr, 0, sizeof (*sr));
+@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+ #include <stddef.h>
+ #include <limits.h>
+ 
++
+ #define alloc_reg_state()       (mempool_alloc (&dwarf_reg_state_pool))
+ #define free_reg_state(rs)      (mempool_free (&dwarf_reg_state_pool, rs))
+ 
+@@ -501,6 +502,9 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
    for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
      set_reg (sr, i, DWARF_WHERE_SAME, 0);
-+  // SP defaults to CFA (but is overridable)
-+  set_reg (sr, UNW_TDEP_SP, DWARF_WHERE_CFA, 0);
  
++  // SP defaults to CFA (but is overridable)
++  set_reg (sr, TDEP_DWARF_SP, DWARF_WHERE_CFA, 0);
++
    struct dwarf_cie_info *dci = c->pi.unwind_info;
    sr->rs_current.ret_addr_column  = dci->ret_addr_column;
-@@ -826,6 +828,10 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+   unw_word_t addr = dci->cie_instr_start;
+@@ -785,14 +789,14 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+       /* As a special-case, if the stack-pointer is the CFA and the
+          stack-pointer wasn't saved, popping the CFA implicitly pops
+          the stack-pointer as well.  */
+-      if ((rs->reg.val[DWARF_CFA_REG_COLUMN] == UNW_TDEP_SP)
+-          && (UNW_TDEP_SP < ARRAY_SIZE(rs->reg.val))
+-          && (rs->reg.where[UNW_TDEP_SP] == DWARF_WHERE_SAME))
++      if ((rs->reg.val[DWARF_CFA_REG_COLUMN] == TDEP_DWARF_SP)
++          && (TDEP_DWARF_SP < ARRAY_SIZE(rs->reg.val))
++          && (DWARF_IS_NULL_LOC(c->loc[TDEP_DWARF_SP])))
+           cfa = c->cfa;
+       else
+         {
+           regnum = dwarf_to_unw_regnum (rs->reg.val[DWARF_CFA_REG_COLUMN]);
+-          if ((ret = unw_get_reg ((unw_cursor_t *) c, regnum, &cfa)) < 0)
++          if ((ret = unw_get_reg (dwarf_to_cursor(c), regnum, &cfa)) < 0)
+             return ret;
+         }
+       cfa += rs->reg.val[DWARF_CFA_OFF_COLUMN];
+@@ -826,6 +830,10 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
          case DWARF_WHERE_SAME:
            break;
  
@@ -130,6 +319,33 @@ index 129b739a..061dcbaa 100644
            c->dwarf.loc[EIP] = eip_loc;
            c->dwarf.use_prev_instr = 1;
          }
+diff --git a/src/x86_64/Ginit.c b/src/x86_64/Ginit.c
+index b7e8e462..64b800af 100644
+--- a/src/x86_64/Ginit.c
++++ b/src/x86_64/Ginit.c
+@@ -49,8 +49,6 @@ static struct unw_addr_space local_addr_space;
+ 
+ unw_addr_space_t unw_local_addr_space = &local_addr_space;
+ 
+-HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
+-
+ /* XXX fix me: there is currently no way to locate the dyn-info list
+        by a remote unwinder.  On ia64, this is done via a special
+        unwind-table entry.  Perhaps something similar can be done with
+@@ -66,7 +64,12 @@ static int
+ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+                         void *arg)
+ {
+-  *dyn_info_list_addr = (unw_word_t) &_U_dyn_info_list;
++#ifndef UNW_LOCAL_ONLY
++# pragma weak _U_dyn_info_list_addr
++  if (!_U_dyn_info_list_addr)
++    return -UNW_ENOINFO;
++#endif
++  *dyn_info_list_addr = _U_dyn_info_list_addr ();
+   return 0;
+ }
+ 
 diff --git a/src/x86_64/Gos-freebsd.c b/src/x86_64/Gos-freebsd.c
 index 883025c8..8bb101ea 100644
 --- a/src/x86_64/Gos-freebsd.c

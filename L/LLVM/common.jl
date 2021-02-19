@@ -266,7 +266,7 @@ const libllvmscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `llvm-config`, `libLLVM` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
@@ -282,7 +282,7 @@ const clangscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
@@ -376,6 +376,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
+        if version >= v"8"
+            push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+        end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 

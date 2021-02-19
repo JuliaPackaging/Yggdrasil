@@ -37,6 +37,14 @@ BinaryBuilder.init_jll_package(
     repo,
 )
 
+function reset_downloader()
+    # Downloads.jl hangs when downloading multiple large files (JuliaLang/Downloads.jl#99).
+    # Work around that issue by using a fresh Downloader each time.
+    lock(Downloads.DOWNLOAD_LOCK) do
+        Downloads.DOWNLOADER[] = nothing
+    end
+end
+
 function download_cached_binaries(download_dir, platforms)
     # Grab things out of the aether for maximum consistency
     bb_hash = ENV["BB_HASH"]
@@ -45,7 +53,10 @@ function download_cached_binaries(download_dir, platforms)
     for platform in platforms
         url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
         filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
+        reset_downloader()
+        println("Downloading $url...")
         Downloads.download(url, joinpath(download_dir, filename))
+        println()
     end
 end
 
@@ -54,7 +65,10 @@ function download_binaries_from_release(download_dir)
         url = info["url"]
         hash = info["sha256"]
         filename = basename(url)
+        reset_downloader()
+        print("Downloading $url... ")
         BinaryBuilderBase.download_verify(url, hash, joinpath(download_dir, filename))
+        println("done")
     end
 
     # Doownload the tarballs reading the information in the current `Artifacts.toml`.

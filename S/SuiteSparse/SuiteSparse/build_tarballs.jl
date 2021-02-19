@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SuiteSparse"
 version = v"5.4.0"
@@ -101,7 +101,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")),
 #    Dependency("METIS_jll"),
 ]
 
@@ -109,3 +109,4 @@ dependencies = [
 # versioning APIs worked out in BB yet.
 version = v"5.4.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
