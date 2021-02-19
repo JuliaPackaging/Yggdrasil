@@ -44,7 +44,7 @@ filter!(p -> libc(p) != "musl" && !Sys.isfreebsd(p), platforms) # muslc is not s
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libJSBSimJL", :JSBSim),
+    LibraryProduct("libJSBSimJL", :libJSBSimJL),
 ]
 
 # Dependencies that must be installed before this package can be built
