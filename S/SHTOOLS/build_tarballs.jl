@@ -6,6 +6,7 @@ version = v"4.8"
 sources = [
     ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v4.8/SHTOOLS-4.8.tar.gz",
                   "c36fc86810017e544abbfb12f8ddf6f101a1ac8b89856a76d7d9801ffc8dac44"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
