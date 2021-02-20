@@ -62,8 +62,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Tcl_jll",
-    "Xorg_libXft_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Tcl_jll"),
+    Dependency("Xorg_libXft_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
