@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"2.0.0"
+version = v"2.2.0"
 
 # Collection of sources required to build Libtiff
 sources = [
     GitSource("https://github.com/staticfloat/libblastrampoline",
-              "ff674f952e55896d6db73331154cec84b54cb841")
+              "45f4a20ffdba5d368db66d71885312f5f73c2dc7")
 ]
 
 # Bash recipe for building across all platforms
