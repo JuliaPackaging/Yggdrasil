@@ -24,8 +24,7 @@ index 6bfc7adc..01b2fe18 100644
 +        integer(kind=c_int), optional,intent(in) :: extend
 +        integer(kind=c_int), optional,intent(out) :: exitstatus
 +        call MakeGradientDH(cilm,lmax,theta,phi,n,sampling=sampling&
-+                                ,lmax_calc=lmax_calc,extend=extend,exitstatus=e
-xitstatus)
++                                ,lmax_calc=lmax_calc,extend=extend,exitstatus=exitstatus)
 +    end subroutine cMakeGradientDH
 +
      subroutine cSHGLQ(lmax,zero,w,plx,norm,csphase,cnorm,exitstatus)  bind(c, name="SHGLQ")
