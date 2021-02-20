@@ -6,6 +6,7 @@ version = v"4.8"
 sources = [
     ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v4.8/SHTOOLS-4.8.tar.gz",
                   "c36fc86810017e544abbfb12f8ddf6f101a1ac8b89856a76d7d9801ffc8dac44"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -13,24 +14,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
 
 # Patch source code
-patch -p0 <<'EOF'
---- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
-+++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
-@@ -80,10 +80,10 @@
- 	@echo "--> Compilation of source files successful"
- 	@echo
- 	@rm -f $(PROG)
--	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)
-+#	$(LIBTOOL) $(LIBTOOLFLAGS) -o $(PROG) $(OBJS)
- #	If you prefer to use libtool, uncomment the above line, and comment the two lines below (AR and RLIB)
--#	$(AR) $(ARFLAGS) $(PROG) $(OBJS)
--#	$(RLIB) $(RLIBFLAGS) $(PROG)
-+	$(AR) $(ARFLAGS) $(PROG) $(OBJS)
-+	$(RLIB) $(RLIBFLAGS) $(PROG)
- 	@echo
- 	@echo "--> Creation of static library successful"
- #	@rm -f $(OBJS)
-EOF
+# Add missing C interface for MakeGradientDH
+atomic_patch -p1 $WORKSPACE/srcdir/patches/add-cMakeGradientDH.patch
+# Don't use libtool
+atomic_patch -p0 $WORKSPACE/srcdir/patches/no-libtool.patch
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
