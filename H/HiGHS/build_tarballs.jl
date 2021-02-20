@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.2.0"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "72523038995877307d9309354a77cd39e2388033"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "796291874f18127f0267f6c4acd2883b5b21c912"),
     DirectorySource("./bundled"),
 ]
 
@@ -37,9 +37,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(
-    expand_cxxstring_abis(supported_platforms())
-)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

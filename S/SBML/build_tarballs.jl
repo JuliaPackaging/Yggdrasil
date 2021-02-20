@@ -4,9 +4,9 @@ using BinaryBuilder, Pkg
 name = "SBML"
 version = v"5.19.0"
 sources = [
-        ArchiveSource(
-          "https://github.com/sbmlteam/libsbml/archive/v5.19.0.tar.gz",
-          "127a44cc8352f998943bb0b91aaf4961604662541b701c993e0efd9bece5dfa8"),
+    ArchiveSource(
+        "https://github.com/sbmlteam/libsbml/archive/v5.19.0.tar.gz",
+        "127a44cc8352f998943bb0b91aaf4961604662541b701c993e0efd9bece5dfa8"),
 ]
 
 script = raw"""
@@ -21,6 +21,9 @@ cmake \
   ..
 make -j${nproc}
 make install
+
+# Remove large static library.
+rm ${prefix}/lib/libsbml-static.a
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -34,4 +37,5 @@ dependencies = [
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# GCC 6 is necessary to work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67557
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")

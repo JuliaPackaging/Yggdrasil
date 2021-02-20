@@ -1,11 +1,11 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.0.0"
+version = v"4.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/nomad.git","a15c91feb589451e6934b1544edb4360af8fbc41"),
+    GitSource("https://github.com/amontoison/nomad.git","f6a4b4f18111372e3e7190b019e76ed86b915ddc"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,18 +19,18 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 mkdir build
 cd build
-cmake -DNOMAD_WITH_OPENMP=OFF -DNOMAD_WITH_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DTEST_OPENMP=OFF -DBUILD_INTERFACES=ON -DBUILD_LIBMODE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(); skip=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnomadInterface", :libnomadInterface),
+    LibraryProduct("libnomadCInterface", :libnomadCInterface),
     LibraryProduct("libnomadAlgos", :libnomadAlgos),
     LibraryProduct("libnomadEval", :libnomadEval),
     LibraryProduct("libnomadUtils", :libnomadUtils),
@@ -40,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

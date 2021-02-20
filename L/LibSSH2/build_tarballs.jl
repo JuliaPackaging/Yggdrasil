@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LibSSH2"
 version = v"1.9.0"
@@ -42,10 +42,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "MbedTLS_jll",
+    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
 version = v"1.9.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+

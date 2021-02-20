@@ -28,12 +28,12 @@ sh autogen.sh
     --host=${target} \
     --without-docs \
     --enable-drafts \
+    --with-libsodium \
     --disable-libunwind \
     --disable-perf \
     --disable-Werror \
     --disable-eventfd \
     --without-gcov \
-    --disable-curve-keygen \
     --disable-static \
     CXXFLAGS="-O2 -fms-extensions"
 make -j${nproc}
@@ -51,6 +51,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("libsodium_jll")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

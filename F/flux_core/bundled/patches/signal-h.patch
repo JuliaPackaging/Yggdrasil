@@ -1,0 +1,26 @@
+From d75e792d6179b7665d7b3a25e4369ef160d25195 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 9 Feb 2021 00:55:19 -0500
+Subject: [PATCH 2/3] test: job-exec: Include signal.h in test/bulk-exec
+
+Problem: The cross-compilation environment for the Julia bindings
+requires an explict include of the signal header.
+---
+ src/modules/job-exec/test/bulk-exec.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/modules/job-exec/test/bulk-exec.c b/src/modules/job-exec/test/bulk-exec.c
+index 44d39ec78..d8a818230 100644
+--- a/src/modules/job-exec/test/bulk-exec.c
++++ b/src/modules/job-exec/test/bulk-exec.c
+@@ -15,6 +15,7 @@
+ #define _GNU_SOURCE 1
+ #include <unistd.h>
+ #include <assert.h>
++#include <signal.h>
+ 
+ #include <flux/core.h>
+ #include <flux/idset.h>
+-- 
+2.30.0
+
