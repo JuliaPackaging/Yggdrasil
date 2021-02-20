@@ -8,7 +8,6 @@ version = v"3.0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Genivia/RE-flex.git", "53da8e9c06fdddeb1973a440dc8b60cadbb42bf5"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
