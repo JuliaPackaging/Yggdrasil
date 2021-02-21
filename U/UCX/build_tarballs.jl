@@ -56,6 +56,8 @@ fi
 # into, we have to build with `V=1`
 make -j${nproc} V=1
 make install
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
