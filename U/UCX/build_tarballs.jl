@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "UCX"
 version = v"1.10.0"
-tag = v"1.10.0-rc3"
+tag = v"1.10.0-rc4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(tag)/ucx-$(version).tar.gz",
-                  "cb9dcc6b53ab141a2dd4cd121e32a35a1537fd73d44164f41f5da956e6c099ec"),
+                  "7043e7011e364125f5dae1ce875e10a42e447626b2120fd56fbfc1c8deb40906"),
     DirectorySource("./bundled"),
 ]
 
@@ -56,6 +56,8 @@ fi
 # into, we have to build with `V=1`
 make -j${nproc} V=1
 make install
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
