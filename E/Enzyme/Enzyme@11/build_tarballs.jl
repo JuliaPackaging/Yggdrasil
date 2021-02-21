@@ -3,11 +3,11 @@ using BinaryBuilder, Pkg
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.7"
+auto_version = "refs/tags/v0.0.8"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "b469b854a73e538facb7046b66c3c27cd5134dc8")]
+sources = [GitSource(repo, "213d40a1e80eda83653b4be5a20aac3ba362770c")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -38,15 +38,15 @@ ninja -C build -j ${nproc} install
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["libEnzyme-9", "libEnzyme"], :libEnzyme),
+    LibraryProduct(["libEnzyme-11", "libEnzyme"], :libEnzyme),
 ]
 
 dependencies = [
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"9.0.1")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
 #    Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
 ]
 
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.5")
+               preferred_gcc_version=v"8", julia_compat="1.6")
