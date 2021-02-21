@@ -20,7 +20,7 @@ apk add perl-xml-parser
 apk add bash-completion
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
-sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt', '-Wl,-rpath=${includedir}']~" ${MESON_TARGET_TOOLCHAIN}
+sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
 # Disable ffast-math; I repented
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
