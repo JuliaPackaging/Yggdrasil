@@ -18,6 +18,8 @@ apk add glib
 apk add orc-compiler
 apk add perl-xml-parser
 apk add bash-completion
+# make sure meson can find everything
+sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
