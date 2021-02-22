@@ -24,6 +24,7 @@ export CFLAGS="${CFLAGS} -O3"
 
 # Apply patches
 atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-apple-silicon-support.patch
+atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-no-mprotect.patch
 
 ./configure --prefix=${prefix} --host=${target} \
     --disable-static \
