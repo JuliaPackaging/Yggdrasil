@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MathGL"
-version = v"2.4.4"
+version = v"2.4.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -21,7 +21,7 @@ done
 cd mathgl-2.4.4/
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Denable-mpi=ON -Denable-all-docs=OFF -Denable-qt5=ON -Denable-qt4=OFF -Denable-mpi=OFF  ../.
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Denable-all-docs=OFF -Denable-qt5=ON -Denable-qt4=OFF -Denable-mpi=OFF  ../.
 make -j
 make install
 """
