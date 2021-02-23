@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MathGL"
-version = v"2.4.5"
+version = v"2.4.4"
 
 # Collection of sources required to complete build
 sources = [
