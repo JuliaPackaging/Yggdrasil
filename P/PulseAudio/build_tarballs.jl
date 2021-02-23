@@ -34,10 +34,8 @@ cd build
 # I can't figure out how to build tdb, use gdbm instead
 # BlueZ requires systemd, which I'm also stuck on
 meson ..  -Ddatabase="gdbm" -Dbluez5="false" --cross-file=${MESON_TARGET_TOOLCHAIN}
-# on musl, meson seems to be able to find dependencies, but isn't passing that info on to ninja?
-sed -i -e "s~/opt/bin/x86_64-linux-musl-cc~/opt/bin/x86_64-linux-musl-cc -I${includedir} -L${libdir}~" build.ninja
 ninja
-ninja install
+DESTDIR="${prefix}" ninja install
 """
 
 # These are the platforms we will build for by default, unless further
