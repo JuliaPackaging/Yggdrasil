@@ -34,7 +34,7 @@ if [[ "${target}" == powerpc64le-* ]]; then     sed -i -e "s~'sys/capability.h',
 mkdir build
 cd build
 # I can't figure out how to build tdb, use gdbm instead
-# BlueZ requires systemd, which I'm also stuck on
+# BlueZ is in progress, see https://github.com/JuliaPackaging/Yggdrasil/pull/2582
 meson ..  -Ddatabase="gdbm" -Dbluez5="false" --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja
 ninja install
