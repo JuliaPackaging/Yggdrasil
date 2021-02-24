@@ -33,7 +33,7 @@ sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" me
 if [[ "${target}" == powerpc64le-* ]]; then     sed -i -e "s~'sys/capability.h',~~"  meson.build; fi
 mkdir build
 cd build
-# I can't figure out how to build tdb, use gdbm instead
+# I can't figure out how to build tdb, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/887
 # BlueZ is in progress, see https://github.com/JuliaPackaging/Yggdrasil/pull/2582
 meson ..  -Ddatabase="gdbm" -Dbluez5="false" --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja
