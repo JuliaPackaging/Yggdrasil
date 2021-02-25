@@ -7,16 +7,22 @@ version = v"7.2.0"
 
 # Collection of sources required to complete build
 sources = [
+    GitSource("https://github.com/westes/flex.git", "d69a58075169410324fe49666f6641ba6a9d1f91"),
     GitSource("https://github.com/Xyce/Xyce.git", "a61faef4bfb2f36f1aa7cc44264bbbb66fbaac11"),
-    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4"),
-    GitSource("https://github.com/westes/flex.git", "d69a58075169410324fe49666f6641ba6a9d1f91")
+    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd flex
-mv src /${prefix}/include
+apk add gettext-dev
+apk add texinfo
+apk add help2man
+./autogen.sh
+./configure --prefix=${prefix}
+make -j${nprocs}
+make install
 cd ..
 mkdir trilbuild
 cd trilbuild
@@ -27,19 +33,27 @@ make -j${nprocs}
 make install
 cd ..
 cd Xyce
-autoreconf -fiv
+./bootstrap
 cd ..
 mkdir buildx
 cd buildx
-/workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas -lquadmath" CPPFLAGS="-I/$prefix/include -I/$prefix/include/src"
+/workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas" CPPFLAGS="-I/$prefix/include"
+cd ..
+cd /workspace/destdir/
+mkdir x86_64-linux-gnu
+cd x86_64-linux-gnu
+mkdir lib
+mkdir lib64
+cd /opt/x86_64-linux-gnu/x86_64-linux-gnu/lib64
+cp libquadmath.a /workspace/destdir/x86_64-linux-gnu/lib64
+cp libquadmath.so /workspace/destdir/x86_64-linux-gnu/lib64
+cp libquadmath.la /workspace/destdir/x86_64-linux-gnu/lib64
+cp libquadmath.so.0.0.0 /workspace/destdir/x86_64-linux-gnu/lib64
+cp libquadmath.so.0 /workspace/destdir/x86_64-linux-gnu/lib64
+cd /workspace/srcdir/buildx
 make -j${nprocs}
 make install
 """
-
-##############
-# When run in interactive wizard, the make -j${nprocs} fails at later stage; but `make install` will install couple libs 
-# that were successfully made already. (when script is run it just exits at the former as it should)
-##############
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -50,17 +64,19 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libzoltan", :libzoltan)
+    LibraryProduct("libxyce", :libxyce),
+    LibraryProduct("libNeuronModels", :libNeuronModels),
+    LibraryProduct("libADMS", :libADMS),
+    ExecutableProduct("Xyce", :Xyce)
 ]
-
-########### It's a Trilinos lib; used here as it always builds and the parameter is necessary for the script
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0")
