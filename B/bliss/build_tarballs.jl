@@ -19,7 +19,10 @@ if [[ "${target}" == *mingw* ]]; then
   atomic_patch -p1 ../patches/notimer.patch
 fi
 cd build
-cmake -DUSE_GMP=on -DGMP_INCLUDE_DIR=${includedir} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
 make -j${nproc}
 mkdir -p $prefix/include/bliss
 mkdir -p $libdir
