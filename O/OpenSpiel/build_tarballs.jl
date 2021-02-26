@@ -43,6 +43,11 @@ install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+]
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
