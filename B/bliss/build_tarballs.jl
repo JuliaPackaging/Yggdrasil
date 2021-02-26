@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "bliss"
-version = v"0.73.0"
+version = v"0.77.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.tcs.hut.fi/Software/bliss/bliss-0.73.zip", "f57bf32804140cad58b1240b804e0dbd68f7e6bf67eba8e0c0fa3a62fd7f0f84"),
+    ArchiveSource("https://users.aalto.fi/~tjunttil/bliss/downloads/bliss-0.77.zip", "acc8b98034f30fad24c897f365abd866c13d9f1bb207e398d0caf136875972a4"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd bliss-0.73
+cd bliss-*
 if [[ "${target}" == *mingw* ]]; then
   atomic_patch -p1 ../patches/notimer.patch
 fi
@@ -35,7 +35,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libbliss", :libbliss)
+    LibraryProduct("libbliss", :libbliss),
 ]
 
 # Dependencies that must be installed before this package can be built
