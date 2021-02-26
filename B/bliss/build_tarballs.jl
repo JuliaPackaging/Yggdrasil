@@ -18,9 +18,8 @@ cd bliss-*
 if [[ "${target}" == *mingw* ]]; then
   atomic_patch -p1 ../patches/notimer.patch
 fi
-# build with GMP and store this information
 cd build
-cmake -DUSE_GMP=on ..
+cmake -DUSE_GMP=on -DGMP_INCLUDE_DIR=${includedir} ..
 make -j${nproc}
 mkdir -p $prefix/include/bliss
 mkdir -p $libdir
