@@ -34,11 +34,13 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
     OPENBLAS32=$(openblas32)
+    AARCH64_ILP64=$(aarch64_ilp64)
+    version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
     script *= raw"""
@@ -54,15 +56,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Slim the binaries by not shipping static libs
     flags+=(NO_STATIC=1)
 
-    if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-        if [[ "${OPENBLAS32}" == "true" ]]; then
-            # We're building an LP64 BLAS with 32-bit BlasInt on a 64-bit platform
-            LIBPREFIX=libopenblas
-        else
-            # We're building an ILP64 BLAS with 64-bit BlasInt
-            LIBPREFIX=libopenblas64_
-            flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
-        fi
+    if [[ ${nbits} == 64 ]] && [[ "${OPENBLAS32}" != "true" ]] && [[ "${AARCH64_ILP64}${target}" != "falseaarch64-"* ]]; then
+        # We're building an ILP64 BLAS with 64-bit BlasInt
+        LIBPREFIX=libopenblas64_
+        flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
     else
         LIBPREFIX=libopenblas
     fi
@@ -82,12 +79,20 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(BINARY=64)
     fi
 
-    # On Intel architectures, engage DYNAMIC_ARCH
+    # On Intel and most aarch64 architectures, engage DYNAMIC_ARCH.
+    # When using DYNAMIC_ARCH the TARGET specifies the minimum architecture requirement.
     if [[ ${proc_family} == intel ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
-    # Otherwise, engage a specific target
+        flags+=(DYNAMIC_ARCH=1)
+        # Before OpenBLAS 0.3.13, there appears to be a miscompilation bug with `clang` on setting `TARGET=GENERIC`
+        # As that is the case, we're just going to be safe and only use `TARGET=GENERIC` on 0.3.13+
+        if [ ${version_patch} -gt 12 ]; then
+            FLAGS+=(TARGET=GENERIC)
+        else
+            FLAGS+=(TARGET=)
+        fi
     elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
+        flags+=(TARGET=ARMV8 DYNAMIC_ARCH=1)
+    # Otherwise, engage a specific target
     elif [[ ${bb_full_target} == aarch64*-libgfortran3* ]]; then
         # Old GCC versions, with libgfortran3, can't build for newer
         # microarchitectures, let's just use the generic one

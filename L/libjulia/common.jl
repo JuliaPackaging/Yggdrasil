@@ -19,7 +19,7 @@ function libjulia_platforms(julia_version)
 end
 
 # Collection of sources required to build Julia
-function build_julia(version)
+function build_julia(ARGS, version)
     name = "libjulia"
 
     checksums = Dict(
@@ -273,6 +273,5 @@ function build_julia(version)
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
     end
 
-    global ARGS
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
 end

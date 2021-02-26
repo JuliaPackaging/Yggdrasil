@@ -100,6 +100,14 @@ sources = [
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz",
                   "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32"),
+    # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
+    # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
+                  "960ebcd32842f81d140293157d90e4e829fd16241bf5b0a23929e4938256a572",
+                  unpack_target="ldid"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.0%2B0/libplist.v2.2.0.x86_64-linux-musl.tar.gz",
+                  "1b02d6fd8b77b71eaf672f15fecd8b38ef1e167baf469399b7d52435c11d414b",
+                  unpack_target="ldid"),
     # And also our own local patches, utilities, etc...
     DirectorySource("./bundled"),
 ]
@@ -171,6 +179,8 @@ cp -vd ${WORKSPACE}/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp -vd ${WORKSPACE}/srcdir/utils/install_license.sh ./usr/local/bin/install_license
 cp -vd ${WORKSPACE}/srcdir/utils/replace_includes.sh ./usr/local/bin/replace_includes
 cp -vd ${WORKSPACE}/srcdir/utils/config.* ./usr/local/share/configure_scripts/
+cp -vd ${WORKSPACE}/srcdir/ldid/bin/* ./usr/local/bin/
+cp -vdr ${WORKSPACE}/srcdir/ldid/lib/* ./usr/local/lib/
 chmod +x ./usr/local/bin/*
 
 # Deploy configuration
@@ -266,8 +276,8 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
-if deploy
+if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info)
 end

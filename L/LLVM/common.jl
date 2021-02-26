@@ -134,6 +134,11 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
 # set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
 CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
 
+if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
+    # https://bugs.llvm.org/show_bug.cgi?id=48221
+    CMAKE_CXX_FLAGS+="-fno-gnu-unique"
+fi
+
 # Install things into $prefix, and make sure it knows we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
@@ -261,7 +266,7 @@ const libllvmscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `llvm-config`, `libLLVM` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
@@ -277,7 +282,7 @@ const clangscript = raw"""
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
 # Clear out our `${prefix}`
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
@@ -371,6 +376,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
+        if version >= v"8"
+            push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+        end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 

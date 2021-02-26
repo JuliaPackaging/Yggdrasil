@@ -6,12 +6,13 @@ include("../common.jl")
 name = "OpenBLASHighCoreCount"
 version = v"0.3.13"
 
+
 sources = openblas_sources(version)
-script = openblas_script(num_64bit_threads=128)
+script = openblas_script(num_64bit_threads=128, aarch64_ilp64=true)
 platforms = openblas_platforms()
 products = openblas_products()
 dependencies = openblas_dependencies()
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.6")
+               preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.7")

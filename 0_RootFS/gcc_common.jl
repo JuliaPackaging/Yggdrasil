@@ -348,12 +348,7 @@ function gcc_script(compiler_target::Platform)
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
 
-        # GCC build doesn't pay attention to DSYMUTIL or DSYMUTIL_FOR_TARGET, tsk tsk
-        mkdir -p ${prefix}/bin
-        ln -s llvm-dsymutil ${prefix}/bin/dsymutil
-        ln -s llvm-${prefix}/bin/${COMPILER_TARGET}-as
-
-        # GCC build needs a little exdtra help finding our binutils
+        # GCC build needs a little extra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-as=${prefix}/bin/${COMPILER_TARGET}-as"
 
@@ -749,6 +744,9 @@ function gcc_script(compiler_target::Platform)
 
     # Remove misleading libtool archives
     rm -f ${prefix}/${COMPILER_TARGET}/lib*/*.la
+
+    # Remove heavy doc directories
+    rm -rf ${sysroot}/usr/share/man
     """
 
     return script
@@ -780,12 +778,12 @@ function build_and_upload_gcc(version, ARGS=ARGS)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
+    ndARGS, deploy_target = find_deploy_arg(ARGS)
     build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true)
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)
-    if deploy
+    if deploy_target !== nothing
         upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
     end
     return build_info

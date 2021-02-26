@@ -7,7 +7,10 @@ version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/code-snapshots/git/s/so/soxr/code.git/soxr-code-945b592b70470e29f917f4de89b4281fbbd540c0.zip", "b797a5d23078be234e520af1041b5e11b49864696d56f0d0b022a0349d1e8d1b")
+    ArchiveSource(
+        "https://sourceforge.net/code-snapshots/git/s/so/soxr/code.git/soxr-code-945b592b70470e29f917f4de89b4281fbbd540c0.zip", 
+        "b797a5d23078be234e520af1041b5e11b49864696d56f0d0b022a0349d1e8d1b"
+    )
 ]
 
 # Bash recipe for building across all platforms

@@ -24,6 +24,7 @@ export CFLAGS="${CFLAGS} -O3"
 
 # Apply patches
 atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-apple-silicon-support.patch
+atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-nomprotect.patch
 
 ./configure --prefix=${prefix} --host=${target} \
     --disable-static \
@@ -57,6 +58,4 @@ products = [
 dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
