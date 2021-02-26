@@ -19,7 +19,6 @@ if [[ "${target}" == *mingw* ]]; then
   atomic_patch -p1 ../patches/notimer.patch
 fi
 # build with GMP and store this information
-sed -i -e 's/^namespace bliss/#define BLISS_USE_GMP\n\nnamespace bliss/' defs.hh
 make -j${nproc} lib_gmp CFLAGS="-I$prefix/include -O3 -fPIC -I." LDFLAGS="$LDFLAGS -L$libdir" CC="$CXX"
 # there is no target for a shared library
 $CXX -shared -o libbliss.$dlext *.og $LDFLAGS -L$libdir -lgmp
