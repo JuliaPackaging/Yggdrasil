@@ -10,7 +10,7 @@ version = v"0.3.5"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/deepmind/open_spiel/archive/v0.3.1.tar.gz", "3d2a7d1c2fb29e3d0df6f70c8692cb6b922a840bd58a86a3e7ef25e509cdbccb"),
-    ArchiveSource("https://github.com/findmyway/dds/archive/v0.1.0.tar.gz", "81070b8e96779b5b2303185642753013aa874bffbd58b9cc599204aee064292d"),
+    ArchiveSource("https://github.com/findmyway/dds/archive/v0.1.1.tar.gz", "fd13ee77feb5b5c3dfcc3333a0523266beb2a3d27715703cf508313af25306e5"),
     ArchiveSource("https://github.com/abseil/abseil-cpp/archive/20200923.1.tar.gz", "808350c4d7238315717749bab0067a1acd208023d41eaf0c7360f29cc8bc8f21"),
     ArchiveSource("https://github.com/findmyway/hanabi-learning-environment/archive/v0.1.0.tar.gz", "6126936fd13a95f8cadeacaa69dfb38a960eaf3bd588aacc8893a6e07e4791a3"),
     ArchiveSource("https://github.com/findmyway/project_acpc_server/archive/v0.1.0.tar.gz", "e29f969dd62ba354b7019cae3f7f1dbfbd9a744687ea4a8f7494c2bb1ee87382"),
@@ -21,7 +21,7 @@ script = raw"""
 
 mv open_spiel-0.3.1 open_spiel
 mv abseil-cpp-20200923.1 open_spiel/open_spiel/abseil-cpp
-mv dds-0.1.0 open_spiel/open_spiel/games/bridge/double_dummy_solver
+mv dds-0.1.1 open_spiel/open_spiel/games/bridge/double_dummy_solver
 mv hanabi-learning-environment-0.1.0 open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
 mv project_acpc_server-0.1.0 open_spiel/open_spiel/games/universal_poker/acpc
 
