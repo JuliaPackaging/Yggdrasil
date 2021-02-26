@@ -45,7 +45,6 @@ include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -63,5 +62,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"10",
+    preferred_gcc_version=v"8",
     julia_compat="$(julia_version.major).$(julia_version.minor)")
