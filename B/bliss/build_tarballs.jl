@@ -23,7 +23,7 @@ cmake -DUSE_GMP=on -DGMP_INCLUDE_DIR=${includedir} ..
 make -j${nproc}
 mkdir -p $prefix/include/bliss
 mkdir -p $libdir
-install -p -m 0644 -t $prefix/include/bliss ../*.hh
+install -p -m 0644 -t $prefix/include/bliss ../src/*.hh
 install -p libbliss.$dlext $libdir
 """
 
