@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/rubberband/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CXXFLAGS="${CXXFLAGS} -DHAVE_FFTW3 -DHAVE_LIBSAMPLERATE" enable_vamp=no enable_ladspa=no
-make DYNAMIC_LDFLAGS="${LDFLAGS} -shared -Wl" DYNAMIC_EXTENSION=".$dlext" DYNAMIC_EXTENSION=".$dlext" PROGRAM_TARGET="bin/rubberband$exeext"
+make DYNAMIC_LDFLAGS="${LDFLAGS} -shared" DYNAMIC_EXTENSION=".$dlext" DYNAMIC_EXTENSION=".$dlext" PROGRAM_TARGET="bin/rubberband$exeext"
 make install DYNAMIC_EXTENSION=".$dlext" PROGRAM_TARGET="bin/rubberband$exeext"
 """
 
