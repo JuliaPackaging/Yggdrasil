@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/rubberband/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CXXFLAGS="${CXXFLAGS} -DHAVE_FFTW3 -DHAVE_LIBSAMPLERATE" enable_vamp=no enable_ladspa=no
 make
 make install
+if [[ "${target}" == *-w64-* ]]; then
+    mv "${prefix}/lib/librubberband.so" "${libdir}/librubberband.dll"
+    mv "${bindir}/rubberband" "${bindir}/rubberband.exe"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
