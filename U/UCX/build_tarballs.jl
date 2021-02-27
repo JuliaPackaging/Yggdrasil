@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "UCX"
 version = v"1.10.0"
-tag = v"1.10.0-rc4"
+tag = v"1.10.0-rc5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(tag)/ucx-$(version).tar.gz",
-                  "7043e7011e364125f5dae1ce875e10a42e447626b2120fd56fbfc1c8deb40906"),
+                  "ce8950c38b53d753a5909c21fd2cfff874d96a84dcf5166e9f85975a1dd3a54d"),
     DirectorySource("./bundled"),
 ]
 
