@@ -16,8 +16,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/argp-*/
 CFLAGS="-fPIC" ./configure --prefix=${prefix} --host=${target}
 make -j${nproc}
-install -D -m644 argp.h $WORKSPACE/destdir/include/argp.h
-install -D -m755 libargp.a $WORKSPACE/destdir/lib/libargp.a
+install -D -m644 argp.h ${includedir}/argp.h
+install -D -m755 libargp.a ${libdir}/libargp.a
 """
 
 # Select Unix platforms
