@@ -1,29 +1,46 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.177"
+version = v"0.179"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "fa489deccbcae7d8c920f60d85906124c1989c591196d90e0fd668e3dc05042e"),
+                  "25a545566cbacaa37ae6222e58f1c48ea4570f53ba991886e2f5ce96e22a23a2"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/elfutils-*/
+if [[ ${target} = *-musl* ]] ; then
+    for patchfile in $WORKSPACE/srcdir/patches/*; do
+        atomic_patch -p1 $patchfile
+    done
+    cp $WORKSPACE/srcdir/error.h src/
+    cp $WORKSPACE/srcdir/error.h lib/
+
+    # For some reason, just installing bsd-compat-headers doesn't work
+    apk add bsd-compat-headers
+    mkdir -p $prefix/include/sys
+    # Skip warning macro at top of file
+    tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
+    autoreconf -vif
+fi
 export CC=gcc
 export CXX=g++
-CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target}
+CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
+    --prefix=${prefix} \
+    --host=${target} \
+    --disable-debuginfod
 make -j${nproc}
 make install
 """
 
-# Only build for Linux, and disable musl/FreeBSD until we have a custom libargp, perhaps
-# the https://github.com/xhebox/libuargp which is known to be musl-friendly.
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) != "musl"]
+# Only build for Linux
+platforms = [p for p in supported_platforms() if Sys.islinux(p)]
 
 # The products that we will ensure are always built
 products = [
@@ -34,9 +51,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "Bzip2_jll",
-    "XZ_jll",
+    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("XZ_jll"),
+    Dependency("argp_standalone_jll"),
+    Dependency("fts_jll"),
+    Dependency("obstack_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
