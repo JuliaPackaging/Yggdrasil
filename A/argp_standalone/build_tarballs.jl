@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "argp_standalone"
-version = v"1.3.4"
+version = v"1.3.0"
 
 # Collection of sources required to build argp-standalone
 sources = [
@@ -30,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
