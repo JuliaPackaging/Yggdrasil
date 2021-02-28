@@ -21,7 +21,7 @@ install -D -m755 libargp.a $WORKSPACE/destdir/lib/libargp.a
 """
 
 # Select Unix platforms
-platforms = [p for p in supported_platforms()]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) == "musl"]
 
 # The products that we will ensure are always built
 products = [
