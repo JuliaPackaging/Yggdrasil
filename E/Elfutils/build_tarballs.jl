@@ -22,8 +22,8 @@ if [[ ${target} = *-musl* ]] ; then
     cp $WORKSPACE/srcdir/error.h src/
     cp $WORKSPACE/srcdir/error.h lib/
 
-    # For some reason, just installing bsd-compat-headers doesn't work
     apk add bsd-compat-headers
+    # /usr/include isn't in search path of cross-cc, so copy cdefs.h
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
@@ -37,6 +37,7 @@ CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
     --disable-debuginfod
 make -j${nproc}
 make install
+rm $prefix/include/sys/cdefs.h || true
 """
 
 # Only build for Linux
