@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "obstack"
-version = v"1.1.1"
+version = v"1.1.0"
 
 # Collection of sources required to build obstack
 sources = [
