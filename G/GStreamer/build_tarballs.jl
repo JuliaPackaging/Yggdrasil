@@ -30,15 +30,15 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgstcheck-1.0", :libgstcheck),
+    LibraryProduct(["libgstcheck-1.0", "libgstcheck-1"], :libgstcheck),
     ExecutableProduct("gst-tester-1.0", :gst_tester),
-    LibraryProduct("libgstnet-1.0", :libgstnet),
-    LibraryProduct("libgstreamer-1.0", :libgstreamer),
+    LibraryProduct(["libgstnet-1.0", "libgstnet-1"], :libgstnet),
+    LibraryProduct(["libgstreamer-1.0", "libgstreamer-1"], :libgstreamer),
     ExecutableProduct("gst-launch-1.0", :gst_launch),
     ExecutableProduct("gst-stats-1.0", :gst_stats),
     ExecutableProduct("gst-typefind-1.0", :gst_typefind),
-    LibraryProduct("libgstcontroller-1.0", :libgstcontroller),
-    LibraryProduct("libgstbase-1.0", :libgstbase),
+    LibraryProduct(["libgstcontroller-1.0", "libgstcontroller-1"], :libgstcontroller),
+    LibraryProduct(["libgstbase-1.0", "libgstbase-1"], :libgstbase),
     ExecutableProduct("gst-inspect-1.0", :gst_inspect)
 ]
 
