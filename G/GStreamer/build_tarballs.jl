@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 apk add bash-completion
-apk add libcap
-apk add gettext
+apk add libcap gettext
 cd gstreamer-*
 mkdir build
 cd build
