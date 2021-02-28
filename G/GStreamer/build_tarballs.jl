@@ -20,7 +20,7 @@ cd gstreamer-*
 mkdir build
 cd build
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja
+ninja -j${nproc}
 ninja install
 """
 
