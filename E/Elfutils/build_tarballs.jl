@@ -37,7 +37,8 @@ CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
     --disable-debuginfod
 make -j${nproc}
 make install
-rm $prefix/include/sys/cdefs.h || true
+rm -f "${includedir/sys/cdefs.h"
+install_license COPYING*
 """
 
 # Only build for Linux
