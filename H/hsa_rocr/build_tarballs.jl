@@ -31,6 +31,7 @@ make install
 # Only supports Linux, seemingly only 64bit
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
