@@ -17,7 +17,7 @@ cd flex
 apk add texinfo
 apk add help2man
 ./autogen.sh
-./configure --prefix=${prefix}
+./configure --prefix=${prefix} --host=${target}
 make -j${nprocs}
 make install
 install_license COPYING
@@ -25,12 +25,13 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-]
+platforms = filter(p -> (!Sys.iswindows(p) &&
+                         !Sys.isapple(p) &&
+                         !Sys.isfreebsd(p) &&
+                         arch(p) ∉ [:armv7l, :powerpc64le, :aarch64]),
+                         supported_platforms())
+
+
 
 
 # The products that we will ensure are always built
