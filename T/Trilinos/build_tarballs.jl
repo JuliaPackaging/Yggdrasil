@@ -24,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows && !Sys.isapple, supported_platforms())
+platforms = filter(p -> (!Sys.iswindows(p) && !Sys.isapple(p)), supported_platforms())
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
