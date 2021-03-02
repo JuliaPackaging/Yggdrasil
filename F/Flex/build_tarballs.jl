@@ -28,11 +28,8 @@ install_license COPYING
 platforms = filter(p -> (!Sys.iswindows(p) &&
                          !Sys.isapple(p) &&
                          !Sys.isfreebsd(p) &&
-                         arch(p) ∉ [:armv7l, :powerpc64le, :aarch64]),
+                         !(arch(p) in (:armv7l, :powerpc64le, :aarch64))),
                          supported_platforms())
-
-
-
 
 # The products that we will ensure are always built
 products = [
