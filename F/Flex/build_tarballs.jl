@@ -27,11 +27,10 @@ install_license COPYING
 # platforms are passed in on the command line
 platforms = filter(p -> (!Sys.iswindows(p) &&
                          !Sys.isapple(p) &&
-                         !Sys.isfreebsd(p)),
+                         !Sys.isfreebsd(p) &&
+                         arch(p) ∉ ("armv7l", "powerpc64le", "aarch64")),
                          supported_platforms())
-
-platforms = filter(p -> !(arch(p) in (:armv7l, :powerpc64le, :aarch64)), platforms)                        
-
+                    
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfl", :libfl),
