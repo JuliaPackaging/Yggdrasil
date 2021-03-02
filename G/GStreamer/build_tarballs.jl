@@ -13,8 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-apk add bash-completion
-apk add libcap gettext
+apk add bash-completion libcap gettext
 cd gstreamer-*
 mkdir build
 cd build
@@ -29,16 +28,16 @@ platforms = supported_platforms(exclude=[Platform("i686", "linux", libc = "musl"
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct(["libgstbase-1.0", "libgstbase-1"], :libgstbase),
     LibraryProduct(["libgstcheck-1.0", "libgstcheck-1"], :libgstcheck),
-    ExecutableProduct("gst-tester-1.0", :gst_tester),
+    LibraryProduct(["libgstcontroller-1.0", "libgstcontroller-1"], :libgstcontroller),
     LibraryProduct(["libgstnet-1.0", "libgstnet-1"], :libgstnet),
     LibraryProduct(["libgstreamer-1.0", "libgstreamer-1"], :libgstreamer),
+    ExecutableProduct("gst-inspect-1.0", :gst_inspect),
     ExecutableProduct("gst-launch-1.0", :gst_launch),
     ExecutableProduct("gst-stats-1.0", :gst_stats),
+    ExecutableProduct("gst-tester-1.0", :gst_tester),
     ExecutableProduct("gst-typefind-1.0", :gst_typefind),
-    LibraryProduct(["libgstcontroller-1.0", "libgstcontroller-1"], :libgstcontroller),
-    LibraryProduct(["libgstbase-1.0", "libgstbase-1"], :libgstbase),
-    ExecutableProduct("gst-inspect-1.0", :gst_inspect)
 ]
 
 # Dependencies that must be installed before this package can be built
