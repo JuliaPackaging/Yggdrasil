@@ -3,9 +3,9 @@ The Care and Feeding of a Root Filesystem
 
 This document details some of the journey we have embarked upon to create a Linux environment that supports cross-compilation for a very wide range of architectures and platforms.  At the moment of writing, we support the following platforms (expressed in compiler triplet format):
 
-* glibc Linux: `i686-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`, `arm-linux-gnueabihf`, `powerpc64le-linux-gnu`
-* musl Linux: `i686-linux-musl`, `x86_64-linux-musl`, `aarch64-linux-musl`, `arm-linux-musleabihf`
-* MacOS: `x86_64-apple-darwin14`
+* glibc Linux: `i686-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`, `armv7l-linux-gnueabihf`, `powerpc64le-linux-gnu`, `armv6l-linux-gnueabihf` (experimental)
+* musl Linux: `i686-linux-musl`, `x86_64-linux-musl`, `aarch64-linux-musl`, `armv7l-linux-musleabihf`, `armv6l-linux-musleabihf` (experimental)
+* MacOS: `x86_64-apple-darwin`, `aarch64-apple-darwin` (experimental)
 * FreeBSD: `x86_64-unknown-freebsd11.1`
 * Windows: `i686-w64-mingw32`, `x86_64-w64-mingw32`
 
@@ -50,13 +50,15 @@ To deal with the above sources of incompatibility, we compile the following shar
 * `clang` (one shard for all targets)
 * `GCC+binutils`, split by version according to the following table:
 
-    |  GCC  | Binutils | libgfortran SONAME |  libstdc++ SONAME   | string ABI |
-    |-------|----------|--------------------|---------------------|------------|
-    | 4.8.5 |  2.24    | libgfortran.so.3   | libstdc++.so.6.0.19 |   cxx03    |
-    | 5.2.0 |  2.25.1  | libgfortran.so.3   | libstdc++.so.6.0.21 |   cxx11    |
-    | 6.1.0*|  2.26    | libgfortran.so.3   | libstdc++.so.6.0.22 |   cxx11    |
-    | 7.1.0 |  2.27    | libgfortran.so.4   | libstdc++.so.6.0.23 |   cxx11    |
-    | 8.1.0 |  2.31    | libgfortran.so.5   | libstdc++.so.6.0.25 |   cxx11    |
+    | GCC    | Binutils | libgfortran SONAME | libstdc++ SONAME    | string ABI |
+    |--------|----------|--------------------|---------------------|------------|
+    | 4.8.5  | 2.24     | libgfortran.so.3   | libstdc++.so.6.0.19 | cxx03      |
+    | 5.2.0  | 2.25.1   | libgfortran.so.3   | libstdc++.so.6.0.21 | cxx11      |
+    | 6.1.0* | 2.26     | libgfortran.so.3   | libstdc++.so.6.0.22 | cxx11      |
+    | 7.1.0  | 2.27     | libgfortran.so.4   | libstdc++.so.6.0.23 | cxx11      |
+    | 8.1.0  | 2.31     | libgfortran.so.5   | libstdc++.so.6.0.25 | cxx11      |
+    | 9.1.0  | 2.33.1   | libgfortran.so.5   | libstdc++.so.6.0.26 | cxx11      |
+    | 10.2.0 | 2.34     | libgfortran.so.5   | libstdc++.so.6.0.28 | cxx11      |
 
 Our GCC version selection is informed by two requirements: the `libgfortran` and `cxx11` incompatibilities.  First off, we must select compiler versions that span the three `libgfortran` SONAMEs we support, and we choose the oldest possible compilers within each SONAME bucket, yielding GCC `4.8.5`, `7.1.0` and `8.1.0`.  We choose the oldest possible GCC version so as to maximize the chance that C++ code compiled via this shard will be portable on other user's systems even without Julia's bundled `libstdc++.so`.  Next, we must provide a way for a user that is on a system with cxx11-defaulted strings but still using `libgfortran.so.3` (this would be the case if they were using GCC 5.3.1, for example, as Ubuntu 16.04 does) to link against our C++ code, so we add `5.2.0` in as the oldest 5.X.0 version that compiles on all our platforms, links against `libgfortran.so.3`, and defaults to `cxx11` string ABI.
 
