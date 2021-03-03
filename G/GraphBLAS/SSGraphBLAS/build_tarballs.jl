@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "SSGraphBLAS"
 version = v"4.0.3"
 
-# Collection of sources required to build SuiteSparse
+# Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     ArchiveSource("https://github.com/DrTimothyAldenDavis/GraphBLAS/archive/v4.0.3.tar.gz",
         "43519783625f1a0a631158603850cfcf0d9681646dbb5c64ae2eaf27e1444b90")
