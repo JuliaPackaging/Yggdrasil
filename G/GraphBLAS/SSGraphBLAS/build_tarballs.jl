@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "SSGraphBLAS"
-version = v"4,0.3"
+version = v"4.0.3"
 
 # Collection of sources required to build SuiteSparse
 sources = [
