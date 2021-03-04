@@ -23,7 +23,7 @@ make -j${nprocs}
 make install
 cd ..
 cd Xyce
-if [[ $target != *glibc ]] ; then
+if [[ $target != *gnu ]] ; then
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
 fi
 ./bootstrap
@@ -31,24 +31,6 @@ cd ..
 mkdir buildx
 cd buildx
 /workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas" CPPFLAGS="-I/$prefix/include" --host=${target}
-cd ..
-cd /workspace/destdir/
-mkdir ${target}
-cd ${target}
-mkdir lib
-if [[ $target == x86_64-* ]] ; then
-    mkdir lib64
-    libname="lib64"
-elif [[ $target == i686-* ]]; then
-    libname="lib"
-fi
-cd /opt/${target}/${target}/${libname}
-cp libquadmath.a /workspace/destdir/${target}/${libname}
-cp libquadmath.${dlext} /workspace/destdir/${target}/${libname}
-cp libquadmath.la /workspace/destdir/${target}/${libname}
-cp libquadmath.${dlext}.0.0.0 /workspace/destdir/${target}/${libname}
-cp libquadmath.${dlext}.0 /workspace/destdir/${target}/${libname}
-cd /workspace/srcdir/buildx
 make -j${nprocs}
 make install
 """
