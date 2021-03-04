@@ -15,7 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd flex
 apk add texinfo
-apk add help2man
 ./autogen.sh
 ./configure --prefix=${prefix} --host=${target}
 make -j${nprocs}
@@ -25,11 +24,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> (!Sys.iswindows(p) &&
-                         !Sys.isapple(p) &&
-                         !Sys.isfreebsd(p) &&
-                         arch(p) ∉ ("armv7l", "powerpc64le", "aarch64")),
-                         supported_platforms())
+platforms = supported_platforms()
                     
 # The products that we will ensure are always built
 products = [
@@ -40,6 +35,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"))
+    Dependency(PackageSpec(name="Help2man_jll", uuid="b065d96c-5f5a-5e02-95cc-818e6b3b761f"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
