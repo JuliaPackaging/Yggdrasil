@@ -8,20 +8,19 @@ version = v"0.9.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/s2geometry.git", "a4dddf40647c68cd0104eafc31e9c8fb247a6308"),
-    GitSource("https://github.com/google/googletest.git", "703bd9caab50b139428cea1aaff9974ebee5742e")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd googletest/
+cd $WORKSPACE/srcdir/s2geometry
+atomic_patch -p1 ../patches/disable-s2testing.patch
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. -DBUILD_GMOCK=OFF
-make -j${nproc}
-make install
-cd ../../s2geometry/
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_EXAMPLES=OFF \
+    ..
 make -j${nproc}
 make install
 """
