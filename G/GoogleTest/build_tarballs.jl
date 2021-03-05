@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "googletest"
+name = "GoogleTest"
 version = v"1.10.0"
 
 # Collection of sources required to complete build
@@ -14,7 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/googletest
 mkdir build && cd build
-cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. -DBUILD_GMOCK=OFF
+cmake -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_GMOCK=OFF \
+    ..
 make -j${nproc}
 make install
 """
