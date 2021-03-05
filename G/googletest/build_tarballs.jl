@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd googletest/
+cd $WORKSPACE/srcdir/googletest
 mkdir build && cd build
 cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. -DBUILD_GMOCK=OFF
 make -j${nproc}
@@ -22,8 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
