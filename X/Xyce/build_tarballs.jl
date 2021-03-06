@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 apk add flex-dev
 cd Xyce
-if [[ $target != *gnu ]] ; then
+if [[ $target != i686-linux-gnu ]] && [[ $target != x86_64-linux-gnu ]] ; then
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
 fi
 ./bootstrap
@@ -31,8 +31,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
    
-platforms = filter(p -> (!Sys.iswindows(p) && !Sys.isapple(p)),
-                   supported_platforms())
+platforms = filter(p -> (arch(p) ∈ ("x86_64", "aarch64", "powerpc64le") && (libc(p) == "glibc")),
+                  supported_platforms())
     
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
