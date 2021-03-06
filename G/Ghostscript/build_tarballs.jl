@@ -80,8 +80,7 @@ products = [
     FileProduct("bin/ps2ps2", :ps2ps2),
 ]
 
-dependencies = [
-    Dependency("Libtiff_jll"),
+dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
