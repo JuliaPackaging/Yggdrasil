@@ -19,14 +19,14 @@ if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # Fix from https://github.com/rust-lang/rust/issues/32859#issuecomment-573423629, see https://github.com/rust-lang/rust/issues/47048
-    cp -f /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/x86_64-pc-windows-gnu/lib
+    cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
 fi
 cargo build --features c_api --release -j${nproc}
 mkdir ${libdir}
 cp target/${rust_target}/release/libstartin.${dlext} ${libdir}
 """
 
-platforms = supported_platforms()
+platforms = filter!(p -> libc(p) != "musl", supported_platforms())
 
 products = [
 LibraryProduct("libstartin", :libstartin),
