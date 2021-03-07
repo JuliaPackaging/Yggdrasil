@@ -13,6 +13,10 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/startin-c-interface/
+if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # Fix linker for BSD platforms
+    sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
+fi
 cargo build --features c_api --release -j${nproc}
 mkdir ${libdir}
 cp target/${rust_target}/release/libstartin.${dlext} ${libdir}
