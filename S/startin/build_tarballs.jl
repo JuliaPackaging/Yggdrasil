@@ -17,7 +17,7 @@ if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Fix linker for BSD platforms
     sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
 fi
-if if [[ "${target}" == *-w64-mingw32* ]]; then
+if [[ "${target}" == *-w64-mingw32* ]]; then
     # Fix from https://github.com/rust-lang/rust/issues/32859#issuecomment-573423629, see https://github.com/rust-lang/rust/issues/47048
     cp -f /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/x86_64-pc-windows-gnu/lib
 fi
