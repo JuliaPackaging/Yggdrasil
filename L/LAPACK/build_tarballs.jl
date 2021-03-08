@@ -15,8 +15,6 @@ cd $WORKSPACE/srcdir/lapack*
 
 mkdir build && cd build
 cmake .. \
-   -DJulia_PREFIX="$prefix" \
-   -DSingular_PREFIX="$prefix" \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
    -DCMAKE_FIND_ROOT_PATH="$prefix" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
