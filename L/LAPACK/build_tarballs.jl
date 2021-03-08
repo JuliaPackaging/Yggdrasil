@@ -19,7 +19,8 @@ cmake .. \
    -DCMAKE_FIND_ROOT_PATH="$prefix" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
    -DCMAKE_BUILD_TYPE=Release \
-   -DBUILD_SHARED_LIBS=ON
+   -DBUILD_SHARED_LIBS=ON \
+   -DBLAS_LIBRARIES="-L$prefix/lib -lblastrampoline.${dlext}"
 
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 """
