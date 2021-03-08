@@ -13,8 +13,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir ${TMPDIR}
+
 cd $WORKSPACE/srcdir
 apk add flex-dev
+install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
 if [[ $target != i686-linux-gnu ]] && [[ $target != x86_64-linux-gnu ]] ; then
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
@@ -23,7 +27,7 @@ fi
 cd ..
 mkdir buildx
 cd buildx
-/workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas" CPPFLAGS="-I/$prefix/include -I/usr/include" --host=${target}
+/workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas" CPPFLAGS="-I/${includedir} -I/usr/include" --host=${target}
 make -j${nprocs}
 make install
 """
@@ -31,11 +35,12 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
    
-platforms = filter(p -> (arch(p) ∈ ("x86_64", "aarch64", "powerpc64le") && (libc(p) == "glibc")),
-                  supported_platforms())
+platforms = filter(p -> (Sys.islinux(p)), supported_platforms())
     
 platforms = expand_cxxstring_abis(platforms)
+platforms = filter(p -> (compiler_abi(p) == CompilerABI(cxxstring_abi=:cxx03)), platforms)
 platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> (compiler_abi(p) == CompilerABI(libgfortran_version=v"5.0.0", cxxstring_abi=:cxx03)), platforms)
 
 # The products that we will ensure are always built
 products = [
