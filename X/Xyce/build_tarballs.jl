@@ -35,12 +35,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
    
-platforms = filter(p -> (Sys.islinux(p)), supported_platforms())
-    
-platforms = expand_cxxstring_abis(platforms)
-platforms = filter(p -> (cxxstring_abi(p) == "cxx03"), platforms)
-platforms = expand_gfortran_versions(platforms)
-platforms = filter(p -> (libgfortran_version(p) == v"5.0.0"), platforms)
+platforms= [Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx11", libgfortran_version=v"4.0.0")]
 
 # The products that we will ensure are always built
 products = [
