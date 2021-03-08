@@ -21,7 +21,7 @@ cmake .. \
    -DCMAKE_BUILD_TYPE=Release \
    -DBUILD_SHARED_LIBS=ON
 
-VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
+VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
