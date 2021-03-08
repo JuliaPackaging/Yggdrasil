@@ -22,14 +22,35 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
 fi
 cargo build --features c_api --release -j${nproc}
+ls -lah target/${rust_target}/release
 mkdir ${libdir}
-cp target/${rust_target}/release/libstartin.${dlext} ${libdir}
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # Windows generates .dlls without the lib prefix
+    cp target/${rust_target}/release/startin.dll ${libdir}/libstartin.dll
+else
+    cp target/${rust_target}/release/libstartin.${dlext} ${libdir}
+fi
 """
 
-platforms = filter!(p -> libc(p) != "musl", supported_platforms())
+# musl platforms are failing, as is win32
+platforms = [
+    Platform("x86_64", "freebsd"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    # Platform("armv7l", "linux"; libc="musl"),
+    Platform("i686", "linux"; libc="glibc"),
+    # Platform("i686", "linux"; libc="musl"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    # Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
+    # Platform("i686", "windows"),  # linking error
+    Platform("x86_64", "windows"),
+]
 
 products = [
-LibraryProduct("libstartin", :libstartin),
+    LibraryProduct("libstartin", :libstartin),
 ]
 
 dependencies = []
