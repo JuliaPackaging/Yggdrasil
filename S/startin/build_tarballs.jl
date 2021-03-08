@@ -22,13 +22,12 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
 fi
 cargo build --features c_api --release -j${nproc}
-ls -lah target/${rust_target}/release
 mkdir ${libdir}
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # Windows generates .dlls without the lib prefix
     cp target/${rust_target}/release/startin.dll ${libdir}/libstartin.dll
 else
-    cp target/${rust_target}/release/libstartin.${dlext} ${libdir}
+    cp target/${rust_target}/release/libstartin.${dlext} ${libdir}/libstartin.${dlext}
 fi
 """
 
@@ -53,6 +52,6 @@ products = [
     LibraryProduct("libstartin", :libstartin),
 ]
 
-dependencies = []
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
