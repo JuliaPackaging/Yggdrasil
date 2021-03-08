@@ -38,9 +38,9 @@ make install
 platforms = filter(p -> (Sys.islinux(p)), supported_platforms())
     
 platforms = expand_cxxstring_abis(platforms)
-platforms = filter(p -> (compiler_abi(p) == CompilerABI(cxxstring_abi=:cxx03)), platforms)
+platforms = filter(p -> (cxxstring_abi(p) == "cxx03"), platforms)
 platforms = expand_gfortran_versions(platforms)
-platforms = filter(p -> (compiler_abi(p) == CompilerABI(libgfortran_version=v"5.0.0", cxxstring_abi=:cxx03)), platforms)
+platforms = filter(p -> (libgfortran_version(p) == v"5.0.0"), platforms)
 
 # The products that we will ensure are always built
 products = [
