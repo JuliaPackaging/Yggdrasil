@@ -6,7 +6,7 @@ version = v"5.0"
 # Collection of sources required to build GLPK
 sources = [
     ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(version.major).$(version.minor).tar.gz",
-                  "bcc410eeecfbc870a13d24687c9fe71868cde3507ffb75b620d61e88f3764a4f"),
+                  "4a1013eebb50f728fc601bdd833b0b2870333c3b3e5a816eeba921d95bec6f15"),
 ]
 
 # Bash recipe for building across all platforms
