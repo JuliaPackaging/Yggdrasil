@@ -58,7 +58,8 @@ export CPPFLAGS="-I${prefix}/include"
     --with-readline=no \
     --with-gmp=$prefix \
     --with-flint=$prefix \
-    --without-python
+    --without-python \
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
 
 make -j${nproc}
 make install
