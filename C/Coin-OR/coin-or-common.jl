@@ -4,8 +4,8 @@ using BinaryBuilder, Pkg
 gcc_version = v"6"
 
 # Versions of various Coin-OR libraries
-Cbc_version = v"2.10.3"
-Cbc_gitsha = "6fe3addaa76436d479d4431add67b371e11d3e83"
+Cbc_version = v"2.10.5"
+Cbc_gitsha = "7b5ccc016f035f56614c8018b20d700978144e9f"
 
 Cgl_version = v"0.60.2"
 Cgl_gitsha = "6377b88754fafacf24baac28bb27c0623cc14457"
