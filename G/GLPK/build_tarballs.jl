@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "GLPK"
-version = v"4.65"
+version = v"5.0"
 
-# Collection of sources required to build GLPKBuilder
+# Collection of sources required to build GLPK
 sources = [
     ArchiveSource("http://ftpmirror.gnu.org/gnu/glpk/glpk-$(version.major).$(version.minor).tar.gz",
-                  "4281e29b628864dfe48d393a7bedd781e5b475387c20d8b0158f329994721a10"),
+                  "bcc410eeecfbc870a13d24687c9fe71868cde3507ffb75b620d61e88f3764a4f"),
 ]
 
 # Bash recipe for building across all platforms
