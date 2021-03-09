@@ -1,3 +1,7 @@
+# Note: editing coin-or-common.jl isn't sufficient to trigger a
+# build. You need to edit this one as well. 
+# Version 2.10.5-0
+
 include("../coin-or-common.jl")
 
 name = "Cbc"
