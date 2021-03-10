@@ -30,22 +30,26 @@ case ${target} in
     *"x86_64"*"linux"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
+        export BLI_F77TYPE=64
         ;;
     *"x86_64"*"w64"*) 
         # MinGW doesn't support savexmm instructions
         # Build only for AMD processors.
         export BLI_CONFIG=amd64
         export BLI_THREAD=openmp
+        export BLI_F77TYPE=64
         ;;
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
+        export BLI_F77TYPE=64
         export CC=gcc
         export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
+        export BLI_F77TYPE=64
         export CC=gcc
         export CXX=g++
         ;;
@@ -54,17 +58,24 @@ case ${target} in
         # Use Cortex-A57 for the moment.
         export BLI_CONFIG=cortexa57
         export BLI_THREAD=openmp
+        export BLI_F77TYPE=64
         ;;
     *"arm"*"linux"*) 
         export BLI_CONFIG=cortexa9
         export BLI_THREAD=none
+        # Keep 32-bit BLAS interface for 32-bit processors.
+        export BLI_F77TYPE=32
         ;;
     *)
+        # Default (Generic) configuration without optimized kernel.
+        export BLI_CONFIG=generic
+        export BLI_THREAD=none
+        export BLI_F77TYPE=64
         ;; 
 
 esac
 
-./configure -p ${prefix} -t ${BLI_THREAD} ${BLI_CONFIG}
+./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77TYPE} ${BLI_CONFIG}
 make -j${nproc}
 make install
 
