@@ -27,7 +27,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.000.102" # actually 4.2.0p1 plus some more changes
+version = v"402.000.103" # actually 4.2.0p1 plus some more changes
 upstream_version = v"4.2.0"
 
 # Collection of sources required to build normaliz
@@ -89,7 +89,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
