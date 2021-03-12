@@ -5,7 +5,7 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libsingular_julia"
-version = VersionNumber(0, 9, julia_version.minor)
+version = VersionNumber(0, 9, 100 + julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -45,7 +45,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="Singular_jll", version=VersionSpec("402.000.102"))),
+    Dependency(PackageSpec(name="Singular_jll"), compat = "~402.000.102"),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 ]
