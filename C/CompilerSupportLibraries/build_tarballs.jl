@@ -80,8 +80,8 @@ rm -f ${libdir}/*.a ${libdir}/*.py
 
 # Delete any `.so` files that are not ELF files, since they're mostly likely linker scripts
 for f in ${libdir}/*.so; do
-    if [[ "$(file -b "$f")" != ELF* ]]; then
-        rm -f "$f"
+    if [[ "$(file -b "$(realpath "$f")")" != ELF* ]]; then
+        rm -vf "$f"
     fi
 done
 
