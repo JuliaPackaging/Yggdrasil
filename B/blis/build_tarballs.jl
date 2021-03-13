@@ -7,7 +7,8 @@ version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6")
+    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -74,6 +75,12 @@ case ${target} in
         ;; 
 
 esac
+
+# For 64-bit builds, add _64 suffix to exported BLAS routines.
+# This corresponds to ILP64 handling of OpenBLAS thus Julia.
+if [ ${BLI_F77TYPE} = 64 ]; then
+    patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
+fi
 
 ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77TYPE} ${BLI_CONFIG}
 make -j${nproc}

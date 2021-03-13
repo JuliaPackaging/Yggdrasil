@@ -1,0 +1,4 @@
+160c160
+< #define PASTEF77(ch1,name)                     ch1        ## name ## _
+---
+> #define PASTEF77(ch1,name)                     ch1        ## name ## _64_
