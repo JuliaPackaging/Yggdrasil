@@ -27,6 +27,8 @@ fi
 ./configure --prefix=$prefix --host=$target --enable-reentrant
 make -j${nproc} shared
 make install
+# Delete the static library
+rm ${prefix}/lib/libcfitsio.a
 # On Windows platforms, we need to move our .dll files to bin
 if [[ "${target}" == *-mingw* ]]; then
     mkdir -p ${libdir}
