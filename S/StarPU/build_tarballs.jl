@@ -29,7 +29,7 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libstarpu-1.3", :libstarpu),
+    LibraryProduct(["libstarpu-1.3", "libstarpu-1"], :libstarpu),
 ]
 
 # Dependencies that must be installed before this package can be built
