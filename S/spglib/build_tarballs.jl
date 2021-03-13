@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "spglib"
-version = v"1.16.0"
+version = v"1.16.1"
 
 # Collection of sources required to build spglib
 sources = [
     ArchiveSource("https://github.com/atztogo/spglib/archive/v$(version).tar.gz",
-                  "969311a2942fef77ee79ac9faab089b68e256f21713194969197e7f2bdb14772"),
+                  "e90682239e4ef63b492fa4e44f7dbcde2e2fe2e688579d96b01f2730dfdf5b2e"),
 ]
 
 # Bash recipe for building across all platforms
