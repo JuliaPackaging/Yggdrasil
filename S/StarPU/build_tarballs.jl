@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd starpu*
 mkdir build
 cd build
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-fortran
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-fortran --disable-build-doc --disable-build-examples
 make -j${nproc}
 make install
 install_license ../COPYING.LGPL
