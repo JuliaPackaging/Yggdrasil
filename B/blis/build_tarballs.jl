@@ -31,26 +31,22 @@ case ${target} in
     *"x86_64"*"linux"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export nbits=64
         ;;
     *"x86_64"*"w64"*) 
         # MinGW doesn't support savexmm instructions
         # Build only for AMD processors.
         export BLI_CONFIG=amd64
         export BLI_THREAD=openmp
-        export nbits=64
         ;;
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export nbits=64
         export CC=gcc
         export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export nbits=64
         export CC=gcc
         export CXX=g++
         ;;
@@ -59,19 +55,16 @@ case ${target} in
         # Use Cortex-A57 for the moment.
         export BLI_CONFIG=cortexa57
         export BLI_THREAD=openmp
-        export nbits=64
         ;;
     *"arm"*"linux"*) 
         export BLI_CONFIG=cortexa9
         export BLI_THREAD=none
         # Keep 32-bit BLAS interface for 32-bit processors.
-        export nbits=32
         ;;
     *)
         # Default (Generic) configuration without optimized kernel.
         export BLI_CONFIG=generic
         export BLI_THREAD=none
-        export nbits=64
         ;; 
 
 esac
