@@ -59,7 +59,6 @@ case ${target} in
     *"arm"*"linux"*) 
         export BLI_CONFIG=cortexa9
         export BLI_THREAD=none
-        # Keep 32-bit BLAS interface for 32-bit processors.
         ;;
     *)
         # Default (Generic) configuration without optimized kernel.
