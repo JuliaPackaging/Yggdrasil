@@ -19,7 +19,7 @@ cd build
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-fortran
 make -j${nproc}
 make install
-exit
+install_license COPYING.LGPL
 """
 
 # These are the platforms we will build for by default, unless further
