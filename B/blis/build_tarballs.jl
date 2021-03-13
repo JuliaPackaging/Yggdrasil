@@ -31,26 +31,26 @@ case ${target} in
     *"x86_64"*"linux"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         ;;
     *"x86_64"*"w64"*) 
         # MinGW doesn't support savexmm instructions
         # Build only for AMD processors.
         export BLI_CONFIG=amd64
         export BLI_THREAD=openmp
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         ;;
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         export CC=gcc
         export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         export CC=gcc
         export CXX=g++
         ;;
@@ -59,30 +59,30 @@ case ${target} in
         # Use Cortex-A57 for the moment.
         export BLI_CONFIG=cortexa57
         export BLI_THREAD=openmp
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         ;;
     *"arm"*"linux"*) 
         export BLI_CONFIG=cortexa9
         export BLI_THREAD=none
         # Keep 32-bit BLAS interface for 32-bit processors.
-        export BLI_F77TYPE=32
+        export BLI_F77BITS=32
         ;;
     *)
         # Default (Generic) configuration without optimized kernel.
         export BLI_CONFIG=generic
         export BLI_THREAD=none
-        export BLI_F77TYPE=64
+        export BLI_F77BITS=64
         ;; 
 
 esac
 
 # For 64-bit builds, add _64 suffix to exported BLAS routines.
 # This corresponds to ILP64 handling of OpenBLAS thus Julia.
-if [ ${BLI_F77TYPE} = 64 ]; then
+if [ ${BLI_F77BITS} = 64 ]; then
     patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
 fi
 
-./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77TYPE} ${BLI_CONFIG}
+./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
 make -j${nproc}
 make install
 
