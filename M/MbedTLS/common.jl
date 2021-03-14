@@ -13,6 +13,11 @@ sources_by_version = Dict(
         GitSource("https://github.com/ARMmbed/mbedtls.git",
                   "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
         DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.26.0" => [
+        GitSource("https://github.com/ARMmbed/mbedtls.git",
+                  "e483a77c85e1f9c1dd2eb1c5a8f552d2617fe400"),
+        DirectorySource("./bundled"; follow_symlinks=true),
     ]
 )
 sources = sources_by_version[version]
@@ -42,6 +47,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
+    -DENABLE_TESTING=OFF \
     ..
 make -j${nproc}
 make install
