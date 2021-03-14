@@ -47,6 +47,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
+    -DENABLE_TESTING=OFF \
     ..
 make -j${nproc}
 make install
