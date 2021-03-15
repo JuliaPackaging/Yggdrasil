@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "Ipopt"
-version = v"3.13.2"
+version = v"3.13.4"
 
 sources = [
     ArchiveSource("https://github.com/coin-or/Ipopt/archive/releases/$(version).tar.gz",
-                  "891ab9e9c7db29fc8ac5c779ccec6313301098de7bbf735ca230cd5544c49496"),
+                  "1fdd0f8ea637856d66b1ebdd7d52ad1b8b8c1142d1a4ce0976b200ab280e5683"),
 ]
 
 # Bash recipe for building across all platforms

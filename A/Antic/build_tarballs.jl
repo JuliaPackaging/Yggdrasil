@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Antic"
-version = v"0.200.300"
+version = v"0.200.301"
 upstream_version = v"0.2.3"
 
 # Collection of sources required to complete build
@@ -57,7 +57,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]

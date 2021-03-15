@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.800.900"
+version = v"300.800.901"
 upstream_version = v"3.8.9"
 
 # Collection of sources required to complete build
@@ -58,7 +58,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
     Dependency(PackageSpec(name="nauty_jll", uuid="55c6dc9b-343a-50ca-8ff2-b71adb3733d5")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]

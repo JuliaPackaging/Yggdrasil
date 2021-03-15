@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"3.48.0"
+version = v"3.49.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz",
-                  "91b48ffef544eb8ea3908543052331072c99bf09ceb139cb3c6977fc3e47aac1"),
+                  "5b65a20d5c53494ec8f638267fca4a629836b7ac8dd0ef0266834eab270ed4b3"),
     DirectorySource("./bundled"),
 ]
 
@@ -27,10 +27,12 @@ fi
 ./configure --prefix=$prefix --host=$target --enable-reentrant
 make -j${nproc} shared
 make install
+# Delete the static library
+rm ${prefix}/lib/libcfitsio.a
 # On Windows platforms, we need to move our .dll files to bin
 if [[ "${target}" == *-mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/*.dll ${prefix}/bin
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/*.dll ${libdir}/.
 fi
 """
 
@@ -45,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll", v"7.71.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

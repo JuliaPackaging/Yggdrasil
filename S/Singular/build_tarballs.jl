@@ -27,12 +27,12 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.000.101" # actually 4.2.0p1 plus some more changes
+version = v"402.000.104" # actually 4.2.0p1 plus some more changes
 upstream_version = v"4.2.0"
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "bad89c24b3352b9c5651915636ed5f2d7766baf9"),
+    GitSource("https://github.com/Singular/Singular.git", "7b8e28f635afde923bf9ebc01c3821ba6d67ece8"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -58,7 +58,8 @@ export CPPFLAGS="-I${prefix}/include"
     --with-readline=no \
     --with-gmp=$prefix \
     --with-flint=$prefix \
-    --without-python
+    --without-python \
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
 
 make -j${nproc}
 make install
@@ -88,7 +89,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]

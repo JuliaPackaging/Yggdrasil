@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "WCS"
-version = v"7.2.0"
+version = v"7.4.0"
 
 # Collection of sources required to build WCS
 sources = [
     ArchiveSource("https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-$(version.major).$(version.minor).tar.bz2",
-                  "63959eb4859517a1ecca48c91542318bebeed62e4a1663656de9a983af376e39"),
+                  "a21c964136055ad1d68ca9d3e9714374a9dc3ff2f7072622af08cc4f5a0c511c"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,6 +21,9 @@ fi
 ./configure --prefix=$prefix --host=$target --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
 make install
+
+# Remove static library
+rm "${prefix}/lib/"libwcs*.a
 
 # Install all license files
 install_license COPYING*
