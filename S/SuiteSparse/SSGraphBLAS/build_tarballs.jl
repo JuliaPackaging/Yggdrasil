@@ -1,18 +1,18 @@
 using BinaryBuilder, Pkg
 
-name = "SuiteSparseGraphBLAS"
-version = v"5.6.0"
+name = "SSGraphBLAS"
+version = v"4.0.3"
 
-# Collection of sources required to build SuiteSparse
+# Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
-    ArchiveSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
-                  "76d34d9f6dafc592b69af14f58c1dc59e24853dcd7c2e8f4c98ffa223f6a1adb")
+    ArchiveSource("https://github.com/DrTimothyAldenDavis/GraphBLAS/archive/v4.0.3.tar.gz",
+        "43519783625f1a0a631158603850cfcf0d9681646dbb5c64ae2eaf27e1444b90")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
-cd $WORKSPACE/srcdir/SuiteSparse-*/GraphBLAS/build
+cd $WORKSPACE/srcdir/GraphBLAS-*/build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSER_NONE=1
 
 make -j${nproc} install
