@@ -1,17 +1,10 @@
-using BinaryBuilder
+include("../common.jl")
 
 name = "SuiteSparse32"
-version = v"5.4.0"
-
-# Collection of sources required to build SuiteSparse
-sources = [
-    ArchiveSource("https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v$(version).tar.gz",
-                  "d9d62d539410d66550d0b795503a556830831f50087723cb191a030525eda770"),
-]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SuiteSparse-*
+cd $WORKSPACE/srcdir/SuiteSparse
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
@@ -22,6 +15,9 @@ if [[ ${target} == *mingw32* ]]; then
 else
     FLAGS+=(UNAME="$(uname)")
 fi
+
+BLAS_NAME=blastrampoline
+FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 mkdir -p ${prefix}/include
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" config

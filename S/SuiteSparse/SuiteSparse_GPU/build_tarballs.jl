@@ -1,16 +1,6 @@
-# This is an experimental build of SuiteSparse.
-
-using BinaryBuilder, Pkg
+include("../common.jl")
 
 name = "SuiteSparse_GPU"
-version = v"5.8.1"
-
-# Collection of sources required to build SuiteSparse
-sources = [
-    GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
-              "1869379f464f0f8dac471edb4e6d010b2b0e639d"),
-    DirectorySource("./bundled"),
-]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -30,26 +20,18 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
-# OpenBLAS 
-#if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-#    BLAS_64="-DSUN64 -DBLAS64 -DLONGBLAS='long long'"
-#    BLAS_NAME=openblas64_
-#else
-#    BLAS_NAME=openblas
-#fi
-#FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
-#FLAGS+=(UMFPACK_CONFIG="$BLAS_64" CHOLMOD_CONFIG+="$BLAS_64" SPQR_CONFIG="$BLAS_64")
+BLAS_NAME=blastrampoline
+if [[ ${nbits} == 64 ]]; then
+    SUN="-DSUN64 -DLONGBLAS='long long'"
+fi
 
-# MKL
-FLAGS+=(MKLROOT="${prefix}")
+FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 # CUDA
 FLAGS+=(CUDA_PATH="$prefix/cuda")
 
 # METIS
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(CHOLMOD_CONFIG+="-DNPARTITION")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
@@ -88,41 +70,23 @@ cd $WORKSPACE/srcdir/SuiteSparse_wrapper
 "${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
+# Override the default platforms
 platforms = [
     Platform("x86_64", "linux"),
 ]
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("libsuitesparseconfig",      :libsuitesparseconfig),
-    LibraryProduct("libamd",                    :libamd),
-    LibraryProduct("libbtf",                    :libbtf),
-    LibraryProduct("libcamd",                   :libcamd),
-    LibraryProduct("libccolamd",                :libccolamd),
-    LibraryProduct("libcolamd",                 :libcolamd),
-    LibraryProduct("libcholmod",                :libcholmod),
-    LibraryProduct("libldl",                    :libldl),
-    LibraryProduct("libklu",                    :libklu),
-    LibraryProduct("libumfpack",                :libumfpack),
-    LibraryProduct("librbio",                   :librbio),
-    LibraryProduct("libspqr",                   :libspqr),
+append!(products, [
     LibraryProduct("libsliplu",                 :libsliplu),
 #    LibraryProduct("libmongoose",               :libmongoose),
     LibraryProduct("libGPUQREngine",            :libGPUQREngine),
-    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),    
-    LibraryProduct("libsuitesparse_wrapper",    :libsuitesparse_wrapper),
+    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
 ]
 
-# Dependencies that must be installed before this package can be built
-cuda_version = v"9.0.176"
-dependencies = [
-    Dependency("MKL_jll"),
+append!(dependencies, [
     Dependency("METIS_jll"),
     Dependency("MPFR_jll"),
     Dependency("GMP_jll"),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.0"))
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")

@@ -1,6 +1,5 @@
 using BinaryBuilder, Pkg
 
-name = "SuiteSparse"
 version = v"5.8.1"
 
 # Collection of sources required to build SuiteSparse
@@ -33,5 +32,4 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"),
-#    Dependency("METIS_jll"),
 ]
