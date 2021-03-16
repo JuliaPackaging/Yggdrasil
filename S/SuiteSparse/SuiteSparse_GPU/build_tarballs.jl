@@ -80,13 +80,14 @@ append!(products, [
 #    LibraryProduct("libmongoose",               :libmongoose),
     LibraryProduct("libGPUQREngine",            :libGPUQREngine),
     LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
-]
+])
 
 append!(dependencies, [
     Dependency("METIS_jll"),
     Dependency("MPFR_jll"),
     Dependency("GMP_jll"),
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.0"))
-]
+])
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.7", preferred_gcc_version=v"6")
