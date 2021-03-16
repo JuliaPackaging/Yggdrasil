@@ -16,9 +16,6 @@ else
     FLAGS+=(UNAME="$(uname)")
 fi
 
-BLAS_NAME=blastrampoline
-FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
-
 mkdir -p ${prefix}/include
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" config
 cp SuiteSparse_config/SuiteSparse_config.h ${prefix}/include

@@ -2,6 +2,8 @@ include("../common.jl")
 
 name = "SuiteSparse_GPU"
 
+append!(sources, DirectorySource("./bundled"));
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
@@ -90,4 +92,4 @@ append!(dependencies, [
 ])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.7", preferred_gcc_version=v"6")
+               preferred_gcc_version=v"6")

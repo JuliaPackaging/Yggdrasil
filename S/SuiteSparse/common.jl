@@ -6,7 +6,6 @@ version = v"5.8.1"
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
               "1869379f464f0f8dac471edb4e6d010b2b0e639d"),
-    DirectorySource("./bundled"),
 ]
 
 # We enable experimental platforms as this is a core Julia dependency
