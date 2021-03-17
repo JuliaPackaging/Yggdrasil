@@ -2,7 +2,10 @@ include("../common.jl")
 
 name = "SuiteSparse_GPU"
 
-append!(sources, DirectorySource("./bundled"));
+sources = [
+    sources;
+    DirectorySource("./bundled"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
