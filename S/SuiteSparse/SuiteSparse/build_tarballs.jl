@@ -2,7 +2,9 @@ include("../common.jl")
 
 name = "SuiteSparse"
 
-append!(sources, DirectorySource("./bundled"));
+append!(sources, [
+    DirectorySource("./bundled")
+])
 
 # Bash recipe for building across all platforms
 script = raw"""
