@@ -37,7 +37,7 @@ else
     BLAS=openblas
 fi
 if [[ ${target} == *apple* ]]; then
-    export FT_OPENMP="-Xpreprocessor -fopenmp=libgomp -lomp "
+    export FT_OPENMP="-Xpreprocessor -fopenmp -lomp "
 fi
 make assembly
 make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
