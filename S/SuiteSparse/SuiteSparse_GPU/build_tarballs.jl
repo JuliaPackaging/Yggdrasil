@@ -4,7 +4,7 @@ name = "SuiteSparse_GPU"
 
 sources = [
     sources;
-    DirectorySource("./bundled"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -87,12 +87,13 @@ append!(products, [
     LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
 ])
 
-append!(dependencies, [
-    Dependency("METIS_jll"),
-    Dependency("MPFR_jll"),
-    Dependency("GMP_jll"),
+dependencies = [
+    dependencies;
+    Dependency("METIS_jll")
+    Dependency("MPFR_jll")
+    Dependency("GMP_jll")
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.0"))
-])
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"6")
