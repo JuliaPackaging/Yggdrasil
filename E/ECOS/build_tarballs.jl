@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "ECOS"
-version = v"2.0.5"
+version = v"2.0.8"
 
 # Collection of sources required to build ECOSBuilder
 sources = [
-    GitSource("https://github.com/embotech/ecos.git", "fcdbcc8dd221b8b2a556b2d90f52e47a749c9695")
+    GitSource("https://github.com/embotech/ecos.git", "3b98fe0376ceeeb8310a06694b0a84ac59920f3f")
 ]
 
 # Bash recipe for building across all platforms
