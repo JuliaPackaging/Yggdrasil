@@ -15,8 +15,7 @@ make shared
 
 mkdir -p ${libdir}
 cp libecos.${dlext} ${libdir}
-mkdir -p ${prefix}/include
-cp -r include ${prefix}/include
+cp -r include ${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
