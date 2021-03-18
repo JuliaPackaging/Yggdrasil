@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "Nettle"
-version = v"3.4.1"
+version = v"3.5.1"
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version).tar.gz",
-                  "f941cf1535cd5d1819be5ccae5babef01f6db611f9b5a777bae9c7604b8a92ad"),
+                  "75cca1998761b02e16f2db56da52992aef622bf55a3b45ec538bc2eedadc9419"),
     DirectorySource("./bundled"),
 ]
 
