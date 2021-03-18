@@ -6,7 +6,7 @@ version = v"3.3.3"
 # Collection of sources required to build glfw
 sources = [
     ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
-    "08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7")
+    "723087ad45b40cd333be7d1a2cd5e09a28facb7f3acdb69f3e5613bd20543977")
 ]
 
 # Bash recipe for building across all platforms
