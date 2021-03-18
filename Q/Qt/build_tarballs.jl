@@ -148,6 +148,15 @@ esac
 
 make -j${nproc}
 make install
+
+# Delete static libraries
+rm ${prefix}/lib/*.a
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Make executables for Windows... executable
+    chmod 755 ${bindir}/*${exeext}
+fi
+
 install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 """
 
