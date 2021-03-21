@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.27.0"
+version = v"2.31.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "73ca9774d7fa226e1d87c1909401623f96dca6a044e583b9a762e84d7d1a73f9"),
+                  "e8f162cbdb3283e13cd7388d864ed23485f1b046a19e969f12ed2685fb789a40"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "96bcfb93c7fbb34bbd4c5c9ba14a2a6ae8f58b299688278e38db1dacad180df2"; unpack_target = "i686-w64-mingw32"),
+                  "faff066b2bb4d7640c6a873c87208514218741c201b67b96eacf11be59d9ae1c"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "a653c41999e4c80eebde8de046dd92a5a9e38a77f60466120daab2f31d3d0935"; unpack_target = "x86_64-w64-mingw32"),
+                  "a5723d9307e044ab9f20f3d43fd014bc6506378da869c98370d3a98b3de7017f"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -67,8 +67,8 @@ dependencies = [
     Dependency("OpenSSL_jll"),
     Dependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll", v"10.35.0"),
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
