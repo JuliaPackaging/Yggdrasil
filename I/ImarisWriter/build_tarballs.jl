@@ -12,10 +12,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ImarisWriter/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DHDF5_FALLBACK_LIBRARIES=$prefix/bin/libhdf5-0.dll
-make
+cd $WORKSPACE/srcdir/ImarisWriter/
+mkdir build && cd build
+if [[ "${target}" == *-mingw* ]]; then
+    FLAGS = "-DHDF5_FALLBACK_LIBRARIES=${libdir}/libhdf5-0.dll"
+fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    "${FLAGS}" \
+    ..
+make -j${nproc}
 make install
 exit
 """
