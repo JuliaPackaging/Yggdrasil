@@ -28,10 +28,10 @@ exit
 # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/H5public.h
 #
 platforms = [
-    Linux(:x86_64),
-    Linux(:aarch64, libc=:glibc),
-    Windows(:i686),
-    Windows(:x86_64)
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 # Too buggy at the moment
 # platforms = collect(Iterators.flatten(expand_cxxstring_abis.(platforms)))
@@ -51,4 +51,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
-
