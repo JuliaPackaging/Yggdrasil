@@ -33,7 +33,8 @@ platforms = [
     Windows(:i686),
     Windows(:x86_64)
 ]
-platforms = collect(Iterators.flatten(expand_cxxstring_abis.(platforms)))
+# Too buggy at the moment
+# platforms = collect(Iterators.flatten(expand_cxxstring_abis.(platforms)))
 
 
 # The products that we will ensure are always built
