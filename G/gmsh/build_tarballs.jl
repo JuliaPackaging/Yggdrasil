@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.7.1"
+version = v"4.8.0"
 
 # Collection of sources required to build Gmsh
 sources = [
-    GitSource("https://gitlab.onelab.info/gmsh/gmsh.git", "8417af5701df5fb2d4e208424f1477be21f65c3c"),
+    ArchiveSource("https://gmsh.info/src/gmsh-$version-source.tgz", "2587783c4b02963f9d8afb717c9954caefa463ea2e0a12e1659307e6a0d7ea6b")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/gmsh
+cd ${WORKSPACE}/srcdir/gmsh-4.8.0-source
 install_license LICENSE.txt
 mkdir build
 cd build
