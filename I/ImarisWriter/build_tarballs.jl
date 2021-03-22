@@ -28,7 +28,7 @@ exit
 # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/H5public.h
 #
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Linux(:x86_64),
     Linux(:aarch64, libc=:glibc),
     Windows(:i686),
     Windows(:x86_64)
