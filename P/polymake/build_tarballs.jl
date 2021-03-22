@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-version = v"400.300.000"
+version = v"400.300.001"
 upstream_version = v"4.3.0"
 
 # Collection of sources required to build polymake
@@ -53,6 +53,9 @@ atomic_patch -p1 ../patches/relocatable.patch
 
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
+
+# avoid latte autoconfiguration picking up count from llvm
+atomic_patch -p1 ../patches/latte-config.patch
 
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
@@ -125,8 +128,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpolymake", :libpolymake; dont_dlopen=true)
-    LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt; dont_dlopen=true)
+    LibraryProduct("libpolymake", :libpolymake)
+    LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt)
     ExecutableProduct("polymake", :polymake)
     ExecutableProduct("polymake-config", Symbol("polymake_config"))
     FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
@@ -135,11 +138,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
+    Dependency("FLINT_jll", compat = "~200.700"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
     Dependency("PPL_jll"),
-    Dependency(PackageSpec(name="Perl_jll", uuid="83958c19-0796-5285-893e-a1267f8ec499", version=v"5.30.3")),
+    Dependency("Perl_jll", compat = "=5.30.3"),
     Dependency("bliss_jll"),
     Dependency("boost_jll"),
     Dependency("cddlib_jll"),

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ephemeralpg"
-version = v"3.0.0"
+version = v"3.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://eradman.com/ephemeralpg/code/ephemeralpg-3.0.tar.gz", "70ef314e31c5547f353ea7b2787faafa07adc32dcfaea6f4f1475512c23b0fc8")
+    ArchiveSource("http://eradman.com/ephemeralpg/code/ephemeralpg-3.1.tar.gz", "4693d195778c09a8e4b0fd3ec6790efcc7b4887e922d8f417bca7c8fe214e2aa")
 ]
 
 # Bash recipe for building across all platforms

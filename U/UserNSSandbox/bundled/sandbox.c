@@ -85,6 +85,10 @@ char *sandbox_root = NULL;
 // new_cd is where we will cd to once we start running.
 char *new_cd = NULL;
 
+// persist_dir is where we will store overlayfs data.
+// Specifying this will allow subsequent invocations to persist temporary state.
+char * persist_dir = NULL;
+
 // verbose sets whether we're in verbose mode.
 unsigned char verbose = 0;
 
@@ -206,7 +210,7 @@ static void configure_user_namespace(uid_t uid, gid_t gid, pid_t pid) {
 
 /*
  * Mount an overlayfs from `src` onto `dest`, anchoring the changes made to the overlayfs
- * within the folders `root_dir`/upper and `root_dir`/work.  Note that the common case of
+ * within the folders `work_dir`/upper and `work_dir`/work.  Note that the common case of
  * `src` == `dest` signifies that we "shadow" the original source location and will simply
  * discard any changes made to it when the overlayfs disappears.  This is how we protect our
  * rootfs and shards when mounting from a local filesystem, as well as how we convert a
@@ -261,7 +265,7 @@ static void mount_procfs(const char * root_dir, uid_t uid, gid_t gid) {
   // Chown this directory to the desired UID/GID, so that it doesn't look like it's
   // owned by "nobody" when we're inside the sandbox.  We allow this to fail, as
   // sometimes we're trying to chown() something we don't own.
-  chown(path, uid, gid);
+  int ignored = chown(path, uid, gid);
 }
 
 static void bind_mount(const char *src, const char *dest, char read_only) {
@@ -364,17 +368,34 @@ static void mount_maps(const char * dest, struct map_list * workspaces, uint8_t 
 static void mount_the_world(const char * root_dir,
                             struct map_list * shard_maps,
                             struct map_list * workspaces,
-                            uid_t uid, gid_t gid) {
-  // Mount the place we'll put all our overlay work directories
-  // We use `/proc` as it is a convenient mount point that is always available.
-  // After this `mount()` command, `/proc` is no longer actually `procfs`.
-  // This isn't dangerous to other processes because we only ever do this after
-  // we're already in a new mount namespace, so other processes don't see these
-  // changes; they can keep on using `/proc` while we do strange things here.
-  if (verbose) {
-    fprintf(stderr, "--> Creating overlay workdir at /proc\n");
+                            uid_t uid, gid_t gid,
+                            const char * persist_dir) {
+  // If `persist_dir` is specified, it represents a host directory that should
+  // be used to store our overlayfs work data.  This is where modifications to
+  // the rootfs and such will go.  Typically, these should be ephemeral (and if
+  // `persist_dir` is `NULL`, it will be mounted in a `tmpfs` so that the
+  // modifcations are lost immediately) but if `persist_dir` is given, the
+  // mounting will be done with modifications stored in that directory.
+  // The caller will be responsible for cleaning up the `work` and `upper`
+  // directories wtihin `persist_dir`, but subsequent invocations of `sandbox`
+  // with the same `--persist` argument will allow resuming execution inside of
+  // a rootfs with the previous modifications intact.
+  if (persist_dir == NULL) {
+    // We know that `/proc` will always be available on basically any Linux
+    // system, so we mount our tmpfs here.  It's also convenient because we
+    // will mount an actual `procfs` over this at the end of this function, so
+    // the overlayfs work directories are completely hidden from view.
+    persist_dir = "/proc";
+
+    // Create tmpfs to store ephemeral changes.  These changes are lost once
+    // the `tmpfs` is unmounted, which occurs when all processes within the
+    // namespace exit and the mount namespace is destroyed.
+    check(0 == mount("tmpfs", "/proc", "tmpfs", 0, "size=1G"));
   }
-  check(0 == mount("tmpfs", "/proc", "tmpfs", 0, "size=1G"));
+
+  if (verbose) {
+    fprintf(stderr, "--> Creating overlay workdir at %s\n", persist_dir);
+  }
 
   // The first thing we do is create an overlay mounting `root_dir` over itself.
   // `root_dir` is the path to the already loopback-mounted rootfs image, and we
@@ -382,13 +403,12 @@ static void mount_the_world(const char * root_dir,
   // without altering the actual rootfs image.  When running in privileged mode,
   // we're mounting before cloning, in unprivileged mode, we clone before calling
   // this mehod at all.sta
-  mount_overlay(root_dir, root_dir, "rootfs", "/proc", uid, gid);
+  mount_overlay(root_dir, root_dir, "rootfs", persist_dir, uid, gid);
 
   // Mount all of our read-only mounts
   mount_maps(root_dir, shard_maps, TRUE);
 
-  // Mount /proc within the sandbox.  Note that `/proc` in our mount namespace is
-  // still a tmpfs! We will restore that at the end of this function.
+  // Mount /proc within the sandbox.
   mount_procfs(root_dir, uid, gid);
 
   // Mount /dev stuff
@@ -400,7 +420,9 @@ static void mount_the_world(const char * root_dir,
   // Once we're done with that, put /proc back in its place in the big world.
   // This is not strictly necessary since if all goes well, we're going to
   // `pivot_root()` into the rootfs, but it helps with debugging.
-  mount_procfs("", uid, gid);
+  if (strcmp(persist_dir, "/proc") == 0) {
+    mount_procfs("", uid, gid);
+  }
 }
 
 /*
@@ -475,6 +497,7 @@ static void print_help() {
   fputs("Usage: sandbox --rootfs <dir> [--cd <dir>] ", stderr);
   fputs("[--map <from>:<to>, --map <from>:<to>, ...] ", stderr);
   fputs("[--workspace <from>:<to>, --workspace <from>:<to>, ...] ", stderr);
+  fputs("[--persist <work_dir>] ", stderr);
   fputs("[--entrypoint <exe_path>] ", stderr);
   fputs("[--verbose] [--help] <cmd>\n", stderr);
   fputs("\nExample:\n", stderr);
@@ -542,6 +565,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
       {"rootfs",     required_argument, NULL, 'r'},
       {"workspace",  required_argument, NULL, 'w'},
       {"entrypoint", required_argument, NULL, 'e'},
+      {"persist",    required_argument, NULL, 'p'},
       {"cd",         required_argument, NULL, 'c'},
       {"map",        required_argument, NULL, 'm'},
       {0, 0, 0, 0}
@@ -619,6 +643,12 @@ int main(int sandbox_argc, char **sandbox_argv) {
                   entry->outside_path, entry->map_path);
         }
       } break;
+      case 'p':
+        persist_dir = strdup(optarg);
+        if (verbose) {
+          fprintf(stderr, "Parsed --persist as \"%s\"\n", persist_dir);
+        }
+        break;
       case 'e':
         entrypoint = strdup(optarg);
         break;
@@ -670,14 +700,14 @@ int main(int sandbox_argc, char **sandbox_argv) {
     check(0 == unshare(CLONE_NEWNS));
 
     // Even if we unshare, we might need to mark `/` as private, as systemd often subverts
-    // the kernel's default value of `MS_PRIVATE` on the root mount.  This doesn't affect
+    // the kernel's default value of `MS_PRIVATE` on the root mount.  This doesn't effect
     // the main root mount, because we have unshared, but this prevents our changes to
     // any subtrees of `/` (e.g. everything) from propagating back to the outside `/`.
     check(0 == mount(NULL, "/", NULL, MS_PRIVATE|MS_REC, NULL));
 
     // Mount the rootfs, shards, and workspace.  We do this here because, on this machine,
     // we may not have permissions to mount overlayfs within user namespaces.
-    mount_the_world(sandbox_root, maps, workspaces, uid, gid);
+    mount_the_world(sandbox_root, maps, workspaces, uid, gid, persist_dir);
   }
 
   // We want to request a new PID space, a new mount space, and a new user space
@@ -718,7 +748,7 @@ int main(int sandbox_argc, char **sandbox_argv) {
     } else if (execution_mode == UNPRIVILEGED_CONTAINER_MODE) {
       // If we're in unprivileged container mode, mount the world now that we
       // have supreme cosmic power.
-      mount_the_world(sandbox_root, maps, workspaces, 0, 0);
+      mount_the_world(sandbox_root, maps, workspaces, 0, 0, persist_dir);
     }
 
     // Finally, we begin invocation of the target program.

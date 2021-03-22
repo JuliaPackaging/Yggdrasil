@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2021.01.19"
+version = v"2021.03.04"
 
 # Collection of sources required to complete build
 sources = [

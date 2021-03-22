@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.2.4"
 
+version = v"0.2.4"
 
 sources = [
     GitSource("https://github.com/ERGO-Code/HiGHS.git", "289e34dc089dda8260e93eebd09e724ef4c64ac3"),
@@ -46,9 +46,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = (
-    expand_cxxstring_abis(supported_platforms())
-)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # Useful for testing to add the MIP and QP solvers.
 # filter!(Sys.iswindows, platforms)

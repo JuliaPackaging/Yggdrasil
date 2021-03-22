@@ -12,7 +12,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     install_license license.pdf
 
-    mv lib/11.1/libcutensor.so* ${libdir}
+    mv lib/11/libcutensor.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     apk add p7zip
@@ -24,7 +24,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     install_license license.pdf
 
-    mv lib/11.1/cutensor.dll ${libdir}
+    mv lib/11/cutensor.dll ${libdir}
     mv include/* ${prefix}/include
 fi
 """

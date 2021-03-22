@@ -1,20 +1,20 @@
 include("../../fancy_toys.jl")
 
-version = v"1.2.1"#.7
+version = v"1.2.2"#.5
 
 name = "CUTENSOR_CUDA$(cuda_version.major)$(cuda_version.minor)"
 
 sources_linux_x64 = [
-    ArchiveSource("https://developer.nvidia.com/compute/cutensor/secure/1.2.1/local_installers/libcutensor-linux-x86_64-1.2.1.7.tar.gz",
-                  "9e8c61d0fee821363c61c105ab0ec33b7f594dd49a79b18eefd509e33004eae2")
+    ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/1.2.2/local_installers/libcutensor-linux-x86_64-1.2.2.5.tar.gz",
+                  "954ee22b80d6b82fd4decd42b7faead86af7c3817653b458620a66174e5b89b6")
 ]
 sources_linux_ppc64le = [
-    ArchiveSource("https://developer.nvidia.com/compute/cutensor/secure/1.2.1/local_installers/libcutensor-linux-ppc64le-1.2.1.7.tar.gz",
-                  "195ae404136e2ad202e50dd4bfd15af0835699ec8b8f7d2ff08a807ccb2ded4a")
+    ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/1.2.2/local_installers/libcutensor-linux-ppc64le-1.2.2.5.tar.gz",
+                  "d914a721b8a6bbfbf4f2bdea3bb51775e5df39abc383d415b3b06bbde2a47e6e")
 ]
 sources_windows = [
-    FileSource("https://developer.nvidia.com/compute/cutensor/secure/1.2.1/local_installers/libcutensor_1.2.1.exe",
-                  "e548484e2116297a9e35d463c98e26ea37e0645941861e63fe5ffb29436269fb")
+    FileSource("https://developer.download.nvidia.com/compute/cutensor/1.2.2/local_installers/libcutensor_1.2.2.exe",
+               "88d3e2c662e601214ef5caa26ca2db0492eab6ec3bf9dc9a746bb1a7b8c3aab2")
 ]
 
 products = [
