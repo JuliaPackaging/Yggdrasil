@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/ImarisWriter/
 mkdir build && cd build
 if [[ "${target}" == *-mingw* ]]; then
-    FLAGS = "-DHDF5_FALLBACK_LIBRARIES=${libdir}/libhdf5-0.dll"
+    FLAGS="-DHDF5_FALLBACK_LIBRARIES=${libdir}/libhdf5-0.dll"
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
