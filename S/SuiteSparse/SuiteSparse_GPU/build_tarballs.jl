@@ -92,7 +92,7 @@ dependencies = [
     Dependency("METIS_jll")
     Dependency("MPFR_jll")
     Dependency("GMP_jll")
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.0"))
+    Dependency("CUDA_full_jll")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
