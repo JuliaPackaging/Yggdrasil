@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.2.2"
 
-# Collection of sources required to complete build
+version = v"0.2.3"
+
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "7f4f0a58c415fa6cd678395d109155a3f5a7c670"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "289e34dc089dda8260e93eebd09e724ef4c64ac3"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,21 +23,32 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+apk add --upgrade cmake
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DFAST_BUILD=ON \
     -DJULIA=ON \
-    -DIPX=OFF ..
-cmake --build . --config Release --parallel
+    -DIPX=ON ..
+if [[ "${target}" == *-linux-* ]]; then
+        make -j $nproc
+else
+    if [[ "${target}" == *-mingw* ]]; then
+        cmake --build . --config Release
+    else
+        cmake --build . --config Release --parallel
+    fi
+fi
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+
+# Useful for testing to add the MIP and QP solvers.
+# filter!(Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
