@@ -1,0 +1,26 @@
+diff --git a/src/google/protobuf/io/coded_stream.h b/src/google/protobuf/io/coded_stream.h
+index df8c4499ad..dcbb7834a7 100644
+--- a/src/google/protobuf/io/coded_stream.h
++++ b/src/google/protobuf/io/coded_stream.h
+@@ -133,6 +133,8 @@
+ #else
+ #ifdef __APPLE__
+ #include <machine/endian.h>  // __BYTE_ORDER
++#elif defined(__FreeBSD__)
++#include <sys/endian.h>  // __BYTE_ORDER
+ #else
+ #include <endian.h>  // __BYTE_ORDER
+ #endif
+diff --git a/src/google/protobuf/stubs/port.h b/src/google/protobuf/stubs/port.h
+index b7aab404ca..0f3b5aa628 100644
+--- a/src/google/protobuf/stubs/port.h
++++ b/src/google/protobuf/stubs/port.h
+@@ -59,6 +59,8 @@
+ #else
+ #ifdef __APPLE__
+ #include <machine/endian.h>  // __BYTE_ORDER
++#elif defined(__FreeBSD__)
++#include <sys/endian.h>  // __BYTE_ORDER
+ #else
+ #include <endian.h>  // __BYTE_ORDER
+ #endif
