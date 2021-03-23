@@ -45,6 +45,7 @@ cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -D
 
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
+rm -f ${libdir}/*.a
 
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
@@ -55,24 +56,18 @@ if [[ $target == *"apple-darwin"* ]]; then
 fi
 """
 
-#platforms = supported_platforms()
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-#    Linux(:i686, libc=:musl),
-#    Linux(:x86_64, libc=:musl),
-#    Linux(:aarch64, libc=:musl),
-#    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64),
-    Windows(:i686),
-    Windows(:x86_64)
+    Platform("armv7l",  "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",  "linux"; libc="glibc"),
+    Platform("powerpc64le",  "linux"; libc="glibc"),
+    Platform("x86_64",  "windows"),
+    Platform("i686",  "windows"),    
+    Platform("x86_64",  "macos"),
+    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
