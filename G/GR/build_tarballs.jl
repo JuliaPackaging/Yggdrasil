@@ -45,7 +45,9 @@ cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -D
 
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
-rm -f ${libdir}/*.a
+
+# Seems like we need the .a files on Windows
+#rm -f ${libdir}/*.a
 
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
@@ -67,7 +69,7 @@ platforms = [
     Platform("x86_64",  "windows"),
     Platform("i686",  "windows"),    
     Platform("x86_64",  "macos"),
-    Platform("x86_64",  "freebsd"),
+#    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
