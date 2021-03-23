@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.53.0"
+version = v"0.56.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "b490cbfacc6f4dc08c2a2de52c6f6594e8c7c5f9"),
+    GitSource("https://github.com/sciapp/gr.git", "c5fbc6613de1437a3dd598680de02af8dbe1098f"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "60b856b8bb834d30612653da42eebef56e4e329d3a73d52c303684ee42b027f1", "gr.js")
+               "1e372730b864b105a4091cb2fd0814156aea8992ef0db308b9695956a292acc8", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ fi
 
 update_configure_scripts
 
-make -C 3rdparty/qhull -j${nproc}
+#make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
@@ -49,25 +49,30 @@ cp ../../gr.js ${libdir}/
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
 if [[ $target == *"apple-darwin"* ]]; then
-    cd $prefix/lib
-    ln -s libGR.so libGR.dylib
-    ln -s libGR3.so libGR3.dylib
-    ln -s libGRM.so libGRM.dylib
-    ln -s libGKS.so libGKS.dylib
-    cd ../bin
+    cd $prefix/bin
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
 
+#platforms = supported_platforms()
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("armv7l",  "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64",  "linux"; libc="glibc"),
-    Platform("x86_64",  "windows"),
-    Platform("x86_64",  "macos"),
+    Linux(:i686, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    Linux(:powerpc64le, libc=:glibc),
+#    Linux(:i686, libc=:musl),
+#    Linux(:x86_64, libc=:musl),
+#    Linux(:aarch64, libc=:musl),
+#    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    MacOS(:x86_64),
+    FreeBSD(:x86_64),
+    Windows(:i686),
+    Windows(:x86_64)
 ]
 platforms = expand_cxxstring_abis(platforms)
 
