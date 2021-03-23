@@ -22,7 +22,7 @@ fi
 
 update_configure_scripts
 
-#make -C 3rdparty/qhull -j${nproc}
+make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
@@ -91,7 +91,7 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
-    Dependency("Qhull_jll"),
+#    Dependency("Qhull_jll"),
     Dependency("Qt_jll"),    
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
