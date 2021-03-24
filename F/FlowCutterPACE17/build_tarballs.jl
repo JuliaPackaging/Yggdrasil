@@ -12,12 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd flow-cutter-pace17/
-$CXX -c -Wall -std=c++11 -O3 -DNDEBUG src/*.cpp
+cd $WORKSPACE/srcdir/flow-cutter-pace17/
 mkdir -p "${bindir}"
-$CXX -o "${bindir}/flow_cutter_pace17${exeext}" *.o
-install_license LICENSE
+c++ -o "${bindir}/flow_cutter_pace17${exeext}" -Wall -std=c++11 -O3 -DNDEBUG src/*.cpp
 """
 
 # These are the platforms we will build for by default, unless further
