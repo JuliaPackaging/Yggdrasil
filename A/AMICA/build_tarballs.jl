@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 mkdir -p ${bindir}
 cd ${WORKSPACE}/srcdir/amica*
-mpif90 -qopenmp -O3 -fpp amica15.f90 funmod2.f90 -o ${bindir}/amica
+mpif90 -O3 amica15.f90 funmod2.f90 -o ${bindir}/amica
 """
 
 platforms = supported_platforms()
