@@ -15,10 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd flow-cutter-pace17/
 $CXX -c -Wall -std=c++11 -O3 -DNDEBUG src/*.cpp
-$CXX -o flow_cutter_pace17 *.o
+mkdir -p "${bindir}"
+$CXX -o "${bindir}/flow_cutter_pace17${exeext}" *.o
 install_license LICENSE
-mkdir $bindir 
-mv flow_cutter_pace17 $bindir/flow_cutter_pace17
 """
 
 # These are the platforms we will build for by default, unless further
