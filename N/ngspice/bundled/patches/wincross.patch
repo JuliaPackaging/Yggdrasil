@@ -1,32 +1,40 @@
-commit b6848fbbb669fbaf7e1db0a51bb5ea7a03beda76
-Author: Keno Fischer <keno@juliacomputing.com>
-Date:   Mon Oct 5 03:58:34 2020 -0400
+From e71ad6195ef558f277eb03f1f6560739ce932c6a Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Wed, 24 Mar 2021 14:45:48 -0400
+Subject: [PATCH] Refactor /proc/meminfo code to use dynamic detection
 
-    Refactor /proc/meminfo code to use dynamic detection
-    
-    At the moment, the build system abuses a header check to make a
-    build-time determination about the existence of /proc/meminfo.
-    This is in general not idea, because it breaks cross compilation
-    (e.g. if we're compiling from Linux, which has /proc/meminfo to
-    Windows, which does not). It's also bad, because the existence
-    of /proc/meminfo is a transient condition. E.g. a Linux distribution
-    may sandbox its compile process without acess to /proc, but otherwise
-    make it available. This removes the compile time check and refactors
-    the rest of the code to dynamically check for /proc/meminfo. Where
-    other dynamic fall backs exist, I tried to make sure to maintain them
-    to avoid breaking users that may not have /proc/meminfo mounted.
-    
-    While I'm here, also fix two instances of an incorrect case of Windows.h
-    (most uses in the code base are correct). File systems on windows are
-    often case insensitive, which is why these kinds of things can easily
-    slip in (as well as being incorrect in a myriad of documentation and
-    tutorials) - nevertheless the official headers are all lower case.
+At the moment, the build system abuses a header check to make a
+build-time determination about the existence of /proc/meminfo.
+This is in general not idea, because it breaks cross compilation
+(e.g. if we're compiling from Linux, which has /proc/meminfo to
+Windows, which does not). It's also bad, because the existence
+of /proc/meminfo is a transient condition. E.g. a Linux distribution
+may sandbox its compile process without acess to /proc, but otherwise
+make it available. This removes the compile time check and refactors
+the rest of the code to dynamically check for /proc/meminfo. Where
+other dynamic fall backs exist, I tried to make sure to maintain them
+to avoid breaking users that may not have /proc/meminfo mounted.
+
+While I'm here, also fix two instances of an incorrect case of Windows.h
+(most uses in the code base are correct). File systems on windows are
+often case insensitive, which is why these kinds of things can easily
+slip in (as well as being incorrect in a myriad of documentation and
+tutorials) - nevertheless the official headers are all lower case.
+---
+ configure.ac                         |  6 +-
+ src/frontend/com_sysinfo.c           |  2 +-
+ src/frontend/get_avail_mem_size.c    | 83 ++++++++++------------------
+ src/frontend/get_phys_mem_size.c     | 58 +++++++++++++------
+ src/frontend/get_resident_set_size.c | 28 +++++-----
+ src/frontend/resource.c              |  8 +--
+ visualc/src/include/ngspice/config.h |  3 -
+ 7 files changed, 91 insertions(+), 97 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index dae84f91e..ec4ad9a66 100644
+index 7c8e1803d..945b7d4b9 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -619,8 +619,8 @@ case $with_wingui in
+@@ -642,8 +642,8 @@ case $with_wingui in
          ;;
      * )
  
@@ -37,7 +45,7 @@ index dae84f91e..ec4ad9a66 100644
  
  # Checks for X11 header files and libraries - X11 support can be disabled
  # by passing the '--without-x' option to configure:
-@@ -1321,8 +1321,6 @@ AC_CONFIG_FILES([Makefile
+@@ -1358,8 +1358,6 @@ AC_CONFIG_FILES([Makefile
                   tests/resistance/Makefile
                   tests/vbic/Makefile])
  
@@ -60,7 +68,7 @@ index 7e92a6cd0..6412472ba 100644
  /* Get memory information */
  static int get_sysmem(struct sys_memory *memall)
 diff --git a/src/frontend/get_avail_mem_size.c b/src/frontend/get_avail_mem_size.c
-index c40702baa..e77168c36 100644
+index 3d468b659..e77168c36 100644
 --- a/src/frontend/get_avail_mem_size.c
 +++ b/src/frontend/get_avail_mem_size.c
 @@ -1,7 +1,7 @@
@@ -72,15 +80,6 @@ index c40702baa..e77168c36 100644
   */
  
  #include "ngspice/ngspice.h"
-@@ -9,7 +9,7 @@
- 
- #if defined(_WIN32)
- #undef BOOLEAN
--#include <Windows.h>
-+#include <windows.h>
- 
- #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
- #include <unistd.h>
 @@ -26,13 +26,9 @@
  #error "Unable to define getMemorySize( ) for an unknown OS."
  #endif
@@ -189,18 +188,9 @@ index c40702baa..e77168c36 100644
 +#endif
  }
 diff --git a/src/frontend/get_phys_mem_size.c b/src/frontend/get_phys_mem_size.c
-index 378f7115d..59797cd8a 100644
+index 3ebb92407..59797cd8a 100644
 --- a/src/frontend/get_phys_mem_size.c
 +++ b/src/frontend/get_phys_mem_size.c
-@@ -11,7 +11,7 @@
- 
- #if defined(_WIN32)
- #undef BOOLEAN
--#include <Windows.h>
-+#include <windows.h>
- 
- #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
- #include <unistd.h>
 @@ -26,13 +26,9 @@
  #endif
  
@@ -380,7 +370,7 @@ index b8013eec9..c328564c9 100644
  static int get_procm(struct proc_mem *memall) {
  
 diff --git a/visualc/src/include/ngspice/config.h b/visualc/src/include/ngspice/config.h
-index 7fb19e47e..5b3609447 100644
+index ceb6d2212..146ef61b1 100644
 --- a/visualc/src/include/ngspice/config.h
 +++ b/visualc/src/include/ngspice/config.h
 @@ -416,9 +416,6 @@
@@ -393,3 +383,6 @@ index 7fb19e47e..5b3609447 100644
  /* Client-Server only via stdio. */
  #define IPC_DEBUG_VIA_STDIO 1
  
+-- 
+2.25.1
+
