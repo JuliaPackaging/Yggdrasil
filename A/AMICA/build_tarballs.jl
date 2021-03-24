@@ -11,16 +11,24 @@ sources = [
 script = raw"""
 mkdir -p ${bindir}
 cd ${WORKSPACE}/srcdir/amica*
-mpif90 -O3 amica15.f90 funmod2.f90 -o ${bindir}/amica
+mpif90 -O3 -mkl -DMKL amica15.f90 funmod2.f90 -o ${bindir}/amica
 """
 
-platforms = supported_platforms()
+# Copied from MKL
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
+]
 
 products = [
     ExecutableProduct("amica", :amica),
 ]
 
 dependencies = [
+    Dependency("MKL_jll"),
     Dependency("MPICH_jll"),
 ]
 
