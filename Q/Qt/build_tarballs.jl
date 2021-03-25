@@ -149,8 +149,8 @@ esac
 make -j${nproc}
 make install
 
-# Delete static libraries
-rm ${prefix}/lib/*.a
+# Deleting static libraries is problematic: https://github.com/JuliaPackaging/Yggdrasil/pull/2713
+#rm ${prefix}/lib/*.a
 
 if [[ "${target}" == *-mingw* ]]; then
     # Make executables for Windows... executable
