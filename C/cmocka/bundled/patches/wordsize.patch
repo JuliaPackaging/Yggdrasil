@@ -1,0 +1,17 @@
+--- cmocka-1.1.5/include/cmocka.h.orig
++++ cmocka-1.1.5/include/cmocka.h
+@@ -57,12 +57,9 @@
+  */
+ 
+ /* If __WORDSIZE is not set, try to figure it out and default to 32 bit. */
++#include <bits/reg.h>
+ #ifndef __WORDSIZE
+-# if (defined(__x86_64__) && !defined(__ILP32__)) || defined(__sparc_v9__) || defined(__sparcv9)
+-#  define __WORDSIZE 64
+-# else
+-#  define __WORDSIZE 32
+-# endif
++#error __WORDSIZE not defined
+ #endif
+ 
+ #ifdef DOXYGEN
