@@ -46,13 +46,10 @@ cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -D
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
 
-# Seems like we need the .a files on Windows
-#rm -f ${libdir}/*.a
-
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
 if [[ $target == *"apple-darwin"* ]]; then
-    cd $prefix/bin
+    cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
