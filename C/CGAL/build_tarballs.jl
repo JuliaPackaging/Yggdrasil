@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name     = "CGAL"
-rversion = "5.2"
+rversion = "5.2.1"
 version  = VersionNumber(rversion)
 
 # Collection of sources required to build CGAL
 sources = [
-    ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion.tar.xz",
-                  "744c86edb6e020ab0238f95ffeb9cf8363d98cde17ebb897d3ea93dac4145923"),
+    ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion-library.tar.xz",
+                  "390aa87c4f21609c19397c4b14abb5ccad3edd1e33933a0089b266f67ce7b111"),
 ]
 
 # Bash recipe for building across all platforms
