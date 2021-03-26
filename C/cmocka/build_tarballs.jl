@@ -7,7 +7,7 @@ version = v"1.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://cmocka.org/files/1.1/cmocka-1.1.5.tar.xz", "f0ccd8242d55e2fd74b16ba518359151f6f8383ff8aef4976e48393f77bba8b6"),
+    ArchiveSource("https://cmocka.org/files/$(version.major).$(version.minor)/cmocka-$(version).tar.xz", "f0ccd8242d55e2fd74b16ba518359151f6f8383ff8aef4976e48393f77bba8b6"),
 ]
 
 # Bash recipe for building across all platforms
