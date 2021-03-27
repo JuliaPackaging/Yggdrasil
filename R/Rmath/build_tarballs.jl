@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Rmath"
-version = v"0.2.2"
+version = v"0.3.0"
 
 sources = [
     GitSource("https://github.com/JuliaStats/Rmath-julia.git",
-              "80bc99724807e0ad1c46800d8497480bd5f110cb"),
+              "c71948a8ce7b8b1aca7b94a3e97840bc06c51749"),
 ]
 
 script = raw"""
