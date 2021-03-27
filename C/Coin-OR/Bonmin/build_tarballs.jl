@@ -10,17 +10,37 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/Bonmin*
+
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-./configure --enable-shared \
-            --prefix=${prefix} \
-            --host=${target}
+update_configure_scripts
+
+# old and custom autoconf
+sed -i s/elf64ppc/elf64lppc/ configure
+
+mkdir build
+cd build/
+
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
+
+../configure \
+    --prefix=$prefix \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-shared \
+    --with-asl-lib="-lasl -lipoptamplinterface"
+
 make
 make install
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
+platforms = filter!(!Sys.isfreebsd, platforms)
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -30,8 +50,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(; name="Ipopt_jll", version=v"3.14.4")),
-    Dependency(PackageSpec(; name="Cbc_jll", version=v"2.10.5")),
+    Dependency("Cbc_jll", v"2.10.5"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Ipopt_jll", v"3.13.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
