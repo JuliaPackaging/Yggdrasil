@@ -60,6 +60,8 @@ products = [
 dependencies = [
     # Build against `ALSA` on Linux
     Dependency("alsa_jll"),
+    # add plugins for PulseAudio support
+    Dependency(PackageSpec(name="alsa_plugins_jll", uuid="5ac2f6bb-493e-5871-9171-112d4c21a6e7"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
