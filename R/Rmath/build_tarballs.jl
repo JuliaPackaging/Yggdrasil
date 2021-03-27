@@ -4,8 +4,8 @@ name = "Rmath"
 version = v"0.2.2"
 
 sources = [
-    ArchiveSource("https://github.com/JuliaStats/Rmath-julia/archive/v$(version).tar.gz",
-                  "6544f40e51999469873b0f28d4bdeecdc847d4b24250a65027ae07e7dccb9ccd"),
+    GitSource("https://github.com/JuliaStats/Rmath-julia.git",
+              "80bc99724807e0ad1c46800d8497480bd5f110cb"),
 ]
 
 script = raw"""
@@ -15,7 +15,7 @@ mkdir -p "${libdir}"
 mv src/libRmath-julia.* "${libdir}"
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 products = [
     LibraryProduct("libRmath-julia", :libRmath),
