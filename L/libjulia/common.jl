@@ -197,7 +197,11 @@ function build_julia(ARGS, version)
     # We don't trust the system libm in places
     # So we include a private copy of libopenlibm
     mkdir -p usr/lib
-    cp ${prefix}/lib/libopenlibm.a usr/lib/
+    if [[ "${target}" == *-mingw* ]] && [[ "${version}" == 1.6.* ]]; then
+        cp ${prefix}/bin/libopenlibm.a usr/lib/
+    else
+        cp ${prefix}/lib/libopenlibm.a usr/lib/
+    fi
 
     # Mac build complains about checksum
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
