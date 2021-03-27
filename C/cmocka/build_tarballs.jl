@@ -34,7 +34,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("cmocka", :cmocka),
+    LibraryProduct(["libcmocka", "cmocka"], :libcmocka),
 ]
 
 # Dependencies that must be installed before this package can be built
