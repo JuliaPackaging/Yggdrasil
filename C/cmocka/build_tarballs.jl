@@ -33,8 +33,8 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = LibraryProduct[
-    # TBD
+products = [
+    LibraryProduct("cmocka", :cmocka),
 ]
 
 # Dependencies that must be installed before this package can be built
