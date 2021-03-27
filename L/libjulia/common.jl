@@ -234,7 +234,7 @@ function build_julia(ARGS, version)
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
         Dependency("LibUnwind_jll"),
-        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
+        Dependency("PCRE2_jll", compat="10.31"),
         Dependency("OpenLibm_jll"),
         Dependency("dSFMT_jll"),
         Dependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")),
@@ -250,27 +250,27 @@ function build_julia(ARGS, version)
         Dependency("Objconv_jll"),
     ]
     if version < v"1.5.1"
-        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.5")))
+        push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
     else
-        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.6")))
+        push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
     end
     if version.major == 1 && version.minor == 3
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
         # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
-        push!(dependencies, Dependency(PackageSpec(name="LLVM_jll", version=v"6.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("LLVM_jll", compat="6.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 4
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.9"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.10"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
     end
 
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
