@@ -107,6 +107,12 @@ function build_julia(ARGS, version)
 
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
     shopt -s extglob
+    if [[ "${version}" == 1.6.* ]]; then
+        # Strip the OS version from Darwin and FreeBSD
+        BB_TRIPLET_LIBGFORTRAN_CXXABI=$(echo ${bb_full_target/-julia_version+([^-])} | sed 's/\(darwin\|freebsd\)[0-9.]*/\1/')
+    else
+        BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
+    fi
 
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
@@ -147,7 +153,7 @@ function build_julia(ARGS, version)
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
 
-    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${BB_TRIPLET_LIBGFORTRAN_CXXABI}
     override USE_BINARYBUILDER=1
 
     prefix=${prefix}
