@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/Rmath-julia-*
+cd $WORKSPACE/srcdir/Rmath-julia*
 make -j${nproc}
 mkdir -p "${libdir}"
 mv src/libRmath-julia.* "${libdir}"
