@@ -14,8 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cmocka-*/
-atomic_patch -p1 $WORKSPACE/srcdir/patches/wordsize.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/musl_uintptr.patch
+if [[ "${target}" = *-linux-musl* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/wordsize.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl_uintptr.patch
+fi
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
