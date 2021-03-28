@@ -6,11 +6,14 @@ version = v"1.8.8"
 sources = [
     GitSource("https://github.com/coin-or/Bonmin.git",
               "65c56cea1e7c40acd9897a2667c11f91d845bb7b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Bonmin*
+cd $WORKSPACE/srcdir/Bonmin
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_dllexport.patch
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
@@ -19,9 +22,6 @@ update_configure_scripts
 # old and custom autoconf
 sed -i s/elf64ppc/elf64lppc/ configure
 
-mkdir build
-cd build/
-
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
@@ -29,7 +29,7 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 fi
 
-../configure \
+./configure \
     --prefix=$prefix \
     --build=${MACHTYPE} \
     --host=${target} \
