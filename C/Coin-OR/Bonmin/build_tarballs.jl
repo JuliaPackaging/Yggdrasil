@@ -22,11 +22,12 @@ update_configure_scripts
 # old and custom autoconf
 sed -i s/elf64ppc/elf64lppc/ configure
 
-export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
+export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin -I${includedir}/coin-or"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
+    export LT_LDFLAGS="-no-undefined"
 fi
 
 ./configure \
@@ -47,7 +48,7 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    # LibraryProduct("libbonmin", :libbonmin),
+    LibraryProduct("libbonmin", :libbonmin),
     ExecutableProduct("bonmin", :amplexe),
 ]
 
