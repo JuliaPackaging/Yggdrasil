@@ -23,6 +23,7 @@ update_configure_scripts
 sed -i s/elf64ppc/elf64lppc/ configure
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
