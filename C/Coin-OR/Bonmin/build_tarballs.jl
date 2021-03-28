@@ -22,11 +22,11 @@ update_configure_scripts
 # old and custom autoconf
 sed -i s/elf64ppc/elf64lppc/ configure
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
+export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
+    export LDFLAGS="-L${libdir}"
 fi
 
 ./configure \
