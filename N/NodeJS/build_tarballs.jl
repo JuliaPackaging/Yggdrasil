@@ -18,7 +18,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/
 cp -r ${target}/*/* ${prefix}/.
 if [[ "${target}" == *-mingw* ]]; then
-    chmod +x ${prefix}/{node.exe,npm,npx}
+    mkdir ${prefix}/bin
+    mv ${prefix}/node.exe ${prefix}/bin
+    chmod +x ${prefix}/bin/node.exe
 fi
 install_license ${prefix}/LICENSE
 """
