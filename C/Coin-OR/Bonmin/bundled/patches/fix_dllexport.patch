@@ -1,15 +1,15 @@
 --- a/Bonmin/src/Interfaces/BonTMINLP.hpp
 +++ b/Bonmin/src/Interfaces/BonTMINLP.hpp
-@@ -16,6 +16,12 @@
+@@ -15,6 +15,12 @@
+ #define __TMINLP_HPP__
 
  #include "IpUtils.hpp"
- #include "IpReferenced.hpp"
 +
 +#ifdef _WIN32
 +#undef IPOPTLIB_EXPORT
 +#define IPOPTLIB_EXPORT __declspec(dllexport)
 +#endif
 +
+ #include "IpReferenced.hpp"
  #include "IpException.hpp"
  #include "IpAlgTypes.hpp"
- #include "CoinPackedMatrix.hpp"

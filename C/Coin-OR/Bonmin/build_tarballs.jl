@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/Bonmin
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_dllexport.patch
 
 # Remove misleading libtool files
-rm -f ${prefix}/lib/*.la
+rm -f ${libdir}/*.la
 update_configure_scripts
 
 # old and custom autoconf
@@ -27,19 +27,36 @@ export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
-    export LT_LDFLAGS="-no-undefined"
 fi
 
 ./configure \
-    --prefix=$prefix \
+    --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
+    --with-pic \
+    --disable-pkg-config \
+    --disable-debug \
     --enable-shared \
-    --with-asl-lib="-lasl -lipoptamplinterface"
+    lt_cv_deplibs_check_method=pass_all \
+    --with-asl-lib="-lasl -lipoptamplinterface" \
+    --with-metis-lib="-lmetis" \
+    --with-mumps-lib="-ldmumps -lmpiseq -lmumps_common -lopenblas -lpord" \
+    --with-coinutils-lib="-lCoinUtils" \
+    --with-osi-lib="-lOsi -lCoinUtils" \
+    --with-clp-lib="-lClp -lOsiClp -lOsi -lCoinUtils" \
+    --with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
+    --with-cbc-lib="-lCbc -lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
+    --with-ipopt-lib="-lipoptamplinterface -lipopt -lasl" \
+    --with-coindepend-lib="-lipopt -lCbc -lCgl -lClp -lOsiClp -lOsi -lCoinUtils"
+
+if [[ ${target} == *mingw* ]]; then
+    export LT_LDFLAGS="-no-undefined"
+fi
 
 make
 make install
 """
+
 
 platforms = supported_platforms()
 platforms = filter!(!Sys.isfreebsd, platforms)
