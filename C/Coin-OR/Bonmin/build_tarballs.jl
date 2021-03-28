@@ -47,7 +47,7 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libbonmin", :libbonmin),
+    # LibraryProduct("libbonmin", :libbonmin),
     ExecutableProduct("bonmin", :amplexe),
 ]
 
