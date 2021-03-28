@@ -77,10 +77,10 @@ function build_julia(ARGS, version)
     override OS=Linux
     EOM
 
-    if [[ "${version}" == 1.6.* ]]; then
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
-    else
+    if [[ "${version}" == 1.[0-5].* ]]; then
         LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    else
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
     fi
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
@@ -107,11 +107,11 @@ function build_julia(ARGS, version)
 
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
     shopt -s extglob
-    if [[ "${version}" == 1.6.* ]]; then
+    if [[ "${version}" == 1.[0-5].* ]]; then
+        BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
+    else
         # Strip the OS version from Darwin and FreeBSD
         BB_TRIPLET_LIBGFORTRAN_CXXABI=$(echo ${bb_full_target/-julia_version+([^-])} | sed 's/\(darwin\|freebsd\)[0-9.]*/\1/')
-    else
-        BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
     fi
 
     cat << EOM >Make.user
@@ -203,11 +203,7 @@ function build_julia(ARGS, version)
     # We don't trust the system libm in places
     # So we include a private copy of libopenlibm
     mkdir -p usr/lib
-    if [[ "${target}" == *-mingw* ]] && [[ "${version}" == 1.6.* ]]; then
-        cp ${prefix}/bin/libopenlibm.a usr/lib/
-    else
-        cp ${prefix}/lib/libopenlibm.a usr/lib/
-    fi
+    cp ${prefix}/*/libopenlibm.a usr/lib/
 
     # Mac build complains about checksum
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
