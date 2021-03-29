@@ -33,21 +33,8 @@ fi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --with-pic \
-    --disable-pkg-config \
-    --disable-debug \
-    --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
-    --with-asl-lib="-lasl -lipoptamplinterface" \
-    --with-metis-lib="-lmetis" \
-    --with-mumps-lib="-ldmumps -lmpiseq -lmumps_common -lopenblas -lpord" \
-    --with-coinutils-lib="-lCoinUtils" \
-    --with-osi-lib="-lOsi -lCoinUtils" \
-    --with-clp-lib="-lClp -lOsiClp -lOsi -lCoinUtils" \
-    --with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
-    --with-cbc-lib="-lCbc -lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
-    --with-ipopt-lib="-lipoptamplinterface -lipopt -lasl" \
-    --with-coindepend-lib="-lipopt -lCbc -lCgl -lClp -lOsiClp -lOsi -lCoinUtils"
+    --with-asl-lib="-lipoptamplinterface -lasl"
 
 if [[ ${target} == *mingw* ]]; then
     export LT_LDFLAGS="-no-undefined"
