@@ -20,8 +20,8 @@ export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 cd src
 make -j${nproc}
-#make install
-make DESTDIR="$WORKSPACE/workdir" install
+make install
+#make DESTDIR="$WORKSPACE/destdir" install
 """
 
 # These are the platforms we will build for by default, unless further
