@@ -17,10 +17,22 @@ cd $WORKSPACE/srcdir/gnuplot-*/
 apk add g++ linux-headers samurai
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-cd src
-make -j${nproc}
-make install
+./configure \
+		--prefix= ../../workdir/usr \
+		--sysconfdir=../../workdir/etc \
+		--mandir=../../workdir/usr/share/man \
+		--localstatedir=../../workdir/var \
+		--enable-stats \
+		--disable-wxwidgets \
+		--disable-qt \
+        --build=${MACHTYPE} \
+        --host=${target}
+	make
+# ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# cd src
+make # -j${nproc}
+#make install
+make DESTDIR="../../workdir" install
 """
 
 # These are the platforms we will build for by default, unless further
