@@ -17,22 +17,11 @@ cd $WORKSPACE/srcdir/gnuplot-*/
 apk add g++ linux-headers samurai
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
-./configure \
-		--prefix= ../../workdir/usr \
-		--sysconfdir=../../workdir/etc \
-		--mandir=../../workdir/usr/share/man \
-		--localstatedir=../../workdir/var \
-		--enable-stats \
-		--disable-wxwidgets \
-		--disable-qt \
-        --build=${MACHTYPE} \
-        --host=${target}
-	make
-# ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-# cd src
-make # -j${nproc}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd src
+make -j${nproc}
 #make install
-make DESTDIR="../../workdir" install
+make DESTDIR="$WORKSPACE/workdir" install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,7 +31,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    LibraryProduct("libiconv", :libiconv),
+    #ExecutableProduct("gnuplot_qt", :libiconv),
 ]
 
 # Dependencies that must be installed before this package can be built
