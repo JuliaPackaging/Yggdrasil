@@ -5,13 +5,13 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
-upstream_version = v"0.4.0"
-version = VersionNumber(upstream_version.major, upstream_version.minor, julia_version.minor)
+upstream_version = v"0.4.1"
+version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + julia_version.minor)
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
-                  "004380813658ba218092ba526a8acf884796fe9afa581552523bd302210293af"),
+                  "f7733a8eb2b2e75d63db6cb6b035b9fae24ce7f6c2992253a3df0529a914ad37"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,12 +49,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name="polymake_jll", version=v"400.300.000")),
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("libcxxwrap_julia_jll"),
+    Dependency("polymake_jll", compat = "~400.300.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
