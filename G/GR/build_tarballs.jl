@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.56.1"
+version = v"0.57.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "c5fbc6613de1437a3dd598680de02af8dbe1098f"),
+    GitSource("https://github.com/sciapp/gr.git", "6e18065920d2b5d9f03aec552a9bc8e85df33262"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "1e372730b864b105a4091cb2fd0814156aea8992ef0db308b9695956a292acc8", "gr.js")
+               "e5933b240a4caa9eeeb41f0945de4fac38a860d9b03d409ba6f8b4bcfbffa5c7", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -91,7 +91,7 @@ dependencies = [
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
 #    Dependency("Qhull_jll"),
-    Dependency("Qt_jll"),    
+    Dependency("Qt5Base_jll"),    
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
