@@ -6,14 +6,15 @@ version = v"1.8.8"
 sources = [
     GitSource("https://github.com/coin-or/Bonmin.git",
               "65c56cea1e7c40acd9897a2667c11f91d845bb7b"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Bonmin
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_dllexport.patch
+if [[ ${target} == *mingw* ]]; then
+    sed -i s/dllimport/dllexport/ /workspace/destdir/include/coin-or/IpoptConfig.h
+fi
 
 # Remove misleading libtool files
 rm -f ${libdir}/*.la
@@ -27,17 +28,31 @@ export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
+    export LT_LDFLAGS="-no-undefined"
 fi
 
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
+    --disable-pthread-mumps \
+    --enable-static \
+    --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lipoptamplinterface -lasl"
 
 if [[ ${target} == *mingw* ]]; then
-    export LT_LDFLAGS="-no-undefined"
+    for d in Interfaces Algorithms CbcBonmin/Heuristics; do
+        cd ${WORKSPACE}/srcdir/Bonmin/Bonmin/src/$d
+        make install
+    done
+    cd ${WORKSPACE}/srcdir/Bonmin/Bonmin/src/CbcBonmin
+    make libbonmin.la
+    cp .libs/libbonmin.a .libs/libbonmin.dll.a
+    make
+    make install
+    cp .libs/libbonminampl.a .libs/libbonminampl.dll.a
+    cd ../..
 fi
 
 make
