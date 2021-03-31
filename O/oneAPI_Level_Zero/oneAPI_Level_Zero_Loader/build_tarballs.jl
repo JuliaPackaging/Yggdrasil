@@ -43,10 +43,10 @@ dependencies = [
     #
     # Users of these packages, e.g. oneAPI.jl, should only depend on the loader and an
     # implementation, but will need to make sure to load one before the other.
-    Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=api_version)),
+    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=$api_version"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"5")
 
-# bump counter: 1
+# bump counter: 2
