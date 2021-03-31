@@ -6,6 +6,7 @@ version = v"1.8.8"
 sources = [
     GitSource("https://github.com/coin-or/Bonmin.git",
               "65c56cea1e7c40acd9897a2667c11f91d845bb7b"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -14,6 +15,7 @@ cd $WORKSPACE/srcdir/Bonmin
 
 if [[ ${target} == *mingw* ]]; then
     sed -i s/dllimport/dllexport/ /workspace/destdir/include/coin-or/IpoptConfig.h
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_dllexport.patch
 fi
 
 # Remove misleading libtool files
@@ -40,20 +42,6 @@ fi
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lipoptamplinterface -lasl"
-
-if [[ ${target} == *mingw* ]]; then
-    for d in Interfaces Algorithms CbcBonmin/Heuristics; do
-        cd ${WORKSPACE}/srcdir/Bonmin/Bonmin/src/$d
-        make install
-    done
-    cd ${WORKSPACE}/srcdir/Bonmin/Bonmin/src/CbcBonmin
-    make libbonmin.la
-    cp .libs/libbonmin.a .libs/libbonmin.dll.a
-    make
-    make install
-    cp .libs/libbonminampl.a .libs/libbonminampl.dll.a
-    cd ../..
-fi
 
 make
 make install

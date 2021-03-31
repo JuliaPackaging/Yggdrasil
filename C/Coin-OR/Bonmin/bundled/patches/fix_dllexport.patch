@@ -1,0 +1,869 @@
+diff --git a/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp b/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
+index 152d1b4..b34f336 100644
+--- a/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
++++ b/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
+@@ -14,7 +14,7 @@
+ 
+ namespace Bonmin
+ {
+-  class BonminAmplSetup: public BonminSetup
++  class __declspec(dllexport) BonminAmplSetup: public BonminSetup
+   {
+   public:
+     /** initialize bonmin with ampl model using the command line arguments.*/
+diff --git a/Bonmin/src/Algorithms/BonBabSetupBase.hpp b/Bonmin/src/Algorithms/BonBabSetupBase.hpp
+index c51c67c..5e21b8f 100644
+--- a/Bonmin/src/Algorithms/BonBabSetupBase.hpp
++++ b/Bonmin/src/Algorithms/BonBabSetupBase.hpp
+@@ -22,7 +22,7 @@
+ namespace Bonmin
+ {
+   /** A class to have all elements necessary to setup a branch-and-bound.*/
+-  class BabSetupBase
++  class __declspec(dllexport) BabSetupBase
+   {
+   public:
+     /** Type for cut generation method with its frequency and string identification. */
+diff --git a/Bonmin/src/Algorithms/BonBonminSetup.hpp b/Bonmin/src/Algorithms/BonBonminSetup.hpp
+index c1ea003..4691b7c 100644
+--- a/Bonmin/src/Algorithms/BonBonminSetup.hpp
++++ b/Bonmin/src/Algorithms/BonBonminSetup.hpp
+@@ -22,7 +22,7 @@ namespace Bonmin
+     B_IFP=5/** Bonmin's implemantation of iterated feasibility pump for MINLP.*/
+   };
+   /* Bonmin algorithm setup. */
+-  class BonminSetup : public BabSetupBase
++  class __declspec(dllexport) BonminSetup : public BabSetupBase
+   {
+   public:
+     /** Default constructor. */
+diff --git a/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp b/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
+index 6d16e91..d5606f3 100644
+--- a/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
++++ b/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
+@@ -17,7 +17,7 @@
+ namespace Bonmin
+ {
+   /** A class to setup default strategy for Cbc specifying which cut generators to use.*/
+-  class CbcStrategyChooseCuts : public CbcStrategyDefault {
++  class __declspec(dllexport) CbcStrategyChooseCuts : public CbcStrategyDefault {
+      public:
+      /** Default constructor.*/
+      CbcStrategyChooseCuts();
+diff --git a/Bonmin/src/Algorithms/BonSubMipSolver.hpp b/Bonmin/src/Algorithms/BonSubMipSolver.hpp
+index d7749c2..038f73b 100644
+--- a/Bonmin/src/Algorithms/BonSubMipSolver.hpp
++++ b/Bonmin/src/Algorithms/BonSubMipSolver.hpp
+@@ -26,7 +26,7 @@ namespace Bonmin {
+     class RegisteredOptions;
+     class BabSetupBase; 
+     /** A very simple class to provide a common interface for solving MIPs with Cplex and Cbc.*/
+-    class SubMipSolver
++    class __declspec(dllexport) SubMipSolver
+     {
+     public:
+       enum MILP_solve_strategy{
+diff --git a/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp b/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
+index 82e7575..fb5924c 100644
+--- a/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
+@@ -18,7 +18,7 @@ class CbcModel;
+ namespace Bonmin
+ {
+ 
+-  class HotInfo : public OsiHotInfo {
++  class __declspec(dllexport) HotInfo : public OsiHotInfo {
+     public:
+     /// Default constructor
+     HotInfo();
+@@ -78,7 +78,7 @@ namespace Bonmin
+       value induced by branching on a specific object are estimated with the pure virtual function fill_changes.
+   */
+ 
+-  class BonChooseVariable : public OsiChooseVariable
++  class __declspec(dllexport) BonChooseVariable : public OsiChooseVariable
+   {
+   protected:
+   /**  This is a utility function which does strong branching on
+@@ -130,7 +130,7 @@ namespace Bonmin
+       BON_CHOOSE_MESSAGES_DUMMY_END
+     };
+ 
+-  class Messages : public CoinMessages
++  class __declspec(dllexport) Messages : public CoinMessages
+     {
+     public:
+       Messages();
+diff --git a/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
+index 83be1ac..837b61a 100644
+--- a/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
+@@ -15,7 +15,7 @@ namespace Bonmin
+   /** Implementation of BonChooseVariable for curvature-based braching.
+   */
+ 
+-  class CurvBranchingSolver : public StrongBranchingSolver
++  class __declspec(dllexport) CurvBranchingSolver : public StrongBranchingSolver
+   {
+ 
+   public:
+diff --git a/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
+index 9e10172..6a8f3d4 100644
+--- a/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
+@@ -12,7 +12,7 @@ namespace Bonmin
+   /** Implementation of BonChooseVariable for curvature-based braching.
+   */
+ 
+-  class LpBranchingSolver : public StrongBranchingSolver
++  class __declspec(dllexport) LpBranchingSolver : public StrongBranchingSolver
+   {
+ 
+   public:
+diff --git a/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp b/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
+index b7934e5..65794ab 100644
+--- a/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
+@@ -14,7 +14,7 @@
+ namespace Bonmin
+ {
+ 
+-  class PseudoCosts: public OsiPseudoCosts
++  class __declspec(dllexport) PseudoCosts: public OsiPseudoCosts
+   {
+   public:
+     /** Default constructor.*/
+diff --git a/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
+index 39c4c86..776db8e 100644
+--- a/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
+@@ -21,7 +21,7 @@ namespace Bonmin
+       (strong branching).
+   */
+ 
+-  class QpBranchingSolver : public StrongBranchingSolver
++  class __declspec(dllexport) QpBranchingSolver : public StrongBranchingSolver
+   {
+ 
+   public:
+diff --git a/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp b/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
+index 41c6f58..154e6d0 100644
+--- a/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
++++ b/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
+@@ -14,7 +14,7 @@
+ #include <list>
+ #include <cmath>
+ 
+-class BonRandomChoice : public OsiChooseVariable {
++class __declspec(dllexport) BonRandomChoice : public OsiChooseVariable {
+   public:
+   ///Default constructor
+   BonRandomChoice(): OsiChooseVariable(){
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp b/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
+index 5c3d7fa..196209a 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
+@@ -14,7 +14,7 @@
+ #include "CbcHeuristic.hpp"
+ namespace Bonmin
+ {
+-  class  DummyHeuristic : public CbcHeuristic
++  class  __declspec(dllexport) DummyHeuristic : public CbcHeuristic
+   {
+   public:
+     /// Default constructor
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp b/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
+index 8f57038..4e12f23 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
+@@ -14,7 +14,7 @@
+ #include "CglCutGenerator.hpp"
+ namespace Bonmin
+ {
+-  class EcpCuts: public OaDecompositionBase
++  class __declspec(dllexport) EcpCuts: public OaDecompositionBase
+   {
+   public:
+     EcpCuts(BabSetupBase & b);
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp b/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
+index 56a8c25..ad221bb 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
+@@ -12,7 +12,7 @@
+ #include "BonOaDecBase.hpp"
+ 
+ namespace Bonmin{
+-  class MinlpFeasPump : public OaDecompositionBase{
++  class __declspec(dllexport) MinlpFeasPump : public OaDecompositionBase{
+    public:
+     /// Constructor with basic setup
+     MinlpFeasPump(BabSetupBase & b);
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
+index c098c9b..d04b760 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
+@@ -15,7 +15,7 @@
+ namespace Bonmin
+ {
+   /** Class to perform OA in its classical form.*/
+-  class OACutGenerator2 : public OaDecompositionBase
++  class __declspec(dllexport) OACutGenerator2 : public OaDecompositionBase
+   {
+   public:
+     /// Constructor with basic setup
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
+index cfe3272..7b79e7f 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
+@@ -34,7 +34,7 @@ namespace Bonmin
+   };
+ 
+   /** Output messages for Outer approximation cutting planes */
+-  class OaMessages : public CoinMessages
++  class __declspec(dllexport) OaMessages : public CoinMessages
+   {
+   public:
+     OaMessages();
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
+index 61156f7..020666b 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
+@@ -24,7 +24,7 @@
+ namespace Bonmin
+ {
+   /** Base class for OA algorithms.*/
+-  class OaDecompositionBase : public CglCutGenerator
++  class __declspec(dllexport) OaDecompositionBase : public CglCutGenerator
+   {
+   public:
+ 
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
+index 5ef8c14..50bd999 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
+@@ -15,7 +15,7 @@
+ namespace Bonmin
+ {
+   /** Class to perform OA in its classical form.*/
+-  class OaFeasibilityChecker : public OaDecompositionBase
++  class __declspec(dllexport) OaFeasibilityChecker : public OaDecompositionBase
+   {
+   public:
+     /// New usefull constructor
+diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
+index c157b66..210ad6c 100644
+--- a/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
++++ b/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
+@@ -16,7 +16,7 @@
+ namespace Bonmin
+ {
+   /** Generate cuts for the nlp corresponding to continuous relaxation at a node.*/
+-  class OaNlpOptim : public CglCutGenerator
++  class __declspec(dllexport) OaNlpOptim : public CglCutGenerator
+   {
+   public:
+     /// Default constructor
+diff --git a/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp b/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
+index 4c80719..44e3a5b 100644
+--- a/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
++++ b/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
+@@ -17,7 +17,7 @@
+ #include <list>
+ 
+ namespace Bonmin {
+-class LinearCutsGenerator : public CglCutGenerator {
++class __declspec(dllexport) LinearCutsGenerator : public CglCutGenerator {
+    public:
+     /** Type for cut generation method with its frequency and string identification. */
+     struct CuttingMethod : public Coin::ReferencedObject 
+diff --git a/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp b/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
+index 8cbf0c8..0fc7d95 100644
+--- a/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
++++ b/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
+@@ -24,7 +24,7 @@ namespace Bonmin {
+    Lower /** Stores the lower triangle of a symetric Q.*/,
+    Full /** Stores the whole matrix of a non-symetric Q.*/};
+ 
+-class QuadCut : public OsiRowCut {
++class __declspec(dllexport) QuadCut : public OsiRowCut {
+  public:
+ 
+   /// Default constructor
+@@ -98,7 +98,7 @@ class QuadCut : public OsiRowCut {
+ };
+ 
+ /** Generalizes OsiCuts to handle quadratic cuts.*/
+-class Cuts : public OsiCuts {
++class __declspec(dllexport) Cuts : public OsiCuts {
+  public:
+   typedef vector<QuadCut *> QuadCutPtrStorage;
+   /** Default constructor.*/
+diff --git a/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp b/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
+index 4d7f0c6..14dbae8 100644
+--- a/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
++++ b/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
+@@ -19,7 +19,7 @@ namespace Bonmin
+ 
+   /** This is a derived class fro TMINLP2TNLP to handle adding quadratic cuts.
+    */
+-  class TMINLP2TNLPQuadCuts : public Bonmin::TMINLP2TNLP
++  class __declspec(dllexport) TMINLP2TNLPQuadCuts : public Bonmin::TMINLP2TNLP
+   {
+   public:
+     /**@name Constructors/Destructors */
+diff --git a/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp b/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
+index 819bc57..077e4b8 100644
+--- a/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
++++ b/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
+@@ -36,7 +36,7 @@ namespace Bonmin {
+     \f]
+     The objective is put as first constraint of the problem and the extra variable is the last one.
+  .*/
+-class TMINLPLinObj: public Bonmin::TMINLP {
++class __declspec(dllexport) TMINLPLinObj: public Bonmin::TMINLP {
+   public:
+    /** Default constructor*/
+    TMINLPLinObj();
+diff --git a/Bonmin/src/CbcBonmin/BonBabInfos.hpp b/Bonmin/src/CbcBonmin/BonBabInfos.hpp
+index 4ff4b37..2889242 100644
+--- a/Bonmin/src/CbcBonmin/BonBabInfos.hpp
++++ b/Bonmin/src/CbcBonmin/BonBabInfos.hpp
+@@ -16,7 +16,7 @@ namespace Bonmin
+ {
+   class Bab;
+   /** Bonmin class for passing info between components of branch-and-cuts.*/
+-  class BabInfo : public Bonmin::AuxInfo
++  class __declspec(dllexport) BabInfo : public Bonmin::AuxInfo
+   {
+   public:
+     /** Default constructor.*/
+diff --git a/Bonmin/src/CbcBonmin/BonCbc.hpp b/Bonmin/src/CbcBonmin/BonCbc.hpp
+index caa178e..66dc62a 100644
+--- a/Bonmin/src/CbcBonmin/BonCbc.hpp
++++ b/Bonmin/src/CbcBonmin/BonCbc.hpp
+@@ -16,7 +16,7 @@
+ namespace Bonmin
+ {
+   class BabSetupBase;
+-  class Bab
++  class __declspec(dllexport) Bab
+   {
+   public:
+     /** Integer optimization return codes.*/
+diff --git a/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp b/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
+index b642ad0..f5c087c 100644
+--- a/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
++++ b/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
+@@ -20,7 +20,7 @@ class CoinWarmStartDiff;
+ 
+ namespace Bonmin
+ {
+-  class CbcNlpStrategy : public CbcStrategy
++  class __declspec(dllexport) CbcNlpStrategy : public CbcStrategy
+   {
+   public:
+ 
+diff --git a/Bonmin/src/CbcBonmin/BonCbcNode.hpp b/Bonmin/src/CbcBonmin/BonCbcNode.hpp
+index 9594124..7a1f753 100644
+--- a/Bonmin/src/CbcBonmin/BonCbcNode.hpp
++++ b/Bonmin/src/CbcBonmin/BonCbcNode.hpp
+@@ -25,7 +25,7 @@ namespace Bonmin
+     augmenting the parent subproblem.
+   */
+ 
+-  class BonCbcFullNodeInfo : public CbcFullNodeInfo
++  class __declspec(dllexport) BonCbcFullNodeInfo : public CbcFullNodeInfo
+   {
+ 
+   public:
+@@ -82,7 +82,7 @@ namespace Bonmin
+     augmenting the parent subproblem.
+   */
+ 
+-  class BonCbcPartialNodeInfo : public CbcPartialNodeInfo
++  class __declspec(dllexport) BonCbcPartialNodeInfo : public CbcPartialNodeInfo
+   {
+ 
+   public:
+diff --git a/Bonmin/src/CbcBonmin/BonDiver.hpp b/Bonmin/src/CbcBonmin/BonDiver.hpp
+index 20a9fa6..b583c74 100644
+--- a/Bonmin/src/CbcBonmin/BonDiver.hpp
++++ b/Bonmin/src/CbcBonmin/BonDiver.hpp
+@@ -105,7 +105,7 @@ namespace Bonmin
+     * Principle is that branch-and-bound follows current branch of the tree by exploring the two children at each level
+     * and continuing the dive on the best one of the two. Untill it 
+     *  hits the bottom at which point it goes to the best candidate (according to CbcCompare) on the heap.*/
+-  class CbcProbedDiver : public CbcTree
++  class __declspec(dllexport) CbcProbedDiver : public CbcTree
+   {
+   public:
+     /// Default constructor.
+@@ -196,7 +196,7 @@ namespace Bonmin
+ 
+      \bug This won't work in a non-convex problem where objective does not decrease down branches.
+    */
+-  class CbcDfsDiver :public CbcTree
++  class __declspec(dllexport) CbcDfsDiver :public CbcTree
+   {
+   public:
+     enum ComparisonModes{
+@@ -306,7 +306,7 @@ namespace Bonmin
+ 
+   };
+ 
+-  class DiverCompare : public CbcCompareBase
++  class __declspec(dllexport) DiverCompare : public CbcCompareBase
+   {
+   public:
+     // Default Constructor
+diff --git a/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp b/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
+index c8c4e6f..ee70ba7 100644
+--- a/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
++++ b/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
+@@ -13,7 +13,7 @@
+ 
+ namespace Bonmin
+ {
+-  class  GuessHeuristic : public CbcHeuristic
++  class  __declspec(dllexport) GuessHeuristic : public CbcHeuristic
+   {
+   public:
+     /// Usefull constructor
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
+index 71039d8..2e648e5 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
+@@ -15,7 +15,7 @@
+ 
+ namespace Bonmin
+ {
+-  class HeuristicDive : public CbcHeuristic
++  class __declspec(dllexport) HeuristicDive : public CbcHeuristic
+   {
+   public:
+     /// Default constructor
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
+index a5efbc6..d8bf310 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace Bonmin
+ {
+-  class HeuristicDiveFractional : public HeuristicDive {
++  class __declspec(dllexport) HeuristicDiveFractional : public HeuristicDive {
+   public:
+     /// Default Constructor 
+     HeuristicDiveFractional ();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
+index 11da60a..0208516 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
+@@ -16,7 +16,7 @@
+ namespace Bonmin
+ {
+   class SubMipSolver;
+-  class HeuristicDiveMIP : public CbcHeuristic
++  class __declspec(dllexport) HeuristicDiveMIP : public CbcHeuristic
+   {
+   public:
+ #if 0
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
+index dae7b3f..79ccdc4 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace Bonmin
+ {
+-  class HeuristicDiveMIPFractional : public HeuristicDiveMIP {
++  class __declspec(dllexport) HeuristicDiveMIPFractional : public HeuristicDiveMIP {
+   public:
+     /// Default Constructor 
+     HeuristicDiveMIPFractional ();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
+index c14ba30..01053c7 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace Bonmin
+ {
+-  class HeuristicDiveMIPVectorLength : public HeuristicDiveMIP {
++  class __declspec(dllexport) HeuristicDiveMIPVectorLength : public HeuristicDiveMIP {
+   public:
+     /// Default Constructor 
+     HeuristicDiveMIPVectorLength ();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
+index 90942a2..1f4255f 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace Bonmin
+ {
+-  class HeuristicDiveVectorLength : public HeuristicDive {
++  class __declspec(dllexport) HeuristicDiveVectorLength : public HeuristicDive {
+   public:
+     /// Default Constructor 
+     HeuristicDiveVectorLength ();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
+index 3f935e6..7673518 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
+@@ -12,7 +12,7 @@
+ #include "CbcHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class LocalSolverBasedHeuristic : public CbcHeuristic {
++  class __declspec(dllexport) LocalSolverBasedHeuristic : public CbcHeuristic {
+   public:
+     /** Default constructor.*/
+     LocalSolverBasedHeuristic();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
+index 94f8723..187cbea 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
+@@ -18,7 +18,7 @@
+ namespace Bonmin
+ {
+   class SubMipSolver;
+-  class MilpRounding : public CbcHeuristic
++  class __declspec(dllexport) MilpRounding : public CbcHeuristic
+   {
+   public:
+ 
+diff --git a/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp b/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
+index 055004c..3abaa7a 100644
+--- a/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
++++ b/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
+@@ -19,7 +19,7 @@ class BM_lp;
+ namespace Bonmin
+ {
+   /** Class for providing an Osi interface to Ipopt with an ampl nl file as input. */
+-  class AmplInterface: public OsiTMINLPInterface
++  class __declspec(dllexport) AmplInterface: public OsiTMINLPInterface
+   {
+   public:
+     /** Default constructor */
+diff --git a/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp b/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
+index 0a566a2..41e7a28 100644
+--- a/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
++++ b/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
+@@ -43,7 +43,7 @@ namespace Bonmin
+    *  This interface creates a AmplTNLP and also retrieves
+    *  the information about the binary and integer variables
+    */
+-  class AmplTMINLP : public TMINLP
++  class __declspec(dllexport) AmplTMINLP : public TMINLP
+   {
+   public:
+     /**@name Constructors/Destructors */
+diff --git a/Bonmin/src/Interfaces/BonAuxInfos.hpp b/Bonmin/src/Interfaces/BonAuxInfos.hpp
+index 8643a57..d274123 100644
+--- a/Bonmin/src/Interfaces/BonAuxInfos.hpp
++++ b/Bonmin/src/Interfaces/BonAuxInfos.hpp
+@@ -20,7 +20,7 @@ namespace Bonmin {
+ 
+ 
+   /** Bonmin class for passing info between components of branch-and-cuts.*/
+-class AuxInfo : public OsiBabSolver {
++class __declspec(dllexport) AuxInfo : public OsiBabSolver {
+ public:
+   /** Default constructor.*/
+   AuxInfo(int type);
+diff --git a/Bonmin/src/Interfaces/BonBoundsReader.hpp b/Bonmin/src/Interfaces/BonBoundsReader.hpp
+index 18dd9cf..6507fa8 100644
+--- a/Bonmin/src/Interfaces/BonBoundsReader.hpp
++++ b/Bonmin/src/Interfaces/BonBoundsReader.hpp
+@@ -17,7 +17,7 @@
+ namespace Bonmin {
+ /** Reads a file containing change bounds for variables.
+     Files follows pretty much the Bounds section in MPS standard.*/
+-class BoundsReader
++class __declspec(dllexport) BoundsReader
+ {
+ public:
+   //Default constructor
+diff --git a/Bonmin/src/Interfaces/BonBranchingTQP.hpp b/Bonmin/src/Interfaces/BonBranchingTQP.hpp
+index f718419..066e694 100644
+--- a/Bonmin/src/Interfaces/BonBranchingTQP.hpp
++++ b/Bonmin/src/Interfaces/BonBranchingTQP.hpp
+@@ -22,7 +22,7 @@ namespace Bonmin
+    *  TNLP, not on the TNLP itself.  The variables of the QP are the
+    *  displacement from the reference point.
+    */
+-  class BranchingTQP : public Ipopt::TNLP
++  class __declspec(dllexport) BranchingTQP : public Ipopt::TNLP
+   {
+   public:
+     /**@name Constructors/Destructors */
+diff --git a/Bonmin/src/Interfaces/BonColReader.hpp b/Bonmin/src/Interfaces/BonColReader.hpp
+index 6ddc4a2..00adcad 100644
+--- a/Bonmin/src/Interfaces/BonColReader.hpp
++++ b/Bonmin/src/Interfaces/BonColReader.hpp
+@@ -22,7 +22,7 @@
+ namespace Bonmin{
+ /** A class for reading a .col or .row file containing name for variables and constraints (usually ampl generated file).
+    */
+-class NamesReader
++class __declspec(dllexport) NamesReader
+ {
+ public:
+   /** Constructor with a file name given by a const char * */
+diff --git a/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp b/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
+index 0eadbf2..1b9be8f 100644
+--- a/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
++++ b/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
+@@ -26,7 +26,7 @@ namespace Bonmin
+ 
+   /** 
+    */
+-  class CurvatureEstimator: public ReferencedObject
++  class __declspec(dllexport) CurvatureEstimator: public ReferencedObject
+   {
+   public:
+     /** @name Constructor/Destructor */
+diff --git a/Bonmin/src/Interfaces/BonCutStrengthener.hpp b/Bonmin/src/Interfaces/BonCutStrengthener.hpp
+index f44acd5..edff376 100644
+--- a/Bonmin/src/Interfaces/BonCutStrengthener.hpp
++++ b/Bonmin/src/Interfaces/BonCutStrengthener.hpp
+@@ -29,7 +29,7 @@ namespace Bonmin
+ 
+   /** Class for strengthening OA cuts, and generating additional ones.
+    */
+-  class CutStrengthener: public Ipopt::ReferencedObject
++  class __declspec(dllexport) CutStrengthener: public Ipopt::ReferencedObject
+   {
+     /** Class implementing the TNLP for strengthening one cut.  We
+      *  assume that the cut has a lower bound. */
+diff --git a/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp b/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
+index 3d95545..20590b8 100644
+--- a/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
++++ b/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
+@@ -45,7 +45,7 @@ namespace Bonmin {
+    (so that we can use it for example as the continuous solver in Cbc).
+ */
+ 
+-class OsiTMINLPInterface : public OsiSolverInterface
++class __declspec(dllexport) OsiTMINLPInterface : public OsiSolverInterface
+ {
+   friend class BonminParam;
+ 
+@@ -121,7 +121,7 @@ class SimpleError : public CoinError
+ 
+ 
+   /** Messages written by an OsiTMINLPInterface. */
+-class Messages : public CoinMessages
++class __declspec(dllexport) Messages : public CoinMessages
+   {
+   public:
+     /// Constructor
+@@ -976,13 +976,13 @@ void getBendersCut(OsiCuts &cs, bool global);
+     OA_CUT_GENERATED/** Print the cut which has been generated.*/,
+     OA_MESSAGES_DUMMY_END/** Dummy end.*/};
+   /** Class to store OA Messages.*/
+-  class OaMessages :public CoinMessages{
++  class __declspec(dllexport) OaMessages :public CoinMessages{
+      public:
+      /** Default constructor.*/
+      OaMessages();
+   };
+   /** Like a CoinMessageHandler but can print a cut also.*/
+-  class OaMessageHandler : public CoinMessageHandler{
++  class __declspec(dllexport) OaMessageHandler : public CoinMessageHandler{
+     public:
+     /** Default constructor.*/
+     OaMessageHandler():CoinMessageHandler(){
+diff --git a/Bonmin/src/Interfaces/BonRegisteredOptions.hpp b/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
+index 8679eda..11430a0 100644
+--- a/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
++++ b/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
+@@ -27,7 +27,7 @@ namespace Bonmin {
+     In particular, it allows to store code to indicate in which algorithm
+     option is available. It also allows to table summing up all the options
+     both in LaTex and html.*/
+-class RegisteredOptions: public Ipopt::RegisteredOptions{
++class __declspec(dllexport) RegisteredOptions: public Ipopt::RegisteredOptions{
+   public:
+     enum ExtraOptInfosBits{
+     validInHybrid=0/** Say that option is valid in Hybrid method (1).*/,
+diff --git a/Bonmin/src/Interfaces/BonStartPointReader.hpp b/Bonmin/src/Interfaces/BonStartPointReader.hpp
+index d0dd0c8..3236677 100644
+--- a/Bonmin/src/Interfaces/BonStartPointReader.hpp
++++ b/Bonmin/src/Interfaces/BonStartPointReader.hpp
+@@ -20,7 +20,7 @@
+ namespace Bonmin {
+ /** This class reads a file with a starting point for Ipopt initalization. File format is number of primals number of duals then values one after another
+  * Numbering of variables is first variables, then duals on lower bounds duals on upper bounds and to finish duals on constraints */
+-class StartPointReader
++class __declspec(dllexport) StartPointReader
+ {
+ public:
+   /** Constructor with fileName_ given by a string (and default) */
+diff --git a/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp b/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
+index 087d2e7..ea1e58c 100644
+--- a/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
++++ b/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
+@@ -14,7 +14,7 @@ namespace Bonmin {
+  *  BonOsiSolverInterface to perform the strong branching solves.
+ */
+ 
+-class StrongBranchingSolver : public Ipopt::ReferencedObject  {
++class __declspec(dllexport) StrongBranchingSolver : public Ipopt::ReferencedObject  {
+  
+ public:
+ 
+diff --git a/Bonmin/src/Interfaces/BonTMINLP.hpp b/Bonmin/src/Interfaces/BonTMINLP.hpp
+index b6d21e1..67c7840 100644
+--- a/Bonmin/src/Interfaces/BonTMINLP.hpp
++++ b/Bonmin/src/Interfaces/BonTMINLP.hpp
+@@ -56,7 +56,7 @@ namespace Bonmin
+    *  variable has no upper or lower bound, set the bound to
+    *  -ipopt_inf or +ipopt_inf respectively
+    */
+-  class TMINLP : public Ipopt::ReferencedObject
++  class __declspec(dllexport) TMINLP : public Ipopt::ReferencedObject
+   {
+   public:
+     friend class TMINLP2TNLP;
+@@ -69,7 +69,7 @@ namespace Bonmin
+       USER_INTERRUPT,
+       MINLP_ERROR};
+     /** Class to store sos constraints for model */
+-    struct SosInfo
++    struct __declspec(dllexport) SosInfo
+     {
+       /** Number of SOS constraints.*/
+       int num;
+@@ -154,7 +154,7 @@ namespace Bonmin
+     };
+ 
+     /** Class to store perturbation radii for variables in the model */
+-    class PerturbInfo
++    class __declspec(dllexport) PerturbInfo
+     {
+     public:
+       /** default constructor. */
+diff --git a/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp b/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
+index 09fb186..b012020 100644
+--- a/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
++++ b/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
+@@ -23,7 +23,7 @@ namespace Bonmin {
+   class BabSetupBase;
+ 
+   /** A transformer class to build outer approximations i.e. transfomrs nonlinear programs into linear programs.*/
+-  class TMINLP2OsiLP: public Ipopt::ReferencedObject {
++  class __declspec(dllexport) TMINLP2OsiLP: public Ipopt::ReferencedObject {
+ 
+   public:
+ 
+diff --git a/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp b/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
+index 7523fc1..da8e17e 100644
+--- a/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
++++ b/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
+@@ -29,7 +29,7 @@ namespace Bonmin
+    *  the treatment of binary and integer variables as
+    *  relaxed, or fixed
+    */
+-  class TMINLP2TNLP : public Ipopt::TNLP
++  class __declspec(dllexport) TMINLP2TNLP : public Ipopt::TNLP
+   {
+   public:
+     /**@name Constructors/Destructors */
+diff --git a/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp b/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
+index 82137c9..4f03f71 100644
+--- a/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
++++ b/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
+@@ -19,7 +19,7 @@ namespace Bonmin
+    *  by changing the objective function to the (2-norm) distance to a point.
+    * The extra function is set_dist_to_point_obj(size_t n, const double *, const int *)
+    */
+-  class TNLP2FPNLP : public Ipopt::TNLP
++  class __declspec(dllexport) TNLP2FPNLP : public Ipopt::TNLP
+   {
+   public:
+     /**@name Constructors/Destructors */
+diff --git a/Bonmin/src/Interfaces/BonTNLPSolver.hpp b/Bonmin/src/Interfaces/BonTNLPSolver.hpp
+index 195fbad..45e90e5 100644
+--- a/Bonmin/src/Interfaces/BonTNLPSolver.hpp
++++ b/Bonmin/src/Interfaces/BonTNLPSolver.hpp
+@@ -23,7 +23,7 @@ namespace Bonmin  {
+     A TNLPSolver is able to solve and resolve a problem, it has some options (stored
+     with Ipopt OptionList structure and registeredOptions) it produces some statistics (in SolveStatisctics and sometimes some errorCodes.
+ */
+-class TNLPSolver: public Ipopt::ReferencedObject{
++class __declspec(dllexport) TNLPSolver: public Ipopt::ReferencedObject{
+  public:
+ 
+   enum ReturnStatus /** Standard return statuses for a solver*/{
+@@ -49,7 +49,7 @@ class TNLPSolver: public Ipopt::ReferencedObject{
+ 
+   /** We will throw this error when a problem is not solved.
+       Eventually store the error code from solver*/
+-  class UnsolvedError
++  class __declspec(dllexport) UnsolvedError
+   {
+   public:
+     /** Constructor */
+diff --git a/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp b/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
+index 5529a4f..0e7b08f 100644
+--- a/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
++++ b/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
+@@ -17,7 +17,7 @@
+ //#define TIME_BQPD
+ namespace Bonmin
+ {
+-  class BqpdSolver : public TNLPSolver
++  class __declspec(dllexport) BqpdSolver : public TNLPSolver
+   {
+   public:
+     friend class FilterSolver;
+@@ -203,7 +203,7 @@ namespace Bonmin
+     //@}
+ 
+     /** Cached information for reoptimizing. */
+-  struct cachedInfo : public Ipopt::ReferencedObject
++  struct __declspec(dllexport) cachedInfo : public Ipopt::ReferencedObject
+     {
+ #ifdef TIME_BQPD
+   Times times_;
+diff --git a/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp b/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
+index 2510f80..f337714 100644
+--- a/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
++++ b/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
+@@ -17,7 +17,7 @@
+ 
+ namespace Bonmin
+ {
+-  class FilterSolver : public TNLPSolver
++  class __declspec(dllexport) FilterSolver : public TNLPSolver
+   {
+   public:
+ 
+diff --git a/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp b/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
+index 0f96693..5673184 100644
+--- a/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
++++ b/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
+@@ -15,7 +15,7 @@
+ 
+ namespace Bonmin
+ {
+-  class IpoptSolver: public TNLPSolver
++  class __declspec(dllexport) IpoptSolver: public TNLPSolver
+   {
+   public:
+   class UnsolvedIpoptError: public TNLPSolver::UnsolvedError
+diff --git a/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp b/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
+index fffc3e3..74daa51 100644
+--- a/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
++++ b/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace Bonmin
+ {
+-  class TMINLP2TNLP;
++  class __declspec(dllexport) TMINLP2TNLP;
+ 
+   /** \brief Class for storing warm start informations for Ipopt.<br>
+    * This class inherits from CoinWarmStartPrimalDual, because that's what
