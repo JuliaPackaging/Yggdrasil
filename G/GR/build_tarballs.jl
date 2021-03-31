@@ -91,7 +91,7 @@ dependencies = [
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
 #    Dependency("Qhull_jll"),
-    Dependency("Qt_jll"),    
+    Dependency("Qt5Base_jll"),    
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
