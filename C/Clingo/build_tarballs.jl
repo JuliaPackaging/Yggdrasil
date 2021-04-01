@@ -32,7 +32,8 @@ products = [
     ExecutableProduct("clingo", :clingo),
     ExecutableProduct("gringo", :gringo),
     ExecutableProduct("reify", :reify),
-    ExecutableProduct("clasp", :clasp)
+    ExecutableProduct("clasp", :clasp),
+    LibraryProduct("libclingo",:libclingo)
 ]
 
 # Dependencies that must be installed before this package can be built
