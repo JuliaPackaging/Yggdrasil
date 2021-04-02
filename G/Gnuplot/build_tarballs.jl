@@ -31,7 +31,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    ExecutableProduct("gnuplot_qt", gnuplot_qt),
+    ExecutableProduct("gnuplot_qt", :gnuplot_qt),
 ]
 
 # Dependencies that must be installed before this package can be built
