@@ -13,15 +13,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
-# Make uic happy to use `libc.so` ¯\_(ツ)_/¯
-apk add g++ linux-headers samurai
+
+# Don't try this at home, it's evil
+ln -s /opt/${host_target}/${host_target}/sys-root/usr/lib/libc.so /usr/lib/libc.so
+
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Delete system libexpat to avoid confusion
+    rm /usr/lib/libexpat.so*
+fi
+
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} 
 cd src
 make -j${nproc}
 make install
-#make DESTDIR="$WORKSPACE/destdir" install
 """
 
 # These are the platforms we will build for by default, unless further
