@@ -19,7 +19,6 @@ cd $WORKSPACE/srcdir/tensorboard/
 atomic_patch -p1 ../patches/tensorboard#4467.patch
 
 install_license LICENSE
-apk del ninja # otherwise `apk update` fails due to a conflict
 apk update && apk add nss
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 apk add py3-numpy py3-numpy-dev
