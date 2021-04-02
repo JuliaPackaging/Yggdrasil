@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/gnuplot-*/
 apk add g++ linux-headers samurai
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango)"
 export LDFLAGS="-liconv"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-x=no
 cd src
 make -j${nproc}
 make install
@@ -31,7 +31,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    ExecutableProduct("gnuplot_qt", :gnuplot_qt),
+    #ExecutableProduct("gnuplot_qt", :gnuplot_qt),
 ]
 
 # Dependencies that must be installed before this package can be built
