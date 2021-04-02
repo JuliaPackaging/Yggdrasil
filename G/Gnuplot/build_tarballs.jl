@@ -31,7 +31,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    #ExecutableProduct("gnuplot_qt", :libiconv),
+    #ExecutableProduct("gnuplot_qt", gnuplot),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -39,9 +39,9 @@ dependencies = [
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Libcerf_jll", uuid="af83a40a-c4c4-57a0-81df-2309fbd279e3")),
     Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f")),
-    #Dependency(PackageSpec(name="X11_jll", uuid="546b0b6d-9ca3-5ba2-8705-1bc1841d8479")),
-    #After WxWidgets has compiled
-    #Dependency(PackageSpec(name="WxWidgets_jll", uuid="")),
+    Dependency(PackageSpec(name="Qt5Tools_jll", uuid="a9c6e4b1-b2fb-56d5-96a9-25f276f13840")),
+    Dependency(PackageSpec(name="Qt5Svg_jll", uuid="af4ccab-a251-578e-a514-ea85a0ba79ee")),
+    Dependency(PackageSpec(name="Qt5Base_jll", uuid="ea2cea3b-5b76-57ae-a6ef-0a8af62496e1")),
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
     Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
@@ -49,4 +49,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
