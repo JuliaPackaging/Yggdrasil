@@ -64,9 +64,10 @@ platforms = [
     Platform("i686",  "linux"; libc="glibc"),
     Platform("powerpc64le",  "linux"; libc="glibc"),
     Platform("x86_64",  "windows"),
-    Platform("i686",  "windows"),    
+    Platform("i686",  "windows"),
     Platform("x86_64",  "macos"),
-    Platform("x86_64",  "freebsd"),
+    Platform("aarch64", "macos")
+#    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -83,17 +84,17 @@ products = [
 dependencies = [
     # Future versions of bzip2 should allow a more relaxed compat because the
     # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
-    Dependency("Cairo_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Pixman_jll"),
 #    Dependency("Qhull_jll"),
-    Dependency("Qt5Base_jll"),    
+    Dependency("Qt5Base_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
@@ -102,4 +103,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"8")
+               preferred_gcc_version = v"8", julia_compat="1.6")
