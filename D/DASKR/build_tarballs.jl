@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd DASKR
 install_license LICENSE
-[ -d $libdir ] || mkdir $libdir
-gfortran -shared -fPIC -o $libdir/daskr.${dlext} solver/d*.f
+mkdir -p "${libdir}"
+gfortran -shared -fPIC -o $libdir/libdaskr.${dlext} solver/d*.f
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,7 +26,7 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("daskr", :daskr)
+    LibraryProduct("libdaskr", :libdaskr)
 ]
 
 # Dependencies that must be installed before this package can be built
