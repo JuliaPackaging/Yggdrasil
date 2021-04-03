@@ -19,6 +19,7 @@ add_definitions("-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS=1")
 
 if (WIN32)
     add_definitions("-DIMGUI_IMPL_API=extern \"C\" __declspec\(dllexport\)")
+    target_link_libraries(imgui-cpp imm32)
 else()
     add_definitions("-DIMGUI_IMPL_API=extern \"C\" ")
 endif(WIN32)
@@ -31,8 +32,6 @@ set_property(TARGET imgui-cpp APPEND PROPERTY
                   ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imstb_textedit.h
                   ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imstb_truetype.h
                   )
-
-target_link_libraries(imgui-cpp imm32)
 
 install(TARGETS imgui-cpp
         EXPORT imgui-cpp-targets
