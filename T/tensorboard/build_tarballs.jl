@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/tensorboard/
 install_license LICENSE
 /sbin/apk update 
 apk add nss
-apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+apk add bazel3 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 apk add py3-numpy py3-numpy-dev
 apk add python3-dev # so it can find `Python.h`
 
