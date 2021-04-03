@@ -7,8 +7,7 @@ version = v"2.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tensorflow/tensorboard.git", "f77ab110993726cddf8245fefb2bb3cfa9532e37"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/tensorflow/tensorboard.git", "f77ab110993726cddf8245fefb2bb3cfa9532e37")
 ]
 
 # Bash recipe for building across all platforms
