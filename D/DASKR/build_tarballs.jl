@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd DASKR
 install_license LICENSE
-mkdir $libdir
+[ -d $libdir ] || mkdir $libdir
 gfortran -shared -fPIC -o $libdir/daskr.${dlext} solver/d*.f
 """
 
