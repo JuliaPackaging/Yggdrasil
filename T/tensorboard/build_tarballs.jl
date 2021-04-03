@@ -37,6 +37,7 @@ BAZEL_BUILD_FLAGS=()
 # note: doesn't seem to work
 BAZEL_BUILD_FLAGS+=(--linkopt="-L${libdir}")
 export LDFLAGS="-L${libdir}"
+BAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
 
 # disable the sandbox and forward environment variables
 BAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
