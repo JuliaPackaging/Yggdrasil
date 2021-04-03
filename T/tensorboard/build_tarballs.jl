@@ -39,6 +39,9 @@ BAZEL_BUILD_FLAGS+=(--linkopt="-L${libdir}")
 export LDFLAGS="-L${libdir}"
 BAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
 
+echo "LDFLAGS=$LDFLAGS"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+
 # disable the sandbox and forward environment variables
 BAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
 while read name; do
