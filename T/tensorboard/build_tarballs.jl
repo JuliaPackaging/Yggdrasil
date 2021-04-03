@@ -49,6 +49,13 @@ BAZEL_BUILD_FLAGS+=(-c opt)
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 
+echo "========================================="
+printf '%s\n' "${BAZEL_FLAGS[@]}"
+echo "========================================="
+printf '%s\n' "${BAZEL_BUILD_FLAGS[@]}"
+echo "========================================="
+
+
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} tensorboard:tensorboard
 """
 
