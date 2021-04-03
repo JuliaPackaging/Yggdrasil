@@ -7,7 +7,7 @@ version = v"2.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tensorflow/tensorboard.git", "f77ab110993726cddf8245fefb2bb3cfa9532e37")
+    GitSource("https://github.com/tensorflow/tensorboard.git", "29cfcec9d15c47d1bf54b15df24e65bc38c188e6")
 ]
 
 # Bash recipe for building across all platforms
