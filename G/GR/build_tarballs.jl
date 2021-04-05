@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.53.0"
+version = v"0.57.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "b490cbfacc6f4dc08c2a2de52c6f6594e8c7c5f9"),
+    GitSource("https://github.com/sciapp/gr.git", "95600ad51830588f2a8ad5d600b1490a5847c10a"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "60b856b8bb834d30612653da42eebef56e4e329d3a73d52c303684ee42b027f1", "gr.js")
+               "e5933b240a4caa9eeeb41f0945de4fac38a860d9b03d409ba6f8b4bcfbffa5c7", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -49,12 +49,7 @@ cp ../../gr.js ${libdir}/
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
 if [[ $target == *"apple-darwin"* ]]; then
-    cd $prefix/lib
-    ln -s libGR.so libGR.dylib
-    ln -s libGR3.so libGR3.dylib
-    ln -s libGRM.so libGRM.dylib
-    ln -s libGKS.so libGKS.dylib
-    cd ../bin
+    cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
@@ -66,8 +61,12 @@ platforms = [
     Platform("armv7l",  "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",  "linux"; libc="glibc"),
+    Platform("powerpc64le",  "linux"; libc="glibc"),
     Platform("x86_64",  "windows"),
+    Platform("i686",  "windows"),    
     Platform("x86_64",  "macos"),
+#    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -91,7 +90,8 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
-    Dependency("Qt_jll"),
+#    Dependency("Qhull_jll"),
+    Dependency("Qt5Base_jll"),    
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),

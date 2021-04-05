@@ -1,0 +1,22 @@
+From bf61d9cb6472364d96dbb5cf5abe5715d9a4d7ff Mon Sep 17 00:00:00 2001
+From: James Mills <prologic@shortcircuit.net.au>
+Date: Tue, 11 Feb 2020 13:03:43 +1000
+Subject: [PATCH] Added patch for linux/stddef.h in libbpf_0_0_1
+
+---
+ libbpf_0_0_1/src/libbpf.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/libbpf.c b/libbpf.c
+index 197b574..bc3cd01 100644
+--- a/libbpf.c
++++ b/libbpf.c
+@@ -22,6 +22,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <ctype.h>
++#include <linux/stddef.h>
+ #include <asm/unistd.h>
+ #include <linux/err.h>
+ #include <linux/kernel.h>
