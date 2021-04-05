@@ -43,9 +43,9 @@ make install
 
 platforms = supported_platforms()
 platforms = filter!(!Sys.isfreebsd, platforms)
-# platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
+platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 # platforms = expand_gfortran_versions(platforms)
-# platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
