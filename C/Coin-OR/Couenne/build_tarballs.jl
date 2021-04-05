@@ -35,7 +35,7 @@ fi
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lasl -lipoptamplinterface" \
-    --with-bonmin-lib="-lbonmin -lbonminampl"
+    --with-bonmin-lib="-lCoinUtils -lClp -lCgl -lCbc -lbonmin -lbonminampl"
 
 make
 make install
