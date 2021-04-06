@@ -6,11 +6,15 @@ version = v"0.5.8"
 sources = [
     GitSource("https://github.com/coin-or/Couenne.git",
               "7154f7a9b3cd84be378d02b483d090b76fc79ce8"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Couenne
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/register.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/intcast.patch
 
 # Remove misleading libtool files
 rm -f ${libdir}/*.la
@@ -35,7 +39,7 @@ fi
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lasl -lipoptamplinterface" \
-    --with-bonmin-lib="-lCoinUtils -lClp -lCgl -lCbc -lbonmin -lbonminampl"
+    --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl" \
 
 make
 make install
