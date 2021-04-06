@@ -15,6 +15,9 @@ cd $WORKSPACE/srcdir/Couenne
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/register.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/intcast.patch
+if [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/export.patch
+fi
 
 # asl.h defines a macro called `filename`. Very unhelpful.
 sed -i s/'#define filename'/'#define __asl_filename'/ /workspace/destdir/include/asl.h

@@ -1,0 +1,15 @@
+diff --git a/Couenne/src/main/CouenneBab.cpp b/Couenne/src/main/CouenneBab.cpp
+index 7093e06..3b75c2c 100644
+--- a/Couenne/src/main/CouenneBab.cpp
++++ b/Couenne/src/main/CouenneBab.cpp
+@@ -42,8 +42,8 @@
+ 
+ // Code to enable user interruption
+ static CbcModel * currentBranchModel = NULL; // pointer to the main b&b
+-extern Bonmin::OACutGenerator2 *currentOA;   // pointer to the OA generator
+-extern CbcModel                *OAModel;     // pointer to the submip if using Cbc
++__declspec(dllexport) extern Bonmin::OACutGenerator2 *currentOA;   // pointer to the OA generator
++__declspec(dllexport) extern CbcModel                *OAModel;     // pointer to the submip if using Cbc
+ 
+ extern "C" {
+ 
