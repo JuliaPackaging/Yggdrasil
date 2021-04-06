@@ -1,5 +1,5 @@
 diff --git a/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp b/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
-index 152d1b4..b34f336 100644
+index 152d1b4..e15a44c 100644
 --- a/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
 +++ b/Bonmin/src/Algorithms/Ampl/BonAmplSetup.hpp
 @@ -14,7 +14,7 @@
@@ -12,7 +12,7 @@ index 152d1b4..b34f336 100644
    public:
      /** initialize bonmin with ampl model using the command line arguments.*/
 diff --git a/Bonmin/src/Algorithms/BonBabSetupBase.hpp b/Bonmin/src/Algorithms/BonBabSetupBase.hpp
-index c51c67c..5e21b8f 100644
+index c51c67c..ac1a0dc 100644
 --- a/Bonmin/src/Algorithms/BonBabSetupBase.hpp
 +++ b/Bonmin/src/Algorithms/BonBabSetupBase.hpp
 @@ -22,7 +22,7 @@
@@ -25,7 +25,7 @@ index c51c67c..5e21b8f 100644
    public:
      /** Type for cut generation method with its frequency and string identification. */
 diff --git a/Bonmin/src/Algorithms/BonBonminSetup.hpp b/Bonmin/src/Algorithms/BonBonminSetup.hpp
-index c1ea003..4691b7c 100644
+index c1ea003..4d46726 100644
 --- a/Bonmin/src/Algorithms/BonBonminSetup.hpp
 +++ b/Bonmin/src/Algorithms/BonBonminSetup.hpp
 @@ -22,7 +22,7 @@ namespace Bonmin
@@ -38,7 +38,7 @@ index c1ea003..4691b7c 100644
    public:
      /** Default constructor. */
 diff --git a/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp b/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
-index 6d16e91..d5606f3 100644
+index 6d16e91..461b421 100644
 --- a/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
 +++ b/Bonmin/src/Algorithms/BonCbcLpStrategy.hpp
 @@ -17,7 +17,7 @@
@@ -51,7 +51,7 @@ index 6d16e91..d5606f3 100644
       /** Default constructor.*/
       CbcStrategyChooseCuts();
 diff --git a/Bonmin/src/Algorithms/BonSubMipSolver.hpp b/Bonmin/src/Algorithms/BonSubMipSolver.hpp
-index d7749c2..038f73b 100644
+index d7749c2..e9bf861 100644
 --- a/Bonmin/src/Algorithms/BonSubMipSolver.hpp
 +++ b/Bonmin/src/Algorithms/BonSubMipSolver.hpp
 @@ -26,7 +26,7 @@ namespace Bonmin {
@@ -64,7 +64,7 @@ index d7749c2..038f73b 100644
      public:
        enum MILP_solve_strategy{
 diff --git a/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp b/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
-index 82e7575..fb5924c 100644
+index 82e7575..f385bc1 100644
 --- a/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonChooseVariable.hpp
 @@ -18,7 +18,7 @@ class CbcModel;
@@ -95,7 +95,7 @@ index 82e7575..fb5924c 100644
      public:
        Messages();
 diff --git a/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
-index 83be1ac..837b61a 100644
+index 83be1ac..ed60046 100644
 --- a/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonCurvBranchingSolver.hpp
 @@ -15,7 +15,7 @@ namespace Bonmin
@@ -108,7 +108,7 @@ index 83be1ac..837b61a 100644
  
    public:
 diff --git a/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
-index 9e10172..6a8f3d4 100644
+index 9e10172..e5279d8 100644
 --- a/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonLpBranchingSolver.hpp
 @@ -12,7 +12,7 @@ namespace Bonmin
@@ -121,7 +121,7 @@ index 9e10172..6a8f3d4 100644
  
    public:
 diff --git a/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp b/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
-index b7934e5..65794ab 100644
+index b7934e5..c856e31 100644
 --- a/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonPseudoCosts.hpp
 @@ -14,7 +14,7 @@
@@ -134,7 +134,7 @@ index b7934e5..65794ab 100644
    public:
      /** Default constructor.*/
 diff --git a/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp b/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
-index 39c4c86..776db8e 100644
+index 39c4c86..67d800c 100644
 --- a/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonQpBranchingSolver.hpp
 @@ -21,7 +21,7 @@ namespace Bonmin
@@ -147,7 +147,7 @@ index 39c4c86..776db8e 100644
  
    public:
 diff --git a/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp b/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
-index 41c6f58..154e6d0 100644
+index 41c6f58..b26db99 100644
 --- a/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
 +++ b/Bonmin/src/Algorithms/Branching/BonRandomChoice.hpp
 @@ -14,7 +14,7 @@
@@ -160,7 +160,7 @@ index 41c6f58..154e6d0 100644
    ///Default constructor
    BonRandomChoice(): OsiChooseVariable(){
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp b/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
-index 5c3d7fa..196209a 100644
+index 5c3d7fa..a56a9f9 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonDummyHeuristic.hpp
 @@ -14,7 +14,7 @@
@@ -173,7 +173,7 @@ index 5c3d7fa..196209a 100644
    public:
      /// Default constructor
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp b/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
-index 8f57038..4e12f23 100644
+index 8f57038..13ac2ee 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonEcpCuts.hpp
 @@ -14,7 +14,7 @@
@@ -186,7 +186,7 @@ index 8f57038..4e12f23 100644
    public:
      EcpCuts(BabSetupBase & b);
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp b/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
-index 56a8c25..ad221bb 100644
+index 56a8c25..75ff969 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonFpForMinlp.hpp
 @@ -12,7 +12,7 @@
@@ -199,7 +199,7 @@ index 56a8c25..ad221bb 100644
      /// Constructor with basic setup
      MinlpFeasPump(BabSetupBase & b);
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
-index c098c9b..d04b760 100644
+index c098c9b..c3e114b 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonOACutGenerator2.hpp
 @@ -15,7 +15,7 @@
@@ -212,7 +212,7 @@ index c098c9b..d04b760 100644
    public:
      /// Constructor with basic setup
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
-index cfe3272..7b79e7f 100644
+index cfe3272..14ace2b 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonOAMessages.hpp
 @@ -34,7 +34,7 @@ namespace Bonmin
@@ -225,7 +225,7 @@ index cfe3272..7b79e7f 100644
    public:
      OaMessages();
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
-index 61156f7..020666b 100644
+index 61156f7..81bdaf7 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonOaDecBase.hpp
 @@ -24,7 +24,7 @@
@@ -238,7 +238,7 @@ index 61156f7..020666b 100644
    public:
  
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
-index 5ef8c14..50bd999 100644
+index 5ef8c14..bc192e4 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonOaFeasChecker.hpp
 @@ -15,7 +15,7 @@
@@ -251,7 +251,7 @@ index 5ef8c14..50bd999 100644
    public:
      /// New usefull constructor
 diff --git a/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp b/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
-index c157b66..210ad6c 100644
+index c157b66..532b1ad 100644
 --- a/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
 +++ b/Bonmin/src/Algorithms/OaGenerators/BonOaNlpOptim.hpp
 @@ -16,7 +16,7 @@
@@ -264,7 +264,7 @@ index c157b66..210ad6c 100644
    public:
      /// Default constructor
 diff --git a/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp b/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
-index 4c80719..44e3a5b 100644
+index 4c80719..58cec3a 100644
 --- a/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
 +++ b/Bonmin/src/Algorithms/QuadCuts/BonLinearCutsGenerator.hpp
 @@ -17,7 +17,7 @@
@@ -277,7 +277,7 @@ index 4c80719..44e3a5b 100644
      /** Type for cut generation method with its frequency and string identification. */
      struct CuttingMethod : public Coin::ReferencedObject 
 diff --git a/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp b/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
-index 8cbf0c8..0fc7d95 100644
+index 8cbf0c8..71bee61 100644
 --- a/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
 +++ b/Bonmin/src/Algorithms/QuadCuts/BonQuadCut.hpp
 @@ -24,7 +24,7 @@ namespace Bonmin {
@@ -299,7 +299,7 @@ index 8cbf0c8..0fc7d95 100644
    typedef vector<QuadCut *> QuadCutPtrStorage;
    /** Default constructor.*/
 diff --git a/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp b/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
-index 4d7f0c6..14dbae8 100644
+index 4d7f0c6..7e9e33b 100644
 --- a/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
 +++ b/Bonmin/src/Algorithms/QuadCuts/BonTMINLP2Quad.hpp
 @@ -19,7 +19,7 @@ namespace Bonmin
@@ -312,7 +312,7 @@ index 4d7f0c6..14dbae8 100644
    public:
      /**@name Constructors/Destructors */
 diff --git a/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp b/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
-index 819bc57..077e4b8 100644
+index 819bc57..b833b37 100644
 --- a/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
 +++ b/Bonmin/src/Algorithms/QuadCuts/BonTMINLPLinObj.hpp
 @@ -36,7 +36,7 @@ namespace Bonmin {
@@ -325,7 +325,7 @@ index 819bc57..077e4b8 100644
     /** Default constructor*/
     TMINLPLinObj();
 diff --git a/Bonmin/src/CbcBonmin/BonBabInfos.hpp b/Bonmin/src/CbcBonmin/BonBabInfos.hpp
-index 4ff4b37..2889242 100644
+index 4ff4b37..b521e1e 100644
 --- a/Bonmin/src/CbcBonmin/BonBabInfos.hpp
 +++ b/Bonmin/src/CbcBonmin/BonBabInfos.hpp
 @@ -16,7 +16,7 @@ namespace Bonmin
@@ -338,7 +338,7 @@ index 4ff4b37..2889242 100644
    public:
      /** Default constructor.*/
 diff --git a/Bonmin/src/CbcBonmin/BonCbc.hpp b/Bonmin/src/CbcBonmin/BonCbc.hpp
-index caa178e..66dc62a 100644
+index caa178e..ff9cb17 100644
 --- a/Bonmin/src/CbcBonmin/BonCbc.hpp
 +++ b/Bonmin/src/CbcBonmin/BonCbc.hpp
 @@ -16,7 +16,7 @@
@@ -351,7 +351,7 @@ index caa178e..66dc62a 100644
    public:
      /** Integer optimization return codes.*/
 diff --git a/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp b/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
-index b642ad0..f5c087c 100644
+index b642ad0..1caff12 100644
 --- a/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
 +++ b/Bonmin/src/CbcBonmin/BonCbcNlpStrategy.hpp
 @@ -20,7 +20,7 @@ class CoinWarmStartDiff;
@@ -364,7 +364,7 @@ index b642ad0..f5c087c 100644
    public:
  
 diff --git a/Bonmin/src/CbcBonmin/BonCbcNode.hpp b/Bonmin/src/CbcBonmin/BonCbcNode.hpp
-index 9594124..7a1f753 100644
+index 9594124..0b3d061 100644
 --- a/Bonmin/src/CbcBonmin/BonCbcNode.hpp
 +++ b/Bonmin/src/CbcBonmin/BonCbcNode.hpp
 @@ -25,7 +25,7 @@ namespace Bonmin
@@ -386,9 +386,18 @@ index 9594124..7a1f753 100644
  
    public:
 diff --git a/Bonmin/src/CbcBonmin/BonDiver.hpp b/Bonmin/src/CbcBonmin/BonDiver.hpp
-index 20a9fa6..b583c74 100644
+index 20a9fa6..c84f3ef 100644
 --- a/Bonmin/src/CbcBonmin/BonDiver.hpp
 +++ b/Bonmin/src/CbcBonmin/BonDiver.hpp
+@@ -23,7 +23,7 @@ namespace Bonmin
+   class BabSetupBase;
+   /** Class to do diving in the tree. Principle is that branch-and-bound follows current branch of the tree untill it
+       hits the bottom at which point it goes to the best candidate (according to CbcCompare) on the heap.*/
+-  class CbcDiver : public CbcTree
++  class __declspec(dllexport) CbcDiver : public CbcTree
+   {
+   public:
+     /// Default constructor.
 @@ -105,7 +105,7 @@ namespace Bonmin
      * Principle is that branch-and-bound follows current branch of the tree by exploring the two children at each level
      * and continuing the dive on the best one of the two. Untill it 
@@ -417,7 +426,7 @@ index 20a9fa6..b583c74 100644
    public:
      // Default Constructor
 diff --git a/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp b/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
-index c8c4e6f..ee70ba7 100644
+index c8c4e6f..abcb5e2 100644
 --- a/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
 +++ b/Bonmin/src/CbcBonmin/BonGuessHeuristic.hpp
 @@ -13,7 +13,7 @@
@@ -429,8 +438,34 @@ index c8c4e6f..ee70ba7 100644
    {
    public:
      /// Usefull constructor
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonDummyPump.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonDummyPump.hpp
+index 45316c0..81dbe33 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonDummyPump.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonDummyPump.hpp
+@@ -11,7 +11,7 @@
+ #include "BonLocalSolverBasedHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class DummyPump:public LocalSolverBasedHeuristic {
++  class __declspec(dllexport) DummyPump:public LocalSolverBasedHeuristic {
+     public:
+      /** Default constructor*/
+      DummyPump();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonFixAndSolveHeuristic.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonFixAndSolveHeuristic.hpp
+index e0c35ea..27567b8 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonFixAndSolveHeuristic.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonFixAndSolveHeuristic.hpp
+@@ -11,7 +11,7 @@
+ #include "BonLocalSolverBasedHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class FixAndSolveHeuristic:public LocalSolverBasedHeuristic {
++  class __declspec(dllexport) FixAndSolveHeuristic:public LocalSolverBasedHeuristic {
+     public:
+      /** Default constructor*/
+      FixAndSolveHeuristic();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
-index 71039d8..2e648e5 100644
+index 71039d8..5dc8831 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDive.hpp
 @@ -15,7 +15,7 @@
@@ -443,7 +478,7 @@ index 71039d8..2e648e5 100644
    public:
      /// Default constructor
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
-index a5efbc6..d8bf310 100644
+index a5efbc6..7c12f0e 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveFractional.hpp
 @@ -18,7 +18,7 @@
@@ -456,7 +491,7 @@ index a5efbc6..d8bf310 100644
      /// Default Constructor 
      HeuristicDiveFractional ();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
-index 11da60a..0208516 100644
+index 11da60a..0128b8c 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIP.hpp
 @@ -16,7 +16,7 @@
@@ -469,7 +504,7 @@ index 11da60a..0208516 100644
    public:
  #if 0
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
-index dae7b3f..79ccdc4 100644
+index dae7b3f..815bacd 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPFractional.hpp
 @@ -18,7 +18,7 @@
@@ -482,7 +517,7 @@ index dae7b3f..79ccdc4 100644
      /// Default Constructor 
      HeuristicDiveMIPFractional ();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
-index c14ba30..01053c7 100644
+index c14ba30..d7bc6eb 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveMIPVectorLength.hpp
 @@ -18,7 +18,7 @@
@@ -495,7 +530,7 @@ index c14ba30..01053c7 100644
      /// Default Constructor 
      HeuristicDiveMIPVectorLength ();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
-index 90942a2..1f4255f 100644
+index 90942a2..7c54df1 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicDiveVectorLength.hpp
 @@ -18,7 +18,7 @@
@@ -507,8 +542,47 @@ index 90942a2..1f4255f 100644
    public:
      /// Default Constructor 
      HeuristicDiveVectorLength ();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicFPump.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicFPump.hpp
+index e8381a0..021e141 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicFPump.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicFPump.hpp
+@@ -15,7 +15,7 @@
+ 
+ namespace Bonmin
+ {
+-  class  HeuristicFPump : public CbcHeuristic
++  class __declspec(dllexport) HeuristicFPump : public CbcHeuristic
+   {
+   public:
+     /// Default constructor
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicLocalBranching.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicLocalBranching.hpp
+index ac56a56..b9e2e65 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicLocalBranching.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicLocalBranching.hpp
+@@ -13,7 +13,7 @@
+ #include "BonLocalSolverBasedHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class HeuristicLocalBranching:public LocalSolverBasedHeuristic {
++  class __declspec(dllexport) HeuristicLocalBranching:public LocalSolverBasedHeuristic {
+     public:
+      /** Default constructor*/
+      HeuristicLocalBranching();
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicRINS.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicRINS.hpp
+index 5dcc68b..18d3b81 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicRINS.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonHeuristicRINS.hpp
+@@ -13,7 +13,7 @@
+ #include "BonLocalSolverBasedHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class HeuristicRINS:public LocalSolverBasedHeuristic {
++  class __declspec(dllexport) HeuristicRINS:public LocalSolverBasedHeuristic {
+     public:
+      /** Default constructor*/
+      HeuristicRINS();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
-index 3f935e6..7673518 100644
+index 3f935e6..c225ca7 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonLocalSolverBasedHeuristic.hpp
 @@ -12,7 +12,7 @@
@@ -521,7 +595,7 @@ index 3f935e6..7673518 100644
      /** Default constructor.*/
      LocalSolverBasedHeuristic();
 diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
-index 94f8723..187cbea 100644
+index 94f8723..2080bf8 100644
 --- a/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
 +++ b/Bonmin/src/CbcBonmin/Heuristics/BonMilpRounding.hpp
 @@ -18,7 +18,7 @@
@@ -533,8 +607,21 @@ index 94f8723..187cbea 100644
    {
    public:
  
+diff --git a/Bonmin/src/CbcBonmin/Heuristics/BonPumpForMinlp.hpp b/Bonmin/src/CbcBonmin/Heuristics/BonPumpForMinlp.hpp
+index e2b7cb1..e4460a9 100644
+--- a/Bonmin/src/CbcBonmin/Heuristics/BonPumpForMinlp.hpp
++++ b/Bonmin/src/CbcBonmin/Heuristics/BonPumpForMinlp.hpp
+@@ -11,7 +11,7 @@
+ #include "BonLocalSolverBasedHeuristic.hpp"
+ 
+ namespace Bonmin {
+-  class PumpForMinlp:public LocalSolverBasedHeuristic {
++  class __declspec(dllexport) PumpForMinlp:public LocalSolverBasedHeuristic {
+     public:
+      /** Default constructor*/
+      PumpForMinlp();
 diff --git a/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp b/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
-index 055004c..3abaa7a 100644
+index 055004c..f2cdc5c 100644
 --- a/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
 +++ b/Bonmin/src/Interfaces/Ampl/BonAmplInterface.hpp
 @@ -19,7 +19,7 @@ class BM_lp;
@@ -547,7 +634,7 @@ index 055004c..3abaa7a 100644
    public:
      /** Default constructor */
 diff --git a/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp b/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
-index 0a566a2..41e7a28 100644
+index 0a566a2..f11a86b 100644
 --- a/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
 +++ b/Bonmin/src/Interfaces/Ampl/BonAmplTMINLP.hpp
 @@ -43,7 +43,7 @@ namespace Bonmin
@@ -560,7 +647,7 @@ index 0a566a2..41e7a28 100644
    public:
      /**@name Constructors/Destructors */
 diff --git a/Bonmin/src/Interfaces/BonAuxInfos.hpp b/Bonmin/src/Interfaces/BonAuxInfos.hpp
-index 8643a57..d274123 100644
+index 8643a57..3588bb0 100644
 --- a/Bonmin/src/Interfaces/BonAuxInfos.hpp
 +++ b/Bonmin/src/Interfaces/BonAuxInfos.hpp
 @@ -20,7 +20,7 @@ namespace Bonmin {
@@ -573,7 +660,7 @@ index 8643a57..d274123 100644
    /** Default constructor.*/
    AuxInfo(int type);
 diff --git a/Bonmin/src/Interfaces/BonBoundsReader.hpp b/Bonmin/src/Interfaces/BonBoundsReader.hpp
-index 18dd9cf..6507fa8 100644
+index 18dd9cf..d637de1 100644
 --- a/Bonmin/src/Interfaces/BonBoundsReader.hpp
 +++ b/Bonmin/src/Interfaces/BonBoundsReader.hpp
 @@ -17,7 +17,7 @@
@@ -586,7 +673,7 @@ index 18dd9cf..6507fa8 100644
  public:
    //Default constructor
 diff --git a/Bonmin/src/Interfaces/BonBranchingTQP.hpp b/Bonmin/src/Interfaces/BonBranchingTQP.hpp
-index f718419..066e694 100644
+index f718419..af72c1a 100644
 --- a/Bonmin/src/Interfaces/BonBranchingTQP.hpp
 +++ b/Bonmin/src/Interfaces/BonBranchingTQP.hpp
 @@ -22,7 +22,7 @@ namespace Bonmin
@@ -599,7 +686,7 @@ index f718419..066e694 100644
    public:
      /**@name Constructors/Destructors */
 diff --git a/Bonmin/src/Interfaces/BonColReader.hpp b/Bonmin/src/Interfaces/BonColReader.hpp
-index 6ddc4a2..00adcad 100644
+index 6ddc4a2..b9a91e9 100644
 --- a/Bonmin/src/Interfaces/BonColReader.hpp
 +++ b/Bonmin/src/Interfaces/BonColReader.hpp
 @@ -22,7 +22,7 @@
@@ -612,7 +699,7 @@ index 6ddc4a2..00adcad 100644
  public:
    /** Constructor with a file name given by a const char * */
 diff --git a/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp b/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
-index 0eadbf2..1b9be8f 100644
+index 0eadbf2..472d40c 100644
 --- a/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
 +++ b/Bonmin/src/Interfaces/BonCurvatureEstimator.hpp
 @@ -26,7 +26,7 @@ namespace Bonmin
@@ -625,7 +712,7 @@ index 0eadbf2..1b9be8f 100644
    public:
      /** @name Constructor/Destructor */
 diff --git a/Bonmin/src/Interfaces/BonCutStrengthener.hpp b/Bonmin/src/Interfaces/BonCutStrengthener.hpp
-index f44acd5..edff376 100644
+index f44acd5..4b0452c 100644
 --- a/Bonmin/src/Interfaces/BonCutStrengthener.hpp
 +++ b/Bonmin/src/Interfaces/BonCutStrengthener.hpp
 @@ -29,7 +29,7 @@ namespace Bonmin
@@ -638,7 +725,7 @@ index f44acd5..edff376 100644
      /** Class implementing the TNLP for strengthening one cut.  We
       *  assume that the cut has a lower bound. */
 diff --git a/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp b/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
-index 3d95545..20590b8 100644
+index 3d95545..be6d921 100644
 --- a/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
 +++ b/Bonmin/src/Interfaces/BonOsiTMINLPInterface.hpp
 @@ -45,7 +45,7 @@ namespace Bonmin {
@@ -676,7 +763,7 @@ index 3d95545..20590b8 100644
      /** Default constructor.*/
      OaMessageHandler():CoinMessageHandler(){
 diff --git a/Bonmin/src/Interfaces/BonRegisteredOptions.hpp b/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
-index 8679eda..11430a0 100644
+index 8679eda..57615b2 100644
 --- a/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
 +++ b/Bonmin/src/Interfaces/BonRegisteredOptions.hpp
 @@ -27,7 +27,7 @@ namespace Bonmin {
@@ -689,7 +776,7 @@ index 8679eda..11430a0 100644
      enum ExtraOptInfosBits{
      validInHybrid=0/** Say that option is valid in Hybrid method (1).*/,
 diff --git a/Bonmin/src/Interfaces/BonStartPointReader.hpp b/Bonmin/src/Interfaces/BonStartPointReader.hpp
-index d0dd0c8..3236677 100644
+index d0dd0c8..fbe58bf 100644
 --- a/Bonmin/src/Interfaces/BonStartPointReader.hpp
 +++ b/Bonmin/src/Interfaces/BonStartPointReader.hpp
 @@ -20,7 +20,7 @@
@@ -702,7 +789,7 @@ index d0dd0c8..3236677 100644
  public:
    /** Constructor with fileName_ given by a string (and default) */
 diff --git a/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp b/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
-index 087d2e7..ea1e58c 100644
+index 087d2e7..7108b93 100644
 --- a/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
 +++ b/Bonmin/src/Interfaces/BonStrongBranchingSolver.hpp
 @@ -14,7 +14,7 @@ namespace Bonmin {
@@ -715,7 +802,7 @@ index 087d2e7..ea1e58c 100644
  public:
  
 diff --git a/Bonmin/src/Interfaces/BonTMINLP.hpp b/Bonmin/src/Interfaces/BonTMINLP.hpp
-index b6d21e1..67c7840 100644
+index b6d21e1..a4a31c2 100644
 --- a/Bonmin/src/Interfaces/BonTMINLP.hpp
 +++ b/Bonmin/src/Interfaces/BonTMINLP.hpp
 @@ -56,7 +56,7 @@ namespace Bonmin
@@ -746,7 +833,7 @@ index b6d21e1..67c7840 100644
      public:
        /** default constructor. */
 diff --git a/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp b/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
-index 09fb186..b012020 100644
+index 09fb186..5d72967 100644
 --- a/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
 +++ b/Bonmin/src/Interfaces/BonTMINLP2OsiLP.hpp
 @@ -23,7 +23,7 @@ namespace Bonmin {
@@ -759,7 +846,7 @@ index 09fb186..b012020 100644
    public:
  
 diff --git a/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp b/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
-index 7523fc1..da8e17e 100644
+index 7523fc1..6ffbc7b 100644
 --- a/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
 +++ b/Bonmin/src/Interfaces/BonTMINLP2TNLP.hpp
 @@ -29,7 +29,7 @@ namespace Bonmin
@@ -772,7 +859,7 @@ index 7523fc1..da8e17e 100644
    public:
      /**@name Constructors/Destructors */
 diff --git a/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp b/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
-index 82137c9..4f03f71 100644
+index 82137c9..9ca351e 100644
 --- a/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
 +++ b/Bonmin/src/Interfaces/BonTNLP2FPNLP.hpp
 @@ -19,7 +19,7 @@ namespace Bonmin
@@ -785,7 +872,7 @@ index 82137c9..4f03f71 100644
    public:
      /**@name Constructors/Destructors */
 diff --git a/Bonmin/src/Interfaces/BonTNLPSolver.hpp b/Bonmin/src/Interfaces/BonTNLPSolver.hpp
-index 195fbad..45e90e5 100644
+index 195fbad..ce9733f 100644
 --- a/Bonmin/src/Interfaces/BonTNLPSolver.hpp
 +++ b/Bonmin/src/Interfaces/BonTNLPSolver.hpp
 @@ -23,7 +23,7 @@ namespace Bonmin  {
@@ -807,7 +894,7 @@ index 195fbad..45e90e5 100644
    public:
      /** Constructor */
 diff --git a/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp b/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
-index 5529a4f..0e7b08f 100644
+index 5529a4f..d936f0b 100644
 --- a/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
 +++ b/Bonmin/src/Interfaces/Filter/BonBqpdSolver.hpp
 @@ -17,7 +17,7 @@
@@ -829,7 +916,7 @@ index 5529a4f..0e7b08f 100644
  #ifdef TIME_BQPD
    Times times_;
 diff --git a/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp b/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
-index 2510f80..f337714 100644
+index 2510f80..3f65fac 100644
 --- a/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
 +++ b/Bonmin/src/Interfaces/Filter/BonFilterSolver.hpp
 @@ -17,7 +17,7 @@
@@ -842,7 +929,7 @@ index 2510f80..f337714 100644
    public:
  
 diff --git a/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp b/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
-index 0f96693..5673184 100644
+index 0f96693..3affce4 100644
 --- a/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
 +++ b/Bonmin/src/Interfaces/Ipopt/BonIpoptSolver.hpp
 @@ -15,7 +15,7 @@
@@ -855,15 +942,15 @@ index 0f96693..5673184 100644
    public:
    class UnsolvedIpoptError: public TNLPSolver::UnsolvedError
 diff --git a/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp b/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
-index fffc3e3..74daa51 100644
+index fffc3e3..43f685d 100644
 --- a/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
 +++ b/Bonmin/src/Interfaces/Ipopt/BonIpoptWarmStart.hpp
-@@ -18,7 +18,7 @@
- 
- namespace Bonmin
- {
--  class TMINLP2TNLP;
-+  class __declspec(dllexport) TMINLP2TNLP;
- 
-   /** \brief Class for storing warm start informations for Ipopt.<br>
-    * This class inherits from CoinWarmStartPrimalDual, because that's what
+@@ -43,7 +43,7 @@ namespace Bonmin
+           (constraints \f$ g(x) \leq 0 \f$) 
+      </UL>
+    */
+-  class IpoptWarmStart :
++  class __declspec(dllexport) IpoptWarmStart :
+     public virtual CoinWarmStartPrimalDual, public virtual CoinWarmStartBasis
+   {
+   public:
