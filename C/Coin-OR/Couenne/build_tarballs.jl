@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/Couenne
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/register.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/intcast.patch
 
+// asl.h defines a macro called `filename`. Very unhelpful.
+sed -i s/'#define filename'/'#define __asl_filename'/ /workspace/destdir/include/asl.h
+sed -i s/'filename;'/'__asl_filename;'/ /workspace/srcdir/Couenne/Couenne/src/readnl/readnl.cpp
+
 # Remove misleading libtool files
 rm -f ${libdir}/*.la
 update_configure_scripts
@@ -39,7 +43,7 @@ fi
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lasl -lipoptamplinterface" \
-    --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl" \
+    --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl"
 
 make
 make install
