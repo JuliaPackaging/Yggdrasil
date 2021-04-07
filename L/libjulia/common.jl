@@ -26,7 +26,9 @@ function build_julia(ARGS, version)
         v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
         v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
+        v"1.6.0" => "c253360d29abb9a3a9e6e01493e0f7bb537d88014fd58ac561b5ba30fcb44cad",
     )
+
     sources = [
         ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
         DirectorySource("./bundled"),
@@ -75,7 +77,11 @@ function build_julia(ARGS, version)
     override OS=Linux
     EOM
 
-    LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    if [[ "${version}" == 1.[0-5].* ]]; then
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    else
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+    fi
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
@@ -92,13 +98,21 @@ function build_julia(ARGS, version)
             LLVMLINK="-L${prefix}/lib -lLLVM-6.0"
         elif [[ "${version}" == 1.4.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-8jl"
-        else
+        elif [[ "${version}" == 1.5.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
+        else
+            LLVMLINK="-L${prefix}/lib -lLLVM-11jl"
         fi
     fi
 
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
     shopt -s extglob
+    if [[ "${version}" == 1.[0-5].* ]]; then
+        BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
+    else
+        # Strip the OS version from Darwin and FreeBSD
+        BB_TRIPLET_LIBGFORTRAN_CXXABI=$(echo ${bb_full_target/-julia_version+([^-])} | sed 's/\(darwin\|freebsd\)[0-9.]*/\1/')
+    fi
 
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
@@ -139,7 +153,7 @@ function build_julia(ARGS, version)
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
 
-    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target/-julia_version+([^-])}
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${BB_TRIPLET_LIBGFORTRAN_CXXABI}
     override USE_BINARYBUILDER=1
 
     prefix=${prefix}
@@ -189,13 +203,18 @@ function build_julia(ARGS, version)
     # We don't trust the system libm in places
     # So we include a private copy of libopenlibm
     mkdir -p usr/lib
-    cp ${prefix}/lib/libopenlibm.a usr/lib/
+    cp ${prefix}/*/libopenlibm.a usr/lib/
 
     # Mac build complains about checksum
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 julia-ui-release
+    if [[ "${version}" == 1.[0-5].* ]]; then
+        MAKE_TARGET=julia-ui-release
+    else
+        MAKE_TARGET="julia-src-release julia-cli-release"
+    fi
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET}
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
@@ -234,10 +253,9 @@ function build_julia(ARGS, version)
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
         Dependency("LibUnwind_jll"),
-        Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
+        Dependency("PCRE2_jll", compat="10.31"),
         Dependency("OpenLibm_jll"),
         Dependency("dSFMT_jll"),
-        Dependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")),
         Dependency("LibUV_jll"),
         Dependency("utf8proc_jll"),
         Dependency("MbedTLS_jll"),
@@ -250,27 +268,34 @@ function build_julia(ARGS, version)
         Dependency("Objconv_jll"),
     ]
     if version < v"1.5.1"
-        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.5")))
+        push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
     else
-        push!(dependencies, Dependency(PackageSpec(name="LibOSXUnwind_jll", version=v"0.0.6")))
+        push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
     end
+
+    if version < v"1.6"
+        push!(dependencies, Dependency("SuiteSparse_jll", compat="5.4.0"))
+    else
+        push!(dependencies, Dependency("SuiteSparse_jll"))
+    end
+
     if version.major == 1 && version.minor == 3
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
         # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
-        push!(dependencies, Dependency(PackageSpec(name="LLVM_jll", version=v"6.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("LLVM_jll", compat="6.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 4
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.9"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
-        push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
-        push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
+        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.10"))
+        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
+        push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
     end
 
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
