@@ -24,6 +24,10 @@ exit
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# code contains std::string values, this is needed for GCC 4/5 version boundary compat
+platforms = expand_cxxstring_abis(platforms)
+
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("primecount", :primecount)
