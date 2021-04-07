@@ -86,9 +86,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         # Before OpenBLAS 0.3.13, there appears to be a miscompilation bug with `clang` on setting `TARGET=GENERIC`
         # As that is the case, we're just going to be safe and only use `TARGET=GENERIC` on 0.3.13+
         if [ ${version_patch} -gt 12 ]; then
-            FLAGS+=(TARGET=GENERIC)
+            flags+=(TARGET=GENERIC)
         else
-            FLAGS+=(TARGET=)
+            flags+=(TARGET=)
         fi
     elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
         flags+=(TARGET=ARMV8 DYNAMIC_ARCH=1)
