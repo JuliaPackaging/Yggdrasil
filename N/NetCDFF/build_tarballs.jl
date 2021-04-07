@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/netcdf-fortran-4.5.3/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
@@ -22,7 +22,10 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; )
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 platforms = expand_gfortran_versions(platforms)
 
