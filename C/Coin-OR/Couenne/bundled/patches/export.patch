@@ -1362,6 +1362,19 @@ index cb44628..558760d 100644
  private:
  	CouenneProblem*                  problem;
  	Ipopt::SmartPtr<Bonmin::TMINLP>  tminlp;
+diff --git a/Couenne/src/readnl/invmap.cpp b/Couenne/src/readnl/invmap.cpp
+index ece4485..dab717f 100644
+--- a/Couenne/src/readnl/invmap.cpp
++++ b/Couenne/src/readnl/invmap.cpp
+@@ -48,7 +48,7 @@ AslCouPair opmap [N_OPS];
+ 
+ /* binary search to get operator number from its efunc2* (the type of e->op) */
+ 
+-size_t getOperator (efunc *f) {
++__declspec(dllexport) size_t getOperator (efunc *f) {
+ 
+   static char first_call = 1;
+   AslCouPair key, *res;
 diff --git a/Couenne/src/standardize/CouenneLQelems.hpp b/Couenne/src/standardize/CouenneLQelems.hpp
 index 938ffe1..595a6a1 100644
 --- a/Couenne/src/standardize/CouenneLQelems.hpp
