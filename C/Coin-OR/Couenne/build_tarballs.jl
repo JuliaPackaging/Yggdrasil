@@ -13,9 +13,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Couenne
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/register.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/intcast.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
+
 if [[ ${target} == *mingw* ]]; then
+    # Disable user-interrupts on Windows.
+    sed -i s/'#define SIGNAL'// ${WORKSPACE}/srcdir/Couenne/Couenne/src/main/CouenneBab.cpp
+    # Export symbols from DLL
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/export.patch
 fi
 

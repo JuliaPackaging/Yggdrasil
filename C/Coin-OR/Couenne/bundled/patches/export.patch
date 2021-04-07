@@ -1,15 +1,1461 @@
-diff --git a/Couenne/src/main/CouenneBab.cpp b/Couenne/src/main/CouenneBab.cpp
-index 7093e06..3b75c2c 100644
---- a/Couenne/src/main/CouenneBab.cpp
-+++ b/Couenne/src/main/CouenneBab.cpp
-@@ -42,8 +42,8 @@
+diff --git a/Couenne/src/bound_tightening/CouenneAggrProbing.hpp b/Couenne/src/bound_tightening/CouenneAggrProbing.hpp
+index 69d2bf4..8e0c9f3 100644
+--- a/Couenne/src/bound_tightening/CouenneAggrProbing.hpp
++++ b/Couenne/src/bound_tightening/CouenneAggrProbing.hpp
+@@ -34,7 +34,7 @@ namespace Couenne {
+   /// TODO: Implement some way to automatically choose the variables
+   /// TODO: Implement the generateCuts method, for use in Branch-and-Bound
  
- // Code to enable user interruption
- static CbcModel * currentBranchModel = NULL; // pointer to the main b&b
--extern Bonmin::OACutGenerator2 *currentOA;   // pointer to the OA generator
--extern CbcModel                *OAModel;     // pointer to the submip if using Cbc
-+__declspec(dllexport) extern Bonmin::OACutGenerator2 *currentOA;   // pointer to the OA generator
-+__declspec(dllexport) extern CbcModel                *OAModel;     // pointer to the submip if using Cbc
+-  class CouenneAggrProbing: public CglCutGenerator {
++  class __declspec(dllexport) CouenneAggrProbing: public CglCutGenerator {
  
- extern "C" {
+   public:
+ 
+diff --git a/Couenne/src/bound_tightening/CouenneBTPerfIndicator.hpp b/Couenne/src/bound_tightening/CouenneBTPerfIndicator.hpp
+index e8af6c5..ddcbd46 100644
+--- a/Couenne/src/bound_tightening/CouenneBTPerfIndicator.hpp
++++ b/Couenne/src/bound_tightening/CouenneBTPerfIndicator.hpp
+@@ -20,7 +20,7 @@ namespace Couenne {
+ 
+   class CouenneProblem;
+ 
+-  class CouenneBTPerfIndicator {
++  class __declspec(dllexport) CouenneBTPerfIndicator {
+ 
+   protected:
+ 
+diff --git a/Couenne/src/bound_tightening/CouenneFixPoint.hpp b/Couenne/src/bound_tightening/CouenneFixPoint.hpp
+index ce5177f..92e2f9f 100644
+--- a/Couenne/src/bound_tightening/CouenneFixPoint.hpp
++++ b/Couenne/src/bound_tightening/CouenneFixPoint.hpp
+@@ -27,7 +27,7 @@ namespace Couenne {
+ 
+   /// Cut Generator for FBBT fixpoint
+ 
+-  class CouenneFixPoint: public CglCutGenerator {
++  class __declspec(dllexport) CouenneFixPoint: public CglCutGenerator {
+ 
+   public:
+ 
+diff --git a/Couenne/src/bound_tightening/CouenneMultiVarProbe.hpp b/Couenne/src/bound_tightening/CouenneMultiVarProbe.hpp
+index 3f5b004..43ab54f 100644
+--- a/Couenne/src/bound_tightening/CouenneMultiVarProbe.hpp
++++ b/Couenne/src/bound_tightening/CouenneMultiVarProbe.hpp
+@@ -22,7 +22,7 @@
+ 
+ namespace Couenne {
+ 
+-  class CouenneMultiVarProbe: public CglCutGenerator {
++  class __declspec(dllexport) CouenneMultiVarProbe: public CglCutGenerator {
+ 
+   public:
+ 
+diff --git a/Couenne/src/bound_tightening/CouenneSparseBndVec.hpp b/Couenne/src/bound_tightening/CouenneSparseBndVec.hpp
+index a63bbd1..9f3b795 100644
+--- a/Couenne/src/bound_tightening/CouenneSparseBndVec.hpp
++++ b/Couenne/src/bound_tightening/CouenneSparseBndVec.hpp
+@@ -13,7 +13,7 @@
+ 
+ namespace Couenne {
+ 
+-  template <class T> class CouenneSparseBndVec {
++  template <class T> class __declspec(dllexport) CouenneSparseBndVec {
+ 
+     /// Implements a fast sparse+dense vector data structure, with a
+     /// size of n and a number k of nonzero elements. Usually, k<<n as
+diff --git a/Couenne/src/bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp b/Couenne/src/bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp
+index 9a46702..8255e82 100644
+--- a/Couenne/src/bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp
++++ b/Couenne/src/bound_tightening/twoImpliedBT/CouenneTwoImplied.hpp
+@@ -171,7 +171,7 @@ namespace Couenne {
+      as in those cases, no \f$ c_i \f$ would be in \f$ [0,1] \f$
+   */
+ 
+-  class CouenneTwoImplied: public CglCutGenerator {
++  class __declspec(dllexport) CouenneTwoImplied: public CglCutGenerator {
+ 
+   public:
+ 
+diff --git a/Couenne/src/branch/CouenneBranchingObject.hpp b/Couenne/src/branch/CouenneBranchingObject.hpp
+index 1162107..2c78c84 100644
+--- a/Couenne/src/branch/CouenneBranchingObject.hpp
++++ b/Couenne/src/branch/CouenneBranchingObject.hpp
+@@ -34,7 +34,7 @@ class CouenneProblem;
+  *  Branching can also be performed on continuous variables.
+  */
+ 
+-class CouenneBranchingObject: public OsiTwoWayBranchingObject {
++class __declspec(dllexport) CouenneBranchingObject: public OsiTwoWayBranchingObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneChooseStrong.hpp b/Couenne/src/branch/CouenneChooseStrong.hpp
+index f20520d..6da0550 100644
+--- a/Couenne/src/branch/CouenneChooseStrong.hpp
++++ b/Couenne/src/branch/CouenneChooseStrong.hpp
+@@ -20,7 +20,7 @@ class CouenneProblem;
+ 
+ template <class T> class CouenneSolverInterface;
+ 
+-class CouenneChooseStrong : public Bonmin::BonChooseVariable {
++class __declspec(dllexport) CouenneChooseStrong : public Bonmin::BonChooseVariable {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneChooseVariable.hpp b/Couenne/src/branch/CouenneChooseVariable.hpp
+index 358cbf8..c6d2a22 100644
+--- a/Couenne/src/branch/CouenneChooseVariable.hpp
++++ b/Couenne/src/branch/CouenneChooseVariable.hpp
+@@ -24,7 +24,7 @@ class CouenneProblem;
+ /** \brief Choose a variable for branching
+  */
+ 
+-class CouenneChooseVariable: public OsiChooseVariable {
++class __declspec(dllexport) CouenneChooseVariable: public OsiChooseVariable {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneComplBranchingObject.hpp b/Couenne/src/branch/CouenneComplBranchingObject.hpp
+index 5e2ea16..0cb2bae 100644
+--- a/Couenne/src/branch/CouenneComplBranchingObject.hpp
++++ b/Couenne/src/branch/CouenneComplBranchingObject.hpp
+@@ -21,7 +21,7 @@ namespace Couenne {
+  *  either x_1=0 or x_2=0
+  */
+ 
+-class CouenneComplBranchingObject: public CouenneBranchingObject {
++class __declspec(dllexport) CouenneComplBranchingObject: public CouenneBranchingObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneComplObject.hpp b/Couenne/src/branch/CouenneComplObject.hpp
+index 4c8c4be..7c6c025 100644
+--- a/Couenne/src/branch/CouenneComplObject.hpp
++++ b/Couenne/src/branch/CouenneComplObject.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ ///
+ /// Associated with two variables \f$ x_1\f$ and \f$x_2\f$, branches with either \f$x_1=0\f$ or \f$x_2=0\f$
+ 
+-class CouenneComplObject: public CouenneObject {
++class __declspec(dllexport) CouenneComplObject: public CouenneObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneObject.hpp b/Couenne/src/branch/CouenneObject.hpp
+index 5cd9753..b8d1ce7 100644
+--- a/Couenne/src/branch/CouenneObject.hpp
++++ b/Couenne/src/branch/CouenneObject.hpp
+@@ -54,7 +54,7 @@ CouNumber maxHeight   (funtriplet *ft, CouNumber lb, CouNumber ub);
+ /// infeasibility $|w-f(x)|$, creates branches to help restoring
+ /// feasibility
+ 
+-  class CouenneObject: public OsiObject {
++  class __declspec(dllexport) CouenneObject: public OsiObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneOrbitBranchingObj.hpp b/Couenne/src/branch/CouenneOrbitBranchingObj.hpp
+index 32d75e9..1bfe1c8 100644
+--- a/Couenne/src/branch/CouenneOrbitBranchingObj.hpp
++++ b/Couenne/src/branch/CouenneOrbitBranchingObj.hpp
+@@ -33,7 +33,7 @@ namespace Couenne {
+  *  Branching can also be performed on continuous variables.
+  */
+ 
+-class CouenneOrbitBranchingObj: public CouenneBranchingObject {
++class __declspec(dllexport) CouenneOrbitBranchingObj: public CouenneBranchingObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneSOSObject.hpp b/Couenne/src/branch/CouenneSOSObject.hpp
+index 94dec1c..3fccf1b 100644
+--- a/Couenne/src/branch/CouenneSOSObject.hpp
++++ b/Couenne/src/branch/CouenneSOSObject.hpp
+@@ -24,7 +24,7 @@ class exprVar;
+ // TODO: SOS of the form sum x_i \le k with k small. Instead of
+ // branching on a single variable do a SOS-like branching
+ 
+-class CouenneSOSBranchingObject: public OsiSOSBranchingObject {
++class __declspec(dllexport) CouenneSOSBranchingObject: public OsiSOSBranchingObject {
+ 
+ protected:
+ 
+@@ -92,7 +92,7 @@ public:
+ ///
+ ///
+ 
+-class CouenneSOSObject: public OsiSOS {
++class __declspec(dllexport) CouenneSOSObject: public OsiSOS {
+ 
+ protected:
+ 
+diff --git a/Couenne/src/branch/CouenneThreeWayBranchObj.hpp b/Couenne/src/branch/CouenneThreeWayBranchObj.hpp
+index cbe4c91..cb51809 100644
+--- a/Couenne/src/branch/CouenneThreeWayBranchObj.hpp
++++ b/Couenne/src/branch/CouenneThreeWayBranchObj.hpp
+@@ -25,7 +25,7 @@ namespace Couenne {
+ /// convexification is sought around the current point by dividing the
+ /// interval in three parts
+ 
+-class CouenneThreeWayBranchObj: public OsiBranchingObject {
++class __declspec(dllexport) CouenneThreeWayBranchObj: public OsiBranchingObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneVTObject.hpp b/Couenne/src/branch/CouenneVTObject.hpp
+index b5c3000..6d7f9a4 100644
+--- a/Couenne/src/branch/CouenneVTObject.hpp
++++ b/Couenne/src/branch/CouenneVTObject.hpp
+@@ -16,7 +16,7 @@
+ namespace Couenne {
+ 
+ /// OsiObject for violation transfer on variables in a MINLP
+-class CouenneVTObject: public CouenneVarObject {
++class __declspec(dllexport) CouenneVTObject: public CouenneVarObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/branch/CouenneVarObject.hpp b/Couenne/src/branch/CouenneVarObject.hpp
+index 0936146..9b0870f 100644
+--- a/Couenne/src/branch/CouenneVarObject.hpp
++++ b/Couenne/src/branch/CouenneVarObject.hpp
+@@ -19,7 +19,7 @@ class CouenneProblem;
+ 
+ 
+ /// OsiObject for variables in a MINLP
+-class CouenneVarObject: public CouenneObject {
++class __declspec(dllexport) CouenneVarObject: public CouenneObject {
+ 
+ public:
+ 
+diff --git a/Couenne/src/convex/CouenneCutGenerator.hpp b/Couenne/src/convex/CouenneCutGenerator.hpp
+index be9647c..589b993 100644
+--- a/Couenne/src/convex/CouenneCutGenerator.hpp
++++ b/Couenne/src/convex/CouenneCutGenerator.hpp
+@@ -46,7 +46,7 @@ class funtriplet;
+ 
+ /// Cut Generator for linear convexifications
+ 
+-class CouenneCutGenerator: public CglCutGenerator {
++class __declspec(dllexport) CouenneCutGenerator: public CglCutGenerator {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/cut/crossconv/CouenneCrossConv.hpp b/Couenne/src/cut/crossconv/CouenneCrossConv.hpp
+index 43a7109..055febf 100644
+--- a/Couenne/src/cut/crossconv/CouenneCrossConv.hpp
++++ b/Couenne/src/cut/crossconv/CouenneCrossConv.hpp
+@@ -29,7 +29,7 @@ namespace Couenne {
+ 
+   /// Base class definition for relations between auxiliaries
+ 
+-  class AuxRelation {
++  class __declspec(dllexport) AuxRelation {
+ 
+   public:
+ 
+@@ -55,7 +55,7 @@ namespace Couenne {
+   /// This has to be repeatedly generated, even when l=u (l and/or u
+   /// could change in other nodes).
+ 
+-  class SumLogAuxRel: public AuxRelation {
++  class __declspec(dllexport) SumLogAuxRel: public AuxRelation {
+ 
+   public:
+ 
+@@ -79,7 +79,7 @@ namespace Couenne {
+   ///
+   /// x_q = x_r (in both cases).
+ 
+-  class MultiProdRel: public AuxRelation {
++  class __declspec(dllexport) MultiProdRel: public AuxRelation {
+ 
+   public:
+ 
+@@ -102,7 +102,7 @@ namespace Couenne {
+   ///
+   /// x_l = x_m (in both cases).
+ 
+-  class BiProdDivRel: public AuxRelation {
++  class __declspec(dllexport) BiProdDivRel: public AuxRelation {
+ 
+   public:
+ 
+@@ -122,7 +122,7 @@ namespace Couenne {
+   ///
+   /// x_p = x_j ^ {beta/alpha}
+ 
+-  class PowRel: public AuxRelation {
++  class __declspec(dllexport) PowRel: public AuxRelation {
+ 
+   public:
+ 
+@@ -136,7 +136,7 @@ namespace Couenne {
+ 
+   /// Cut Generator that uses relationships between auxiliaries
+ 
+-  class CouenneCrossConv: public CglCutGenerator {
++  class __declspec(dllexport) CouenneCrossConv: public CglCutGenerator {
+ 
+   public:
+ 
+diff --git a/Couenne/src/cut/sdpcuts/CouenneMatrix.hpp b/Couenne/src/cut/sdpcuts/CouenneMatrix.hpp
+index 74666ed..c113709 100644
+--- a/Couenne/src/cut/sdpcuts/CouenneMatrix.hpp
++++ b/Couenne/src/cut/sdpcuts/CouenneMatrix.hpp
+@@ -22,7 +22,7 @@ namespace Couenne {
+ 
+   // Base class for elements of our sparse structures ////////////////////////////
+ 
+-  class CouenneScalar {
++  class __declspec(dllexport) CouenneScalar {
+ 
+   protected:
+ 
+@@ -63,7 +63,7 @@ namespace Couenne {
+ 
+   // Sparse vector of expressions /////////////////////////////////////////////////
+ 
+-  class CouenneSparseVector {
++  class __declspec(dllexport) CouenneSparseVector {
+ 
+   public:
+ 
+@@ -101,7 +101,7 @@ namespace Couenne {
+ 
+   // Sparse matrix of expressions ///////////////////////////////////////////////////
+ 
+-  class CouenneExprMatrix {
++  class __declspec(dllexport) CouenneExprMatrix {
+ 
+   public:
+ 
+diff --git a/Couenne/src/cut/sdpcuts/CouennePSDcon.hpp b/Couenne/src/cut/sdpcuts/CouennePSDcon.hpp
+index 03c57be..b37cc4d 100644
+--- a/Couenne/src/cut/sdpcuts/CouennePSDcon.hpp
++++ b/Couenne/src/cut/sdpcuts/CouennePSDcon.hpp
+@@ -21,7 +21,7 @@ namespace Couenne {
+ 
+   /// Class to represent positive semidefinite constraints //////////////////
+ 
+-  class CouennePSDcon: public CouenneConstraint {
++  class __declspec(dllexport) CouennePSDcon: public CouenneConstraint {
+ 
+   protected:
+ 
+diff --git a/Couenne/src/cut/sdpcuts/CouenneSdpCuts.hpp b/Couenne/src/cut/sdpcuts/CouenneSdpCuts.hpp
+index ae1c78b..e67a18e 100644
+--- a/Couenne/src/cut/sdpcuts/CouenneSdpCuts.hpp
++++ b/Couenne/src/cut/sdpcuts/CouenneSdpCuts.hpp
+@@ -40,7 +40,7 @@ namespace Couenne {
+   /// (thanks Andrea!).
+   ///
+ 
+-  class CouenneSdpCuts: public CglCutGenerator {
++  class __declspec(dllexport) CouenneSdpCuts: public CglCutGenerator {
+ 
+   protected:
+ 
+diff --git a/Couenne/src/disjunctive/CouenneDisjCuts.hpp b/Couenne/src/disjunctive/CouenneDisjCuts.hpp
+index 0b5b2d2..28360eb 100644
+--- a/Couenne/src/disjunctive/CouenneDisjCuts.hpp
++++ b/Couenne/src/disjunctive/CouenneDisjCuts.hpp
+@@ -31,7 +31,7 @@ enum {COUENNE_INFEASIBLE, COUENNE_TIGHTENED, COUENNE_FEASIBLE};
+ 
+ /// Cut Generator for linear convexifications
+ 
+-class CouenneDisjCuts: public CglCutGenerator {
++class __declspec(dllexport) CouenneDisjCuts: public CglCutGenerator {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouExpr.hpp b/Couenne/src/expression/CouExpr.hpp
+index ddd5029..d665b27 100644
+--- a/Couenne/src/expression/CouExpr.hpp
++++ b/Couenne/src/expression/CouExpr.hpp
+@@ -14,7 +14,7 @@
+ 
+ namespace Couenne {
+ 
+-class CouExpr {
++class __declspec(dllexport) CouExpr {
+ 
+ private:
+ 
+diff --git a/Couenne/src/expression/CouenneDomain.hpp b/Couenne/src/expression/CouenneDomain.hpp
+index b2667a3..2a77961 100644
+--- a/Couenne/src/expression/CouenneDomain.hpp
++++ b/Couenne/src/expression/CouenneDomain.hpp
+@@ -27,7 +27,7 @@ namespace Couenne {
+ 
+ /// Define a point in the solution space and the bounds around it.
+ 
+-class DomainPoint {
++class __declspec(dllexport) DomainPoint {
+ 
+   friend class Domain;
+ 
+@@ -101,7 +101,7 @@ public:
+ /// Define a dynamic point+bounds, with a way to save and restore
+ /// previous points+bounds through a LIFO structure
+ 
+-class Domain {
++class __declspec(dllexport) Domain {
+ 
+ protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExprAux.hpp b/Couenne/src/expression/CouenneExprAux.hpp
+index 4ff247c..247d766 100644
+--- a/Couenne/src/expression/CouenneExprAux.hpp
++++ b/Couenne/src/expression/CouenneExprAux.hpp
+@@ -29,7 +29,7 @@ class CouenneCutGenerator;
+  *  nonlinear constraints/objectives.
+  */
+ 
+-class exprAux: public exprVar {
++class __declspec(dllexport) exprAux: public exprVar {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/CouenneExprBound.hpp b/Couenne/src/expression/CouenneExprBound.hpp
+index 23aec19..e985476f3 100644
+--- a/Couenne/src/expression/CouenneExprBound.hpp
++++ b/Couenne/src/expression/CouenneExprBound.hpp
+@@ -35,7 +35,7 @@ namespace Couenne {
+ 
+ /// lower bound 
+ 
+-class exprLowerBound: public exprVar {
++class __declspec(dllexport) exprLowerBound: public exprVar {
+ 
+  public:
+ 
+@@ -84,7 +84,7 @@ class exprLowerBound: public exprVar {
+ 
+ /// upper bound 
+ 
+-class exprUpperBound: public exprVar {
++class __declspec(dllexport) exprUpperBound: public exprVar {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/CouenneExprClone.hpp b/Couenne/src/expression/CouenneExprClone.hpp
+index 39018c4..9b7f76a 100644
+--- a/Couenne/src/expression/CouenneExprClone.hpp
++++ b/Couenne/src/expression/CouenneExprClone.hpp
+@@ -21,7 +21,7 @@ namespace Couenne {
+ 
+ /// expression clone (points to another expression) 
+ 
+-class exprClone: public exprCopy {
++class __declspec(dllexport) exprClone: public exprCopy {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/CouenneExprConst.hpp b/Couenne/src/expression/CouenneExprConst.hpp
+index f2439a5..53df16b 100644
+--- a/Couenne/src/expression/CouenneExprConst.hpp
++++ b/Couenne/src/expression/CouenneExprConst.hpp
+@@ -20,7 +20,7 @@ namespace Couenne {
+ 
+ /// constant-type operator
+ 
+-class exprConst: public expression {
++class __declspec(dllexport) exprConst: public expression {
+ 
+ private: 
+ 
+diff --git a/Couenne/src/expression/CouenneExprCopy.hpp b/Couenne/src/expression/CouenneExprCopy.hpp
+index a827777..12cbc91 100644
+--- a/Couenne/src/expression/CouenneExprCopy.hpp
++++ b/Couenne/src/expression/CouenneExprCopy.hpp
+@@ -22,7 +22,7 @@ class CouenneObject;
+ 
+ // expression copy (points to VALUE of another expression) 
+ 
+-class exprCopy: public expression {
++class __declspec(dllexport) exprCopy: public expression {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExprIVar.hpp b/Couenne/src/expression/CouenneExprIVar.hpp
+index 43f6e65..a006585 100644
+--- a/Couenne/src/expression/CouenneExprIVar.hpp
++++ b/Couenne/src/expression/CouenneExprIVar.hpp
+@@ -22,7 +22,7 @@ namespace Couenne {
+ /// variable-type operator. All variables of the expression must be
+ /// objects of this class
+ 
+-class exprIVar: public exprVar {
++class __declspec(dllexport) exprIVar: public exprVar {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/CouenneExprOp.hpp b/Couenne/src/expression/CouenneExprOp.hpp
+index b9199de..e9366fb 100644
+--- a/Couenne/src/expression/CouenneExprOp.hpp
++++ b/Couenne/src/expression/CouenneExprOp.hpp
+@@ -28,7 +28,7 @@ class Domain;
+ /// subtraction, multiplication, power, division, max, min, etc. are
+ /// derived from this class.
+ 
+-class exprOp: public expression {
++class __declspec(dllexport) exprOp: public expression {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExprStore.hpp b/Couenne/src/expression/CouenneExprStore.hpp
+index 55255d4..0e01582 100644
+--- a/Couenne/src/expression/CouenneExprStore.hpp
++++ b/Couenne/src/expression/CouenneExprStore.hpp
+@@ -20,7 +20,7 @@ namespace Couenne {
+ 
+ /// storage class for previously evaluated expressions
+ 
+-class exprStore: public exprCopy {
++class __declspec(dllexport) exprStore: public exprCopy {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExprUnary.hpp b/Couenne/src/expression/CouenneExprUnary.hpp
+index e040535..c9ba9d0 100644
+--- a/Couenne/src/expression/CouenneExprUnary.hpp
++++ b/Couenne/src/expression/CouenneExprUnary.hpp
+@@ -30,7 +30,7 @@ inline CouNumber zero_fun (CouNumber x)
+ /// of common methods that need not be re-implemented by any
+ /// univariate class.
+ 
+-class exprUnary: public expression {
++class __declspec(dllexport) exprUnary: public expression {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExprVar.hpp b/Couenne/src/expression/CouenneExprVar.hpp
+index 6893bc3..1902890 100644
+--- a/Couenne/src/expression/CouenneExprVar.hpp
++++ b/Couenne/src/expression/CouenneExprVar.hpp
+@@ -42,7 +42,7 @@ class CouenneCutGenerator;
+ /// All variables of the expression must be objects of this class or
+ /// of the derived exprAux class
+ 
+-class exprVar: public expression {
++class __declspec(dllexport) exprVar: public expression {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/expression/CouenneExpression.hpp b/Couenne/src/expression/CouenneExpression.hpp
+index d4a8299..780269b 100644
+--- a/Couenne/src/expression/CouenneExpression.hpp
++++ b/Couenne/src/expression/CouenneExpression.hpp
+@@ -45,7 +45,7 @@ struct compNode;
+ /// all other expression classes (for constants, variables, and
+ /// operators) are derived.
+ 
+-class expression {
++class __declspec(dllexport) expression {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprAbs.hpp b/Couenne/src/expression/operators/CouenneExprAbs.hpp
+index 9acf4b2..3b23cd4 100644
+--- a/Couenne/src/expression/operators/CouenneExprAbs.hpp
++++ b/Couenne/src/expression/operators/CouenneExprAbs.hpp
+@@ -20,7 +20,7 @@ namespace Couenne {
+ 
+ /// class for \f$ |f(x)| \f$
+ 
+-class exprAbs: public exprUnary {
++class __declspec(dllexport) exprAbs: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprBinProd.hpp b/Couenne/src/expression/operators/CouenneExprBinProd.hpp
+index e74b0cb..008fab9 100644
+--- a/Couenne/src/expression/operators/CouenneExprBinProd.hpp
++++ b/Couenne/src/expression/operators/CouenneExprBinProd.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+ 
+   /// class for \f$ \prod_{i=1}^n f_i(x) \f$ with \f$ f_i(x) \f$ all binary
+ 
+-  class exprBinProd: public exprMul {
++  class __declspec(dllexport)  exprMul {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprCeil.hpp b/Couenne/src/expression/operators/CouenneExprCeil.hpp
+index 968201d..9f01262 100644
+--- a/Couenne/src/expression/operators/CouenneExprCeil.hpp
++++ b/Couenne/src/expression/operators/CouenneExprCeil.hpp
+@@ -17,7 +17,7 @@ namespace Couenne {
+ 
+ /// class ceiling, \f$ \lceil f(x) \rceil \f$
+ 
+-class exprCeil: public exprUnary {
++class __declspec(dllexport) exprCeil: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprCos.hpp b/Couenne/src/expression/operators/CouenneExprCos.hpp
+index 3b65c98..1573d76 100644
+--- a/Couenne/src/expression/operators/CouenneExprCos.hpp
++++ b/Couenne/src/expression/operators/CouenneExprCos.hpp
+@@ -17,7 +17,7 @@ namespace Couenne {
+ 
+ /// class cosine, \f$ \cos f(x) \f$
+ 
+-class exprCos: public exprUnary {
++class __declspec(dllexport) exprCos: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprDiv.hpp b/Couenne/src/expression/operators/CouenneExprDiv.hpp
+index 1587688..2862146 100644
+--- a/Couenne/src/expression/operators/CouenneExprDiv.hpp
++++ b/Couenne/src/expression/operators/CouenneExprDiv.hpp
+@@ -21,7 +21,7 @@ namespace Couenne {
+ 
+ /// class for divisions, \f$ \frac{f(x)}{g(x)} \f$
+ 
+-class exprDiv: public exprOp {
++class __declspec(dllexport) exprDiv: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprEvenPow.hpp b/Couenne/src/expression/operators/CouenneExprEvenPow.hpp
+index e7b1703..ed01392 100644
+--- a/Couenne/src/expression/operators/CouenneExprEvenPow.hpp
++++ b/Couenne/src/expression/operators/CouenneExprEvenPow.hpp
+@@ -23,7 +23,7 @@ namespace Couenne {
+   /// Power of an expression (binary operator) with even exponent, \f$
+   /// f(x)^k\f$ with \f$ k\in \mathbb Z\f$ constant even
+ 
+-  class exprEvenPow: public exprPow {
++  class __declspec(dllexport) exprEvenPow: public exprPow {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprExp.hpp b/Couenne/src/expression/operators/CouenneExprExp.hpp
+index fff1805..5eefbba 100644
+--- a/Couenne/src/expression/operators/CouenneExprExp.hpp
++++ b/Couenne/src/expression/operators/CouenneExprExp.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ 
+ /// class for the exponential, \f$ e^{f(x)} \f$
+ 
+-class exprExp: public exprUnary {
++class __declspec(dllexport) exprExp: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprFloor.hpp b/Couenne/src/expression/operators/CouenneExprFloor.hpp
+index 8ddf8ce..970190f 100644
+--- a/Couenne/src/expression/operators/CouenneExprFloor.hpp
++++ b/Couenne/src/expression/operators/CouenneExprFloor.hpp
+@@ -17,7 +17,7 @@ namespace Couenne {
+ 
+ /// class floor, \f$ \lfloor f(x) \rfloor \f$
+ 
+-class exprFloor: public exprUnary {
++class __declspec(dllexport) exprFloor: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprGroup.hpp b/Couenne/src/expression/operators/CouenneExprGroup.hpp
+index a5bb900..c2a7865 100644
+--- a/Couenne/src/expression/operators/CouenneExprGroup.hpp
++++ b/Couenne/src/expression/operators/CouenneExprGroup.hpp
+@@ -22,7 +22,7 @@ class Domain;
+ 
+ /// class Group, with constant, linear and nonlinear terms: \f$ a_0 + \sum_{i=1}^n a_i x_i \f$
+ 
+-class exprGroup: public exprSum {
++class __declspec(dllexport) exprGroup: public exprSum {
+ 
+ public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprIf.hpp b/Couenne/src/expression/operators/CouenneExprIf.hpp
+index 389c046..90cc435 100644
+--- a/Couenne/src/expression/operators/CouenneExprIf.hpp
++++ b/Couenne/src/expression/operators/CouenneExprIf.hpp
+@@ -15,7 +15,7 @@
+ 
+ namespace Couenne {
+ 
+-class exprIf: public exprOp {
++class __declspec(dllexport) exprIf: public exprOp {
+ 
+ };
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprInv.hpp b/Couenne/src/expression/operators/CouenneExprInv.hpp
+index 5166d9f..ac02061 100644
+--- a/Couenne/src/expression/operators/CouenneExprInv.hpp
++++ b/Couenne/src/expression/operators/CouenneExprInv.hpp
+@@ -32,7 +32,7 @@ inline CouNumber inv_dblprime (register CouNumber x)
+ 
+ /// class inverse: \f$ 1/f(x) \f$
+ 
+-class exprInv: public exprUnary {
++class __declspec(dllexport) exprInv: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprLog.hpp b/Couenne/src/expression/operators/CouenneExprLog.hpp
+index 5bf509a..80e870b 100644
+--- a/Couenne/src/expression/operators/CouenneExprLog.hpp
++++ b/Couenne/src/expression/operators/CouenneExprLog.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+ 
+ /// class logarithm, \f$ \log f(x)\f$
+ 
+-class exprLog: public exprUnary {
++class __declspec(dllexport) exprLog: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprMax.hpp b/Couenne/src/expression/operators/CouenneExprMax.hpp
+index bbb6ce7..083fce6 100644
+--- a/Couenne/src/expression/operators/CouenneExprMax.hpp
++++ b/Couenne/src/expression/operators/CouenneExprMax.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ 
+ /// class for maxima
+ 
+-class exprMax: public exprOp {
++class __declspec(dllexport) exprMax: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprMin.hpp b/Couenne/src/expression/operators/CouenneExprMin.hpp
+index a2c1aa0..7cfdfec 100644
+--- a/Couenne/src/expression/operators/CouenneExprMin.hpp
++++ b/Couenne/src/expression/operators/CouenneExprMin.hpp
+@@ -26,7 +26,7 @@ namespace Couenne {
+ 
+ /// class for minima
+ 
+-class exprMin: public exprOp {
++class __declspec(dllexport) exprMin: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprMul.hpp b/Couenne/src/expression/operators/CouenneExprMul.hpp
+index 022971c..607ea14 100644
+--- a/Couenne/src/expression/operators/CouenneExprMul.hpp
++++ b/Couenne/src/expression/operators/CouenneExprMul.hpp
+@@ -21,7 +21,7 @@ class CouenneCutGenerator;
+ 
+ /// class for multiplications, \f$ \prod_{i=1}^n f_i(x) \f$
+ 
+-class exprMul: public exprOp {
++class __declspec(dllexport) exprMul: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprMultiLin.hpp b/Couenne/src/expression/operators/CouenneExprMultiLin.hpp
+index 508070f..207c70f 100644
+--- a/Couenne/src/expression/operators/CouenneExprMultiLin.hpp
++++ b/Couenne/src/expression/operators/CouenneExprMultiLin.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+ 
+   /// another class for multiplications, \f$ \prod_{i=1}^n f_i(x) \f$
+ 
+-  class exprMultiLin: public exprMul {
++  class __declspec(dllexport) exprMultiLin: public exprMul {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprNorm.hpp b/Couenne/src/expression/operators/CouenneExprNorm.hpp
+index 022d4a5..a0f0c3a 100644
+--- a/Couenne/src/expression/operators/CouenneExprNorm.hpp
++++ b/Couenne/src/expression/operators/CouenneExprNorm.hpp
+@@ -17,7 +17,7 @@ namespace Couenne {
+ 
+   /// Class for \f$ p \f$-norms, \f$ || f(x)||_p = \left(\sum_{i=1}^n f_i(x)^p\right)^{\frac{1}{p}} \f$
+ 
+-  class exprNorm: public exprOp {
++  class __declspec(dllexport) exprNorm: public exprOp {
+ 
+   };
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprOddPow.hpp b/Couenne/src/expression/operators/CouenneExprOddPow.hpp
+index bc078ba..d5584a8 100644
+--- a/Couenne/src/expression/operators/CouenneExprOddPow.hpp
++++ b/Couenne/src/expression/operators/CouenneExprOddPow.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ 
+   /// Power of an expression (binary operator), \f$ f(x)^k\f$ with \f$ k\f$ constant
+ 
+-  class exprOddPow: public exprPow {
++  class __declspec(dllexport) exprOddPow: public exprPow {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprOpp.hpp b/Couenne/src/expression/operators/CouenneExprOpp.hpp
+index 43b7f7b..a87ee92 100644
+--- a/Couenne/src/expression/operators/CouenneExprOpp.hpp
++++ b/Couenne/src/expression/operators/CouenneExprOpp.hpp
+@@ -24,7 +24,7 @@ inline CouNumber opp (register CouNumber arg)
+ 
+ /// class opposite, \f$ -f(x) \f$
+ 
+-class exprOpp: public exprUnary {
++class __declspec(dllexport) exprOpp: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprPWLinear.hpp b/Couenne/src/expression/operators/CouenneExprPWLinear.hpp
+index 3065c63..ec9551a 100644
+--- a/Couenne/src/expression/operators/CouenneExprPWLinear.hpp
++++ b/Couenne/src/expression/operators/CouenneExprPWLinear.hpp
+@@ -15,7 +15,7 @@
+ 
+ namespace Couenne {
+ 
+-class exprPWLinear: public exprOp {
++class __declspec(dllexport) exprPWLinear: public exprOp {
+ 
+ };
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprPow.hpp b/Couenne/src/expression/operators/CouenneExprPow.hpp
+index 5833f9c..f976c82 100644
+--- a/Couenne/src/expression/operators/CouenneExprPow.hpp
++++ b/Couenne/src/expression/operators/CouenneExprPow.hpp
+@@ -27,7 +27,7 @@ class funtriplet;
+ 
+ /// Power of an expression (binary operator), \f$ f(x)^k\f$ with \f$ k\f$ constant
+ 
+-class exprPow: public exprOp {
++class __declspec(dllexport) exprPow: public exprOp {
+ 
+  private:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprQuad.hpp b/Couenne/src/expression/operators/CouenneExprQuad.hpp
+index 90d485d..27fe2e6 100644
+--- a/Couenne/src/expression/operators/CouenneExprQuad.hpp
++++ b/Couenne/src/expression/operators/CouenneExprQuad.hpp
+@@ -41,7 +41,7 @@ class Domain;
+  *  \f$w=h(x)\f$ is created and included in the linear part.
+  */
+ 
+-class exprQuad: public exprGroup {
++class __declspec(dllexport) exprQuad: public exprGroup {
+ 
+ public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprSignPow.hpp b/Couenne/src/expression/operators/CouenneExprSignPow.hpp
+index e1a977d..8684df3 100644
+--- a/Couenne/src/expression/operators/CouenneExprSignPow.hpp
++++ b/Couenne/src/expression/operators/CouenneExprSignPow.hpp
+@@ -22,7 +22,7 @@ namespace Couenne {
+   /// Power of an expression (binary operator), \f$
+   /// f(x)|f(x)|^{k-1}\f$ with \f$ k \in \mathbb R\f$ constant
+ 
+-  class exprSignPow: public exprSignPow {
++  class __declspec(dllexport) exprSignPow: public exprSignPow {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprSin.hpp b/Couenne/src/expression/operators/CouenneExprSin.hpp
+index 1eecb2f..7d7b614 100644
+--- a/Couenne/src/expression/operators/CouenneExprSin.hpp
++++ b/Couenne/src/expression/operators/CouenneExprSin.hpp
+@@ -44,7 +44,7 @@ bool trigImpliedBound (enum cou_trig, int, int, CouNumber *, CouNumber *, t_chg_
+ 
+ 
+ /// class for \f$ \sin f(x)\f$
+-class exprSin: public exprUnary {
++class __declspec(dllexport) exprSin: public exprUnary {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprSub.hpp b/Couenne/src/expression/operators/CouenneExprSub.hpp
+index d44f95e..d607307 100644
+--- a/Couenne/src/expression/operators/CouenneExprSub.hpp
++++ b/Couenne/src/expression/operators/CouenneExprSub.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ 
+ /// class for subtraction, \f$ f(x) - g(x) \f$
+ 
+-class exprSub: public exprOp {
++class __declspec(dllexport) exprSub: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprSum.hpp b/Couenne/src/expression/operators/CouenneExprSum.hpp
+index 1517c5a..45496c1 100644
+--- a/Couenne/src/expression/operators/CouenneExprSum.hpp
++++ b/Couenne/src/expression/operators/CouenneExprSum.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ 
+ /// class sum, \f$ \sum_{i=1}^n f_i(x) \f$
+ 
+-class exprSum: public exprOp {
++class __declspec(dllexport) exprSum: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/CouenneExprTrilinear.hpp b/Couenne/src/expression/operators/CouenneExprTrilinear.hpp
+index 91908d2..4613174 100644
+--- a/Couenne/src/expression/operators/CouenneExprTrilinear.hpp
++++ b/Couenne/src/expression/operators/CouenneExprTrilinear.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+ 
+   /// class for multiplications
+ 
+-  class exprTrilinear: public exprMul {
++  class __declspec(dllexport) exprTrilinear: public exprMul {
+ 
+   public:
+ 
+diff --git a/Couenne/src/expression/operators/bounds/CouenneExprBCos.hpp b/Couenne/src/expression/operators/bounds/CouenneExprBCos.hpp
+index 955ad27..327cf01 100644
+--- a/Couenne/src/expression/operators/bounds/CouenneExprBCos.hpp
++++ b/Couenne/src/expression/operators/bounds/CouenneExprBCos.hpp
+@@ -24,7 +24,7 @@ namespace Couenne {
+ ///  class to compute lower bound of a cosine based on the bounds of
+ ///  its arguments
+ 
+-class exprLBCos: public exprOp {
++class __declspec(dllexport) exprLBCos: public exprOp {
+ 
+  public:
+ 
+@@ -77,7 +77,7 @@ inline CouNumber exprLBCos::operator () () {
+ ///  class to compute lower bound of a cosine based on the bounds of
+ ///  its arguments
+ 
+-class exprUBCos: public exprOp {
++class __declspec(dllexport) exprUBCos: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/bounds/CouenneExprBDiv.hpp b/Couenne/src/expression/operators/bounds/CouenneExprBDiv.hpp
+index bbec888..602a486 100644
+--- a/Couenne/src/expression/operators/bounds/CouenneExprBDiv.hpp
++++ b/Couenne/src/expression/operators/bounds/CouenneExprBDiv.hpp
+@@ -34,7 +34,7 @@ static inline CouNumber safeDiv (register CouNumber a, register CouNumber b, int
+ ///  class to compute lower bound of a fraction based on the bounds of
+ ///  both numerator and denominator
+ 
+-class exprLBDiv: public exprOp {
++class __declspec(dllexport) exprLBDiv: public exprOp {
+ 
+  public:
+ 
+@@ -82,7 +82,7 @@ inline CouNumber exprLBDiv::operator () () {
+ /// class to compute upper bound of a fraction based on the bounds of
+ /// both numerator and denominator
+ 
+-class exprUBDiv: public exprOp {
++class __declspec(dllexport) exprUBDiv: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/bounds/CouenneExprBMul.hpp b/Couenne/src/expression/operators/bounds/CouenneExprBMul.hpp
+index a2c8c54..066ad8b 100644
+--- a/Couenne/src/expression/operators/bounds/CouenneExprBMul.hpp
++++ b/Couenne/src/expression/operators/bounds/CouenneExprBMul.hpp
+@@ -37,7 +37,7 @@ inline CouNumber safeProd (register CouNumber a, register CouNumber b) {
+ /// class to compute lower bound of a product based on the bounds of
+ /// both factors
+ 
+-class exprLBMul: public exprOp {
++class __declspec(dllexport) exprLBMul: public exprOp {
+ 
+  public:
+ 
+@@ -90,7 +90,7 @@ inline CouNumber exprLBMul::operator () () {
+ /// class to compute upper bound of a product based on the bounds of
+ /// both factors
+ 
+-class exprUBMul: public exprOp {
++class __declspec(dllexport) exprUBMul: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/operators/bounds/CouenneExprBQuad.hpp b/Couenne/src/expression/operators/bounds/CouenneExprBQuad.hpp
+index 8c2c0b3..b0fcd0e 100644
+--- a/Couenne/src/expression/operators/bounds/CouenneExprBQuad.hpp
++++ b/Couenne/src/expression/operators/bounds/CouenneExprBQuad.hpp
+@@ -19,7 +19,7 @@ namespace Couenne {
+ /// class to compute lower bound of a fraction based on the bounds of
+ /// both numerator and denominator
+ 
+-class exprLBQuad: public expression {
++class __declspec(dllexport) exprLBQuad: public expression {
+ 
+   exprQuad *ref_; ///< quadratic form, reference expression
+ 
+@@ -57,7 +57,7 @@ class exprLBQuad: public expression {
+ /// class to compute upper bound of a fraction based on the bounds of
+ /// both numerator and denominator
+ 
+-class exprUBQuad: public expression {
++class __declspec(dllexport) exprUBQuad: public expression {
+ 
+   exprQuad *ref_; ///< quadratic form, reference expression
+ 
+diff --git a/Couenne/src/expression/operators/bounds/CouenneExprBSin.hpp b/Couenne/src/expression/operators/bounds/CouenneExprBSin.hpp
+index 3075e61..6c51fdf 100644
+--- a/Couenne/src/expression/operators/bounds/CouenneExprBSin.hpp
++++ b/Couenne/src/expression/operators/bounds/CouenneExprBSin.hpp
+@@ -24,7 +24,7 @@ namespace Couenne {
+ ///  class to compute lower bound of a sine based on the bounds on its
+ ///  arguments
+ 
+-class exprLBSin: public exprOp {
++class __declspec(dllexport) exprLBSin: public exprOp {
+ 
+  public:
+ 
+@@ -77,7 +77,7 @@ inline CouNumber exprLBSin::operator () () {
+ ///  class to compute lower bound of a sine based on the bounds on its
+ ///  arguments
+ 
+-class exprUBSin: public exprOp {
++class __declspec(dllexport) exprUBSin: public exprOp {
+ 
+  public:
+ 
+diff --git a/Couenne/src/expression/partial/CouenneExprHess.hpp b/Couenne/src/expression/partial/CouenneExprHess.hpp
+index 29d46d0..5477927 100644
+--- a/Couenne/src/expression/partial/CouenneExprHess.hpp
++++ b/Couenne/src/expression/partial/CouenneExprHess.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+   /// expression matrices. Used to evaluate the Hessian of the
+   /// Lagrangian function at an optimal solution of the NLP
+ 
+-  class ExprHess {
++  class __declspec(dllexport) ExprHess {
+ 
+   private:
+ 
+diff --git a/Couenne/src/expression/partial/CouenneExprJac.hpp b/Couenne/src/expression/partial/CouenneExprJac.hpp
+index 2bb4107..be14d3d 100644
+--- a/Couenne/src/expression/partial/CouenneExprJac.hpp
++++ b/Couenne/src/expression/partial/CouenneExprJac.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+   /// Jacobian of the problem (computed through Couenne expression
+   /// classes).
+ 
+-  class ExprJac {
++  class __declspec(dllexport) ExprJac {
+ 
+   private:
+ 
+diff --git a/Couenne/src/heuristics/BonInitHeuristic.hpp b/Couenne/src/heuristics/BonInitHeuristic.hpp
+index 4ef9a41..2651eaf 100644
+--- a/Couenne/src/heuristics/BonInitHeuristic.hpp
++++ b/Couenne/src/heuristics/BonInitHeuristic.hpp
+@@ -21,7 +21,7 @@ namespace Couenne {
+    *  Cbc about this.
+    */
+ 
+-  class InitHeuristic : public CbcHeuristic{
++  class __declspec(dllexport) InitHeuristic : public CbcHeuristic{
+ 
+   public:
+ 
+diff --git a/Couenne/src/heuristics/BonNlpHeuristic.hpp b/Couenne/src/heuristics/BonNlpHeuristic.hpp
+index 66c637c..c953d3d 100644
+--- a/Couenne/src/heuristics/BonNlpHeuristic.hpp
++++ b/Couenne/src/heuristics/BonNlpHeuristic.hpp
+@@ -25,7 +25,7 @@ namespace Couenne {
+ 
+   const double maxNlpInf_0 = 1e-5;
+ 
+-  class NlpSolveHeuristic : public CbcHeuristic{
++  class __declspec(dllexport) NlpSolveHeuristic : public CbcHeuristic{
+ 
+   public:
+     /** Default constructor.*/
+diff --git a/Couenne/src/heuristics/CouenneFPpool.hpp b/Couenne/src/heuristics/CouenneFPpool.hpp
+index 5fcc5a8..4033592 100644
+--- a/Couenne/src/heuristics/CouenneFPpool.hpp
++++ b/Couenne/src/heuristics/CouenneFPpool.hpp
+@@ -29,7 +29,7 @@ namespace Couenne {
+   static enum what_to_compare {SUM_NINF = 0, SUM_INF, OBJVAL, ALL_VARS, INTEGER_VARS} comparedTerm_;
+ 
+   /// Class containing a solution with infeasibility evaluation
+-  class CouenneFPsolution {
++  class __declspec(dllexport) CouenneFPsolution {
+ 
+   protected:
+ 
+@@ -79,7 +79,7 @@ namespace Couenne {
+ 
+ 
+   /// class for comparing solutions (used in tabu list)
+-  class compareSol {
++  class __declspec(dllexport) compareSol {
+ 
+   public:
+     bool operator () (const CouenneFPsolution &one, 
+@@ -88,7 +88,7 @@ namespace Couenne {
+ 
+ 
+   /// Pool of solutions
+-  class CouenneFPpool {
++  class __declspec(dllexport) CouenneFPpool {
+ 
+   protected:
+ 
+diff --git a/Couenne/src/heuristics/CouenneFeasPump.hpp b/Couenne/src/heuristics/CouenneFeasPump.hpp
+index be524ce..4571394 100644
+--- a/Couenne/src/heuristics/CouenneFeasPump.hpp
++++ b/Couenne/src/heuristics/CouenneFeasPump.hpp
+@@ -54,7 +54,7 @@ namespace Couenne {
+   /// An implementation of the Feasibility pump that uses
+   /// linearization and Ipopt to find the two sequences of points.
+   
+-  class CouenneFeasPump: public CbcHeuristic {
++  class __declspec(dllexport) CouenneFeasPump: public CbcHeuristic {
+ 
+   public:
+ 
+diff --git a/Couenne/src/heuristics/CouenneIterativeRounding.hpp b/Couenne/src/heuristics/CouenneIterativeRounding.hpp
+index 600ac57..fef8056 100644
+--- a/Couenne/src/heuristics/CouenneIterativeRounding.hpp
++++ b/Couenne/src/heuristics/CouenneIterativeRounding.hpp
+@@ -33,7 +33,7 @@ namespace Couenne{
+       number of iterations, or until a better solution is found.
+   */
+ 
+-  class CouenneIterativeRounding : public CbcHeuristic{
++  class __declspec(dllexport) CouenneIterativeRounding : public CbcHeuristic{
+ 
+   public:
+     /** Default constructor.*/
+diff --git a/Couenne/src/interfaces/BonCouenneInterface.hpp b/Couenne/src/interfaces/BonCouenneInterface.hpp
+index 71e30ee..0ca1662 100644
+--- a/Couenne/src/interfaces/BonCouenneInterface.hpp
++++ b/Couenne/src/interfaces/BonCouenneInterface.hpp
+@@ -30,7 +30,7 @@ namespace Bonmin {
+ 
+ namespace Couenne {
+ 
+-  class CouenneInterface : public Bonmin::AmplInterface
++  class __declspec(dllexport) CouenneInterface : public Bonmin::AmplInterface
+   {
+   public:
+     /** Default constructor. */
+diff --git a/Couenne/src/interfaces/CouenneMINLPInterface.hpp b/Couenne/src/interfaces/CouenneMINLPInterface.hpp
+index 888d1fe..e5f082f 100644
+--- a/Couenne/src/interfaces/CouenneMINLPInterface.hpp
++++ b/Couenne/src/interfaces/CouenneMINLPInterface.hpp
+@@ -56,7 +56,7 @@ namespace Couenne {
+   /// Linear Program expressed as a TMINLP (so that we can use it for
+   /// example as the continuous solver in Cbc).
+ 
+-  class CouenneMINLPInterface: public OsiSolverInterface {
++  class __declspec(dllexport) CouenneMINLPInterface: public OsiSolverInterface {
+ 
+   public:
+ 
+@@ -988,7 +988,7 @@ namespace Couenne {
+     };
+ 
+     /// Like a CoinMessageHandler but can print a cut also.
+-    class OaMessageHandler : public CoinMessageHandler{
++    class __declspec(dllexport) OaMessageHandler : public CoinMessageHandler{
+     public:
+       /// Default constructor.
+       OaMessageHandler():CoinMessageHandler(){
+diff --git a/Couenne/src/interfaces/CouenneTNLP.hpp b/Couenne/src/interfaces/CouenneTNLP.hpp
+index 8cc4668..0bd98e2 100644
+--- a/Couenne/src/interfaces/CouenneTNLP.hpp
++++ b/Couenne/src/interfaces/CouenneTNLP.hpp
+@@ -24,7 +24,7 @@ namespace Couenne {
+   class CouenneSparseMatrix;
+ 
+   /// Class for handling NLPs using CouenneProblem
+-  class CouenneTNLP: public Ipopt::TNLP {
++  class __declspec(dllexport) CouenneTNLP: public Ipopt::TNLP {
+ 
+   public:
+ 
+diff --git a/Couenne/src/interfaces/CouenneUserInterface.hpp b/Couenne/src/interfaces/CouenneUserInterface.hpp
+index 71a1773..7aaf16f 100644
+--- a/Couenne/src/interfaces/CouenneUserInterface.hpp
++++ b/Couenne/src/interfaces/CouenneUserInterface.hpp
+@@ -29,7 +29,7 @@ class CouenneBaB;
+ 
+ /* abstract base class of an interface for Couenne users
+  */ 
+-class CouenneUserInterface {
++class __declspec(dllexport) CouenneUserInterface {
+ protected:
+ 	Ipopt::SmartPtr<Ipopt::OptionsList> options;
+ 	Ipopt::SmartPtr<Ipopt::Journalist>  jnlst;
+diff --git a/Couenne/src/main/BonCouenneInfo.hpp b/Couenne/src/main/BonCouenneInfo.hpp
+index 2d67a41..ba28b2a 100644
+--- a/Couenne/src/main/BonCouenneInfo.hpp
++++ b/Couenne/src/main/BonCouenneInfo.hpp
+@@ -19,11 +19,11 @@
+ namespace Couenne {
+ 
+   /** Bonmin class for passing info between components of branch-and-cuts.*/
+-  class CouenneInfo : public Bonmin::BabInfo
++  class __declspec(dllexport) CouenneInfo : public Bonmin::BabInfo
+   {
+   public:
+     /** Class for storing an Nlp Solution */
+-    class NlpSolution: public Ipopt::ReferencedObject
++    class __declspec(dllexport) NlpSolution: public Ipopt::ReferencedObject
+     {
+     public:
+       // meaningful constructor
+diff --git a/Couenne/src/main/BonCouenneSetup.hpp b/Couenne/src/main/BonCouenneSetup.hpp
+index 022b278..d028763 100644
+--- a/Couenne/src/main/BonCouenneSetup.hpp
++++ b/Couenne/src/main/BonCouenneSetup.hpp
+@@ -30,7 +30,7 @@ namespace Couenne {
+   class CouenneProblem;
+   class CouenneTNLP;
+ 
+-  class SmartAsl : public Ipopt::ReferencedObject{
++  class __declspec(dllexport) SmartAsl : public Ipopt::ReferencedObject{
+   public:
+     ASL * asl;
+     SmartAsl():
+@@ -40,7 +40,7 @@ namespace Couenne {
+     virtual ~SmartAsl();
+   };
+ 
+-  class CouenneSetup : public Bonmin::BonminSetup{
++  class __declspec(dllexport) CouenneSetup : public Bonmin::BonminSetup{
+   public:
+     /** Default constructor*/
+     CouenneSetup():
+diff --git a/Couenne/src/main/CouenneBab.hpp b/Couenne/src/main/CouenneBab.hpp
+index ecdbca8..f1e26b4 100644
+--- a/Couenne/src/main/CouenneBab.hpp
++++ b/Couenne/src/main/CouenneBab.hpp
+@@ -18,7 +18,7 @@ namespace Couenne {
+ 
+   class CouenneProblem;
+ 
+-  class CouenneBab: public Bonmin::Bab {
++  class __declspec(dllexport) CouenneBab: public Bonmin::Bab {
+ 
+   public:
+ 
+diff --git a/Couenne/src/main/CouenneOSInterface.hpp b/Couenne/src/main/CouenneOSInterface.hpp
+index 685f38e..45aee73 100644
+--- a/Couenne/src/main/CouenneOSInterface.hpp
++++ b/Couenne/src/main/CouenneOSInterface.hpp
+@@ -33,7 +33,7 @@ class OSInstance;
+ 
+ namespace Couenne {
+ 
+-class CouenneOSInterface : public CouenneUserInterface {
++class __declspec(dllexport) CouenneOSInterface : public CouenneUserInterface {
+ private:
+ 	CouenneProblem*                  problem;
+ 	Ipopt::SmartPtr<Bonmin::TMINLP>  tminlp;
+diff --git a/Couenne/src/problem/CouenneGlobalCutOff.hpp b/Couenne/src/problem/CouenneGlobalCutOff.hpp
+index d32ef5a..83a6878 100644
+--- a/Couenne/src/problem/CouenneGlobalCutOff.hpp
++++ b/Couenne/src/problem/CouenneGlobalCutOff.hpp
+@@ -16,7 +16,7 @@
+ 
+ namespace Couenne {
+ 
+-  class GlobalCutOff {
++  class __declspec(dllexport) GlobalCutOff {
+ 
+   private:
+ 
+diff --git a/Couenne/src/problem/CouenneProblem.hpp b/Couenne/src/problem/CouenneProblem.hpp
+index e5b54a5..e1293a3 100644
+--- a/Couenne/src/problem/CouenneProblem.hpp
++++ b/Couenne/src/problem/CouenneProblem.hpp
+@@ -166,7 +166,7 @@ const CouNumber feas_tolerance_default = 1e-5;
+  *  program occur in standardization.
+  */
+ 
+-class CouenneProblem {
++class __declspec(dllexport) CouenneProblem {
+ 
+   friend class exprMul;
+ 
+diff --git a/Couenne/src/problem/CouenneProblemElem.hpp b/Couenne/src/problem/CouenneProblemElem.hpp
+index 8e86930..d53a93c 100644
+--- a/Couenne/src/problem/CouenneProblemElem.hpp
++++ b/Couenne/src/problem/CouenneProblemElem.hpp
+@@ -36,7 +36,7 @@ namespace Couenne {
+  *  while lb_ = new exprConst (2.) and ub_ = new exprConst (4.).
+  */
+ 
+-class CouenneConstraint {
++class __declspec(dllexport) CouenneConstraint {
+ 
+  protected:
+ 
+@@ -106,7 +106,7 @@ class CouenneConstraint {
+  *
+  */
+ 
+-class CouenneObjective {
++class __declspec(dllexport) CouenneObjective {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/problem/CouenneRecordBestSol.hpp b/Couenne/src/problem/CouenneRecordBestSol.hpp
+index 658e129..bdc0532 100644
+--- a/Couenne/src/problem/CouenneRecordBestSol.hpp
++++ b/Couenne/src/problem/CouenneRecordBestSol.hpp
+@@ -16,7 +16,7 @@
+ namespace Couenne {
+ 
+ // class to record best found feasible solution
+-class CouenneRecordBestSol {
++class __declspec(dllexport) CouenneRecordBestSol {
+ 
+ public:
+ 
+diff --git a/Couenne/src/problem/CouenneSolverInterface.hpp b/Couenne/src/problem/CouenneSolverInterface.hpp
+index 144fa66..18d77d4 100644
+--- a/Couenne/src/problem/CouenneSolverInterface.hpp
++++ b/Couenne/src/problem/CouenneSolverInterface.hpp
+@@ -24,7 +24,7 @@ class CouenneCutGenerator;
+ /// 2) to replace OsiSolverInterface::isInteger () with problem_ -> [expression] -> isInteger ()
+ /// 3) to use NLP solution at branching
+  
+-template <class T> class CouenneSolverInterface: public T {
++template <class T> class __declspec(dllexport) CouenneSolverInterface: public T {
+ 
+ public:
+ 
+diff --git a/Couenne/src/problem/depGraph/CouenneDepGraph.hpp b/Couenne/src/problem/depGraph/CouenneDepGraph.hpp
+index ea75fe1..4d260ee 100644
+--- a/Couenne/src/problem/depGraph/CouenneDepGraph.hpp
++++ b/Couenne/src/problem/depGraph/CouenneDepGraph.hpp
+@@ -30,7 +30,7 @@ struct compNode {
+ /// vertex of a dependence graph. Contains variable and its forward
+ /// star (all variables it depends on)
+ 
+-class DepNode {
++class __declspec(dllexport) DepNode {
+ 
+ public:
+ 
+@@ -112,7 +112,7 @@ bool compNode::operator () (const DepNode *n0, const DepNode *n1) const
+ /// Dependence graph. Shows dependence of auxiliary variable on other
+ /// (auxiliary and/or original) variables
+ 
+-class DepGraph {
++class __declspec(dllexport) DepGraph {
+ 
+ protected:
+ 
+diff --git a/Couenne/src/readnl/CouenneAmplInterface.hpp b/Couenne/src/readnl/CouenneAmplInterface.hpp
+index cb44628..558760d 100644
+--- a/Couenne/src/readnl/CouenneAmplInterface.hpp
++++ b/Couenne/src/readnl/CouenneAmplInterface.hpp
+@@ -23,7 +23,7 @@ namespace Couenne {
+ 
+ class expression;
+ 
+-class CouenneAmplInterface : public CouenneUserInterface {
++class __declspec(dllexport) CouenneAmplInterface : public CouenneUserInterface {
+ private:
+ 	CouenneProblem*                  problem;
+ 	Ipopt::SmartPtr<Bonmin::TMINLP>  tminlp;
+diff --git a/Couenne/src/standardize/CouenneLQelems.hpp b/Couenne/src/standardize/CouenneLQelems.hpp
+index 938ffe1..595a6a1 100644
+--- a/Couenne/src/standardize/CouenneLQelems.hpp
++++ b/Couenne/src/standardize/CouenneLQelems.hpp
+@@ -17,7 +17,7 @@
+ 
+ namespace Couenne {
+ 
+-class quadElem {
++class __declspec(dllexport) quadElem {
+ 
+ private:
+   exprVar   *varI_;
+@@ -45,7 +45,7 @@ public:
+ };
+ 
+ 
+-class LinMap {
++class __declspec(dllexport) LinMap {
+ 
+ private:
+   std::map <int, CouNumber> lmap_;
+@@ -72,7 +72,7 @@ public:
+ };
+ 
+ 
+-class QuadMap {
++class __declspec(dllexport) QuadMap {
+ 
+ private:
+   std::map <std::pair <int, int>, CouNumber> qmap_;
+diff --git a/Couenne/src/util/CouenneFunTriplets.hpp b/Couenne/src/util/CouenneFunTriplets.hpp
+index 600a3cf..147d199 100644
+--- a/Couenne/src/util/CouenneFunTriplets.hpp
++++ b/Couenne/src/util/CouenneFunTriplets.hpp
+@@ -19,7 +19,7 @@ namespace Couenne
+ {
+ 
+ ///
+-class funtriplet {
++class __declspec(dllexport) funtriplet {
+ 
+ public:
+ 
+@@ -37,7 +37,7 @@ public:
+ 
+ 
+ ///
+-class simpletriplet: public funtriplet {
++class __declspec(dllexport) simpletriplet: public funtriplet {
+ 
+ protected:
+ 
+@@ -69,7 +69,7 @@ public:
+ 
+ 
+ ///
+-class powertriplet: public funtriplet {
++class __declspec(dllexport) powertriplet: public funtriplet {
+ 
+ protected:
+ 
+@@ -100,7 +100,7 @@ public:
+ 
+ 
+ ///
+-class kpowertriplet: public powertriplet {
++class __declspec(dllexport) kpowertriplet: public powertriplet {
+ 
+ protected:
+ 
+diff --git a/Couenne/src/util/CouenneRootQ.hpp b/Couenne/src/util/CouenneRootQ.hpp
+index 9c78bd7..e357b39 100644
+--- a/Couenne/src/util/CouenneRootQ.hpp
++++ b/Couenne/src/util/CouenneRootQ.hpp
+@@ -26,7 +26,7 @@ CouNumber rootQ (int k);
+ /// class that stores result of previous calls to rootQ into a map for
+ /// faster access
+ 
+-class Qroot {
++class __declspec(dllexport) Qroot {
+ 
+  protected:
+ 
+diff --git a/Couenne/src/util/CouenneSparseMatrix.hpp b/Couenne/src/util/CouenneSparseMatrix.hpp
+index e9f9248..ad014d0 100644
+--- a/Couenne/src/util/CouenneSparseMatrix.hpp
++++ b/Couenne/src/util/CouenneSparseMatrix.hpp
+@@ -14,7 +14,7 @@
+ namespace Couenne {
+ 
+   /// Class for sparse Matrixs (used in modifying distances in FP)
+-  class CouenneSparseMatrix {
++  class __declspec(dllexport) CouenneSparseMatrix {
+ 
+   public:
  
