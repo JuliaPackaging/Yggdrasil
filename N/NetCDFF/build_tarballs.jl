@@ -12,10 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/netcdf-fortran-4.5.3/
+cd $WORKSPACE/srcdir/netcdf-fortran*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # Manually build shared library for Windows
+    gfortran -shared -fPIC -o ${libdir}/libnetcdff.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libnetcdff.a -Wl,$(flagon --no-whole-archive) -lnetcdf
+fi
+# Remove static libraries
+rm ${prefix}/lib/*.a
 """
 
 # These are the platforms we will build for by default, unless further
