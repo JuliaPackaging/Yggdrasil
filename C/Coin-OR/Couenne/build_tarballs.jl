@@ -39,6 +39,9 @@ export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
     export LT_LDFLAGS="-no-undefined"
+elif [[ ${target} == *apple* ]]; then
+    # Turn off the annoying, but harmless, -Wdeprecated-register.
+    export CPPFLAGS="${CPPFLAGS} -Wno-deprecated-register"
 fi
 
 ./configure \
