@@ -62,7 +62,7 @@ platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcouenne", :libcouenne),
+    LibraryProduct("libCouenne", :libcouenne),
     ExecutableProduct("couenne", :amplexe),
 ]
 
