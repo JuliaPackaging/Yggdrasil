@@ -3,11 +3,14 @@ using BinaryBuilder
 include("../common.jl")
 
 name = "Go"
-version = v"1.13"
+version = v"1.16.3"
 
+# https://golang.org/dl/
 sources = [
-    "https://dl.google.com/go/go1.13.linux-amd64.tar.gz" =>
-    "68a2297eb099d1a76097905a2ce334e3155004ec08cdea85f24527be3c48e856",
+    ArchiveSource(
+        "https://golang.org/dl/go1.16.3.linux-amd64.tar.gz",
+        "951a3c7c6ce4e56ad883f97d9db74d3d6d80d5fec77455c6ada6c1f7ac4776d2",
+    )
 ]
 
 # Bash recipe for building across all platforms
@@ -15,10 +18,9 @@ script = raw"""
 mv ${WORKSPACE}/srcdir/go ${prefix}/
 """
 
-# We only build for Linux x86_64
+# We only build for host platform: x86_64-linux-musl
 platforms = [
-    # TODO: Switch to musl once https://github.com/rust-lang/rustup.rs/pull/1882 is released
-    Platform("x86_64", "linux"; libc="musl"),
+    host_platform,
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -30,6 +32,9 @@ products = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_info = build_tarballs(ARGS, "$(name)", version, sources, script, platforms, products, dependencies; skip_audit=true)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
+build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
 
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)
+if deploy_target !== nothing
+    upload_and_insert_shards(deploy_target, name, version, build_info)
+end
