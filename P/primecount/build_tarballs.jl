@@ -3,21 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "primecount"
-version = v"6.4.0"
+version = v"6.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kimwalisch/primecount.git", "3b7a25a0047d463b8925e5d39bb2b5d741c9c022")
+    GitSource("https://github.com/kimwalisch/primecount.git", "fe433f39fa16eaeab41d7caaef90a9caefa32474"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd primecount/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make -j
+cd $WORKSPACE/srcdir/primecount/
+atomic_patch -p1 ../patches/0001-Allow-disabling-building-static-library-for-Windows.patch
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_STATIC_LIBS=OFF \
+    ..
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,11 +36,14 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("primecount", :primecount)
+    ExecutableProduct("primecount", :primecount),
+    LibraryProduct("libprimecount", :libprimecount),
+    LibraryProduct("libprimesieve", :libprimesieve),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
