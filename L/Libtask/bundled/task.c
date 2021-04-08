@@ -44,9 +44,7 @@ jl_task_t *jl_clone_task(jl_task_t *t)
     newt->_state = t->_state;
     newt->_isexception = t->_isexception;
     newt->prio = t->prio;
-    newt->world_age = t->world_age;
     newt->excstack = NULL; // t->excstack;
-    newt->timing_stack = t->timing_stack;
 #endif
 
     newt->start = t->start;
