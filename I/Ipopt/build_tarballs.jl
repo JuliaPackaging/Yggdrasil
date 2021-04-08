@@ -35,11 +35,12 @@ make
 make install
 """
 
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libipopt", :libipopt),
+    LibraryProduct("libipoptamplinterface", :libipoptamplinterface),
     ExecutableProduct("ipopt", :amplexe),
 ]
 
@@ -47,7 +48,7 @@ products = [
 dependencies = [
     Dependency("ASL_jll"),
     Dependency("OpenBLAS32_jll", v"0.3.9"),  # Ipopt uses 32-bit ints
-    Dependency(PackageSpec(; name="MUMPS_seq_jll", version=v"5.2.1")),
+    Dependency("MUMPS_seq_jll", v"5.2.1", compat="=5.2.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
