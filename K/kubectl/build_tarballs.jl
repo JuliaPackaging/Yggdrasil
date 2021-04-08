@@ -1,43 +1,58 @@
 using BinaryBuilder
 
 name = "kubectl"
-version = v"1.20.0"
+version = v"1.20.4"
 
-# Links to downloads can found at: https://kubernetes.io/docs/tasks/tools/
+# Collection of sources required to complete build
+#
+# Take note that different Kubernetes versions require minimum versions of Go:
+# https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go
 sources = [
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/linux/amd64/kubectl", "a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c"; filename="x86_64-linux-gnu-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/linux/arm64/kubectl", "25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623"; filename="aarch64-linux-gnu-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/darwin/amd64/kubectl", "82046a4abb056005edec097a42cc3bb55d1edd562d6f6f38c07318603fcd9fca"; filename="x86_64-apple-darwin14-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/windows/amd64/kubectl.exe", "ee7be8e93349fb0fd1db7f5cdb5985f5698cef69b7b7be012fc0e6bed06b254d"; filename="x86_64-w64-mingw32-kubectl"),
-    FileSource("https://raw.githubusercontent.com/kubernetes/kubernetes/v$(version)/LICENSE", "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30")
+    ArchiveSource(
+        "https://github.com/kubernetes/kubernetes/archive/refs/tags/v$(version).tar.gz",
+        "3fe491b90f60b1b8989556325abad53409568b96e271b00e5d23fde18f3dbe44",
+    ),
 ]
 
 # Bash recipe for building across all platforms
+#
+# Build instructions adapted from:
+# - https://github.com/kubernetes/kubernetes/#to-start-developing-k8s
+# - https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#building-kubernetes
 script = raw"""
-cd ${WORKSPACE}/srcdir/
-mkdir -p ${bindir}
+mkdir -p $GOPATH/src/k8s.io
+mv kubernetes-* $GOPATH/src/k8s.io/kubernetes
+cd $GOPATH/src/k8s.io/kubernetes
+
+# Revise bash process substitution as this fails in the build environment.
+# Symptoms of this failure look like:
+# `./hack/run-in-gopath.sh: line 34: _output/bin/prerelease-lifecycle-gen: Permission denied`
+# and when running a clean build with `DBG_MAKEFILE` you can see the actual issue:
+# `hack/lib/golang.sh: line 867: /dev/fd/62: No such file or directory`
+sed -ri 's/<\s+<\((.*)\)/<<< $(\1)/' hack/lib/golang.sh hack/make-rules/clean.sh
+
+# Disable `gofmt` as it isn't included in the compiler shard
+sed -i 's/^gofmt/# \0/' hack/generate-bindata.sh
+
+# Note: Using `-E DBG_MAKEFILE=1` is helpful for debugging Makefile issues
+make WHAT=cmd/kubectl
 
 install_license LICENSE
-
-mv "${target}-kubectl" "${bindir}/kubectl${exeext}"
-chmod 755 "${bindir}/kubectl${exeext}"
+mkdir -p ${bindir}
+mv _output/local/go/bin/kubectl ${bindir}/kubectl${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("kubectl", :kubectl),
 ]
 
+# Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
