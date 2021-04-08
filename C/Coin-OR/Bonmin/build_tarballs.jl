@@ -65,7 +65,7 @@ products = [
 dependencies = [
     Dependency("Cbc_jll", v"2.10.5"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Ipopt_jll", v"3.13.4"),
+    Dependency("Ipopt_jll", v"3.13.4", compat="~3.13.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
