@@ -29,6 +29,7 @@ dependencies = []
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("go", :go, "go/bin"),
+    ExecutableProduct("gofmt", :gofmt, "go/bin"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
