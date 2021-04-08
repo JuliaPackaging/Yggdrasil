@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.4.3"
+version = v"3.5.1"
 
 # Collection of sources required to complete build
 sources = [
