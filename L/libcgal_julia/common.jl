@@ -4,7 +4,10 @@ using BinaryBuilder
 import Pkg: PackageSpec
 
 name = "libcgal_julia"
-version = VersionNumber(0, 16, julia_version.minor)
+rversion = v"0.16.1"
+version = VersionNumber(rversion.major,
+                        rversion.minor,
+                        100rversion.patch + julia_version.minor)
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
@@ -13,7 +16,7 @@ rname = "libcgal-julia"
 sources = [
     isyggdrasil ?
         GitSource("https://github.com/rgcv/$rname.git",
-                  "1d6eabab1bb94e83676a19f3a6c5877b17b1e11c") :
+                  "b13c777227527d794e3fb0b1caaff202a25921a8") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
@@ -69,11 +72,11 @@ dependencies = [
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 
-    Dependency(PackageSpec(name="CGAL_jll", version="5.2")),
+    Dependency("CGAL_jll", compat="5.2"),
     Dependency("libcxxwrap_julia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8",
+               preferred_gcc_version=gcc_version,
                julia_compat = "$(julia_version.major).$(julia_version.minor)")
