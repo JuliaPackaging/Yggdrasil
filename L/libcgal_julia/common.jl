@@ -69,11 +69,11 @@ dependencies = [
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 
-    Dependency(PackageSpec(name="CGAL_jll", version="5.2")),
+    Dependency("CGAL_jll", compat="5.2"),
     Dependency("libcxxwrap_julia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8",
+               preferred_gcc_version=v"9",
                julia_compat = "$(julia_version.major).$(julia_version.minor)")
