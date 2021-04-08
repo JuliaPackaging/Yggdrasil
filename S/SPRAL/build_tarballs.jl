@@ -13,7 +13,7 @@ cd ${WORKSPACE}/srcdir/spral
 ./autogen.sh
 update_configure_scripts
 CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
-    ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" \
     --with-metis-inc-dir="${prefix}/include"
@@ -30,7 +30,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name = "METIS_jll",
+    BuildDependency(PackageSpec(; name = "METIS4_jll",
                                 uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
                                 version = v"4.0.3")),
     Dependency("CompilerSupportLibraries_jll"),
@@ -39,5 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
