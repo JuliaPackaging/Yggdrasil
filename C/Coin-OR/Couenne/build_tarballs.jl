@@ -54,7 +54,7 @@ fi
     --with-asl-lib="-lasl -lipoptamplinterface" \
     --with-bonmin-lib="-lbonminampl -lbonmin -lipoptamplinterface -lipopt -lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lasl -lopenblas"
 
-make
+make -j${nproc}
 make install
 """
 
@@ -74,9 +74,20 @@ dependencies = [
     Dependency("ASL_jll", v"0.1.2"),
     Dependency("Bonmin_jll", v"1.8.8"),
     Dependency("Cbc_jll", v"2.10.5"),
-    Dependency("CompilerSupportLibraries_jll"),
     Dependency("Ipopt_jll", v"3.13.4"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Note: for obscure reasons I miss, `Clp_jll` built for
+# `x86_64-linux-gnu-libgfortran3-cxx11` with GCC 6.1 provides the symbol
+#     virtual thunk to OsiClpSolverInterface::getRowName(int, unsigned int) const
+# instead of
+#     virtual thunk to OsiClpSolverInterface::getRowName[abi:cxx11](int, unsigned int) const
+# Thus, if we build Couenne with GCC < 7 (=> libgfortran3) we'd have the symbol
+# without the `abi:cxx11` tag.  Auditor doesn't complain because at the end of
+# the build everything has a consistent ABI for the libgfortran3 runtime.
+# However, when we load the package at runtime we'd have libgfortran5 and the
+# corresponding Clp provides the `abi:cxx11`-tagged symbol, causing the error
+#    /tmp/jl_KKxJ1h/artifacts/ecc837f417130ef88b6288424541354733c387b1/lib/libCouenne.so: undefined symbol: _ZTv0_n720_NK21OsiClpSolverInterface10getRowNameEij
+# The solution is to build Couenne with GCC 7 (=> libgfortran4) so that
+# `Clp_jll` used during the build has the correctly tagged symbol.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
