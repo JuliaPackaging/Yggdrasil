@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-                Dependency(PackageSpec(name="CImGui_jll", version=v"1.82.0")),
+                Dependency("CImGui_jll", build_version=v"1.82.0", compat="1.82.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
