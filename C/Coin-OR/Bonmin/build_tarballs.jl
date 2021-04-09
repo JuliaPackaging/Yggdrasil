@@ -14,7 +14,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/Bonmin
 
 if [[ ${target} == *mingw* ]]; then
-    sed -i s/dllimport/dllexport/ /workspace/destdir/include/coin-or/IpoptConfig.h
+    sed -i s/dllimport/dllexport/ "${includedir}/coin-or/IpoptConfig.h"
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_dllexport.patch
 fi
 
@@ -43,12 +43,11 @@ fi
     lt_cv_deplibs_check_method=pass_all \
     --with-asl-lib="-lipoptamplinterface -lasl"
 
-make
+make -j${nproc}
 make install
 
-if [[ ${target} == *mingw* ]]; then
-    rm /workspace/destdir/include/coin-or/IpoptConfig.h
-fi
+# Prevent IpoptConfig.h from being included in the tarball after editing it above.
+rm "${includedir}/coin-or/IpoptConfig.h"
 """
 
 
