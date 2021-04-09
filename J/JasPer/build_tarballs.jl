@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "JasPer"
-version = v"2.28.0"
+version = v"2.0.28"
 
 # Collection of sources required to complete build
 sources = [
