@@ -45,6 +45,10 @@ fi
 
 make
 make install
+
+if [[ ${target} == *mingw* ]]; then
+    rm /workspace/destdir/include/coin-or/IpoptConfig.h
+fi
 """
 
 
