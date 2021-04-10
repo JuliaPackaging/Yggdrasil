@@ -33,6 +33,7 @@ export CC=gcc
 export CXX=g++
 CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
     --prefix=${prefix} \
+    --build=${MACHTYPE} \
     --host=${target} \
     --disable-debuginfod
 make -j${nproc}

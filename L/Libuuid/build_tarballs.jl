@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/util-linux-*/
-./configure --prefix=$prefix --host=$target --disable-all-programs --enable-libuuid
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libuuid
 make -j${nproc}
 make install
 """

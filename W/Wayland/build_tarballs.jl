@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/wayland-*/
 apk add wayland-dev
 
 atomic_patch -p1 ../patches/Makefile_in.patch
-./configure --prefix=${prefix} --host=${target} --disable-documentation --with-host-scanner
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-documentation --with-host-scanner
 make -j${nproc}
 make install
 """

@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/freetype-*/
-./configure --prefix=${prefix} --host=${target} --enable-shared --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
 make -j${nproc}
 make install
 """

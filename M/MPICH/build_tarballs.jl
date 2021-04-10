@@ -57,7 +57,7 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
     fi
 fi
 
-./configure --prefix=$prefix --host=$target \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes \
     --enable-static=no \
     --disable-dependency-tracking \

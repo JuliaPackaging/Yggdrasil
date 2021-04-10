@@ -24,7 +24,7 @@ elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
     BACKEND_OPTIONS="--enable-xlib --enable-xcb --enable-xlib-xcb"
 fi
 
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-static \
     --enable-ft \
     --enable-tee \

@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/util-linux-*/
-./configure --prefix=$prefix --host=$target --disable-all-programs --enable-libblkid --enable-libmount
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount
 make -j${nproc}
 make install
 """

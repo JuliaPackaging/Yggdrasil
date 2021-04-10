@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pcre-*/
-./configure --prefix=$prefix --host=$target --enable-utf8 --enable-unicode-properties
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-utf8 --enable-unicode-properties
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
 """

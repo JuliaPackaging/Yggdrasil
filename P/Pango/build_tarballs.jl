@@ -23,7 +23,7 @@ if [[ ${target} == powerpc64le* ]]; then
     export LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${prefix}/lib64"
 fi
 
-./configure --prefix=$prefix --host=$target \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-introspection \
     --disable-gtk-doc-html
 

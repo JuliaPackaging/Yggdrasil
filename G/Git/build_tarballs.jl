@@ -40,7 +40,7 @@ elif [[ ${target} == *-freebsd* ]]; then
     LDFLAGS="-L${prefix}/lib -lcharset"
 fi
 
-./configure --prefix=$prefix --host=$target \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
     --with-openssl \

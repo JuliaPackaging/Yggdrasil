@@ -24,7 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # renames `TBYTE` to `_TBYTE`.
     atomic_patch -p1 ../patches/tbyte.patch
 fi
-./configure --prefix=$prefix --host=$target --enable-reentrant
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
 # Delete the static library

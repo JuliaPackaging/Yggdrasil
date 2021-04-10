@@ -37,7 +37,7 @@ if [[ "${target}" == i686-linux-musl ]]; then
     sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
 fi
 
-./configure --cache-file=glib.cache --with-libiconv=gnu --prefix=${prefix} --host=${target}
+./configure --cache-file=glib.cache --with-libiconv=gnu --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
 
 make -j${nproc}

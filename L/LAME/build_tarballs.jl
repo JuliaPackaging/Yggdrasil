@@ -19,7 +19,7 @@ apk add nasm
 if [[ $(uname -m) == i?86 ]]; then
     sed -i -e 's/<xmmintrin.h/&.nouse/' configure
 fi
-./configure --prefix=$prefix --host=$target --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """

@@ -20,7 +20,7 @@ if [[ "${target}" == x86_64* ]] || [[ "${target}" == i686* ]]; then
 else
     export AS="${CC}"
 fi
-./configure --prefix=$prefix --host=$target --enable-shared --enable-pic --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --enable-pic --disable-static
 # Remove unsafe compilation flag
 sed -i 's/ -ffast-math//g' config.mak
 make -j${nproc}

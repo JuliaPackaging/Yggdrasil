@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libffi-*/
 update_configure_scripts
 autoreconf -f -i
-./configure --prefix=$prefix --host=$target --disable-static --enable-shared
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j${nproc}
 make install
 """

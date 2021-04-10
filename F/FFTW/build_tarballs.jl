@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir/fftw*
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
+    --build=${MACHTYPE}
     --host="${target}"
     --enable-shared
     --disable-static

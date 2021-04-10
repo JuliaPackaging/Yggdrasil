@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpc-*
-./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix} --with-mpfr=${prefix}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --with-mpfr=${prefix}
 make -j${nproc}
 make install
 

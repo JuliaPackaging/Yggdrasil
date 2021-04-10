@@ -34,7 +34,7 @@ export LUA_LIB=-llua
 
 export PYTHON=python3
 
-./configure --prefix=$prefix --host=${target} --without-python
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-python
 
 make -j${nproc}
 make install

@@ -23,6 +23,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_sunrpc_uchar.patch
 mkdir -p $WORKSPACE/srcdir/glibc_build
 cd $WORKSPACE/srcdir/glibc_build
 $WORKSPACE/srcdir/glibc-*/configure --prefix=/usr \
+	--build=${MACHTYPE} \
 	--host=${target} \
 	--disable-multilib \
 	--disable-werror
