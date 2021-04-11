@@ -16,9 +16,16 @@ sources = [
 # Tried -no-undefined but still couldn't build for windows
 script = raw"""
 cd $WORKSPACE/srcdir/npth-*/
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+if [[ "${target}" == powerpc64le-* ]]; then
+    autoreconf -vi
+fi
+update_configure_scripts
+
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --disable-static
 make -j${nproc}
 make install
+
+
 install_license ${WORKSPACE}/srcdir/npth-*/COPYING.LIB
 """
 
@@ -29,7 +36,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnpth", :libnpth),
+    LibraryProduct(["libnpth", "libnpath6"], :libnpth),
 ]
 
 # Dependencies that must be installed before this package can be built
