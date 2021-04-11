@@ -9,14 +9,23 @@ version = v"2.2.27"
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
                   "34e60009014ea16402069136e0a5f63d9b65f90096244975db5cea74b3d02399"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
-
-# Tried -no-undefined but still couldn't build for windows
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*/
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    # We have an old glibc which doesn't have `IN_EXCL_UNLINK`
+    FLAGS=(ac_cv_func_inotify_init=no)
+    # Add -lrt dependency to fix the error
+    #     undefined reference to `clock_gettime'
+    atomic_patch -p1 ../patches/intel-linux-gnu-add-rt-lib.patch
+fi
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
