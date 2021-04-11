@@ -15,7 +15,7 @@ script = raw"""
 apk add tcsh # build script is in csh
 
 cd $WORKSPACE/srcdir/ioapi-3.2/ioapi/
-install_license LICENSE
+install_license ../LICENSE
 export HOME=${WORKSPACE}/srcdir
 export BIN=tmp
 export BINDIR=${HOME}/ioapi-3.2/${BIN}
