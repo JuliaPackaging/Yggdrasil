@@ -57,6 +57,7 @@ platforms = [
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "linux"; libc = "glibc")
 ]
+platforms = expand_gfortran_versions(platforms)
 
 
 # The products that we will ensure are always built
