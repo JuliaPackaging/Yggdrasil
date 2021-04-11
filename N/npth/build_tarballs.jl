@@ -36,7 +36,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libnpth", "libnpath6"], :libnpth),
+    LibraryProduct(["libnpth", "libnpth6"], :libnpth),
 ]
 
 # Dependencies that must be installed before this package can be built
