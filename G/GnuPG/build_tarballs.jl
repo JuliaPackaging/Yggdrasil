@@ -16,7 +16,7 @@ sources = [
 # Tried -no-undefined but still couldn't build for windows
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*/
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} LDFLAGS=-Wl,-rpath-link=${prefix}
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
 """
@@ -33,6 +33,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We need this to run a host yat2m executable
+    HostBuildDependency("Libgpg_error_jll"),
     Dependency("GnuTLS_jll"),
     Dependency("Libksba_jll"),
     Dependency("Libgcrypt_jll"),
@@ -43,7 +45,8 @@ dependencies = [
     Dependency("OpenLDAPClient_jll"),
     Dependency("Bzip2_jll"),
     Dependency("SQLite_jll"),
-    Dependency("libusb_jll")
+    Dependency("libusb_jll"),
+    Dependency("Nettle_jll", v"3.4.1", compat="~3.4.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
