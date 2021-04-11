@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "libassuan"
+name = "Libassuan"
 version = v"2.5.5"
 
 # Collection of sources required to build libgcrypt
