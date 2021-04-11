@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "npth"
+name = "nPth"
 version = v"1.6"
 
 # Collection of sources required to build libgcrypt
