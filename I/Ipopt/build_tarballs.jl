@@ -28,6 +28,7 @@ fi
             --with-mumps-lflags="-L${libdir} -ldmumps -lmpiseq -lmumps_common -lopenblas -lpord" \
             --with-asl-cflags="-I${prefix}/include" \
             --with-asl-lflags="${LIBASL[*]}" \
+            --build=${MACHTYPE} \
             --host=${target}
 
 # parallel build fails

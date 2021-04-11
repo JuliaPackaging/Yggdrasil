@@ -25,7 +25,7 @@ FLAGS=()
 if [[ "${target}" == x86_64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
-./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 # Tk needs private headers

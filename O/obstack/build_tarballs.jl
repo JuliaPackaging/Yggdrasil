@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/musl-obstack-*/
 ./bootstrap.sh
-CFLAGS="-fPIC" ./configure --prefix=${prefix} --host=${target}
+CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

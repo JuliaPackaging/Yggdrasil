@@ -40,6 +40,7 @@ fi
 
 $WORKSPACE/srcdir/mingw-*/mingw-w64-crt/configure \
     --prefix=/ \
+    --build=${MACHTYPE} \
     --host=${target} \
     ${MINGW_CONF_ARGS}
 make -j${nproc} 
@@ -51,6 +52,7 @@ mkdir -p $WORKSPACE/srcdir/mingw_winpthreads_build
 cd $WORKSPACE/srcdir/mingw_winpthreads_build
 $WORKSPACE/srcdir/mingw-*/mingw-w64-libraries/winpthreads/configure \
     --prefix=/ \
+    --build=${MACHTYPE} \
     --host=${target} \
     --enable-static \
     --enable-shared

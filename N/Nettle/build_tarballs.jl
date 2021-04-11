@@ -18,7 +18,7 @@ atomic_patch -p1 ../patches/alloca.patch
 export CFLAGS="${CFLAGS} -std=c99"
 
 update_configure_scripts
-./configure --prefix=$prefix --host=$target --with-include-path=$prefix/include
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} --with-include-path=$prefix/include
 make -j${nproc}
 make install
 install_license COPYING*

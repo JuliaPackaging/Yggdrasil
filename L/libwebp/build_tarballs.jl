@@ -19,7 +19,7 @@ export CPPFLAGS="-I${prefix}/include"
 if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-swap-16bit-csp \
     --enable-experimental \
     --enable-libwebp{mux,demux,decoder,extras} \

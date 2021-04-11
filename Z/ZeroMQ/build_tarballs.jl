@@ -25,6 +25,7 @@ elif [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 sh autogen.sh
 ./configure --prefix=$prefix \
+    --build=${MACHTYPE} \
     --host=${target} \
     --without-docs \
     --enable-drafts \

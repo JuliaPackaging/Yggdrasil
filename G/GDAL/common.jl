@@ -53,7 +53,7 @@ function configure(version_offset, min_julia_version, proj_jll_version)
     rm -f ${prefix}/lib/*.la
 
     ./configure --help
-    ./configure --prefix=$prefix --host=$target \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
         --with-geos=${bindir}/geos-config \
         --with-proj=$prefix \
         --with-tiff=$prefix \

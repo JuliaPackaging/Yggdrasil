@@ -21,7 +21,7 @@ if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
 ./autogen.sh
-./configure --prefix=$prefix --host=$target
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

@@ -41,7 +41,7 @@ if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p2 "${WORKSPACE}/srcdir/patches/win_tk_rc_include.patch"
 fi
 
-./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 make install-private-headers

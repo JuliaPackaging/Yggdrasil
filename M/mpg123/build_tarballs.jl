@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpg123-*/
-./configure --prefix=$prefix --host=$target --enable-int-quality
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-int-quality
 make -j${nproc}
 make install
 """

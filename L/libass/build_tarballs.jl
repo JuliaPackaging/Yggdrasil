@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libass-*
 apk add nasm
-./configure --prefix=$prefix --host=$target --disable-require-system-font-provider --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-require-system-font-provider --disable-static
 make -j${nproc}
 make install
 """

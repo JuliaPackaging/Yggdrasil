@@ -18,7 +18,7 @@ if [[ "${target}" == *mingw* ]]; then
     autoconf
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
 fi
-./configure --prefix=$prefix --host=$target --disable-fortran --without-cfitsio --without-pgplot --disable-utils
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
 make install
 

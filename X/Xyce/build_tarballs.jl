@@ -27,7 +27,10 @@ fi
 cd ..
 mkdir buildx
 cd buildx
-/workspace/srcdir/Xyce/./configure --enable-shared --disable-mpi --prefix=${prefix} LDFLAGS="-L${libdir} -lopenblas" CPPFLAGS="-I/${includedir} -I/usr/include" --host=${target}
+/workspace/srcdir/Xyce/./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-shared --disable-mpi \
+    LDFLAGS="-L${libdir} -lopenblas" \
+    CPPFLAGS="-I/${includedir} -I/usr/include"
 make -j${nprocs}
 make install
 """

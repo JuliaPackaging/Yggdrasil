@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cuba/
 
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make shared
 make install
 rm "${prefix}/lib/libcuba.a" "${prefix}/share/cuba.pdf"

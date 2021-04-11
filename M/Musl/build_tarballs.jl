@@ -27,6 +27,7 @@ musl_arch()
 
 export LDFLAGS="${LDFLAGS} -Wl,-soname,libc.musl-$(musl_target).so.1"
 ${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
+    --build=${MACHTYPE} \
     --host=${target} \
     --disable-multilib \
     --disable-werror \

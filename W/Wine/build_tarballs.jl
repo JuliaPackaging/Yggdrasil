@@ -35,7 +35,7 @@ wine64_build_script = raw"""
 # First, build wine64, making the actual build directory itself the thing we will install.
 mkdir $WORKSPACE/destdir/wine64
 cd $WORKSPACE/destdir/wine64
-$WORKSPACE/srcdir/wine/configure --prefix=${prefix} --host=${target} --without-x --without-freetype --enable-win64
+$WORKSPACE/srcdir/wine/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-x --without-freetype --enable-win64
 make -j${nproc}
 """
 

@@ -23,7 +23,7 @@ touch NEWS README AUTHORS ChangeLog
 # but with some encouragement it can do it
 autoreconf -vi || autoreconf -vi
 export CPPFLAGS="-I${prefix}/include/SDL2"
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \
     "${FLAGS[@]}"

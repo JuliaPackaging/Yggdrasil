@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
 atomic_patch -p1 ../patches/Remove-HB_ICU_STMT.patch
 autoreconf -i -f
-./configure --prefix=$prefix --host=$target \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-gobject=yes \
     --with-graphite2=yes \
     --with-glib=yes \

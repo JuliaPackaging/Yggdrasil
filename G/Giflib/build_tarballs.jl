@@ -27,7 +27,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
 fi
 
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 install_license COPYING

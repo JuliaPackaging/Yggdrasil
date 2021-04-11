@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/argp-*/
-CFLAGS="-fPIC" ./configure --prefix=${prefix} --host=${target}
+CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 install_license $WORKSPACE/srcdir/LICENSE
 install -D -m644 argp.h ${includedir}/argp.h

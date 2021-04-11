@@ -21,7 +21,7 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(--disable-Bsymbolic)
 fi
 
-./configure --prefix=$prefix --host=$target --disable-gtk-doc "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-gtk-doc "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
