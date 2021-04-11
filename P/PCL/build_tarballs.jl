@@ -30,6 +30,8 @@ if [[ "${target}" == *-linux-* ]]; then
     fi
 fi
 
+#see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
+
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DWITH_VTK=OFF \
@@ -39,9 +41,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
 -DWITH_QHULL=OFF \
 -DWITH_OPENGL=OFF \
 -DWITH_PCAP=OFF \
-#would like to enable this, but couldn't get it working right away
 -DPCL_ENABLE_SSE=OFF \
-#maybe don't need?, see https://github.com/PointCloudLibrary/pcl/pull/4695 for this flag
 -DPCL_WARNINGS_ARE_ERRORS=OFF \
 -DCMAKE_BUILD_TYPE=Release
 
