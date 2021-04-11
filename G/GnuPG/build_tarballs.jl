@@ -28,7 +28,21 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libgnupg"], :libgnupg),
+    ExecutableProduct("dirmngr", :dirmngr),
+    ExecutableProduct("dirmngr-client", :dirmngr_client),
+    ExecutableProduct("gpg", :gpg),
+    ExecutableProduct("gpg-agent", :gpg_agent),
+    ExecutableProduct("gpgconf", :gpgconf),
+    ExecutableProduct("gpg-connect-agent", :gpg_connect_agent),
+    ExecutableProduct("gpgparsemail", :gpgparsemail),
+    ExecutableProduct("gpgscm", :gpgscm),
+    ExecutableProduct("gpgsm", :gpgsm),
+    ExecutableProduct("gpgsplit", :gpgsplit),
+    ExecutableProduct("gpgtar", :gpgtar),
+    ExecutableProduct("gpgv", :gpgv),
+    ExecutableProduct("gpg-wks-server", :gpg_wks_server),
+    ExecutableProduct("kbxutil", :kbxutil),
+    ExecutableProduct("watchgnupg", :watchgnupg),
 ]
 
 # Dependencies that must be installed before this package can be built
