@@ -17,9 +17,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libassuan-*/
 export CPPFLAGS="-I${includedir}"
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --disable-static
 make -j${nproc}
 make install
+
+if [[ "${target}" == x86_64-*-mingw* ]]; then
+    # We have to manually build the shared library for Windows
+    cc -shared -fPIC -o "${libdir}/libassuan-0.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libassuan.a" -Wl,$(flagon --no-whole-archive)  -lgpg-error -lws2_32
+    rm "${prefix}/lib/libassuan.a"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
