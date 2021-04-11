@@ -12,13 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd $WORKSPACE/srcdir/pcl*
 mkdir build && cd build
-
-#I was running into issues with this locally conflicting with /opt/x86_64-linux-gnu/x86_64-linux-gnu/lib64/libgomp.so, so this allowed me to finish the wizard at least.
-
-rm /workspace/destdir/lib/libgomp.so*
 
 #unsure if needed, ran this to be safe?
 # Hint to find libstc++, required to link against C++ libs when using C compiler
@@ -33,17 +28,17 @@ fi
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
 
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DWITH_VTK=OFF \
--DWITH_LIBUSB=OFF \
--DWITH_QT=OFF \
--DWITH_CUDA=OFF \
--DWITH_QHULL=OFF \
--DWITH_OPENGL=OFF \
--DWITH_PCAP=OFF \
--DPCL_ENABLE_SSE=OFF \
--DPCL_WARNINGS_ARE_ERRORS=OFF \
--DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DWITH_VTK=OFF \
+    -DWITH_LIBUSB=OFF \
+    -DWITH_QT=OFF \
+    -DWITH_CUDA=OFF \
+    -DWITH_QHULL=OFF \
+    -DWITH_OPENGL=OFF \
+    -DWITH_PCAP=OFF \
+    -DPCL_ENABLE_SSE=OFF \
+    -DPCL_WARNINGS_ARE_ERRORS=OFF \
+    -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
 
@@ -138,6 +133,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="FLANN_jll", uuid="48b6455b-4cf5-590d-a543-2d733c79e793"))
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
