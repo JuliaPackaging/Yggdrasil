@@ -37,7 +37,7 @@ make # Parallel make (-j > 1) does not work
 
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
 
-gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive) -lnetcdf -Wl,$(flagon --no-whole-archive) -lnetcdff
+gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -lnetcdff
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
