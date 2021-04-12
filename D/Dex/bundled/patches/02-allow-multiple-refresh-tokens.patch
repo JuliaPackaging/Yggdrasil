@@ -1,0 +1,594 @@
+diff --git a/cmd/dex/config.go b/cmd/dex/config.go
+index 88dc98e7..ed7ac061 100644
+--- a/cmd/dex/config.go
++++ b/cmd/dex/config.go
+@@ -48,6 +48,8 @@ type Config struct {
+ 	// querying the storage. Cannot be specified without enabling a passwords
+ 	// database.
+ 	StaticPasswords []password `json:"staticPasswords"`
++
++	EnableMultiRefreshTokens bool `json:"enableMultiRefreshTokens"`
+ }
+ 
+ // Validate the configuration
+@@ -304,6 +306,9 @@ type Expiry struct {
+ 
+ 	// DeviceRequests defines the duration of time for which the DeviceRequests will be valid.
+ 	DeviceRequests string `json:"deviceRequests"`
++
++	// RefreshTokens defines the duration of time for which an unused RefreshToken will be valid
++	RefreshTokens string `json:"refreshTokens"`
+ }
+ 
+ // Logger holds configuration required to customize logging for dex.
+diff --git a/cmd/dex/serve.go b/cmd/dex/serve.go
+index bd7869c4..7c1da4d2 100644
+--- a/cmd/dex/serve.go
++++ b/cmd/dex/serve.go
+@@ -259,18 +259,19 @@ func runServe(options serveOptions) error {
+ 	healthChecker := gosundheit.New()
+ 
+ 	serverConfig := server.Config{
+-		SupportedResponseTypes: c.OAuth2.ResponseTypes,
+-		SkipApprovalScreen:     c.OAuth2.SkipApprovalScreen,
+-		AlwaysShowLoginScreen:  c.OAuth2.AlwaysShowLoginScreen,
+-		PasswordConnector:      c.OAuth2.PasswordConnector,
+-		AllowedOrigins:         c.Web.AllowedOrigins,
+-		Issuer:                 c.Issuer,
+-		Storage:                s,
+-		Web:                    c.Frontend,
+-		Logger:                 logger,
+-		Now:                    now,
+-		PrometheusRegistry:     prometheusRegistry,
+-		HealthChecker:          healthChecker,
++		SupportedResponseTypes:   c.OAuth2.ResponseTypes,
++		SkipApprovalScreen:       c.OAuth2.SkipApprovalScreen,
++		AlwaysShowLoginScreen:    c.OAuth2.AlwaysShowLoginScreen,
++		PasswordConnector:        c.OAuth2.PasswordConnector,
++		AllowedOrigins:           c.Web.AllowedOrigins,
++		Issuer:                   c.Issuer,
++		Storage:                  s,
++		Web:                      c.Frontend,
++		Logger:                   logger,
++		Now:                      now,
++		PrometheusRegistry:       prometheusRegistry,
++		HealthChecker:            healthChecker,
++		EnableMultiRefreshTokens: c.EnableMultiRefreshTokens,
+ 	}
+ 	if c.Expiry.SigningKeys != "" {
+ 		signingKeys, err := time.ParseDuration(c.Expiry.SigningKeys)
+@@ -304,6 +305,14 @@ func runServe(options serveOptions) error {
+ 		logger.Infof("config device requests valid for: %v", deviceRequests)
+ 		serverConfig.DeviceRequestsValidFor = deviceRequests
+ 	}
++	if c.Expiry.RefreshTokens != "" {
++		refreshTokens, err := time.ParseDuration(c.Expiry.RefreshTokens)
++		if err != nil {
++			return fmt.Errorf("invalid config value %q for refresh tokens expiry: %v", c.Expiry.RefreshTokens, err)
++		}
++		logger.Infof("config device requests valid for: %v", refreshTokens)
++		serverConfig.UnusedRefreshTokensValidFor = refreshTokens
++	}
+ 	serv, err := server.NewServer(context.Background(), serverConfig)
+ 	if err != nil {
+ 		return fmt.Errorf("failed to initialize server: %v", err)
+@@ -437,7 +446,7 @@ func runServe(options serveOptions) error {
+ 		}
+ 
+ 		grpcSrv := grpc.NewServer(grpcOptions...)
+-		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger))
++		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, c.EnableMultiRefreshTokens))
+ 
+ 		grpcMetrics.InitializeMetrics(grpcSrv)
+ 		if c.GRPC.Reflection {
+diff --git a/server/api.go b/server/api.go
+index 5560c3bc..3728af26 100644
+--- a/server/api.go
++++ b/server/api.go
+@@ -30,16 +30,18 @@ const (
+ )
+ 
+ // NewAPI returns a server which implements the gRPC API interface.
+-func NewAPI(s storage.Storage, logger log.Logger) api.DexServer {
++func NewAPI(s storage.Storage, logger log.Logger, enableMultiRefreshTokens bool) api.DexServer {
+ 	return dexAPI{
+-		s:      s,
+-		logger: logger,
++		s:                        s,
++		logger:                   logger,
++		enableMultiRefreshTokens: enableMultiRefreshTokens,
+ 	}
+ }
+ 
+ type dexAPI struct {
+-	s      storage.Storage
+-	logger log.Logger
++	s                        storage.Storage
++	logger                   log.Logger
++	enableMultiRefreshTokens bool
+ }
+ 
+ func (d dexAPI) CreateClient(ctx context.Context, req *api.CreateClientReq) (*api.CreateClientResp, error) {
+@@ -280,6 +282,13 @@ func (d dexAPI) VerifyPassword(ctx context.Context, req *api.VerifyPasswordReq)
+ }
+ 
+ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.ListRefreshResp, error) {
++	if d.enableMultiRefreshTokens {
++		return d.listRefreshMultiRefreshMode(ctx, req)
++	}
++	return d.listRefresh(ctx, req)
++}
++
++func (d dexAPI) listRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.ListRefreshResp, error) {
+ 	id := new(internal.IDTokenSubject)
+ 	if err := internal.Unmarshal(req.UserId, id); err != nil {
+ 		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
+@@ -313,7 +322,45 @@ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.
+ 	}, nil
+ }
+ 
++func (d dexAPI) listRefreshMultiRefreshMode(ctx context.Context, req *api.ListRefreshReq) (*api.ListRefreshResp, error) {
++	id := new(internal.IDTokenSubject)
++	if err := internal.Unmarshal(req.UserId, id); err != nil {
++		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
++		return nil, err
++	}
++
++	var refreshTokenRefs []*api.RefreshTokenRef
++
++	// FIXME: listing all tokens can be slow
++	refreshTokens, err := d.s.ListRefreshTokens()
++	if err != nil {
++		return nil, err
++	}
++	for _, t := range refreshTokens {
++		if t.Claims.UserID == id.UserId && t.ConnectorID == id.ConnId {
++			r := api.RefreshTokenRef{
++				Id:        t.ID,
++				ClientId:  t.ClientID,
++				CreatedAt: t.CreatedAt.Unix(),
++				LastUsed:  t.LastUsed.Unix(),
++			}
++			refreshTokenRefs = append(refreshTokenRefs, &r)
++		}
++	}
++
++	return &api.ListRefreshResp{
++		RefreshTokens: refreshTokenRefs,
++	}, nil
++}
++
+ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*api.RevokeRefreshResp, error) {
++	if d.enableMultiRefreshTokens {
++		return d.revokeRefreshMultiRefreshMode(ctx, req)
++	}
++	return d.revokeRefresh(ctx, req)
++}
++
++func (d dexAPI) revokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*api.RevokeRefreshResp, error) {
+ 	id := new(internal.IDTokenSubject)
+ 	if err := internal.Unmarshal(req.UserId, id); err != nil {
+ 		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
+@@ -363,3 +410,42 @@ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*
+ 
+ 	return &api.RevokeRefreshResp{}, nil
+ }
++
++func (d dexAPI) revokeRefreshMultiRefreshMode(ctx context.Context, req *api.RevokeRefreshReq) (*api.RevokeRefreshResp, error) {
++	id := new(internal.IDTokenSubject)
++	if err := internal.Unmarshal(req.UserId, id); err != nil {
++		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
++		return nil, err
++	}
++
++	// FIXME: listing all tokens can be slow
++	refreshTokens, err := d.s.ListRefreshTokens()
++	if err != nil {
++		return nil, err
++	}
++	if len(refreshTokens) == 0 {
++		return &api.RevokeRefreshResp{NotFound: true}, nil
++	}
++
++	for _, t := range refreshTokens {
++		if t.Claims.UserID == id.UserId && t.ConnectorID == id.ConnId && t.ClientID == req.ClientId {
++			if err := d.s.DeleteRefresh(t.ID); err != nil {
++				d.logger.Errorf("failed to delete refresh token: %v", err)
++				return nil, err
++			}
++		}
++	}
++
++	updater := func(old storage.OfflineSessions) (storage.OfflineSessions, error) {
++		// Remove entry from Refresh list of the OfflineSession object.
++		delete(old.Refresh, req.ClientId)
++		return old, nil
++	}
++
++	if err := d.s.UpdateOfflineSessions(id.UserId, id.ConnId, updater); err != nil {
++		d.logger.Errorf("api: failed to update offline session object: %v", err)
++		return nil, err
++	}
++
++	return &api.RevokeRefreshResp{}, nil
++}
+diff --git a/server/api_test.go b/server/api_test.go
+index e7725063..19045539 100644
+--- a/server/api_test.go
++++ b/server/api_test.go
+@@ -36,7 +36,7 @@ func newAPI(s storage.Storage, logger log.Logger, t *testing.T) *apiClient {
+ 	}
+ 
+ 	serv := grpc.NewServer()
+-	api.RegisterDexServer(serv, NewAPI(s, logger))
++	api.RegisterDexServer(serv, NewAPI(s, logger, false))
+ 	go serv.Serve(l)
+ 
+ 	// Dial will retry automatically if the serv.Serve() goroutine
+diff --git a/server/handlers.go b/server/handlers.go
+index eb65f490..4bee472e 100644
+--- a/server/handlers.go
++++ b/server/handlers.go
+@@ -894,13 +894,15 @@ func (s *Server) exchangeAuthCode(w http.ResponseWriter, authCode storage.AuthCo
+ 				return nil, err
+ 			}
+ 		} else {
+-			if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
+-				// Delete old refresh token from storage.
+-				if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
+-					s.logger.Errorf("failed to delete refresh token: %v", err)
+-					s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
+-					deleteToken = true
+-					return nil, err
++			if !s.enableMultiRefreshTokens {
++				if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
++					// Delete old refresh token from storage.
++					if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
++						s.logger.Errorf("failed to delete refresh token: %v", err)
++						s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
++						deleteToken = true
++						return nil, err
++					}
+ 				}
+ 			}
+ 
+@@ -1097,7 +1099,11 @@ func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request, clie
+ 	// in offline session for the user.
+ 	if err := s.storage.UpdateOfflineSessions(refresh.Claims.UserID, refresh.ConnectorID, func(old storage.OfflineSessions) (storage.OfflineSessions, error) {
+ 		if old.Refresh[refresh.ClientID].ID != refresh.ID {
+-			return old, errors.New("refresh token invalid")
++			if s.enableMultiRefreshTokens {
++				return old, nil
++			} else {
++				return old, errors.New("refresh token invalid")
++			}
+ 		}
+ 		old.Refresh[refresh.ClientID].LastUsed = lastUsed
+ 		old.ConnectorData = ident.ConnectorData
+@@ -1337,16 +1343,18 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
+ 				return
+ 			}
+ 		} else {
+-			if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
+-				// Delete old refresh token from storage.
+-				if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil {
+-					if err == storage.ErrNotFound {
+-						s.logger.Warnf("database inconsistent, refresh token missing: %v", oldTokenRef.ID)
+-					} else {
+-						s.logger.Errorf("failed to delete refresh token: %v", err)
+-						s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
+-						deleteToken = true
+-						return
++			if !s.enableMultiRefreshTokens {
++				if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
++					// Delete old refresh token from storage.
++					if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil {
++						if err == storage.ErrNotFound {
++							s.logger.Warnf("database inconsistent, refresh token missing: %v", oldTokenRef.ID)
++						} else {
++							s.logger.Errorf("failed to delete refresh token: %v", err)
++							s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
++							deleteToken = true
++							return
++						}
+ 					}
+ 				}
+ 			}
+diff --git a/server/server.go b/server/server.go
+index a79b7cfd..7be1b4b6 100644
+--- a/server/server.go
++++ b/server/server.go
+@@ -77,10 +77,11 @@ type Config struct {
+ 	// If enabled, the connectors selection page will always be shown even if there's only one
+ 	AlwaysShowLoginScreen bool
+ 
+-	RotateKeysAfter        time.Duration // Defaults to 6 hours.
+-	IDTokensValidFor       time.Duration // Defaults to 24 hours
+-	AuthRequestsValidFor   time.Duration // Defaults to 24 hours
+-	DeviceRequestsValidFor time.Duration // Defaults to 5 minutes
++	RotateKeysAfter             time.Duration // Defaults to 6 hours.
++	IDTokensValidFor            time.Duration // Defaults to 24 hours
++	AuthRequestsValidFor        time.Duration // Defaults to 24 hours
++	DeviceRequestsValidFor      time.Duration // Defaults to 5 minutes
++	UnusedRefreshTokensValidFor time.Duration // Defaults to 30 days
+ 	// If set, the server will use this connector to handle password grants
+ 	PasswordConnector string
+ 
+@@ -96,6 +97,8 @@ type Config struct {
+ 	PrometheusRegistry *prometheus.Registry
+ 
+ 	HealthChecker gosundheit.Health
++
++	EnableMultiRefreshTokens bool
+ }
+ 
+ // WebConfig holds the server's frontend templates and asset configuration.
+@@ -163,6 +166,8 @@ type Server struct {
+ 	deviceRequestsValidFor time.Duration
+ 
+ 	logger log.Logger
++
++	enableMultiRefreshTokens bool
+ }
+ 
+ // NewServer constructs a server from the provided config.
+@@ -223,19 +228,20 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+ 	}
+ 
+ 	s := &Server{
+-		issuerURL:              *issuerURL,
+-		connectors:             make(map[string]Connector),
+-		storage:                newKeyCacher(c.Storage, now),
+-		supportedResponseTypes: supported,
+-		idTokensValidFor:       value(c.IDTokensValidFor, 24*time.Hour),
+-		authRequestsValidFor:   value(c.AuthRequestsValidFor, 24*time.Hour),
+-		deviceRequestsValidFor: value(c.DeviceRequestsValidFor, 5*time.Minute),
+-		skipApproval:           c.SkipApprovalScreen,
+-		alwaysShowLogin:        c.AlwaysShowLoginScreen,
+-		now:                    now,
+-		templates:              tmpls,
+-		passwordConnector:      c.PasswordConnector,
+-		logger:                 c.Logger,
++		issuerURL:                *issuerURL,
++		connectors:               make(map[string]Connector),
++		storage:                  newKeyCacher(c.Storage, now),
++		supportedResponseTypes:   supported,
++		idTokensValidFor:         value(c.IDTokensValidFor, 24*time.Hour),
++		authRequestsValidFor:     value(c.AuthRequestsValidFor, 24*time.Hour),
++		deviceRequestsValidFor:   value(c.DeviceRequestsValidFor, 5*time.Minute),
++		skipApproval:             c.SkipApprovalScreen,
++		alwaysShowLogin:          c.AlwaysShowLoginScreen,
++		now:                      now,
++		templates:                tmpls,
++		passwordConnector:        c.PasswordConnector,
++		logger:                   c.Logger,
++		enableMultiRefreshTokens: c.EnableMultiRefreshTokens,
+ 	}
+ 
+ 	// Retrieves connector objects in backend storage. This list includes the static connectors
+@@ -348,7 +354,7 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+ 	s.mux = r
+ 
+ 	s.startKeyRotation(ctx, rotationStrategy, now)
+-	s.startGarbageCollection(ctx, value(c.GCFrequency, 5*time.Minute), now)
++	s.startGarbageCollection(ctx, value(c.GCFrequency, 5*time.Minute), value(c.UnusedRefreshTokensValidFor, 720*time.Hour), now)
+ 
+ 	return s, nil
+ }
+@@ -466,18 +472,18 @@ func (k *keyCacher) GetKeys() (storage.Keys, error) {
+ 	return storageKeys, nil
+ }
+ 
+-func (s *Server) startGarbageCollection(ctx context.Context, frequency time.Duration, now func() time.Time) {
++func (s *Server) startGarbageCollection(ctx context.Context, frequency time.Duration, unusedRefreshTokensValidFor time.Duration, now func() time.Time) {
+ 	go func() {
+ 		for {
+ 			select {
+ 			case <-ctx.Done():
+ 				return
+ 			case <-time.After(frequency):
+-				if r, err := s.storage.GarbageCollect(now()); err != nil {
++				if r, err := s.storage.GarbageCollect(now(), unusedRefreshTokensValidFor); err != nil {
+ 					s.logger.Errorf("garbage collection failed: %v", err)
+ 				} else if !r.IsEmpty() {
+-					s.logger.Infof("garbage collection run, delete auth requests=%d, auth codes=%d, device requests=%d, device tokens=%d",
+-						r.AuthRequests, r.AuthCodes, r.DeviceRequests, r.DeviceTokens)
++					s.logger.Infof("garbage collection run, delete auth requests=%d, auth codes=%d, device requests=%d, device tokens=%d, refresh tokens=%d",
++						r.AuthRequests, r.AuthCodes, r.DeviceRequests, r.DeviceTokens, r.RefreshTokens)
+ 				}
+ 			}
+ 		}
+diff --git a/storage/conformance/conformance.go b/storage/conformance/conformance.go
+index 3f5e2aa1..85a6356c 100644
+--- a/storage/conformance/conformance.go
++++ b/storage/conformance/conformance.go
+@@ -771,8 +771,10 @@ func testGC(t *testing.T, s storage.Storage) {
+ 		t.Fatalf("failed creating auth code: %v", err)
+ 	}
+ 
++	refreshTokensValidFor, err := time.ParseDuration("720h")
++
+ 	for _, tz := range []*time.Location{time.UTC, est, pst} {
+-		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+ 		if err != nil {
+ 			t.Errorf("garbage collection failed: %v", err)
+ 		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
+@@ -783,7 +785,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 		}
+ 	}
+ 
+-	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+ 		t.Errorf("garbage collection failed: %v", err)
+ 	} else if r.AuthCodes != 1 {
+ 		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthCodes)
+@@ -822,7 +824,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 	}
+ 
+ 	for _, tz := range []*time.Location{time.UTC, est, pst} {
+-		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+ 		if err != nil {
+ 			t.Errorf("garbage collection failed: %v", err)
+ 		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
+@@ -833,7 +835,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 		}
+ 	}
+ 
+-	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+ 		t.Errorf("garbage collection failed: %v", err)
+ 	} else if r.AuthRequests != 1 {
+ 		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthRequests)
+@@ -859,7 +861,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 	}
+ 
+ 	for _, tz := range []*time.Location{time.UTC, est, pst} {
+-		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+ 		if err != nil {
+ 			t.Errorf("garbage collection failed: %v", err)
+ 		} else if result.DeviceRequests != 0 {
+@@ -869,7 +871,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 			t.Errorf("expected to be able to get auth request after GC: %v", err)
+ 		}
+ 	}
+-	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+ 		t.Errorf("garbage collection failed: %v", err)
+ 	} else if r.DeviceRequests != 1 {
+ 		t.Errorf("expected to garbage collect 1 device request, got %d", r.DeviceRequests)
+@@ -895,7 +897,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 	}
+ 
+ 	for _, tz := range []*time.Location{time.UTC, est, pst} {
+-		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+ 		if err != nil {
+ 			t.Errorf("garbage collection failed: %v", err)
+ 		} else if result.DeviceTokens != 0 {
+@@ -905,7 +907,7 @@ func testGC(t *testing.T, s storage.Storage) {
+ 			t.Errorf("expected to be able to get device token after GC: %v", err)
+ 		}
+ 	}
+-	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+ 		t.Errorf("garbage collection failed: %v", err)
+ 	} else if r.DeviceTokens != 1 {
+ 		t.Errorf("expected to garbage collect 1 device token, got %d", r.DeviceTokens)
+diff --git a/storage/etcd/etcd.go b/storage/etcd/etcd.go
+index 97aced45..9adc8076 100644
+--- a/storage/etcd/etcd.go
++++ b/storage/etcd/etcd.go
+@@ -38,7 +38,7 @@ func (c *conn) Close() error {
+ 	return c.db.Close()
+ }
+ 
+-func (c *conn) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
++func (c *conn) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+ 	ctx, cancel := context.WithTimeout(context.Background(), defaultStorageTimeout)
+ 	defer cancel()
+ 	authRequests, err := c.listAuthRequests(ctx)
+diff --git a/storage/kubernetes/storage.go b/storage/kubernetes/storage.go
+index b670244a..5c9b88af 100644
+--- a/storage/kubernetes/storage.go
++++ b/storage/kubernetes/storage.go
+@@ -590,7 +590,7 @@ func (cli *client) UpdateConnector(id string, updater func(a storage.Connector)
+ 	})
+ }
+ 
+-func (cli *client) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
++func (cli *client) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+ 	var authRequests AuthRequestList
+ 	if err := cli.list(resourceAuthRequest, &authRequests); err != nil {
+ 		return result, fmt.Errorf("failed to list auth requests: %v", err)
+diff --git a/storage/memory/memory.go b/storage/memory/memory.go
+index 82264205..3ebc5651 100644
+--- a/storage/memory/memory.go
++++ b/storage/memory/memory.go
+@@ -69,7 +69,7 @@ func (s *memStorage) tx(f func()) {
+ 
+ func (s *memStorage) Close() error { return nil }
+ 
+-func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
++func (s *memStorage) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+ 	s.tx(func() {
+ 		for id, a := range s.authCodes {
+ 			if now.After(a.Expiry) {
+@@ -95,6 +95,13 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
+ 				result.DeviceTokens++
+ 			}
+ 		}
++		stale_refresh_token_cutoff := now.Add(-unusedRefreshTokensValidFor)
++		for id, a := range s.refreshTokens {
++			if stale_refresh_token_cutoff.After(a.LastUsed) {
++				delete(s.refreshTokens, id)
++				result.RefreshTokens++
++			}
++		}
+ 	})
+ 	return result, nil
+ }
+diff --git a/storage/sql/crud.go b/storage/sql/crud.go
+index 4451e5c5..ad1f0093 100644
+--- a/storage/sql/crud.go
++++ b/storage/sql/crud.go
+@@ -84,7 +84,7 @@ type scanner interface {
+ 	Scan(dest ...interface{}) error
+ }
+ 
+-func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
++func (c *conn) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
+ 	result := storage.GCResult{}
+ 
+ 	r, err := c.Exec(`delete from auth_request where expiry < $1`, now)
+@@ -119,6 +119,15 @@ func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
+ 		result.DeviceTokens = n
+ 	}
+ 
++	stale_refresh_token_cutoff := now.Add(-unusedRefreshTokensValidFor)
++	r, err = c.Exec(`delete from refresh_token where last_used < $1`, stale_refresh_token_cutoff)
++	if err != nil {
++		return result, fmt.Errorf("gc refresh_token: %v", err)
++	}
++	if n, err := r.RowsAffected(); err == nil {
++		result.RefreshTokens = n
++	}
++
+ 	return result, err
+ }
+ 
+diff --git a/storage/storage.go b/storage/storage.go
+index c308ac46..96989b83 100644
+--- a/storage/storage.go
++++ b/storage/storage.go
+@@ -53,6 +53,7 @@ type GCResult struct {
+ 	AuthCodes      int64
+ 	DeviceRequests int64
+ 	DeviceTokens   int64
++	RefreshTokens  int64
+ }
+ 
+ // IsEmpty returns whether the garbage collection result is empty or not.
+@@ -60,7 +61,8 @@ func (g *GCResult) IsEmpty() bool {
+ 	return g.AuthRequests == 0 &&
+ 		g.AuthCodes == 0 &&
+ 		g.DeviceRequests == 0 &&
+-		g.DeviceTokens == 0
++		g.DeviceTokens == 0 &&
++		g.RefreshTokens == 0
+ }
+ 
+ // Storage is the storage interface used by the server. Implementations are
+@@ -131,8 +133,8 @@ type Storage interface {
+ 	UpdateDeviceToken(deviceCode string, updater func(t DeviceToken) (DeviceToken, error)) error
+ 
+ 	// GarbageCollect deletes all expired AuthCodes,
+-	// AuthRequests, DeviceRequests, and DeviceTokens.
+-	GarbageCollect(now time.Time) (GCResult, error)
++	// AuthRequests, DeviceRequests, DeviceTokens and RefreshTokens
++	GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (GCResult, error)
+ }
+ 
+ // Client represents an OAuth2 client.
