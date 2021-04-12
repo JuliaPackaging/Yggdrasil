@@ -19,11 +19,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/libassuan-*/
 
 if [[ "${target}" == x86_64-*-mingw* ]]; then
-    ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} GPG_ERROR_CONFIG="../gpgrt-config.sh" ac_cv_path_GPGRT_CONFIG="../gpgrt-config.sh"
-else
-    export CPPFLAGS="-I${includedir}"
-    ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} 
+    # `gpgrt-config` for this platform returns garbage results.  We replace it with
+    # a simple wrapper around `pkg-config`, so that we can easily build the shared library.
+    FLAGS=(GPG_ERROR_CONFIG="../gpgrt-config.sh" ac_cv_path_GPGRT_CONFIG="../gpgrt-config.sh")
 fi
+export CPPFLAGS="-I${includedir}"
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} "${FLAGS[@]}"
 make -j${nproc}
 make install
 
