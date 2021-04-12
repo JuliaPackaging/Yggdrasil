@@ -40,7 +40,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll")
+#     OpenBLAS_jll-0.3.13-3 opted into using ILP64 on aarch64
+#     (see https://github.com/JuliaPackaging/Yggdrasil/pull/2590)
+#     but we still try to compile with `-lopenblas` there.
+    Dependency("OpenBLAS_jll", v"0.3.12", compat="<0.3.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
