@@ -19,6 +19,8 @@ if [[ "${target}" != ${MACHTYPE} ]]; then
     # Delete `gpg-error-config` of the host to prevent it from being picked up
     # when configuring the package
     rm "${host_bindir}/gpg-error-config"
+    # Use Windows LDAP
+    FLAGS=(LDAPLIBS="-lwldap32")
 fi
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # We have an old glibc which doesn't have `IN_EXCL_UNLINK`
@@ -48,21 +50,22 @@ products = [
     ExecutableProduct("gpg-agent", :gpg_agent),
     ExecutableProduct("gpgconf", :gpgconf),
     ExecutableProduct("gpg-connect-agent", :gpg_connect_agent),
-    ExecutableProduct("gpgparsemail", :gpgparsemail),
     ExecutableProduct("gpgscm", :gpgscm),
     ExecutableProduct("gpgsm", :gpgsm),
-    ExecutableProduct("gpgsplit", :gpgsplit),
+    # ExecutableProduct("gpgsplit", :gpgsplit),
     ExecutableProduct("gpgtar", :gpgtar),
     ExecutableProduct("gpgv", :gpgv),
-    ExecutableProduct("gpg-wks-server", :gpg_wks_server),
+    # ExecutableProduct("gpg-wks-server", :gpg_wks_server),
     ExecutableProduct("kbxutil", :kbxutil),
-    ExecutableProduct("watchgnupg", :watchgnupg),
+    # ExecutableProduct("watchgnupg", :watchgnupg),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need this to run a host yat2m executable
     HostBuildDependency("Libgpg_error_jll"),
+    # We need this to run a host msgfmt executable
+    HostBuildDependency("Gettext_jll"),
     Dependency("GnuTLS_jll"),
     Dependency("Libksba_jll"),
     Dependency("Libgcrypt_jll"),
