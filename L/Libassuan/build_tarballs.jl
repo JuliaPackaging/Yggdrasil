@@ -9,6 +9,7 @@ version = v"2.5.5"
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libassuan/libassuan-$(version).tar.bz2",
                   "8e8c2fcc982f9ca67dcbb1d95e2dc746b1739a4668bc20b3a3c5be632edb34e4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,16 +17,18 @@ sources = [
 # Tried -no-undefined but still couldn't build for windows
 script = raw"""
 cd $WORKSPACE/srcdir/libassuan-*/
+
+if [[ "${target}" == x86_64-*-mingw* ]]; then
+    # `gpgrt-config` for this platform returns garbage results.  We replace it with
+    # a simple wrapper around `pkg-config`, so that we can easily build the shared library.
+    FLAGS=(GPG_ERROR_CONFIG="../gpgrt-config.sh" ac_cv_path_GPGRT_CONFIG="../gpgrt-config.sh")
+fi
 export CPPFLAGS="-I${includedir}"
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --disable-static
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} "${FLAGS[@]}"
 make -j${nproc}
 make install
 
-if [[ "${target}" == x86_64-*-mingw* ]]; then
-    # We have to manually build the shared library for Windows
-    cc -shared -fPIC -o "${libdir}/libassuan-0.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libassuan.a" -Wl,$(flagon --no-whole-archive)  -lgpg-error -lws2_32
-    rm "${prefix}/lib/libassuan.a"
-fi
+install_license ${WORKSPACE}/srcdir/libassuan-*/COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,7 +38,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libassuan", :libassuan),
+    LibraryProduct(["libassuan", "libassuan6"], :libassuan),
 ]
 
 # Dependencies that must be installed before this package can be built
