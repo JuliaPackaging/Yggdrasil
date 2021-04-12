@@ -19,6 +19,7 @@ if [[ "${target}" != ${MACHTYPE} ]]; then
     # Delete `gpg-error-config` of the host to prevent it from being picked up
     # when configuring the package
     rm "${host_bindir}/gpg-error-config"
+    export LDFLAGS="-L${libdir}"
 fi
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # We have an old glibc which doesn't have `IN_EXCL_UNLINK`
