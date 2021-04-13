@@ -35,7 +35,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 
-cuda_version = v"9.0.176"
+# since https://github.com/cvxgrp/scs/pull/155 scs uses the generic
+# cusparse API which was itroduced in CUDA-10.1
+cuda_version = v"10.1.243"
 
 dependencies = [
     Dependency("OpenBLAS_jll"),
