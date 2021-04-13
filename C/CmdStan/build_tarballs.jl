@@ -41,7 +41,6 @@ products = [
     ExecutableProduct("diagnose", :diagnose),
     ExecutableProduct("linux-stanc", :linux_stanc),
     ExecutableProduct("mac-stanc", :mac_stanc),
-    ExecutableProduct("print", :print),
     ExecutableProduct("stanc", :stanc),
     ExecutableProduct("stansummary", :stansummary),
     ExecutableProduct("windows-stanc", :windows_stanc)
@@ -52,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
