@@ -36,7 +36,7 @@ install_license ${WORKSPACE}/srcdir/cmdstan-*/LICENSE
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
-products = [
+products = Product[
     ExecutableProduct("cmdstan", :cmdstan),
     ExecutableProduct("diagnose", :diagnose),
     ExecutableProduct("linux-stanc", :linux_stanc),
