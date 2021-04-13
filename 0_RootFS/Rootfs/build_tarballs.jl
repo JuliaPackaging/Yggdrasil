@@ -196,6 +196,7 @@ cp -vd ${WORKSPACE}/srcdir/conf/vimrc ${prefix}/etc/vim/vimrc
 mkdir -p ${prefix}/etc/vim/
 git clone https://github.com/VundleVim/Vundle.vim ${prefix}/etc/vim/bundle/Vundle.vim
 chroot ${prefix} vim -E -u /etc/vim/vimrc -c PluginInstall -c qall
+find ${prefix}/etc/vim/bundle -name \*.git | xargs rm -rf
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
 gcc -g -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
