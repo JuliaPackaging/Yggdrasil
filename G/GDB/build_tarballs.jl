@@ -15,7 +15,8 @@ script = raw"""
 apk add texinfo
 cd $WORKSPACE/srcdir/gdb-10.1/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} 
-make -j${nproc} all install
+make -j${nproc} all
+make install
 """
 
 # These are the platforms we will build for by default, unless further
