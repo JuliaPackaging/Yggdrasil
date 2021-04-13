@@ -37,13 +37,9 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("cmdstan", :cmdstan),
     ExecutableProduct("diagnose", :diagnose),
-    ExecutableProduct("linux-stanc", :linux_stanc),
-    ExecutableProduct("mac-stanc", :mac_stanc),
     ExecutableProduct("stanc", :stanc),
-    ExecutableProduct("stansummary", :stansummary),
-    ExecutableProduct("windows-stanc", :windows_stanc)
+    ExecutableProduct("stansummary", :stansummary)
 ]
 
 # Dependencies that must be installed before this package can be built
