@@ -30,7 +30,7 @@ platforms = [
     Platform("i686", "windows"; ),
     Platform("x86_64", "windows"; )
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
