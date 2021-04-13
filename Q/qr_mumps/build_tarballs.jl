@@ -8,7 +8,7 @@ version = v"3.0.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://buttari.perso.enseeiht.fr/qr_mumps/releases/qr_mumps-$version.tgz",
-                  "80871bc8242fe4bc510047022e11db73357123680a3875b2cdfc71790be72280")
+                  "9e881f0734de05a89bee7866cb158985096f8930ed3e1e169e1874b85ec28396")
 ]
 
 # Bash recipe for building across all platforms
