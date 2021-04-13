@@ -36,7 +36,7 @@ install_license ${WORKSPACE}/srcdir/cmdstan-*/LICENSE
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("cmdstan", :cmdstan),
     ExecutableProduct("diagnose", :diagnose),
     ExecutableProduct("linux-stanc", :linux_stanc),
@@ -52,4 +52,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
