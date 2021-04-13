@@ -2,11 +2,11 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_GPU"
-version = v"2.1.2"
+version = v"2.1.3"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "4ed6c2abf28399c01a0417ff3456b2639560afa6")
+    GitSource("https://github.com/cvxgrp/scs.git", "07ca69c296312c260027c755f545f05bf45156eb")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,7 +35,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 
-cuda_version = v"9.0.176"
+# since https://github.com/cvxgrp/scs/pull/155 scs uses the generic
+# cusparse API which was itroduced in CUDA-10.1
+cuda_version = v"10.1.243"
 
 dependencies = [
     Dependency("OpenBLAS_jll"),
