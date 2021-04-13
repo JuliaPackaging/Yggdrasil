@@ -7,12 +7,19 @@ version = v"1.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PointCloudLibrary/pcl/releases/download/pcl-$version/source.tar.gz", "19d1a0bee2bc153de47c05da54fc6feb23393f306ab2dea2e25419654000336e")
+    ArchiveSource("https://github.com/PointCloudLibrary/pcl/releases/download/pcl-$version/source.tar.gz",
+                  "19d1a0bee2bc153de47c05da54fc6feb23393f306ab2dea2e25419654000336e"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pcl*
+
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/windows-cases.patch
+fi
+
 mkdir build && cd build
 
 #unsure if needed, ran this to be safe?
