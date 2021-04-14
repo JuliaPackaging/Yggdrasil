@@ -38,7 +38,11 @@ Osi_gitsha = "2bd34ae6b8c93d342d54fd19d4d773f07194583c"
 CoinUtils_version = v"2.11.3"
 CoinUtils_gitsha = "ea66474879246f299e977802c94a0e45334e7afb"
 
+Ipopt_version = v"3.13.4"
+Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
+
 # Third-party packages needed by COIN-OR libraries.
+ASL_version = v"0.1.2"
 METIS_version = v"5.1.0"
 MUMPS_seq_version = v"5.2.1"
 OpenBLAS32_version = v"0.3.9"
