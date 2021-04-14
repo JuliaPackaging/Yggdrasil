@@ -16,6 +16,9 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/cmdstan-*
 cp ../local make/
+if [[ "${target}" == i686* ]]; then
+    echo "BITS=32" >> make/local
+fi
 if [[ "${target}" == *-mingw32 ]]; then
     target="windows"
 elif [[ "${target}" == *-linux* ]]; then
@@ -25,7 +28,7 @@ elif [[ "${target}" == *-apple* ]]; then
 elif [[ "${target}" == *-freebsd ]]; then
     target="FreeBSD"
 fi
-echo $target
+
 make -j${nproc} build
 cp -R bin/ $prefix/bin/ 
 install_license ${WORKSPACE}/srcdir/cmdstan-*/LICENSE
