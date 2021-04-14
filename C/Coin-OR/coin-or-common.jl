@@ -24,8 +24,10 @@ gcc_version = v"6"
 Cbc_version = v"2.10.5"
 Cbc_gitsha = "7b5ccc016f035f56614c8018b20d700978144e9f"
 
-Cgl_version = v"0.60.2"
+Cgl_upstream_version = v"0.60.2"
 Cgl_gitsha = "6377b88754fafacf24baac28bb27c0623cc14457"
+Cgl_version_offset = v"0.0.0"
+Cgl_version = offset_version(Cgl_upstream_version, Cgl_version_offset)
 
 Clp_upstream_version = v"1.17.6"
 Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
