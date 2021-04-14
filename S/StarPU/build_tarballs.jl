@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "StarPU"
-version = v"1.3.7"
+version = v"1.3.7" 
 
 # Collection of sources required to complete build
 sources = [
