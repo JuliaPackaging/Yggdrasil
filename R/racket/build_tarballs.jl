@@ -18,8 +18,8 @@ cd src/
 mkdir build
 cd build
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-bc
-make -j ${procs}
-make -j ${procs} install
+make -j ${nproc}
+make -j install
 exit
 """
 
