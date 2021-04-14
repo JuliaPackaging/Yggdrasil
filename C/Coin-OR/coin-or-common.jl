@@ -39,7 +39,7 @@ CoinUtils_version = v"2.11.3"
 CoinUtils_gitsha = "ea66474879246f299e977802c94a0e45334e7afb"
 
 # Third-party packages needed by COIN-OR libraries.
-METIS_version = v"4.0.3"
+METIS_version = v"5.1.0"
 MUMPS_seq_version = v"5.2.1"
 OpenBLAS32_version = v"0.3.9"
 
