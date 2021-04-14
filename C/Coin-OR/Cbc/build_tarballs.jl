@@ -41,11 +41,7 @@ fi
     --with-asl-lib="-lasl" \
     --with-blas-lib="-lopenblas" \
     --with-lapack-lib="-lopenblas" \
-    --with-metis-lib="-lmetis" \
-    --with-coinutils-lib="-lCoinUtils" \
-    --with-osi-lib="-lOsi" \
     --with-clp-lib="-lClp" \
-    --with-cgl-lib="-lCgl -lOsiClp " \
     --with-coindepend-lib="-lCgl -lOsiClp -lClp -lOsi -lCoinUtils" \
     --enable-cbc-parallel
 
