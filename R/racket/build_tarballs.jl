@@ -17,7 +17,7 @@ cd racket-8.0/
 cd src/
 mkdir build
 cd build
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-bc
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-bconly
 make -j ${nproc}
 make -j install
 exit
