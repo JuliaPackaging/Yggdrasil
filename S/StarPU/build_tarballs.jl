@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "StarPU"
-version = v"1.3.7" 
+version = v"1.3.7"
 
 # Collection of sources required to complete build
 sources = [
@@ -24,7 +24,7 @@ install_license ../COPYING.LGPL
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && p ≠ Platform("aarch64", "linux", libc="musl"), supported_platforms()))
 
 
 # The products that we will ensure are always built
