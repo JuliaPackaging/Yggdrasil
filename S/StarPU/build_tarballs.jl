@@ -20,6 +20,7 @@ cd build
 make -j${nproc}
 make install
 install_license ../COPYING.LGPL
+rm -r $prefix/share/doc/starpu
 """
 
 # These are the platforms we will build for by default, unless further
