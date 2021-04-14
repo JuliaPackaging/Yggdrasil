@@ -54,6 +54,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Clp_jll", Clp_version),
+    Dependency("Osi_jll", Osi_version),
+    Dependency("CoinUtils_jll", CoinUtils_version),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
