@@ -14,9 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd racket/
-cd racket/src
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-cd ../..
 make -j ${nproc} base
 cp -r racket/bin ${prefix}/.
 exit
