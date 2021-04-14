@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd racket/
 make -j ${nproc} base
-cp racket/bin/* ${prefix}/
+cp -r racket/bin ${prefix}/.
 exit
 """
 
