@@ -1,12 +1,8 @@
 include("../coin-or-common.jl")
 
-name = "Clp"
-version = Clp_version
-
 # Collection of sources required to build Clp
 sources = [
-    GitSource("https://github.com/coin-or/Clp.git",
-              Clp_gitsha)
+    GitSource("https://github.com/coin-or/Clp.git", Clp_gitsha),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,9 +19,9 @@ sed -i s/elf64ppc/elf64lppc/ configure
 mkdir build
 cd build/
 
-export CPPFLAGS="${CPPFLAGS} -DNDEBUG -I${prefix}/include -I$prefix/include/coin"
+export CPPFLAGS="${CPPFLAGS} -DNDEBUG -I${includedir} -I${includedir}/coin"
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
+    export LDFLAGS="-L${libdir}"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
@@ -34,15 +30,24 @@ if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
    export CPPFLAGS="${CPPFLAGS} -D__arm__"
 fi
 
-../configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
---disable-debug --disable-dependency-tracking \
---enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas="-lopenblas" --with-lapack="-lopenblas" \
---with-coinutils-lib="-lCoinUtils" \
---with-osi-lib="-lOsi -lCoinUtils" \
---with-mumps-lib="-L${prefix}/lib -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
---with-mumps-incdir="${prefix}/include/mumps_seq" \
---with-metis-lib="-L${prefix}/lib -lmetis" --with-metis-incdir="${prefix}/include"
+../configure \
+    --prefix=$prefix \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-pic \
+    --disable-pkg-config \
+    --disable-debug \
+    --disable-dependency-tracking \
+    --enable-shared \
+    lt_cv_deplibs_check_method=pass_all \
+    --with-blas="-lopenblas" \
+    --with-lapack="-lopenblas" \
+    --with-coinutils-lib="-lCoinUtils" \
+    --with-osi-lib="-lOsi -lCoinUtils" \
+    --with-mumps-lib="-L${libdir} -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
+    --with-mumps-incdir="${includedir}/mumps_seq" \
+    --with-metis-lib="-L${libdir} -lmetis" \
+    --with-metis-incdir="${includedir}"
 
 make -j${nproc}
 make install
@@ -52,19 +57,29 @@ make install
 products = [
     LibraryProduct("libClp", :libClp),
     LibraryProduct("libOsiClp", :libOsiClp),
-    LibraryProduct("libClpSolver", :libClpSolver)
+    LibraryProduct("libClpSolver", :libClpSolver),
+    ExecutableProduct("clp", :clp),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(CoinUtils_packagespec),
-    Dependency(Osi_packagespec),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("Osi_jll", Osi_version),
+    Dependency("METIS_jll", METIS_version),
+    Dependency("MUMPS_seq_jll", MUMPS_seq_version),
+    Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(MUMPS_seq_packagespec),
-    BuildDependency(METIS_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, expand_gfortran_versions(platforms), products, dependencies;
-               preferred_gcc_version=gcc_version)
+build_tarballs(
+    ARGS,
+    "Clp",
+    Clp_version,
+    sources,
+    script,
+    expand_gfortran_versions(platforms),
+    products,
+    dependencies;
+    preferred_gcc_version=gcc_version,
+)
