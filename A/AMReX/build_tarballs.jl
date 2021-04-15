@@ -16,12 +16,14 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-if [[ "${target}" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=${WORKSPACE}/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+if [[ "$target" == *-x86_64-w64-mingw32 ]]; then
+    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+elif [[ "$target" == *-mingw* ]]; then
+    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64"
 else
     mpiopts=
 fi
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_FORTRAN_INTERFACES=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON ${mpiopts} ..
+env VERBOSE=1 cmake   -DCMAKE_VERBOSE_MAKEFILE=ON   -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_FORTRAN_INTERFACES=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON ${mpiopts} .. || { cat /workspace/srcdir/amrex/build/CMakeFiles/CMakeOutput.log; cat /workspace/srcdir/amrex/build/CMakeFiles/CMakeError.log; }
 make -j$(nproc)
 make -j$(nproc) install
 """
@@ -32,28 +34,26 @@ make -j$(nproc) install
 # - We might not want to build `cxxstring_abi="cxx03"` since AMReX requires at least C++14 (C++17 on Windows)
 # - The <filesystem> header is available in GCC 8 (?); how can we require this for Windows only?
 platforms = [
-    # Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    # Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    # Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
-    # Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
-    # Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    # Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    # Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
-    # Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
-    # Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    # Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    # Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
-    # Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
-    # Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    # Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    # Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
-    # Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
-
-    # Not working
-    Platform("i686", "windows"; cxxstring_abi="cxx03"), # header <filesystem> missing
-    Platform("i686", "windows"; cxxstring_abi="cxx11"), # header <filesystem> missing
-    Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI not found
-    Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI not found
+    Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
+    Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
+    Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
+    Platform("i686", "windows"; cxxstring_abi="cxx03"),
+    Platform("i686", "windows"; cxxstring_abi="cxx11"),
+    Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
+    Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
+    Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
+    Platform("x86_64", "windows"; cxxstring_abi="cxx03"),
+    Platform("x86_64", "windows"; cxxstring_abi="cxx11"),
 ]
 
 # The products that we will ensure are always built
@@ -72,6 +72,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
-# - On Windows, AMReX requires C++17, and at least GCC 8
-# - GCC 8.1.0 has an ICE
+# - On Windows, AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
+# - GCC 8.1.0 suffers from an ICE
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
