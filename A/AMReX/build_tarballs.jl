@@ -52,8 +52,9 @@ platforms = [
     Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
     Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
     Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
-    Platform("x86_64", "windows"; cxxstring_abi="cxx03"),
-    Platform("x86_64", "windows"; cxxstring_abi="cxx11"),
+
+    # Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI_CXX not found
+    # Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI_CXX not found
 ]
 
 # The products that we will ensure are always built
@@ -64,7 +65,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # AMReX' cmake stage fails with OpenMPI on almost all architectures; it claims OpenMPI does not support Fortran
+    # AMReX's cmake stage fails with OpenMPI on almost all architectures
     # Dependency(PackageSpec(name="OpenMPI_jll", uuid="fe0851c0-eecd-5654-98d4-656369965a5c")),
     Dependency(PackageSpec(name="MPICH_jll")),
     Dependency(PackageSpec(name="MicrosoftMPI_jll")),
@@ -74,5 +75,5 @@ dependencies = [
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
 # - On Windows, AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header.
 #   How can we require this for Windows only?
-# - GCC 8.1.0 suffers from an ICE
+# - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
