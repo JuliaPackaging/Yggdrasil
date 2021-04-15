@@ -62,9 +62,9 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name = "armadillo_jll", version = "9.850.1")),
-    Dependency(PackageSpec(name = "GSL_jll", version = "2.6.0")),
-    Dependency(PackageSpec(name = "OpenBLAS_jll", version = "0.3.9")),
+    Dependency(PackageSpec(name = "armadillo_jll", compat = "9.850.1")),
+    Dependency(PackageSpec(name = "GSL_jll", compat = "2.6.0")),
+    Dependency(PackageSpec(name = "OpenBLAS_jll", compat = "0.3.9")),
 ]
 
 # preferred_gcc_version = v"8" is a requirement from libcxxwrap_julia_jll
