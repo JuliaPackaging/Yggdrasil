@@ -1,9 +1,7 @@
 using BinaryBuilder, Pkg
 
-julia_version = v"1.5.3"
-
 name = "HelFEM"
-version = v"0.1.5"
+version = VersionNumber(0, 1, julia_version.minor)
 sources = [
     GitSource("https://github.com/mortenpi/HelFEM.git", "a4d3b2e6f16f7f7953afd5f69a44257a65c5b131"),
 ]
@@ -64,9 +62,9 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency(PackageSpec(name = "armadillo_jll", version = "9.850.1")),
-    Dependency(PackageSpec(name = "GSL_jll", version = "2.6.0")),
-    Dependency(PackageSpec(name = "OpenBLAS_jll", version = "0.3.9")),
+    Dependency("armadillo_jll", compat = "9.850.1"),
+    Dependency("GSL_jll", compat = "2.6.0"),
+    Dependency("OpenBLAS_jll", v"0.3.10"; compat = "0.3.10"),
 ]
 
 # preferred_gcc_version = v"8" is a requirement from libcxxwrap_julia_jll
