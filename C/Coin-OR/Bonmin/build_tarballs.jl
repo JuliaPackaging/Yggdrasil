@@ -1,11 +1,10 @@
-using BinaryBuilder, Pkg
+include("../coin-or-common.jl")
 
 name = "Bonmin"
-version = v"1.8.8"
+version = Bonmin_version
 
 sources = [
-    GitSource("https://github.com/coin-or/Bonmin.git",
-              "65c56cea1e7c40acd9897a2667c11f91d845bb7b"),
+    GitSource("https://github.com/coin-or/Bonmin.git", Bonmin_gitsha),
     DirectorySource("./bundled")
 ]
 
@@ -37,11 +36,12 @@ fi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-pthread-mumps \
-    --enable-static \
+    --disable-pkgconfig \
+    --disable-debug \
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
-    --with-asl-lib="-lipoptamplinterface -lasl"
+    --with-asl-lib="-lasl" \
+    --with-coindepend-lib="-lCbc -lCgl -lOsiClp -lClp -lOsi -lCoinUtils -lipoptamplinterface -lipopt"
 
 make -j${nproc}
 make install
@@ -50,10 +50,6 @@ make install
 rm "${includedir}/coin-or/IpoptConfig.h"
 """
 
-
-platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
-platforms = expand_cxxstring_abis(platforms)
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 platforms = expand_gfortran_versions(platforms)
 
@@ -66,9 +62,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cbc_jll", v"2.10.5"),
+    Dependency("ASL_jll", ASL_version),
+    Dependency("Cbc_jll", Cbc_version, compat="=$(Cbc_version)"),
+    Dependency("Cgl_jll", Cgl_version),
+    Dependency("Clp_jll", Clp_version),
+    Dependency("Osi_jll", Osi_version),
+    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("Ipopt_jll", Ipopt_version, compat="=$(Ipopt_version)"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Ipopt_jll", v"3.13.4", compat="~3.13.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
