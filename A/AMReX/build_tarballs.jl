@@ -16,21 +16,12 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-echo $target
 if [[ "${target}" == *-mingw* ]]; then
-    MPIEXEC_EXECUTABLE=$(which mpiexec.exe)
-    MPI_EXECUTABLE_SUFFIX=.exe
+    mpiopts="-DMPI_HOME=${WORKSPACE}/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
-    MPIEXEC_EXECUTABLE=$(which mpiexec)
-    MPI_EXECUTABLE_SUFFIX=
+    mpiopts=
 fi
-echo $MPIEXEC_EXECUTABLE
-echo $WORKSPACE
-export MPI_HOME="$WORKSPACE/destdir"
-ls -l $MPI_HOME
-ls -l $MPI_HOME/bin
-# -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN:Bool=OFF -DAMReX_FORTRAN_INTERFACES:Bool=OFF -DAMReX_OMP:Bool=ON -DAMReX_PARTICLES:Bool=ON -DBUILD_SHARED_LIBS:Bool=ON -DMPI_EXECUTABLE_SUFFIX=${MPI_EXECUTABLE_SUFFIX} ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_FORTRAN_INTERFACES=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON ${mpiopts} ..
 make -j$(nproc)
 make -j$(nproc) install
 """
@@ -41,28 +32,28 @@ make -j$(nproc) install
 # - We might not want to build `cxxstring_abi="cxx03"` since AMReX requires at least C++14 (C++17 on Windows)
 # - The <filesystem> header is available in GCC 8 (?); how can we require this for Windows only?
 platforms = [
-    Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
-    Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
-    Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
-    Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
-    Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
-    Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
+    # Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    # Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    # Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
+    # Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
+    # Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    # Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    # Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
+    # Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
+    # Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    # Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    # Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
+    # Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
+    # Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    # Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    # Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
+    # Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
 
     # Not working
-    # Platform("i686", "windows"; cxxstring_abi="cxx03"), # header <filesystem> missing
-    # Platform("i686", "windows"; cxxstring_abi="cxx11"), # header <filesystem> missing
-    # Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI not found
-    # Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI not found
+    Platform("i686", "windows"; cxxstring_abi="cxx03"), # header <filesystem> missing
+    Platform("i686", "windows"; cxxstring_abi="cxx11"), # header <filesystem> missing
+    Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI not found
+    Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI not found
 ]
 
 # The products that we will ensure are always built
