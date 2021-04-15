@@ -51,7 +51,6 @@ rm "${includedir}/coin-or/IpoptConfig.h"
 """
 
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
-platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
