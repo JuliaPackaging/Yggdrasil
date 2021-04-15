@@ -1,6 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "HelFEM"
+version = VersionNumber(0, 1, julia_version.minor)
 sources = [
     GitSource("https://github.com/mortenpi/HelFEM.git", "a4d3b2e6f16f7f7953afd5f69a44257a65c5b131"),
 ]
