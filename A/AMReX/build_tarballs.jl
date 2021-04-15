@@ -16,29 +16,54 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_FORTRAN_INTERFACES=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON -DXSDK_ENABLE_Fortran=OFF ..
+echo $target
+if [[ "${target}" == *-mingw* ]]; then
+    MPIEXEC_EXECUTABLE=$(which mpiexec.exe)
+    MPI_EXECUTABLE_SUFFIX=.exe
+else
+    MPIEXEC_EXECUTABLE=$(which mpiexec)
+    MPI_EXECUTABLE_SUFFIX=
+fi
+echo $MPIEXEC_EXECUTABLE
+echo $WORKSPACE
+export MPI_HOME="$WORKSPACE/destdir"
+ls -l $MPI_HOME
+ls -l $MPI_HOME/bin
+# -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN:Bool=OFF -DAMReX_FORTRAN_INTERFACES:Bool=OFF -DAMReX_OMP:Bool=ON -DAMReX_PARTICLES:Bool=ON -DBUILD_SHARED_LIBS:Bool=ON -DMPI_EXECUTABLE_SUFFIX=${MPI_EXECUTABLE_SUFFIX} ..
 make -j$(nproc)
 make -j$(nproc) install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+# - We can't build with musl since AMReX requires the `fegetexcept` GNU API
+# - We might not want to build `cxxstring_abi="cxx03"` since AMReX requires at least C++14 (C++17 on Windows)
+# - The <filesystem> header is available in GCC 8 (?); how can we require this for Windows only?
 platforms = [
-    Platform("aarch64", "linux"; libc="glibc"),
-    # Platform("aarch64", "linux"; libc="musl"), # `fegetexcept` missing 
-    Platform("armv7l", "linux"; libc="glibc"),
-    # Platform("armv7l", "linux"; libc="musl"), # `fegetexcept` missing 
-    Platform("i686", "linux"; libc = "glibc"),
-    # Platform("i686", "linux"; libc="musl"), # `fegetexcept` missing 
-    # Platform("i686", "windows"),            # MPICH not available
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    # Platform("x86_64", "linux"; libc="musl"), # `fegetexcept` missing 
-    # Platform("x86_64", "macos"),   # no OpenMP support
-    # Platform("x86_64", "windows"), # MPICH not available
+    Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
+    Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
+    Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
+    Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
+    Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
+    Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
+    Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
+    Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
+
+    # Not working
+    # Platform("i686", "windows"; cxxstring_abi="cxx03"), # header <filesystem> missing
+    # Platform("i686", "windows"; cxxstring_abi="cxx11"), # header <filesystem> missing
+    # Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI not found
+    # Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI not found
 ]
-platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -48,10 +73,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # cmake fails with OpenMPI on almost all architectures; it claims OpenMPI does not support Fortran
+    # AMReX' cmake stage fails with OpenMPI on almost all architectures; it claims OpenMPI does not support Fortran
     # Dependency(PackageSpec(name="OpenMPI_jll", uuid="fe0851c0-eecd-5654-98d4-656369965a5c")),
     Dependency(PackageSpec(name="MPICH_jll")),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+# - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
+# - On Windows, AMReX requires C++17, and at least GCC 8
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
