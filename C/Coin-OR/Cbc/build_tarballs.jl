@@ -1,7 +1,3 @@
-# Note: editing coin-or-common.jl isn't sufficient to trigger a
-# build. You need to edit this one as well. 
-# Version 2.10.5+3
-
 include("../coin-or-common.jl")
 
 name = "Cbc"
@@ -9,8 +5,7 @@ version = Cbc_version
 
 # Collection of sources required to build CbcBuilder
 sources = [
-    GitSource("https://github.com/coin-or/Cbc.git",
-              Cbc_gitsha),
+    GitSource("https://github.com/coin-or/Cbc.git", Cbc_gitsha),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,24 +22,28 @@ sed -i s/elf64ppc/elf64lppc/ configure
 mkdir build
 cd build/
 
-export CPPFLAGS="${CPPFLAGS} -DNDEBUG -I${prefix}/include -I$prefix/include/coin"
+export CPPFLAGS="${CPPFLAGS} -DNDEBUG -I${includedir} -I${includedir}/coin"
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L$prefix/bin"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-../configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
---with-pic --disable-pkg-config --disable-debug \
---enable-shared lt_cv_deplibs_check_method=pass_all \
---with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas" \
---with-metis-lib="-lmetis" \
---with-coinutils-lib="-lCoinUtils" \
---with-osi-lib="-lOsi -lCoinUtils" \
---with-clp-lib="-lClp -lOsiClp -lCoinUtils" \
---with-cgl-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
---with-coindepend-lib="-lCgl -lClp -lOsiClp -lOsi -lCoinUtils" \
---enable-cbc-parallel
+../configure \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-pic \
+    --disable-pkg-config \
+    --disable-debug \
+    --enable-shared \
+    lt_cv_deplibs_check_method=pass_all \
+    --with-asl-lib="-lasl" \
+    --with-blas-lib="-lopenblas" \
+    --with-lapack-lib="-lopenblas" \
+    --with-clp-lib="-lClp" \
+    --with-coindepend-lib="-lCgl -lOsiClp -lClp -lOsi -lCoinUtils" \
+    --enable-cbc-parallel
 
 make -j${nproc}
 make install
@@ -54,15 +53,17 @@ make install
 products = [
     LibraryProduct("libCbc", :libCbc),
     LibraryProduct("libCbcSolver", :libcbcsolver),
+    ExecutableProduct("cbc", :cbc),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(Clp_packagespec),
-    Dependency(Cgl_packagespec),
-    Dependency(Osi_packagespec),
-    Dependency(CoinUtils_packagespec),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("ASL_jll", ASL_version),
+    Dependency("Cgl_jll", Cgl_version),
+    Dependency("Clp_jll", Clp_version),
+    Dependency("Osi_jll", Osi_version),
+    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
