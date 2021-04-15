@@ -64,7 +64,7 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("armadillo_jll", compat = "9.850.1"),
     Dependency("GSL_jll", compat = "2.6.0"),
-    Dependency("OpenBLAS_jll", compat = "0.3.9"),
+    Dependency("OpenBLAS_jll", compat = "0.3.13"),
 ]
 
 # preferred_gcc_version = v"8" is a requirement from libcxxwrap_julia_jll
