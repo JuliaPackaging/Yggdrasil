@@ -5,8 +5,7 @@ version = Osi_version
 
 # Collection of sources required to build OsiBuilder
 sources = [
-    GitSource("https://github.com/coin-or/Osi.git",
-              Osi_gitsha)
+    GitSource("https://github.com/coin-or/Osi.git", Osi_gitsha),
 ]
 
 script = raw"""
@@ -22,18 +21,25 @@ sed -i s/elf64ppc/elf64lppc/ configure
 mkdir build
 cd build/
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I${prefix}/include/coin"
+export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
+    export LDFLAGS="-L${bindir}"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
-../configure --prefix=$prefix --build=${MACHTYPE} --host=${target} \
---with-pic --disable-pkg-config --disable-debug \
---enable-shared lt_cv_deplibs_check_method=pass_all \
---with-coinutils-lib="-lCoinUtils" \
---with-blas-lib="-lopenblas" --with-lapack-lib="-lopenblas"
+../configure \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-pic \
+    --disable-pkg-config \
+    --disable-debug \
+    --enable-shared \
+    lt_cv_deplibs_check_method=pass_all \
+    --with-coinutils-lib="-lCoinUtils" \
+    --with-blas-lib="-lopenblas" \
+    --with-lapack-lib="-lopenblas"
 
 make -j${nproc}
 make install
@@ -47,8 +53,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(CoinUtils_packagespec),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

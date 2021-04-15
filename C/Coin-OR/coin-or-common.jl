@@ -42,8 +42,8 @@ Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
 Clp_version_offset = v"0.0.0"
 Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 
-Osi_version = v"0.108.5"
-Osi_gitsha = "2bd34ae6b8c93d342d54fd19d4d773f07194583c"
+Osi_version = v"0.108.6"
+Osi_gitsha = "dfa6449d6756fdd96912cf96e168d0be07b1d37c"
 
 CoinUtils_version = v"2.11.4"
 CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
