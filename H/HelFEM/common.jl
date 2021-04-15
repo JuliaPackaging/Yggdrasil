@@ -14,7 +14,7 @@ cp -v ${WORKSPACE}/srcdir/HelFEM/julia/CMake.system ${WORKSPACE}/srcdir/HelFEM/C
 #   https://github.com/JuliaPackaging/Yggdrasil/blob/48d7a89b4aa46b1a8c91269bb138a660f4ee4ece/A/armadillo/build_tarballs.jl#L23-L52
 #
 # We need to manually set up OpenBLAS because FindOpenBLAS.cmake does not work with BB:
-if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+if [[ "${nbits}" == 64 ]]; then
     OPENBLAS="${libdir}/libopenblas64_.${dlext}"
 else
     OPENBLAS="${libdir}/libopenblas.${dlext}"
