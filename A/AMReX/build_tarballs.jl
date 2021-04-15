@@ -82,4 +82,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
 # - On Windows, AMReX requires C++17, and at least GCC 8
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
+# - GCC 8.1.0 has an ICE
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
