@@ -22,9 +22,9 @@ mkdir build
 cd build/
 
 export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
-if [[ ${target} == *mingw* ]]; then
+if [[ "${target}" == *mingw* ]]; then
     export LDFLAGS="-L${bindir}"
-elif [[ ${target} == *linux* ]]; then
+elif [[ "${target}" == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
