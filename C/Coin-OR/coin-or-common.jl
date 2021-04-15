@@ -39,8 +39,8 @@ Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 Osi_version = v"0.108.5"
 Osi_gitsha = "2bd34ae6b8c93d342d54fd19d4d773f07194583c"
 
-CoinUtils_version = v"2.11.3"
-CoinUtils_gitsha = "ea66474879246f299e977802c94a0e45334e7afb"
+CoinUtils_version = v"2.11.4"
+CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
 
 Ipopt_version = v"3.13.4"
 Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
