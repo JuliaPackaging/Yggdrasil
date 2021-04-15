@@ -36,7 +36,7 @@ fi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-pkgconfig \
+    --disable-pkg-config \
     --disable-debug \
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
