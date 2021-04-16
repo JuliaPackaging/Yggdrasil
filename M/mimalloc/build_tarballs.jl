@@ -12,14 +12,18 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mimalloc/
-mkdir -p out/release
-cd out/release/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -MI_BUILD_STATIC=OFF -MI_INSTALL_TOPLEVEL=ON -MI_BUILD_TESTS=OFF ../..
+cd $WORKSPACE/srcdir/mimalloc/
+mkdir -p build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DMI_BUILD_STATIC=OFF \
+    -DMI_BUILD_OBJECT=OFF \
+    -DMI_INSTALL_TOPLEVEL=ON \
+    -DMI_BUILD_TESTS=OFF \
+    ..
 make -j ${nproc}
 make -j ${nproc} install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -28,8 +32,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/mimalloc-2.0/mimalloc.o", :mimalloc),
-    LibraryProduct("libmimalloc", :libmimalloc, "lib/mimalloc-2.0")
+    LibraryProduct("libmimalloc", :libmimalloc)
 ]
 
 # Dependencies that must be installed before this package can be built
