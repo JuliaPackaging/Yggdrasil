@@ -330,6 +330,7 @@ static void mount_dev(const char * root_dir) {
   // Bindmount /dev/shm, if it exists (it technically may not)
   if (access("/dev/shm", F_OK) == 0) {
     snprintf(path, sizeof(path), "%s/dev/shm", root_dir);
+    mkpath(path);
     bind_mount("/dev/shm", path, FALSE);
   }
 }
