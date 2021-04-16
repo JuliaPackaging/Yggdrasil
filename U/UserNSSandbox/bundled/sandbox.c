@@ -326,6 +326,12 @@ static void mount_dev(const char * root_dir) {
   char ptmx_dst[PATH_MAX];
   snprintf(ptmx_dst, sizeof(ptmx_dst), "%s/dev/ptmx", root_dir);
   bind_mount(path, ptmx_dst, FALSE);
+
+  // Bindmount /dev/shm, if it exists (it technically may not)
+  if (access("/dev/shm", F_OK) == 0) {
+    snprintf(path, sizeof(path), "%s/dev/shm", root_dir);
+    bind_mount("/dev/shm", path, FALSE);
+  }
 }
 
 static void mount_maps(const char * dest, struct map_list * workspaces, uint8_t read_only) {
