@@ -20,7 +20,7 @@ if [[ "$target" == *-x86_64-w64-mingw32 ]]; then
     # TODO: This case should not be necessary
     mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI
+    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
     mpiopts=
 fi
