@@ -16,8 +16,7 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-if [[ "$target" == *-x86_64-w64-mingw32 ]]; then
-    # TODO: This case should not be necessary
+if [[ "$target" == x86_64-w64-mingw32 ]]; then
     mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
     mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
@@ -31,20 +30,9 @@ make -j$(nproc) install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# - We can't build with musl since AMReX requires the `fegetexcept` GNU API
-# - We might not want to build `cxxstring_abi="cxx03"` since AMReX requires at least C++14 (C++17 on Windows)
-platforms = [
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("i686", "windows"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"), # MPI_CXX not found
-]
+platforms = supported_platforms()
+# We cannot build with musl since AMReX requires the `fegetexcept` GNU API
+platforms = filter(p -> libc(p) ≠ "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
