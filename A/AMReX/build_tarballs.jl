@@ -38,11 +38,11 @@ platforms = [
     Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
     Platform("armv7l", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc = "glibc"),
-    Platform("i686", "windows")
+    Platform("i686", "windows"),
     Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd")
+    Platform("x86_64", "freebsd"),
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos")
+    Platform("x86_64", "macos"),
     Platform("x86_64", "windows"), # MPI_CXX not found
 ]
 platforms = expand_cxxstring_abis(platform)
