@@ -7,12 +7,17 @@ version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/microsoft/mimalloc.git", "8e35ccc43be293a9bfd6e63da310a79c235d25d9")
+    GitSource("https://github.com/microsoft/mimalloc.git",
+              "8e35ccc43be293a9bfd6e63da310a79c235d25d9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mimalloc/
+if [[ "${target}" == i686-*-mingw* ]]; then
+    atomic_patch -p1 ../patches/mimalloc-redirect32.patch
+fi
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -24,6 +29,12 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j ${nproc}
 make -j ${nproc} install
+# Manually install the mimalloc-redirect lib for Windows
+if [[ "${target}" == i686-*-mingw* ]]; then
+    cp "mimalloc-redirect32.${dlext}" "${libdir}/."
+elif [[ "${target}" == x86_64-*-mingw* ]]; then
+    cp "mimalloc-redirect.${dlext}" "${libdir}/."
+fi
 """
 
 # These are the platforms we will build for by default, unless further
