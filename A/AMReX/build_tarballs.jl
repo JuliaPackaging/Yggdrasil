@@ -45,7 +45,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"), # MPI_CXX not found
 ]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
