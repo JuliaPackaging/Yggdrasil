@@ -33,7 +33,8 @@ make -j$(nproc) install
 platforms = supported_platforms()
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
-platforms = expand_cxxstring_abis(platforms)
+# Apparently, macOS doesn't use different C++ string APIs
+platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
