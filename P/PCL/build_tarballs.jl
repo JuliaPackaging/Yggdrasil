@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/pcl*
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/windows-cases.patch
+    atomic_patch -p1 ../patches/pcl_io-link-ws2_32.patch
 fi
 
 mkdir build && cd build
