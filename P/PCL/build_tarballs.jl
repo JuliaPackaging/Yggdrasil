@@ -23,16 +23,6 @@ fi
 
 mkdir build && cd build
 
-#unsure if needed, ran this to be safe?
-# Hint to find libstc++, required to link against C++ libs when using C compiler
-if [[ "${target}" == *-linux-* ]]; then
-    if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-    else
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-    fi
-fi
-
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
 
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
