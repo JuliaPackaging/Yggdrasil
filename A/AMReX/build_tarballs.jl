@@ -20,7 +20,7 @@ if [[ "$target" == *-x86_64-w64-mingw32 ]]; then
     # TODO: This case should not be necessary
     mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64"
+    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI
 else
     mpiopts=
 fi
@@ -34,28 +34,18 @@ make -j$(nproc) install
 # - We can't build with musl since AMReX requires the `fegetexcept` GNU API
 # - We might not want to build `cxxstring_abi="cxx03"` since AMReX requires at least C++14 (C++17 on Windows)
 platforms = [
-    Platform("aarch64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("aarch64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx03", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", cxxstring_abi="cxx11", libc="glibc"),
-    Platform("armv7l", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("armv7l", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("i686", "linux"; cxxstring_abi="cxx03", libc = "glibc"),
-    Platform("i686", "linux"; cxxstring_abi="cxx11", libc = "glibc"),
-    Platform("i686", "windows"; cxxstring_abi="cxx03"),
-    Platform("i686", "windows"; cxxstring_abi="cxx11"),
-    Platform("powerpc64le", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("powerpc64le", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("x86_64", "freebsd"; cxxstring_abi="cxx03"),
-    Platform("x86_64", "freebsd"; cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; cxxstring_abi="cxx03", libc="glibc"),
-    Platform("x86_64", "linux"; cxxstring_abi="cxx11", libc="glibc"),
-    Platform("x86_64", "macos"; cxxstring_abi="cxx03"),
-    Platform("x86_64", "macos"; cxxstring_abi="cxx11"),
-
-    # Platform("x86_64", "windows"; cxxstring_abi="cxx03"), # MPI_CXX not found
-    # Platform("x86_64", "windows"; cxxstring_abi="cxx11"), # MPI_CXX not found
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("i686", "windows")
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd")
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos")
+    Platform("x86_64", "windows"), # MPI_CXX not found
 ]
+platforms = expand_cxxstring_abis(platform)
 
 # The products that we will ensure are always built
 products = [
