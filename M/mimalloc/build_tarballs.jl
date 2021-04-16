@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd mimalloc/
 mkdir -p out/release
 cd out/release/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DMI_BUILD_STATIC=OFF ../..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -MI_BUILD_STATIC=OFF -MI_INSTALL_TOPLEVEL=ON ../..
 make -j ${nproc}
 make -j ${nproc} install
 exit
