@@ -1,0 +1,20 @@
+--- a/io/include/pcl/io/low_level_io.h
++++ b/io/include/pcl/io/low_level_io.h
+@@ -51,7 +51,7 @@
+ # endif
+ # include <io.h>
+ # include <windows.h>
+-# include <BaseTsd.h>
++# include <basetsd.h>
+ using ssize_t = SSIZE_T;
+ #else
+ # include <unistd.h>
+--- a/surface/CMakeLists.txt
++++ b/surface/CMakeLists.txt
+@@ -179,5 +179,5 @@
+   PCL_ADD_INCLUDES("${SUBSYS_NAME}" "${SUBSYS_NAME}/vtk_smoothing" ${VTK_SMOOTHING_INCLUDES})
+ endif()
+ if(WIN32)
+-  target_link_libraries("${LIB_NAME}" Rpcrt4.lib)
++  target_link_libraries("${LIB_NAME}" rpcrt4.lib)
+ endif()
