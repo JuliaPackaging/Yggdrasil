@@ -16,6 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/pcl*
 
+# Patch to simplify CMake checks
+atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
+
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/windows-cases.patch
     atomic_patch -p1 ../patches/pcl_io-link-ws2_32.patch
@@ -24,17 +27,6 @@ fi
 mkdir build && cd build
 
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
-
-FLAGS=(
-    -DHAVE_SSSE3_EXTENSIONS=OFF
-    -DHAVE_SSE4_2_EXTENSIONS=OFF
-    -DHAVE_SSE4_1_EXTENSIONS=OFF
-)
-if [[ "${proc_family}" == "intel" ]]; then
-    FLAGS+=(-DHAVE_SSE2_EXTENSIONS=ON -DHAVE_SSE_EXTENSIONS=ON)
-else
-    FLAGS+=(-DHAVE_SSE2_EXTENSIONS=OFF -DHAVE_SSE_EXTENSIONS=OFF)
-fi
 
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -46,8 +38,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_OPENGL=OFF \
     -DWITH_PCAP=OFF \
     -DPCL_WARNINGS_ARE_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
-    "${FLAGS[@]}"
+    -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
 make install
