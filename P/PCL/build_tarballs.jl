@@ -22,6 +22,7 @@ atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/windows-cases.patch
     atomic_patch -p1 ../patches/pcl_io-link-ws2_32.patch
+    atomic_patch -p1 ../patches/ssize_t-mingw.patch
 fi
 
 mkdir build && cd build
