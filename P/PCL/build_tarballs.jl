@@ -25,7 +25,18 @@ mkdir build && cd build
 
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
 
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+FLAGS=(
+    -DHAVE_SSSE3_EXTENSIONS=OFF
+    -DHAVE_SSE4_2_EXTENSIONS=OFF
+    -DHAVE_SSE4_1_EXTENSIONS=OFF
+)
+if [[ "${proc_family}" == "intel" ]]; then
+    FLAGS+=(-DHAVE_SSE2_EXTENSIONS=ON -DHAVE_SSE_EXTENSIONS=ON)
+else
+    FLAGS+=(-DHAVE_SSE2_EXTENSIONS=OFF -DHAVE_SSE_EXTENSIONS=OFF)
+fi
+
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DWITH_VTK=OFF \
     -DWITH_LIBUSB=OFF \
@@ -34,12 +45,11 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
     -DWITH_QHULL=OFF \
     -DWITH_OPENGL=OFF \
     -DWITH_PCAP=OFF \
-    -DPCL_ENABLE_SSE=OFF \
     -DPCL_WARNINGS_ARE_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    "${FLAGS[@]}"
 
 make -j${nproc}
-
 make install
 """
 
