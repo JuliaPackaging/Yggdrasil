@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add tcsh # build script is in csh
+apk add tcsh # Build script is in csh
 
 cd $WORKSPACE/srcdir/ioapi-3.2/ioapi/
 install_license ../LICENSE
@@ -24,21 +24,30 @@ mkdir $BINDIR
 sed -i 's/-ffast-math /-fPIC /g' Makeinclude* # Get rid of forbidden -ffast-math flag
 sed -i 's/-DNEED_ARGS=1/-DNEED_ARGS=1 -DIOAPI_NCF4=1/g' Makeinclude* # Specify NetCDF v4
 
-if [[ "${target}" == *i686* ]]; then
+if [[ "${nbits}" == 32 ]]; then
     sed -i 's/-m64/-m32/g' Makeinclude* # Specify 32-bit build
 elif [[ "${target}" == *aarch64* ]]; then
     sed -i 's/-m64//g' Makeinclude* # Get rid of x86 flag
 fi
 
+if [[ "${target}" == *mingw* ]]; then
+    # Add missing stdint header.
+    sed -i 's/<stdio.h>/<stdio.h>\n\#include <stdint.h>/g' bufint3.c
+
+    # This sys/wait.h header is not available and doesn't seem to be used.
+    sed -i 's/\#include <sys\/wait.h>//g' systemf.c
+fi
+
 cp Makefile.nocpl Makefile
 cp Makeinclude.Linux2_x86_64gfort Makeinclude.$BIN
 
-make fixed_src
 make # Parallel make (-j > 1) does not work
 
+cp *.h ${includedir} # C header files
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
 
-gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -lnetcdff
+# Convert static library to dynamic library
+gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -L${libdir} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdff
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
@@ -47,7 +56,8 @@ make
 
 cd $BINDIR
 
-rm *.o *.mod
+rm *.o 
+mv *.mod ${includedir} # Move FORTRAN mod files to include dir, they are used by some dependencies
 mv * $bindir # Move executables to bindir
 """
 
@@ -56,7 +66,9 @@ mv * $bindir # Move executables to bindir
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; ),
-    Platform("aarch64", "linux"; libc = "glibc")
+    Platform("aarch64", "linux"; libc = "glibc"),
+    #Platform("x86_64", "windows"),
+    #Platform("i686", "windows")
 ]
 platforms = expand_gfortran_versions(platforms)
 
