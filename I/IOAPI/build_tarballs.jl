@@ -47,7 +47,7 @@ cp *.h ${includedir} # C header files
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
 
 # Convert static library to dynamic library
-gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdff
+gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -L${libdir} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdff
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
