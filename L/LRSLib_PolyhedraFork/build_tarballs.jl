@@ -32,10 +32,10 @@ cp liblrsnash.${dlext} ${libdir}/liblrsnash.${dlext}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:powerpc64le, libc=:glibc),
-    MacOS(:x86_64)
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
 ]
 
 
