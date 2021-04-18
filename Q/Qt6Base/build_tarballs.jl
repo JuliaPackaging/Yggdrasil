@@ -77,7 +77,7 @@ install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSE.LGPLv3
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter(Sys.isapple, supported_platforms()))
+platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
 platforms_macos = [ Platform("x86_64", "macos") ]
 
 # The products that we will ensure are always built
