@@ -26,12 +26,12 @@ if [[ "${target}" == *-mingw* ]]; then
     cp lib/fnmatch.in.h lib/fnmatch.h
     
     make -j${nproc}
-    make install
 else
     ./configure --build=${MACHTYPE} --prefix=$prefix --host=${target}
     make -j${nproc}
     make install
 fi
+install_license ${WORKSPACE}/srcdir/make-*/COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
