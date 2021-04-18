@@ -19,8 +19,8 @@ cd $WORKSPACE/srcdir/make-4.3
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
 if [[ "${target}" == *-mingw* ]]; then
     cp $WORKSPACE/srcdir/Makefile GNUmakefile
-    mkdir ${prefix}/lib
-    mkdir ${prefix}/bin
+    mkdir -p ${prefix}/lib
+    mkdir -p ${bindir}
     cp src/config.h.W32 src/config.h
     cp lib/glob.in.h lib/glob.h
     cp lib/fnmatch.in.h lib/fnmatch.h
