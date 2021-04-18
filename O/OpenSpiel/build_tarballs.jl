@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.5.3"
+julia_version = v"1.6.0"
 
 name = "OpenSpiel"
-version = v"0.3.5"
+version = v"0.3.6"
 
 # Collection of sources required to complete build
 sources = [
