@@ -1,7 +1,5 @@
-diff --git before/grass-7.8.5/general/Makefile after/grass-7.8.5/general/Makefile
-index 2ba7243..0deea9d 100644
---- before/grass-7.8.5/general/Makefile
-+++ after/grass-7.8.5/general/Makefile
+--- before/general/Makefile
++++ after/general/Makefile
 @@ -19,7 +19,6 @@ SUBDIRS = \
  	g.parser \
  	g.pnmcomp \
