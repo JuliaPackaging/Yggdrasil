@@ -39,7 +39,7 @@ install_license ${WORKSPACE}/srcdir/make-*/COPYING
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("make",:make)
 ]
 
