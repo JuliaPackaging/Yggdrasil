@@ -1,0 +1,7 @@
+INCLUDEDIR = /usr/include
+LIBDIR     = /usr/lib
+SHLIB = liblrsnash.so
+# LIBLRSDIR = /path/to/liblrs.so
+
+all:lrsnashlib.c lrsnashlib.h
+	$(CC) -shared -fPIC -O3 -o $(SHLIB) lrsnashlib.c -L$(LIBLRSDIR) -llrs -L${LIBDIR} -lgmp -Wl,-rpath,$(LIBLRSDIR) -DGMP -DMA -DLRS_QUIET -I${INCLUDEDIR}

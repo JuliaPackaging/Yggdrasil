@@ -1,0 +1,11 @@
+--- a/makefile	2018-07-03 13:37:36.000000000 +0900
++++ b/makefile
+@@ -204,7 +204,7 @@ SHLIBBIN=lrs-shared redund-shared lrsnas
+ # Building (linking) the shared library, and relevant symlinks.
+ 
+ ${SHLIB}: ${SHLIBOBJ}
+-	$(CC) -shared -Wl,-soname=$(SONAME) $(SHLIBFLAGS) -o $@ ${SHLIBOBJ} -lgmp
++	$(CC) -shared -Wl,-install_name,$(SONAME) $(SHLIBFLAGS) -o $@ ${SHLIBOBJ} -L${LIBDIR} -lgmp
+ 
+ ${SONAME}: ${SHLIB}
+ 	ln -sf ${SHLIB} ${SONAME}
