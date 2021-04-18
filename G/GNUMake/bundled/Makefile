@@ -1,4 +1,5 @@
-CFLAGS = -mthreads -Wall -std=gnu99 -gdwarf-2 -g3 -O2 -DWINDOWS32 -DHAVE_CONFIG_H -I./src -I./lib -I./src/w32/include -I./src/w32 -I./src/w32/subproc
+CPPFLAGS = -DWINDOWS32 -DHAVE_CONFIG_H -I./src -I./lib -I./src/w32/include -I./src/w32 -I./src/w32/subproc
+CFLAGS = -mthreads -Wall -std=gnu99 -gdwarf-2 -g3 -O2
 
 
 
