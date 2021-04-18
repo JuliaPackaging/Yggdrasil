@@ -31,7 +31,7 @@ else
     make -j${nproc}
     make install
 fi
-install_license ${WORKSPACE}/srcdir/make-*/COPYING.LIB
+install_license ${WORKSPACE}/srcdir/make-*/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
