@@ -5,7 +5,6 @@
  	g.pnmcomp \
  	g.ppmtopng \
 -	g.proj \
-+	#g.proj \
  	g.region \
  	g.remove \
  	g.rename \
