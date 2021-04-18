@@ -28,7 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make -j${nproc}
     make install
 else
-    ./configure --build=${MACHTYPE} --prefix=$prefix --host=${target} --disable-nls
+    ./configure --build=${MACHTYPE} --prefix=$prefix --host=${target}
     make -j${nproc}
     make install
 fi
