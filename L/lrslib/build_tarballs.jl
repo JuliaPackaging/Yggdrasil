@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lrslib*
 extraargs=""
-cflags="-O3 -Wall"
+cflags="-fPIC -O3 -Wall"
 
 # 32bit linux, arm and windows:
 if [[ $target == i686* ]] || [[ $target == arm* ]]; then
@@ -40,6 +40,10 @@ if [[ $target == *mingw* ]]; then
   for file in ${bindir}/{lrs,lrsnash,redund}; do mv $file $file.exe; done
   mv ${prefix}/lib/*lrs*.dll ${libdir}/
 fi
+
+nash_shlib="liblrsnash.${dlext}"
+${CC} -shared ${cflags} -o ${nash_shlib} lrsnashlib.c -L${libdir} -llrs -lgmp -Wl,-rpath,${libdir} -DMA -DGMP -DLRS_QUIET -I${includedir}
+mv ${nash_shlib} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -52,6 +56,7 @@ products = [
     ExecutableProduct("lrsnash", :lrsnash)
     ExecutableProduct("redund", :redund)
     LibraryProduct("liblrs", :liblrs)
+    LibraryProduct("liblrsnash", :liblrsnash)
 ]
 
 # Dependencies that must be installed before this package can be built
