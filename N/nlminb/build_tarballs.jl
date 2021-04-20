@@ -14,54 +14,53 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/nlminb.f
 mkdir build && cd build
+FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_INSTALL_PREFIX=${prefix}
+       -DCMAKE_BUILD_TYPE=Release
+       -DBUILD_SHARED_LIBS=ON)
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-             -DCMAKE_BUILD_TYPE=Release
-             -DBUILD_SHARED_LIBS=ON)
+if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+    FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas64_.${dlext}")
+    # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
+    # replacement.
+    # FLAGS+=(-DLAPACK_LIBRARY="${libdir}/libopenblas64_.${dlext}") # not used
 
-if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
+    SYMB_DEFS=()
+    for sym in sasum dasum snrm2 dnrm2 sdot ddot sgemv dgemv cgemv zgemv sgemm dgemm cgemm zgemm ssyrk dsyrk cherk zherk; do
+        SYMB_DEFS+=("-D${sym}=${sym}_64")
+    done
+    # if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
+    #     FLAGS+=(-DALLOW_OPENBLAS_MACOS=ON)
+    # fi
+
+    for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cgels cgelsd cgemm cgemv cgeqrf cgesdd cgesv cgesvd cgesvx cgetrf cgetri cgetrs cgges cggev cgtsv cgtsvx cheev cheevd cherk clangb clange clanhe clansy cpbtrf cpocon cposv cposvx cpotrf cpotri cpotrs ctrcon ctrsyl ctrtri ctrtrs cungqr dasum ddot dgbcon dgbsv dgbsvx dgbtrf dgbtrs dgecon dgees dgeev dgeevx dgehrd dgels dgelsd dgemm dgemv dgeqrf dgesdd dgesv dgesvd dgesvx dgetrf dgetri dgetrs dgges dggev dgtsv dgtsvx dlahqr dlangb dlange dlansy dlarnv dnrm2 dorgqr dpbtrf dpocon dposv dposvx dpotrf dpotri dpotrs dstedc dsyev dsyevd dsyrk dtrcon dtrevc dtrsyl dtrtri dtrtrs ilaenv sasum sdot sgbcon sgbsv sgbsvx sgbtrf sgbtrs sgecon sgees sgeev sgeevx sgehrd sgels sgelsd sgemm sgemv sgeqrf sgesdd sgesv sgesvd sgesvx sgetrf sgetri sgetrs sgges sggev sgtsv sgtsvx slahqr slangb slange slansy slarnv snrm2 sorgqr spbtrf spocon sposv sposvx spotrf spotri spotrs sstedc ssyev ssyevd ssyrk strcon strevc strsyl strtri strtrs zgbcon zgbsv zgbsvx zgbtrf zgbtrs zgecon zgees zgeev zgeevx zgehrd zgels zgelsd zgemm zgemv zgeqrf zgesdd zgesv zgesvd zgesvx zgetrf zgetri zgetrs zgges zggev zgtsv zgtsvx zheev zheevd zherk zlangb zlange zlanhe zlansy zpbtrf zpocon zposv zposvx zpotrf zpotri zpotrs ztrcon ztrsyl ztrtri ztrtrs zungqr; do
+        SYMB_DEFS+=("-D${sym}=${sym}_64")
+    done
+
+    export CXXFLAGS="${SYMB_DEFS[@]}"
+    export CCFLAGS="${SYMB_DEFS[@]}"
+    # Force the configuration parameter ARMA_BLAS_LONG to be true, as in our
+    # setting 64-bit systems are going to need a 64-bit integer to be used for
+    # Armadillo's `blas_int` type.
+    # sed -i 's|// #define ARMA_BLAS_LONG$|#define ARMA_BLAS_LONG|' ../include/armadillo_bits/config.hpp.cmake
+    # cat ../include/armadillo_bits/config.hpp.cmake
 else
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    # special case for CMake to discover MPI_Fortran
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DCMAKE_SHARED_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DMPI_Fortran_LINK_FLAGS="-Wl,-rpath -Wl,/workspace/destdir/lib -Wl,--enable-new-dtags -L/workspace/destdir/lib -Wl,-L/opt/${target}/${target}/sys-root/usr/lib64 -Wl,-lpthread -Wl,-lrt")
-  else
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
-  fi
+    # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
+    # replacement.
+    FLAGS+=(-DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}")
 fi
 
-OPENBLAS=(-lopenblas)
-FFLAGS=(-cpp -ffixed-line-length-none)
-
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-  OPENBLAS=(-lopenblas64_)
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    OPENBLAS+=(-lgomp)
-  fi
-  syms=(caxpy cbdsqr ccopy cdotc cdotu cgbmv cgbtrf cgemm cgemv cgerc cgeru cgetrf cgetrs chbmv chemm chemv cher cher2 cher2k cherk chetrd clacgv clacpy cladiv clanhs clarfg clartg claset clasr classq claswp cpbtrf cpotrf cpttrf crot csbmv cscal csscal cswap csymm csyr2k csyrk ctbtrs ctrmm ctrmv ctrsm ctrsv ctrtrs dasum daxpy dsbmv dbdsqr dcopy ddot dgbmv dgbtrf dgemm dgemv dger dgetrf dgetrs dhbmv disnan dlabad dlacpy dlae2 dlaebz dlaed4 dlaev2 dlagtf dlagts dlahqr dlamc3 dlamch dlange dlanst dlanv2 dlapy2 dlapy3 dlaqr0 dlaqr1 dlaqr3 dlaqr4 dlarfg dlarfx dlarnv dlarra dlarrb dlarrc dlarrd dlarrk dlarrv dlartg dlaruv dlascl dlaset dlasq2 dlasr dlasrt dlassq dlaswp dlasy2 dnrm2 dpbtrf dpotrf dpttrf drot dscal dstedc dsteqr dsterf dswap dsymm dsymv dsyr dsyr2 dsyr2k dsyrk dsytrd dtbtrs dtrmm dtrmv dtrsm dtrsv dtrtrs dzasum dznrm2 dzsum1 icamax icmax1 idamax ieeeck ilaenv isamax izamax izmax1 lsame lsamen sasum saxpy sbdsqr scasum scnrm2 scopy scsum1 sdot sgbmv sgbtrf sgemm sgemv sger sgetrf sgetrs shbmv sisnan slabad slacpy slae2 slaebz slaed4 slaev2 slagtf slagts slahqr slamc3 slamch slange slanst slanv2 slapy2 slapy3 slaqr0 slaqr1 slaqr3 slaqr4 slarfg slarfx slarnv slarra slarrb slarrc slarrd slarrk slarrv slartg slaruv slascl slaset slasq2 slasr slasrt slassq slaswp slasy2 snrm2 spbtrf spotrf spttrf srot ssbmv sscal sstedc ssteqr ssterf sswap ssymm ssymv ssyr ssyr2 ssyr2k ssyrk ssytrd stbtrs strmm strmv strsm strsv strtrs xerbla zaxpy zbdsqr zcopy zdotc zdotu zdscal zgbmv zgbtrf zgemm zgemv zgerc zgeru zgetrf zgetrs zhbmv zhemm zhemv zher zher2 zher2k zherk zhetrd zlacgv zlacpy zladiv zlanhs zlarfg zlartg zlaset zlasr zlassq zlaswp zpbtrf zpotrf zpttrf zrot zdbmv zscal zswap zsymm zsyr2k zsyrk ztbtrs ztrmm ztrmv ztrsm ztrsv ztrtrs)
-  for sym in ${syms[@]}
-  do
-    FFLAGS+=("-D${sym}=${sym}_64")
-    FFLAGS+=("-D${sym}_=${sym}_64_")  # due to some evil #defines in SCALAPACK
-    FFLAGS+=("-D${sym^^}=${sym}_64")
-  done
-
-  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
-                -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\")
-fi
-
-CMAKE_FLAGS+=(-DBLAS_LIBRARIES=\"${OPENBLAS[*]}\" \
-              -DLAPACK_LIBRARIES=\"${OPENBLAS[*]}\")
-# export CDEFS="Add_"
-
-mkdir build && cd build
-cmake .. "${CMAKE_FLAGS[@]}"
-
-make -j${nproc} all
+cmake .. "${FLAGS[@]}"
+make -j${nproc}
 make install
+
+# Armadillo links against a _very_ specific version of OpenBLAS on macOS by
+# default:
+if [[ ${target} == *apple* ]]; then
+    # Figure out what version it probably latched on to:
+    OPENBLAS_LINK=$(otool -L ${libdir}/libnlminb.dylib | grep libopenblas64_ | awk '{ print $1 }')
+    install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${libdir}/libnlminb.dylib
+fi
 """
 # -DBLAS_LIBRARIES="-l${LIBOPENBLAS}"
 
@@ -70,8 +69,8 @@ make install
 # platforms = expand_gfortran_versions(supported_platforms()) # build on all supported platforms
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"),
     Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
 ]
