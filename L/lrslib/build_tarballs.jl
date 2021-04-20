@@ -29,7 +29,7 @@ if [[ $target == *apple* ]]; then
   sed -i -e 's#-Wl,-soname=#-install_name #' makefile
   extraargs="SONAME=liblrs.0.dylib SHLINK=liblrs.dylib SHLIB=liblrs.0.0.0.dylib"
 elif [[ $target == *freebsd* ]]; then
-  export CC="gcc $LDFLAGS"
+  export CC="gcc"
 elif [[ $target == *mingw* ]]; then
   extraargs="SONAME=liblrs-0.dll SHLINK=liblrs.dll SHLIB=liblrs-0-0-0.dll"
   cflags="$cflags -DSIGNALS -DTIMES"
