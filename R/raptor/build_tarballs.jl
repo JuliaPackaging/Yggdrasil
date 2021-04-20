@@ -34,19 +34,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("integrator.o", :integrator),
-    FileProduct("main.o", :main),
-    FileProduct("rcarry.o", :rcarry),
-    FileProduct("metric.o", :metric),
-    FileProduct("GRmath.o", :GRmath),
-    FileProduct("grmhd.o", :grmhd),
-    FileProduct("j_nu.o", :j_nu),
-    FileProduct("utilities.o", :utilities),
     ExecutableProduct("RAPTOR", :RAPTOR),
-    FileProduct("radiative_transfer.o", :radiative_transfer),
-    FileProduct("raptor_harm_model.o", :raptor_harm_model),
-    FileProduct("newtonraphson.o", :newtonraphson),
-    FileProduct("core.o", :core)
 ]
 
 # Dependencies that must be installed before this package can be built
