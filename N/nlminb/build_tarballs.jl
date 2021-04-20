@@ -6,17 +6,28 @@ version = v"0.1.0"
 # Collection of sources required to build NLopt
 sources = [
     GitSource("https://github.com/geo-julia/nlminb.f.git",
-              "1aba02cd2fe994ebb52b27caea1335a4189c1d45"), # v0.1.0
+              "6b2d460b866911e8bfca32b1217c08fb78c3111f"), # v0.1.0
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/nlminb.f
-cd lib && tar -xvzf blas-3.8.0.tgz \
-    && cd BLAS-3.8.0 && make && cd ../../
 mkdir build 
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ..
+
+if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+    OPENBLAS="${libdir}/libopenblas64_.${dlext}"
+else
+    OPENBLAS="${libdir}/libopenblas.${dlext}"
+fi
+
+# -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
+              -DBLAS_LIBRARIES=${OPENBLAS}
+              -DCMAKE_BUILD_TYPE=Release
+              )
+        
+cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
 make install
 """
@@ -24,7 +35,15 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms()) # build on all supported platforms
+# platforms = expand_gfortran_versions(supported_platforms()) # build on all supported platforms
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
+]
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -33,6 +52,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("OpenBLAS_jll"),
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
