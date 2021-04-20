@@ -12,11 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd raptor/
+cd $WORKSPACE/srcdir/raptor/
 make CPU="1" CFLAGS="-fopenmp -std=c99 -I{includedir} -Wno-unused-result" LDFLAGS="-lm -lgsl -lgslcblas"
-cp RAPTOR *.o run.sh model.in dump040 ${prefix}/
-exit
+cp RAPTOR ${bindir}/.
 """
 
 # These are the platforms we will build for by default, unless further
