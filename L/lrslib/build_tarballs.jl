@@ -41,9 +41,7 @@ if [[ $target == *mingw* ]]; then
   mv ${prefix}/lib/*lrs*.dll ${libdir}/
 fi
 
-nash_shlib="liblrsnash.${dlext}"
-${CC} -shared ${cflags} -o ${nash_shlib} lrsnashlib.c -L${libdir} -llrs -lgmp -Wl,-rpath,${libdir} -DMA -DGMP -DLRS_QUIET -I${includedir}
-mv ${nash_shlib} ${libdir}
+${CC} -shared ${cflags} -o "${libdir}/liblrsnash.${dlext}" lrsnashlib.c -L${libdir} -llrs -lgmp -Wl,-rpath,${libdir} -DMA -DGMP -DLRS_QUIET -I${includedir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -66,4 +64,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
