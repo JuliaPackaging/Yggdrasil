@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/raptor/
-make CPU="1" CFLAGS="-fopenmp -std=c99 -I{includedir} -Wno-unused-result" LDFLAGS="-lm -lgsl -lgslcblas"
+make CPU="1" CFLAGS="-fopenmp -std=c99 -I${includedir} -Wno-unused-result" LDFLAGS="-lm -lgsl -lgslcblas"
 cp RAPTOR ${bindir}/.
 """
 
