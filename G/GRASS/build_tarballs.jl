@@ -30,18 +30,18 @@ done
 --with-python=no \
 --with-cxx \
 --with-lapack --with-lapack-includes=${prefix}/include \
---with-tiff \
---with-png \
---with-sqlite \
+--with-tiff --with-tiff-includes=${prefix}/include \
+--with-png --with-png-includes=${prefix}/include \
+--with-sqlite --with-sqlite-includes=${prefix}/include \
 --with-opengl=no \
---with-fftw \
+--with-fftw --with-fftw-includes=${prefix}/include \
 --with-cairo --with-cairo-includes=${prefix}/include/cairo --with-cairo-ldflags=-lfontconfig \
 --with-freetype --with-freetype-includes=${prefix}/include/freetype2 \
 --with-regex \
---with-zstd \
+--with-zstd --with-zstd-includes=${prefix}/include \
 --with-geos=${bindir}/geos-config \
 --with-gdal \
---with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include/proj
+--with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
 
  make -j${nproc}
  make install
