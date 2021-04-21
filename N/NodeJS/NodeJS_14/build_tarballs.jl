@@ -1,16 +1,16 @@
 using BinaryBuilder
 
-name = "NodeJS"
-version = v"14.16.0"
+name = "NodeJS_14"
+version = v"14.16.1"
 
 url_prefix = "https://nodejs.org/dist/v$version/node-v$version"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "7212031d7468718d7c8f5e1766380daaabe09d54611675338e7a88a97c3e31b6"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "2b78771550f8a3e6e990d8e60e9ade82c7a9e2738b6222e92198bcd5ea857ea6"; unpack_target = "aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "2339b4b1a8db39348cb1877b0cfdee3b2ef2b730f461ef7263610cbaaea5232a"; unpack_target = "powerpc64le-linux-gnu"),
-    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "14ec767e376d1e2e668f997065926c5c0086ec46516d1d45918af8ae05bd4583"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-win-x64.zip", "716045c2f16ea10ca97bd04cf2e5ef865f9c4d6d677a9bc25e2ea522b594af4f"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-win-x86.zip", "9699067581e0d333b13158d4ebb27b6357444564548aaa220d821cdc6d840bd2"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "068400cb9f53d195444b9260fd106f7be83af62bb187932656b68166a2f87f44"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "58cb307666ed4aa751757577a563b8a1e5d4ee73a9fac2b495e5c463682a07d1"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "de6ccb9bf08520939cc2ae0507634015981604b5eb6912d031d4b7fe146f0de4"; unpack_target = "powerpc64le-linux-gnu"),
+    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "b762b72fc149629b7e394ea9b75a093cad709a9f2f71480942945d8da0fc1218"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-win-x64.zip", "e469db37b4df74627842d809566c651042d86f0e6006688f0f5fe3532c6dfa41"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-win-x86.zip", "cfb3535a172fb792a63814deffde405466902359bedfbd884188f6fc56f97d64"; unpack_target = "i686-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
