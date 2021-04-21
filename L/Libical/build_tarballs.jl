@@ -17,7 +17,7 @@ cd libical-*
 
 apk add glib-dev libxml2-dev
 
-# Don't try this at home, it's evil
+# Don't try this at home, it's bad
 ln -s /opt/${host_target}/${host_target}/sys-root/usr/lib/libc.so /usr/lib/libc.so
 
 FLAGS=(
