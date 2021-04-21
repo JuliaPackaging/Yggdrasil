@@ -12,12 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libavtp-*
+cd $WORKSPACE/srcdir/libavtp-*
 mkdir build
 cd build
 meson --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja
+ninja -j${nproc}
 ninja install
 """
 
