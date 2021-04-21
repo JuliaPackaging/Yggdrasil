@@ -29,14 +29,11 @@ FCFLAGS="-fPIC -fno-optimize-sibling-calls -O2 ${FLAGS}"
 gfortran ${FCFLAGS} -c src/portsrc.f -o src/portsrc.o 
 gfortran ${FCFLAGS} -c src/d1mach.f -o src/d1mach.o 
 gcc ${CCFLAGS} -c src/port2.c -o src/port.o
-gfortran -shared -static-libgcc -lm -o libnlminb.${dlext} src/portsrc.o src/d1mach.o src/port.o lib/BLAS-3.8.0/blas_LINUX.a
-cp -L *.${dlext} ${libdir}
+gfortran -shared -static-libgcc -lm -o ${libdir}/libnlminb.${dlext} src/portsrc.o src/d1mach.o src/port.o lib/BLAS-3.8.0/blas_LINUX.a
 """
-# -DBLAS_LIBRARIES="-l${LIBOPENBLAS}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = expand_gfortran_versions(supported_platforms()) # build on all supported platforms
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
@@ -47,12 +44,6 @@ platforms = [
 platforms = expand_gfortran_versions(platforms)
 platforms = platforms[2:end]
 
-## Linux x86_64 {libc=glibc, libgfortran_version=3.0.0}
-# This version not work: 
-# /blas_LINUX.a(dnrm2.o): relocation R_X86_64_PC32 against undefined symbol
-# `sqrt@@GLIBC_2.2.5' can not be used when making a shared object; recompile
-# with -fPIC/
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libnlminb", :libnlminb),
@@ -60,7 +51,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency("OpenBLAS_jll"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
