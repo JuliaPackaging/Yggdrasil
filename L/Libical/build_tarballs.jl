@@ -36,6 +36,7 @@ FLAGS=(
     export PKG_CONFIG_SYSROOT_DIR="/usr"
     export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
     export LDFLAGS="-L/usr/lib"
+    export ICU_BASE="${prefix}"
     cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
         "${FLAGS[@]}" \
