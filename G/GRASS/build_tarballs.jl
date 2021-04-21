@@ -24,6 +24,12 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
+#need a posix regex
+if [[ "${target}" == *-mingw* ]]; then
+	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
+	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
+fi
+
 ./configure \
 --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
 --enable-shared \
@@ -43,8 +49,13 @@ done
 --with-gdal \
 --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
 
- make -j${nproc}
- make install
+make -j${nproc}
+make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Cover up the traces of the hack
+    rm ${prefix}/include/regex.h
+fi
 
 """
 
