@@ -45,6 +45,13 @@ platforms = [
     Platform("i686", "windows"),
 ]
 platforms = expand_gfortran_versions(platforms)
+platforms = platforms[2:end]
+
+## Linux x86_64 {libc=glibc, libgfortran_version=3.0.0}
+# This version not work: 
+# /blas_LINUX.a(dnrm2.o): relocation R_X86_64_PC32 against undefined symbol
+# `sqrt@@GLIBC_2.2.5' can not be used when making a shared object; recompile
+# with -fPIC/
 
 # The products that we will ensure are always built
 products = [
@@ -53,7 +60,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    # Dependency("OpenBLAS_jll"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
