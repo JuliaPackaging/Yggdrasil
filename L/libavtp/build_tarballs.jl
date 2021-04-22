@@ -30,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     BuildDependency(PackageSpec(name="cmocka_jll", uuid="f83fd561-6387-5ecc-9835-b38c8eaffb11"))
 ]
 
