@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd libical-*
 
-apk add glib-dev libxml2-dev
+apk add glib-dev libxml2-dev icu-dev
 
 # Don't try this at home, it's bad
 ln -s /opt/${host_target}/${host_target}/sys-root/usr/lib/libc.so /usr/lib/libc.so
@@ -27,6 +27,7 @@ FLAGS=(
     -DGOBJECT_INTROSPECTION=false
     -DLIBICAL_BUILD_TESTING=false
     -DWITH_CXX_BINDINGS=false
+    -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH="FALSE"
 )
 
 # cross compiling libical requires a binary from the native build
@@ -36,9 +37,7 @@ FLAGS=(
     export PKG_CONFIG_SYSROOT_DIR="/usr"
     export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
     export LDFLAGS="-L/usr/lib"
-    apk add icu
-    apk add icu-dev
-    ICU_BASE="/usr" cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
+    cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
         "${FLAGS[@]}" \
         ..
