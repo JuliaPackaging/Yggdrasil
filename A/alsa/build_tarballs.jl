@@ -3,17 +3,20 @@
 using BinaryBuilder
 
 name = "alsa"
-version = v"1.2.1-1"
+version = v"1.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.1.1.tar.bz2",
-                  "c95ac63c0aad43a6ac457d960569096b0b2ef72dc4e3737e77e3e2de87022cec"),
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$version.tar.bz2",
+                  "f7554be1a56cdff468b58fc1c29b95b64864c590038dd309c7a978c7116908f7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/alsa-lib*/
+# TODO: remove for version >= 1.2.5
+atomic_patch -p1 $WORKSPACE/srcdir/patches/plugin_dir_no_DL.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
