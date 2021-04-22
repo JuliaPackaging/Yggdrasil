@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd libical-*
 
-apk add glib-dev libxml2-dev icu-dev
+apk add glib-dev libxml2-dev
 
 # Don't try this at home, it's bad
 ln -s /opt/${host_target}/${host_target}/sys-root/usr/lib/libc.so /usr/lib/libc.so
@@ -78,6 +78,7 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("XML2_jll"),
     Dependency("ICU_jll"),
+    HostBuildDependency("ICU_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
