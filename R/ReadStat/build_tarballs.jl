@@ -5,8 +5,8 @@ name = "ReadStat"
 version = v"1.1.5"
 
 sources = [
-    "https://github.com/WizardMac/ReadStat.git" =>
-    "69f55186ae615a14a3367ad5cd08b7829aa8f308",
+    GitSource("https://github.com/WizardMac/ReadStat.git",
+              "69f55186ae615a14a3367ad5cd08b7829aa8f308"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,8 +41,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libiconv_jll",
-    "Zlib_jll",
+    Dependency("Libiconv_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
