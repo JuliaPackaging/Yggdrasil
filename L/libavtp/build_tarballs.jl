@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libavtp-*
 mkdir build
 cd build
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dtests=disabled
+meson --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja -j${nproc}
 ninja install
 """
@@ -31,6 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    BuildDependency(PackageSpec(name="cmocka_jll", uuid="f83fd561-6387-5ecc-9835-b38c8eaffb11"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
