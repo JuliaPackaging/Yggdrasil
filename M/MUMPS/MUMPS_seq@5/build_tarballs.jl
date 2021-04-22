@@ -27,7 +27,8 @@ make_args+=(OPTF=-O3
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lopenblas"
+            LAPACK="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
