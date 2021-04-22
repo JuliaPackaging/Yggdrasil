@@ -78,6 +78,7 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("XML2_jll"),
     Dependency("ICU_jll"),
+    Dependency("Libffi_jll"),
     HostBuildDependency("ICU_jll"),
 ]
 
