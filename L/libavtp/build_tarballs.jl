@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libavtp-*
 mkdir build
 cd build
-meson --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dtests=disabled
 ninja -j${nproc}
 ninja install
 """
