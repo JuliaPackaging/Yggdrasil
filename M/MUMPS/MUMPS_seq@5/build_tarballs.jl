@@ -34,7 +34,7 @@ if [[ "${target}" == *-apple* ]]; then
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"
