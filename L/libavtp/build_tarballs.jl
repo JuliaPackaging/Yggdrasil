@@ -30,8 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="cmocka_jll", uuid="f83fd561-6387-5ecc-9835-b38c8eaffb11"))
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
