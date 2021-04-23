@@ -7,7 +7,7 @@ version = v"3.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "73c2cdfcaf2a22880ddf42a866ebd4614d424410")
+    ArchiveSource("https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.0.1.tar.gz", "9cd984bb6b0a9572dd4a373b1fab60bc4c992a52ec5c68328fe0f48f194ba3c0")
 ]
 
 # Bash recipe for building across all platforms
