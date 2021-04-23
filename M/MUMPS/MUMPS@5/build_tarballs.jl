@@ -1,20 +1,17 @@
 using BinaryBuilder
 
 name = "MUMPS"
-version = v"5.2.1"
+version = v"5.4.0"
 
-# Collection of sources required to build PARMETIS.
-# The patch prevents building the source of METIS that ships with PARMETIS;
-# we rely on METIS_jll instead.
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.2.1.tar.gz",
-                "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
+                "c613414683e462da7c152c131cebf34f937e79b30571424060dd673368bbf627"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/MUMPS_5.2.1
+cd $WORKSPACE/srcdir/MUMPS*
 
 OPENBLAS=(-lopenblas)
 FFLAGS=()
@@ -56,7 +53,7 @@ if [[ "${target}" == *-apple* ]]; then
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"
