@@ -7,18 +7,24 @@ version = v"3.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "4a84390282584957ffaf1697c411f9ae7e420f2f")
+    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.0.1.tar.gz", "6d14a8df938bbbd55dd6e55b24c527fe9323fe6a45f704e56967dfbf477cecc1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/openexr*
 mkdir build
-cd build
-cmake -DOPENEXR_INSTALL_EXAMPLES=OFF -DOPENEXR_INSTALL_TOOLS=OFF -DOPENEXR_BUILD_UTILS=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../openexr/
-make -j
+cd build/
+cmake \
+    -DBUILD_TESTING=OFF \
+    -DOPENEXR_INSTALL_TOOLS=OFF \
+    -DOPENEXR_INSTALL_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+make -j${nproc}
 make install
-install_license ../openexr/LICENSE.md 
 exit
 """
 
@@ -41,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
