@@ -504,7 +504,7 @@ index b670244a..5c9b88af 100644
  	if err := cli.list(resourceAuthRequest, &authRequests); err != nil {
  		return result, fmt.Errorf("failed to list auth requests: %v", err)
 diff --git a/storage/memory/memory.go b/storage/memory/memory.go
-index 82264205..3ebc5651 100644
+index 82264205..7f09e546 100644
 --- a/storage/memory/memory.go
 +++ b/storage/memory/memory.go
 @@ -69,7 +69,7 @@ func (s *memStorage) tx(f func()) {
@@ -516,22 +516,33 @@ index 82264205..3ebc5651 100644
  	s.tx(func() {
  		for id, a := range s.authCodes {
  			if now.After(a.Expiry) {
-@@ -95,6 +95,13 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
+@@ -95,6 +95,24 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
  				result.DeviceTokens++
  			}
  		}
-+		stale_refresh_token_cutoff := now.Add(-unusedRefreshTokensValidFor)
++		staleRefreshTokenCutoff := now.Add(-unusedRefreshTokensValidFor)
 +		for id, a := range s.refreshTokens {
-+			if stale_refresh_token_cutoff.After(a.LastUsed) {
-+				delete(s.refreshTokens, id)
-+				result.RefreshTokens++
++			if staleRefreshTokenCutoff.After(a.LastUsed) {
++				// do not delete if this is the primary refresh token linked to offline session
++				o, err := s.GetOfflineSessions(a.Claims.UserID, a.ConnectorID)
++
++				if err != nil {
++					s.logger.Errorf("failed to fetch offline session for user_id %v, connector_id %v: %v", a.Claims.UserID, a.ConnectorID, err)
++				} else {
++					if o.Refresh[a.ClientID].ID == id {
++						s.logger.Debugf("not deleting expired primary refresh token")
++					} else {
++						delete(s.refreshTokens, id)
++						result.RefreshTokens++
++					}
++				}
 +			}
 +		}
  	})
  	return result, nil
  }
 diff --git a/storage/sql/crud.go b/storage/sql/crud.go
-index 4451e5c5..ad1f0093 100644
+index 4451e5c5..a8c1aa16 100644
 --- a/storage/sql/crud.go
 +++ b/storage/sql/crud.go
 @@ -84,7 +84,7 @@ type scanner interface {
@@ -543,22 +554,69 @@ index 4451e5c5..ad1f0093 100644
  	result := storage.GCResult{}
  
  	r, err := c.Exec(`delete from auth_request where expiry < $1`, now)
-@@ -119,6 +119,15 @@ func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
+@@ -119,6 +119,26 @@ func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
  		result.DeviceTokens = n
  	}
  
-+	stale_refresh_token_cutoff := now.Add(-unusedRefreshTokensValidFor)
-+	r, err = c.Exec(`delete from refresh_token where last_used < $1`, stale_refresh_token_cutoff)
++	staleRefreshTokenCutoff := now.Add(-unusedRefreshTokensValidFor)
++	staleRefreshTokens, err := c.ListStaleRefreshTokens(staleRefreshTokenCutoff)
 +	if err != nil {
 +		return result, fmt.Errorf("gc refresh_token: %v", err)
 +	}
-+	if n, err := r.RowsAffected(); err == nil {
-+		result.RefreshTokens = n
++	for _, t := range staleRefreshTokens {
++		// do not delete if this is the primary refresh token linked to offline session
++		o, err := c.GetOfflineSessions(t.Claims.UserID, t.ConnectorID)
++		if err != nil {
++			c.logger.Errorf("failed to fetch offline session for user_id %v, connector_id %v: %v", t.Claims.UserID, t.ConnectorID, err)
++		} else {
++			if o.Refresh[t.ClientID].ID == t.ID {
++				c.logger.Debugf("not deleting expired primary refresh token")
++			} else {
++				c.DeleteRefresh(t.ID)
++				result.RefreshTokens++
++			}
++		}
 +	}
 +
  	return result, err
  }
  
+@@ -365,6 +385,35 @@ func getRefresh(q querier, id string) (storage.RefreshToken, error) {
+ 	`, id))
+ }
+ 
++func (c *conn) ListStaleRefreshTokens(lastUsedTime time.Time) ([]storage.RefreshToken, error) {
++	rows, err := c.Query(`
++		select
++			id, client_id, scopes, nonce,
++			claims_user_id, claims_username, claims_preferred_username,
++			claims_email, claims_email_verified, claims_groups,
++			connector_id, connector_data,
++			token, created_at, last_used
++		from refresh_token where last_used < $1;
++	`, lastUsedTime)
++	if err != nil {
++		return nil, fmt.Errorf("query: %v", err)
++	}
++	defer rows.Close()
++
++	var tokens []storage.RefreshToken
++	for rows.Next() {
++		r, err := scanRefresh(rows)
++		if err != nil {
++			return nil, err
++		}
++		tokens = append(tokens, r)
++	}
++	if err := rows.Err(); err != nil {
++		return nil, fmt.Errorf("scan: %v", err)
++	}
++	return tokens, nil
++}
++
+ func (c *conn) ListRefreshTokens() ([]storage.RefreshToken, error) {
+ 	rows, err := c.Query(`
+ 		select
 diff --git a/storage/storage.go b/storage/storage.go
 index c308ac46..96989b83 100644
 --- a/storage/storage.go
