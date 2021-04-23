@@ -358,8 +358,10 @@ function gcc_script(compiler_target::Platform)
         # On darwin, cilk doesn't build on 5.X-7.X.  :(
         export enable_libcilkrts=no
 
-        # GCC doesn't know how to use availability macros properly, so tell it not to use `clock_gettime()`
+        # GCC doesn't know how to use availability macros properly, so tell it not to use functions
+        # that are available only starting in later macOS versions such as `clock_gettime` or `mkostemp`
         export ac_cv_func_clock_gettime=no
+        export ac_cv_func_mkostemp=no
     fi
 
     # Link dependent packages into gcc build root:
