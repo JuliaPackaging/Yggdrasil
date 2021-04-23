@@ -119,5 +119,19 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+products = [
+    ExecutableProduct("nvdisasm", :nvdisasm),
+    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
+    LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
+    LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
+    LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
+    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
+    LibraryProduct(["libcurand", "curand64_10"], :libcurand),
+    LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
+    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
+    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+]
+
 platforms = [Platform("x86_64", "linux"),
              Platform("x86_64", "windows")]
