@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Imath
+cd $WORKSPACE/srcdir/Imath*
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
