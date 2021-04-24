@@ -5,7 +5,7 @@ version = v"0.5.4"
 
 # Collection of sources required to build openspecfun
 sources = [
-    GitSource("https://github.com/JuliaMath/openspecfun/",
+    GitSource("https://github.com/JuliaMath/openspecfun.git",
               "d22094a030caf4042701d9c8eebd7c5236d3b3c9")
 ]
 
