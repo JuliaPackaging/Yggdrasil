@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/libudfread-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-install_licence COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
