@@ -22,7 +22,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "aarch64", supported_platforms())
+platforms = filter!(p -> arch(p) != "aarch64", supported_platforms(; experimental=true))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
