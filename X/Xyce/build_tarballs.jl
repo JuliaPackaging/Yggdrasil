@@ -20,9 +20,6 @@ cd $WORKSPACE/srcdir
 apk add flex-dev
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
-if [[ $target != i686-linux-gnu ]] && [[ $target != x86_64-linux-gnu ]] ; then
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
-fi
 ./bootstrap
 cd ..
 mkdir buildx
