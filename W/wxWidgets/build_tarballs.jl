@@ -22,6 +22,8 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc} 
 make install
+cd docs
+install_license preamble.txt licence.txt licendoc.txt gpl.txt lgpl.txt xserver.txt
 """
 
 # These are the platforms we will build for by default, unless further
