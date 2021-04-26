@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "wxWidgets"
-version = v"3.1.4"
+version = v"3.1.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$(version)/wxWidgets-$(version).tar.bz2",
-                  "3ca3a19a14b407d0cdda507a7930c2e84ae1c8e74f946e0144d2fa7d881f1a94")
+                  "725455d6324baa808259b56a42199237327e0638")
 ]
 
 # Bash recipe for building across all platforms
