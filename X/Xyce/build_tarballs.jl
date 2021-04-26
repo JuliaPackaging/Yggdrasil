@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
-
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
 cd $WORKSPACE/srcdir
 apk add flex-dev
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
