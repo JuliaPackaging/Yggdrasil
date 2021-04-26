@@ -5,8 +5,8 @@ version = v"3.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$(version)/wxWidgets-$(version).tar.bz2",
-                  "725455d6324baa808259b56a42199237327e0638")
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v$(version).tar.gz",
+                  "e8fd5f9fbff864562aa4d9c094f898c97f5e1274c90f25beb0bfd5cb61319dea")
 ]
 
 # Bash recipe for building across all platforms
