@@ -37,17 +37,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-   
-platforms = filter(p -> (!Sys.iswindows(p) &&
-                         !Sys.isapple(p) &&
-                         !Sys.isfreebsd(p))
-                   , supported_platforms())
 
-platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms)
+platform = [Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx11", libgfortran_version=v"4.0.0")]
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libADMS", :libADMS),
+    LibraryProduct("libNeuronModels", :libNeuronModels),
     LibraryProduct("libxyce", :libxyce),
     ExecutableProduct("Xyce", :Xyce)
 ]
@@ -62,4 +58,4 @@ dependencies = [
                 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platform, products, dependencies; preferred_gcc_version = v"7.1.0")
