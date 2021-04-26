@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "finufft"
-version = v"2.0.2"
+version = v"2.0.3"
 
 # Collection of sources required to complete build
 sources = [
