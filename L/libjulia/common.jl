@@ -25,7 +25,7 @@ function build_julia(ARGS, version)
     checksums = Dict(
         v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
-        v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
+        v"1.5.4" => "852122bf1bdefd39307b1dd2aa546e3885d76ede7c07cb04d90814b9510ea9f9",
         v"1.6.0" => "c253360d29abb9a3a9e6e01493e0f7bb537d88014fd58ac561b5ba30fcb44cad",
     )
 
