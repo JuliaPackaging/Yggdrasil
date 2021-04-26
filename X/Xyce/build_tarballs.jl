@@ -39,6 +39,8 @@ platform = [Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx11", lib
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libADMS", :libADMS),
+    LibraryProduct("libNeuronModels", :libNeuronModels),
     LibraryProduct("libxyce", :libxyce),
     ExecutableProduct("Xyce", :Xyce)
 ]
