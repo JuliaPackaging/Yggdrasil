@@ -12,7 +12,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
-git submodule update --init 3rdparty/catch
 FLAGS=()
 if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
@@ -23,8 +22,6 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc} 
 make install
-cd docs
-install_license preamble.txt licence.txt licendoc.txt gpl.txt lgpl.txt xserver.txt
 """
 
 # These are the platforms we will build for by default, unless further
