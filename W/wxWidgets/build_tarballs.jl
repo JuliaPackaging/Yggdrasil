@@ -12,6 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*/
+git submodule update --init 3rdparty/catch
 FLAGS=()
 if [[ "${target}" == *-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
