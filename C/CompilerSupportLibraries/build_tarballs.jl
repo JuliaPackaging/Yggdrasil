@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.4.1"
+version = v"0.4.2"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
