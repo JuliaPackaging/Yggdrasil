@@ -7,7 +7,7 @@ version = v"6.0.19"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz", "e0a992d740709892e81f9d93f06daf305cf73fb81b545afe72478043172c3628")
+    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz", "2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e")
 ]
 
 # Bash recipe for building across all platforms
