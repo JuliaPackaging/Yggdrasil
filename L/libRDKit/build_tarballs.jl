@@ -45,10 +45,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FreeType2_jll"),
-    Dependency("boost_jll"),
-    Dependency("Eigen_jll"),
-    Dependency("Zlib_jll"),
+    BuildDependency("FreeType2_jll"),
+    BuildDependency("boost_jll"),
+    BuildDependency("Eigen_jll"),
+    BuildDependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
