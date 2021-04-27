@@ -12,6 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Set BINARY=32 on i686 platforms and armv7l
+if [[ ${nbits} == 32 ]]; then
+    flags="${flags} BINARY=32"
+fi
+
 cd $WORKSPACE/srcdir/yasm-*
 autoreconf -f -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
