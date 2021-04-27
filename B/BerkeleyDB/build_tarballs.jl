@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "BerkeleyDB"
-version = v"5.3.28"
+version = v"6.0.19"
 
 # Collection of sources required to complete build
 sources = [
