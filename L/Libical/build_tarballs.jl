@@ -30,6 +30,9 @@ FLAGS=(
     -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH="FALSE"
 )
 
+# ICU isn't available for the native build: apk's version is too old, and a simultaneous HostBuildDependency doesn't seem to be working...
+# I think that's ok though, because it's available for the final build?
+
 # cross compiling libical requires a binary from the native build
 (
     mkdir native_build && cd native_build
@@ -79,8 +82,7 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("XML2_jll"),
     Dependency("ICU_jll"),
-    Dependency("Libffi_jll"),
-    HostBuildDependency("ICU_jll"),
+    Dependency("Libffi_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
