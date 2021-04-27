@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 # Set BINARY=32 on i686 platforms and armv7l
 if [[ ${nbits} == 32 ]]; then
-    flags="${flags} BINARY=32"
+    flags="${flags} -m32"
 fi
 
 cd $WORKSPACE/srcdir/yasm-*
