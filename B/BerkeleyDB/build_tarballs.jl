@@ -12,8 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add gettext
-
 cd $WORKSPACE/srcdir/db-*/docs
 # see https://stackoverflow.com/questions/64707079/berkeley-db-make-install-fails-on-linux 
 mkdir bdb-sql
