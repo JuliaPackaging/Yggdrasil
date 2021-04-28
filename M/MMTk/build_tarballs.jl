@@ -14,7 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd mmtk-core/
-export RUSTUP_TOOLCHAIN=nightly-2020-12-20
 cargo build
 exit
 """
