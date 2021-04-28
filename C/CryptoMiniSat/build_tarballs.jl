@@ -35,7 +35,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct("cryptominisat5", :cryptominisat5),
+    ExecutableProduct(["cryptominisat5", "cryptominisat5win"], :cryptominisat5),
     ExecutableProduct("cryptominisat5_simple", :cryptominisat5_simple),
     LibraryProduct(["libcryptominisat5", "libcryptominisat5win"], :libcryptominisat5),
     LibraryProduct("libipasircryptominisat5", :libipasircryptominisat5)
