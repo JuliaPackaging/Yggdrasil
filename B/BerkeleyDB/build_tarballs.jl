@@ -3,17 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "BerkeleyDB"
-version = v"6.0.19"
+version = v"18.1.40"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz", "2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e")
+    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz", "0cecb2ef0c67b166de93732769abdeba0555086d51de1090df325e18ee8da9c8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/db-*/dist
-update_configure_scripts
+cd $WORKSPACE/srcdir/db-*/docs
+# see https://stackoverflow.com/questions/64707079/berkeley-db-make-install-fails-on-linux 
+mkdir bdb-sql
+mkdir gsg_db_server
 cd ../build_unix
 ../dist/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
@@ -24,23 +26,25 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("db_hotbackup", :db_hotbackup),
-    ExecutableProduct("db_log_verify", :db_log_verify),
-    ExecutableProduct("db_tuner", :db_tuner),
-    ExecutableProduct("db_printlog", :db_printlog),
-    ExecutableProduct("db_archive", :db_archive),
     ExecutableProduct("db_dump", :db_dump),
-    ExecutableProduct("db_load", :db_load),
-    ExecutableProduct("db_upgrade", :db_upgrade),
-    ExecutableProduct("db_checkpoint", :db_checkpoint),
-    ExecutableProduct("db_replicate", :db_replicate),
-    ExecutableProduct("db_stat", :db_stat),
-    ExecutableProduct("db_recover", :db_recover),
     LibraryProduct("libdb", :libdb),
+    ExecutableProduct("db_load", :db_load),
+    ExecutableProduct("db_stat", :db_stat),
+    ExecutableProduct("db_log_verify", :db_log_verify),
+    ExecutableProduct("db_archive", :db_archive),
+    ExecutableProduct("db_deadlock", :db_deadlock),
+    ExecutableProduct("db_hotbackup", :db_hotbackup),
+    ExecutableProduct("db_tuner", :db_tuner),
+    ExecutableProduct("db_checkpoint", :db_checkpoint),
+    ExecutableProduct("db_recover", :db_recover),
+    ExecutableProduct("db_replicate", :db_replicate),
+    ExecutableProduct("db_printlog", :db_printlog),
     ExecutableProduct("db_verify", :db_verify),
-    ExecutableProduct("db_deadlock", :db_deadlock)
+    ExecutableProduct("db_upgrade", :db_upgrade),
+    ExecutableProduct("db_convert", :db_convert)
 ]
 
 # Dependencies that must be installed before this package can be built
