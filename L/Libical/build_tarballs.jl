@@ -39,7 +39,7 @@ FLAGS=(
     # It would be nice to have `HOST_PKG_CONFIG_*` variables.
     export PKG_CONFIG_SYSROOT_DIR="/usr"
     export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
-    export LDFLAGS="-L/usr/lib"
+    export CMAKE_MODULE_LINKER_FLAGS_INIT="-L/usr/lib"
     cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
         "${FLAGS[@]}" \
@@ -57,7 +57,7 @@ if [[ "${target}" == *-linux-* ]]; then
     fi
 fi
 
-export LDFLAGS="-L${libdir}"
+export CMAKE_MODULE_LINKER_FLAGS_INIT="-L${libdir}"
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
