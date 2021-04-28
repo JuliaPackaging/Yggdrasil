@@ -131,3 +131,4 @@ for platform in platforms
         build_tarballs(ARGS, name, version, sources, script, [platform], products, []; julia_compat="1.6")
     end
 end
+
