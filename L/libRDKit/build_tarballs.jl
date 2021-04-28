@@ -52,4 +52,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"5", julia_compat="^$(julia_version.major).$(julia_version.minor)", experimental=true)
+    preferred_gcc_version=v"5", julia_compat="^$(julia_version.major).$(julia_version.minor)")
