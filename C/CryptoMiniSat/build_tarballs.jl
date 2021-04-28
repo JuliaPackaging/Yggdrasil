@@ -16,6 +16,7 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/cryptominisat
 atomic_patch -p1 ../Yalsatpatch.patch
+atomic_patch -p1 ../feenablepatch.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -23,6 +24,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DENABLE_PYTHON_INTERFACE=OFF \
     -DIPASIR=ON \
     -DNOM4RI=ON \
+    -DBoost_USE_STATIC_LIBS=OFF \
     ..
 make -j${nproc}
 make install
