@@ -16,6 +16,14 @@ cd $WORKSPACE/srcdir/db-*/docs
 # see https://stackoverflow.com/questions/64707079/berkeley-db-make-install-fails-on-linux 
 mkdir bdb-sql
 mkdir gsg_db_server
+cd ../dist
+
+# update configure for powerpc
+if [[ "${target}" == powerpc64le-* ]]; then
+    autoreconf -vi
+fi
+update_configure_scripts
+
 cd ../build_unix
 ../dist/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
@@ -24,7 +32,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms())
+platforms = filter!(p -> !Sys.iswindows(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
