@@ -20,6 +20,7 @@ apk add flex-dev
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/detach.txt
 ./bootstrap
 cd ..
 mkdir buildx
@@ -35,7 +36,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platform = [Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx11", libgfortran_version=v"4.0.0")]
+platforms = [Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx11", libgfortran_version=v"4.0.0"),
+             Platform("x86_64", "linux", libc="glibc", cxxstring_abi="cxx03", libgfortran_version=v"5.0.0")]
 
 # The products that we will ensure are always built
 products = [
@@ -55,4 +57,4 @@ dependencies = [
                 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platform, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")

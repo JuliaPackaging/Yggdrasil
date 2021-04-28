@@ -1,0 +1,444 @@
+diff --git a/src/DeviceModelPKG/ADMS/Makefile.am b/src/DeviceModelPKG/ADMS/Makefile.am
+index bef4c695..edaa044b 100755
+--- a/src/DeviceModelPKG/ADMS/Makefile.am
++++ b/src/DeviceModelPKG/ADMS/Makefile.am
+@@ -4,7 +4,7 @@ AM_CPPFLAGS = @Xyce_INCS@
+ AM_CXXFLAGS = @ADMS_CXXFLAGS@
+ CXXFLAGS = @ADMS_CXXFLAGS@
+ 
+-lib_LTLIBRARIES = libADMS.la
++noinst_LTLIBRARIES = libADMS.la
+ 
+ libADMS_la_SOURCES = \
+   N_DEV_RegisterADMSDevices.C \
+diff --git a/src/DeviceModelPKG/NeuronModels/Makefile.am b/src/DeviceModelPKG/NeuronModels/Makefile.am
+index b8b7a341..3913cbc0 100644
+--- a/src/DeviceModelPKG/NeuronModels/Makefile.am
++++ b/src/DeviceModelPKG/NeuronModels/Makefile.am
+@@ -1,7 +1,7 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-lib_LTLIBRARIES = libNeuronModels.la
++noinst_LTLIBRARIES = libNeuronModels.la
+ 
+ libNeuronModels_la_SOURCES = \
+   N_DEV_RegisterNeuronDevices.C \
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 9b196663..b60a533d 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -18,7 +18,7 @@ SUBDIRS = \
+   MultiTimePDEPKG \
+   test
+ 
+-XYCELINK = \
++XYCELINK_BASE = \
+   $(top_builddir)/src/CircuitPKG/libCircuit.la \
+   $(top_builddir)/src/DakotaLinkPKG/libDakotaLink.la \
+   $(top_builddir)/src/DeviceModelPKG/Core/libDeviceCore.la \
+@@ -43,41 +43,41 @@ XYCELINK = \
+ 
+ # conditionally link in radiation-aware device models.
+ if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
++    RADLINK = $(XYCELINK_BASE) $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+ else
+-    RADLD =
++    RADLINK = $(XYCELINK_BASE)
+ endif
+ 
+ # conditionally link in ADMS device models.
+ if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la 
++    ADMSLINK = $(RADLINK) $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la
+ else
+-    ADMSLD =
++    ADMSLINK = $(RADLINK)
+ endif
+ 
+ # conditionally link in Neuron device models.
+ if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la 
++    NEURONLINK = $(ADMSLINK) $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la
+ else
+-    NEURONLD =
++    NEURONLINK = $(ADMSLINK)
+ endif
+ 
+ # conditionally link in radiation-aware device models.
+ if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
++    NFLINK = $(NEURONLINK) $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+ else
+-    NONFREELD =
++    NFLINK = $(NEURONLINK)
+ endif
+ 
+ # conditionally link in Berkeley device models.
+ if MODSPECMODELS
+-    MODSPECLD =   $(top_builddir)/src/DeviceModelPKG/BERKELEY/libBERKELEY.la \
+-                  $(top_builddir)/src/DeviceModelPKG/BERKELEY/Xyce_ModSpec_Interface/libModSpec.la 
++    MSLINK = $(NFLINK)  $(top_builddir)/src/DeviceModelPKG/BERKELEY/libBERKELEY.la \
++                  $(top_builddir)/src/DeviceModelPKG/BERKELEY/Xyce_ModSpec_Interface/libModSpec.la
+ else
+-    MODSPECLD =
++    MSLINK = $(NFLINK)
+ endif
+ 
+-
++XYCELINK = $(MSLINK)
+ 
+ # build library (static & shared) for linking (w/libtool) into other codes
+ lib_LTLIBRARIES = libxyce.la
+@@ -92,7 +92,7 @@ if BUILD_XYCE_SHAREABLE
+ # standalone Xyce executable (shareable object)
+ bin_PROGRAMS = Xyce
+ Xyce_SOURCES = Xyce.C
+-Xyce_LDADD = libxyce.la $(NONFREELD) $(RADLD) $(MODSPECLD) $(ADMSLD) $(NEURONLD)
++Xyce_LDADD = libxyce.la
+ Xyce_LDFLAGS = $(AM_LDFLAGS)
+ 
+ else
+@@ -100,7 +100,7 @@ else
+ # standalone Xyce executable (monolithic)
+ bin_PROGRAMS = Xyce
+ Xyce_SOURCES = Xyce.C
+-Xyce_LDADD = libxyce.la $(NONFREELD) $(RADLD) $(MODSPECLD) $(ADMSLD) $(NEURONLD)
++Xyce_LDADD = libxyce.la
+ Xyce_LDFLAGS = -static $(AM_LDFLAGS)
+ 
+ endif
+diff --git a/src/test/DeviceInterface/Makefile.am b/src/test/DeviceInterface/Makefile.am
+index 0453eac2..1c01cf6e 100644
+--- a/src/test/DeviceInterface/Makefile.am
++++ b/src/test/DeviceInterface/Makefile.am
+@@ -1,38 +1,6 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+-else
+-    RADLD = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+-else
+-    NONFREELD = 
+-endif
+-
+-# conditionally link in ADMS device models.
+-if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la 
+-else
+-    ADMSLD =
+-endif
+-
+-# conditionally link in Neuron device models.
+-if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la 
+-else
+-    NEURONLD =
+-endif
+ 
+ # standalone DeviceInterfaceTest executable
+ check_PROGRAMS = DeviceInterfaceTest
+@@ -42,6 +10,6 @@ DeviceInterfaceTESTSOURCES = \
+ 
+ # standalone DeviceInterface  executable
+ DeviceInterfaceTest_SOURCES = $(DeviceInterfaceTESTSOURCES)
+-DeviceInterfaceTest_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-DeviceInterfaceTest_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++DeviceInterfaceTest_LDADD = $(top_builddir)/src/libxyce.la
++DeviceInterfaceTest_LDFLAGS = -static $(AM_LDFLAGS)
+  
+diff --git a/src/test/FFTInterface/Makefile.am b/src/test/FFTInterface/Makefile.am
+index 6301a88a..6064480c 100644
+--- a/src/test/FFTInterface/Makefile.am
++++ b/src/test/FFTInterface/Makefile.am
+@@ -1,11 +1,6 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+ TEST_FFT_INTERFACE_SOURCES = \
+   testFFTInterface.C
+ 
+@@ -13,5 +8,5 @@ TEST_FFT_INTERFACE_SOURCES = \
+ check_PROGRAMS = testFFTInterface
+ testFFTInterface_SOURCES = $(TEST_FFT_INTERFACE_SOURCES)
+ testFFTInterface_LDADD = $(top_builddir)/src/libxyce.la
+-testFFTInterface_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++testFFTInterface_LDFLAGS = -static $(AM_LDFLAGS)
+  
+diff --git a/src/test/GenExtTestHarnesses/Makefile.am b/src/test/GenExtTestHarnesses/Makefile.am
+index aa410e10..1d00ebb5 100644
+--- a/src/test/GenExtTestHarnesses/Makefile.am
++++ b/src/test/GenExtTestHarnesses/Makefile.am
+@@ -1,41 +1,12 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+-else
+-    RADLD = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+-else
+-    NONFREELD = 
+-endif
+-
+-# conditionally link in ADMS device models.
+-if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la 
+-else
+-    ADMSLD =
+-endif
+-
+-# conditionally link in Neuron device models.
+-if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la 
+-else
+-    NEURONLD =
+-endif
+-
+ # standalone executable
+-check_PROGRAMS = testGenCoup
++check_PROGRAMS = testGenCoup TestGH19
+ testGenCoup_SOURCES = testGenCoup.C
+-testGenCoup_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-testGenCoup_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++testGenCoup_LDADD = $(top_builddir)/src/libxyce.la
++testGenCoup_LDFLAGS = -static $(AM_LDFLAGS)
++
++TestGH19_SOURCES = TestGH19.C
++TestGH19_LDADD = $(top_builddir)/src/libxyce.la
++TestGH19_LDFLAGS = -static $(AM_LDFLAGS)
+diff --git a/src/test/LinearAlgebraTest/Makefile.am b/src/test/LinearAlgebraTest/Makefile.am
+index 87f70a3e..70cb08df 100644
+--- a/src/test/LinearAlgebraTest/Makefile.am
++++ b/src/test/LinearAlgebraTest/Makefile.am
+@@ -1,11 +1,6 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+ TEST_LINALG_SOURCES = \
+   testBlockLinearSystems.C
+ 
+@@ -13,5 +8,5 @@ TEST_LINALG_SOURCES = \
+ check_PROGRAMS = testBlockLinearSystems
+ testBlockLinearSystems_SOURCES = $(TEST_LINALG_SOURCES)
+ testBlockLinearSystems_LDADD = $(top_builddir)/src/libxyce.la
+-testBlockLinearSystems_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++testBlockLinearSystems_LDFLAGS = -static $(AM_LDFLAGS)
+  
+diff --git a/src/test/RandomTest/Makefile.am b/src/test/RandomTest/Makefile.am
+index ae6321dc..0efb9e0a 100644
+--- a/src/test/RandomTest/Makefile.am
++++ b/src/test/RandomTest/Makefile.am
+@@ -1,11 +1,6 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+ TEST_RANDOM_SOURCES = \
+   testRandom.C
+ 
+@@ -13,5 +8,5 @@ TEST_RANDOM_SOURCES = \
+ check_PROGRAMS = testRandom
+ testRandom_SOURCES= $(TEST_RANDOM_SOURCES)
+ testRandom_LDADD = $(top_builddir)/src/libxyce.la
+-testRandom_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++testRandom_LDFLAGS = -static $(AM_LDFLAGS)
+  
+diff --git a/src/test/TwoLevelNewton/Makefile.am b/src/test/TwoLevelNewton/Makefile.am
+index b7c20dae..50543a6b 100644
+--- a/src/test/TwoLevelNewton/Makefile.am
++++ b/src/test/TwoLevelNewton/Makefile.am
+@@ -1,52 +1,20 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+-else
+-    RADLD = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+-else
+-    NONFREELD = 
+-endif
+-
+-# conditionally link in ADMS device models.
+-if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la 
+-else
+-    ADMSLD =
+-endif
+-
+-# conditionally link in Neuron device models.
+-if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la 
+-else
+-    NEURONLD =
+-endif
+ 
+ # standalone XyceLibTest executable
+ check_PROGRAMS = twoLevelNewtonLinearDC twoLevelNewtonLinearTran
+ #twoLevelNewton
+ 
+ #twoLevelNewton_SOURCES = twoLevelNewton.C
+-#twoLevelNewton_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-#twoLevelNewton_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++#twoLevelNewton_LDADD = $(top_builddir)/src/libxyce.la
++#twoLevelNewton_LDFLAGS = -static $(AM_LDFLAGS)
+ 
+ twoLevelNewtonLinearDC_SOURCES = twoLevelNewtonLinearDC.C baseNewton.h twoLevelNewtonLinear.h
+-twoLevelNewtonLinearDC_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-twoLevelNewtonLinearDC_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++twoLevelNewtonLinearDC_LDADD = $(top_builddir)/src/libxyce.la
++twoLevelNewtonLinearDC_LDFLAGS = -static $(AM_LDFLAGS)
+ 
+ twoLevelNewtonLinearTran_SOURCES = twoLevelNewtonLinearTran.C baseNewton.h twoLevelNewtonLinear.h
+-twoLevelNewtonLinearTran_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-twoLevelNewtonLinearTran_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++twoLevelNewtonLinearTran_LDADD = $(top_builddir)/src/libxyce.la
++twoLevelNewtonLinearTran_LDFLAGS = -static $(AM_LDFLAGS)
+ 
+diff --git a/src/test/VPITests/Makefile.am b/src/test/VPITests/Makefile.am
+index 30da9678..3deacfb3 100644
+--- a/src/test/VPITests/Makefile.am
++++ b/src/test/VPITests/Makefile.am
+@@ -2,39 +2,6 @@
+ AM_CPPFLAGS = @Xyce_INCS@ -I$(VPI_BASE)/include/iverilog
+ AM_CFLAGS = @Xyce_INCS@ -I$(VPI_BASE)/include/iverilog
+ 
+-# check for optionally included sources
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+-else
+-    RADLD =
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+-else
+-    NONFREELD =
+-endif
+-
+-# conditionally link in ADMS device models.
+-if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la
+-else
+-    ADMSLD =
+-endif
+-
+-# conditionally link in Neuron device models.
+-if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la
+-else
+-    NEURONLD =
+-endif
+ 
+ MKL_EXTRA = -lmkl_rt -lmkl_avx
+ # since the build targets all require a special build procedure (a compile followed by two link stages)
+diff --git a/src/test/XyceAsLibrary/Makefile.am b/src/test/XyceAsLibrary/Makefile.am
+index d151a76a..87aede82 100644
+--- a/src/test/XyceAsLibrary/Makefile.am
++++ b/src/test/XyceAsLibrary/Makefile.am
+@@ -1,38 +1,6 @@
+ 
+ AM_CPPFLAGS = @Xyce_INCS@
+ 
+-# needed for Dakota 4.x not 5.0
+-if DAKOTA_OBJ_NEEDED 
+-  DAKOTA_OBJS = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if RADMODELS
+-    RADLD = $(top_builddir)/src/DeviceModelPKG/SandiaModels/libSandiaModels.la
+-else
+-    RADLD = 
+-endif
+-
+-# conditionally link in radiation-aware device models.
+-if NONFREEMODELS
+-    NONFREELD = $(top_builddir)/src/DeviceModelPKG/Xyce_NonFree/libNonFree.la
+-else
+-    NONFREELD = 
+-endif
+-
+-# conditionally link in ADMS device models.
+-if ADMSMODELS
+-    ADMSLD = $(top_builddir)/src/DeviceModelPKG/ADMS/libADMS.la 
+-else
+-    ADMSLD =
+-endif
+-
+-# conditionally link in Neuron device models.
+-if NEURONMODELS
+-    NEURONLD = $(top_builddir)/src/DeviceModelPKG/NeuronModels/libNeuronModels.la 
+-else
+-    NEURONLD =
+-endif
+ 
+ # standalone testHarness1685 executable
+ check_PROGRAMS = testHarness1685
+@@ -42,6 +10,6 @@ BUG1685TESTSOURCES = \
+ 
+ # standalone testHarness1685  executable
+ testHarness1685_SOURCES = $(BUG1685TESTSOURCES)
+-testHarness1685_LDADD = $(top_builddir)/src/libxyce.la $(RADLD) $(NONFREELD) $(ADMSLD) $(NEURONLD)
+-testHarness1685_LDFLAGS = -static $(AM_LDFLAGS) $(DAKOTA_OBJS)
++testHarness1685_LDADD = $(top_builddir)/src/libxyce.la
++testHarness1685_LDFLAGS = -static $(AM_LDFLAGS)
+  
