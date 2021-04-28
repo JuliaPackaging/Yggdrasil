@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 julia_version = v"1.6.0"
 
-name = "libRDKit"
+name = "RDKit"
 version = v"2021.09.1pre"
 
 sources = [
