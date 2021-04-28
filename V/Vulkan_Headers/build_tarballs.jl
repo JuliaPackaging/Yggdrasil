@@ -4,7 +4,7 @@ name = "Vulkan_Headers"
 version = v"1.2.177"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "88da24862cf91d692801c6ae64665d26d39f06c4"
+commit = "3f437c4a94ae35af1eb93700d073e9d0e7adab3d"
 
 sources = [
     GitSource(source, commit)
