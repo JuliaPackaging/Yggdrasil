@@ -39,7 +39,7 @@ FLAGS=(
     # It would be nice to have `HOST_PKG_CONFIG_*` variables.
     export PKG_CONFIG_SYSROOT_DIR="/usr"
     export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
-    export CMAKE_MODULE_LINKER_FLAGS_INIT="-L/usr/lib"
+    export LDFLAGS="-L/usr/lib"
     cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
         "${FLAGS[@]}" \
@@ -82,7 +82,8 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("XML2_jll"),
     Dependency("ICU_jll"),
-    Dependency("Libffi_jll")
+    Dependency("Libffi_jll"),
+    Dependency("BerkeleyDB_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
