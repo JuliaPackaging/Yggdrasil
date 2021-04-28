@@ -22,9 +22,8 @@ cd ../dist
 
 # update configure for powerpc
 if [[ "${target}" == powerpc64le-* ]]; then
-    autoreconf -vi
+    sed -i s/elf64ppc/elf64lppc/ configure
 fi
-update_configure_scripts
 
 cd ../build_unix
 ../dist/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
