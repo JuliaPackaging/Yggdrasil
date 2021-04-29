@@ -25,7 +25,7 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     OPENBLAS+=(-lgomp)
   fi
 
-  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
+  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA caxpy ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr daxpy dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 saxpy scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zaxpy zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
   for sym in ${syms[@]}
   do
     FFLAGS+=("-D${sym}=${sym}_64")
