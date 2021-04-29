@@ -106,6 +106,7 @@ dependencies = [
     Dependency("METIS_jll"),
     Dependency("PARMETIS_jll"),
     Dependency("SCALAPACK_jll"),
+    Dependency("OpenBLAS_jll", v"0.3.9"),
 ]
 
 # Build the tarballs
