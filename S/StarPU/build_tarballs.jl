@@ -7,13 +7,15 @@ version = v"1.3.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://files.inria.fr/starpu/starpu-1.3.7/starpu-1.3.7.tar.gz", "1d7e01567fbd4a66b7e563626899374735e37883226afb96c8952fea1dab77c2")
+    ArchiveSource("https://files.inria.fr/starpu/starpu-1.3.7/starpu-1.3.7.tar.gz", "1d7e01567fbd4a66b7e563626899374735e37883226afb96c8952fea1dab77c2"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd starpu*
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fortify.patch"
 mkdir build
 cd build
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-fortran --disable-build-doc --disable-build-examples
@@ -25,7 +27,7 @@ rm -r $prefix/share/doc/starpu
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && p ≠ Platform("aarch64", "linux", libc="musl"), supported_platforms()))
+platforms = expand_gfortran_versions(filter!(p -> p ≠ Platform("aarch64", "linux", libc="musl"), supported_platforms()))
 
 
 # The products that we will ensure are always built
