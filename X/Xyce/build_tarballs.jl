@@ -15,14 +15,13 @@ sources = [
 script = raw"""
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
-
 cd $WORKSPACE/srcdir
 apk add flex-dev
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
-if [[ $target != i686-linux-gnu ]] && [[ $target != x86_64-linux-gnu ]] ; then
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross.patch
-fi
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 ./bootstrap
 cd ..
 mkdir buildx
@@ -37,11 +36,11 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-   
+
 platforms = filter(p -> (!Sys.iswindows(p) &&
                          !Sys.isapple(p) &&
-                         !Sys.isfreebsd(p))
-                   , supported_platforms())
+                         !Sys.isfreebsd(p)),
+                   supported_platforms())
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
