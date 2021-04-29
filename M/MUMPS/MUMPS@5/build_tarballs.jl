@@ -101,6 +101,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
     Dependency("MPICH_jll"),
     Dependency("METIS_jll"),
     Dependency("PARMETIS_jll"),
