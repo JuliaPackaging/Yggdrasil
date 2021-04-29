@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir
 cd qr_mumps*
 mkdir build
 cd build
-cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=OFF -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
+cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=ON -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
 make -j${nproc}
 make install
 exit
@@ -44,6 +44,7 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
+    Dependency(PackageSpec(name="StarPU_jll", uuid="e3ad0b27-b140-5312-a56e-059adfc55eb4"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
