@@ -79,11 +79,11 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("BerkeleyDB_jll"),
     Dependency("Glib_jll"),
-    Dependency("XML2_jll"),
     Dependency("ICU_jll"),
     Dependency("Libffi_jll"),
-    Dependency("BerkeleyDB_jll")
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
