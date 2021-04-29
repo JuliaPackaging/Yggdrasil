@@ -48,9 +48,8 @@ dependencies = [
     Dependency("boost_jll"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
-    Dependency("MPICH_jll"),
-    Dependency("MicrosoftMPI_jll")
+    Dependency("MPICH_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
