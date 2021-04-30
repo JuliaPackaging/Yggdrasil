@@ -7,16 +7,13 @@ version = v"5.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/msoos/cryptominisat.git", "e7079937ed2bfe9160a104378e5a344028e4ab78"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/msoos/cryptominisat.git", "a792072cc035819fee070173f3c82861edeb35e0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 cd $WORKSPACE/srcdir/cryptominisat
-atomic_patch -p1 ../Yalsatpatch.patch
-atomic_patch -p1 ../feenablepatch.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
