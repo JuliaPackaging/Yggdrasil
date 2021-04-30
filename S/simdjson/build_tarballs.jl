@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "simdjson"
 version = v"0.9.2"
+julia_compat = "1.6"
 
 # Collection of sources required to complete build
 sources = [
@@ -16,7 +17,7 @@ cd $WORKSPACE/srcdir
 cd simdjson/
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DSIMDJSON_ENABLE_THREADS=ON ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DSIMDJSON_ENABLE_THREADS=ON -DBUILD_SHARED_LIBS=ON ..
 make -j${nprocs}
 make install
 exit
