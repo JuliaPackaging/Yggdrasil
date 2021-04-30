@@ -13,6 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
 ./autogen.sh
 update_configure_scripts
 mkdir build
