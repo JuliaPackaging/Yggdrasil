@@ -2188,3 +2188,16 @@ set(HEADERS
     include/signal1.h
     include/zzalloc.h
     include/zzerror.h)
+
+add_library(cspice SHARED ${SRCS})
+set_target_properties(cspice PROPERTIES PUBLIC_HEADER "${HEADERS}")
+if(WIN32)
+  GENERATE_EXPORT_HEADER(
+    cspice
+    BASE_NAME cspice
+    EXPORT_MACRO_NAME cspice_EXPORT
+    EXPORT_FILE_NAME cspice_Export.h
+    STATIC_DEFINE cspice_BUILT_AS_STATIC)
+endif()
+target_link_libraries(cspice m)
+
