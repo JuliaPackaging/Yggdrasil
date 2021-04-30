@@ -7,12 +7,14 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lanl-ansi/spral.git", "5a83fe10178997f89eecc17145b8ca30e4c3e989")
+    GitSource("https://github.com/lanl-ansi/spral.git", "5a83fe10178997f89eecc17145b8ca30e4c3e989"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/metis.patch
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
     CXX=g++

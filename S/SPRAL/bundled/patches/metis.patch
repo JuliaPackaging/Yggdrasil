@@ -1,0 +1,21 @@
+--- a/src/metis5_wrapper.F90
++++ b/src/metis5_wrapper.F90
+@@ -17,18 +17,7 @@
+    public :: metis_order ! Calls metis on a symmetric matrix
+ 
+    integer, parameter :: long = C_LONG
+-
+-#if SPRAL_HAVE_METIS_H
+-! metis header is available, check for index types 
+-#if SIZEOF_IDX_T == 8
+-   integer, parameter :: metis_idx_t = c_int64_t
+-#else
+-   integer, parameter :: metis_idx_t = c_int   
+-#endif
+-#else
+-   ! metis header is not available, default to 32-bit index types 
+    integer, parameter :: metis_idx_t = c_int
+-#endif
+    
+    ! We use the C interface to METIS via the following interoperable interfaces
+    interface METIS_SetDefaultOptions
