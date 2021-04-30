@@ -8,13 +8,13 @@
 -#if SPRAL_HAVE_METIS_H
 -! metis header is available, check for index types 
 -#if SIZEOF_IDX_T == 8
--   integer, parameter :: metis_idx_t = c_int64_t
+    integer, parameter :: metis_idx_t = c_int64_t
 -#else
 -   integer, parameter :: metis_idx_t = c_int   
 -#endif
 -#else
 -   ! metis header is not available, default to 32-bit index types 
-    integer, parameter :: metis_idx_t = c_int64_t
+-   integer, parameter :: metis_idx_t = c_int
 -#endif
     
     ! We use the C interface to METIS via the following interoperable interfaces
