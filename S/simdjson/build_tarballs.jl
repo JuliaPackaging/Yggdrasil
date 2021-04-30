@@ -17,7 +17,7 @@ cd simdjson/
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DSIMDJSON_ENABLE_THREADS=ON ..
-make -j ${nprocs}
+make -j ${nproc}
 make install
 exit
 """
