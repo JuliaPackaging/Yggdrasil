@@ -16,8 +16,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/spral
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/metis.patch
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
 fi
 ./autogen.sh
 update_configure_scripts
