@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clong.patch
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
 fi
 ./autogen.sh
