@@ -14,7 +14,7 @@
 -#endif
 -#else
 -   ! metis header is not available, default to 32-bit index types 
-    integer, parameter :: metis_idx_t = c_int
+    integer, parameter :: metis_idx_t = c_int64_t
 -#endif
     
     ! We use the C interface to METIS via the following interoperable interfaces
