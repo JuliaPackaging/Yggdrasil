@@ -15,15 +15,15 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clong.patch
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
-fi
-if [[ "${target}" == *-w64-* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lrt.patch
-fi
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
     CXX=g++
+fi
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
+fi
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lrt.patch
 fi
 ./autogen.sh
 update_configure_scripts
