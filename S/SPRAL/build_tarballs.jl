@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/metis.patch
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
 fi
