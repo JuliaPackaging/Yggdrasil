@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "CSPICE"
-version = v"66.0.0"
+version = v"66.1.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -22,6 +22,7 @@ cp -r $WORKSPACE/srcdir/cmake .
 mv cmake/CMakeLists.txt .
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dskx02.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/subpnt.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/inquire.patch"
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
@@ -36,7 +37,25 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcspice", :libcspice)
+    LibraryProduct("libcspice", :libcspice),
+    LibraryProduct("libcsupport", :libcsupport),
+    ExecutableProduct("brief", :brief),
+    ExecutableProduct("chronos", :chronos),
+    ExecutableProduct("ckbrief", :ckbrief),
+    ExecutableProduct("commnt", :commnt),
+    ExecutableProduct("dskbrief", :dskbrief),
+    ExecutableProduct("dskexp", :dskexp),
+    ExecutableProduct("frmdiff", :frmdiff),
+    ExecutableProduct("inspekt", :inspekt),
+    ExecutableProduct("mkdsk", :mkdsk),
+    ExecutableProduct("mkspk", :mkspk),
+    ExecutableProduct("msopck", :msopck),
+    ExecutableProduct("spacit", :spacit),
+    ExecutableProduct("spkdiff", :spkdiff),
+    ExecutableProduct("spkmerge", :spkmerge),
+    ExecutableProduct("tobin", :tobin),
+    ExecutableProduct("toxfr", :toxfr),
+    ExecutableProduct("version", :version),
 ]
 
 # Dependencies that must be installed before this package can be built
