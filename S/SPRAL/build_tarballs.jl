@@ -14,7 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/metis.patch
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
 fi
@@ -43,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
+    Dependency(PackageSpec(name="METIS4_jll", uuid="40b5814e-7855-5c9f-99f7-a735ce3fdf8b"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8"))
