@@ -22,6 +22,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_T
     -DASSIMP_BUILD_TESTS=false \
     -DASSIMP_INSTALL_PDB=false \
     -DASSIMP_DOUBLE_PRECISION=false \
+    -DINJECT_DEBUG_POSTFIX=false \
 
 make -j${nproc}
 make install
