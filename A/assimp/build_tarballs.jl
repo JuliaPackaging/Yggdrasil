@@ -7,8 +7,8 @@ version = v"5.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/assimp/assimp.git" =>
-    "8f0c6b04b2257a520aaab38421b2e090204b69df",
+    GitSource("https://github.com/assimp/assimp.git",
+              "8f0c6b04b2257a520aaab38421b2e090204b69df"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,9 +22,11 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_T
     -DASSIMP_BUILD_TESTS=false \
     -DASSIMP_INSTALL_PDB=false \
     -DASSIMP_DOUBLE_PRECISION=false \
+    -DINJECT_DEBUG_POSTFIX=false \
 
 make -j${nproc}
 make install
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
