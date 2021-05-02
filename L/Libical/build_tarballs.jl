@@ -13,56 +13,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir
 cd libical-*
-
-apk add glib-dev libxml2-dev
-
-# Don't try this at home, it's bad
-ln -s /opt/${host_target}/${host_target}/sys-root/usr/lib/libc.so /usr/lib/libc.so
-
-FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DSHARED_ONLY=true
-    -DICAL_BUILD_DOCS=false
-    -DGOBJECT_INTROSPECTION=false
-    -DLIBICAL_BUILD_TESTING=false
-    -DWITH_CXX_BINDINGS=false
-    -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH="FALSE"
-)
-
-# ICU isn't available for the native build: apk's version is too old, and a simultaneous HostBuildDependency doesn't seem to be working...
-# I think that's ok though, because it's available for the final build?
-
-# cross compiling libical requires a binary from the native build
-(
-    mkdir native_build && cd native_build
-    # It would be nice to have `HOST_PKG_CONFIG_*` variables.
-    export PKG_CONFIG_SYSROOT_DIR="/usr"
-    export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
-    export LDFLAGS="-L/usr/lib"
-    cmake -DCMAKE_INSTALL_PREFIX=../native_prefix \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-        "${FLAGS[@]}" \
-        ..
-    make -j${nproc}
-    make install
-)
-
+apk add libxml2-dev gtk-doc doxygen
 # Hint to find libstc++, required to link against C++ libs when using C compiler
 if [[ "${target}" == *-linux-* ]]; then
     if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib";
     else
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-    fi
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64";     
+    fi;
 fi
-
-export CMAKE_MODULE_LINKER_FLAGS_INIT="-L${libdir}"
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    "${FLAGS[@]}" \
-    -DIMPORT_ICAL_GLIB_SRC_GENERATOR="../native_prefix/lib64/cmake/LibIcal/IcalGlibSrcGenerator.cmake" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DICAL_GLIB="FALSE" \
     ..
 make -j${nproc}
 make install
@@ -73,17 +39,20 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
-    # TBD
+products = [
+    LibraryProduct("libicalvcal", :libicalvcal),
+    LibraryProduct("libicalss_cxx", :libicalss_cxx),
+    LibraryProduct("libical_cxx", :libical_cxx),
+    LibraryProduct("libicalss", :libicalss),
+    LibraryProduct("libical", :libical)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("BerkeleyDB_jll"),
-    Dependency("Glib_jll"),
-    Dependency("ICU_jll"),
-    Dependency("Libffi_jll"),
-    Dependency("XML2_jll"),
+    Dependency(PackageSpec(name="BerkeleyDB_jll", uuid="cd00e070-8fe2-570d-8212-aefc8f89bd06"))
+    Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
+    Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"))
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
