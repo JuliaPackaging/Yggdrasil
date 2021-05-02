@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libsixel"
-version = v"1.8.1"
+version = v"1.8.6"
 
 # Collection of sources required to complete build
 sources = [
