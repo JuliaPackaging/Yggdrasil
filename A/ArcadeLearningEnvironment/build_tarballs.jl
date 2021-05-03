@@ -21,7 +21,7 @@ unzip ROMS.zip
 mkdir $prefix/roms
 for f in ROMS/*; do md5=`md5sum "$f" | awk '{print $1}'`; newname=`grep $md5 md5.txt | awk '{print $2}'`; if [[ $newname != "" ]]; then cp "$f" $prefix/roms/$newname; fi; done
 cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
-install_license $(pwd)/LICENSE.md
+install_license $(pwd)/License.txt
 atomic_patch -p1 ../patches/fix-dlext-macos.patch
 atomic_patch -p1 ../patches/cmake-install-for-windows.patch
 mkdir build && cd build
