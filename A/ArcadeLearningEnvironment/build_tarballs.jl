@@ -18,8 +18,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/
 unrar e Roms.rar
 unzip ROMS.zip
-mkdir $WORKSPACE/roms
-for f in ROMS/*; do md5=`md5sum "$f" | awk '{print $1}'`; newname=`grep $md5 md5.txt | awk '{print $2}'`; if [[ $newname != "" ]]; then cp "$f" $WORKSPACE/roms/$newname; fi; done
+mkdir $prefix/roms
+for f in ROMS/*; do md5=`md5sum "$f" | awk '{print $1}'`; newname=`grep $md5 md5.txt | awk '{print $2}'`; if [[ $newname != "" ]]; then cp "$f" $prefix/roms/$newname; fi; done
 cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
 atomic_patch -p1 ../patches/fix-dlext-macos.patch
 atomic_patch -p1 ../patches/cmake-install-for-windows.patch
@@ -36,6 +36,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     ..
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/Arcade-Learning-Environment-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
