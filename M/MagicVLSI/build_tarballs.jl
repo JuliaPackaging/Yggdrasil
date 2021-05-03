@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MagicVLSI"
-version = v"8.3.61"
+version = v"8.3.160"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Keno/magic.git", "a58100a14cdb57462cf75691532d01c5733fb59b")
+    GitSource("https://github.com/Keno/magic.git", "7e68c94744cd36c193536ba8a5cc3a931b640b8b")
 ]
 
 # Bash recipe for building across all platforms
