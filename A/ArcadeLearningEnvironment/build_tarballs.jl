@@ -46,7 +46,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libale_c", :libale_c),
-    FileProduct("$WORKSPACE/roms", :roms)
+    FileProduct("roms", :roms)
 ]
 
 # Dependencies that must be installed before this package can be built
