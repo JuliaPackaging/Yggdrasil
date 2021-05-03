@@ -7,7 +7,7 @@ version = v"8.3.160"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Keno/magic.git", "7e68c94744cd36c193536ba8a5cc3a931b640b8b")
+    GitSource("https://github.com/Keno/magic.git", "8ab1743be8f6e0d7ab95e0c2e86688379fca1aad")
 ]
 
 # Bash recipe for building across all platforms
