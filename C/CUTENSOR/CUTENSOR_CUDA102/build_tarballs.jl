@@ -26,6 +26,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     mv lib/10.2/cutensor.dll ${libdir}
     mv include/* ${prefix}/include
+
+    # fixup
+    chmod +x ${libdir}/*.{exe,dll}
 fi
 """
 
