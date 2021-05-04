@@ -8,11 +8,11 @@ sources = [
     ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "068400cb9f53d195444b9260fd106f7be83af62bb187932656b68166a2f87f44"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "58cb307666ed4aa751757577a563b8a1e5d4ee73a9fac2b495e5c463682a07d1"; unpack_target = "aarch64-linux-gnu"),
     ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "de6ccb9bf08520939cc2ae0507634015981604b5eb6912d031d4b7fe146f0de4"; unpack_target = "powerpc64le-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "54efe997dbeff971b1e39c8eb910566ecb68cfd6140a6b5c738265d4b5842d24"; unpack_target = "armv7l-linux-gnueabihf"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "54efe997dbeff971b1e39c8eb910566ecb68cfd6140a6b5c738265d4b5842d24"; unpack_target = "arm-linux-gnueabihf"),
 
     ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "068400cb9f53d195444b9260fd106f7be83af62bb187932656b68166a2f87f44"; unpack_target = "x86_64-linux-musl"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "58cb307666ed4aa751757577a563b8a1e5d4ee73a9fac2b495e5c463682a07d1"; unpack_target = "aarch64-linux-musl"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "54efe997dbeff971b1e39c8eb910566ecb68cfd6140a6b5c738265d4b5842d24"; unpack_target = "armv7l-linux-musleabihf"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "54efe997dbeff971b1e39c8eb910566ecb68cfd6140a6b5c738265d4b5842d24"; unpack_target = "arm-linux-musleabihf"),
 
     ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "b762b72fc149629b7e394ea9b75a093cad709a9f2f71480942945d8da0fc1218"; unpack_target = "x86_64-apple-darwin14"),
 
