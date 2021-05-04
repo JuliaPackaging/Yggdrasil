@@ -1,7 +1,3 @@
-using BinaryBuilder
-
-cuda_version = v"10.2.89"   # NOTE: could be less specific
-
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
@@ -10,26 +6,20 @@ if [[ ${target} == *-linux-gnu ]]; then
     cd libcutensor
     find .
 
-    install_license license.pdf
+    install_license license.txt
 
-    mv lib/10.2/libcutensor.so* ${libdir}
+    mv lib/11.0/libcutensor.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    apk add p7zip
-    7z x libcutensor*.exe
-    cd libcutensor
-
     cd libcutensor
     find .
 
-    install_license license.pdf
+    install_license license.txt
 
-    mv lib/10.2/cutensor.dll ${libdir}
+    mv lib/11.0/cutensor.dll ${libdir}
     mv include/* ${prefix}/include
 
     # fixup
     chmod +x ${libdir}/*.{exe,dll}
 fi
 """
-
-include("../common.jl")
