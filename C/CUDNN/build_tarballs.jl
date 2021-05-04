@@ -1,8 +1,9 @@
+using BinaryBuilder, Pkg
+
 include("../../fancy_toys.jl")
 
-version = v"8.1.0"#.77
-
-name = "CUDNN_CUDA$(cuda_version.major)$(cuda_version.minor)"
+name = "CUDNN"
+version = v"8.2.0"#.53
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -39,24 +40,24 @@ fi
 """
 
 products = [
-    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
+    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn, dont_dlopen = true),
 ]
 
-dependencies = [Dependency(PackageSpec(name="CUDA_jll", version=cuda_version))]
+# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
+#      lacking that, we can't currently dlopen the library
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-if @isdefined(sources_linux_x64) && should_build_platform("x86_64-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version, sources_linux_x64, script,
-                   [Platform("x86_64", "linux")], products, dependencies)
-end
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3"]
+for cuda_version in cuda_versions
+    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
+    include("build_$(cuda_tag).jl")
 
-if @isdefined(sources_linux_ppc64le) && should_build_platform("powerpc64le-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
-                   [Platform("powerpc64le", "linux")], products, dependencies)
-end
+    for (platform, sources) in platforms_and_sources
+        should_build_platform(triplet(platform)) || continue
+        platform.tags["cuda"] = cuda_tag
 
-if @isdefined(sources_windows) && should_build_platform("x86_64-w64-mingw32")
-    build_tarballs(ARGS, name, version, sources_windows, script,
-                   [Platform("x86_64", "windows")], products, dependencies)
+        build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
+                       lazy_artifacts=true)
+    end
 end
