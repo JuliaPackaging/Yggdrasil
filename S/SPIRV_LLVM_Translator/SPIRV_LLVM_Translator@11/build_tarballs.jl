@@ -3,11 +3,11 @@ include("../common.jl")
 version = v"11.0"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "db02e6a3bb872abd3c8d8971c17a53d12cab9bc4")]
+sources = [GitSource(repo, "d3c8d0e0379202b124c0ff5454a05ab0fc1153f7")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.0")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
     #Dependency(PackageSpec(name="libLLVM_jll", version=v"11.0.0"))
 ]
 

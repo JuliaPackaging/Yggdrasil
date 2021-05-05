@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Translator"
-repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
+repo = "https://github.com/maleadt/SPIRV-LLVM-Translator.git"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
