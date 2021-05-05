@@ -43,7 +43,7 @@ fi
 cd ${WORKSPACE}/srcdir/abc
 
 # it appears necessary to have the file(s) for the FileProduct(s) live in the destdir
-cp abc.rc ${WORKSPACE}/destdir
+cp abc.rc ${prefix}/.
 
 make -j${nproc} ABC_USE_STDINT_H=1 CFLAGS+="${EXFLGS}" libabc.so
 # the abc Makefile always makes a .so  Fix that here.
