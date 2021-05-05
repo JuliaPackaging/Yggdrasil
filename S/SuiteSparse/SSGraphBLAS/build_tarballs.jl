@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
-cd $WORKSPACE/srcdir/GraphBLAS-*/build
+cd $WORKSPACE/srcdir/GraphBLAS/build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSER_NONE=1
 
 make -j${nproc} install
