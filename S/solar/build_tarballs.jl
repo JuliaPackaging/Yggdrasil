@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/solar/src
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows.patch"
 fi
-make
+make COMPILATOR="c++"
 mkdir -p $bindir
 cp "../bin/solar${exeext}" "${bindir}/solar${exeext}"
 exit
