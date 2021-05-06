@@ -23,7 +23,7 @@ if [[ "${target}" == *mingw* ]]; then
     cp ../bin/solar.exe $bindir/solar.exe
 else
   cp ../bin/solar $bindir/solar
-end
+fi
 exit
 """
 
