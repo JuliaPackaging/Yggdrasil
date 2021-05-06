@@ -19,17 +19,13 @@ if [[ "${target}" == *mingw* ]]; then
 fi
 make
 mkdir -p $bindir
-if [[ "${target}" == *mingw* ]]; then
-    cp ../bin/solar.exe $bindir/solar.exe
-else
-  cp ../bin/solar $bindir/solar
-fi
+cp "../bin/solar${exeext}" "${bindir}/solar${exeext}"
 exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 
 # The products that we will ensure are always built
@@ -41,4 +37,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
