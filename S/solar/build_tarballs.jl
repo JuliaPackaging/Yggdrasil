@@ -7,12 +7,16 @@ version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/solar.git", "d0c2932a3f25d4b0a71010b87b1f929c6fc1e020")
+    GitSource("https://github.com/bbopt/solar.git", "d0c2932a3f25d4b0a71010b87b1f929c6fc1e020"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/solar/src
+if [[ "${target}" == *mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows.patch"
+fi
 make
 mkdir -p $bindir
 cp ../bin/solar $bindir/solar
