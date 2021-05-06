@@ -19,7 +19,7 @@ if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
     # For mysterious reasons, the shared library is not installed
     # when building for Windows
     mkdir -p "${libdir}"
-    cp "libgraphblas.${dlext}" "${libdir}"
+    cp "build/libgraphblas.${dlext}" "${libdir}"
 fi
 """
 
