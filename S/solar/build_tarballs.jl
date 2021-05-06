@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/solar/src
 make
+mkdir -p $bindir
 cp ../bin/solar $bindir/solar
 exit
 """
