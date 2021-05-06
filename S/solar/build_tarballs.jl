@@ -19,7 +19,11 @@ if [[ "${target}" == *mingw* ]]; then
 fi
 make
 mkdir -p $bindir
-cp ../bin/solar $bindir/solar
+if [[ "${target}" == *mingw* ]]; then
+    cp ../bin/solar.exe $bindir/solar.exe
+else
+  cp ../bin/solar $bindir/solar
+end
 exit
 """
 
