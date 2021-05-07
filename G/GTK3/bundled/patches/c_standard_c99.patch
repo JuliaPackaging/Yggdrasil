@@ -1,0 +1,10 @@
+--- a/meson.build
++++ b/meson.build
+@@ -1,6 +1,7 @@
+ project('gtk+-3.0', 'c',
+         version: '3.24.29',
+         default_options: [
++          'c_std=c99',
+           'buildtype=debugoptimized',
+           'warning_level=1'
+         ],
