@@ -157,7 +157,8 @@ if [[ ${target} == *linux* ]]; then
     CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
-if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
+# if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
+if [[ ${target} == *linux* ]]; then # TODO only LLVM12
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
