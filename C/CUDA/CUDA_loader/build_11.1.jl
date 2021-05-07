@@ -28,9 +28,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     # CUDA BLAS Library
     mv lib64/libcublas.so* lib64/libcublasLt.so* ${libdir}
 
-    # NVIDIA "Drop-in" BLAS Library
-    mv lib64/libnvblas.so* ${libdir}
-
     # CUDA Sparse Matrix Library
     mv lib64/libcusparse.so* ${libdir}
 
@@ -42,9 +39,6 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
-
-    # NVIDIA Performance Primitives Library
-    mv lib64/libnpp*.so* ${libdir}
 
     # NVIDIA Optimizing Compiler Library
     mv nvvm/lib64/libnvvm.so* ${libdir}
@@ -64,8 +58,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv compute-sanitizer/* ${bindir}
 
     # Additional binaries
+    mv bin/ptxas ${bindir}
     mv bin/nvdisasm ${bindir}
-    mv bin/cuda-memcheck ${bindir}
+    mv bin/nvlink ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -76,9 +71,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # CUDA BLAS Library
     mv bin/cublas64_*.dll bin/cublasLt64_*.dll ${bindir}
-
-    # NVIDIA "Drop-in" BLAS Library
-    mv bin/nvblas64_*.dll ${bindir}
 
     # CUDA Sparse Matrix Library
     mv bin/cusparse64_*.dll ${bindir}
@@ -91,9 +83,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # CUDA Random Number Generation Library
     mv bin/curand64_*.dll ${bindir}
-
-    # NVIDIA Performance Primitives Library
-    mv bin/npp*64_*.dll ${bindir}
 
     # NVIDIA Optimizing Compiler Library
     mv nvvm/bin/nvvm64_*.dll ${bindir}
@@ -113,8 +102,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv compute-sanitizer/* ${bindir}
 
     # Additional binaries
+    mv bin/ptxas.exe ${bindir}
     mv bin/nvdisasm.exe ${bindir}
-    mv bin/cuda-memcheck.exe ${bindir}
+    mv bin/nvlink.exe ${bindir}
 
     # Fix permissions
     chmod +x ${bindir}/*.{exe,dll}
@@ -122,8 +112,7 @@ fi
 """
 
 products = [
-    ExecutableProduct("nvdisasm", :nvdisasm),
-    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
+    LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
     LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
     LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
     LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
@@ -134,6 +123,10 @@ products = [
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+    ExecutableProduct("ptxas", :ptxas),
+    ExecutableProduct("nvdisasm", :nvdisasm),
+    ExecutableProduct("nvlink", :nvlink),
+    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
 platforms = [Platform("x86_64", "linux"),
