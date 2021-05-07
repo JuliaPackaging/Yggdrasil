@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GTK3"
-version = v"3.24.11"
+version = v"3.24.29"
 
 # Collection of sources required to build GTK
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/gtk+/$(version.major).$(version.minor)/gtk+-$(version).tar.xz",
-                  "dba7658d0a2e1bfad8260f5210ca02988f233d1d86edacb95eceed7eca982895"),
+                  "f57ec4ade8f15cab0c23a80dcaee85b876e70a8823d9105f067ce335a8268caa"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,16 +32,23 @@ ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
 # Remove wayland-scanner when present, so that we can call the native one
 rm -f ${prefix}/bin/wayland-scanner
 
+# Patch upstreamed: https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/3526
 atomic_patch -p1 $WORKSPACE/srcdir/patches/gdkwindow-quartz_c.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build.patch
-# The `meson.build` file has the wrong version number in 3.24.11.
-atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build_version_3.24.11.patch
+# Patch upstreamed: https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/3527
+atomic_patch -p1 $WORKSPACE/srcdir/patches/c_standard_c99.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11_backend=false -Dwayland_backend=false)
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland_backend=false)
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Despite what's declared in their meson.build, they require Meson 0.54:
+    # https://gitlab.gnome.org/GNOME/gtk/-/issues/3927
+    apk add meson --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 fi
 
 mkdir build-gtk && cd build-gtk
@@ -80,7 +87,8 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
-    Dependency("ATK_jll"),
+    # Gtk 3.24.29 requires ATK 2.35.1
+    Dependency("ATK_jll", v"2.36"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
     Dependency("xkbcommon_jll"),
     Dependency("iso_codes_jll"),
