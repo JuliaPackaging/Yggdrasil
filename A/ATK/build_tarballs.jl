@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ATK"
-version = v"2.34.1"
+version = v"2.36.0"
 
 # Collection of sources required to build ATK
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_$(version.major)_$(version.minor)_$(version.patch)/atk-ATK_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "337b0a0aa3be88a79091bb023c6792e1489c187b9492777b1cc3514b0b686b8a"),
+                  "395894d43f0628497f919dff1b769f5482af99a8991127277e365f9374f46d57"),
 ]
 
 # Bash recipe for building across all platforms
