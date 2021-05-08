@@ -30,24 +30,29 @@ if [[ "${target}" == *-mingw* ]]; then
 	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
 fi
 
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Remove system libexpat to avoid confusion
+    rm /usr/lib/libexpat.so*
+fi
+
 ./configure \
---prefix=${prefix} --build=${MACHTYPE} --host=${target} \
---enable-shared \
---with-python=no \
---with-cxx \
---with-lapack --with-lapack-includes=${prefix}/include \
---with-tiff --with-tiff-includes=${prefix}/include \
---with-png --with-png-includes=${prefix}/include \
---with-sqlite --with-sqlite-includes=${prefix}/include \
---with-opengl=no \
---with-fftw --with-fftw-includes=${prefix}/include \
---with-cairo --with-cairo-includes=${prefix}/include/cairo --with-cairo-ldflags=-lfontconfig \
---with-freetype --with-freetype-includes=${prefix}/include/freetype2 \
---with-regex \
---with-zstd --with-zstd-includes=${prefix}/include \
---with-geos=${bindir}/geos-config \
---with-gdal \
---with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
+    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-shared \
+    --with-python=no \
+    --with-cxx \
+    --with-lapack --with-lapack-includes=${prefix}/include \
+    --with-tiff --with-tiff-includes=${prefix}/include \
+    --with-png --with-png-includes=${prefix}/include \
+    --with-sqlite --with-sqlite-includes=${prefix}/include \
+    --with-opengl=no \
+    --with-fftw --with-fftw-includes=${prefix}/include \
+    --with-cairo --with-cairo-includes=${prefix}/include/cairo --with-cairo-ldflags=-lfontconfig \
+    --with-freetype --with-freetype-includes=${prefix}/include/freetype2 \
+    --with-regex \
+    --with-zstd --with-zstd-includes=${prefix}/include \
+    --with-geos=${bindir}/geos-config \
+    --with-gdal \
+    --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
 
 make -j${nproc}
 make install
