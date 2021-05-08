@@ -68,9 +68,9 @@ dependencies = [
     Dependency("FLAC_jll"),
     Dependency("FreeType2_jll"),
     Dependency("libvorbis_jll"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_xorgproto_jll"),
+    BuildDependency("Xorg_libXrandr_jll"),
+    BuildDependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("OpenAL_jll"),
     Dependency("eudev_jll")
 ]
