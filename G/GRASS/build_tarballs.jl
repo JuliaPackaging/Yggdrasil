@@ -536,6 +536,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(name="GRASS_jll", uuid="58433f90-7b86-51a1-96c6-55447b2352ff", url="https://github.com/giordano/GRASS_jll.jl.git"))
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
     Dependency(PackageSpec(name="PROJ_jll", uuid="58948b4f-47e0-5654-a9ad-f609743f8632"))
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a"))
