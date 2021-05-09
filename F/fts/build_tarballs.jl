@@ -7,21 +7,23 @@ version = v"1.2.7"
 
 # Collection of sources required to build fts
 sources = [
-    ArchiveSource("https://github.com/pullmoll/musl-fts/archive/v$version.zip",
-                  "3b1fe92f1d8cb98488d1bce2ad078cd815f10a0fad0c03caf30229c9318f300b"),
+    GitSource("https://github.com/void-linux/musl-fts.git",
+              "0bde52df588e8969879a2cae51c3a4774ec62472"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/musl-fts-*/
+cd $WORKSPACE/srcdir/musl-fts/
 ./bootstrap.sh
 CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license ./COPYING
 """
 
-# Select Unix platforms
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) == "musl"]
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
