@@ -7,7 +7,7 @@ version = v"34"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/imr/ngspice.git", "279edff5d9877b13ddd7708285553ea20d6f14cd"),
+    GitSource("https://github.com/JuliaSky130/ngspice.git", "a034b9a2bafcc218aba92c911a6425953f0bda28"),
     DirectorySource("./bundled")
 ]
 
