@@ -55,8 +55,23 @@ fi
     --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
 
 # Build only the libraries
-make -j${nproc} -C include
-make -C lib
+DIRS=(
+    include
+    tools
+    lib/external/shapelib
+    lib/datetime
+    lib/gis
+    lib/linkm
+    lib/db
+    lib/btree2
+    lib/vector
+    db/drivers
+    lib
+)
+
+for dir in "${DIRS[@]}"; do
+    make -j${nproc} -C "${dir}"
+done
 
 # Manually install libraries and header files
 cp dist.*/lib/*.${dlext}* ${libdir}/.
