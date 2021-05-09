@@ -22,8 +22,9 @@ install -D -m644 argp.h ${includedir}/argp.h
 install -D -m755 libargp.a ${libdir}/libargp.a
 """
 
-# Select Unix platforms
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) == "musl"]
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
