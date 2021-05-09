@@ -3,25 +3,26 @@
 using BinaryBuilder
 
 name = "obstack"
-version = v"1.1.0"
+version = v"1.2.2"
 
 # Collection of sources required to build obstack
 sources = [
-    ArchiveSource("https://github.com/pullmoll/musl-obstack/archive/v$(version.major).$(version.minor).tar.gz",
-                  "52a216613e7d55e8725e43d017bb2d49a4b1ffa1e06da472f03c7f9875df7d0d"),
+    GitSource("https://github.com/void-linux/musl-obstack.git",
+              "d0493f4726835a08c5a145bce42b61a65847c6a9"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/musl-obstack-*/
+cd $WORKSPACE/srcdir/musl-obstack/
 ./bootstrap.sh
 CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
-# Select Unix platforms
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) == "musl"]
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
