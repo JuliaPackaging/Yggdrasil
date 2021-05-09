@@ -67,6 +67,10 @@ DIRS=(
     lib/vector
     db/drivers
     lib
+    imagery/i.ortho.photo/lib
+    vector/v.lrs/lib
+    raster/r.li/r.li.daemon
+    raster/r.sim/simlib
 )
 
 for dir in "${DIRS[@]}"; do
