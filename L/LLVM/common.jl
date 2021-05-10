@@ -296,6 +296,22 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
+const mlirscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/mlir ${prefix}/lib/mlir
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
 const llvmscript = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
@@ -305,13 +321,15 @@ rm -rf ${prefix}/*
 
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config}
+rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${libdir}/*MLIR*.${dlext}*
 rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
+rm -vrf ${prefix}/lib/mlir
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false)
@@ -359,6 +377,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         error("You must lock an extracted LLVM build to a particular libLLVM build number!")
     end
     version = VersionNumber(LLVM_full_version.major, LLVM_full_version.minor, LLVM_full_version.patch)
+    compat_version = "$(version.major).$(version.minor).$(version.patch)"
     if name == "libLLVM"
         script = libllvmscript
         products = [
@@ -371,6 +390,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
             ExecutableProduct("clang", :clang, "tools"),
         ]
+    elseif name == "MLIR"
+        script = mlirscript
+        products = [
+            LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
+        ]        
     elseif name == "LLVM"
         script = llvmscript
         products = [
@@ -394,14 +418,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM")
-            push!(dependencies, Dependency(get_addable_spec("libLLVM_assert_jll", libLLVM_version)))
+        if name in ("Clang", "LLVM", "MLIR")
+            push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
         end
         name = "$(name)_assert"
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM")
-            push!(dependencies, Dependency(get_addable_spec("libLLVM_jll", libLLVM_version)))
+        if name in ("Clang", "LLVM", "MLIR")
+            push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end
 
