@@ -1,18 +1,18 @@
 using BinaryBuilder
 
 name = "Bzip2"
-version = v"1.0.6"
+version = v"1.0.8"
 
 
 # Collection of sources required to build bzip2
 sources = [
-    GitSource("https://github.com/enthought/bzip2-1.0.6.git",
-              "288acf97a15d558f96c24c89f578b724d6e06b0c"),
+    GitSource("git://sourceware.org/git/bzip2.git",
+              "6a8690fc8d26c815e798c588f796eabe9d684cf0"),
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
-cd $WORKSPACE/srcdir/bzip2-*/
+script = "VERSION=$(version)\n" * raw"""
+cd $WORKSPACE/srcdir/bzip2*/
 
 # Welp, auto-patching an include because otherwise win32/64 bzip2 won't cross-compile
 sed -i 's/sys\\stat\.h/sys\/stat\.h/g' bzip2.c
@@ -25,35 +25,34 @@ make CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
 # Build dynamic library
 if [[ "${target}" == *-darwin* ]]; then
-    $CC -shared -current_version 1.0.6 -compatibility_version 1.0 -o libbz2.1.0.6.dylib $LDFLAGS $OBJS
-    ln -s libbz2.1.0.6.dylib libbz2.1.0.dylib
-    ln -s libbz2.1.0.6.dylib libbz2.1.dylib
-    ln -s libbz2.1.0.6.dylib libbz2.dylib
-    mv libbz2*.dylib ${prefix}/lib/
+    cc -shared -current_version "${VERSION}" -compatibility_version 1.0 -o "libbz2.${VERSION}.dylib" ${OBJS}
+    ln -s libbz2.${VERSION}.dylib libbz2.1.0.dylib
+    ln -s libbz2.${VERSION}.dylib libbz2.1.dylib
+    ln -s libbz2.${VERSION}.dylib libbz2.dylib
 elif [[ "${target}" == *-mingw* ]]; then
-    $CC -shared -o libbz2-1.dll $LDFLAGS $OBJS
+    cc -shared -o libbz2-1.dll ${OBJS}
     ln -s libbz2-1.dll libbz2.dll
-    mv libbz2*.dll ${prefix}/bin/
 else
-    $CC -shared -Wl,-soname -Wl,libbz2.so.1.0 -o libbz2.so.1.0.6 $LDFLAGS $OBJS
-    ln -s libbz2.so.1.0.6 libbz2.so.1.0
-    ln -s libbz2.so.1.0.6 libbz2.so.1
-    ln -s libbz2.so.1.0.6 libbz2.so
-    mv libbz2.so* ${prefix}/lib/
+    cc -shared -Wl,-soname -Wl,libbz2.so.1.0 -o "libbz2.so.${VERSION}" ${OBJS}
+    ln -s "libbz2.so.${VERSION}" libbz2.so.1.0
+    ln -s "libbz2.so.${VERSION}" libbz2.so.1
+    ln -s "libbz2.so.${VERSION}" libbz2.so
 fi
+mkdir -p ${libdir}
+mv libbz2*.${dlext}* ${libdir}/.
 
 # Add pkg-config file
 mkdir -p ${prefix}/lib/pkgconfig
 cat << EOF > $prefix/lib/pkgconfig/bzip2.pc
 prefix=${prefix}
 exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
+libdir=\${exec_prefix}/$(basename ${libdir})
 sharedlibdir=\${libdir}
 includedir=\${prefix}/include
 
 Name: bzip2
 Description: bzip2 compression library
-Version: 1.0.6
+Version: ${VERSION}
 
 Requires:
 Libs: -L\${libdir} -L\${sharedlibdir} -lbz2
@@ -63,7 +62,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -71,7 +70,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
