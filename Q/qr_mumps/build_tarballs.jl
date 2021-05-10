@@ -13,8 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd qr_mumps*
+cd $WORKSPACE/srcdir/qr_mumps*
 mkdir build
 cd build
 cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON \
