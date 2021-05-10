@@ -13,6 +13,16 @@ sources = [
 script = raw"""
 install_license ${WORKSPACE}/srcdir/licensecheck/LICENSE
 cd $WORKSPACE/srcdir/licensecheck/
+
+if [[ "${target}" == *-darwin* ]]; then
+    # Create official Apple-blessed `xcrun`, needed by the CGO linker
+    cat > /usr/bin/xcrun << EOF
+#!/bin/sh
+exec "\${@}"
+EOF
+    chmod +x /usr/bin/xcrun
+fi
+
 mkdir clib
 cp $WORKSPACE/srcdir/main.go clib/main.go
 mkdir -p ${libdir}
