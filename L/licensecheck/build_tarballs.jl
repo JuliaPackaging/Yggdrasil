@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "licensecheck"
-version = v"000.300.101"
+version = v"0.3.1"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
