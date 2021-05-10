@@ -1,5 +1,6 @@
 using BinaryBuilder
 
+
 name = "licensecheck"
 version = v"0.3.1"
 
