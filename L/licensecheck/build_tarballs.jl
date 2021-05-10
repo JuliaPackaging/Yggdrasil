@@ -5,7 +5,7 @@ version = v"0.3.1"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
-              "5aa300fd3333d0c6592148249397338023cafcce"),
+              "16aaea36649f556bae5a5ee972c247f58a0de1c4"),
     DirectorySource("./bundled")
 
 ]
