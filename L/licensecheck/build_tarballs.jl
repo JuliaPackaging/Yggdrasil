@@ -5,15 +5,24 @@ version = v"0.3.1"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
-              "16aaea36649f556bae5a5ee972c247f58a0de1c4"),
+              "5aa300fd3333d0c6592148249397338023cafcce"),
     DirectorySource("./bundled")
-
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 install_license ${WORKSPACE}/srcdir/licensecheck/LICENSE
 cd $WORKSPACE/srcdir/licensecheck/
+
+if [[ "${target}" == *-darwin* ]]; then
+    # Create official Apple-blessed `xcrun`, needed by the CGO linker
+    cat > /usr/bin/xcrun << EOF
+#!/bin/sh
+exec "\${@}"
+EOF
+    chmod +x /usr/bin/xcrun
+fi
+
 mkdir clib
 cp $WORKSPACE/srcdir/main.go clib/main.go
 mkdir -p ${libdir}
@@ -34,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], preferred_gcc_version=v"6")
