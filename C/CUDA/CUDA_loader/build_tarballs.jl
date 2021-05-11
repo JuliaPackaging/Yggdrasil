@@ -10,12 +10,7 @@ for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
 
-    for platform in platforms
-        platform.tags["cuda"] = cuda_tag
-    end
-
     any(should_build_platform.(triplet.(platforms))) || continue
     build_tarballs(ARGS, name, version, [], script, platforms, products, dependencies;
                    lazy_artifacts=true)
-
 end
