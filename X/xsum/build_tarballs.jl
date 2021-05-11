@@ -6,7 +6,7 @@ version = v"1.1"
 # Collection of sources required to build Xsum
 sources = [
     GitSource("https://gitlab.com/radfordneal/xsum.git",
-              "e3212fdcff9928f0b9e571a89fa08b2d2d634a81"), # version 2018-12-02 "1.1"
+              "e3212fdcff9928f0b9e571a89fa08b2d2d634a81"), # version 2021-05-10 "1.1"
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ mkdir -p ${libdir}
 if [[ $target == i686-* ]]; then
     xsumfpmath="-mfpmath=sse"
 fi
-${CC} -shared -fPIC -O3 -std=c99 ${xsumfpmath} -fno-inline-functions -o ${libdir}/libxsum.${dlext} xsum.c pbinary.c
+${CC} -shared -fPIC -O3 -std=c99 ${xsumfpmath} -fno-inline-functions -o ${libdir}/libxsum.${dlext} xsum.c
 """
 
 # These are the platforms we will build for by default, unless further
