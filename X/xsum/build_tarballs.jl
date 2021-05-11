@@ -21,7 +21,7 @@ ${CC} -shared -fPIC -O3 -std=c99 ${xsumfpmath} -fno-inline-functions -o ${libdir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() # build on all supported platforms
+platforms = supported_platforms(; experimental=true) # build on all supported platforms
 
 # The products that we will ensure are always built
 products = [
