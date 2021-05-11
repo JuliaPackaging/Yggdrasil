@@ -129,6 +129,6 @@ products = [
     ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
-platforms = [Platform("x86_64", "linux"),
-             Platform("powerpc64le", "linux"),
-             Platform("x86_64", "windows")]
+platforms = [Platform("x86_64", "linux"; cuda="11.0"),
+             Platform("powerpc64le", "linux"; cuda="11.0"),
+             Platform("x86_64", "windows"; cuda="11.0")]
