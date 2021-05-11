@@ -16,8 +16,7 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/grass-*/
 
-#add flag for linker to find Libiconv, otherwise get undefined references to libiconv, libiconv_open, and libconv_close errors
-export LDFLAGS="$LDFLAGS -liconv"
+export LDFLAGS="-L${libdir}"
 
 #patch remove g.proj from general/Makefile for right now, throws a segmentation fault
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
