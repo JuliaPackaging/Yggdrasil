@@ -1,0 +1,11 @@
+--- a/fat-ppc.c
++++ b/fat-ppc.c
+@@ -46,7 +46,7 @@
+ # if __GLIBC_PREREQ(2, 16)
+ #  define USE_GETAUXVAL 1
+ #  include <asm/cputable.h>
+-#  include <sys/auxv.h>
++#  include <linux/auxvec.h>
+ # endif
+ #elif defined(__FreeBSD__)
+ # include <machine/cpu.h>
