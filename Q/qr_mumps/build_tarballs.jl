@@ -13,16 +13,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd qr_mumps*
+cd $WORKSPACE/srcdir/qr_mumps*
 mkdir build
 cd build
-starpu="ON"
-if [[ ${target} == aarch64-linux-musl* ]]; then
-    starpu="OFF"
-fi
 cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON \
-                           -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=$starpu -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release \
+                           -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=OFF -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release \
                            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
 make -j${nproc}
 make install
