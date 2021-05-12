@@ -11,13 +11,24 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes --enable-static=no --disable-mpi-fortran --without-cs-fs
+if [[ "${target}" == *-freebsd* ]]; then
+    # Help compiler find `complib/cl_types.h`.
+    export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
+fi
+
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-shared=yes \
+    --enable-static=no \
+    --disable-mpi-fortran \
+    --without-cs-fs
 
 # Build the library
-make "${flags[@]}" -j${nproc}
+make -j${nproc}
 
 # Install the library
-make "${flags[@]}" install
+make install
 """
 
 # These are the platforms we will build for by default, unless further
