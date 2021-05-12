@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "Deno"
-version = v"1.9.2"
+version = v"1.10.1"
 
 release_url = "https://github.com/denoland/deno/releases/download/v$version"
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "05c69483ff0b98c7b26666e35672b71f3dcde1df523db10ccee60510275be1c5"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "6facc63a33c575a016ec51c911ea0c1f09d51021d42b57d610a2185f26974bae"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "2725784bbccbef854b18ff25d4cf5ef6e0e85be783973edabad62d785fa009e3"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$release_url/deno_src.tar.gz", "555d928670a147e7048685ab8bcb75bc96237bd2511965d4d897ed4bb52e0373"),
+    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "cd82598abdefade06c9df0fc5644313213f118eceb9e42f984ec59323d8aec51"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "214e998a5eb69710440cc9671270869ae89019172a90127c91e146a50c23bb88"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "312559f818915a60584863420e4f7f74779fcbbdebae31868335dfa09e094dc0"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$release_url/deno_src.tar.gz", "947fa815f24d85d70bc3196c1180abe846ab104c9213c6b2b1a42c4a065ef5a5"),
 ]
 
 # Bash recipe for building across all platforms
