@@ -1,12 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.3.2"
+version = v"3.4.1"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
-    DirectorySource("./bundled"),
+                  "8836939804ef6d492bcee7d54abafd6477d2beca247157d92688654d13779727"),
 ]
 
 script = raw"""
@@ -22,11 +21,6 @@ if [[ "${target}" == powerpc64le-* ]]; then
     # extra link flags are not appended to the gfortran wrapper
     sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
 fi
-
-atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
-pushd src/mpi/romio
-autoreconf -vi
-popd
 
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
