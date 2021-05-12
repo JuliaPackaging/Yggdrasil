@@ -34,45 +34,44 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
-]
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("imagecalc", :imagecalc),
-    ExecutableProduct("taql", :taql),
-    LibraryProduct("libcasa_coordinates", :casa_coordinates),
-    ExecutableProduct("readms", :readms),
-    LibraryProduct("libcasa_lattices", :casa_lattices),
-    LibraryProduct("libcasa_ms", :casa_ms),
-    ExecutableProduct("lsmf", :lsmf),
-    ExecutableProduct("tomf", :tomf),
-    LibraryProduct("libcasa_scimath", :casa_scimath),
+    LibraryProduct("libcasa_casa", :libcasa_casa),
+    LibraryProduct("libcasa_coordinates", :libcasa_coordinates),
+    LibraryProduct("libcasa_derivedmscal", :libcasa_derivedmscal),
+    LibraryProduct("libcasa_fits", :libcasa_fits),
+    LibraryProduct("libcasa_images", :libcasa_images),
+    LibraryProduct("libcasa_lattices", :libcasa_lattices),
+    LibraryProduct("libcasa_meas", :libcasa_meas),
+    LibraryProduct("libcasa_measures", :libcasa_measures),
+    LibraryProduct("libcasa_mirlib", :libcasa_mirlib),
+    LibraryProduct("libcasa_msfits", :libcasa_msfits),
+    LibraryProduct("libcasa_ms", :libcasa_ms),
+    LibraryProduct("libcasa_scimath_f", :libcasa_scimath_f),
+    LibraryProduct("libcasa_scimath", :libcasa_scimath),
+    LibraryProduct("libcasa_tables", :libcasa_tables),
     ExecutableProduct("casahdf5support", :casahdf5support),
-    LibraryProduct("libcasa_casa", :casa_casa),
-    LibraryProduct("libcasa_fits", :casa_fits),
-    LibraryProduct("libcasa_images", :casa_images),
-    ExecutableProduct("imageregrid", :imageregrid),
-    LibraryProduct("libcasa_tables", :casa_tables),
-    ExecutableProduct("msselect", :msselect),
-    ExecutableProduct("measuresdata", :measuresdata),
-    LibraryProduct("libcasa_scimath_f", :casa_scimath),
-    ExecutableProduct("showtablelock", :showtablelock),
-    ExecutableProduct("fits2table", :fits2table),
-    LibraryProduct("libcasa_msfits", :casa_msfits),
-    ExecutableProduct("imageslice", :imageslice),
-    LibraryProduct("libcasa_meas", :casa_meas),
-    ExecutableProduct("image2fits", :image2fits),
-    ExecutableProduct("showtableinfo", :showtableinfo),
-    ExecutableProduct("tablefromascii", :tablefromascii),
     ExecutableProduct("findmeastable", :findmeastable),
+    ExecutableProduct("fits2table", :fits2table),
+    ExecutableProduct("image2fits", :image2fits),
+    ExecutableProduct("imagecalc", :imagecalc),
+    ExecutableProduct("imageregrid", :imageregrid),
+    ExecutableProduct("imageslice", :imageslice),
+    ExecutableProduct("lsmf", :lsmf),
+    ExecutableProduct("measuresdata", :measuresdata),
+    ExecutableProduct("measuresdata-update", :measuresdata_update),
     ExecutableProduct("ms2uvfits", :ms2uvfits),
+    ExecutableProduct("msselect", :msselect),
+    ExecutableProduct("readms", :readms),
+    ExecutableProduct("showtableinfo", :showtableinfo),
+    ExecutableProduct("showtablelock", :showtablelock),
+    ExecutableProduct("tablefromascii", :tablefromascii),
+    ExecutableProduct("taql", :taql),
+    ExecutableProduct("tomf", :tomf),
     ExecutableProduct("writems", :writems),
-    LibraryProduct("libcasa_derivedmscal", :casa_derivedmscal),
-    LibraryProduct("libcasa_measures", :casa_measures),
-    LibraryProduct("libcasa_mirlib", :casa_mirlib)
 ]
 
 # Dependencies that must be installed before this package can be built
