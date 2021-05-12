@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenMPI"
-version = v"4.0.2"
+version = v"4.1.1"
 sources = [
-    ArchiveSource("https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-$(version).tar.gz",
-                  "662805870e86a1471e59739b0c34c6f9004e0c7a22db068562d5388ec4421904"),
+    ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
+                  "d80b9219e80ea1f8bcfe5ad921bd9014285c4948c5965f4156a3831e60776444"),
 ]
 
 script = raw"""
