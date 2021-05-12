@@ -5,11 +5,11 @@ import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
 
 name = "libsingular_julia"
-version = VersionNumber(0, 10, julia_version.minor)
+version = VersionNumber(0, 11, julia_version.minor)
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "1521ad223a44e31d244c2b66d95dc34fdb019ea2"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "d6a81e1dfc502429489c224e462364a98e8b6a2c"),
 ]
 
 # Bash recipe for building across all platforms
