@@ -57,7 +57,9 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("Xorg_libXext_jll"),
     Dependency("Xorg_libXrender_jll"),
     Dependency("LZO_jll"),
