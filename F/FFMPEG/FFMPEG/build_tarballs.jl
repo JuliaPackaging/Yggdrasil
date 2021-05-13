@@ -31,9 +31,11 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency(PackageSpec(name="x264_jll", version=v"2020.7.14")),
+    Dependency("x264_jll", v"2020.7.14"; compat="=2020.7.14"),
     Dependency("x265_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency("Opus_jll"),

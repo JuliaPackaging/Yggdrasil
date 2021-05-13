@@ -74,7 +74,9 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"),
     Dependency("OpenLDAPClient_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("SQLite_jll"),
     Dependency("libusb_jll"),
     Dependency("Nettle_jll", v"3.4.1", compat="~3.4.1"),

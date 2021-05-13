@@ -72,12 +72,14 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
-    "Bzip2_jll",
-    "Libffi_jll",
-    "Zlib_jll",
-    "XZ_jll",
-    "OpenSSL_jll",
+    Dependency("Expat_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Libffi_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("XZ_jll"),
+    Dependency("OpenSSL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
