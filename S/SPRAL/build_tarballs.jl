@@ -24,7 +24,10 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
-make && make install
+make
+gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libspral.a -Wl,$(flagon --no-whole-archive) -lgomp -lopenblas -lhwloc -lmetis -lstdc++ -o libspral.${dlext}
+make install
+cp libspral.${dlext} ${libdir}
 exit
 """
 
@@ -35,8 +38,8 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libspral", :libspral),
     ExecutableProduct("spral_ssids", :spral_ssids)
-    FileProduct("lib/libspral.a", :libspral_a)
 ]
 
 # Dependencies that must be installed before this package can be built
