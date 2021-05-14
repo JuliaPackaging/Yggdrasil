@@ -51,8 +51,8 @@ dependencies = [
     Dependency("Xorg_libXScrnSaver_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("alsa_jll"),
+    Dependency("PulseAudio_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
