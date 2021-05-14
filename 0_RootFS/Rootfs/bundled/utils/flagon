@@ -73,7 +73,10 @@ for flag in "${FLAGS[@]}"; do
         --no-whole-archive)
             case "${PLATFORM}" in
                 *-apple-*)
-                    echo -n "-noall_load -n"
+                # The macOS flag here should be `-noall_load`, but it's the
+                # default behaviour and this flag is now obsolete:
+                # https://stackoverflow.com/a/32984843/2442087
+                    echo -n ""
                     ;;
                 *)
                     echo -n "--no-whole-archive "
