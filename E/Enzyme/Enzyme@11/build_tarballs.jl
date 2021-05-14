@@ -3,11 +3,11 @@ using BinaryBuilder, Pkg
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.10"
+auto_version = "refs/tags/v0.0.11"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "7495e2ff0187c1e4188eabbd0685601629d92b6f")]
+sources = [GitSource(repo, "c8255c15b7dc0bbc635b0cb00258a2880bb8cfce")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
