@@ -7,8 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "cd2d2e817275f16d586cf72767631b3c7472ce02"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/ralna/spral.git", "cd2d2e817275f16d586cf72767631b3c7472ce02")
 ]
 
 # Bash recipe for building across all platforms
