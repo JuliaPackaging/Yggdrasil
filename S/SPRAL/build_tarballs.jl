@@ -7,13 +7,17 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "186b1c3bb0d3c09640365a1e109aa5c9115e6cf8"),
+    GitSource("https://github.com/ralna/spral.git", "cd2d2e817275f16d586cf72767631b3c7472ce02"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
 ./autogen.sh
 mkdir build
 cd build
@@ -22,6 +26,7 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
 make && make install
+cc -shared -fPIC -o "${libdir}/libspral.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libspral.a"
 exit
 """
 
