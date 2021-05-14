@@ -73,7 +73,7 @@ for flag in "${FLAGS[@]}"; do
         --no-whole-archive)
             case "${PLATFORM}" in
                 *-apple-*)
-                    echo -n "-noall_load -n"
+                    echo -n "-noall_load "
                     ;;
                 *)
                     echo -n "--no-whole-archive "
