@@ -14,10 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
 ./autogen.sh
 mkdir build
 cd build
@@ -26,7 +22,6 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
 make && make install
-cc -shared -fPIC -o "${libdir}/libspral.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libspral.a"
 exit
 """
 
