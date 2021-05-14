@@ -25,10 +25,8 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
 make
-gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libspral.a -Wl,$(flagon --no-whole-archive) -lgomp -lopenblas -lhwloc -lmetis -lstdc++ -o libspral.${dlext}
+gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libspral.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lgomp -lopenblas -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
 make install
-cp libspral.${dlext} ${libdir}
-exit
 """
 
 # These are the platforms we will build for by default, unless further
