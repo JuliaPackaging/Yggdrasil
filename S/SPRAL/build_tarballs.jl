@@ -26,7 +26,6 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
 make && make install
-cc -shared -fPIC -o "${libdir}/libspral.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libspral.a"
 exit
 """
 
