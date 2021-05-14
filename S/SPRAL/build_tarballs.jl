@@ -7,26 +7,18 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lanl-ansi/spral.git", "5a83fe10178997f89eecc17145b8ca30e4c3e989"),
+    GitSource("https://github.com/ralna/spral.git", "186b1c3bb0d3c09640365a1e109aa5c9115e6cf8"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/spral
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clong.patch
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
     CXX=g++
 fi
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/timespec.patch
-fi
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-w64-* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lrt.patch
-fi
 ./autogen.sh
-update_configure_scripts
 mkdir build
 cd build
 CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
@@ -34,6 +26,7 @@ CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
     --with-blas="-L${libdir} -lopenblas" --with-lapack="-L${libdir} -lopenblas" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${prefix}/include"
 make && make install
+cc -shared -fPIC -o "${libdir}/libspral.${dlext}" -Wl,$(flagon --whole-archive) "${prefix}/lib/libspral.a"
 exit
 """
 
@@ -57,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
