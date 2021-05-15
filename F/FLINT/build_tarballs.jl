@@ -31,7 +31,7 @@ upstream_version = v"2.8.0-dev"
 # Collection of sources required to build FLINT
 sources = [
 #    GitSource("https://github.com/wbhart/flint2.git", "12c069ea98cd8d2c1b556bbd85568c4891f126fa"),
-    ArchiveSource("https://github.com/wbhart/flint2/archive/refs/tags/$(upstream_version).tar.gz", #"https://www.flintlib.org/flint-$(upstream_version).tar.gz",
+    ArchiveSource("https://github.com/wbhart/flint2/archive/refs/tags/v$(upstream_version).tar.gz", #"https://www.flintlib.org/flint-$(upstream_version).tar.gz",
                   "d4750a20fbb6243f50c500c60006c7e39a9522667330a9d0f748abe248f7df0d")
 ]
 
@@ -78,4 +78,3 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
         cglobal(:jl_free))
   end
 """)
-
