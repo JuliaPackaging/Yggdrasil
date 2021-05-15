@@ -23,7 +23,7 @@ target_include_directories(hanabi PUBLIC
 
 target_compile_features(hanabi PRIVATE cxx_std_11)
 
-set_property(TARGET hanabi APPEND PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/pyhanabi.h)
+set_target_properties(hanabi PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/pyhanabi.h)
 
 install(TARGETS hanabi
         EXPORT hanabi-targets
