@@ -76,7 +76,7 @@ dependencies = [
     Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
