@@ -13,7 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 ./autogen.sh
 export CPPFLAGS="${CPPFLAGS} -I${includedir}"
@@ -24,7 +23,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(;exclude=Sys.iswindows, experimental=true))
+platforms = supported_platforms(;exclude=Sys.iswindows, experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("Gettext_jll")
+    Dependency("Gettext_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
