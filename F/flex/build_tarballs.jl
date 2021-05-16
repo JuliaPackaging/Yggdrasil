@@ -16,8 +16,8 @@ script = raw"""
 apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 if [[ "${target}" == *-mingw* ]]; then
-	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
-	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
+	cp ${includedir}/pcreposix.h ${includedir}/regex.h
+	export LDFLAGS="-lpcreposix-0 -L${libdir}"
 fi
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared --disable-bootstrap
