@@ -45,11 +45,11 @@ dependencies = [
     Dependency("Glib_jll"),
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
-    Dependency("Libffi_jll"),
+    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
     Dependency("Gettext_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
-    Dependency(PackageSpec(; name="ICU_jll", version=v"67.1.0")),
+    Dependency("ICU_jll", v"67.1.0"; compat="=67.1.0"),
     BuildDependency("Xorg_xorgproto_jll")
 ]
 

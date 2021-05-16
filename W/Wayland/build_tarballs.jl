@@ -41,7 +41,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
-    Dependency("Libffi_jll"),
+    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
     Dependency("XML2_jll"),
 ]
 
