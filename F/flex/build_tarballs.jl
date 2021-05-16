@@ -13,12 +13,20 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add gettext-dev
+
 cd ${WORKSPACE}/srcdir/flex-*
+if [[ "${target}" == *-mingw* ]]; then
+	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
+	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
+fi
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared --disable-bootstrap
 make -j${nproc}
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # Cover up the traces of the hack
+    rm ${prefix}/include/regex.h
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,7 +42,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("Gettext_jll")
+    HostBuildDependency("Gettext_jll"),
+    Dependency("PCRE_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
