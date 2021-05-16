@@ -35,10 +35,6 @@ fi
 
 sed -i "${SED_SCRIPT[@]}" \
     "${MESON_TARGET_TOOLCHAIN}"
-# We need a new version of objcopy (in binutils) and a native "msgfmt" (in gettext)
-apk add binutils gettext
-# Get rid of the old objcopy
-rm /opt/bin/objcopy
 
 meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
@@ -60,6 +56,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Host gettext needed for "msgfmt"
+    HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
     Dependency("Gettext_jll"),
