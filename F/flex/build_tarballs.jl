@@ -15,7 +15,7 @@ script = raw"""
 apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 ./autogen.sh
-./configure --prefix=${prefix} --disable-static --enable-shared --host="$target"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j${nproc} && make install
 """
 
