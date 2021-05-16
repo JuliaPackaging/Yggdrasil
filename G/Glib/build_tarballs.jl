@@ -13,15 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
-# Tell meson where to find libintl.h
-SED_SCRIPT=(-e "s?c_args = \[]?c_args = ['-I${includedir}']?")
-# We need to link to iconv, but ninja doesn't know how to do that as libiconv
-# doesn't have a pkgconfig file.  Let's give meson a tip.  Note: on PowerPC the
-# cross-file has already entries for `c_link_args`, so we have to append.
-if [[ "${target}" == powerpc64le-* ]]; then
-    SED_SCRIPT+=(-e "s?c_link_args = \[\(.*\)]?c_link_args = [\1, '-liconv']?")
-elif [[ "${target}" == *-freebsd* ]]; then
-    SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-L${libdir}', '-liconv']?")
+
+if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
     # be a problem at runtim.  This flag allows having undefined symbols.
@@ -33,15 +26,18 @@ elif [[ "${target}" == *-freebsd* ]]; then
     #     Don't fail if getxattr is not available. The code is already ready
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
-else
-    SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-liconv']?")
 fi
 
-sed -i "${SED_SCRIPT[@]}" \
+# Tell meson where to find libintl.h
+sed -i "s?c_args = \[]?c_args = ['-I${includedir}']?" \
     "${MESON_TARGET_TOOLCHAIN}"
 
 mkdir build_glib && cd build_glib
-meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}" "${MESON_FLAGS[@]}"
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Dman=false \
+    -Diconv=external \
+    "${MESON_FLAGS[@]}" \
+    ..
 ninja -j${nproc}
 ninja install
 """
@@ -72,4 +68,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
