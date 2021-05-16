@@ -7,7 +7,8 @@ version = v"2.6.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz", "e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995")
+    ArchiveSource("https://github.com/westes/flex/releases/download/v$(version)/flex-$(version).tar.gz",
+                  "e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,8 +16,9 @@ script = raw"""
 apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 ./autogen.sh
-./configure --prefix=${prefix} --disable-static --enable-shared --host="$target"
-make -j${nproc} && make install
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
