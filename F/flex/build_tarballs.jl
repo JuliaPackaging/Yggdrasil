@@ -16,7 +16,7 @@ apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 ./autogen.sh
 ./configure --prefix=${prefix} --disable-static --enable-shared --host="$target"
-make && make install
+make -j${nproc} && make install
 """
 
 # These are the platforms we will build for by default, unless further
