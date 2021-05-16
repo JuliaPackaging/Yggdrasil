@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.62.0"
+version = v"2.68.1"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "664a5dee7307384bb074955f8e5891c7cecece349bbcc8a8311890dc185b428e"),
+                  "241654b96bd36b88aaa12814efc4843b578e55d47440103727959ac346944333"),
 ]
 
 # Bash recipe for building across all platforms
