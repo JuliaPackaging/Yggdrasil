@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "lrslib"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaPolyhedra/lrslib.git",
-              "d8b723a2c315614979a8354f9e768d273d14a215"),
+    ArchiveSource("http://cgm.cs.mcgill.ca/~avis/C/lrslib/archive/lrslib-071a.tar.gz",
+                  "926636ea68de46625f141f6e025dce967cc7e68cf4bf4a597375c063f5c11673"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lrslib*
+atomic_patch -p1 ../patches/cflags.jl
+atomic_patch -p1 ../patches/firsttime.patch
 extraargs=""
 cflags="-fPIC -O3 -Wall"
 
@@ -53,7 +55,6 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("lrs", :lrs)
     ExecutableProduct("lrsnash", :lrsnash)
-    ExecutableProduct("redund", :redund)
     LibraryProduct("liblrs", :liblrs)
     LibraryProduct("liblrsnash", :liblrsnash)
 ]
