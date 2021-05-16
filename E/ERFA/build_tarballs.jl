@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ERFA"
-version = v"1.7.3"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/liberfa/erfa/releases/download/v$(version)/erfa-$(version).tar.gz", "80311221c96b45151f9a68517acc2b54b548b49d740e53cf409a6bc7502bd86b")
+    ArchiveSource("https://github.com/liberfa/erfa/releases/download/v$(version)/erfa-$(version).tar.gz", "75cb0a2cc1561d24203d9d0e67c21f105e45a70181d57f158e64a46a50ccd515")
 ]
 
 # Bash recipe for building across all platforms
