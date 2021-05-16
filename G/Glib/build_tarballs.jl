@@ -60,7 +60,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll"),
+    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
     Dependency("Gettext_jll"),
     Dependency("PCRE_jll"),
     Dependency("Zlib_jll"),
