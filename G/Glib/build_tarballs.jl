@@ -7,14 +7,14 @@ version = v"2.68.1"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "241654b96bd36b88aaa12814efc4843b578e55d47440103727959ac346944333"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
-mkdir build_glib && cd build_glib
-
-SED_SCRIPT=()
+# Tell meson where to find libintl.h
+SED_SCRIPT=(-e "s?c_args = \[]?c_args = ['-I${includedir}']?")
 # We need to link to iconv, but ninja doesn't know how to do that as libiconv
 # doesn't have a pkgconfig file.  Let's give meson a tip.  Note: on PowerPC the
 # cross-file has already entries for `c_link_args`, so we have to append.
@@ -22,21 +22,26 @@ if [[ "${target}" == powerpc64le-* ]]; then
     SED_SCRIPT+=(-e "s?c_link_args = \[\(.*\)]?c_link_args = [\1, '-liconv']?")
 elif [[ "${target}" == *-freebsd* ]]; then
     SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-L${libdir}', '-liconv']?")
+    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
+    # complain if this symbol is used in the built library, even if this won't
+    # be a problem at runtim.  This flag allows having undefined symbols.
+    MESON_FLAGS=(-Db_lundef=false)
+
+    # Adapt patch relative to `xattr` from
+    # http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/glib2/patches/patch-meson.build?rev=1.2&content-type=text/x-cvsweb-markup.
+    # Quoting the comment:
+    #     Don't fail if getxattr is not available. The code is already ready
+    #     for this case with some small configure changes.
+    atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 else
     SED_SCRIPT+=(-e "s?c_link_args = \[]?c_link_args = ['-liconv']?")
-fi
-if [[ "${target}" == i686-linux-musl ]]; then
-    # We can't run executables for i686-linux-musl in the BB environment
-    SED_SCRIPT+=(-e "s?needs_exe_wrapper = false?needs_exe_wrapper = true?" "${MESON_TARGET_TOOLCHAIN}")
-elif [[  "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
-    # Tell meson where to find libintl.h
-    SED_SCRIPT+=(-e "s?c_args = \[]?c_args = ['-I${prefix}/include']?")
 fi
 
 sed -i "${SED_SCRIPT[@]}" \
     "${MESON_TARGET_TOOLCHAIN}"
 
-meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+mkdir build_glib && cd build_glib
+meson .. -Dman=false --cross-file="${MESON_TARGET_TOOLCHAIN}" "${MESON_FLAGS[@]}"
 ninja -j${nproc}
 ninja install
 """
