@@ -5,12 +5,12 @@ using BinaryBuilder
 # TODO PR: Remove this line; this is a dummy change to trigger CI builds.
 
 name = "Fontconfig"
-version = v"2.13.1"
+version = v"2.13.93"
 
 # Collection of sources required to build FriBidi
 sources = [
-    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.bz2",
-                  "f655dd2a986d7aa97e052261b36aa67b0a64989496361eca8d604e6414006741"),
+    ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
+                  "ea968631eadc5739bc7c8856cef5c77da812d1f67b763f5e51b57b8026c1a0a0"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,10 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/fontconfig-*/
 
-apk add gperf
-
-# Ensure that `${prefix}/include` is..... included
-export CPPFLAGS="-I${prefix}/include"
+# Ensure that `${includedir}` is..... included
+export CPPFLAGS="-I${includedir}"
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -35,6 +33,7 @@ elif [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(--with-add-fonts="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font4,/System/Library/Assets/com_apple_MobileAsset_Font5")
 fi
 
+# Apply MinGW patches: https://github.com/msys2/MINGW-packages/tree/33f847297fe429d145cd9d72cb1fbbc574431cc5/mingw-w64-fontconfig
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
@@ -51,7 +50,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -70,10 +69,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("gperf_jll"),
     Dependency("FreeType2_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),
     Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
@@ -81,6 +79,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
                init_block = """
 ENV["FONTCONFIG_FILE"] = get(ENV, "FONTCONFIG_FILE", fonts_conf)
     ENV["FONTCONFIG_PATH"] = get(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
