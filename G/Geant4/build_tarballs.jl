@@ -68,7 +68,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     BuildDependency("Xorg_xorgproto_jll"),

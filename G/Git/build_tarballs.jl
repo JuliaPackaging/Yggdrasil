@@ -63,7 +63,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibCURL_jll"),
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
     Dependency("OpenSSL_jll"),
     Dependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
