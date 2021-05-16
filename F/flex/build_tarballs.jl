@@ -25,7 +25,7 @@ make -j${nproc}
 make install
 if [[ "${target}" == *-mingw* ]]; then
     # Cover up the traces of the hack
-    rm ${prefix}/include/regex.h
+    rm ${includedir}/regex.h
 fi
 """
 
