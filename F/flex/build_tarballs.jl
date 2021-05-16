@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
+apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 if [[ "${target}" == *-mingw* ]]; then
 	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
