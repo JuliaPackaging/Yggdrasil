@@ -19,7 +19,7 @@ if [[ ${target} == i686-w64* ]] || [[ ${target} == x86_64-w64* ]]; then
     sed -i 's/liberfa_la_LDFLAGS = -version-info \$(VI_ALL)/liberfa_la_LDFLAGS = -no-undefined -version-info $(VI_ALL)/' src/Makefile.am;
 fi
 autoreconf -fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
