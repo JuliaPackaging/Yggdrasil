@@ -13,9 +13,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add gettext-dev
 cd ${WORKSPACE}/srcdir/flex-*
 ./autogen.sh
-export CPPFLAGS="${CPPFLAGS} -I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared --disable-bootstrap
 make -j${nproc}
 make install
@@ -33,8 +33,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("Gettext_jll")
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
