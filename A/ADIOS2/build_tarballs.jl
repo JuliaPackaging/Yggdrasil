@@ -16,13 +16,14 @@ cd $WORKSPACE/srcdir
 cd ADIOS2-2.7.1
 mkdir build
 cd build
-if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
-elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
-else
-    mpiopts=
-fi
+# if [[ "$target" == x86_64-w64-mingw32 ]]; then
+#     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+# elif [[ "$target" == *-mingw* ]]; then
+#     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+# else
+#     mpiopts=
+# fi
+mpiopts=
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ..
 make -j${nproc}
 make -j${nproc} install
@@ -46,8 +47,7 @@ platforms = [
 
     # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
     # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
-    # (Probably a problem with a 32-bit ptrdiff_t or similar; reported
-    # as <https://github.com/ornladios/ADIOS2/issues/2704>)
+    # (32-bit architectures are officially not supported.)
     #FAIL Platform("armv7l", "linux"; libc="glibc"),
     #FAIL Platform("i686", "linux"; libc="glibc"),
     #TODO Platform("i686", "linux"; libc="musl"),
@@ -77,7 +77,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPICH_jll")),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    # Dependency(PackageSpec(name="MicrosoftMPI_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
