@@ -1,10 +1,9 @@
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "BlueZ"
-version = v"5.54"
+version = v"5.54.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,10 +12,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# I think a target version is actually needed, but this gets you pretty far
-apk add libical-dev
+cd $WORKSPACE/srcdir
 cd bluez-*
-# dooesn't seem to work, prevent configure from finding it
+if [[ "${target}" == *-linux-* ]]; then
+    if [[ "${nbits}" == 32 ]]; then
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib";
+    else
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64";
+    fi;
+fi
 sed -i -e "s~ linux/if_alg.h~~" configure.ac 
 autoconf
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-systemd
@@ -26,21 +30,45 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+]
+
 
 # The products that we will ensure are always built
-products = Product[
-    # TBD
+products = [
+    ExecutableProduct("btmon", :btmon),
+    ExecutableProduct("l2ping", :l2ping),
+    ExecutableProduct("hid2hci", :hid2hci, "lib/udev"),
+    ExecutableProduct("l2test", :l2test),
+    ExecutableProduct("bccmd", :bccmd),
+    ExecutableProduct("btattach", :btattach),
+    ExecutableProduct("hex2hcd", :hex2hcd),
+    ExecutableProduct("bluetoothd", :bluetoothd, "libexec/bluetooth"),
+    ExecutableProduct("bluemoon", :bluemoon),
+    ExecutableProduct("rctest", :rctest),
+    ExecutableProduct("bluetooth", :bluetooth, "lib/cups/backend"),
+    ExecutableProduct("mpris-proxy", :mpris_proxy),
+    ExecutableProduct("obexd", :obexd, "libexec/bluetooth"),
+    ExecutableProduct("bluetoothctl", :bluetoothctl)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Dbus_jll"),
-    Dependency("eudev_jll"),
-    Dependency("Glib_jll"),
-    # Dependency("Libical_jll"),
-    Dependency("Readline_jll")
+    Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"))
+    Dependency(PackageSpec(name="eudev_jll", uuid="35ca27e7-8b34-5b7f-bca9-bdc33f59eb06"))
+    Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
+    Dependency(PackageSpec(name="Libical_jll", uuid="bce108ef-3f60-5dd0-bcd6-e13a096cb796"))
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
