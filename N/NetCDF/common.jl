@@ -25,7 +25,10 @@ function configure(version_offset, min_julia_version)
     script = raw"""
 cd $WORKSPACE/srcdir/netcdf-c-*
 
-export CPPFLAGS="-I${includedir}"
+# -DH5_USE_110_API work-around for the error:
+# recompile your libhdf5 install using '--with-default-api-version=v18'
+# https://github.com/Unidata/netcdf-c/issues/1978
+export CPPFLAGS="-I${includedir} -DH5_USE_110_API"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 
