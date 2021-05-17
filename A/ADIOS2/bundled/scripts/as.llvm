@@ -1,0 +1,50 @@
+#! /bin/sh
+
+# GCC and Clang disagree about the exact names for certain mnemonics:
+#    GCC:          Clang:
+#    fild          fildl
+#    fildlll       fildq (?)
+#    fildlq        fildq
+#    fisttp        fisttpl
+#    fisttplll     fisttpq (?)
+#    fisttplq      fisttpq
+#    vcvtsd2siq    vcvtsd2si
+#    vcvttsd2siq   vcvttsd2si
+#    vcvttss2siq   vcvttss2si
+# We don't really care who is right, but we need to convert the syntax.
+
+for arg in $@; do
+    if [ -f "$arg" ]; then
+        perl -pi -e 's{\bfild\b}{fildl}g; s{\bfildlll\b}{fildq}g; s{\bfildlq\b}{fildq}g; s{\bfisttp\b}{fisttpl}g; s{\bfisttplll\b}{fisttpq}g; s{\bfisttplq\b}{fisttpq}g; s{\bvcvtsd2siq\b}{vcvtsd2si}g; s{\bvcvttsd2siq\b}{vcvttsd2si}g; s{\bvcvttss2siq\b}{vcvttss2si}g' $arg
+    fi
+done
+exec "$AS" "$@"
+# Taken and adapted from
+# https://lists.macosforge.org/pipermail/macports-dev/2011-October/016335.html
+# by Vincent Habchi <vince@macports.org>
+
+# To be installed in /opt/local/bin
+
+unset DYLD_LIBRARY_PATH
+
+have_input_file=
+ARGS=$@
+while [[ $# -ne 0 ]]; do
+    ARG=$1
+    # Skip options
+    if [[ $ARG == -arch || $ARG == -[FILRYlouz] ]]; then
+        # Skip next token
+        shift
+        shift
+        continue
+    fi
+
+    if [[ $ARG == -* ]]; then
+        shift
+        continue
+    fi
+
+    input_file=$ARG
+    have_input_file=1
+    break
+done

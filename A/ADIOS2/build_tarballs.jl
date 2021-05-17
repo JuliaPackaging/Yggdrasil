@@ -7,7 +7,8 @@ version = v"2.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.7.1.tar.gz", "c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e")
+    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.7.1.tar.gz", "c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,15 +17,25 @@ cd $WORKSPACE/srcdir
 cd ADIOS2-2.7.1
 mkdir build
 cd build
+if [[ "$target" == *-apple-* ]]; then
+    # Set up a wrapper script for the assembler
+    as=$(which as)
+    mv "$as" "$as.old"
+    export AS="$as.old"
+    ln -s "$WORKSPACE/srcdir/scripts/as.llvm" "$as"
+fi
+mpiopts=
+sstopts=
 # if [[ "$target" == x86_64-w64-mingw32 ]]; then
 #     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+#     sstopts="-DADIOS2_USE_SST=OFF"
 # elif [[ "$target" == *-mingw* ]]; then
 #     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
-# else
-#     mpiopts=
+#     sstopts="-DADIOS2_USE_SST=OFF"
 # fi
-mpiopts=
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ..
+# We disable Fortran because this would require building many more
+# versions of the library
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ${sstopts} ..
 make -j${nproc}
 make -j${nproc} install
 """
@@ -37,13 +48,9 @@ platforms = [
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
 
     # These platforms fail:
-
-    # [21:20:50] /tmp/ccaoehHe.s:73869:2: error: ambiguous instructions require an explicit suffix (could be 'filds', or 'fildl')
-    # [21:20:50]         fild    14(%rsp)
-    # (Maybe using a different assembler would help?)
-    #FAIL Platform("x86_64", "macos"),
 
     # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
     # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
@@ -58,9 +65,9 @@ platforms = [
     # reported as <https://github.com/ornladios/ADIOS2/issues/2705>.)
     #FAIL Platform("x86_64", "freebsd"),
 
-    # [10:00:48] /workspace/srcdir/ADIOS2-2.7.1/thirdparty/dill/dill/x86_64_rt.c:4:22: fatal error: sys/mman.h: No such file or directory
-    # [10:00:48]  #include "sys/mman.h"
-    # (Windows is not supported.)
+    # [13:22:26] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/table/TableWriter.cpp:201:16: error: ‘AvailableIpAddresses’ is not a member of ‘adios2::helper’
+    # [13:22:26]      auto ips = helper::AvailableIpAddresses();
+    # (Reported as <https://github.com/ornladios/ADIOS2/issues/2705>.)
     #FAIL Platform("x86_64", "windows"),
     #TODO Platform("i686", "windows"),
 ]
@@ -75,9 +82,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="Blosc_jll")),
+    Dependency(PackageSpec(name="Bzip2_jll")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPICH_jll")),
     # Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="Python_jll")),
+    Dependency(PackageSpec(name="ZeroMQ_jll")),
+    Dependency(PackageSpec(name="libpng_jll")),
+    Dependency(PackageSpec(name="zfp_jll")),
+    # (HDF5: cannot do; we would need HDF5 with MPI support)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
