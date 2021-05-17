@@ -28,10 +28,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
 
-# Tell meson where to find libintl.h
-sed -i "s?c_args = \[]?c_args = ['-I${includedir}']?" \
-    "${MESON_TARGET_TOOLCHAIN}"
-
 mkdir build_glib && cd build_glib
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dman=false \
@@ -44,7 +40,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -60,8 +56,9 @@ dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
-    Dependency("Gettext_jll"),
+    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
+    # Gettext is only needed on macOS, as far as I could see
+    Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libmount_jll"),
