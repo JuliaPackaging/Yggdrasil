@@ -1,0 +1,12 @@
+diff --git a/src/julia_gc.c b/src/julia_gc.c
+index fe04034db..568aae4e5 100644
+--- a/src/julia_gc.c
++++ b/src/julia_gc.c
+@@ -910,7 +910,6 @@ void GAP_InitJuliaMemoryInterface(jl_module_t *   module,
+ #endif
+     max_pool_obj_size = jl_gc_max_internal_obj_size();
+     jl_gc_enable_conservative_gc_support();
+-    jl_init();
+ 
+     SetJuliaTLS();
+     SetupSafeRestoreHandlers();
