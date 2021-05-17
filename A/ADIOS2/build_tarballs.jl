@@ -43,6 +43,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ${winopts} ..
 make -j${nproc}
 make -j${nproc} install
+install_license ../Copyright.txt ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
