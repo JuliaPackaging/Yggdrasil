@@ -21,14 +21,14 @@ using BinaryBuilder, BinaryBuilderBase, Pkg
 # to all components.
 
 name = "GAP"
-version = v"400.1100.1"
-upstream_version = v"4.11.0"
+version = v"400.1100.100"
+upstream_version = v"4.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gap-system/gap.git", "42b0b58709ccb7272de7ad467ecd6f05f570c817"),
-#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.bz2",
-#                  "6637f66409bc91af21eaa38368153270b71b13b55b75cc1550ed867c629901d1"),
+#    GitSource("https://github.com/gap-system/gap.git", "a762b49ef1df00d692b4b2fe21612a79aeaf69b5"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     DirectorySource("./bundled"),
 ]
 
@@ -36,8 +36,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 # run autogen.sh if compiling from it source and/or if configure was patched
 ./autogen.sh
