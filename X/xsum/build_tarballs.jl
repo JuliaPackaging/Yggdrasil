@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "xsum"
-version = v"1.1"
+version = v"2.0"
 
 # Collection of sources required to build Xsum
 sources = [
     GitSource("https://gitlab.com/radfordneal/xsum.git",
-              "e3212fdcff9928f0b9e571a89fa08b2d2d634a81"), # version 2021-05-10 "1.1"
+              "9db6fee4083b44192abe968bfe7c8111a5a0b698"), # version 2021-05-16 "2.0"
 ]
 
 # Bash recipe for building across all platforms
