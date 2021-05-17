@@ -17,25 +17,25 @@ cd ADIOS2-2.7.1
 mkdir build
 cd build
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
     mpiopts=
 fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ..
-make -j$(nproc)
-make -j$(nproc) install
+make -j${nproc}
+make -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
+    # Platform("aarch64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="musl"),
+    # Platform("powerpc64le", "linux"; libc="glibc"),
+    # Platform("x86_64", "linux"; libc="glibc"),
+    # Platform("x86_64", "linux"; libc="musl"),
 
     # These platforms fail:
 
@@ -57,6 +57,12 @@ platforms = [
     # (Likely the respective syscall does not exist on FreeBSD;
     # reported as <https://github.com/ornladios/ADIOS2/issues/2705>.)
     #FAIL Platform("x86_64", "freebsd"),
+
+    # [10:00:48] /workspace/srcdir/ADIOS2-2.7.1/thirdparty/dill/dill/x86_64_rt.c:4:22: fatal error: sys/mman.h: No such file or directory
+    # [10:00:48]  #include "sys/mman.h"
+    # (Windows is not supported.)
+    #FAIL Platform("x86_64", "windows"),
+    #TODO Platform("i686", "windows"),
 ]
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
