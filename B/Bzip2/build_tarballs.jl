@@ -1,13 +1,12 @@
 using BinaryBuilder
 
 name = "Bzip2"
-version = v"1.0.8"
-
+version = v"1.0.7"
 
 # Collection of sources required to build bzip2
 sources = [
     GitSource("git://sourceware.org/git/bzip2.git",
-              "6a8690fc8d26c815e798c588f796eabe9d684cf0"),
+              "f319b98aade2a337c74b9a3b48c6daffb7809cda"),
 ]
 
 # Bash recipe for building across all platforms
@@ -63,7 +62,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -74,4 +73,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
