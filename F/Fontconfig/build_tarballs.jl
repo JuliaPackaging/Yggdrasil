@@ -71,7 +71,7 @@ products = [
 dependencies = [
     HostBuildDependency("gperf_jll"),
     Dependency("FreeType2_jll"),
-    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
+    Dependency("Bzip2_jll", v"1.0.7"; compat="1.0.7"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),
     Dependency("Expat_jll", v"2.2.10"; compat="~2.2.7"),
