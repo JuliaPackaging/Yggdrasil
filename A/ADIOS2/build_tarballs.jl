@@ -43,6 +43,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ${winopts} ..
 make -j${nproc}
 make -j${nproc} install
+install_license ../Copyright.txt ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -84,15 +85,16 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Blosc_jll")),
-    Dependency(PackageSpec(name="Bzip2_jll")),
+    # We don't want to use Bzip2 because this would lock us into Julia ≥1.6
+    # Dependency(PackageSpec(name="Bzip2_jll")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPICH_jll")),
     Dependency(PackageSpec(name="MicrosoftMPI_jll")),
-    Dependency(PackageSpec(name="Python_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
-    # (HDF5: cannot do; we would need HDF5 with MPI support)
+    # We cannot use HDF5 because we need a HDF5 configurion with MPI support
+    # Dependency(PackageSpec(name="HDF5_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
