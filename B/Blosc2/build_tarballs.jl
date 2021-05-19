@@ -7,13 +7,15 @@ version = v"1.9.9"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f06319ce93654e7cada64a75778fb50e8ddc6667")
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f06319ce93654e7cada64a75778fb50e8ddc6667"),
+    DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd c-blosc2/
+git apply ../patches/blosc_armv7l.patch
 mkdir build
 cd build/
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
