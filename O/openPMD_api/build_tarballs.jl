@@ -80,4 +80,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
 # GCC 5 has a bug regarding `std::to_string` on freebsd, fixed on GCC 6
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
+# macos encounters an ICE in GCC 6; switching to GCC 7 instead
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
