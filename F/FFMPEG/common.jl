@@ -74,7 +74,7 @@ pkg-config --list-all
   --dep-cc="${CC}"     \
   --ar=ar              \
   --nm=nm              \
-  --objcc="${OBJC}"    \
+  --objcc="${CC} -x objective-c" \
   --sysinclude=${prefix}/include \
   --pkg-config=$(which pkg-config) \
   --pkg-config-flags=--static \
