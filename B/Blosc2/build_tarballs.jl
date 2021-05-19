@@ -7,7 +7,7 @@ version = v"1.9.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f0a05c9df216d156104756ffbbdf7ba8e553eb2a")
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f06319ce93654e7cada64a75778fb50e8ddc6667")
 ]
 
 # Bash recipe for building across all platforms
