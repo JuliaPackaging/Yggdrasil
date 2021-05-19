@@ -6,7 +6,7 @@ name = "RDKit"
 version = v"2021.09.1pre"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "d859a23c9e514e3266adeb7119ef337f87e7214b"),
+    GitSource("https://github.com/rdkit/rdkit.git", "f5a54af475cc38a82b2c69a8a44193a222fe92fc"),
 ]
 
 script = raw"""
