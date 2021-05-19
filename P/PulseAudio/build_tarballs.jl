@@ -20,10 +20,10 @@ apk add perl-xml-parser
 apk add bash-completion
 # make sure meson can find everything
 sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
-# I guess pulseaudio doesn't set install_rpath correctly?
-find pulseaudio-* -type f | xargs sed -i "s~install_rpath : privlibdir~install_rpath : '\$ORIGIN/pulseaudio'~"
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
+# I guess pulseaudio doesn't set install_rpath correctly?
+find pulseaudio-* -type f | xargs sed -i "s~install_rpath : privlibdir~install_rpath : '\$ORIGIN/pulseaudio'~"
 cd pulseaudio-*
 # Disable ffast-math; I repented
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
