@@ -34,8 +34,7 @@ if [[ "${target}" == powerpc64le-* ]]; then     sed -i -e "s~'sys/capability.h',
 mkdir build
 cd build
 # I can't figure out how to build tdb, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/887
-# BlueZ is in progress, see https://github.com/JuliaPackaging/Yggdrasil/pull/2582
-meson ..  -Ddatabase="gdbm" -Dbluez5="false" --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson ..  -Ddatabase="gdbm" --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja
 ninja install
 """
@@ -59,6 +58,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
+    Dependency(PackageSpec(name="BlueZ_jll", uuid="471b5b61-da80-5748-8755-67d5084d21f2"))
     Dependency(PackageSpec(name="Check_jll", uuid="491db154-c145-5abe-9c32-446728d60cce"))
     Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"))
     Dependency(PackageSpec(name="eudev_jll", uuid="35ca27e7-8b34-5b7f-bca9-bdc33f59eb06"))
