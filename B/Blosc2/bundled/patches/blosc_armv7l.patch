@@ -12,17 +12,17 @@ index 6fdf399..412d475 100644
      # Define a symbol for the shuffle-dispatch implementation
      # so it knows NEON is supported even though that file is
 diff --git a/blosc/shuffle.c b/blosc/shuffle.c
-index cb166ee..586b039 100644
+index cb166ee..974f627 100644
 --- a/blosc/shuffle.c
 +++ b/blosc/shuffle.c
-@@ -15,6 +15,7 @@
- #include <stdio.h>
- #include <string.h>
- #include <stdbool.h>
-+#include <sys/auxv.h>
+@@ -36,6 +36,7 @@
+ #endif  /* defined(SHUFFLE_SSE2_ENABLED) */
  
- 
- #if !defined(__clang__) && defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+ #if defined(SHUFFLE_NEON_ENABLED)
++  #include <sys/auxv.h>
+   #include "shuffle-neon.h"
+   #include "bitshuffle-neon.h"
+ #endif  /* defined(SHUFFLE_NEON_ENABLED) */
 @@ -251,7 +252,7 @@ static blosc_cpu_features blosc_get_cpu_features(void) {
    /* aarch64 always has NEON */
    cpu_features |= BLOSC_HAVE_NEON;
