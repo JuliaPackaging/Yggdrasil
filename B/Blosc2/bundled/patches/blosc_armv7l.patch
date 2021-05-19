@@ -1,0 +1,34 @@
+diff --git a/blosc/CMakeLists.txt b/blosc/CMakeLists.txt
+index 6fdf399..412d475 100644
+--- a/blosc/CMakeLists.txt
++++ b/blosc/CMakeLists.txt
+@@ -194,7 +194,7 @@ if(COMPILER_SUPPORT_NEON)
+         # Only armv7l needs special -mfpu=neon flag; aarch64 doesn't.
+       set_source_files_properties(
+             shuffle-neon.c bitshuffle-neon.c
+-            PROPERTIES COMPILE_FLAGS "-mfpu=neon")
++            PROPERTIES COMPILE_FLAGS "-mfpu=neon -flax-vector-conversions")
+     endif()
+     # Define a symbol for the shuffle-dispatch implementation
+     # so it knows NEON is supported even though that file is
+diff --git a/blosc/shuffle.c b/blosc/shuffle.c
+index cb166ee..586b039 100644
+--- a/blosc/shuffle.c
++++ b/blosc/shuffle.c
+@@ -15,6 +15,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdbool.h>
++#include <sys/auxv.h>
+ 
+ 
+ #if !defined(__clang__) && defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+@@ -251,7 +252,7 @@ static blosc_cpu_features blosc_get_cpu_features(void) {
+   /* aarch64 always has NEON */
+   cpu_features |= BLOSC_HAVE_NEON;
+ #else
+-  if (getauxval(AT_HWCAP) & HWCAP_NEON) {
++  if (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) {
+     cpu_features |= BLOSC_HAVE_NEON;
+   }
+ #endif
