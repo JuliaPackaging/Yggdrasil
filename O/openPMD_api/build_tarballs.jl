@@ -35,6 +35,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ${mpiopts} ..
 make -j${nproc}
 make -j${nproc} install
+install_license ../COPYING*
 """
 
 # These are the platforms we will build for by default, unless further
