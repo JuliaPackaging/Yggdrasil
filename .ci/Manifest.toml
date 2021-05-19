@@ -36,11 +36,11 @@ version = "0.3.5"
 
 [[BinaryBuilderBase]]
 deps = ["CodecZlib", "Downloads", "InteractiveUtils", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "UUIDs", "p7zip_jll", "pigz_jll"]
-git-tree-sha1 = "56393545b3506aba0211c24d0de873e00788d3b8"
+git-tree-sha1 = "4edcf8f70cc017aee55bdcdf83a95e1f86eb4b17"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
-version = "0.6.5"
+version = "0.6.6"
 
 [[CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -50,9 +50,9 @@ version = "0.7.0"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
-git-tree-sha1 = "0900bc19193b8e672d9cd477e6cd92d9e7c02f99"
+git-tree-sha1 = "e4e2b39db08f967cc1360951f01e8a75ec441cab"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "3.29.0"
+version = "3.30.0"
 
 [[DataAPI]]
 git-tree-sha1 = "dfb3b7e89e395be1e25c2ad6d7690dc29cc53b1d"
@@ -312,9 +312,9 @@ version = "1.2.4"
 
 [[RegistryTools]]
 deps = ["AutoHashEquals", "LibGit2", "Pkg", "UUIDs"]
-git-tree-sha1 = "400c6c8b167d61c301c7a4a9059e26ceaa1cc847"
+git-tree-sha1 = "a1b5b98de15341137ef9bbdb40c7629297bc8d9b"
 uuid = "d1eb7eb1-105f-429d-abf5-b0f65cb9e2c4"
-version = "1.5.4"
+version = "1.5.6"
 
 [[Requires]]
 deps = ["UUIDs"]
