@@ -39,26 +39,7 @@ make -j${nproc} install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("i686", "windows"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-
-    # linux/musl doesn't work because `posix_memalign` is defined with
-    # two incompatible signatures in the GCC 5 header files
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-
-    # [14:13:53] /workspace/srcdir/openPMD-api-0.13.4/include/openPMD/Datatype.hpp:771:13: error: ‘to_string’ is not a member of ‘std’
-    # [14:13:53]              std::to_string( static_cast< int >( dt ) ) );
-    Platform("x86_64", "freebsd"),
-]
+platforms = supported_platforms()
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 
@@ -79,6 +60,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
+# GCC 5 an incompatible signatures for `posix_memalign` on linux/musl, fixed on GCC 6
 # GCC 5 has a bug regarding `std::to_string` on freebsd, fixed on GCC 6
 # macos encounters an ICE in GCC 6; switching to GCC 7 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
