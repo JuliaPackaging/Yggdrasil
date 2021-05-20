@@ -1,5 +1,5 @@
 diff --git a/blosc/shuffle.c b/blosc/shuffle.c
-index 974f627..6899e15 100644
+index 974f627..22e1768 100644
 --- a/blosc/shuffle.c
 +++ b/blosc/shuffle.c
 @@ -36,7 +36,10 @@
@@ -7,7 +7,7 @@ index 974f627..6899e15 100644
  
  #if defined(SHUFFLE_NEON_ENABLED)
 -  #include <sys/auxv.h>
-+  #ifndef(__aarch64__)
++  #ifndef __aarch64__
 +    /* Avoid including Linux header on macOS */
 +    #include <sys/auxv.h>
 +  #endif
