@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LAMMPS"
-version = v"20201029.0.0"
+version = v"1.0.0" # Equivalent to 2020-10-29
 
 # Collection of sources required to complete build
 sources = [
@@ -22,6 +22,10 @@ cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DPKG_SNAP=ON
 make -j${nproc}
 make install
+
+if [[ "${target}" == *mingw* ]]; then
+    cp *.dll ${prefix}/bin/
+fi
 """
 
 # These are the platforms we will build for by default, unless further
