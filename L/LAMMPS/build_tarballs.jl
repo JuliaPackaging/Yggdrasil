@@ -13,21 +13,25 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lammps/
-mkdir build
-cd build/
-cmake ../cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DLAMMPS_EXCEPTIONS=ON -DPKG_SNAP=ON
-make -j
+mkdir build && cd build/
+cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DLAMMPS_EXCEPTIONS=ON \
+    -DPKG_SNAP=ON
+make -j{nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblammps", :liblammps),
-    ExecutableProduct("lmp", :lmp)
+    ExecutableProduct("lmp", :lmp),
 ]
 
 # Dependencies that must be installed before this package can be built
