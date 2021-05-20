@@ -78,15 +78,19 @@ platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libadios2_atl", :libadios2_atl),
     LibraryProduct("libadios2_c", :libadios2_c),
     LibraryProduct("libadios2_c_mpi", :libadios2_c_mpi),
     LibraryProduct("libadios2_core", :libadios2_core),
     LibraryProduct("libadios2_core_mpi", :libadios2_core_mpi),
-    LibraryProduct("libadios2_dill", :libadios2_dill),
-    LibraryProduct("libadios2_evpath", :libadios2_evpath),
-    LibraryProduct("libadios2_ffs", :libadios2_ffs),
+    LibraryProduct("libadios2_cxx11", :libadios2_cxx11),
+    LibraryProduct("libadios2_cxx11_mpi", :libadios2_cxx11_mpi),
     LibraryProduct("libadios2_taustubs", :libadios2_taustubs),
+
+    # Missing on Windows:
+    # LibraryProduct("libadios2_atl", :libadios2_atl),
+    # LibraryProduct("libadios2_dill", :libadios2_dill),
+    # LibraryProduct("libadios2_evpath", :libadios2_evpath),
+    # LibraryProduct("libadios2_ffs", :libadios2_ffs),
 ]
 
 # Dependencies that must be installed before this package can be built
