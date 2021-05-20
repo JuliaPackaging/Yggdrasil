@@ -19,7 +19,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
-    # Set up a wrapper script for the assembler. GCC's assembler
+    # Set up a wrapper script for the assembler. GCC's assembly
     # output isn't accepted by the LLVM assembler.
     as=$(which as)
     mv "$as" "$as.old"
