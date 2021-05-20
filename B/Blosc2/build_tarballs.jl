@@ -7,15 +7,12 @@ version = v"1.9.9"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f06319ce93654e7cada64a75778fb50e8ddc6667"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "fe135bab842f1f20504f552fccc6e54691dc6e63"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
-atomic_patch -p1 ../patches/blosc_armv7l.patch
-atomic_patch -p1 ../patches/blosc_aarch64-apple-darwin.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -51,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"5.2")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2")
