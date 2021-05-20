@@ -31,7 +31,7 @@ install_license ../LICENSE_en.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.iswindows(p), supported_platforms(; experimental=true))
+platforms = filter!(!Sys.iswindows, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
