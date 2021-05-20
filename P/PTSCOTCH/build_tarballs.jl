@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "SCOTCH"
+name = "PTSCOTCH"
 version = v"6.1.0"
 
 # Collection of sources required to complete build
@@ -25,8 +25,8 @@ fi
 cd src
 make ptscotch
 cp ../lib/libpt* ${libdir}
+cp ../include/p* ${includedir}
 install_license ../LICENSE_en.txt
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,7 +37,7 @@ platforms = filter!(p -> !Sys.iswindows(p), supported_platforms(; experimental=t
 products = [
     LibraryProduct("libptscotcherr", :libptscotcherr),
     LibraryProduct("libptscotcherrexit", :libptscotcherrexit),
-    LibraryProduct("libptscotchparmetis", :libptscotchmetis),
+    LibraryProduct("libptscotchparmetis", :libptscotchparmetis),
     LibraryProduct("libptscotch", :libptscotch)
 ]
 
