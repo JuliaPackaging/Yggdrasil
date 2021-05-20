@@ -20,7 +20,7 @@ cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_SNAP=ON
-make -j{nproc}
+make -j${nproc}
 make install
 """
 
