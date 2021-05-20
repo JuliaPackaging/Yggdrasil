@@ -27,6 +27,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
