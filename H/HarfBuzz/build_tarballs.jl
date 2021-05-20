@@ -46,7 +46,8 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
     Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
-    Dependency("Gettext_jll"),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
     Dependency("Fontconfig_jll"),
     Dependency("Cairo_jll"),
     Dependency("ICU_jll", v"67.1.0"; compat="=67.1.0"),
