@@ -87,7 +87,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Gettext_jll"),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
 ]
 
 # Build the tarballs.
