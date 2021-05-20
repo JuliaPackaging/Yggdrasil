@@ -35,7 +35,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Arb_jll", uuid="d9960996-1013-53c9-9ba4-74a4155039c3"))
     Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82"))
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"; compat="6.1.2")
     Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
 ]
 
