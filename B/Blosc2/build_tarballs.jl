@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
 atomic_patch -p1 ../patches/blosc_armv7l.patch
+atomic_patch -p1 ../patches/blosc_aarch64-apple-darwin.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
