@@ -78,8 +78,15 @@ platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libadios2_c_mpi", :libadios2_c_mpi),
+    LibraryProduct("libadios2_atl", :libadios2_atl),
     LibraryProduct("libadios2_c", :libadios2_c),
+    LibraryProduct("libadios2_c_mpi", :libadios2_c_mpi),
+    LibraryProduct("libadios2_core", :libadios2_core),
+    LibraryProduct("libadios2_core_mpi", :libadios2_core_mpi),
+    LibraryProduct("libadios2_dill", :libadios2_dill),
+    LibraryProduct("libadios2_evpath", :libadios2_evpath),
+    LibraryProduct("libadios2_ffs", :libadios2_ffs),
+    LibraryProduct("libadios2_taustubs", :libadios2_taustubs),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -93,7 +100,7 @@ dependencies = [
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
-    # We cannot use HDF5 because we need a HDF5 configurion with MPI support
+    # We cannot use HDF5 because we need a HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
 ]
 
