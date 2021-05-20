@@ -12,11 +12,21 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Ccluster*/
-if [[ ${target} == *musl* ]]; then      export CFLAGS="-D_GNU_SOURCE=1 -std=c99 -O2 -funroll-loops -g"; fi
-if [[ ${target} == *mingw* ]]; then sed -i -e "s#/lib\>#/$(basename ${libdir})#g" configure; extraflags=--build=MINGW${nbits}; fi
-./configure --prefix=$prefix --disable-pthread --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix ${extraflags}
+cd $WORKSPACE/srcdir/Ccluster*/
+if [[ ${target} == *musl* ]]; then
+    export CFLAGS="-D_GNU_SOURCE=1 -std=c99 -O2 -funroll-loops -g"
+elif [[ ${target} == *mingw* ]]; then
+    sed -i -e "s#/lib\>#/$(basename ${libdir})#g" configure; extraflags=--build=MINGW${nbits}
+fi
+./configure --prefix=$prefix \
+    --disable-pthread \
+    --disable-static \
+    --enable-shared \
+    --with-gmp=$prefix \
+    --with-mpfr=$prefix \
+    --with-flint=$prefix \
+    --with-arb=$prefix \
+    ${extraflags}
 make library -j${nproc}
 make install LIBDIR=$(basename ${libdir})
 exit
