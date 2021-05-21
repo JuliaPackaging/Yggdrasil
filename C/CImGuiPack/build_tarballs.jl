@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CImGuiPack"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/Gnimuc/cimgui-pack.git",
-              "4ac1694b8c9739b152c949f11ae6de9c54d1badf")
+              "156ecc27a1b9cf5281da9a121874cdd94c643fd9")
 ]
 
 # Bash recipe for building across all platforms
