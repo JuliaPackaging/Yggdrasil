@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.4.3"
+version = v"0.4.4"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -56,9 +56,9 @@ tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
 echo ***********************************************************
 echo LatestLibraries logs, reproduced here for debuggability:
-zcat ${prefix}/logs/LatestLibraries.log.gz
+zcat ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 echo ***********************************************************
-rm -f ${prefix}/logs/LatestLibraries.log.gz
+rm -f ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 
 # Make sure expansions aren't empty
 shopt -s nullglob
@@ -97,6 +97,9 @@ if [[ ${target} == *apple* ]]; then
     LIBGCC_NAME=$(basename $(echo ${libdir}/libgcc_s.*.dylib))
     install_name_tool -id @rpath/${LIBGCC_NAME} ${libdir}/${LIBGCC_NAME}
 fi
+
+# Remove extraneous libraries
+rm -f ${libdir}/{libiconv,libxml2,libz}*.${dlext}*
 
 # Install license (we license these all as GPL3, since they're from GCC)
 install_license /usr/share/licenses/GPL3
