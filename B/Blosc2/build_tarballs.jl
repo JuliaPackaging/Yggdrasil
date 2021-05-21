@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"1.9.9"
+version = v"2.0.0-rc1"
 
 # Collection of sources required to build Blosc2
 sources = [
