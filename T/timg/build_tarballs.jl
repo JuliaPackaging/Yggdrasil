@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/timg
 echo "add_definitions(-D__STDC_FORMAT_MACROS)"|cat - CMakeLists.txt > tmp_out && mv tmp_out CMakeLists.txt 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DWITH_VIDEO_DECODING=On -DWITH_VIDEO_DEVICE=Off -DWITH_OPENSLIDE_SUPPORT=On
 sed -i '$ s/$/ -lrt/' ./src/CMakeFiles/timg.dir/link.txt 
-make
+make -j${nproc}
 make install
 """
 
