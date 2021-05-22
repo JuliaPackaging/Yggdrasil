@@ -32,6 +32,7 @@ platforms = [
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
