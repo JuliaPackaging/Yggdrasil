@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libgraphicsmagic"
-version = v"1.3.0"
+version = v"1.3.36"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.icm.edu.pl/pub/unix/graphics/GraphicsMagick/GraphicsMagick-LATEST.tar.gz", "1e6723c48c4abbb31197fadf8396b2d579d97e197123edc70a4f057f0533d563")
+    ArchiveSource("ftp://ftp.icm.edu.pl/pub/unix/graphics/GraphicsMagick/1.3/GraphicsMagick-1.3.36.tar.gz", "1e6723c48c4abbb31197fadf8396b2d579d97e197123edc70a4f057f0533d563")
 ]
 
 # Bash recipe for building across all platforms
