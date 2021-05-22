@@ -12,10 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd GraphicsMagick-1.3.36/
+cd $WORKSPACE/srcdir/GraphicsMagick*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared
-make
+make -j${nproc}
 make install
 """
 
