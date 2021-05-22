@@ -43,7 +43,7 @@ dependencies = [
     Dependency(PackageSpec(name="Xorg_libSM_jll", uuid="c834827a-8449-5923-a945-d239c165b7dd"))
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
     Dependency(PackageSpec(name="LittleCMS_jll", uuid="d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"))
-    Dependency(PackageSpec(name="Bzip2_jll", version=v"1.0.7", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"))
+    Dependency("Bzip2_jll", v"1.0.7"; compat="1.0.7")
     Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
     Dependency(PackageSpec(name="Libtool_jll", uuid="a76c16ae-fb8f-5ff0-8826-da3b7a640f0b"))
 ]
