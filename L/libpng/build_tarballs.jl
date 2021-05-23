@@ -16,10 +16,17 @@ version = v"1.6.38" # <--- This version number is a lie, we need to bump it to b
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libpng-*/
-export CPPFLAGS="-I${includedir}"
-export CFLAGS="-O3"
-export LDFLAGS="-L${libdir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+mkdir build && cd build
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Let CMake know this platform supports NEON extension
+    FLAGS=(-DPNG_ARM_NEON=on)
+fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPNG_STATIC=OFF \
+    "${FLAGS[@]}" \
+    ..
 make -j${nproc}
 make install
 """
