@@ -34,6 +34,9 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     rm /usr/lib/libexpat.so*
 fi
 
+# Force linking to libiconv with `-liconv`
+sed -i 's/ICONVLIB=.*/ICONVLIB=-liconv/' configure
+
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
