@@ -23,12 +23,6 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-#need a posix regex
-if [[ "${target}" == *-mingw* ]]; then
-    cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
-    export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
-fi
-
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
@@ -36,6 +30,13 @@ fi
 
 # Force linking to libiconv with `-liconv`
 sed -i 's/ICONVLIB=.*/ICONVLIB=-liconv/' configure
+
+# Need a posix regex for Windows
+if [[ "${target}" == *-mingw* ]]; then
+    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+    # Force linking to libregex with `-lpcreposix-0`
+    sed -i 's/-lregex/-lpcreposix-0/' configure
+fi
 
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -85,7 +86,7 @@ cp -r dist.*/include/grass ${includedir}/.
 
 if [[ "${target}" == *-mingw* ]]; then
     # Cover up the traces of the hack
-    rm ${prefix}/include/regex.h
+    rm "${includedir}/regex.h"
 fi
 
 install_license COPYING GPL.TXT
