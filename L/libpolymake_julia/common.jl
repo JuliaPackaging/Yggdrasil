@@ -6,7 +6,7 @@ import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
 upstream_version = v"0.4.1"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + julia_version.minor)
+version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + 10 + julia_version.minor)
 
 # Collection of sources required to build libpolymake_julia
 sources = [
@@ -36,9 +36,10 @@ install_license $WORKSPACE/srcdir/libpolymake-j*/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,8 +54,8 @@ dependencies = [
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency("polymake_jll", compat = "~400.300.1"),
+    Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
+    Dependency("polymake_jll", compat = "~400.400.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
