@@ -55,7 +55,7 @@ dependencies = [
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
-    Dependency("polymake_jll", compat = "~400.400.0"),
+    Dependency("polymake_jll", v"400.400.0"; compat = "~400.400.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
