@@ -43,19 +43,19 @@ fi
     --enable-shared \
     --with-python=no \
     --with-cxx \
-    --with-lapack --with-lapack-includes=${prefix}/include \
-    --with-tiff --with-tiff-includes=${prefix}/include \
-    --with-png --with-png-includes=${prefix}/include \
-    --with-sqlite --with-sqlite-includes=${prefix}/include \
+    --with-lapack --with-lapack-includes=${includedir} \
+    --with-tiff --with-tiff-includes=${includedir} \
+    --with-png --with-png-includes=${includedir} \
+    --with-sqlite --with-sqlite-includes=${includedir} \
     --with-opengl=no \
-    --with-fftw --with-fftw-includes=${prefix}/include \
-    --with-cairo --with-cairo-includes=${prefix}/include/cairo --with-cairo-ldflags=-lfontconfig \
-    --with-freetype --with-freetype-includes=${prefix}/include/freetype2 \
+    --with-fftw --with-fftw-includes=${includedir} \
+    --with-cairo --with-cairo-includes=${includedir}/cairo --with-cairo-ldflags=-lfontconfig \
+    --with-freetype --with-freetype-includes=${includedir}/freetype2 \
     --with-regex \
-    --with-zstd --with-zstd-includes=${prefix}/include \
+    --with-zstd --with-zstd-includes=${includedir} \
     --with-geos=${bindir}/geos-config \
     --with-gdal \
-    --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${prefix}/include
+    --with-proj --with-proj-share=${prefix}/share/proj --with-proj-includes=${includedir}
 
 # Build only the libraries
 DIRS=(
