@@ -7,14 +7,29 @@ version = v"1.16.0"
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/cairo-$(version).tar.xz",
                   "5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331"),
+    DirectorySource("./bundled"),
 ]
+
+version = v"1.16.1" # <-- This version number is a lie to build for the experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cairo-*/
 
+if [[ "${target}" == *-mingw* ]]; then
+    # Link against libssp to fix errors like
+    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-output-stream.o: in function `memcpy':
+    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:202: undefined reference to `__memcpy_chk'
+    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-win32-font.o: in function `memcpy':
+    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:202: undefined reference to `__memcpy_chk'
+    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-pdf-interchange.o: in function `strcat':
+    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:234: undefined reference to `__strcat_chk'
+    atomic_patch -p1 ../patches/mingw-libssp.patch
+    autoreconf -fiv
+fi
+
 # Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 
 if [[ "${target}" == *-apple-* ]]; then
     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
@@ -40,7 +55,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -57,15 +72,12 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
     Dependency("Xorg_libXext_jll"),
     Dependency("Xorg_libXrender_jll"),
     Dependency("LZO_jll"),
     Dependency("Zlib_jll"),
 ]
 
-
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
