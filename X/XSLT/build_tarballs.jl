@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.33"
+version = v"1.1.34"
 
 # Collection of sources required to build XSLT
 sources = [
-    ArchiveSource("http://xmlsoft.org/sources/libxslt-1.1.33.tar.gz",
-                  "8e36605144409df979cab43d835002f63988f3dc94d5d3537c12796db90e38c8"),
+    ArchiveSource("http://xmlsoft.org/sources/libxslt-$(version).tar.gz",
+                  "98b1bd46d6792925ad2dfe9a87452ea2adebf69dcb9919ffd55bf926a7f93f7f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ rm -rf ${prefix}/share/doc/libxslt-*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -33,9 +33,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Libgpg_error_jll", v"1.42.0"; compat="1.42.0"),
     Dependency("Libgcrypt_jll"),
+    Dependency("Libiconv_jll"),
     Dependency("XML2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
