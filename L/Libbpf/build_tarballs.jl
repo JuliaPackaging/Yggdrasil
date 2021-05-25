@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libbpf"
-version = v"0.3"
+version = v"0.4"
 
 # Collection of sources required to build libbpf
 sources = [
-    ArchiveSource("https://github.com/libbpf/libbpf/archive/v$(version.major).$(version.minor).tar.gz",
-                  "c168d84a75b541f753ceb49015d9eb886e3fb5cca87cdd9aabce7e10ad3a1efc"),
+    ArchiveSource("https://github.com/libbpf/libbpf/archive/v$version.tar.gz",
+                  "21cbee4df093e7fd29e76ed429650d3f3abe3a893f35e346ab9bc3484f6e68c0"),
     DirectorySource("./bundled"),
 ]
 
