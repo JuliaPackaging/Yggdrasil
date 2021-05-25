@@ -24,7 +24,7 @@ cp -R ../include/uapi "$prefix/include/uapi"
 """
 
 # Only build for Linux
-platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
