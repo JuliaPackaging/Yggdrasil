@@ -24,7 +24,7 @@ cp -R ../include/uapi "$prefix/include/uapi"
 """
 
 # Only build for Linux
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -37,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
