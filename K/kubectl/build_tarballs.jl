@@ -20,6 +20,19 @@ sources = [
 # - https://github.com/kubernetes/kubernetes/#to-start-developing-k8s
 # - https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#building-kubernetes
 script = raw"""
+# Use the larger WORKSPACE volume for tmp to avoid: "No space left on device"
+export TMPDIR=${WORKSPACE}/tmp
+mkdir -p $TMPDIR
+
+# Switch to using the host toolchain so Kubernetes can generate some build tools
+cd /opt/bin/x86_64-linux-musl-*/
+for f in x86_64-linux-musl-*; do
+    ln -s "$f" "${f//x86_64-linux-musl-/}"
+done
+ORG_PATH="$PATH"
+export PATH="$(pwd):$PATH"
+cd -
+
 mkdir -p $GOPATH/src/k8s.io
 mv kubernetes-* $GOPATH/src/k8s.io/kubernetes
 cd $GOPATH/src/k8s.io/kubernetes
@@ -29,17 +42,26 @@ cd $GOPATH/src/k8s.io/kubernetes
 # `./hack/run-in-gopath.sh: line 34: _output/bin/prerelease-lifecycle-gen: Permission denied`
 # and when running a clean build with `DBG_MAKEFILE` you can see the actual issue:
 # `hack/lib/golang.sh: line 867: /dev/fd/62: No such file or directory`
-sed -ri 's/<\s+<\((.*)\)/<<< $(\1)/' hack/lib/golang.sh hack/make-rules/clean.sh
+sed -ri 's/<\s+<\(/<<< \$(/' hack/lib/golang.sh hack/make-rules/clean.sh
 
-# Disable `gofmt` as it isn't included in the compiler shard
-sed -i 's/^gofmt/# \0/' hack/generate-bindata.sh
+# Need to avoid using `GOBIN` to allow for cross-compilation.
+# ```
+# go install: cannot install cross-compiled binaries when GOBIN is set
+# make[1]: *** [Makefile.generated_files:627: gen_bindata] Error 1
+# ```
+sed -ri 's/^export GOBIN|^PATH/# \0/' hack/generate-bindata.sh
 
+# Build for the host first to generate some tools need to be run on the host
+make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOHOSTOS)/$(go env GOHOSTARCH)
+
+# Restore the target toolchain
 # Note: Using `-E DBG_MAKEFILE=1` is helpful for debugging Makefile issues
-make WHAT=cmd/kubectl
+export PATH=$ORG_PATH
+make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOOS)/$(go env GOARCH)
 
 install_license LICENSE
 mkdir -p ${bindir}
-mv _output/local/go/bin/kubectl ${bindir}/kubectl${exeext}
+mv _output/local/go/bin/$(go env GOOS)_$(go env GOARCH)/kubectl ${bindir}/kubectl${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
