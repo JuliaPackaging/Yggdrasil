@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Tesseract"
-version = v"4.1.1"
+version = v"4.1.100" # <--- This version number is a lie, (it is v4.1.1) we just need to bump it to build for experimental platforms
 
 # Collection of sources required to build Tesseract
 sources = [
@@ -28,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -52,4 +52,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
