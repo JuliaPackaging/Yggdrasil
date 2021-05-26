@@ -93,7 +93,7 @@ jobs:
           fi
       done
       if [[ -n "${PROJECTS_ACCEPTED[@]}" ]]; then
-          if [[ ${#PROJECTS_ACCEPTED[@]} -gt 25 ]]; then
+          if [[ ${#PROJECTS_ACCEPTED[@]} -gt 20 ]]; then
               echo "Too many projects requested"
               exit 1
           fi
