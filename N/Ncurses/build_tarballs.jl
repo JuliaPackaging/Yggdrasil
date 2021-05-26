@@ -3,27 +3,23 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.1"
+version = v"6.2"
 
 # Collection of sources required to build Ncurses
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17"),
+                  "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ncurses-*/
 
-# We need to run the native "tic" program
-apk add ncurses
-
 CONFIG_FLAGS=""
-if [[ ${target} == x86_64-apple-darwin14 ]]; then
+if [[ ${target} == *-darwin* ]]; then
     CONFIG_FLAGS="${CONFIG_FLAGS} --disable-stripping"
 elif [[ "${target}" == *-mingw* ]]; then
     CONFIG_FLAGS="--enable-sp-funcs --enable-term-driver"
-    export CFLAGS="-lintl -liconv"
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -43,6 +39,7 @@ fi
     --enable-warnings \
     --enable-assertions \
     --enable-database \
+    --without-tests \
     ${CONFIG_FLAGS}
 make -j${nproc}
 make install
@@ -70,12 +67,12 @@ for lib in ncurses form panel menu; do
     ln -s "${lib}w.pc" "${prefix}/lib/pkgconfig/${lib}.pc"
     ln -s "lib${lib}w${abiver}.${dlext}" "${libdir}/lib${lib}${abiver}.${dlext}"
 done
-ln -s ncursesw ${prefix}/include/ncurses
+ln -s ncursesw ${includedir}/ncurses
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = Product[
@@ -87,10 +84,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # TOOD: verify Gettext is actually needed at runtime
-    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
+    # We need to run the native "tic" program
+    HostBuildDependency("Ncurses_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
