@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ADIOS2-2.7.1
+# PR <https://github.com/ornladios/ADIOS2/pull/2712>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ndims.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 mkdir build
 cd build
