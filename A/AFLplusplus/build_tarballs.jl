@@ -88,8 +88,8 @@ products = [
 ]
 
 dependencies = [
-	Dependency(PackageSpec(name="Clang_jll", version=v"9.0.1")),
-	Dependency("Glib_jll"),
+	Dependency("Clang_jll", v"9.0.1"; compat="9.0.1"),
+	Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
 	Dependency("Pixman_jll"),
 ]
 
