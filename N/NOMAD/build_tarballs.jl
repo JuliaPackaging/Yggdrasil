@@ -15,7 +15,7 @@ cd "${WORKSPACE}/srcdir/nomad"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad-no-headers-generation.patch"
 mkdir build
 cd build
-cmake -DTEST_OPENMP=OFF -DBUILD_INTERFACES=ON -DBUILD_LIBMODE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DTEST_OPENMP=OFF -DBUILD_INTERFACES=ON -DBUILD_LIBMODE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
