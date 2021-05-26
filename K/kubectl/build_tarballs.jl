@@ -25,13 +25,16 @@ export TMPDIR=${WORKSPACE}/tmp
 mkdir -p $TMPDIR
 
 # Switch to using the host toolchain so Kubernetes can generate some build tools
-cd /opt/bin/x86_64-linux-musl-*/
-for f in x86_64-linux-musl-*; do
-    ln -s "$f" "${f//x86_64-linux-musl-/}"
-done
-ORG_PATH="$PATH"
-export PATH="$(pwd):$PATH"
-cd -
+go_cross=$([ "$(go env GOHOSTOS)/$(go env GOHOSTARCH)" = "$(go env GOOS)/$(go env GOARCH)" ]; echo $? )
+if [ $go_cross -eq 1 ]; then
+    cd /opt/bin/x86_64-linux-musl-*/
+    for f in x86_64-linux-musl-*; do
+        ln -s "$f" "${f//x86_64-linux-musl-/}"
+    done
+    ORG_PATH="$PATH"
+    export PATH="$(pwd):$PATH"
+    cd -
+fi
 
 mkdir -p $GOPATH/src/k8s.io
 mv kubernetes-* $GOPATH/src/k8s.io/kubernetes
@@ -51,17 +54,27 @@ sed -ri 's/<\s+<\(/<<< \$(/' hack/lib/golang.sh hack/make-rules/clean.sh
 # ```
 sed -ri 's/^export GOBIN|^PATH/# \0/' hack/generate-bindata.sh
 
-# Build for the host first to generate some tools need to be run on the host
-make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOHOSTOS)/$(go env GOHOSTARCH)
+if [ $go_cross -eq 1 ]; then
+    # Build for the host first to generate some tools need to be run on the host
+    make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOHOSTOS)/$(go env GOHOSTARCH)
 
-# Restore the target toolchain
+    # Restore the target toolchain
+    export PATH=$ORG_PATH
+fi
+
 # Note: Using `-E DBG_MAKEFILE=1` is helpful for debugging Makefile issues
-export PATH=$ORG_PATH
 make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOOS)/$(go env GOARCH)
 
 install_license LICENSE
 mkdir -p ${bindir}
-mv _output/local/go/bin/$(go env GOOS)_$(go env GOARCH)/kubectl ${bindir}/kubectl${exeext}
+
+if [ $go_cross -eq 1 ]; then
+    output_dir="_output/local/go/bin/$(go env GOOS)_$(go env GOARCH)"
+else
+    output_dir="_output/local/bin/$(go env GOOS)/$(go env GOARCH)"
+fi
+
+mv ${output_dir}/kubectl ${bindir}/kubectl${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
