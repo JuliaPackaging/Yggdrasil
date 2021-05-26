@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "kubectl"
-version = v"1.20.4"
+version = v"1.20.7"
 
 # Collection of sources required to complete build
 #
@@ -10,7 +10,7 @@ version = v"1.20.4"
 sources = [
     ArchiveSource(
         "https://github.com/kubernetes/kubernetes/archive/refs/tags/v$(version).tar.gz",
-        "3fe491b90f60b1b8989556325abad53409568b96e271b00e5d23fde18f3dbe44",
+        "3e4e698e142dbbdc6a5c84b140eb20477a4e0da1903395d59de84d0d254ae7fd",
     ),
 ]
 
