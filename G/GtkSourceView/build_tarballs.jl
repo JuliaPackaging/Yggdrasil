@@ -41,9 +41,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "GTK3_jll",
-    "FriBidi_jll",
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59"),
+    Dependency("GTK3_jll"),
+    Dependency("FriBidi_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

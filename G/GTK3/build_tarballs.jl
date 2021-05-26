@@ -80,7 +80,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"),
     Dependency("FriBidi_jll"),
