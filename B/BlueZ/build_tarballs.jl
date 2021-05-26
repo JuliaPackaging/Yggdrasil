@@ -23,7 +23,7 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 sed -i -e "s~ linux/if_alg.h~~" configure.ac 
 autoconf
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-systemd
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-systemd --enable-library
 make
 make install
 """
@@ -48,7 +48,8 @@ products = [
     ExecutableProduct("bluetooth", :bluetooth, "lib/cups/backend"),
     ExecutableProduct("mpris-proxy", :mpris_proxy),
     ExecutableProduct("obexd", :obexd, "libexec/bluetooth"),
-    ExecutableProduct("bluetoothctl", :bluetoothctl)
+    ExecutableProduct("bluetoothctl", :bluetoothctl),
+    LibraryProduct("libbluetooth", :libbluetooth),
 ]
 
 # Dependencies that must be installed before this package can be built
