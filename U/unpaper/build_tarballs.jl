@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "unpaper"
-version = v"6.1"
+version = v"6.1.100" # <--- This version number is a lie, (it is v6.1) we just need to bump it to build for experimental platforms
 
 # Collection of sources required to complete build
 sources = [
@@ -30,7 +30,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -44,4 +44,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # FFMPEG uses `preferred_gcc_version=v"8"`.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
