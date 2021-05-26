@@ -21,6 +21,7 @@ if [[ "${target}" == *-linux-* ]]; then
         export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64";
     fi;
 fi
+# linux/if_alg doesn't seem to work; prevent configure from finding it
 sed -i -e "s~ linux/if_alg.h~~" configure.ac 
 autoconf
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-systemd --enable-library
