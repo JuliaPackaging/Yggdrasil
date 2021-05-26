@@ -7,7 +7,7 @@ version = v"4.1.100" # <--- This version number is a lie, (it is v4.1.1) we just
 
 # Collection of sources required to build Tesseract
 sources = [
-    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz",
+    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/v4.1.1.tar.gz",
                   "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb"),
     DirectorySource("./bundled")
 ]
