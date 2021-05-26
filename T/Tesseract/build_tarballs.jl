@@ -3,14 +3,16 @@
 using BinaryBuilder
 
 name = "Tesseract"
-version = v"4.1.100" # <--- This version number is a lie, (it is v4.1.1) we just need to bump it to build for experimental platforms
+version = v"4.1.1"
 
 # Collection of sources required to build Tesseract
 sources = [
-    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/v4.1.1.tar.gz",
+    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz",
                   "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb"),
     DirectorySource("./bundled")
 ]
+
+version = v"4.1.100" # <--- This version number is a lie, we just need to bump it to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
