@@ -6,11 +6,15 @@ version = v"1.21.0"
 # Collection of sources required to build Blosc
 sources = [
     ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "b0ef4fda82a1d9cbd11e0f4b9685abf14372db51703c595ecd4d76001a8b342d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc-*
+if [[ "${target}" == *mingw* ]]; then
+  atomic_patch -p1 ../patches/mingw.patch
+fi
 mkdir build
 cd build
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
