@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd bluez-*
+# Hint to find libstc++, required to link against C++ libs when using C compiler
 if [[ "${target}" == *-linux-* ]]; then
     if [[ "${nbits}" == 32 ]]; then
         export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib";
