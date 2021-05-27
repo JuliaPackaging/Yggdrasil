@@ -31,11 +31,6 @@ cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
 make install
 
-if [[ "${target}" == *-mingw* ]]; then
-    # Manually move dlls from lib/ to bin/
-    mv ${prefix}/lib/*.${dlext} ${libdir}
-fi
-
 install_license ../LICENSES/*.txt
 """
 
