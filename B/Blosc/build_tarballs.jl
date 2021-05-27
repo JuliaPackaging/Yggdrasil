@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Blosc"
-version = v"1.14.3"
+version = v"1.21.0"
 
 # Collection of sources required to build Blosc
 sources = [
-    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "7217659d8ef383999d90207a98c9a2555f7b46e10fa7d21ab5a1f92c861d18f7"),
+    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "b0ef4fda82a1d9cbd11e0f4b9685abf14372db51703c595ecd4d76001a8b342d"),
 ]
 
 # Bash recipe for building across all platforms
