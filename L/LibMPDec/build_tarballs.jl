@@ -7,35 +7,33 @@ version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz", "9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f")
+    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(version).tar.gz",
+                  "9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mpdecimal-2.5.1/
-CFLAGS="-std=gnu99" ./configure --disable-cxx --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd $WORKSPACE/srcdir/mpdecimal*/
+
+# Give somewhat reasonable names to libraries for Windows
+atomic_patch -p1 ../patches/01-libname-windows.patch
+# By default use `${CC}` as linker
+atomic_patch -p1 ../patches/02-linker-cc.patch
+autoreconf -fiv
+
+export CFLAGS="-std=gnu99"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-cxx
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; ),
-    # Platform("i686", "windows"; ),
-    # Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
