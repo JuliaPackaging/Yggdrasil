@@ -82,7 +82,7 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Cairo_jll"),
-    Dependency("Pango_jll"),
+    Dependency("Pango_jll", v"1.42.4"; compat="1.42.4"),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
