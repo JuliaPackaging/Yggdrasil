@@ -13,11 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-apk add gettext
-apk add glib
-apk add orc-compiler
-apk add perl-xml-parser
-apk add bash-completion
+apk add bash-completion gettext glib orc-compiler perl-xml-parser 
 # make sure meson can find everything
 sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
 # For some reason, librt fails to get linked correctly, so add a flag
@@ -29,11 +25,14 @@ cd pulseaudio-*
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
 # pulseaudio seems to check for iconv_open but use libiconv_open?
 sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" meson.build
-# Force meson to use some libraries
-if [[ "${target}" == powerpc64le-* ]]; then     sed -i -e "s~'sys/capability.h',~~"  meson.build; fi
+# sys/capability.h doesn't seem to be workig on PowerPC
+if [[ "${target}" == powerpc64le-* ]]; then
+    sed -i -e "s~'sys/capability.h',~~"  meson.build;
+fi
 mkdir build
 cd build
-# I can't figure out how to build tdb, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/887
+# optional dependencies I can't build but might be useful
+# Avahi Jack LIRC tdb WebRTC 
 meson ..  -Ddatabase="gdbm" --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja
 ninja install
