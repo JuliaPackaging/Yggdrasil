@@ -21,7 +21,7 @@ sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 # I guess pulseaudio doesn't set install_rpath correctly?
 find pulseaudio-* -type f | xargs sed -i "s~install_rpath : privlibdir~install_rpath : '\$ORIGIN/pulseaudio'~"
 cd pulseaudio-*
-# Disable ffast-math; I repented
+# Disable ffast-math. I repented.
 sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
 # pulseaudio seems to check for iconv_open but use libiconv_open?
 sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" meson.build
