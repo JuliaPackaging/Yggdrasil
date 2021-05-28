@@ -1,0 +1,30 @@
+diff --git a/src/p4est.c b/src/p4est.c
+index 834b70f6..9b71cc90 100644
+--- a/src/p4est.c
++++ b/src/p4est.c
+@@ -3522,6 +3522,10 @@ p4est_save_ext (const char *filename, p4est_t * p4est,
+     file = fopen (filename, "ab");
+     SC_CHECK_ABORT (file != NULL, "file open");
+ 
++    /* explicitly seek to end to avoid bad ftell return value on Windows */
++    retval = fseek(file, 0, SEEK_END);
++    SC_CHECK_ABORT (retval == 0, "file seek");
++
+     /* align the start of the header */
+     fpos = ftell (file);
+     SC_CHECK_ABORT (fpos > 0, "first file tell");
+diff --git a/src/p6est.c b/src/p6est.c
+index 9bb7b546..d115952f 100644
+--- a/src/p6est.c
++++ b/src/p6est.c
+@@ -756,6 +756,10 @@ p6est_save_ext (const char *filename, p6est_t * p6est,
+     file = fopen (filename, "ab");
+     SC_CHECK_ABORT (file != NULL, "file open");
+ 
++    /* explicitly seek to end to avoid bad ftell return value on Windows */
++    retval = fseek(file, 0, SEEK_END);
++    SC_CHECK_ABORT (retval == 0, "file seek");
++
+     /* align */
+     fpos = ftell (file);
+     SC_CHECK_ABORT (fpos > 0, "first file tell");

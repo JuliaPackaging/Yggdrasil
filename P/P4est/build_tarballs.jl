@@ -9,6 +9,7 @@ version = v"2.3.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://p4est.github.io/release/p4est-2.3.1.tar.gz", "be66893b039fb3f27aca3d5d00acff42c67bfad5aa09cea9253cdd628b2bdc9a"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,6 +39,10 @@ if [[ "${target}" == *-mingw* ]]; then
   # Add manual definitions to fix missing `htonl` according to `INSTALL_WINDOWS` file
   # (see https://github.com/cburstedde/p4est/blob/master/INSTALL_WINDOWS)
   sed -i "1s/^/#define htonl(_val) ( ((uint16_t)(_val) \& 0xff00) >> 8 | ((uint16_t)(_val) \& 0xff) << 8 )\n/" src/p4est_algorithms.c src/p8est_algorithms.c src/p6est.c src/p4est_ghost.c
+
+  # Add patch to hotfix `p4est_save_ext`/`p6est_save_ext` until
+  # https://github.com/cburstedde/p4est/issues/113 is fixed and released
+  atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-bad-ftell-return-value-windows.patch
 fi
 
 # Configure, build, install
