@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Calcium"
-version = v"000.300.000"
-upstream_version = v"0.3.0"
+version = v"000.400.000"
+upstream_version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/fredrik-johansson/calcium/archive/refs/tags/$(upstream_version).tar.gz",
-                  "63e8e1ed97d55d045b13bd28d1b7ab1c38239f08acd226866be6233543cb7456"),
+                  "019469d2c7991e4077a9b32769451e891b105f763ab71f9c3585ce636df18918"),
 ]
 
 # Bash recipe for building across all platforms
