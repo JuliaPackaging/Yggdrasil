@@ -17,7 +17,7 @@ function build_harfbuzz(ARGS, name::String)
     # Bash recipe for building across all platforms
     # Side note: this is a great use-case for
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/778
-    script = raw"""
+    script = "ICU=$(icu)\n" * raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
 mkdir build && cd build
 meson .. \
@@ -34,7 +34,14 @@ meson .. \
     -Dicu_builtin=false \
     -Dcoretext=enabled
 ninja -j${nproc}
-ninja install
+if [[ "${ICU}" == true ]]; then
+    # Manually install only ICU-related files
+    cp src/libharfbuzz-icu*${dlext}* ${libdir}/.
+    cp meson-private/harfbuzz-icu.pc ${prefix}/lib/pkgconfig/.
+    cp ../src/hb-icu.h ${includedir}/harfbuzz/.
+else
+    ninja install
+fi
 """
 
     # These are the platforms we will build for by default, unless further
@@ -59,16 +66,16 @@ ninja install
         Dependency("Cairo_jll"),
         Dependency("Fontconfig_jll"),
         Dependency("FreeType2_jll"),
-        Dependency("Glib_jll", v"2.68.1"; compat="2.68.1"),
+        Dependency("Glib_jll"; compat="2.68.1"),
         Dependency("Graphite2_jll"),
-        Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
+        Dependency("Libffi_jll"; compat="~3.2.2"),
         BuildDependency("Xorg_xorgproto_jll"),
     ]
 
     if icu
         append!(dependencies, [
-            Dependency("HarfBuzz_jll", version; compat="$(version)"),
-            Dependency("ICU_jll", v"69.1.0"; compat="69.1.0"),
+            Dependency("HarfBuzz_jll"; compat="$(version)"),
+            Dependency("ICU_jll"; compat="69.1.0"),
         ])
     end
 
