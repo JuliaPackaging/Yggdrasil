@@ -15,7 +15,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lrslib*
-atomic_patch -p1 ../patches/cflags.jl
+atomic_patch -p1 ../patches/random.patch
+atomic_patch -p1 ../patches/cflags.patch
 atomic_patch -p1 ../patches/firsttime.patch
 extraargs=""
 cflags="-fPIC -O3 -Wall"
