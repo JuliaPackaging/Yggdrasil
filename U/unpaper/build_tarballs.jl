@@ -11,11 +11,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unpaper-6.1/
-apk add libxslt
-if [[ "${target}" == *-linux-* ]]; then
-    export LDFLAGS="-lstdc++"
-elif [[ "${target}" == *-mingw* ]]; then
+cd $WORKSPACE/srcdir/unpaper-*/
+if [[ "${target}" == *-mingw* ]]; then
     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
     # Give some hints to the linker
@@ -38,7 +35,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    # Offer a native xsltproc
+    HostBuildDependency("XSLT_jll"),
     Dependency("FFMPEG_jll"),
 ]
 
