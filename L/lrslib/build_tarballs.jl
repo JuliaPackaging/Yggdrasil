@@ -41,7 +41,7 @@ fi
 make prefix=$prefix INCLUDEDIR=$prefix/include LIBDIR=${libdir} CFLAGS="$cflags" $extraargs -j ${nproc} install
 if [[ $target == *mingw* ]]; then
   # rename binaries and move libraries
-  for file in ${bindir}/{lrs,lrsnash,redund}; do mv $file $file.exe; done
+  for file in ${bindir}/{lrs,lrsnash}; do mv $file $file.exe; done
   mv ${prefix}/lib/*lrs*.dll ${libdir}/
 fi
 
