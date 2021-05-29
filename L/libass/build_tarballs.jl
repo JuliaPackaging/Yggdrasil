@@ -2,12 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "libass"
-version = v"0.14.0"
+version = v"0.15.1"
 
 # Collection of sources required to build libass
 sources = [
     ArchiveSource("https://github.com/libass/libass/releases/download/$(version)/libass-$(version).tar.xz",
-                  "881f2382af48aead75b7a0e02e65d88c5ebd369fe46bc77d9270a94aa8fd38a2"),
+                  "1cdd39c9d007b06e737e7738004d7f38cf9b1e92843f37307b24e7ff63ab8e53"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -32,11 +32,10 @@ products = [
 dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("FriBidi_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
