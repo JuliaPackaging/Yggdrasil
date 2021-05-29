@@ -43,6 +43,10 @@ if [[ "${target}" == *-mingw* ]]; then
   # Add patch to hotfix `p4est_save_ext`/`p6est_save_ext` until
   # https://github.com/cburstedde/p4est/issues/113 is fixed and released
   atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-bad-ftell-return-value-windows.patch
+
+  # Add patch to hotfix `p4est_connectivity_getline_upper` until
+  # https://github.com/cburstedde/p4est/pull/115 is merged and released
+  atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-end-of-file-detection-windows.patch
 fi
 
 # Configure, build, install
