@@ -1,0 +1,23 @@
+diff --git a/lrsnashlib.c b/lrsnashlib.c
+index 673f003..04ecba3 100755
+--- a/lrsnashlib.c
++++ b/lrsnashlib.c
+@@ -1116,4 +1116,6 @@ void updateFwidth(game *g, int col, int pos, char *str) {
+                 ((gInfo *)g->aux)->fwidth[col][pos] = len;
+ }
+ 
++void resetNashSolver() { FirstTime = TRUE; }
++
+ /******************** end of lrsnashlib.c ***************************/
+diff --git a/lrsnashlib.h b/lrsnashlib.h
+index 7b87334..4f2577b 100755
+--- a/lrsnashlib.h
++++ b/lrsnashlib.h
+@@ -65,6 +65,7 @@ void printGame(game * g);
+ void setFwidth(game *g, int len);
+ void initFwidth(game *g);
+ void updateFwidth(game *g, int col, int pos, char *str);
++void resetNashSolver();  /* Call this function for every new game to be solved */
+ 
+ 
+ extern long Debug_flag;
