@@ -19,11 +19,11 @@ products = [
     LibraryProduct(["libswscale", "swscale"], :libswscale),
 ]
 
-# Dependencies that must be installed before this package can be built
+# Dependencies that must be installed before this package can be built.
 # TODO: Theora once it's available
 dependencies = [
     BuildDependency("nv_codec_headers_jll"),
-    Dependency("libass_jll"),
+    Dependency("libass_jll"; compat="0.15.1"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"),
@@ -31,15 +31,13 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency("x264_jll", v"2020.7.14"; compat="=2020.7.14"),
-    Dependency("x265_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("x264_jll"; compat="~2021.05.05"),
+    Dependency("x265_jll"; compat="~3.5"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies; preferred_gcc_version=preferred_gcc_version)
+build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies; preferred_gcc_version=preferred_gcc_version, julia_compat="1.6")
