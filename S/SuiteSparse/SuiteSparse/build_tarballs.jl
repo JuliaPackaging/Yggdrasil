@@ -66,10 +66,6 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 install_license LICENSE.txt
-
-# Compile SuiteSparse_wrapper shim
-cd $WORKSPACE/srcdir/SuiteSparse_wrapper
-"${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
