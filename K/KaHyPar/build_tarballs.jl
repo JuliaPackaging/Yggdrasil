@@ -20,7 +20,7 @@ done
 cd kahypar/
 git submodule update --init --recursive --depth=1
 mkdir build && cd build
-cmake ..  -DBoost_USE_STATIC_LIBS=OFF -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make install.library
 """
 
