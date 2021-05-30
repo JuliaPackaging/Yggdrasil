@@ -5,9 +5,9 @@ version = v"4.1.0"
 
 # Collection of sources required to build libffi
 sources = [
-    "https://gitlab.com/virtio-fs/qemu.git" =>
-    "bf5775237ee563b4baa1c7f3c1a65b7c93b93fca",
-    "./bundled",
+    GitSource("https://gitlab.com/virtio-fs/qemu.git",
+              "bf5775237ee563b4baa1c7f3c1a65b7c93b93fca"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,11 +48,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Pixman_jll",
-    "Glib_jll",
-    "PCRE_jll",
-    "Gettext_jll",
-    "libcap_jll",
+    Dependency("Pixman_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("PCRE_jll"),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
+    Dependency("libcap_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

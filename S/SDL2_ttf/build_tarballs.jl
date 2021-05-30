@@ -56,9 +56,11 @@ dependencies = [
     # The following libraries aren't needed for the build, but libSDL2_ttf is
     # dynamically linked to them regardless.
     Dependency("libpng_jll"),
+    # TODO: Next time you build a new version of this package, make sure
+    # HarfBuzz is actually needed, it doesn't look like it's the case.
     Dependency("HarfBuzz_jll"),
     Dependency("Graphite2_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("PCRE_jll"),
 ]
 

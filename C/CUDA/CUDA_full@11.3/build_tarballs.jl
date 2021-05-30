@@ -3,19 +3,23 @@ using BinaryBuilder
 include("../../../fancy_toys.jl")
 
 name = "CUDA_full"
-version = v"11.3.0"
+version = v"11.3.1"
 
 sources_linux = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.0/local_installers/cuda_11.3.0_465.19.01_linux.run",
-               "262da7f77db177b153a6b70b5812210f3f72f00eb608ab9cf2a4582328c4bf5c", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.1/local_installers/cuda_11.3.1_465.19.01_linux.run",
+               "ad93ea98efced35855c58d3a0fc326377c60917cb3e8c017d3e6d88819bf2934", "installer.run")
 ]
 sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.0/local_installers/cuda_11.3.0_465.19.01_linux_ppc64le.run",
-               "c0010107933b575a87e27b1293e5dc32b74201486f4ae2f4c8695ea727d22857", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.1/local_installers/cuda_11.3.1_465.19.01_linux_ppc64le.run",
+               "220f2c10a21500d62b03c6848c1659ebb3a8e10dc0915ab87b86b397058407c5", "installer.run")
+]
+sources_linux_aarch64 = [
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.1/local_installers/cuda_11.3.1_465.19.01_linux_sbsa.run",
+               "39990d3da88b21289ac20850bc183f0b66275f32e1f562b551c05843bf506e4c", "installer.run")
 ]
 sources_win10 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.0/local_installers/cuda_11.3.0_465.89_win10.exe",
-               "845c07d133b7f5597cc3f7a736b2537b4944009bcd0c4ddcc371256e51e62b9e", "installer.exe")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.3.1/local_installers/cuda_11.3.1_465.89_win10.exe",
+               "ff5beed6004e968dd413200535168559e90d7d870e8cf7189786cd32cd78cf01", "installer.exe")
 ]
 
 script = raw"""

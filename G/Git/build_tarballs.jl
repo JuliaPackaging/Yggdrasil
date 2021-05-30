@@ -65,7 +65,8 @@ dependencies = [
     Dependency("LibCURL_jll"),
     Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
     Dependency("OpenSSL_jll"),
-    Dependency("Gettext_jll"),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll", v"10.35.0"),
     Dependency("Zlib_jll"),

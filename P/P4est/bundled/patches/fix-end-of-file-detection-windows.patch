@@ -1,0 +1,17 @@
+diff --git a/src/p4est_connectivity.c b/src/p4est_connectivity.c
+index e8267437..51360e8e 100644
+--- a/src/p4est_connectivity.c
++++ b/src/p4est_connectivity.c
+@@ -4596,11 +4596,11 @@ p4est_connectivity_getline_upper (FILE * stream)
+ 
+   for (;;) {
+     c = fgetc (stream);
+-    c = toupper (c);
+     if (c == EOF && linep == line) {
+       P4EST_FREE (linep);
+       return NULL;
+     }
++    c = toupper (c);
+ 
+     if (--len == 0) {
+       char               *linen;
