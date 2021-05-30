@@ -3,39 +3,26 @@
 using BinaryBuilder
 
 name = "Giflib"
-version = v"5.1.4"
+version = v"5.2.1"
 
 # Collection of sources required to build Giflib
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(version).tar.bz2",
-                  "df27ec3ff24671f80b29e6ab1c4971059c14ac3db95406884fc26574631ba8d5"),
-
-    # Apply security patch
-    ArchiveSource("https://deb.debian.org/debian/pool/main/g/giflib/giflib_5.1.4-3.debian.tar.xz",
-                  "767ea03c1948fa203626107ead3d8b08687a3478d6fbe4690986d545fb1d60bf"),
+    ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(version).tar.gz",
+                  "31da5562f44c5f15d63340a09a4fd62b48c45620cd302f77a6d9acf0077879bd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/giflib-*/
-atomic_patch -p1 ../debian/patches/CVE-2016-3977.patch
-
-# We need to massage configure script to convince it to build the shared library
-# for PowerPC.
-if [[ "${target}" == powerpc64le-* ]]; then
-    autoreconf -vi
-fi
-
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-make install
+make install PREFIX="${prefix}" LIBDIR="${libdir}"
+rm "${libdir}/libgif.a"
 install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -43,8 +30,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
