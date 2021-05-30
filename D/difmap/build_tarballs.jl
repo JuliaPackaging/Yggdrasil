@@ -10,7 +10,7 @@ sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5k.tar.
 
 script = raw"""
 cd $WORKSPACE/srcdir
-cd uvf_difmap
+cd uvf_difmap_2.5k
 sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
 ./configure linux-i486-gcc
 ./makeall
