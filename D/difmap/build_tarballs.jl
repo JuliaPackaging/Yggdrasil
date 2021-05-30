@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "difmap"
-# difmap version is 2.5e, mapped here to numerical value of 2.5.5
-version = v"2.5.5"
+# difmap version is 2.5k, mapped here to numerical value of 2.5.11
+version = v"2.5.11"
 
-sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5e.tar.gz", "457cd77c146e22b5332403c19b29485388a863ec494fff87137176396fc6a9ff")]
+sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5k.tar.gz", "457cd77c146e22b5332403c19b29485388a863ec494fff87137176396fc6a9ff")]
 
 script = raw"""
 cd $WORKSPACE/srcdir
