@@ -9,8 +9,7 @@ version = v"2.5.11"
 sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5k.tar.gz", "d754dcc094a758a817677fe493bde13408cc270910f6bb7bbc3487e002cc184e")]
 
 script = raw"""
-cd $WORKSPACE/srcdir
-cd uvf_difmap_2.5k
+cd $WORKSPACE/srcdir/uvf_difmap*
 sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
 ./configure linux-i486-gcc
 ./makeall
