@@ -45,7 +45,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("MPICH_jll")
