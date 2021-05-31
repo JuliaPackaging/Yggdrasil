@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PDAL"
-version = v"2.2.0"
+version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PDAL/PDAL/releases/download/$version/PDAL-$version-src.tar.gz", "421e94beafbfda6db642e61199bc4605eade5cab5d2e54585e08f4b27438e568"),
+    ArchiveSource("https://github.com/PDAL/PDAL/releases/download/$version/PDAL-$version-src.tar.gz", "5b0b92258874ef722b5027054d64c8b318b524e7a9b2b250d0330d76e19b8618"),
     DirectorySource("./bundled")
 ]
 
@@ -26,8 +26,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Replace-non-standard-endian-functions-with-alternati.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Use-consistent-lowercase-for-Windows-header-files.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Fix-type-of-arguments-of-ifstream-ofstream.patch
+    #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Use-consistent-lowercase-for-Windows-header-files.patch
+    #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Fix-type-of-arguments-of-ifstream-ofstream.patch
 fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
