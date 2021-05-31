@@ -38,6 +38,13 @@ if [[ $target == *apple* ]]; then
     toolset=darwin-6.0
     extraargs="binary-format=mach-o link=shared"
     echo "using darwin : 6.0 : $CXX : <cxxflags>-stdlib=libc++ <linkflags>-stdlib=libc++ ;" > project-config.jam
+    if [[ "${target}" == aarch64-* ]]; then
+        # Fix error
+        #     Undefined symbols for architecture arm64:
+        #       "_jump_fcontext", referenced from:
+        # See https://github.com/boostorg/context/issues/170#issuecomment-863669877
+        extraargs="abi=aapcs ${extraargs}"
+    fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
     extraargs="address-model=64 binary-format=pe abi=ms link=shared"
