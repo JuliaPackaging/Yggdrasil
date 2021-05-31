@@ -86,6 +86,11 @@ EOT
 
         cd $WORKSPACE/srcdir/build
 
+        if [[ "${target}" == aarch64-* ]]; then
+            CONFIGURE_EXTRA_FLAGS=(-device-option QMAKE_APPLE_DEVICE_ARCHS=arm64)
+            sed -i 's/QMAKE_APPLE_DEVICE_ARCHS = .*/QMAKE_APPLE_DEVICE_ARCHS = arm64/' ../qtbase-everywhere-src-*/mkspecs/common/macx.conf
+        fi
+
         export QT_MAC_SDK_NO_VERSION_CHECK=1
         ../qtbase-everywhere-src-*/configure \
             QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks \
@@ -93,7 +98,8 @@ EOT
             QMAKE_MACOSX_DEPLOYMENT_TARGET=10.14 \
             -platform musl -xplatform macx-clang -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
             -prefix ${prefix} $commonoptions \
-            -skip qtwinextras
+            -skip qtwinextras \
+            "${CONFIGURE_EXTRA_FLAGS[@]}"
         ;;
 
     *mingw*)
