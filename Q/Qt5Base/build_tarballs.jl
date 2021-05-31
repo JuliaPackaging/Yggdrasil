@@ -13,6 +13,8 @@ sources = [
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
+version = v"5.15.3" # This version number is a lie to build for experimental platforms
+
 script = raw"""
 cd $WORKSPACE/srcdir
 
@@ -48,10 +50,12 @@ case "$target" in
 
 	*apple-darwin*)
         echo "QMAKE_CFLAGS_ARCH_HASWELL =" >> ../qtbase-everywhere-src-*/mkspecs/macx-clang/qmake.conf
-        cd $WORKSPACE/srcdir/MacOSX10.14.sdk
-        rm -rf /opt/$target/$target/sys-root/System
-        rsync -a usr/* /opt/$target/$target/sys-root/usr/
-        cp -a System /opt/$target/$target/sys-root/
+        if [[ "${target}" == x86_64-* ]]; then
+            cd $WORKSPACE/srcdir/MacOSX10.14.sdk
+            rm -rf /opt/$target/$target/sys-root/System
+            rsync -a usr/* /opt/$target/$target/sys-root/usr/
+            cp -a System /opt/$target/$target/sys-root/
+        fi
 
         cd $WORKSPACE/srcdir/qtbase-everywhere-src-*/
 
@@ -76,8 +80,10 @@ EOT
         QMAKE_MAC_SDK.macosx.PlatformPath = '"/opt/$target"'\n;' 'mkspecs/features/mac/sdk.prf'
         echo "" >  mkspecs/features/mac/no_warn_empty_obj_files.prf
 
-        sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang++
-        sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang
+        if [[ "${target}" == x86_64-* ]]; then
+            sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang++
+            sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang
+        fi
 
         cd $WORKSPACE/srcdir/build
 
@@ -127,7 +133,7 @@ platforms_linux = [
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
-platforms_macos = [ Platform("x86_64", "macos") ]
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -171,7 +177,7 @@ dependencies = [
     Dependency("xkbcommon_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"),
@@ -179,12 +185,14 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+julia_compat = "1.6"
+
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
