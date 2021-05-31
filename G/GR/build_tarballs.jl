@@ -66,8 +66,8 @@ platforms = [
     Platform("x86_64",  "windows"),
     Platform("i686",  "windows"),
     Platform("x86_64",  "macos"),
-    Platform("aarch64", "macos")
-#    Platform("x86_64",  "freebsd"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -82,8 +82,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
