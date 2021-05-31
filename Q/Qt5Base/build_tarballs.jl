@@ -80,10 +80,9 @@ EOT
         QMAKE_MAC_SDK.macosx.PlatformPath = '"/opt/$target"'\n;' 'mkspecs/features/mac/sdk.prf'
         echo "" >  mkspecs/features/mac/no_warn_empty_obj_files.prf
 
-        if [[ "${target}" == x86_64-* ]]; then
-            sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang++
-            sed -i "s?-fuse-ld=x86_64-apple-darwin14?-fuse-ld=${BIN_DIR}/x86_64-apple-darwin14-ld?g" ${BIN_DIR}/x86_64-apple-darwin14-clang
-        fi
+        for bin in "${BIN_DIR}/clang++" "${BIN_DIR}/clang"; do
+            sed -i "s?-fuse-ld=[^ ]\+?-fuse-ld=${BIN_DIR}/ld?g" "${bin}"
+        done
 
         cd $WORKSPACE/srcdir/build
 
