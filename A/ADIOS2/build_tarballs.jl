@@ -73,7 +73,8 @@ platforms = [
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 platforms = expand_gfortran_versions(platforms)
 # x86_64-apple-darwin-libgfortran3 encounters an ICE in GCC
-platforms = filter(p -> !(Sys.isapple(p) && libgfortran_version(p) == v"3"), platforms)
+# on Windows there is a build error with libgfortran3
+platforms = filter(p -> libgfortran_version(p) > v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
