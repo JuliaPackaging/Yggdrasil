@@ -39,13 +39,10 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     gcc -c cfg_stub.c
     ar -crs libcfg_stub.a cfg_stub.o
     cp libcfg_stub.a $prefix/lib
-    # cp $prefix/src/mpi.f90 $prefix/include
     # - cmake's auto-detection for MPI doesn't work on Windows.
     # - The SST and Table ADIOS2 components don't build on Windows
     #   (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
     export FFLAGS="-I$prefix/src -I$prefix/include -fno-range-check"
-    # -DMPI_Fortran_COMPILER_FLAGS='-fno-range-check;-I$prefix/src;-I$prefix/include'
-    # -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS='$prefix/src;$prefix/include'
     archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
@@ -58,27 +55,6 @@ install_license ../Copyright.txt ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#TODO platforms = [
-#TODO     Platform("aarch64", "linux"; libc="glibc"),
-#TODO     Platform("aarch64", "linux"; libc="musl"),
-#TODO     Platform("powerpc64le", "linux"; libc="glibc"),
-#TODO     Platform("x86_64", "freebsd"),
-#TODO     Platform("x86_64", "linux"; libc="glibc"),
-#TODO     Platform("x86_64", "linux"; libc="musl"),
-#TODO     Platform("x86_64", "macos"),
-#TODO     Platform("x86_64", "windows"),
-#TODO 
-#TODO     # These platforms fail:
-#TODO 
-#TODO     # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
-#TODO     # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
-#TODO     # (32-bit architectures are not supported; see
-#TODO     # <https://github.com/ornladios/ADIOS2/issues/2704>.)
-#TODO     #FAIL Platform("armv7l", "linux"; libc="glibc"),
-#TODO     #FAIL Platform("i686", "linux"; libc="glibc"),
-#TODO     #TODO Platform("i686", "linux"; libc="musl"),
-#TODO     #TODO Platform("i686", "windows"),
-#TODO ]
 platforms = supported_platforms()
 # 32-bit architectures are not supported; see
 # <https://github.com/ornladios/ADIOS2/issues/2704>
