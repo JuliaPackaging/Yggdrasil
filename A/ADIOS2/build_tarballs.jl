@@ -33,14 +33,12 @@ if [[ "$target" == *-apple-* ]]; then
 fi
 archopts=
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    # cmake's auto-detection doesn't work on Windows.
+    # cmake's auto-detection for MPI doesn't work on Windows.
     # The SST and Table ADIOS2 components don't build on Windows
     # (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_Table=OFF"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 elif [[ "$target" == *-mingw* ]]; then
-    #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_Table=OFF"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${archopts} ..
 make -j${nproc}
@@ -74,6 +72,8 @@ platforms = [
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 platforms = expand_gfortran_versions(platforms)
+# x86_64-apple-darwin-libgfortran3 encounters an ICE in GCC
+platforms = filter(p -> !(Sys.isapple(p) && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -112,5 +112,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
-# GCC 6 has an ICE on apple
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
