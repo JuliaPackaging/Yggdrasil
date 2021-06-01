@@ -112,4 +112,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
+# GCC 6 has an ICE on macOS
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
