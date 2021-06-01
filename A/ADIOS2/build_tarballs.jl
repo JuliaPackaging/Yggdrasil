@@ -24,8 +24,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sockaddr_in.patch
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
-    # Set up a wrapper script for the assembler. GCC's assembly
-    # output isn't accepted by the LLVM assembler.
+    # Set up a wrapper script for the assembler. GCC's assembly output
+    # isn't accepted by the LLVM assembler.
     as=$(which as)
     mv "$as" "$as.old"
     export AS="$as.old"
@@ -37,10 +37,10 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     # The SST and Table ADIOS2 components don't build on Windows
     # (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
     #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_Table=OFF"
 elif [[ "$target" == *-mingw* ]]; then
     #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_Table=OFF"
 fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${archopts} ..
 make -j${nproc}
@@ -112,5 +112,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
-# GCC 6 and GCC 7 have an ICE on macOS
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
+# GCC 6 has an ICE on apple
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
