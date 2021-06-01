@@ -15,9 +15,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ADIOS2-2.7.1
+# See <https://github.com/ornladios/ADIOS2/issues/2705>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gettid.patch
 # PR <https://github.com/ornladios/ADIOS2/pull/2712>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ndims.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sockaddr_in.patch
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
@@ -28,21 +31,18 @@ if [[ "$target" == *-apple-* ]]; then
     export AS="$as.old"
     ln -s "$WORKSPACE/srcdir/scripts/as.llvm" "$as"
 fi
-mpiopts=
-winopts=
+archopts=
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
     # cmake's auto-detection doesn't work on Windows.
     # The SST and Table ADIOS2 components don't build on Windows
     # (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
-    winopts="-DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
-    winopts="-DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    #TODO archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 fi
-# We disable Fortran because this would require building many more
-# versions of the library
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_USE_Fortran=OFF -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${mpiopts} ${winopts} ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DADIOS2_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ${archopts} ..
 make -j${nproc}
 make -j${nproc} install
 install_license ../Copyright.txt ../LICENSE
@@ -54,6 +54,7 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="musl"),
     Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
@@ -63,20 +64,16 @@ platforms = [
 
     # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
     # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
-    # (32-bit architectures are officially not supported.)
+    # (32-bit architectures are not supported; see
+    # <https://github.com/ornladios/ADIOS2/issues/2704>.)
     #FAIL Platform("armv7l", "linux"; libc="glibc"),
     #FAIL Platform("i686", "linux"; libc="glibc"),
     #TODO Platform("i686", "linux"; libc="musl"),
     #TODO Platform("i686", "windows"),
-
-    # [22:40:43] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/toolkit/profiling/taustubs/tautimer.cpp:208:31: error: ‘__NR_gettid’ was not declared in this scope
-    # [22:40:43]      mytid = (uint64_t)syscall(__NR_gettid);
-    # (Likely the respective syscall does not exist on FreeBSD;
-    # reported as <https://github.com/ornladios/ADIOS2/issues/2705>.)
-    #FAIL Platform("x86_64", "freebsd"),
 ]
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -86,6 +83,8 @@ products = [
     LibraryProduct("libadios2_core_mpi", :libadios2_core_mpi),
     LibraryProduct("libadios2_cxx11", :libadios2_cxx11),
     LibraryProduct("libadios2_cxx11_mpi", :libadios2_cxx11_mpi),
+    LibraryProduct("libadios2_fortran", :libadios2_fortran),
+    LibraryProduct("libadios2_fortran_mpi", :libadios2_fortran_mpi),
     LibraryProduct("libadios2_taustubs", :libadios2_taustubs),
 
     # Missing on Windows:
@@ -112,4 +111,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+# GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")

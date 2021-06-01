@@ -1,0 +1,15 @@
+diff --git a/source/adios2/helper/adiosNetwork.cpp b/source/adios2/helper/adiosNetwork.cpp
+index 9122224e0..a3c010d19 100644
+--- a/source/adios2/helper/adiosNetwork.cpp
++++ b/source/adios2/helper/adiosNetwork.cpp
+@@ -24,6 +24,10 @@
+ #include <sys/ioctl.h> //AvailableIpAddresses() ioctl
+ #include <unistd.h>    //AvailableIpAddresses() close
+
++#if defined(__FreeBSD__)
++#include <netinet/in.h>
++#endif
++
+ #include <nlohmann/json.hpp>
+
+ namespace adios2
