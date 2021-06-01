@@ -34,8 +34,7 @@ script = raw"""
     make install
 
     # Copy the library's license file
-    mkdir -p ${prefix}/share/licenses/GRAMPC/
-    cp $WORKSPACE/srcdir/grampc_julia_wrapper/src_GRAMPC/LICENSE.txt ${prefix}/share/licenses/GRAMPC/
+    install_license $WORKSPACE/srcdir/grampc_julia_wrapper/src_GRAMPC/LICENSE.txt 
 """
 
 # These are the platforms we will build for by default, unless further
