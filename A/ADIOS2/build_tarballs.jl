@@ -48,33 +48,37 @@ install_license ../Copyright.txt ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-
-    # These platforms fail:
-
-    # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
-    # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
-    # (32-bit architectures are not supported; see
-    # <https://github.com/ornladios/ADIOS2/issues/2704>.)
-    #FAIL Platform("armv7l", "linux"; libc="glibc"),
-    #FAIL Platform("i686", "linux"; libc="glibc"),
-    #TODO Platform("i686", "linux"; libc="musl"),
-    #TODO Platform("i686", "windows"),
-]
+#TODO platforms = [
+#TODO     Platform("aarch64", "linux"; libc="glibc"),
+#TODO     Platform("aarch64", "linux"; libc="musl"),
+#TODO     Platform("powerpc64le", "linux"; libc="glibc"),
+#TODO     Platform("x86_64", "freebsd"),
+#TODO     Platform("x86_64", "linux"; libc="glibc"),
+#TODO     Platform("x86_64", "linux"; libc="musl"),
+#TODO     Platform("x86_64", "macos"),
+#TODO     Platform("x86_64", "windows"),
+#TODO 
+#TODO     # These platforms fail:
+#TODO 
+#TODO     # [22:03:24] /workspace/srcdir/ADIOS2-2.7.1/source/adios2/engine/ssc/SscReader.cpp:420:71: error: narrowing conversion of ‘18446744073709551613ull’ from ‘long long unsigned int’ to ‘unsigned int’ inside { } [-Wnarrowing]
+#TODO     # [22:03:24]                  m_IO.DefineVariable<T>(b.name, {adios2::LocalValueDim});       \
+#TODO     # (32-bit architectures are not supported; see
+#TODO     # <https://github.com/ornladios/ADIOS2/issues/2704>.)
+#TODO     #FAIL Platform("armv7l", "linux"; libc="glibc"),
+#TODO     #FAIL Platform("i686", "linux"; libc="glibc"),
+#TODO     #TODO Platform("i686", "linux"; libc="musl"),
+#TODO     #TODO Platform("i686", "windows"),
+#TODO ]
+platforms = supported_platforms()
+# 32-bit architectures are not supported; see
+# <https://github.com/ornladios/ADIOS2/issues/2704>
+platforms = filter(p -> arch(p) ∉ ("armv6l", "armv7l", "i686"), platforms)
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
+# TODO: Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 # x86_64-apple-darwin-libgfortran3 encounters an ICE in GCC
-# on Windows there is a build error with libgfortran3
-platforms = filter(p -> libgfortran_version(p) > v"3", platforms)
+platforms = filter(p -> !(Sys.isapple(p) && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
