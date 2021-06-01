@@ -33,10 +33,20 @@ if [[ "$target" == *-apple-* ]]; then
 fi
 archopts=
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    # cmake's auto-detection for MPI doesn't work on Windows.
-    # The SST and Table ADIOS2 components don't build on Windows
-    # (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    # - The MSMPI Fortran bindings are missing a function; see
+    #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
+    echo 'void __guard_check_icall_fptr(unsigned long ptr) {}' >cfg_stub.c
+    gcc -c cfg_stub.c
+    ar -crs libcfg_stub.a cfg_stub.o
+    cp libcfg_stub.a $prefix/lib
+    # cp $prefix/src/mpi.f90 $prefix/include
+    # - cmake's auto-detection for MPI doesn't work on Windows.
+    # - The SST and Table ADIOS2 components don't build on Windows
+    #   (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
+    export FFLAGS="-I$prefix/src -I$prefix/include -fno-range-check"
+    # -DMPI_Fortran_COMPILER_FLAGS='-fno-range-check;-I$prefix/src;-I$prefix/include'
+    # -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS='$prefix/src;$prefix/include'
+    archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
@@ -72,7 +82,7 @@ install_license ../Copyright.txt ../LICENSE
 platforms = supported_platforms()
 # 32-bit architectures are not supported; see
 # <https://github.com/ornladios/ADIOS2/issues/2704>
-platforms = filter(p -> arch(p) ∉ ("armv6l", "armv7l", "i686"), platforms)
+platforms = filter(p -> nbits(p) ≠ 32, platforms)
 # Apparently, macOS doesn't use different C++ string APIs
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
 # TODO: Windows doesn't build with libcxx="cxx03"
@@ -117,4 +127,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
