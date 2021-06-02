@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"21.5.0"
+version = v"21.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.05/amrex-21.05.tar.gz", "eb6d21e48279ad67278413c77b29a1754c18ffe741aa6b3a9f3f01eeac13177f")
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.06/amrex-21.06.tar.gz", "6982c22837d7c0bc4583065d9da55e0aebcf07b54386e4b90a779391fe73fd53")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,15 +17,15 @@ cd amrex
 mkdir build
 cd build
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$WORKSPACE/destdir -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
     mpiopts=
 fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON ${mpiopts} ..
-make -j$(nproc)
-make -j$(nproc) install
+make -j${nproc}
+make -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
