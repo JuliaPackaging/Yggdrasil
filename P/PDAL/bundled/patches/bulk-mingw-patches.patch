@@ -119,14 +119,14 @@ diff --git a/pdal/PointLayout.cpp b/pdal/PointLayout.cpp
 index 67eeb8bdd..46d80ff7b 100644
 --- a/pdal/PointLayout.cpp
 +++ b/pdal/PointLayout.cpp
-@@ -342,6 +342,8 @@ MetadataNode PointLayout::toMetadata() const
-     return root;
+@@ -357,6 +357,8 @@ void PointLayout::setAllowedDims(StringList dimNames)
+     m_allowedDimNames = dimNames;
  }
  
 +PointLayout::~PointLayout() {}
 +
  } // namespace pdal
- 
+
  
 diff --git a/pdal/PointLayout.hpp b/pdal/PointLayout.hpp
 index f52d98bd0..8d90d8d47 100644
@@ -342,15 +342,15 @@ index 883cb06b2..3e45b5aa3 100644
      }
      catch (pdalboost::filesystem::filesystem_error&)
      {
-@@ -255,7 +228,7 @@ bool fileExists(const std::string& name)
- 
+@@ -273,7 +273,7 @@ bool fileExists(const std::string& name)
  uintmax_t fileSize(const std::string& file)
  {
--    return pdalboost::filesystem::file_size(toNative(file));
-+    return pdalboost::filesystem::file_size(file);
- }
- 
- 
+     pdalboost::system::error_code ec;
+-    uintmax_t size = pdalboost::filesystem::file_size(toNative(file), ec);
++    uintmax_t size = pdalboost::filesystem::file_size(file, ec);
+     if (ec)
+         size = 0;
+     return size;
 @@ -281,6 +254,25 @@ std::string getcwd()
  }
  
@@ -492,7 +492,7 @@ index 883cb06b2..3e45b5aa3 100644
      FindClose(handle);
  #else
      glob_t glob_result;
-@@ -448,9 +439,13 @@ std::vector<std::string> glob(std::string path)
+@@ -469,6 +469,10 @@ std::vector<std::string> glob(std::string path)
      return filenames;
  }
  
@@ -501,26 +501,8 @@ index 883cb06b2..3e45b5aa3 100644
 +    m_addr = nullptr;
 +}
  
- MapContext mapFile(const std::string& filename, bool readOnly,
--    size_t pos, size_t size)
-+                   size_t pos, size_t size)
+ MapContext mapFile(const std::string& filename, bool readOnly, uintmax_t pos, uintmax_t size)
  {
-     MapContext ctx;
- 
-@@ -482,11 +477,11 @@ MapContext mapFile(const std::string& filename, bool readOnly,
-     }
- #else
-     ctx.m_handle = CreateFileMapping((HANDLE)_get_osfhandle(ctx.m_fd),
--        NULL, PAGE_READONLY, 0, 0, NULL);
-+                                     NULL, PAGE_READONLY, 0, 0, NULL);
-     uint32_t low = pos & 0xFFFFFFFF;
-     uint32_t high = (pos >> 8);
-     ctx.m_addr = MapViewOfFile(ctx.m_handle, FILE_MAP_READ, high, low,
--        ctx.m_size);
-+                               ctx.m_size);
-     if (ctx.m_addr == nullptr)
-         ctx.m_error = "Couldn't map file";
- #endif
 @@ -522,5 +517,6 @@ MapContext unmapFile(MapContext ctx)
  }
  
@@ -532,15 +514,15 @@ diff --git a/pdal/util/FileUtils.hpp b/pdal/util/FileUtils.hpp
 index 514a5e6c8..ad8be4fad 100644
 --- a/pdal/util/FileUtils.hpp
 +++ b/pdal/util/FileUtils.hpp
-@@ -277,8 +277,7 @@ namespace FileUtils
-     struct PDAL_DLL MapContext
+@@ -288,8 +288,7 @@ namespace FileUtils
+     struct MapContext
      {
      public:
 -        MapContext() : m_fd(-1), m_addr(nullptr)
 -        {}
 +        MapContext();
  
-         void *addr() const
+         PDAL_DLL void *addr() const
          { return m_addr; }
 diff --git a/pdal/util/portable_endian.hpp b/pdal/util/portable_endian.hpp
 index b0e753f32..e9ea563b7 100644
@@ -585,7 +567,7 @@ index d717ae795..92a2934eb 100644
  }
  
  TEST(FileUtilsTest, test_readFileIntoString)
-@@ -248,8 +245,7 @@ TEST(FileUtilsTest, glob)
+@@ -248,8 +248,7 @@ TEST(FileUtilsTest, glob)
      EXPECT_EQ(FileUtils::glob(TP("foo1.glob")).size(), 0u);
  
  #ifdef _WIN32
@@ -594,12 +576,11 @@ index d717ae795..92a2934eb 100644
 +    EXPECT_THROW(FileUtils::glob(TP("~foo1.glob")), pdal::pdal_error);
  #endif
  
-     FileUtils::deleteFile("temp.glob");
-@@ -257,64 +253,3 @@ TEST(FileUtilsTest, glob)
-     EXPECT_EQ(FileUtils::glob("temp.glob").size(), 1u);
-     FileUtils::deleteFile("temp.glob");
+     std::string temp_filename = Support::temppath("temp.glob");
+@@ -259,63 +259,3 @@ TEST(FileUtilsTest, glob)
+     FileUtils::deleteFile(temp_filename);
  }
--
+ 
 -TEST(FileUtilsTest, test_file_ops_with_unicode_paths)
 -{
 -    // 1. Read Unicode encoded word, ie. Japanese, from .txt file.
@@ -704,15 +685,6 @@ diff --git a/vendor/arbiter/arbiter.cpp b/vendor/arbiter/arbiter.cpp
 index 5ad2affa3..6389715ef 100644
 --- a/vendor/arbiter/arbiter.cpp
 +++ b/vendor/arbiter/arbiter.cpp
-@@ -893,7 +893,7 @@ const drivers::Http& Endpoint::getHttpDriver() const
- #include <sys/stat.h>
- #else
- #define UNICODE
--#include <Shlwapi.h>
-+#include <shlwapi.h>
- #include <iterator>
- #include <locale>
- #include <codecvt>
 @@ -4816,7 +4816,7 @@ std::unique_ptr<std::string> env(const std::string& var)
  {
      std::unique_ptr<std::string> result;
