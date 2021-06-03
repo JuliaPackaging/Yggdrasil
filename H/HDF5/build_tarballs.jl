@@ -21,6 +21,7 @@ sources = [
 
     # Can't use conda-forge on other platforms since it links too many libraries, but apparently on aarch64 is fine
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.0/download/linux-aarch64/hdf5-1.12.0-nompi_h1022a3e_102.tar.bz2", "605aff906fd0fca9a52da6ad9b48607fab5cb26e2615d3827a1f318d6e103c4a", unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.0/download/osx-arm64/hdf5-1.12.0-nompi_had0e5e0_107.tar.bz2", "79bde5381be9a6bc9696173e1be7dfb7c2675e1d4efee5105b8d66cb7cb93a16", unpack_target = "aarch64-apple-darwin20"),
 ]
 
 # Bash recipe for building across all platforms
@@ -96,6 +97,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
@@ -112,4 +114,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
