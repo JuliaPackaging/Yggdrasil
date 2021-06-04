@@ -3,12 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.2.0"
+version = v"2021.2.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "2dba2072869a189b9fdab3ffa431d3ea49059a19"),
+              # Note: this isn't actually 2021.2.1 (there is no such versions at
+              # the moment), this seems to be the revision where most platforms
+              # are successful
+              "9e15720bc7744f85dff611d34d65e9099e077da4"),
     DirectorySource("./bundled"),
 ]
 
