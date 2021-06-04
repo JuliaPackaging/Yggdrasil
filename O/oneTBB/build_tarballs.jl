@@ -3,33 +3,41 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"1.0.0"
+version = v"2021.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/oneTBB.git", "4b479c1e0b1e33f12f26d263b13128c857887798")
+    GitSource("https://github.com/oneapi-src/oneTBB.git",
+              "2dba2072869a189b9fdab3ffa431d3ea49059a19"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd oneTBB/
-mkdir build
-cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cd $WORKSPACE/srcdir/oneTBB/
+
+# Apply Musl patch from
+# https://git.alpinelinux.org/aports/tree/community/libtbb/musl.patch
+atomic_patch -p1 ../patches/musl.patch
+
+mkdir build && cd build/
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtbbmalloc", :libtbbmalloc),
     LibraryProduct("libtbbmalloc_proxy", :libtbbmalloc_proxy),
-    LibraryProduct("libtbb", :libtbb)
+    LibraryProduct("libtbb", :libtbb),
 ]
 
 # Dependencies that must be installed before this package can be built
