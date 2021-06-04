@@ -37,6 +37,10 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+# Windows with MinGW at the moment doesn't work, but it may change in the near
+# future, watch out <https://github.com/oneapi-src/oneTBB/pull/351>. See also
+# <https://stackoverflow.com/q/67572880/2442087>.
+filter!(!Sys.iswindows, platforms)
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l") && libc(p) != "musl", platforms)
 
