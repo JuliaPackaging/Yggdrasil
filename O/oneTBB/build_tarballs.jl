@@ -19,8 +19,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oneTBB/
 
-# Apply Musl patch from
-# https://git.alpinelinux.org/aports/tree/community/libtbb/musl.patch
+# Adapt patch from
+# https://github.com/oneapi-src/oneTBB/pull/203
 atomic_patch -p1 ../patches/musl.patch
 
 mkdir build && cd build/
@@ -42,7 +42,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # <https://stackoverflow.com/q/67572880/2442087>.
 filter!(!Sys.iswindows, platforms)
 # Disable platforms unlikely to work
-filter!(p -> arch(p) ∉ ("armv6l", "armv7l") && libc(p) != "musl", platforms)
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
 # The products that we will ensure are always built
 products = [
