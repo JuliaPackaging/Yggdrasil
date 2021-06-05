@@ -33,7 +33,7 @@ sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-buil
 if [[ $target == *"mingw"* ]]; then
   cp -L $WORKSPACE/destdir/spot-build/bin/*.dll $WORKSPACE/destdir/spot-build/lib/
   rm $WORKSPACE/destdir/spot-build/bin/*.dll
-  windows_extra_flags="-DCMAKE_FIND_LIBRARY_CUSTOM_LIB_SUFFIX=.dll"
+  windows_extra_flags="-DCMAKE_FIND_LIBRARY_SUFFIXES=.dll"
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
