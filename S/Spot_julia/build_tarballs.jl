@@ -9,7 +9,7 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "3441d06933f0b1cd6fa2c649267a02eb09cf0fff")
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "1357250568e0ecf6fdbe854460ac88de17f9345e")
     ]
     
     # Bash recipe for building across all platforms
@@ -30,6 +30,9 @@ cd $WORKSPACE/srcdir/spot_julia/spot_julia
 # edit the CMAKE script to find spot-build
 sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-build/#g' CMakeLists.txt
 
+if [[ $target == *"mingw"* ]]; then
+  mv $WORKSPACE/destdir/spot-build/bin/*.dll $WORKSPACE/destdir/spot-build/lib/
+fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
 if [[ $target == *"apple-darwin"* ]]; then
