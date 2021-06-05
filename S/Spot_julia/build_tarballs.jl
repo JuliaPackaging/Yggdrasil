@@ -9,7 +9,7 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "2dce2bcb10d616aa112851448ace5814e42dfd5c")
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "3441d06933f0b1cd6fa2c649267a02eb09cf0fff")
     ]
     
     # Bash recipe for building across all platforms
@@ -49,9 +49,9 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos")
+    # Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "windows")
+    # Platform("x86_64", "macos")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
