@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "spot_julia"
+name = "Spot_julia"
 version = v"2.9.7"
 julia_version = v"1.6.0"
 
