@@ -31,7 +31,9 @@ cd $WORKSPACE/srcdir/spot_julia/spot_julia
 sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-build/#g' CMakeLists.txt
 
 if [[ $target == *"mingw"* ]]; then
-  mv $WORKSPACE/destdir/spot-build/bin/*.dll $WORKSPACE/destdir/spot-build/lib/
+  cp -L $WORKSPACE/destdir/spot-build/bin/*.dll $WORKSPACE/destdir/spot-build/lib/
+  rm $WORKSPACE/destdir/spot-build/bin/*.dll
+  windows_extra_flags="-DCMAKE_FIND_LIBRARY_CUSTOM_LIB_SUFFIX=.dll"
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
@@ -41,7 +43,7 @@ fi
 Julia_PREFIX=$prefix
 mkdir build
 cd build
-cmake -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_FIND_ROOT_PATH=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} $macos_extra_flags -DCMAKE_BUILD_TYPE=Release ../
+cmake -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_FIND_ROOT_PATH=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} $macos_extra_flags $windows_extra_flags -DCMAKE_BUILD_TYPE=Release ../
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 install_license $WORKSPACE/srcdir/spot_julia/LICENSE.md
