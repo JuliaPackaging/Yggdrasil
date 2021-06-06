@@ -14,25 +14,20 @@ sources = [
     
     # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd spot-2.9.7/
-# make sure pdf is older than .tex to not trigger latexmk during build 
-# touch doc/tl/tl.tex
-# touch doc/tl/tl.pdf
+cd $WORKSPACE/srcdir/spot-2.9.7/
 ./configure --prefix=${prefix}/spot-build --build=${MACHTYPE} --host=${target} --disable-python
-make -j${nproc} && make install
+make -j${nproc}
+make install
 
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
-# edit the CMAKE script to find libcxxwrap 
-# "/home/maxime/cxxwrap-test/libcxxwrap-julia-build"
 
 # edit the CMAKE script to find spot-build
 sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-build/#g' CMakeLists.txt
 
 if [[ $target == *"mingw"* ]]; then
-  cp -L $WORKSPACE/destdir/spot-build/bin/*.dll $WORKSPACE/destdir/spot-build/lib/
-  rm $WORKSPACE/destdir/spot-build/bin/*.dll
+  cp -L ${prefix}/spot-build/bin/*.dll ${prefix}/spot-build/lib/
+  rm ${prefix}/spot-build/bin/*.dll
   windows_extra_flags="-DCMAKE_FIND_LIBRARY_SUFFIXES=.dll"
 fi
 
@@ -43,12 +38,17 @@ fi
 Julia_PREFIX=$prefix
 mkdir build
 cd build
-cmake -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_FIND_ROOT_PATH=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} $macos_extra_flags $windows_extra_flags -DCMAKE_BUILD_TYPE=Release ../
+cmake -DJulia_PREFIX=$Julia_PREFIX \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DJlCxx_DIR=${libdir}/cmake/JlCxx \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    ${macos_extra_flags} \
+    ${windows_extra_flags} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
-
 install_license $WORKSPACE/srcdir/spot_julia/LICENSE.md
-
-exit
 """
 
 # These are the platforms we will build for by default, unless further
