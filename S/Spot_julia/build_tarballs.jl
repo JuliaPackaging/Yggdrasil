@@ -9,7 +9,7 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "1357250568e0ecf6fdbe854460ac88de17f9345e")
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "f2c389b55583a9d23307f352b2fb86b03bc01a40")
     ]
     
     # Bash recipe for building across all platforms
@@ -28,7 +28,6 @@ sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-buil
 if [[ $target == *"mingw"* ]]; then
   cp -L ${prefix}/spot-build/bin/*.dll ${prefix}/spot-build/lib/
   rm ${prefix}/spot-build/bin/*.dll
-  windows_extra_flags="-DCMAKE_FIND_LIBRARY_SUFFIXES=.dll"
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
