@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "WCS"
-version = v"7.5.0"
+version = v"7.6.0"
 
 # Collection of sources required to build WCS
 sources = [
     ArchiveSource("https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-$(version.major).$(version.minor).tar.bz2",
-                  "bc01dfd6659dcbd17992cac1fda1f479877a8946d2acdc939dec9a7a597d6694"),
+                  "54bb8c92167a7f13f8aa73fc4b8a09785256d2c98213467debc7a282a431318b"),
     DirectorySource("./bundled"),
 ]
 
