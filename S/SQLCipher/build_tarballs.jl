@@ -1,0 +1,68 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "SQLCipher"
+version = v"4.4.3"
+
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://github.com/sqlcipher/sqlcipher.git", "0663d8500204e14bd2bb0ca25162d91e4555528d")
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/sqlcipher
+
+# required for amalgamation, could not build without it
+apk add tcl
+
+# use same flags as SQLite_jll
+# plus those provided at https://github.com/sqlcipher/sqlcipher
+export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
+                 -DSQLITE_ENABLE_UNLOCK_NOTIFY \
+                 -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+                 -DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
+                 -DSQLITE_SECURE_DELETE \
+                 -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
+                 -DSQLITE_MAX_EXPR_DEPTH=10000"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-tempstore=yes \
+    --disable-static \
+    --enable-fts3 \
+    --enable-fts4 \
+    --enable-fts5 \
+    --enable-rtree \
+    --enable-json1 \
+    CFLAGS="-DSQLITE_HAS_CODEC" \
+    LDFLAGS="-L${libdir}" \
+    LDFLAGS="-lcrypto"
+
+make
+make install
+
+# SQLCipher and SQLite licenses
+install_license "${WORKSPACE}/srcdir/sqlcipher/LICENSE"
+install_license "${WORKSPACE}/srcdir/sqlcipher/LICENSE.md"
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libsqlcipher", :libsqlcipher),
+    ExecutableProduct("sqlcipher", :sqlcipher)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
