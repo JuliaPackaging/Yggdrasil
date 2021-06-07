@@ -9,7 +9,7 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "9b59bebb96a973ba078f482128e3aeac1fe3cc38")
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "b68e1ce02373725f8fd4edbc085b341496c920ab")
     ]
     
     # Bash recipe for building across all platforms
@@ -22,15 +22,11 @@ make install
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
+
+SPOT_LIB_DIR=${prefix}/lib
+SPOT_INCLUDE_DIR=${prefix}/include
 if [[ $target == *"mingw"* ]]; then
-  cp -L ${prefix}/bin/libspot-0.dll ${prefix}/lib/
-  cp -L ${prefix}/bin/libbddx-0.dll ${prefix}/lib/
-  cp -L ${prefix}/bin/libspotltsmin-0.dll ${prefix}/lib/
-  cp -L ${prefix}/bin/libspotgen-0.dll ${prefix}/lib/
-  rm ${prefix}/bin/libspot-0.dll
-  rm ${prefix}/bin/libspot-0.dll
-  rm ${prefix}/bin/libspotltsmin-0.dll
-  rm ${prefix}/bin/libspotgen-0.dll
+    SPOT_LIB_DIR=${prefix}/bin
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
@@ -41,7 +37,8 @@ Julia_PREFIX=$prefix
 mkdir build
 cd build
 cmake -DJulia_PREFIX=$Julia_PREFIX \
-    -DCMAKE_SPOT_DIR=${prefix} \
+    -DCMAKE_SPOT_LIB_DIR=$SPOT_LIB_DIR \
+    -DCMAKE_SPOT_INCLUDE_DIR=$SPOT_INCLUDE_DIR \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DJlCxx_DIR=${libdir}/cmake/JlCxx \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
