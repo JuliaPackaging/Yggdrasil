@@ -9,25 +9,22 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "f2c389b55583a9d23307f352b2fb86b03bc01a40")
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "9b59bebb96a973ba078f482128e3aeac1fe3cc38")
     ]
     
     # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/spot-2.9.7/
-./configure --prefix=${prefix}/spot-build --build=${MACHTYPE} --host=${target} --disable-python
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
 make install
 
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
-# edit the CMAKE script to find spot-build
-sed -i 's#\${CMAKE_SOURCE_DIR}/../spot-build/#\${CMAKE_INSTALL_PREFIX}/spot-build/#g' CMakeLists.txt
-
 if [[ $target == *"mingw"* ]]; then
-  cp -L ${prefix}/spot-build/bin/*.dll ${prefix}/spot-build/lib/
-  rm ${prefix}/spot-build/bin/*.dll
+  cp -L ${prefix}/bin/*.dll ${prefix}/lib/
+  rm ${prefix}/bin/*.dll
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
@@ -38,6 +35,7 @@ Julia_PREFIX=$prefix
 mkdir build
 cd build
 cmake -DJulia_PREFIX=$Julia_PREFIX \
+    -DCMAKE_SPOT_DIR=${prefix} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DJlCxx_DIR=${libdir}/cmake/JlCxx \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -70,24 +68,24 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("genltl", :genltl, "spot-build/bin"),
-    LibraryProduct("libspot", :libspot, "spot-build/lib"),
-    ExecutableProduct("ltl2tgta", :ltl2tgta, "spot-build/bin"),
-    ExecutableProduct("ltlsynt", :ltlsynt, "spot-build/bin"),
-    ExecutableProduct("ltlcross", :ltlcross, "spot-build/bin"),
-    LibraryProduct("libspotgen", :libspotgen, "spot-build/lib"),
-    ExecutableProduct("autcross", :autcross, "spot-build/bin"),
-    ExecutableProduct("genaut", :genaut, "spot-build/bin"),
-    ExecutableProduct("ltl2tgba", :ltl2tgba, "spot-build/bin"),
-    ExecutableProduct("randaut", :randaut, "spot-build/bin"),
-    ExecutableProduct("autfilt", :autfilt, "spot-build/bin"),
-    ExecutableProduct("ltlfilt", :ltlfilt, "spot-build/bin"),
-    ExecutableProduct("ltlgrind", :ltlgrind, "spot-build/bin"),
-    ExecutableProduct("ltldo", :ltldo, "spot-build/bin"),
-    LibraryProduct("libbddx", :libbddx, "spot-build/lib"),
-    LibraryProduct("libspotltsmin", :libspotltsmin, "spot-build/lib"),
-    ExecutableProduct("randltl", :randltl, "spot-build/bin"),
-    ExecutableProduct("dstar2tgba", :dstar2tgba, "spot-build/bin"),
+    ExecutableProduct("genltl", :genltl, "bin"),
+    LibraryProduct("libspot", :libspot, "lib"),
+    ExecutableProduct("ltl2tgta", :ltl2tgta, "bin"),
+    ExecutableProduct("ltlsynt", :ltlsynt, "bin"),
+    ExecutableProduct("ltlcross", :ltlcross, "bin"),
+    LibraryProduct("libspotgen", :libspotgen, "lib"),
+    ExecutableProduct("autcross", :autcross, "bin"),
+    ExecutableProduct("genaut", :genaut, "bin"),
+    ExecutableProduct("ltl2tgba", :ltl2tgba, "bin"),
+    ExecutableProduct("randaut", :randaut, "bin"),
+    ExecutableProduct("autfilt", :autfilt, "bin"),
+    ExecutableProduct("ltlfilt", :ltlfilt, "bin"),
+    ExecutableProduct("ltlgrind", :ltlgrind, "bin"),
+    ExecutableProduct("ltldo", :ltldo, "bin"),
+    LibraryProduct("libbddx", :libbddx, "lib"),
+    LibraryProduct("libspotltsmin", :libspotltsmin, "lib"),
+    ExecutableProduct("randltl", :randltl, "bin"),
+    ExecutableProduct("dstar2tgba", :dstar2tgba, "bin"),
     LibraryProduct("libspot_julia", :libspot_julia, "lib")
 ]
 
