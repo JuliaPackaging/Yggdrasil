@@ -23,10 +23,10 @@ make install
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
 
-SPOT_LIB_DIR=${prefix}/lib
-SPOT_INCLUDE_DIR=${prefix}/include
+SPOT_LIB_DIR=${libdir}
+SPOT_INCLUDE_DIR=${includedir}
 if [[ $target == *"mingw"* ]]; then
-    SPOT_LIB_DIR=${prefix}/bin
+    SPOT_LIB_DIR=${bindir}
 fi
 
 # Override compiler ID to silence the horrible "No features found" cmake error
