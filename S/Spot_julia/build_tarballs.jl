@@ -71,25 +71,25 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("genltl", :genltl, "bin"),
-    LibraryProduct("libspot", :libspot, "lib"),
-    ExecutableProduct("ltl2tgta", :ltl2tgta, "bin"),
-    ExecutableProduct("ltlsynt", :ltlsynt, "bin"),
-    ExecutableProduct("ltlcross", :ltlcross, "bin"),
-    LibraryProduct("libspotgen", :libspotgen, "lib"),
-    ExecutableProduct("autcross", :autcross, "bin"),
-    ExecutableProduct("genaut", :genaut, "bin"),
-    ExecutableProduct("ltl2tgba", :ltl2tgba, "bin"),
-    ExecutableProduct("randaut", :randaut, "bin"),
-    ExecutableProduct("autfilt", :autfilt, "bin"),
-    ExecutableProduct("ltlfilt", :ltlfilt, "bin"),
-    ExecutableProduct("ltlgrind", :ltlgrind, "bin"),
-    ExecutableProduct("ltldo", :ltldo, "bin"),
-    LibraryProduct("libbddx", :libbddx, "lib"),
-    LibraryProduct("libspotltsmin", :libspotltsmin, "lib"),
-    ExecutableProduct("randltl", :randltl, "bin"),
-    ExecutableProduct("dstar2tgba", :dstar2tgba, "bin"),
-    LibraryProduct("libspot_julia", :libspot_julia, "lib")
+    ExecutableProduct("genltl", :genltl),
+    LibraryProduct("libspot", :libspot),
+    ExecutableProduct("ltl2tgta", :ltl2tgta),
+    ExecutableProduct("ltlsynt", :ltlsynt),
+    ExecutableProduct("ltlcross", :ltlcross),
+    LibraryProduct("libspotgen", :libspotgen),
+    ExecutableProduct("autcross", :autcross),
+    ExecutableProduct("genaut", :genaut),
+    ExecutableProduct("ltl2tgba", :ltl2tgba),
+    ExecutableProduct("randaut", :randaut),
+    ExecutableProduct("autfilt", :autfilt),
+    ExecutableProduct("ltlfilt", :ltlfilt),
+    ExecutableProduct("ltlgrind", :ltlgrind),
+    ExecutableProduct("ltldo", :ltldo),
+    LibraryProduct("libbddx", :libbddx),
+    LibraryProduct("libspotltsmin", :libspotltsmin),
+    ExecutableProduct("randltl", :randltl),
+    ExecutableProduct("dstar2tgba", :dstar2tgba),
+    LibraryProduct("libspot_julia", :libspot_julia)
 ]
 
 # Dependencies that must be installed before this package can be built
