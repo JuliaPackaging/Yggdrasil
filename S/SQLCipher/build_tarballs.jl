@@ -14,9 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sqlcipher
 
-# required for amalgamation, could not build without it
-apk add tcl
-
 # use same flags as SQLite_jll
 # plus those provided at https://github.com/sqlcipher/sqlcipher
 export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
@@ -40,25 +37,18 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     LDFLAGS="-L${libdir}" \
     LDFLAGS="-lcrypto"
 
-make
+make -j${nproc}
 make install
 
 # SQLCipher and SQLite licenses
-install_license "${WORKSPACE}/srcdir/sqlcipher/LICENSE"
-install_license "${WORKSPACE}/srcdir/sqlcipher/LICENSE.md"
+install_license LICENSE*
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux")
-    Platform("x86_64", "linux")
-    Platform("aarch64", "linux")
-    Platform("armv7l", "linux")
-    Platform("powerpc64le", "linux")
-    Platform("x86_64", "macos")
-]
-
+platforms = supported_platforms(; experimental=true)
+filter!(p -> libc(p) != "musl", platforms)
+filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -68,7 +58,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    # Required for amalgamation, could not build without it
+    HostBuildDependency("Tcl_jll"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
