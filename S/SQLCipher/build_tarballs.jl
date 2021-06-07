@@ -50,7 +50,14 @@ install_license "${WORKSPACE}/srcdir/sqlcipher/LICENSE.md"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Platform("i686", "linux")
+    Platform("x86_64", "linux")
+    Platform("aarch64", "linux")
+    Platform("armv7l", "linux")
+    Platform("powerpc64le", "linux")
+    Platform("x86_64", "macos")
+]
 
 
 # The products that we will ensure are always built
