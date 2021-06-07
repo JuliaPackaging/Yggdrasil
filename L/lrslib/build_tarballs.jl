@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "lrslib"
-version = v"0.3.0"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -19,7 +19,7 @@ atomic_patch -p1 ../patches/random.patch
 atomic_patch -p1 ../patches/cflags.patch
 atomic_patch -p1 ../patches/firsttime.patch
 extraargs=""
-cflags="-fPIC -O3 -Wall"
+cflags="-fPIC -O3 -Wall -DLRS_QUIET"
 
 # 32bit linux, arm and windows:
 if [[ $target == i686* ]] || [[ $target == arm* ]]; then
