@@ -12,21 +12,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd fglt/
-if [[ "${target}" == *i686* ]] || [[ "${target}" == *armv7l-linux-musl* ]] || [[ "${target}" == *x86_64-linux-musl* ]] || [[ "${target}" == *x86_64-linux-gnu* ]]; then
-  meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dprefer_openmp=true build
-else
-  meson --cross-file=${MESON_TARGET_TOOLCHAIN} build
+cd $WORKSPACE/srcdir/fglt/
+if [[ "${target}" == *-linux-* ]]; then
+    FLAGS="-Dprefer_openmp=true"
 fi
+meson --cross-file=${MESON_TARGET_TOOLCHAIN} ${FLAGS} build
 cd build/
-ninja
+ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # [FIXED!] FGlT contains std::string values!  This causes incompatibilities across the GCC 4/5 version boundary.
 # platforms = expand_cxxstring_abis(platforms)
