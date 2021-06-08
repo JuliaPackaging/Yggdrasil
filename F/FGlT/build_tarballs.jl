@@ -7,14 +7,18 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fcdimitr/fglt.git", "b91e1b3f4ed05eca69f342f7319faedb9d358257")
+    GitSource("https://github.com/fcdimitr/fglt.git", "c3c0c683a76fef56473314527760b74ffd271455")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd fglt/
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} build
+if [[ "${target}" == *-i686* ]] || [[ "${target}" == *-armv7l-linux-musl* ]] || [[ "${target}" == *-x86_64-linux-musl* ]]; then
+  meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dprefer_openmp=true build
+else
+  meson --cross-file=${MESON_TARGET_TOOLCHAIN} build
+fi
 cd build/
 ninja
 ninja install
@@ -24,8 +28,8 @@ ninja install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# FGlT contains std::string values!  This causes incompatibilities across the GCC 4/5 version boundary.
-platforms = expand_cxxstring_abis(platforms)
+# [FIXED!] FGlT contains std::string values!  This causes incompatibilities across the GCC 4/5 version boundary.
+# platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
