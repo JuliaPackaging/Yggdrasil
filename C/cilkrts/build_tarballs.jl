@@ -12,16 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd cilkrts/
-mkdir build
-cd build/
-if [[ "${target}" == *-apple-* ]]; then 
-  cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
-else
-  cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-fi
-make && make install
+cd $WORKSPACE/srcdir/cilkrts/
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,7 +27,7 @@ platforms = [
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; )
+    Platform("x86_64", "macos"),
 ]
 
 
