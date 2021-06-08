@@ -40,6 +40,11 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc}
 make install
+
+mkdir -p ${prefix}/share/licenses/SCIP
+for dir in papilo scip soplex; do
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
+done
 """
 
 # These are the platforms we will build for by default, unless further
