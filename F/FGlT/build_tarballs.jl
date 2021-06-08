@@ -13,10 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/fglt/
-#if [[ "${target}" == *-linux-* ]]; then
-#    FLAGS="-Dprefer_openmp=true"
-#fi
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} ${FLAGS} build
+meson --cross-file=${MESON_TARGET_TOOLCHAIN} build
 cd build/
 ninja -j${nproc}
 ninja install
