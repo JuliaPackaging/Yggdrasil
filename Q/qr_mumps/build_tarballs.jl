@@ -45,7 +45,7 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
-    Dependency(PackageSpec(name="StarPU_jll", uuid="e3ad0b27-b140-5312-a56e-059adfc55eb4"))
+    # Dependency(PackageSpec(name="StarPU_jll", uuid="e3ad0b27-b140-5312-a56e-059adfc55eb4"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
