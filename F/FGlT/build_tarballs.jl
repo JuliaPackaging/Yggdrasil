@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd fglt/
-if [[ "${target}" == *-i686* ]] || [[ "${target}" == *-armv7l-linux-musl* ]] || [[ "${target}" == *-x86_64-linux-musl* ]]; then
+if [[ "${target}" == *-i686* ]] || [[ "${target}" == *-armv7l-linux-musl* ]] || [[ "${target}" == *-x86_64-linux-musl* || [[ "${target}" == *-x86_64-linux-gnu* ]]; then
   meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dprefer_openmp=true build
 else
   meson --cross-file=${MESON_TARGET_TOOLCHAIN} build
