@@ -9,11 +9,18 @@ name = "mlpack"
 version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
-                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171")
+                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
+
+# Apply any patches that are needed.
+for f in ${WORKSPACE}/srcdir/patches/*.patch;
+do
+    atomic_patch -p1 ${f};
+done
 
 mkdir build && cd build
 
@@ -179,7 +186,7 @@ products = [
 dependencies = [
     Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll")
+    Dependency("OpenBLAS_jll", v"0.3.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
