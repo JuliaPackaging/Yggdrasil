@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "qr_mumps"
-version = v"3.0.2"
+version = v"3.0.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://buttari.perso.enseeiht.fr/qr_mumps/releases/qr_mumps-$version.tgz",
-                  "9e881f0734de05a89bee7866cb158985096f8930ed3e1e169e1874b85ec28396")
+                  "bd83f3e6125bb08c04e9ec78dff7c4d375720c7ed064bbfb4fa27f710741ec9a")
 ]
 
 # Bash recipe for building across all platforms
