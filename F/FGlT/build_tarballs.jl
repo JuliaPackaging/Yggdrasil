@@ -24,6 +24,9 @@ ninja install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# FGlT contains std::string values!  This causes incompatibilities across the GCC 4/5 version boundary.
+platforms = expand_cxxstring_abis(platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfglt", :libfglt)
