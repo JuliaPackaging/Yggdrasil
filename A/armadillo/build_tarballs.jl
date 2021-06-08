@@ -5,10 +5,10 @@ using BinaryBuilder
 
 
 name = "armadillo"
-version = v"9.850.1"
+version = v"10.5.1"
 sources = [
-    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz",
-                  "d4c389b9597a5731500ad7a2656c11a6031757aaaadbcafdea5cc8ac0fd2c01f")
+    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-10.5.1.tar.xz",
+                  "96ad6e1cbcf28f3d1c1ff972de2c40dadddbd7683256bad502d3c463d2f64cdf")
 ]
 
 script = raw"""
@@ -20,7 +20,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_BUILD_TYPE=Release
        -DBUILD_SHARED_LIBS=ON)
 
-if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+if [[ "${nbits}" == 64 ]]; then
     FLAGS+=(-Dopenblas_LIBRARY="${libdir}/libopenblas64_.${dlext}")
     # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
     # replacement.
