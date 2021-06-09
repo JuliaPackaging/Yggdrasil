@@ -17,6 +17,8 @@ if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure-mingw.patch"
     autoconf
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
+elif [[ "${target}" == *-darwin* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/soname-macos.patch"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
