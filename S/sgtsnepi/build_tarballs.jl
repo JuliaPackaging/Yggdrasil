@@ -7,7 +7,7 @@ version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fcdimitr/sgtsnepi.git", "b6cc873cb78f92b7f5ab468ed473bcbc4c2d9c10")
+    GitSource("https://github.com/fcdimitr/sgtsnepi.git", "a35fb7da86e314f563d8b95c1325128ae2cb328b")
 ]
 
 # Bash recipe for building across all platforms
