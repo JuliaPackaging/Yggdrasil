@@ -7,7 +7,7 @@ name = "HiGHS"
 version = v"0.2.3"
 
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "289e34dc089dda8260e93eebd09e724ef4c64ac3"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "bd54ff0fce9350ce95e06f123f2248b4dfb84e2b"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,6 +23,7 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
+apk del ninja
 apk add --upgrade cmake
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
