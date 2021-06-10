@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsa_rocr"
-version = v"3.7.0"
+version = v"4.0.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCR-Runtime/archive/rocm-$(version).tar.gz",
-                  "0071d14431f73ce74574e61d0786f2b7cf34b14ea898a1f54b6e1b06b2d468c0")
+                  "e84c48e80ea38698a5bd5da3940048ad3cab3696d10a53132acad07ca357f17c")
 ]
 
 # Bash recipe for building across all platforms
