@@ -1,8 +1,9 @@
+using Base: DirectOrdering
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = "1.6.0"
+julia_version = v"1.6.0"
 
 name = "XyceWrapper"
 version = v"0.1.0"
@@ -24,9 +25,12 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 cmake --build . --config Release --target install -- -j${nproc}
+install_license /usr/share/licenses/MIT
 """
 
-platforms = filter(Sys.islinux, supported_platforms())
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
+platforms = filter!(Sys.islinux, platforms) # Xyce only supports Linux
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
