@@ -2,9 +2,15 @@
 #include <Xyce_config.h>
 #include <N_CIR_GenCouplingSimulator.h>
 
-// CxxWrap doesn't like the return value
-void set_report_handler(Xyce::REH reh) {
-    Xyce::set_report_handler(reh);
+void report_handler(const char *m, unsigned i)
+{
+    std::cout << m;
+}
+
+// by default Xyce aborts on an error.
+// As a library we don't like that
+void set_report_handler() {
+    Xyce::set_report_handler(&report_handler);
 }
 
 class OutputHandler final : public Xyce::IO::ExternalOutputInterface
