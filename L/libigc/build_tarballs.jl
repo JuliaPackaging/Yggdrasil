@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.6712"
+version = v"1.0.7423"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -13,10 +13,10 @@ version = v"1.0.6712"
 # Collection of sources required to build IGC
 # NOTE: these hashes are taken from the release notes in GitHub
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "a1a451f633b0c8ba403e57ffb4ef2a5d898c0951"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3104b45be5ed35a7f6a8d52ff4a7f339f582e055"),
     GitSource("https://github.com/intel/opencl-clang.git", "c8cd72e32b6abc18ce6da71c357ea45ba78b52f0"),
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "9d8d0329fe41d7fd1b859d1988b8c89d7cce0a7e"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "7ee152a0024b22d757fe2d7c7e2c869d23ef7825"),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "069ced1e8a408d8b602b3b210017603792df6260"),
     GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"),
     # patches
     DirectorySource("./bundled"),
