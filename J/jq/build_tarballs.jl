@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd jq
+cd $WORKSPACE/srcdir/jq
 git submodule update --init
 autoreconf -fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-oniguruma=builtin --disable-maintainer-mode
@@ -23,7 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
