@@ -2,7 +2,10 @@
 #include <Xyce_config.h>
 #include <N_CIR_GenCouplingSimulator.h>
 
-typedef void (*func_t)(int);
+// CxxWrap doesn't like the return value
+void set_report_handler(Xyce::REH reh) {
+    Xyce::set_report_handler(reh);
+}
 
 class OutputHandler final : public Xyce::IO::ExternalOutputInterface
 {
@@ -104,4 +107,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("initialize", &Xyce::Circuit::GenCouplingSimulator::initialize)
         .method("addOutputInterface", &Xyce::Circuit::GenCouplingSimulator::addOutputInterface)
         .method("runSimulation", &Xyce::Circuit::GenCouplingSimulator::runSimulation);
+
+    mod.method("set_report_handler", &set_report_handler);
 }
