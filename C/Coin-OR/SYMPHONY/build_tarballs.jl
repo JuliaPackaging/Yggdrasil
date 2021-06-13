@@ -59,7 +59,7 @@ build_tarballs(
     SYMPHONY_version,
     sources,
     script,
-    platforms,
+    expand_gfortran_versions(platforms),
     products,
     dependencies;
     preferred_gcc_version=gcc_version,
