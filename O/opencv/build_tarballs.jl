@@ -9,25 +9,53 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "39d25787f16c4dd6435b9fe0a8253394ac51e7fb"),
-    GitSource("https://github.com/archit120/opencv_contrib.git", "3178ebf514e9a59e2b673e44c790a987c3c0df73")
+    GitSource("https://github.com/archit120/opencv_contrib.git", "3178ebf514e9a59e2b673e44c790a987c3c0df73"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir build
-cd build
-cmake -DCMAKE_FIND_ROOT_PATH=$prefix       -DJulia_PREFIX=${prefix}       -DWITH_JULIA=ON    -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}       -DCMAKE_BUILD_TYPE=Release       -DWITH_QT=ON   -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules   -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia       ../opencv/
+mkdir build && cd build
+if [[ "${target}" == *-apple-* ]]; then
+    # We want to use OpenBLAS over Accelerate framework...
+    export OpenBLAS_HOME=${prefix}
+    export CXXFLAGS=""
+    # ...but we also need to rename quite a few symbols
+    for symbol in sgemm dgemm cgemm zgemm; do
+        # Rename CBLAS symbols for ILP64
+        CXXFLAGS="${CXXFLAGS} -Dcblas_${symbol}=cblas_${symbol}64_"
+    done
+    for symbol in sgesv_ sposv_ spotrf_ sgesdd_ sgeqrf_ sgels_ dgeqrf_ dgesdd_ sgetrf_ dgesv_ dposv_ dgels_ dgetrf_ dpotrf_ dgeev_; do
+        # Rename LAPACK symbols for ILP64
+        CXXFLAGS="${CXXFLAGS} -D${symbol}=${symbol}64_"
+    done
+    # Apply patch to help CMake find our 64-bit OpenBLAS
+    atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
+fi
+cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
+      -DJulia_PREFIX=${prefix} \
+      -DWITH_JULIA=ON \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DWITH_QT=ON \
+      -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
+      -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia \
+      ../opencv/
 make -j${nproc}
 make install
-cp lib/libopencv_julia.* ${prefix}/lib
+
+# Install also libopencv_julia
+cp lib/libopencv_julia.* ${libdir}/.
+# Move julia bindings to the prefix
 cp -R OpenCV ${prefix}
+
+install_license ../opencv/{LICENSE,COPYRIGHT}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
-
 platforms = [
     Platform("i686", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "glibc"),
