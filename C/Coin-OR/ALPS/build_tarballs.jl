@@ -2,6 +2,7 @@ include("../coin-or-common.jl")
 
 sources = [
     GitSource("https://github.com/coin-or/CHiPPS-ALPS.git", ALPS_gitsha),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
