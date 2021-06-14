@@ -1,11 +1,9 @@
 include("../coin-or-common.jl")
 
-# Collection of sources required to build CbcBuilder
 sources = [
     GitSource("https://github.com/coin-or/CHiPPS-ALPS.git", ALPS_gitsha),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
 if [[ "${target}" == *mingw* ]]; then
