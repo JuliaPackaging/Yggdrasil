@@ -51,6 +51,9 @@ CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
 Ipopt_version = v"3.13.4"
 Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
 
+SYMPHONY_version = v"5.6.17"
+SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
+
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.2"
 METIS_version = v"5.1.0"
