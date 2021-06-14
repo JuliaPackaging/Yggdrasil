@@ -51,6 +51,12 @@ CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
 Ipopt_version = v"3.13.4"
 Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
 
+ALPS_upstream_version = v"1.5.7"
+# This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
+ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
+ALPS_version_offset = v"0.0.1"
+ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
+
 SYMPHONY_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
 
