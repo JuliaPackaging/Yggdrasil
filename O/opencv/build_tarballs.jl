@@ -43,6 +43,9 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia \
       ../opencv/
+if [[ "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/freebsd-malloc-h.patch
+fi
 make -j${nproc}
 make install
 
@@ -56,16 +59,9 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("x86_64", "Windows"),
-    Platform("i686", "Windows"),
-    Platform("x86_64", "MacOS")
-]
-
+platforms = supported_platforms()
+# We don't have Qt5 for Musl platforms
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
