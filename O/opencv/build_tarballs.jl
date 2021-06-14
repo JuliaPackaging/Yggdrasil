@@ -27,24 +27,16 @@ cp -R OpenCV ${prefix}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = [
-    FreeBSD(:x86_64),
-    Linux(:armv7l; libc=:glibc),
-    Linux(:aarch64; libc=:glibc),
-    Linux(:x86_64; libc=:glibc),
-    Linux(:i686; libc=:glibc),
-    MacOS(:x86_64),
-    Windows(:x86_64),
-    Windows(:i686),
-]
 
-# platforms = [
-#     Platform("i686", "linux"; libc = "glibc"),
-#     Platform("x86_64", "linux"; libc = "glibc"),
-#     Platform("aarch64", "linux"; libc = "glibc"),
-#     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-#     Platform("powerpc64le", "linux"; libc = "glibc")
-# ]
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("x86_64", "Windows"),
+    Platform("i686", "Windows"),
+    Platform("x86_64", "MacOS")
+]
 
 
 # The products that we will ensure are always built
