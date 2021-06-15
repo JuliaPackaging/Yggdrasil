@@ -12,11 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gocloc/
+cd $WORKSPACE/srcdir/gocloc/
 mkdir -p ${bindir}
 make
-mv ./bin/gocloc ${bindir}
+mv bin/gocloc ${bindir}/gocloc${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
