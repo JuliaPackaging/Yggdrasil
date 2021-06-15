@@ -41,7 +41,9 @@ platforms = [
     Platform("x86_64", "macos"; ),
     Platform("x86_64", "freebsd"; ),
     Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
+    Platform("x86_64", "windows"; ),
+    Platform("aarch64", "macos"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
 ]
 
 platforms = expand_gfortran_versions(platforms)
@@ -58,4 +60,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
