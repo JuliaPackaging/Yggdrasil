@@ -11,7 +11,6 @@ if [[ "${target}" == *mingw* ]]; then
 elif [[ "${target}" == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
-
 cd $WORKSPACE/srcdir/CHiPPS-BiCePS
 rm -f ${prefix}/lib/*.la
 update_configure_scripts
