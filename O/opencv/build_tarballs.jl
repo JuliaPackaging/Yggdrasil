@@ -9,13 +9,17 @@ julia_version = v"1.6.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "39d25787f16c4dd6435b9fe0a8253394ac51e7fb"),
-    GitSource("https://github.com/archit120/opencv_contrib.git", "3178ebf514e9a59e2b673e44c790a987c3c0df73"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "f5d7f6712d4ff229ba4f45cf79dfd11c557d56fd"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+# Apply patch for BB specific CMake changes
+cd opencv_contrib
+git apply ../patches/opencv-julia.patch
+cd ..
 mkdir build && cd build
 export USE_QT="ON"
 if [[ "${target}" == *-apple-* ]]; then
@@ -36,6 +40,7 @@ if [[ "${target}" == *-apple-* ]]; then
     # Disable QT
     export USE_QT="OFF"
 elif [[ "${target}" == *-w64-* ]]; then
+    # Needed for mingw compilation of big files
     export CXXFLAGS="-Wa,-mbig-obj"
     export USE_QT="OFF"
 fi
