@@ -34,6 +34,7 @@ if [[ "${target}" == *-apple-* ]]; then
     # Apply patch to help CMake find our 64-bit OpenBLAS
     atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
 elif [[ "${target}" == *-w64-* ]]; then
+    export CXXFLAGS="-DCMAKE_CXX_FLAGS=-Wa,-mbig-obj"
     export USE_QT="OFF"
 fi
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -68,16 +69,16 @@ filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libopencv_calib3d", :libopencv_calib3d),
-    LibraryProduct("libopencv_objdetect", :libopencv_objdetect),
-    LibraryProduct("libopencv_core", :libopencv_core),
-    LibraryProduct("libopencv_dnn", :libopencv_dnn),
-    LibraryProduct("libopencv_imgcodecs", :libopencv_imgcodecs),
-    LibraryProduct("libopencv_highgui", :libopencv_highgui),
-    LibraryProduct("libopencv_flann", :libopencv_flann),
-    LibraryProduct("libopencv_imgproc", :libopencv_imgproc),
-    LibraryProduct("libopencv_features2d", :libopencv_features2d),
-    LibraryProduct("libopencv_videoio", :libopencv_videoio),
+    LibraryProduct(["libopencv_calib3d", "libopencv_calib3d452"], :libopencv_calib3d),
+    LibraryProduct(["libopencv_objdetect", "libopencv_objdetect452"], :libopencv_objdetect),
+    LibraryProduct(["libopencv_core", "libopencv_core452"], :libopencv_core),
+    LibraryProduct(["libopencv_dnn", "libopencv_dnn452"], :libopencv_dnn),
+    LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs452"], :libopencv_imgcodecs),
+    LibraryProduct(["libopencv_highgui", "libopencv_highgui452"], :libopencv_highgui),
+    LibraryProduct(["libopencv_flann", "libopencv_flanne452"], :libopencv_flann),
+    LibraryProduct(["libopencv_imgproc", "libopencv_imgproc452"], :libopencv_imgproc),
+    LibraryProduct(["libopencv_features2d", "libopencv_features2d452"], :libopencv_features2d),
+    LibraryProduct(["libopencv_videoio", "libopencv_videoio452"], :libopencv_videoio),
     LibraryProduct("libopencv_julia", :libopencv_julia)#,
     # FileProduct("OpenCV.jl.tar", :OpenCV_jl)
 ]
