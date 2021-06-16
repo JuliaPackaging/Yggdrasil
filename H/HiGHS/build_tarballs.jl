@@ -4,10 +4,10 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"0.2.3"
+version = v"0.3.0"
 
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "73ec415532691dbb4270d4c1952567b0f779a8aa"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "8558117be9a85cf37fd0194c739cb6fa8c1cfd5e"),
     DirectorySource("./bundled"),
 ]
 
