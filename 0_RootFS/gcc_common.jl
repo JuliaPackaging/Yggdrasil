@@ -12,9 +12,9 @@
 #   `build_tarballs.jl` file from `0_RootFS/GCCBootstrap@X-1` and change the
 #   version to build.  In order to reduce patches duplication, we want to use as
 #   many symlinks as possible, so link to previously existing patches whenever
-#   possible.  This shell command should be useful:
+#   possible.  This bash command should be useful:
 #
-#      for p in ../../../GCCBootstrap@XYZ/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
+#      ORIGDIR=../../../GCCBootstrap@XYZ/bundled/patches; for p in ${ORIGDIR}/{,*/}*.patch; do DESTDIR=$(dirname ${p#"${ORIGDIR}/"}); mkdir -p "${DESTDIR}"; if [[ -L "${p}" ]]; then cp -a "${p}" "${DESTDIR}"; else ln -s $(realpath --relative-to="${DESTDIR}" "${p}") "${DESTDIR}"; fi; done
 #
 # * you can build only one platform at the time.  To deploy the compiler shards
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
@@ -615,6 +615,13 @@ function gcc_script(compiler_target::Platform)
             MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib64"
         else
             MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib32"
+        fi
+
+        # Apply MinGW patches, if any
+        if [[ -d "${WORKSPACE}/srcdir/patches/mingw" ]]; then
+            for p in ${WORKSPACE}/srcdir/patches/mingw/*.patch; do
+                atomic_patch -p1 -d ${WORKSPACE}/srcdir/mingw-* "${p}"
+            done
         fi
 
         ${WORKSPACE}/srcdir/mingw-*/mingw-w64-crt/configure \
