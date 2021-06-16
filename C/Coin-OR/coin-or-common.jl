@@ -57,6 +57,9 @@ ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
 ALPS_version_offset = v"0.0.1"
 ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
 
+BiCePS_version = v"0.9.4"
+BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
+
 SYMPHONY_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
 
