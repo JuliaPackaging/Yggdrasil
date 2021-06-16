@@ -1,4 +1,5 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
 
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
@@ -39,7 +40,7 @@ function configure(julia_version, llvm_version)
     platforms = expand_cxxstring_abis(supported_platforms())
 
     foreach(platforms) do p
-        BinaryBuilder.add_tag!(p.tags, "julia_version", string(julia_version))
+        BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
     end
 
     # The products that we will ensure are always built
@@ -52,7 +53,7 @@ function configure(julia_version, llvm_version)
     #    Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")) is given through julia_version tag
     ]
 
-    return platforms, product, dependencies
+    return platforms, products, dependencies
 end
 
 supported = (
