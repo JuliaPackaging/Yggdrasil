@@ -18,6 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build && cd build
 export USE_QT="ON"
+export OPENGL=""
 if [[ "${target}" == *-apple-* ]]; then
     # We want to use OpenBLAS over Accelerate framework...
     export OpenBLAS_HOME=${prefix}
@@ -33,8 +34,10 @@ if [[ "${target}" == *-apple-* ]]; then
     done
     # Apply patch to help CMake find our 64-bit OpenBLAS
     atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
+    # Disable OpenGL
+    OPENGL="-DWITH_OPENGL=OFF"
 elif [[ "${target}" == *-w64-* ]]; then
-    export CXXFLAGS="-DCMAKE_CXX_FLAGS=-Wa,-mbig-obj"
+    export CXXFLAGS="-Wa,-mbig-obj"
     export USE_QT="OFF"
 fi
 cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -44,6 +47,7 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DWITH_QT=${USE_QT} \
+      ${OPENGL} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia \
       ../opencv/
@@ -75,7 +79,7 @@ products = [
     LibraryProduct(["libopencv_dnn", "libopencv_dnn452"], :libopencv_dnn),
     LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs452"], :libopencv_imgcodecs),
     LibraryProduct(["libopencv_highgui", "libopencv_highgui452"], :libopencv_highgui),
-    LibraryProduct(["libopencv_flann", "libopencv_flanne452"], :libopencv_flann),
+    LibraryProduct(["libopencv_flann", "libopencv_flann452"], :libopencv_flann),
     LibraryProduct(["libopencv_imgproc", "libopencv_imgproc452"], :libopencv_imgproc),
     LibraryProduct(["libopencv_features2d", "libopencv_features2d452"], :libopencv_features2d),
     LibraryProduct(["libopencv_videoio", "libopencv_videoio452"], :libopencv_videoio),
