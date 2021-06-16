@@ -47,7 +47,7 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DWITH_QT=${USE_QT} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
-      -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia \
+      -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
       ../opencv/
 if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-malloc-h.patch
@@ -78,8 +78,11 @@ products = [
     LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs452"], :libopencv_imgcodecs),
     LibraryProduct(["libopencv_highgui", "libopencv_highgui452"], :libopencv_highgui),
     LibraryProduct(["libopencv_flann", "libopencv_flann452"], :libopencv_flann),
+    LibraryProduct(["libopencv_gapi", "libopencv_gapi452"], :libopencv_gapi),
     LibraryProduct(["libopencv_imgproc", "libopencv_imgproc452"], :libopencv_imgproc),
     LibraryProduct(["libopencv_features2d", "libopencv_features2d452"], :libopencv_features2d),
+    LibraryProduct(["libopencv_stitching", "libopencv_stitching452"], :libopencv_stitching),
+    LibraryProduct(["libopencv_video", "libopencv_video452"], :libopencv_video),
     LibraryProduct(["libopencv_videoio", "libopencv_videoio452"], :libopencv_videoio),
     LibraryProduct("libopencv_julia", :libopencv_julia)#,
     # FileProduct("OpenCV.jl.tar", :OpenCV_jl)
