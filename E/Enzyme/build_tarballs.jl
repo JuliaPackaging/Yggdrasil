@@ -39,7 +39,7 @@ function configure(julia_version, llvm_version)
     platforms = expand_cxxstring_abis(supported_platforms())
 
     foreach(platforms) do p
-        p.tags["julia_version"] = julia_version
+        BinaryBuilder.add_tag!(p.tags, "julia_version", string(julia_version))
     end
 
     # The products that we will ensure are always built
