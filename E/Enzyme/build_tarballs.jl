@@ -1,6 +1,8 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+include("../../fancy_toys.jl")
+
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
@@ -48,8 +50,9 @@ function configure(julia_version, llvm_version)
         LibraryProduct(["libEnzyme-$(llvm_version.major)", "libEnzyme"], :libEnzyme),
     ]
 
+
     dependencies = [
-        BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+        BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
     #    Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")) is given through julia_version tag
     ]
 
