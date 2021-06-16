@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build && cd build
 export USE_QT="ON"
-export OPENGL=""
 if [[ "${target}" == *-apple-* ]]; then
     # We want to use OpenBLAS over Accelerate framework...
     export OpenBLAS_HOME=${prefix}
@@ -34,8 +33,8 @@ if [[ "${target}" == *-apple-* ]]; then
     done
     # Apply patch to help CMake find our 64-bit OpenBLAS
     atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
-    # Disable OpenGL
-    OPENGL="-DWITH_OPENGL=OFF"
+    # Disable QT
+    export USE_QT="OFF"
 elif [[ "${target}" == *-w64-* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
     export USE_QT="OFF"
@@ -47,7 +46,6 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DWITH_QT=${USE_QT} \
-      ${OPENGL} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,julia \
       ../opencv/
