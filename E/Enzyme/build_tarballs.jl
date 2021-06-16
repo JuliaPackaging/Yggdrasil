@@ -38,7 +38,7 @@ function configure(julia_version, llvm_version)
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms())
 
-    map!(platforms) do p
+    foreach(platforms) do p
         p.tags["julia_version"] = julia_version
     end
 
