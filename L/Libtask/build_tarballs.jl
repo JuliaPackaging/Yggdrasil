@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.6.0"
+julia_version = v"1.3.1"
 
 name = "Libtask"
 version = v"0.5.0"
