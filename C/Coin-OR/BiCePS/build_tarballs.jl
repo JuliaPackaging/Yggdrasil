@@ -46,7 +46,7 @@ dependencies = [
     Dependency("Osi_jll", Osi_version),
     Dependency("Clp_jll", Clp_version),
     Dependency("Cgl_jll", Cgl_version),
-    Dependency("ALPS_jll", ALPS_version),
+    # Dependency("ALPS_jll", ALPS_version),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
