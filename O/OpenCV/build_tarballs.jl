@@ -73,6 +73,7 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 platforms = supported_platforms()
 # We don't have Qt5 for Musl platforms
 filter!(p -> libc(p) != "musl", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
