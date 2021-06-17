@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "opencv"
+name = "OpenCV"
 version = v"4.5.2"
 julia_version = v"1.6.0"
 

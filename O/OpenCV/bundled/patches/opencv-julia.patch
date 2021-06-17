@@ -221,7 +221,7 @@ index 948b22ac..4061ef16 100644
 @@ -1,12 +1,14 @@
  # using StaticArrays
  
-+using opencv_jll
++using OpenCV_jll
 +
  include("typestructs.jl")
  include("Vec.jl")
@@ -230,7 +230,7 @@ index 948b22ac..4061ef16 100644
  
  using CxxWrap
 -@wrapmodule(joinpath(@__DIR__,"lib","libopencv_julia"), :cv_wrap)
-+@wrapmodule(opencv_jll.libopencv_julia_path, :cv_wrap)
++@wrapmodule(OpenCV_jll.libopencv_julia_path, :cv_wrap)
  function __init__()
      @initcxx
  
