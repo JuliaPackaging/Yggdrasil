@@ -3,40 +3,28 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.42.4"
+version = v"1.47.0"
 
 # Collection of sources required to build Pango
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d"),
+                  "730db8652fc43188e03218c3374db9d152351f51fc7011b9acae6d0a6c92c367"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
-
-# Remove misleading libtool files
-rm -f ${prefix}/lib/*.la
-
-# Be able to find libffi on ppc64le
-if [[ ${target} == powerpc64le* ]]; then
-    export LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${prefix}/lib64"
-fi
-
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-introspection \
-    --disable-gtk-doc-html
-
-# The generated Makefile tries to build some examples in the "tests" directory,
-# but this would fail for some unknown reasons.  Let's skip it.
-sed -i 's/^\(SUBDIRS = .*\) tests/\1/' Makefile
-make -j${nproc}
-make install
+mkdir build && cd build
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Dintrospection=false \
+    ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -49,12 +37,12 @@ products = [
 dependencies = [
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.68.1"; compat="2.68.1"),
     Dependency("Fontconfig_jll"),
-    Dependency("HarfBuzz_jll"),
-    Dependency("Cairo_jll"),
+    Dependency("HarfBuzz_jll", v"2.8.1"; compat="2.8.1"),
+    Dependency("Cairo_jll", v"1.16.1"; compat="1.16.1"),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

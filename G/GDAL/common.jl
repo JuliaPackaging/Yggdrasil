@@ -111,7 +111,7 @@ function configure(version_offset, min_julia_version, proj_jll_version)
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),
         Dependency("OpenJpeg_jll"),
-        Dependency("Expat_jll"),
+        Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
         Dependency("Zstd_jll"),
         Dependency("Libtiff_jll"),
         Dependency("libgeotiff_jll"),

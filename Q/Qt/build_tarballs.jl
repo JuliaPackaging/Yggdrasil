@@ -284,7 +284,7 @@ dependencies = [
     Dependency("xkbcommon_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"),

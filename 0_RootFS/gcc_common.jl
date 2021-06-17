@@ -219,11 +219,9 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         ]
     elseif Sys.isapple(compiler_target)
         if gcc_version == v"11.0.0-iains"
-            # MacOSX11.1 is not yet available on phracker/MacOSX-SDKs
-            # https://github.com/phracker/MacOSX-SDKs/pull/32#issuecomment-749230532
             libc_sources = [
-                ArchiveSource("https://github.com/larskanis/MacOSX-SDKs/releases/download/11.1/MacOSX11.1.sdk.tar.xz",
-                              "97f44b22949cea4522408ccca9a8d87f2d09779b2878423d2d7a2cb805c3d42d"),
+                ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                              "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
             ]
         else
             libc_sources = [

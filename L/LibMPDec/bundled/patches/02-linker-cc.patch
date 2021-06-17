@@ -1,0 +1,10 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -521,6 +521,7 @@
+         PROFILE=
+         ;;
+     *)
++        LD="$CC"
+         PROFILE=
+         ;;
+ esac

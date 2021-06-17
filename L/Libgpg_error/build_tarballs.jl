@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libgpg_error"
-version = v"1.36"
+version = v"1.42"
 
 # Collection of sources required to build Libgpg-Error
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version.major).$(version.minor).tar.bz2",
-                  "babd98437208c163175c29453f8681094bcaf92968a15cafb1a276076b33c97c"),
+                  "fc07e70f6c615f8c4f590a8e37a9b8dd2e2ca1e9408f8e60459c67452b925e23"),
     DirectorySource("./bundled"),
 ]
 
@@ -28,12 +28,13 @@ cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pu
 
 # Use libgpg-specific mapping for triplets
 TARGET="${target}"
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    TARGET=x86_64-apple-darwin
+if [[ "${target}" == *-apple-darwin* ]]; then
+    TARGET="$(echo "${target}" | cut -d- -f1)-apple-darwin"
 fi
 
-# We need `msgformat`
-apk add gettext
+# We patched `configure.ac` to force always using lock files in `src/syscfg`
+# to generate `src/gpg-error.h`, so we need to update `configure`
+autoreconf -fiv
 
 ./configure --prefix=${prefix} --host=${TARGET} --build=${MACHTYPE}
 make -j${nproc}
@@ -43,7 +44,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -52,7 +53,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We need `msgformat`
+    HostBuildDependency("Gettext_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA"
-version = v"11.3.0"
+version = v"11.3.1"
 
 dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=version))]
 
@@ -151,7 +151,7 @@ products = [
     LibraryProduct(["libnpps", "npps64_11"], :libnpps),
     LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_2021.1.0"], :libcupti),
+    LibraryProduct(["libcupti", "cupti64_2021.1.1"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     ExecutableProduct("nvdisasm", :nvdisasm),
     ExecutableProduct("compute-sanitizer", :compute_sanitizer),

@@ -1,11 +1,12 @@
 using BinaryBuilder
 
-# Collection of sources required to build Nettle
+# Collection of sources required to build OpenSSL
 name = "OpenSSL"
-version = v"1.1.1"
+version = v"1.1.10" # <--- This version number is a lie to build for experimental platforms
+
 sources = [
-    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1e.tar.gz",
-                  "694f61ac11cb51c9bf73f54e771ff6022b0327a43bbdfa1b2f19de1662a6dcbe"),
+    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1k.tar.gz",
+                  "892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,7 +18,7 @@ if [[ ${target} == *darwin* ]]; then
     export RANLIB=/opt/${target}/bin/${target}-ranlib
 fi
 
-# Manual translation of BB $target to Configure-target
+# Manual translation of BB $target to Configure-target, see `./Configure --help`
 function translate_target()
 {
     if [[ ${target} == x86_64-linux* ]]; then
@@ -32,6 +33,8 @@ function translate_target()
         echo linux-ppc64le
     elif [[ ${target} == x86_64-apple-darwin* ]]; then
         echo darwin64-x86_64-cc
+    elif [[ ${target} == aarch64-apple-darwin* ]]; then
+        echo darwin64-arm64-cc
     elif [[ ${target} == x86_64-unknown-freebsd* ]]; then
         echo BSD-x86_64
     elif [[ ${target} == x86_64*mingw* ]]; then
@@ -54,7 +57,7 @@ make install_sw
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built.  What are these naming conventions guys?  Seriously?!
 products = [
@@ -64,9 +67,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

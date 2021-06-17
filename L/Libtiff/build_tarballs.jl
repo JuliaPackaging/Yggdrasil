@@ -3,19 +3,18 @@
 using BinaryBuilder
 
 name = "Libtiff"
-version = v"4.1.0"
+version = v"4.3.0"
 
 # Collection of sources required to build Libtiff
 sources = [
     ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(version).tar.gz",
-                  "5d29f32517dadb6dbcd1255ea5bbc93a2b54b94fbf83653b4d65c7d6775b8634")
+                  "0e46e5acb087ce7d1ac53cf4f56a09b221537fc86dfc5daaad1c2e89e1b37ac8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tiff-*/
-export CPPFLAGS="-I${prefix}/include"
-
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -23,7 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -38,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

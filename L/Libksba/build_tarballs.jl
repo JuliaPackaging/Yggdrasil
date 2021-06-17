@@ -41,7 +41,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"),
+    # Future versions of `Libgpg_error_jll` maybe can have a more lax compat,
+    # but the move 1.36 -> 1.42 changed the soname for FreeBSD and Windows.
+    Dependency("Libgpg_error_jll", v"1.36.0"; compat="=1.36.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

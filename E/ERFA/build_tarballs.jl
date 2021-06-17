@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ERFA"
-version = v"1.7.3"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/liberfa/erfa/releases/download/v$(version)/erfa-$(version).tar.gz", "80311221c96b45151f9a68517acc2b54b548b49d740e53cf409a6bc7502bd86b")
+    ArchiveSource("https://github.com/liberfa/erfa/releases/download/v$(version)/erfa-$(version).tar.gz", "75cb0a2cc1561d24203d9d0e67c21f105e45a70181d57f158e64a46a50ccd515")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,14 +19,14 @@ if [[ ${target} == i686-w64* ]] || [[ ${target} == x86_64-w64* ]]; then
     sed -i 's/liberfa_la_LDFLAGS = -version-info \$(VI_ALL)/liberfa_la_LDFLAGS = -no-undefined -version-info $(VI_ALL)/' src/Makefile.am;
 fi
 autoreconf -fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -38,4 +38,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-version = v"400.300.001"
-upstream_version = v"4.3.0"
+upstream_version = v"4.4"
+version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,0)
 
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "1f0ef1c022a214c935189b72e8ac67e6c6315bf9dff5fc87c3d704d3e76cb994")
+                  "6560445a3f6d359c0d1c3a01eb3ec3f3174b3554bf33865c913082030e72c176")
     DirectorySource("./bundled")
 ]
 
@@ -54,8 +54,8 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
-# avoid latte autoconfiguration picking up count from llvm
-atomic_patch -p1 ../patches/latte-config.patch
+# fix bug in minkowski_sum_fukuda (until 4.5)
+atomic_patch -p1 ../patches/minkowski_sum.patch
 
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
@@ -138,16 +138,16 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll", compat = "~200.700"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("PPL_jll"),
+    Dependency("FLINT_jll", compat = "~200.700"),
+    Dependency("PPL_jll", compat = "~1.2"),
     Dependency("Perl_jll", compat = "=5.30.3"),
-    Dependency("bliss_jll"),
-    Dependency("boost_jll"),
-    Dependency("cddlib_jll"),
-    Dependency("lrslib_jll"),
-    Dependency("normaliz_jll"),
+    Dependency("bliss_jll", compat = "~0.73"),
+    Dependency("boost_jll", compat = "~1.71"),
+    Dependency("cddlib_jll", compat = "~0.94"),
+    Dependency("lrslib_jll", compat = "~0.1, ~0.2"),
+    Dependency("normaliz_jll", compat = "~300.800.900"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -49,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
     Dependency("Zlib_jll"),

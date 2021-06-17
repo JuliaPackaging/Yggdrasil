@@ -113,8 +113,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
-    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201")),
-    Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
+    Dependency("Pango_jll", v"1.42.4"; compat="1.42.4"),
     # PCRE is needed only for Windows.  Maybe it's only a build dependency?
     # Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")),
 ]

@@ -1,29 +1,40 @@
 using BinaryBuilder
 
 name = "OpenMPI"
-version = v"4.0.2"
+version = v"4.1.1"
 sources = [
-    ArchiveSource("https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-$(version).tar.gz",
-                  "662805870e86a1471e59739b0c34c6f9004e0c7a22db068562d5388ec4421904"),
+    ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
+                  "d80b9219e80ea1f8bcfe5ad921bd9014285c4948c5965f4156a3831e60776444"),
 ]
 
 script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes --enable-static=no --disable-mpi-fortran --without-cs-fs
+if [[ "${target}" == *-freebsd* ]]; then
+    # Help compiler find `complib/cl_types.h`.
+    export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
+fi
+
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-shared=yes \
+    --enable-static=no \
+    --disable-mpi-fortran \
+    --without-cs-fs
 
 # Build the library
-make "${flags[@]}" -j${nproc}
+make -j${nproc}
 
 # Install the library
-make "${flags[@]}" install
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 #platforms = supported_platforms()
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms(; experimental=true))
 
 products = [
     LibraryProduct("libmpi", :libmpi)
@@ -34,4 +45,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -65,7 +65,7 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Fontconfig_jll"),
     # Dependency("GTK3_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"),
     Dependency("OpenJpeg_jll"),

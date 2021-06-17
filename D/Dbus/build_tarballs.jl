@@ -41,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

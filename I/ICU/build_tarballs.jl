@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ICU"
-version = v"68.2"
+version = v"69.1"
 
 # Collection of sources required to build ICU
 sources = [
     ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
-                  "c79193dee3907a2199b8296a93b52c5cb74332c26f3d167269487680d479d625"),
+                  "4cba7b7acd1d3c42c44bb0c14be6637098c7faf2b330ce876bc5f3b915d09745"),
     DirectorySource("./bundled"),
 ]
 
@@ -64,7 +64,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -81,4 +81,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

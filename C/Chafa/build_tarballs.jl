@@ -40,7 +40,7 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("ImageMagick_jll"),
 ]
 

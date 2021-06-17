@@ -55,7 +55,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),

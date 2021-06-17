@@ -120,5 +120,5 @@ products = [
     ExecutableProduct("nvlink", :nvlink),
 ]
 
-platforms = [Platform("x86_64", "linux"),
-             Platform("x86_64", "windows")]
+platforms = [Platform("x86_64", "linux"; cuda="10.2"),
+             Platform("x86_64", "windows"; cuda="10.2")]

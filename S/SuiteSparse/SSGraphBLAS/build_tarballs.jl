@@ -1,33 +1,31 @@
 using BinaryBuilder, Pkg
 
 name = "SSGraphBLAS"
-version = v"4.0.3"
+version = v"5.0.4"
 
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
-    ArchiveSource("https://github.com/DrTimothyAldenDavis/GraphBLAS/archive/v4.0.3.tar.gz",
-        "43519783625f1a0a631158603850cfcf0d9681646dbb5c64ae2eaf27e1444b90")
+    GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
+        "9a170e76de65c90d99c10f114b67a7e8aac02a81")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
-cd $WORKSPACE/srcdir/GraphBLAS-*/build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSER_NONE=1
-
-make -j${nproc} install
-
+cd $WORKSPACE/srcdir/GraphBLAS
+make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+make install
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
     # For mysterious reasons, the shared library is not installed
     # when building for Windows
     mkdir -p "${libdir}"
-    cp "libgraphblas.${dlext}" "${libdir}"
+    cp "build/libgraphblas.${dlext}" "${libdir}"
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -41,4 +39,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6")
+               preferred_gcc_version=v"6", julia_compat="1.6")

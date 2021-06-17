@@ -1,13 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+
 name = "libvorbis"
-version = v"1.3.6"
+version = v"1.3.7"
 
 # Collection of sources required to build libvorbis
 sources = [
-    ArchiveSource("https://downloads.xiph.org/releases/vorbis/libvorbis-$(version).tar.xz",
-                  "af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415"),
+    ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-$(version).tar.xz",
+                  "b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,7 +33,8 @@ rm -r "${prefix}/share/doc"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libvorbis", :libvorbis),
@@ -46,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

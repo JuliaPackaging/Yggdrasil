@@ -39,8 +39,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "XML2_jll",
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

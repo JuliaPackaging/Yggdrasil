@@ -1,0 +1,22 @@
+diff --git a/lrslib.c b/lrslib.c
+index 5adca6f..199b4a9 100755
+--- a/lrslib.c
++++ b/lrslib.c
+@@ -1577,7 +1577,7 @@ lrs_read_dic (lrs_dic * P, lrs_dat * Q)
+           sprintf(mess,"*seed=%ld",Q->seed);
+           if(overflow != 2)
+ 	  	lrs_warning(Q,"warning",mess);
+-          srandom(Q->seed);
++          srand(Q->seed);
+ 	}
+ 
+       if (strcmp (name, "estimates") == 0)
+@@ -5671,7 +5671,7 @@ ran_selectpivot (lrs_dic * P, lrs_dat * Q, long *r, long *s)
+ 
+   for ( i = 0; i < d; i++) 
+     {
+-	j = random() % (d-i) + i;
++	j = rand() % (d-i) + i;
+ 	t = perm[j]; perm[j] = perm[i]; perm[i] = t; // Swap i and j
+      }
+   if(Q->debug)

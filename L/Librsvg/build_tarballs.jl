@@ -86,7 +86,7 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"),
+    Dependency("Pango_jll", v"1.42.4"; compat="1.42.4"),
     Dependency("Libcroco_jll"),
 ]
 

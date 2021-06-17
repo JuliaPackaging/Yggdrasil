@@ -133,7 +133,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1")),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
     Dependency("Zlib_jll"),
 ]
 

@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 # return the platforms supported by libjulia
 function libjulia_platforms(julia_version)
-    platforms = supported_platforms()
+    platforms = supported_platforms(; experimental=julia_version ≥ v"1.7")
 
     # skip 32bit musl builds; they fail with this error:
     #    libunwind.so.8: undefined reference to `setcontext'
@@ -298,5 +298,8 @@ function build_julia(ARGS, version)
         push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
     end
 
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", lock_microarchitecture=false)
+    julia_compat = version ≥ v"1.7" ? "1.6" : "1.0"
+
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                   preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
 end

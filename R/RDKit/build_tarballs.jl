@@ -6,7 +6,7 @@ name = "RDKit"
 version = v"2021.09.1pre"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "ccb805b46790ec497ed9eac538e880060c2693bc"),
+    GitSource("https://github.com/rdkit/rdkit.git", "f5a54af475cc38a82b2c69a8a44193a222fe92fc"),
 ]
 
 script = raw"""
@@ -46,7 +46,7 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"),
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]

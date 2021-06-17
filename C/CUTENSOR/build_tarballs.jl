@@ -1,4 +1,5 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os
 
 include("../../fancy_toys.jl")
 
@@ -36,10 +37,9 @@ for cuda_version in cuda_versions
     include("build_$(cuda_tag).jl")
 
     for (platform, sources) in platforms_and_sources
-        should_build_platform(triplet(platform)) || continue
-        platform.tags["cuda"] = cuda_tag
-
-        build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                       lazy_artifacts=true)
+        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        should_build_platform(triplet(augmented_platform)) || continue
+        build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+                       products, dependencies; lazy_artifacts=true)
     end
 end

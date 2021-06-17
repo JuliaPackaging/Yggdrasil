@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libgcrypt"
-version = v"1.8.5"
+version = v"1.8.7"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
-                  "3b4a2a94cb637eff5bdebbcaf46f4d95c4f25206f459809339cdada0eb577ac3"),
+                  "03b70f028299561b7034b8966d7dd77ef16ed139c43440925fe8782561974748"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -33,8 +33,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"),
+    Dependency("Libgpg_error_jll", v"1.42.0"; compat="1.42.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -35,7 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
