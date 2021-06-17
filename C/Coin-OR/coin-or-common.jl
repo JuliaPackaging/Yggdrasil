@@ -60,6 +60,13 @@ ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
 BiCePS_version = v"0.9.4"
 BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
 
+CHiPPS_BLIS_upstream_version = v"0.94.8"
+# This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
+CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
+CHiPPS_BLIS_version_offset = v"0.0.1"
+CHiPPS_BLIS_version =
+    offset_version(CHiPPS_BLIS_upstream_version, CHiPPS_BLIS_version_offset)
+
 SYMPHONY_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
 
