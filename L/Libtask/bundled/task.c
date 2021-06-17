@@ -31,8 +31,6 @@ jl_task_t *jl_clone_task(jl_task_t *t)
     //jl_task_t *newt = (jl_task_t*)jl_new_task(t->start, t->ssize); //  Less efficient
     memset(newt, 0, sizeof(jl_task_t));
     jl_set_typeof(newt, jl_task_type);
-    newt->stkbuf = NULL;
-    newt->gcstack = NULL;
     JL_GC_PUSH1(&newt);
 
 #if JULIA_VERSION_MAJOR == 1 && JULIA_VERSION_MINOR < 6
@@ -80,3 +78,84 @@ jl_task_t *jl_clone_task(jl_task_t *t)
 
     return newt;
 }
+
+
+jl_task_t *jl_clone_task_opaque(jl_task_t *t, size_t size)
+{
+    jl_ptls_t ptls = jl_get_ptls_states();
+    jl_task_t *newt = (jl_task_t*)jl_gc_allocobj(size);
+    memcpy(newt, t, size);
+
+    jl_set_typeof(newt, jl_task_type);
+    memcpy((void*)newt->ctx.uc_mcontext, (void*)t->ctx.uc_mcontext, sizeof(jl_jmp_buf));
+    return newt;
+}
+
+
+// setter
+void jl_setfield_null(void *t, size_t offset) {
+    int8_t *p = (int8_t*)t;
+    p += offset;
+    void **f = (void**)p;
+    *f = NULL;
+}
+
+void jl_setfield_nothing(void *t, size_t offset) {
+    int8_t *p = (int8_t*)t;
+    p += offset;
+    jl_value_t **f = (jl_value_t**)p;
+    *f = jl_nothing;
+}
+
+void jl_setfield_ptr(void *t, size_t offset, void *ptr) {
+    int8_t *p = (int8_t*)t;
+    p += offset;
+    void **f = (void**)p;
+    *f = ptr;
+}
+
+#define setter(type)                                               \
+    void jl_setfield_##type(void *t, size_t offset, type v) { \
+        int8_t *p = (int8_t*)t;                                    \
+        p += offset;                                               \
+        type *f = (type*)p;                                        \
+        *f = v;                                                    \
+    }
+
+setter(int8_t);
+setter(uint8_t);
+setter(int16_t);
+setter(uint16_t);
+setter(int32_t);
+setter(uint32_t);
+setter(int64_t);
+setter(uint64_t);
+setter(size_t);
+
+
+// getter
+
+void* jl_getfield_ptr(void *t, size_t offset) {
+    int8_t *p = (int8_t*)t;
+    p += offset;
+    void **f = (void**)p;
+    return *f;
+}
+
+#define getter(type) \
+    type jl_getfield_##type(void *t, size_t offset) { \
+        int8_t *p = (int8_t*)t;                         \
+        p += offset;                                    \
+        type *f = (type*)p;                             \
+        return *f;                                      \
+    }
+
+getter(int8_t);
+getter(uint8_t);
+getter(int16_t);
+getter(uint16_t);
+getter(int32_t);
+getter(uint32_t);
+getter(int64_t);
+getter(uint64_t);
+getter(size_t);
