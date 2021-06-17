@@ -50,7 +50,7 @@ dependencies = [
 build_tarballs(
     ARGS,
     "CHiPPS_BLIS",
-    BiCePS_version,
+    CHiPPS_BLIS_version,
     sources,
     script,
     platforms,
