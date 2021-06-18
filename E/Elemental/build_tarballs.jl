@@ -30,7 +30,7 @@ else
 fi
 
 cd ${WORKSPACE}/srcdir/Elemental
-mkdir -p build
+mkdir -p build && cd build
 
 cmake \
   -DCMAKE_INSTALL_PREFIX="${prefix}" \
@@ -46,7 +46,7 @@ cmake \
   -DLAPACK_LIBRARIES="$BLAS_LAPACK_LIB" \
   -DEL_BLAS_SUFFIX="$BLAS_LAPACK_SUFFIX" \
   -DEL_LAPACK_SUFFIX="$BLAS_LAPACK_SUFFIX" \
-  "$WORKSPACE/srcdir/$SRC_NAME"
+  ..
 
 make "-j$nproc"
 make install
