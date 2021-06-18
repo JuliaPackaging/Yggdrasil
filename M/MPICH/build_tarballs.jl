@@ -20,7 +20,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
     # script basically reverts
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
     # extra link flags are not appended to the gfortran wrapper
-    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
+    #sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
 fi
 
 #atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
