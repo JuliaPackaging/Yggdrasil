@@ -11,7 +11,7 @@ sources = [
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/mpich-*
+cd ${WORKSPACE}/srcdir/mpich*
 
 #if [[ "${target}" == powerpc64le-* ]]; then
     # I don't understand why, but the extra link flags we append in the gfortran
@@ -22,11 +22,6 @@ cd ${WORKSPACE}/srcdir/mpich-*
     # extra link flags are not appended to the gfortran wrapper
     #sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
 #fi
-
-#atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
-pushd src/mpi/romio
-autoreconf -vi
-popd
 
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
@@ -55,6 +50,10 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
         sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
         EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
     fi
+fi
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    export FFLAGS=-fallow-argument-mismatch
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
