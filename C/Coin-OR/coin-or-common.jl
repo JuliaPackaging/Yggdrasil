@@ -70,6 +70,9 @@ CHiPPS_BLIS_version =
 SYMPHONY_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
 
+MibS_version = v"1.1.3"
+MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
+
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.2"
 METIS_version = v"5.1.0"
