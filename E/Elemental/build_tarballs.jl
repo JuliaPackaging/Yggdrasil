@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Elemental"
-version = v"0.87.7"
+version = v"1.5.1"
 
 # Collection of sources required to build Elemental
 sources = [
-    GitSource("https://github.com/elemental/Elemental.git",
-              "477e503a7a840cc1a75173552711b980505a0b06"),
+    GitSource("https://github.com/llnl/elemental",
+              "85a74ed25461bd8d8c638105663b6ea663451db8"),
 ]
 
 # Bash recipe for building across all platforms
