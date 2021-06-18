@@ -11,7 +11,6 @@ if [[ "${target}" == *mingw* ]]; then
 elif [[ "${target}" == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
-
 cd $WORKSPACE/srcdir/MibS
 rm -f ${prefix}/lib/*.la
 update_configure_scripts
@@ -37,6 +36,7 @@ make install
 
 products = [
     ExecutableProduct("mibs", :mibs),
+    ExecutableProduct("libMibs", :libmibs),
 ]
 
 dependencies = [
