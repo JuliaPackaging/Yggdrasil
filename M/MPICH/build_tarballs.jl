@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.3.2"
+version = v"3.4.2"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
+                  "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
     DirectorySource("./bundled"),
 ]
 
@@ -71,7 +71,7 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
 products = [
     LibraryProduct("libmpicxx", :libmpicxx),
@@ -85,4 +85,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
