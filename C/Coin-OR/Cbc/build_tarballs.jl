@@ -52,6 +52,7 @@ make install
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libCbc", :libCbc),
+    LibraryProduct("libOsiCbc", :libOsiCbc),
     LibraryProduct("libCbcSolver", :libcbcsolver),
     ExecutableProduct("cbc", :cbc),
 ]
