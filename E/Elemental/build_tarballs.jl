@@ -7,7 +7,7 @@ version = v"1.5.1"
 
 # Collection of sources required to build Elemental
 sources = [
-    GitSource("https://github.com/llnl/elemental",
+    GitSource("https://github.com/llnl/Elemental",
               "85a74ed25461bd8d8c638105663b6ea663451db8"),
 ]
 
@@ -29,7 +29,7 @@ else
   BLAS_INT64="OFF"
 fi
 
-cd ${WORKSPACE}/srcdir/Elemental*
+cd ${WORKSPACE}/srcdir/Elemental
 mkdir -p build
 
 cmake \
