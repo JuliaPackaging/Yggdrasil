@@ -23,7 +23,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
     sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
 fi
 
-atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
+#atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
 pushd src/mpi/romio
 autoreconf -vi
 popd
