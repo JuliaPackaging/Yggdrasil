@@ -58,9 +58,8 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes \
-    --enable-static=no \
-    --disable-dependency-tracking \
+    --enable-shared=yes --enable-static=no \
+    --with-device=ch3 --disable-dependency-tracking \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
 
