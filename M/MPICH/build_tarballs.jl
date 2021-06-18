@@ -61,6 +61,7 @@ fi
     --enable-shared=yes --enable-static=no \
     --with-device=ch3 --disable-dependency-tracking \
     --docdir=/tmp \
+    FFLAGS=-fallow-argument-mismatch \
     "${EXTRA_FLAGS[@]}"
 
 # Build the library
