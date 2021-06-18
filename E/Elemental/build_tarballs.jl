@@ -29,11 +29,11 @@ else
   BLAS_INT64="OFF"
 fi
 
-mkdir -p "$WORKSPACE/srcdir/elemental/build"
-cd "$WORKSPACE/srcdir/elemental/build"
+cd ${WORKSPACE}/srcdir/Elemental*
+mkdir -p build
 
 cmake \
-  -DCMAKE_INSTALL_PREFIX="$prefix" \
+  -DCMAKE_INSTALL_PREFIX="${prefix}" \
   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
   -DCMAKE_BUILD_TYPE="Release" \
   -DEL_USE_64BIT_INTS="$INT64" \
