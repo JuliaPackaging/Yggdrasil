@@ -36,7 +36,7 @@ make install
 
 products = [
     ExecutableProduct("mibs", :mibs),
-    ExecutableProduct("libMibs", :libmibs),
+    LibraryProduct("libMibs", :libmibs),
 ]
 
 dependencies = [
