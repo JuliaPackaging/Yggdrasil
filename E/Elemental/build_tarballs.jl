@@ -29,8 +29,8 @@ else
   BLAS_INT64="OFF"
 fi
 
-mkdir "$WORKSPACE/srcdir/$SRC_NAME/build"
-cd "$WORKSPACE/srcdir/$SRC_NAME/build"
+mkdir -p "$WORKSPACE/srcdir/elemental/build"
+cd "$WORKSPACE/srcdir/elemental/build"
 
 cmake \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
