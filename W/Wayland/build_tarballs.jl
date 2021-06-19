@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -38,8 +38,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
-    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
+    Dependency("Expat_jll"; compat="~2.2.10"),
+    Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
 ]
 
