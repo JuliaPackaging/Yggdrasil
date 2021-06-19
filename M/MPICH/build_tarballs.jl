@@ -1,17 +1,16 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.3.2"
+version = v"3.4.2"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
-    DirectorySource("./bundled"),
+                  "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
 ]
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/mpich-*
+cd ${WORKSPACE}/srcdir/mpich*
 
 if [[ "${target}" == powerpc64le-* ]]; then
     # I don't understand why, but the extra link flags we append in the gfortran
@@ -20,13 +19,8 @@ if [[ "${target}" == powerpc64le-* ]]; then
     # script basically reverts
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
     # extra link flags are not appended to the gfortran wrapper
-    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
+    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/${target}*/gfortran
 fi
-
-atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
-pushd src/mpi/romio
-autoreconf -vi
-popd
 
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
@@ -57,10 +51,13 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
     fi
 fi
 
+if [[ "${target}" == aarch64-apple-* ]]; then
+    export FFLAGS=-fallow-argument-mismatch
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes \
-    --enable-static=no \
-    --disable-dependency-tracking \
+    --enable-shared=yes --enable-static=no \
+    --with-device=ch3 --disable-dependency-tracking \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
 
@@ -71,7 +68,7 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
 products = [
     LibraryProduct("libmpicxx", :libmpicxx),
@@ -85,4 +82,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
