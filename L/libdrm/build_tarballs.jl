@@ -8,15 +8,11 @@ version = v"2.4.106"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-2.4.106.tar.xz", "92d8ac54429b171e087e61c2894dc5399fe6a549b1fbba09fa6a3cb9d4e57bd4"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 cd libdrm-*
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=false build
 ninja -C build install
