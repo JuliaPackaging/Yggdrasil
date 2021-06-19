@@ -19,7 +19,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
     # script basically reverts
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
     # extra link flags are not appended to the gfortran wrapper
-    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
+    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/${target}*/gfortran
 fi
 
 EXTRA_FLAGS=()
