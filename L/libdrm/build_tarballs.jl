@@ -18,7 +18,7 @@ cd libdrm-*
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=false build
 ninja -C build install
 # taken from https://salsa.debian.org/xorg-team/lib/libdrm/-/blob/libdrm-2.4.105-3/debian/copyright
-install_license copyright
+install_license ../copyright
 """
 
 # These are the platforms we will build for by default, unless further
