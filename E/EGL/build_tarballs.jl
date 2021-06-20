@@ -30,7 +30,11 @@ rm /workspace/destdir/usr/bin/wayland-scanner
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms())
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
