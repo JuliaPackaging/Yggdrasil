@@ -8,6 +8,7 @@ version = v"1.4.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.freedesktop.org/mesa/mesa.git", "1b74a12ea0ae900d49d1921ed8931eb6131e1f18")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,6 +27,8 @@ ninja -j${nproc}
 ninja install
 
 rm /workspace/destdir/usr/bin/wayland-scanner
+# taken from https://metadata.ftp-master.debian.org/changelogs//main/m/mesa/mesa_20.3.5-1_copyright
+install_license ../../copyright
 """
 
 # These are the platforms we will build for by default, unless further
