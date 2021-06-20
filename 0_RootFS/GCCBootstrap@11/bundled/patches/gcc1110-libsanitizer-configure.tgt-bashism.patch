@@ -1,0 +1,39 @@
+From 6e6956b0bb80748b5ee2a5971f854ed985b6b8f1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Fri, 18 Jun 2021 23:46:44 +0000
+Subject: [PATCH 1/1] Fix bashism in `libsanitizer/configure.tgt'
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Appending to a string variable with `+=' is a bashism and does not work in
+strict POSIX shells like dash.  This results in the extra compilation flags not
+to be set correctly.  This patch replaces the `+=' syntax with a simple string
+interpolation to append to the `EXTRA_CXXFLAGS' variable.
+
+libsanitizer/ChangeLog
+
+	* configure.tgt: Fix bashism in setting of `EXTRA_CXXFLAGS'.
+
+Signed-off-by: Mosè Giordano <mose@gnu.org>
+---
+ libsanitizer/ChangeLog     | 4 ++++
+ libsanitizer/configure.tgt | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/libsanitizer/configure.tgt b/libsanitizer/configure.tgt
+index 0ca5d9fd924..1947780be79 100644
+--- a/libsanitizer/configure.tgt
++++ b/libsanitizer/configure.tgt
+@@ -65,7 +65,7 @@ case "${target}" in
+ 	;;
+   x86_64-*-darwin2* | x86_64-*-darwin1[2-9]* | i?86-*-darwin1[2-9]*)
+ 	TSAN_SUPPORTED=no
+-	EXTRA_CXXFLAGS+="-Wl,-undefined,dynamic_lookup"
++	EXTRA_CXXFLAGS="${EXTRA_CXXFLAGS} -Wl,-undefined,dynamic_lookup"
+ 	;;
+   x86_64-*-solaris2.11* | i?86-*-solaris2.11*)
+ 	;;
+-- 
+2.25.1
+

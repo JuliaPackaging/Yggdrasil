@@ -12,9 +12,9 @@
 #   `build_tarballs.jl` file from `0_RootFS/GCCBootstrap@X-1` and change the
 #   version to build.  In order to reduce patches duplication, we want to use as
 #   many symlinks as possible, so link to previously existing patches whenever
-#   possible.  This shell command should be useful:
+#   possible.  This bash command should be useful:
 #
-#      for p in ../../../GCCBootstrap@XYZ/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
+#      ORIGDIR=../../../GCCBootstrap@XYZ/bundled/patches; for p in ${ORIGDIR}/{,*/}*.patch; do DESTDIR=$(dirname ${p#"${ORIGDIR}/"}); mkdir -p "${DESTDIR}"; if [[ -L "${p}" ]]; then cp -a "${p}" "${DESTDIR}"; else ln -s $(realpath --relative-to="${DESTDIR}" "${p}") "${DESTDIR}"; fi; done
 #
 # * you can build only one platform at the time.  To deploy the compiler shards
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
@@ -115,6 +115,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
+        v"11.1.0" => [
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-11.1.0/gcc-11.1.0.tar.xz",
+                          "4c4a6fb8a8396059241c2e674b85b351c26a5d678274007f076957afa1cc9ddf"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz",
+                          "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
+                          "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+        ],
     )
 
     # Map from GCC version and platform -> binutils sources
@@ -150,6 +162,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"8.1.0" => v"2.31",
             v"9.1.0" => v"2.33.1",
             v"10.2.0" => v"2.34",
+            v"11.1.0" => v"2.36",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -185,7 +198,11 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.35.1" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.35.1.tar.xz",
                               "3ced91db9bf01182b7e420eab68039f2083aed0a214c0424e257eae3ddee8607"),
-            ]
+            ],
+            v"2.36" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.36.tar.xz",
+                              "5788292cc5bbcca0848545af05986f6b17058b105be59e99ba7d0f9eb5336fb8"),
+            ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
         binutils_sources = binutils_version_sources[binutils_version]
@@ -598,6 +615,13 @@ function gcc_script(compiler_target::Platform)
             MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib64"
         else
             MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib32"
+        fi
+
+        # Apply MinGW patches, if any
+        if [[ -d "${WORKSPACE}/srcdir/patches/mingw" ]]; then
+            for p in ${WORKSPACE}/srcdir/patches/mingw/*.patch; do
+                atomic_patch -p1 -d ${WORKSPACE}/srcdir/mingw-* "${p}"
+            done
         fi
 
         ${WORKSPACE}/srcdir/mingw-*/mingw-w64-crt/configure \
