@@ -20,7 +20,6 @@ cd build
 apk add meson scdoc
 
 PKG_CONFIG_SYSROOT_DIR="" meson ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
-mkdir ${includedir}
 ninja -j${nproc}
 ninja install
 """
