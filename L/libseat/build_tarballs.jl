@@ -23,7 +23,7 @@ apk add meson scdoc
 mkdir -p /workspace/destdir/usr/bin/
 ln -s $(which scdoc) /workspace/destdir/usr/bin/
 
-meson -D werror=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
+PKG_CONFIG_SYSROOT_DIR="" meson -D werror=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 mkdir ${includedir}
 ninja -j${nproc}
 ninja install
