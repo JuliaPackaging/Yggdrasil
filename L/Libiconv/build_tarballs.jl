@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Libiconv
 name = "Libiconv"
-version = v"1.16.1" # <-- this is a lie, we're building v1.16, but we need to bump version to build for julia v1.6
+version = v"1.16" # <-- this is a lie, we're building v1.16, but we need to bump version to build for julia v1.6
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz",
@@ -38,7 +38,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -51,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
