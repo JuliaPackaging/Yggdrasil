@@ -13,10 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mtdev-*/
-# build system doesn't recognize platforms ending with -musl
-_MACHTYPE=$(echo ${MACHTYPE} | sed 's/\(.*\)-musl\(eabihf\)\?$/\1/')
-_target=$(echo ${target} | sed 's/\(.*\)-musl\(eabihf\)\?$/\1/')
-./configure --prefix=${prefix} --build=${_MACHTYPE} --host=${target}
+update_configure_scripts
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
