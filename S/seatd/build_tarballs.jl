@@ -19,7 +19,7 @@ mkdir build
 cd build
 apk add meson scdoc
 
-PKG_CONFIG_SYSROOT_DIR="" meson -D werror=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
+PKG_CONFIG_SYSROOT_DIR="" meson ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 mkdir ${includedir}
 ninja -j${nproc}
 ninja install
@@ -40,4 +40,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
