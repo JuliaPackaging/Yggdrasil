@@ -37,9 +37,9 @@ cmake ../.. \
       -DCOVERAGE=OFF \
       -DUNITTESTS=OFF \
       -DJULIA=OFF \
-      -DLAPACKE=${WORKSPACE}/destdir/lib/${BLAS} \
-      -DLAPACK=${WORKSPACE}/destdir/lib/${BLAS} \
-      -DCMAKE_C_FLAGS="-I${WORKSPACE}/destdir/include -std=${std}"
+      -DLAPACKE=${prefix}/lib/${BLAS} \
+      -DLAPACK=${prefix}/lib/${BLAS} \
+      -DCMAKE_C_FLAGS="-I${includedir} -std=${std}"
 
 make
 
