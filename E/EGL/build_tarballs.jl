@@ -20,7 +20,7 @@ apk add py3-mako meson wayland-dev
 mkdir -p /workspace/destdir/usr/bin/
 ln -s $(which wayland-scanner) /workspace/destdir/usr/bin/
 
-meson -D egl=enabled -D gles1=enabled -D gles2=enabled -D platforms=wayland -D glx=disabled ../mesa --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson -D egl=enabled -D gles1=enabled -D gles2=enabled -D platforms=wayland -D glx=disabled -D c_args="-Wno-implicit-function-declaration" ../mesa --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
