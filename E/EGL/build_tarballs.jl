@@ -7,7 +7,7 @@ version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.freedesktop.org/mesa/mesa.git", "1b74a12ea0ae900d49d1921ed8931eb6131e1f18")
+    GitSource("https://gitlab.freedesktop.org/mesa/mesa.git", "1b74a12ea0ae900d49d1921ed8931eb6131e1f18"),
     DirectorySource("./bundled"),
 ]
 
