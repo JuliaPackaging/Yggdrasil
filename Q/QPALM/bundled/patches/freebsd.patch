@@ -1,0 +1,47 @@
+diff --git a/include/util.h b/include/util.h
+index aa2f6d2..3c1a463 100644
+--- a/include/util.h
++++ b/include/util.h
+@@ -2,7 +2,7 @@
+  * @file util.h
+  * @author Ben Hermans
+  * @brief Utility functions.
+- * @details This file contains some utility functions, to copy the settings, 
++ * @details This file contains some utility functions, to copy the settings,
+  * to update the solver status, to print information and to time the algorithm.
+  */
+ #ifndef UTIL_H
+@@ -53,7 +53,7 @@ void update_status(QPALMInfo *info,
+ 
+ #ifdef PRINTING
+ 
+-/** 
++/**
+  * Print the header with QPALM version number and fields.
+  */
+ void print_header(void);
+@@ -135,6 +135,17 @@ struct QPALM_TIMER {
+   struct timespec toc;
+ };
+ 
++// FreeBSD
++#  elif defined __FreeBSD__ // ifdef _WIN32
++
++#   include <time.h>
++#   include <sys/time.h>
++
++struct QPALM_TIMER {
++  struct timespec tic;
++  struct timespec toc;
++};
++
+ #  endif // ifdef _WIN32
+ 
+ /*! \endcond */
+@@ -160,4 +171,4 @@ c_float qpalm_toc(QPALMTimer *t);
+ }
+ # endif // ifdef __cplusplus
+ 
+-#endif // ifndef UTIL_H
+\ No newline at end of file
++#endif // ifndef UTIL_H
