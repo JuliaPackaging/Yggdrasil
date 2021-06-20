@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "QPALM"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Benny44/QPALM_vLADEL.git", "370ccbeb33baaa566c3de2bde5a69944994593e2"),
     GitSource("https://github.com/Benny44/LADEL.git", "585b766da25e028f368e4d9039ef69e326baeb5b"),
+    GitSource("https://github.com/kul-optec/QPALM.jl.git", "7b4424ce17ba232aa6e89648032c93572ca5a3e1"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,6 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd QPALM_vLADEL/
 ln -s ${WORKSPACE}/srcdir/LADEL/* ${WORKSPACE}/srcdir/QPALM_vLADEL/LADEL/
+ln -s ${WORKSPACE}/srcdir/QPALM.jl/* ${WORKSPACE}/srcdir/QPALM_vLADEL/interfaces/QPALM.jl/
 [[ $target == *-freebsd* ]] && patch -p1 < $WORKSPACE/srcdir/patches/freebsd.patch
 mkdir -p build
 cd build
@@ -36,7 +38,7 @@ cmake ../.. \
       -DPYTHON=OFF \
       -DCOVERAGE=OFF \
       -DUNITTESTS=OFF \
-      -DJULIA=OFF \
+      -DJULIA=ON \
       -DLAPACKE=${prefix}/lib/${BLAS} \
       -DLAPACK=${prefix}/lib/${BLAS} \
       -DCMAKE_C_FLAGS="-I${includedir} -std=${std}"
