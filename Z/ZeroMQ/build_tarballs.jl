@@ -14,8 +14,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/libzmq
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from
-    # https://github.com/msys2/MINGW-packages/blob/350ace4617661a4df7b9474c573b08325fa716c3/mingw-w64-zeromq/001-mingw-__except-fixes.patch
-    atomic_patch -p1 ../patches/001-mingw-__except-fixes.patch
+    # https://github.com/msys2/MINGW-packages/blob/66c0195ad84836161c48797241a1c7611ac4a435/mingw-w64-zeromq/001-testutil_different_signedness-fix.patch
+    atomic_patch -p1 ../patches/001-testutil_different_signedness-fix.patch
 elif [[ "${target}" == *86*-linux-musl* ]]; then
     # Fix bug in Musl C library, see
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
