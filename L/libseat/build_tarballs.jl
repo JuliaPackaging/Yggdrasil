@@ -19,16 +19,10 @@ mkdir build
 cd build
 apk add meson scdoc
 
-# pkgconfig returns the wrong path here. It's an ugly hack, but it works
-mkdir -p /workspace/destdir/usr/bin/
-ln -s $(which scdoc) /workspace/destdir/usr/bin/
-
 PKG_CONFIG_SYSROOT_DIR="" meson -D werror=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 mkdir ${includedir}
 ninja -j${nproc}
 ninja install
-
-rm -rf /workspace/destdir/usr/
 """
 
 # These are the platforms we will build for by default, unless further
