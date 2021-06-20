@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ripgrep"
-version = v"12.1.1"
+version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/BurntSushi/ripgrep/archive/$(version).tar.gz",
-                  "2513338d61a5c12c8fea18a0387b3e0651079ef9b31f306050b1f0aaa926271e"),
+                  "0fb17aaf285b3eee8ddab17b833af1e190d73de317ff9648751ab0660d763ed2"),
 ]
 
 # Bash recipe for building across all platforms
