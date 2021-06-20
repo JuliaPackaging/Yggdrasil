@@ -1,19 +1,20 @@
 --- meson.build
-+++ meson.build
-@@ -153,7 +153,7 @@
- 	link_with: private_lib,
- 	include_directories: [include_directories('.', 'include')],
- 	install: true,
--	link_args: symbols_flag,
-+	link_args: ['-lrt', symbols_flag],
- 	link_depends: symbols_file,
- )
++++ meson.build2
+@@ -132,6 +132,10 @@
+ 	private_deps += logind
+ endif
  
-@@ -173,6 +173,7 @@
++# needed for cross-compilation
++realtime = meson.get_compiler('c').find_library('rt')
++private_deps += realtime
++
+ if get_option('builtin').enabled()
+ 	add_project_arguments('-DBUILTIN_ENABLED=1', language: 'c')
+ 	private_files += server_files
+@@ -173,6 +177,7 @@
  		[ server_files, 'seatd/seatd.c' ],
  		include_directories: [include_directories('.', 'include')],
  		install: true,
-+		link_args: ['-lrt'],
++		dependencies: [realtime],
  	)
  endif
- 
