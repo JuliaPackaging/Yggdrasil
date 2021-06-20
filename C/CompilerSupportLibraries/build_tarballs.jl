@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.4.4"
+version = v"0.5.0"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -136,4 +136,3 @@ for platform in platforms
         build_tarballs(ARGS, name, version, sources, script, [platform], products, []; preferred_gcc_version=v"100", julia_compat="1.6")
     end
 end
-
