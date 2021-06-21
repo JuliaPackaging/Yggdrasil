@@ -18,7 +18,7 @@ atomic_patch ../patches/link_rt.patch
 mkdir build
 cd build
 
-PKG_CONFIG_SYSROOT_DIR="" meson -D tests=disabled -D documentation=disabled ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson -D tests=disabled -D documentation=disabled ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
