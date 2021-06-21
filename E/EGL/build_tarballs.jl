@@ -57,7 +57,7 @@ dependencies = Dependency[
     Dependency("libdrm_jll"),
     Dependency("LLVM_jll"),
     Dependency("Elfutils_jll"),
-    Dependency("Expat_jll"; compat="~2.2.10"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
     Dependency("Wayland_protocols_jll"),
 ]
