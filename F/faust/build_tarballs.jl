@@ -60,7 +60,7 @@ else
     CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
     CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 
-    if [[ "${target}" == "x86_64-linux-musl-cxx03*"]]; then
+    if [[ "${target}" == "x86_64-linux-musl-cxx03*" ]]; then
         # For some reason this target requires "-lLLVM-11jl"
         # while others require "-lLLVM" to build.
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl_cxx03.patch
