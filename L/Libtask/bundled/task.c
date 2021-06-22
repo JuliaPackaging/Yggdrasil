@@ -79,18 +79,36 @@ jl_task_t *jl_clone_task(jl_task_t *t)
     return newt;
 }
 
+// -----------------
+
+void *jl_reset_task_ctx(jl_task_t *t, size_t ctx_offset, size_t ctx_size, size_t boffset)
+{
+    jl_ptls_t ptls = jl_get_ptls_states();
+    int8_t *p = (int8_t*)t;
+    p += ctx_offset;
+    int8_t *b = (int8_t*)ptls;
+    b += boffset;
+    memcpy(p, b, ctx_size);
+}
 
 jl_task_t *jl_clone_task_opaque(jl_task_t *t, size_t size)
 {
-    jl_ptls_t ptls = jl_get_ptls_states();
     jl_task_t *newt = (jl_task_t*)jl_gc_allocobj(size);
     memcpy(newt, t, size);
 
     jl_set_typeof(newt, jl_task_type);
-    memcpy((void*)newt->ctx.uc_mcontext, (void*)t->ctx.uc_mcontext, sizeof(jl_jmp_buf));
     return newt;
 }
 
+void jl_memcpy(void *dest, void *src, size_t size) {
+    memcpy(dest, src, size);
+}
+
+void jl_memset(void *t, size_t offset0, size_t offset1, int val) {
+    int8_t *dest = (int8_t*)t;
+    dest += offset0;
+    memset(dest, val, offset1 - offset0);
+}
 
 // setter
 void jl_setfield_null(void *t, size_t offset) {
