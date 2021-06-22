@@ -178,6 +178,7 @@ dependencies = [
     Dependency("Ncurses_jll"),
     Dependency("Zlib_jll"),
     Dependency("libmicrohttpd_jll"),
+    Dependency("libsndfile_jll"),
     BuildDependency("XML2_jll"),
 ]
 
