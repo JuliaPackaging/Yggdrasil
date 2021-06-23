@@ -66,26 +66,10 @@ supported = (
 )
 
 
-# If the user passed in a platform (or a few, comma-separated) on the
-# command-line, use that instead of our default platforms
-if length(ARGS) > 0
-    parse_platform(p::AbstractString) = p == "any" ? AnyPlatform() : parse(Platform, p; validate_strict=true)
-    chosen_platforms = parse_platform.(split(ARGS[1], ","))
-    popfirst!(ARGS)
-else
-    chosen_platforms = nothing
-end
-
 for (julia_version, llvm_version) in supported
     platforms, products, dependencies = configure(julia_version, llvm_version)
 
-    # if chosen_platforms !== nothing
-    #     platforms = intersect(platforms, chosen_platforms)
-    # end
-    if chosen_platforms !== nothing
-        platforms = filter(p->p.tags["julia_version"] == string(julia_version), chosen_platforms)
-    end
-    isempty(platforms) && continue
+    any(should_build_platform.(triplet.(platforms))) || continue
 
     # Build the tarballs.
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
