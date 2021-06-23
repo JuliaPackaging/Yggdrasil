@@ -111,6 +111,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
     mod.add_type<Xyce::Circuit::GenCouplingSimulator>("GenCouplingSimulator")
         .method("initialize", &Xyce::Circuit::GenCouplingSimulator::initialize)
+        .method("initializeEarly", &Xyce::Circuit::GenCouplingSimulator::initializeEarly)
+        .method("initializeLate", &Xyce::Circuit::GenCouplingSimulator::initializeLate)
         .method("addOutputInterface", &Xyce::Circuit::GenCouplingSimulator::addOutputInterface)
         .method("runSimulation", &Xyce::Circuit::GenCouplingSimulator::runSimulation);
 
