@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_version = v"1.6.0"
 
 name = "XyceWrapper"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
