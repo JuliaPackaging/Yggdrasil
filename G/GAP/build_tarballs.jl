@@ -21,14 +21,15 @@ using BinaryBuilder, BinaryBuilderBase, Pkg
 # to all components.
 
 name = "GAP"
-version = v"400.1100.100"
-upstream_version = v"4.11.1"
+version = v"400.1190.0"
+upstream_version = v"4.12.0-dev"
 
 # Collection of sources required to complete build
 sources = [
-#    GitSource("https://github.com/gap-system/gap.git", "a762b49ef1df00d692b4b2fe21612a79aeaf69b5"),
-    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
+    # snapshot of GAP master branch leading up to GAP 4.12:
+    GitSource("https://github.com/gap-system/gap.git", "a9b5db7c1361d336363e2f6bdf6ee83fc248c10b"),
+#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+#                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     DirectorySource("./bundled"),
 ]
 
@@ -43,6 +44,9 @@ done
 # run autogen.sh if compiling from it source and/or if configure was patched
 ./autogen.sh
 
+# provide some generated code
+cp ${WORKSPACE}/srcdir/generated/c_*.c src/
+
 # compile GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-gmp=${prefix} \
@@ -56,7 +60,10 @@ make -j${nproc}
 make install-bin install-headers install-libgap
 
 # also install config.h
-cp gen/config.h ${prefix}/include/gap
+cp build/config.h ${prefix}/include/gap
+
+# the license
+install_license LICENSE
 
 # get rid of *.la files, they just cause trouble
 rm ${prefix}/lib/*.la
