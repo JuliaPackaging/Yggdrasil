@@ -27,6 +27,7 @@ FLAGS=(
 
     # A few things we actually enable
     --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+    --enable-versioned-symbols
 )
 
 
@@ -75,7 +76,7 @@ dependencies = [
     Dependency("nghttp2_jll"),
     # Note that while we unconditionally list MbedTLS as a dependency,
     # we default to schannel/SecureTransport on Windows/MacOS.
-    Dependency(Pkg.Types.PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
+    Dependency("MbedTLS_jll", v"2.24.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
