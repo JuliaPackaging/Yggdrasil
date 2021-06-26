@@ -21,7 +21,7 @@ using BinaryBuilder, BinaryBuilderBase, Pkg
 # to all components.
 
 name = "GAP"
-version = v"400.1190.0"
+version = v"400.1190.1"
 upstream_version = v"4.12.0-dev"
 
 # Collection of sources required to complete build
@@ -99,7 +99,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
-    Dependency("Readline_jll"),
+    Dependency("Readline_jll", v"8.0.4"),
     Dependency("Zlib_jll"),
 
     # GAP tries hard to produce a binary that works in all Julia versions,
