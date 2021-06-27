@@ -8,7 +8,7 @@ repo = "https://github.com/vchuravy/LLVMExtra.git"
 version = v"0.0.1"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "30882a8aadea1e15178e6fc8a70165a88f8377b0")]
+sources = [GitSource(repo, "0f9293476db7bc60268dfa041acbdef82387861a")]
 
 
 # Bash recipe for building across all platforms
@@ -35,7 +35,7 @@ ninja -C build -j ${nproc} install
 function configure(julia_version, llvm_version)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = expand_cxxstring_abis(supported_platforms())
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
     foreach(platforms) do p
         BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
@@ -43,7 +43,7 @@ function configure(julia_version, llvm_version)
 
     # The products that we will ensure are always built
     products = Product[
-        LibraryProduct(["libLLVMExtra-$(llvm_version.major)", "libExtra"], :libExtra),
+        LibraryProduct(["libLLVMExtra-$(llvm_version.major)", "libLLVMExtra"], :libLLVMExtra),
     ]
 
 
