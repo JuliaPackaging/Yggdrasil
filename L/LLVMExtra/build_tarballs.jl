@@ -8,7 +8,7 @@ repo = "https://github.com/vchuravy/LLVMExtra.git"
 version = v"0.0.1"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "354a37a6bb682df90f203d5132b28393cd3dc978")]
+sources = [GitSource(repo, "30882a8aadea1e15178e6fc8a70165a88f8377b0")]
 
 
 # Bash recipe for building across all platforms
