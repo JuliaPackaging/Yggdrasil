@@ -3,9 +3,9 @@ using BinaryBuilder, Pkg
 name = "QuantumEspresso"
 version = v"6.7.0"
 
-# TODO This build still suffers from a number of severe limitations:
+# TODO This build still suffers from some limitations:
 #      - Missing support for Libxc
-#      - Missing parallelisation (requires compilation with MPI / Scalapack)
+#      - Missing SCALAPACK support
 
 sources = [
     ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
@@ -19,19 +19,21 @@ script = raw"""
     cd qe-*
     atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
 
-    export FFTW_INCLUDE=${includedir} FFT_LIBS="-L${libdir} -lfftw3"
     export BLAS_LIBS="-L${libdir} -lopenblas"
     export LAPACK_LIBS="-L${libdir} -lopenblas"
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parallel=no --with-scalapack=no --with-libxc=no
+    export FFTW_INCLUDE=${includedir} FFT_LIBS="-L${libdir} -lfftw3"
+    export MPIF90=mpif90
+    export CC=mpicc
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+        --enable-parallel=yes --with-scalapack=no --with-libxc=no
 
-    make all "${make_args[@]}" -j $nproc
+    make all "${make_args[@]}" -j $nproc MPIF90=mpif90 CC=mpicc
     make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
-filter!(!Sys.iswindows, platforms)
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -44,6 +46,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("FFTW_jll"),
+    Dependency("MPICH_jll"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
