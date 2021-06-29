@@ -3,6 +3,10 @@ using BinaryBuilder, Pkg
 name = "QuantumEspresso"
 version = v"6.7.0"
 
+# TODO This build still suffers from a number of severe limitations:
+#      - Missing support for Libxc
+#      - Missing parallelisation (requires compilation with MPI / Scalapack)
+
 sources = [
     ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
                   "8f06ea31ae52ad54e900a2f51afd5c70f78096d9dcf39c86c2b17dccb1ec9c87"),
@@ -27,6 +31,7 @@ script = raw"""
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
