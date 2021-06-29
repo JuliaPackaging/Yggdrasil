@@ -27,6 +27,7 @@ if [[ "${target}" = *-mingw* ]]; then
 else
     autoreconf -vi
     export CFLAGS="$CFLAGS -std=c99"
+    export FCFLAGS="-pipe -O3"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
         --disable-static --enable-shared \
         --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
