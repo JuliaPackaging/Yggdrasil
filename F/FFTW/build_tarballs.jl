@@ -20,7 +20,6 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --disable-fortran
     --disable-mpi
     --disable-doc
     --enable-threads
