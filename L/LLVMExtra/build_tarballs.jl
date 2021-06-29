@@ -59,8 +59,8 @@ end
 supported = (
     (v"1.6", v"11.0.1+3"),
     (v"1.7", v"12.0.0+0"),
+    (v"1.8", v"12.0.0+0"),
 )
-
 
 for (julia_version, llvm_version) in supported
     platforms, products, dependencies = configure(julia_version, llvm_version)
