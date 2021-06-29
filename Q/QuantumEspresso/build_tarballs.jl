@@ -4,14 +4,16 @@ name = "QuantumEspresso"
 version = v"6.7.0"
 
 sources = [
-   ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
-                 "8f06ea31ae52ad54e900a2f51afd5c70f78096d9dcf39c86c2b17dccb1ec9c87")
+    ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
+                  "8f06ea31ae52ad54e900a2f51afd5c70f78096d9dcf39c86c2b17dccb1ec9c87"),
+    DirectorySource("./bundled"),
 ]
 
 
 # Bash recipe for building across all platforms
 script = raw"""
     cd qe-*
+    atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
 
     export FFTW_INCLUDE=$prefix/include FFT_LIBS="-L$prefix/lib -lfftw3"
     export BLAS_LIBS="-L$prefix/lib -lopenblas"
