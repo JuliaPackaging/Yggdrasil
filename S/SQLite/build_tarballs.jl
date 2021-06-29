@@ -47,7 +47,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsqlite3", :libsqlite)
+    LibraryProduct("libsqlite3", :libsqlite),
+    ExecutableProduct("sqlite3", :sqlite3),
 ]
 
 # Dependencies that must be installed before this package can be built
