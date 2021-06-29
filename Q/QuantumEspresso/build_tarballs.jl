@@ -20,7 +20,7 @@ script = raw"""
     export LAPACK_LIBS="-L${libdir} -lopenblas"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parallel=no --with-scalapack=no --with-libxc=no
 
-    make pw "${make_args[@]}" -j $nproc
+    make all "${make_args[@]}" -j $nproc
     make install
 """
 
@@ -30,7 +30,11 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("pw.x", :pwscf),
+    ExecutableProduct("pw.x",  :pwscf),
+    ExecutableProduct("cp.x",  :cp),
+    ExecutableProduct("ph.x",  :phonon),
+    ExecutableProduct("gww.x", :gww),
+    ExecutableProduct("hp.x",  :hp),
 ]
 
 # Dependencies that must be installed before this package can be built
