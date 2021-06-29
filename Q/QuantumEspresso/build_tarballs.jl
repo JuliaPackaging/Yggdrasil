@@ -15,9 +15,9 @@ script = raw"""
     cd qe-*
     atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
 
-    export FFTW_INCLUDE=$prefix/include FFT_LIBS="-L$prefix/lib -lfftw3"
-    export BLAS_LIBS="-L$prefix/lib -lopenblas"
-    export LAPACK_LIBS="-L$prefix/lib -lopenblas"
+    export FFTW_INCLUDE=${includedir} FFT_LIBS="-L${libdir} -lfftw3"
+    export BLAS_LIBS="-L${libdir} -lopenblas"
+    export LAPACK_LIBS="-L${libdir} -lopenblas"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parallel=no --with-scalapack=no --with-libxc=no
 
     make pw "${make_args[@]}" -j $nproc
