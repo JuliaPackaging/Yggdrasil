@@ -7,6 +7,7 @@ index 9c765ad..5865c21 100644
  	(gzip -dc ../archive/fox.tgz | (cd ../FoX; tar -xvf -)); \
  	cd ../FoX/fox/; export FC=$(F90); export FCFLAGS="$(FOX_FLAGS)"; \
 -	./configure --prefix=$(TOPDIR)/FoX ;\
++	update_configure_scripts ;\
 +	./configure --build=$(MACHTYPE) --host=$(target)  --prefix=$(TOPDIR)/FoX ;\
      touch cp_test; \
      if cp -p cp_test cp_test_1; then \
