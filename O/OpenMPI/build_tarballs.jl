@@ -21,7 +21,6 @@ fi
     --host=${target} \
     --enable-shared=yes \
     --enable-static=no \
-    --disable-mpi-fortran \
     --without-cs-fs
 
 # Build the library
