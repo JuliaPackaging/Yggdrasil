@@ -31,10 +31,9 @@ platforms = expand_gfortran_versions(supported_platforms())
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pw.x",  :pwscf),
-    ExecutableProduct("cp.x",  :cp),
+    ExecutableProduct("cp.x",  :carparinello),
     ExecutableProduct("ph.x",  :phonon),
-    ExecutableProduct("gww.x", :gww),
-    ExecutableProduct("hp.x",  :hp),
+    ExecutableProduct("hp.x",  :hubbardparams),
 ]
 
 # Dependencies that must be installed before this package can be built
