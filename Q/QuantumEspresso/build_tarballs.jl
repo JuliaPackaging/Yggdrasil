@@ -13,8 +13,7 @@ sources = [
 script = raw"""
     cd qe-*
 
-    # TODO Use internal FFTW for now
-    # FFTW_INCLUDE=$prefix/include FFT_LIBS="-L$prefix/lib -lfftw3"
+    export FFTW_INCLUDE=$prefix/include FFT_LIBS="-L$prefix/lib -lfftw3"
     export BLAS_LIBS="-L$prefix/lib -lopenblas"
     export LAPACK_LIBS="-L$prefix/lib -lopenblas"
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parallel=no --with-scalapack=no --with-libxc=no
@@ -34,11 +33,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency("FFTW_jll"),
+    Dependency("FFTW_jll"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
+               preferred_gcc_version=v"5", julia_compat="1.6")
