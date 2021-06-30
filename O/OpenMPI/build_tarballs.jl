@@ -23,7 +23,7 @@ fi
     --enable-shared=yes \
     --enable-static=no \
     --without-cs-fs \
-    # --with-cross=${WORKSPACE}/srcdir/${target}
+    --with-cross=${WORKSPACE}/srcdir/${target}
 
 # Build the library
 make -j${nproc}
