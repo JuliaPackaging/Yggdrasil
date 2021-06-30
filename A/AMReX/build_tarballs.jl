@@ -7,7 +7,8 @@ version = v"21.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.06/amrex-21.06.tar.gz", "6982c22837d7c0bc4583065d9da55e0aebcf07b54386e4b90a779391fe73fd53")
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.06/amrex-21.06.tar.gz",
+                  "6982c22837d7c0bc4583065d9da55e0aebcf07b54386e4b90a779391fe73fd53")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,16 +17,39 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-if [[ "$target" == x86_64-w64-mingw32 ]]; then
+if [[ "$target" == *-apple-* ]]; then
+    # Apple's Clang does not support OpenMP (at least cmake thinks so)
+    omp_opts="-DAMReX_OMP=OFF"
+else
+    omp_opts="-DAMReX_OMP=ON"
+fi
+if [[ "$target" == *-apple-* ]]; then
+    # MPICH's pkgconfig file "mpich.pc" lists these options:
+    #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
+    #     Cflags:   -I${includedir}
+    # cmake doesn't know how to handle the "-framework OpenCL" option
+    # and wants to use "-framework" as a stand-alone option. This fails,
+    # and cmake concludes that MPI is not available.
+    mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
     mpiopts=
 fi
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release -DAMReX_FORTRAN=OFF -DAMReX_OMP=ON -DAMReX_PARTICLES=ON -DBUILD_SHARED_LIBS=ON ${mpiopts} ..
-make -j${nproc}
-make -j${nproc} install
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DAMReX_FORTRAN=OFF \
+    -DAMReX_MPI=ON \
+    -DAMReX_PARTICLES=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    ${ompopts} \
+    ${mpiopts} \
+    ..
+cmake --build . --config Release --parallel $nproc
+cmake --build . --config Release --parallel $nproc --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,8 +57,7 @@ make -j${nproc} install
 platforms = supported_platforms()
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
-# Apparently, macOS doesn't use different C++ string APIs
-platforms = expand_cxxstring_abis(platforms; skip=Sys.isapple)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
