@@ -17,6 +17,7 @@ sources = [
 script = raw"""
     cd qe-*
     atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
+    atomic_patch -p1 ../patches/0001-libxc-prefix.patch
 
     export BLAS_LIBS="-L${libdir} -lopenblas"
     export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -36,10 +37,10 @@ platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("pw.x",  :pwscf),
-    ExecutableProduct("cp.x",  :carparinello),
-    ExecutableProduct("ph.x",  :phonon),
-    ExecutableProduct("hp.x",  :hubbardparams),
+    ExecutableProduct("pw.x", :pwscf),
+    ExecutableProduct("cp.x", :carparinello),
+    ExecutableProduct("ph.x", :phonon),
+    ExecutableProduct("hp.x", :hubbardparams),
 ]
 
 # Dependencies that must be installed before this package can be built
