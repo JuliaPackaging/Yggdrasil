@@ -25,8 +25,6 @@ fi
     --without-cs-fs \
     # --with-cross=${WORKSPACE}/srcdir/${target}
 
-exit 1
-
 # Build the library
 make -j${nproc}
 
