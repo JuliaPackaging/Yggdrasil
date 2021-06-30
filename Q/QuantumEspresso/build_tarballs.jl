@@ -5,6 +5,7 @@ version = v"6.7.0"
 
 # TODO This build still suffers from some limitations:
 #      - Missing SCALAPACK support
+#      - Missing Libxc support
 
 sources = [
     ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
@@ -17,7 +18,6 @@ sources = [
 script = raw"""
     cd qe-*
     atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
-    atomic_patch -p1 ../patches/0001-libxc-prefix.patch
 
     export BLAS_LIBS="-L${libdir} -lopenblas"
     export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -26,7 +26,7 @@ script = raw"""
     export CC=mpicc
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
         --enable-parallel=yes --with-scalapack=no \
-        --with-libxc=yes --with-libxc-prefix=${prefix}
+        --with-libxc=no
     make all "${make_args[@]}" -j $nproc MPIF90=mpif90 CC=mpicc
     make install
 """
@@ -47,7 +47,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("FFTW_jll"),
-    Dependency("Libxc_jll"),
     Dependency("MPICH_jll"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
 ]
