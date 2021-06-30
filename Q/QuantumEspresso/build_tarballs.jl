@@ -4,7 +4,6 @@ name = "QuantumEspresso"
 version = v"6.7.0"
 
 # TODO This build still suffers from some limitations:
-#      - Missing support for Libxc
 #      - Missing SCALAPACK support
 
 sources = [
@@ -25,8 +24,8 @@ script = raw"""
     export MPIF90=mpif90
     export CC=mpicc
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-        --enable-parallel=yes --with-scalapack=no --with-libxc=no
-
+        --enable-parallel=yes --with-scalapack=no \
+        --with-libxc=yes --with-libxc-prefix=${prefix}
     make all "${make_args[@]}" -j $nproc MPIF90=mpif90 CC=mpicc
     make install
 """
@@ -45,10 +44,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("FFTW_jll"),
+    Dependency("Libxc_jll"),
     Dependency("MPICH_jll"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
