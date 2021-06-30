@@ -25,58 +25,91 @@ else
     MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
 fi
 
-./configure --prefix=${prefix} \
-    CC=${CC} \
-    FC=${FC} \
-    CXX=${CXX} \
-    CFLAGS='-fno-stack-protector' \
-    COPTFLAGS='-O3' \
-    CXXOPTFLAGS='-O3' \
-    FOPTFLAGS='-O3' \
-    --with-64-bit-indices=0 \
-    --with-debugging=0 \
-    --with-batch \
-    --PETSC_ARCH=$target \
-    --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-    --with-blaslapack-suffix="" \
-    --known-64-bit-blas-indices=0 \
-    --with-mpi-lib="${MPI_LIBS}" \
-    --known-mpi-int64_t=0 \
-    --with-mpi-include="${includedir}" \
-    --with-sowing=0
+build_petsc()
+{
 
-if [[ "${target}" == *-mingw* ]]; then
-    export CPPFLAGS="-Dpetsc_EXPORTS"
-elif [[ "${target}" == powerpc64le-* ]]; then
-    export CFLAGS="-fPIC"
-    export FFLAGS="-fPIC"
-fi
+    if [[ "${3}" == "Int64" ]]; then
+        USE_INT64=1
+    else
+        USE_INT64=0
+    fi
 
-make -j${nproc} \
-    PETSC_DIR="${PWD}" \
-    PETSC_ARCH="${target}" \
-    CPPFLAGS="${CPPFLAGS}" \
-    CFLAGS="${CFLAGS}" \
-    FFLAGS="${FFLAGS}" \
-    DEST_DIR="${prefix}" \
-    all
+    ./configure --prefix=${prefix} \
+        CC=${CC} \
+        FC=${FC} \
+        CXX=${CXX} \
+        COPTFLAGS='-O3' \
+        CXXOPTFLAGS='-O3' \
+        CFLAGS='-fno-stack-protector' \
+        FOPTFLAGS='-O3' \
+        --with-64-bit-indices=${USE_INT64} \
+        --with-debugging=0 \
+        --with-batch \
+        --PETSC_ARCH=${target}_${1}_${2}_${3} \
+        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
+        --with-blaslapack-suffix="" \
+        --known-64-bit-blas-indices=0 \
+        --with-mpi-lib="${MPI_LIBS}" \
+        --known-mpi-int64_t=0 \
+        --with-mpi-include="${includedir}" \
+        --with-sowing=0 \
+        --with-precision=${1} \
+        --with-scalar-type=${2}
 
-make PETSC_DIR=$PWD PETSC_ARCH=$target DEST_DIR=$prefix install
+    if [[ "${target}" == *-mingw* ]]; then
+        export CPPFLAGS="-Dpetsc_EXPORTS"
+    elif [[ "${target}" == powerpc64le-* ]]; then
+        export CFLAGS="-fPIC"
+        export FFLAGS="-fPIC"
+    fi
 
-if [[ "${target}" == *-mingw* ]]; then
-    # Move library to ${libdir} on Windows,
-    # changing the extension from so to dll.
-    mv ${prefix}/lib/libpetsc.so.*.*.* "${libdir}/libpetsc.${dlext}"
+    make -j${nproc} \
+        PETSC_DIR="${PWD}" \
+        PETSC_ARCH="${target}_${1}_${2}_${3}" \
+        CPPFLAGS="${CPPFLAGS}" \
+        CFLAGS="${CFLAGS}" \
+        FFLAGS="${FFLAGS}" \
+        DEST_DIR="${prefix}" \
+        all
+
+    make PETSC_DIR=$PWD PETSC_ARCH=${target}_${1}_${2}_${3} DEST_DIR=$prefix install
+
+    # add suffix to library name
+    if [[ "${target}" == *-mingw* ]]; then
+        # changing the extension from so to dll.
+        mv ${prefix}/lib/libpetsc.so.*.*.* "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
+    elif [[ "${target}" == *-apple* ]]; then
+        mv ${prefix}/lib/libpetsc.*.*.*.${dlext} "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
+    else
+        mv ${prefix}/lib/libpetsc.${dlext}.*.*.* "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
+    fi
     # Remove useless links
     rm ${prefix}/lib/libpetsc.*
-fi
+}
+
+build_petsc double real Int32
+build_petsc single real Int32
+build_petsc double complex Int32
+build_petsc single complex Int32
+build_petsc double real Int64
+build_petsc single real Int64
+build_petsc double complex Int64
+build_petsc single complex Int64
 """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
 
 products = [
-    LibraryProduct("libpetsc", :libpetsc),
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc), # Current default build
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64),
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64),
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64),
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64),
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32),
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32),
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32),
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32),
 ]
 
 dependencies = [
