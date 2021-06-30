@@ -5,6 +5,7 @@ version = v"4.1.1"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "d80b9219e80ea1f8bcfe5ad921bd9014285c4948c5965f4156a3831e60776444"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -21,7 +22,10 @@ fi
     --host=${target} \
     --enable-shared=yes \
     --enable-static=no \
-    --without-cs-fs
+    --without-cs-fs \
+    # --with-cross=${WORKSPACE}/srcdir/${target}
+
+exit 1
 
 # Build the library
 make -j${nproc}
