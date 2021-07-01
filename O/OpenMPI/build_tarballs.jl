@@ -30,6 +30,8 @@ make -j${nproc}
 
 # Install the library
 make install
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
