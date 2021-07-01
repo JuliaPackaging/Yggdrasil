@@ -45,7 +45,8 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec)
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
