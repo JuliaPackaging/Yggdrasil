@@ -17,17 +17,24 @@ script = raw"""
 
     export BLAS_LIBS="-L${libdir} -lopenblas"
     export LAPACK_LIBS="-L${libdir} -lopenblas"
-    export SCALAPACK_LIBS="-L${libdir} -lscalapack"
     export FFTW_INCLUDE=${includedir}
     export FFT_LIBS="-L${libdir} -lfftw3"
     export FC=mpif90
     export CC=mpicc
 
-    flags=(--enable-parallel=yes --with-scalapack=yes)
-    if [ ${nbits} -eq 64 ]; then
+    flags=(--enable-parallel=yes)
+    if [ "${nbits}" == 64 ]; then
         # Enable Libxc support only on 64-bit platforms
         atomic_patch -p1 ../patches/0001-libxc-prefix.patch
         flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
+    fi
+
+    if [[ "${target}" == powerpc64le-linux-gnu ]]; then
+        # No scalapack binary available on PowerPC
+        flags+=(--with-scalapack=no)
+    else
+        export SCALAPACK_LIBS="-L${libdir} -lscalapack"
+        flags+=(--with-scalapack=yes)
     fi
 
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
