@@ -39,9 +39,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# Disable armv7l because the build seems to fill /tmp.
-platforms = [p for p in supported_platforms() if arch(p) != :armv7l]
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 
 # The products that we will ensure are always built
@@ -55,5 +53,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# For the time being use LLVM 11 because LLVM 12 has troubles with GCC 4-5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
+               preferred_gcc_version=v"5", preferred_llvm_version=v"11")
