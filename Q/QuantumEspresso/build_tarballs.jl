@@ -33,7 +33,6 @@ script = raw"""
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
     make all "${make_args[@]}" -j $nproc
     make install
-    exit 1
 """
 
 # These are the platforms we will build for by default, unless further
