@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/ZITSOL_1
 echo "cmake_minimum_required(VERSION 3.17)" >> CMakeLists.txt
 echo "project(ZITSOL_1 C)" >> CMakeLists.txt
 echo "enable_language(Fortran)" >> CMakeLists.txt
-echo "include(\$ENV{WORKSPACE}/destdir/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
+echo "include(\$ENV{prefix}/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
 echo "file(GLOB SRCS *.c)" >> CMakeLists.txt
 echo "file(GLOB SRCS2 LIB/*.c)" >> CMakeLists.txt
 echo "list(FILTER SRCS2 EXCLUDE REGEX systimer)" >> CMakeLists.txt
@@ -30,29 +30,15 @@ echo "install(TARGETS ZITSOL_1)" >> CMakeLists.txt
 
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # FreeBSD build failed with libgfortran_version=3.0.0
-platforms = [Platform("i686", "linux"; libc = "glibc"),
-             Platform("x86_64", "linux"; libc = "glibc"),
-             Platform("aarch64", "linux"; libc = "glibc"),
-             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-             Platform("powerpc64le", "linux"; libc = "glibc"),
-             Platform("i686", "linux"; libc = "musl"),
-             Platform("x86_64", "linux"; libc = "musl"),
-             Platform("aarch64", "linux"; libc = "musl"),
-             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-             Platform("x86_64", "freebsd";),
-             Platform("i686", "windows"; ),
-             Platform("x86_64", "windows"; )
-             ]
-
+platforms = supported_platforms(; experimental=true)
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
@@ -68,4 +54,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# For the time being need LLVM 11 because of <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158>.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")

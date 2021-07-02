@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/ITSOL_2
 echo "cmake_minimum_required(VERSION 3.17)" >> CMakeLists.txt
 echo "project(ITSOL_2 C)" >> CMakeLists.txt
 echo "enable_language(Fortran)" >> CMakeLists.txt
-echo "include(\$ENV{WORKSPACE}/destdir/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
+echo "include(\$ENV{prefix}/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
 echo "file(GLOB SRCS SRC/*.c)" >> CMakeLists.txt
 echo "# remove some unnecessary files from build" >> CMakeLists.txt
 echo "list(FILTER SRCS EXCLUDE REGEX indsetC)" >> CMakeLists.txt
