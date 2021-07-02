@@ -14,8 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 # generate CMakeLists.txt on the fly. The ITSOL_2 provided makefile is rather limited build definition.
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ITSOL_2
+cd $WORKSPACE/srcdir/ITSOL_2
 
 echo "cmake_minimum_required(VERSION 3.17)" >> CMakeLists.txt
 echo "project(ITSOL_2 C)" >> CMakeLists.txt
@@ -40,29 +39,14 @@ echo "install(TARGETS ITSOL_2)" >> CMakeLists.txt
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # FreeBSD build failed with libgfortran_version=3.0.0
-platforms = [Platform("i686", "linux"; libc = "glibc"),
-             Platform("x86_64", "linux"; libc = "glibc"),
-             Platform("aarch64", "linux"; libc = "glibc"),
-             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-             Platform("powerpc64le", "linux"; libc = "glibc"),
-             Platform("i686", "linux"; libc = "musl"),
-             Platform("x86_64", "linux"; libc = "musl"),
-             Platform("aarch64", "linux"; libc = "musl"),
-             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-             Platform("x86_64", "freebsd"; libgfortran_version="4.0.0"),
-             Platform("x86_64", "freebsd"; libgfortran_version="5.0.0"),
-             Platform("i686", "windows"; ),
-             Platform("x86_64", "windows"; )
-             ]
-
+platforms = supported_platforms(; experimental=true)
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
@@ -78,4 +62,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# For the time being need LLVM 11 because of <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158>.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
