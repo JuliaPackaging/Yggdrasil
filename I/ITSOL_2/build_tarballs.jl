@@ -47,20 +47,21 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
+# FreeBSD build failed with libgfortran_version=3.0.0
+platforms = [Platform("i686", "linux"; libc = "glibc"),
+             Platform("x86_64", "linux"; libc = "glibc"),
+             Platform("aarch64", "linux"; libc = "glibc"),
+             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+             Platform("powerpc64le", "linux"; libc = "glibc"),
+             Platform("i686", "linux"; libc = "musl"),
+             Platform("x86_64", "linux"; libc = "musl"),
+             Platform("aarch64", "linux"; libc = "musl"),
+             Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+             Platform("x86_64", "freebsd"; libgfortran_version="4.0.0"),
+             Platform("x86_64", "freebsd"; libgfortran_version="5.0.0"),
+             Platform("i686", "windows"; ),
+             Platform("x86_64", "windows"; )
+             ]
 
 platforms = expand_gfortran_versions(platforms)
 
