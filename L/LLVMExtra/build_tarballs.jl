@@ -4,16 +4,17 @@ using Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 name = "LLVMExtra"
-repo = "https://github.com/vchuravy/LLVMExtra.git"
-version = v"0.0.1"
+repo = "https://github.com/maleadt/LLVM.jl.git"
+version = v"0.0.2"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "0f9293476db7bc60268dfa041acbdef82387861a")]
+sources = [GitSource(repo, "83e890b2ed146a3275be04425ee0e1193c1a1da9")]
 
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd LLVMExtra
+cd LLVM.jl/deps/LLVMExtra
+
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
@@ -29,6 +30,7 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+
 ninja -C build -j ${nproc} install
 """
 
@@ -46,10 +48,10 @@ function configure(julia_version, llvm_version)
         LibraryProduct(["libLLVMExtra-$(llvm_version.major)", "libLLVMExtra"], :libLLVMExtra),
     ]
 
-
     dependencies = [
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
-    #    Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")) is given through julia_version tag
+        #Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
+        # ^ is given through julia_version tag
     ]
 
     return platforms, products, dependencies
@@ -69,5 +71,5 @@ for (julia_version, llvm_version) in supported
 
     # Build the tarballs.
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                preferred_gcc_version=v"8", julia_compat="1.6")
+                   preferred_gcc_version=v"8", julia_compat="1.6")
 end
