@@ -30,20 +30,27 @@ make -j${nproc}
 
 # Install the library
 make install
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 #platforms = supported_platforms()
 platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms(; experimental=true))
-
+platforms = expand_gfortran_versions(platforms)
+    
 products = [
     LibraryProduct("libmpi", :libmpi)
     ExecutableProduct("mpiexec", :mpiexec)
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# For the time being we need to use LLVM 11 because LLVM 12 has troubles with GCC 4-5
+# on FreeBSD: https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_llvm_version=v"11")

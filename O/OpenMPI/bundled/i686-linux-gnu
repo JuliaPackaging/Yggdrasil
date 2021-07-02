@@ -61,3 +61,6 @@ ompi_cv_fortran_sizeof_REALp8='8'
 ompi_cv_fortran_true_value='1'
 
 ompi_cv_real16_c_equiv='yes'
+
+ompi_cv_fortran_alignment_type_test_mpi_handle_='    4'
+ompi_cv_fortran_sizeof_type_test_mpi_handle_='4'
