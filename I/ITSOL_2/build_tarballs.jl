@@ -3,42 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "ITSOL_2"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://www-users.cs.umn.edu/~saad/software/ITSOL/ITSOL_2.tar.gz",
-                  "80c1848f7f25c38e32090063233ef4a9ce9ea7b8e817774041085574a2ba59b0")
+sources = [GitSource("https://github.com/JuhaHeiskala/itsol_mod.git",
+                  "6a585843634521949c526be621e82515564fc038")
 ]
 
 # Bash recipe for building across all platforms
-# generate CMakeLists.txt on the fly. The ITSOL_2 provided makefile is rather limited build definition.
 script = raw"""
-cd $WORKSPACE/srcdir/ITSOL_2
-
-echo "cmake_minimum_required(VERSION 3.17)" >> CMakeLists.txt
-echo "project(ITSOL_2 C)" >> CMakeLists.txt
-echo "enable_language(Fortran)" >> CMakeLists.txt
-echo "include(\$ENV{prefix}/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
-echo "file(GLOB SRCS SRC/*.c)" >> CMakeLists.txt
-echo "# remove some unnecessary files from build" >> CMakeLists.txt
-echo "list(FILTER SRCS EXCLUDE REGEX indsetC)" >> CMakeLists.txt
-echo "list(FILTER SRCS EXCLUDE REGEX setblks)" >> CMakeLists.txt
-echo "list(FILTER SRCS EXCLUDE REGEX systimer)" >> CMakeLists.txt
-echo "list(SUBLIST SRCS 0 -1 VBILUK)" >> CMakeLists.txt
-echo "list(FILTER VBILUK INCLUDE REGEX vbiluk)" >> CMakeLists.txt
-echo "file(READ \${VBILUK} VBILUKSTR)" >> CMakeLists.txt
-# rename multiple defined function 'lofC'
-echo "string(REPLACE \\"int lofC(\\" \\"int lofC2(\\" VBILUKSTR2 \\"\${VBILUKSTR}\\")" >> CMakeLists.txt
-echo "file(WRITE \${VBILUK} \\"\${VBILUKSTR2}\\")" >> CMakeLists.txt
-echo "add_library(ITSOL_2 SHARED \${SRCS} SRC/tools.f)" >> CMakeLists.txt
-echo "target_link_libraries(ITSOL_2  \${LAPACK_LIBRARIES})" >> CMakeLists.txt
-echo "target_include_directories(ITSOL_2 PUBLIC INC)" >> CMakeLists.txt
-echo "install(TARGETS ITSOL_2)" >> CMakeLists.txt
+cd $WORKSPACE/srcdir/itsol_mod
 
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJLL_BUILD=1 ..
 make -j${nproc}
 make install
 
