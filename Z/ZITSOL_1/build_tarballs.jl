@@ -3,34 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "ZITSOL_1"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://www-users.cs.umn.edu/~saad/software/ITSOL/ZITSOL_1.tar.gz",
-                  "0ce5e3cef5ec55966db843a0d716a47566303961ba638b915a1b599d7a7800bd")
+sources = [GitSource("https://github.com/JuhaHeiskala/zitsol_mod.git",
+                     "d9878e22218d1b050af876624af4ebdf163354dc")
 ]
 
 # Bash recipe for building across all platforms
 # generate CMakeLists.txt on the fly.
 script = raw"""
-cd $WORKSPACE/srcdir/ZITSOL_1
-
-echo "cmake_minimum_required(VERSION 3.17)" >> CMakeLists.txt
-echo "project(ZITSOL_1 C)" >> CMakeLists.txt
-echo "enable_language(Fortran)" >> CMakeLists.txt
-echo "include(\$ENV{prefix}/lib/cmake/lapack-3.9.0/lapack-config.cmake)" >> CMakeLists.txt
-echo "file(GLOB SRCS *.c)" >> CMakeLists.txt
-echo "file(GLOB SRCS2 LIB/*.c)" >> CMakeLists.txt
-echo "list(FILTER SRCS2 EXCLUDE REGEX systimer)" >> CMakeLists.txt
-echo "add_library(ZITSOL_1 SHARED \${SRCS} \${SRCS2} LIB/ztools.f)" >> CMakeLists.txt
-echo "target_link_libraries(ZITSOL_1  \${LAPACK_LIBRARIES})" >> CMakeLists.txt
-echo "target_include_directories(ZITSOL_1 PUBLIC LIB)" >> CMakeLists.txt
-echo "install(TARGETS ZITSOL_1)" >> CMakeLists.txt
+cd $WORKSPACE/srcdir/zitsol_mod
 
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJLL_BUILD=1 ..
 make -j${nproc}
 make install
 
