@@ -269,18 +269,18 @@ function build_julia(ARGS, version)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
-        Dependency("OpenLibm_jll"),
-        Dependency("dSFMT_jll"),
-        Dependency("LibUV_jll"),
-        Dependency("utf8proc_jll"),
-        Dependency("MbedTLS_jll"),
-        Dependency("LibSSH2_jll"),
-        Dependency("LibCURL_jll"),
-        Dependency("Zlib_jll"),
-        Dependency("p7zip_jll"),
-        Dependency("MPFR_jll"),
-        Dependency("GMP_jll"),
-        Dependency("Objconv_jll"),
+        BuildDependency("OpenLibm_jll"),
+        BuildDependency("dSFMT_jll"),
+        BuildDependency("LibUV_jll"),
+        BuildDependency("utf8proc_jll"),
+        BuildDependency("MbedTLS_jll"),
+        BuildDependency("LibSSH2_jll"),
+        BuildDependency("LibCURL_jll"),
+        BuildDependency("Zlib_jll"),
+        BuildDependency("p7zip_jll"),
+        BuildDependency("MPFR_jll"),
+        BuildDependency("GMP_jll"),
+        BuildDependency("Objconv_jll"),
     ]
     if version < v"1.5.1"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
@@ -289,38 +289,38 @@ function build_julia(ARGS, version)
     end
 
     if version < v"1.6"
-        push!(dependencies, Dependency("SuiteSparse_jll", compat="5.4.0"))
+        push!(dependencies, BuildDependency("SuiteSparse_jll", compat="5.4.0"))
     else
-        push!(dependencies, Dependency("SuiteSparse_jll"))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
     end
 
     if version < v"1.7"
-        push!(dependencies, Dependency("PCRE2_jll", compat="10.31"))
+        push!(dependencies, BuildDependency("PCRE2_jll", compat="10.31"))
     #else
-    #    push!(dependencies, Dependency("PCRE2_jll", compat="10.36"))
+    #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
 
     if version.major == 1 && version.minor == 3
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.5"))
         # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
         push!(dependencies, Dependency("LLVM_jll", compat="6.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 4
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.5"))
         push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.9"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.9"))
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.10"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.10"))
         push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="1.0.1"))
     elseif version.major == 1 && version.minor == 7
-        #push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.13"))
+        #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
         #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
-        #push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
+        #push!(dependencies, BuildDependency("LibGit2_jll", compat="1.0.1"))
 
         # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
         # for several other standard JLLs.
