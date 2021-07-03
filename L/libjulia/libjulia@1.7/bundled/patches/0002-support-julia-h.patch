@@ -1,0 +1,21 @@
+commit 1b20d2b3aa6dedfba875895adcde86cb668253e5
+Author: Sacha Verweij <sacha.verweij@alumni.stanford.edu>
+Date:   2021-06-21 18:05:57 -0400
+
+    Fix inability to find support/{platform,dirpath}.h from julia_fasttls.h.
+
+diff --git a/src/julia_fasttls.h b/src/julia_fasttls.h
+index 0dc0c05c82..3930a6d8a2 100644
+--- a/src/julia_fasttls.h
++++ b/src/julia_fasttls.h
+@@ -10,8 +10,8 @@ extern "C" {
+ #endif
+ 
+ /* Bring in definitions for `_OS_X_`, `PATH_MAX` and `PATHSEPSTRING`, `jl_ptls_t`, etc... */
+-#include "support/platform.h"
+-#include "support/dirpath.h"
++#include "platform.h"
++#include "dirpath.h"
+ 
+ typedef struct _jl_gcframe_t jl_gcframe_t;
+ 
