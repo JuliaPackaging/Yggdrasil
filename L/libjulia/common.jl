@@ -21,7 +21,7 @@ function libjulia_platforms(julia_version)
 end
 
 # Collection of sources required to build Julia
-function build_julia(ARGS, version)
+function build_julia(ARGS, version::VersionNumber)
     name = "libjulia"
 
     checksums = Dict(
@@ -269,9 +269,9 @@ function build_julia(ARGS, version)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
+        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
-        BuildDependency("LibUV_jll"),
         BuildDependency("utf8proc_jll"),
         BuildDependency("MbedTLS_jll"),
         BuildDependency("LibSSH2_jll"),
