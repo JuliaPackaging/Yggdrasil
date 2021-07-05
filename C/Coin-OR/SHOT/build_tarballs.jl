@@ -50,6 +50,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency("ASL_jll", ASL_version),
     Dependency("Cbc_jll", Cbc_version),
     Dependency("Ipopt_jll", Ipopt_version),
     Dependency("CompilerSupportLibraries_jll"),
