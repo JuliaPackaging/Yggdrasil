@@ -28,7 +28,7 @@ cmake \
     -DGENERATE_EXE=on \
     ..
 
-make
+make -j${nproc}
 make install
 """
 
