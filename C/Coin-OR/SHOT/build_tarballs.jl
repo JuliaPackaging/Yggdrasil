@@ -16,6 +16,17 @@ git submodule update --init --recursive
 mkdir -p build
 cd build
 
+if [[ "${target}" == *-darwin* ]]; then
+    # Work around the issue
+    #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
+    #                     optional.value()->coefficient *= -1.0;
+    #                              ^
+    #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
+    #         constexpr value_type& value() &
+    #                               ^
+    export CXXFLAGS="-mmacosx-version-min=10.14"
+fi
+
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
