@@ -8,11 +8,13 @@ sources = [
         "https://github.com/coin-or/SHOT.git",
         "d2c99ba451689bd4a80b5e170855b94f0d300b05",
     ),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
+atomic_patch -p1 ../patches/0001-Fix-whole-archive-linker-options-for-macOS.patch
 mkdir -p build
 cd build
 
