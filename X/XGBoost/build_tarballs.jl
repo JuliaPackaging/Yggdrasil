@@ -41,10 +41,8 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
-# Disable powerpc for now
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
@@ -57,4 +55,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
