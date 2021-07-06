@@ -1,0 +1,13 @@
+diff --git a/src/odb_pack.c b/src/odb_pack.c
+index 86c858df1..c391bd344 100644
+--- a/src/odb_pack.c
++++ b/src/odb_pack.c
+@@ -535,7 +535,7 @@ static int pack_backend__writepack(struct git_odb_writepack **out,
+ 	GIT_ERROR_CHECK_ALLOC(writepack);
+ 
+ 	if (git_indexer_new(&writepack->indexer,
+-		backend->pack_folder, 0, odb, &opts) < 0) {
++		backend->pack_folder, 0644, odb, &opts) < 0) {
+ 		git__free(writepack);
+ 		return -1;
+ 	}
