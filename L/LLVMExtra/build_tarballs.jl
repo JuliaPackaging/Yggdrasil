@@ -5,10 +5,10 @@ include("../../fancy_toys.jl")
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.2"
+version = v"0.0.3"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "83e890b2ed146a3275be04425ee0e1193c1a1da9")]
+sources = [GitSource(repo, "7373b7a9dc731d2396e6ea4bdcafdd19921e4f7d")]
 
 
 # Bash recipe for building across all platforms
