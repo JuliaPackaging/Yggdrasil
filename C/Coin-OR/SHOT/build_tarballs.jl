@@ -8,6 +8,8 @@ sources = [
         "https://github.com/coin-or/SHOT.git",
         "d2c99ba451689bd4a80b5e170855b94f0d300b05",
     ),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,8 +17,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
 atomic_patch -p1 ../patches/0001-Fix-whole-archive-linker-options-for-macOS.patch
-mkdir -p build
-cd build
 
 if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
@@ -27,11 +27,18 @@ if [[ "${target}" == *-darwin* ]]; then
     #         constexpr value_type& value() &
     #                               ^
     export CXXFLAGS="-mmacosx-version-min=10.15"
-fi
-
-if [[ ${target} == *mingw* ]]; then
+    # ...and install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+elif [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
+
+mkdir -p build
+cd build
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
