@@ -26,7 +26,7 @@ if [[ "${target}" == *-darwin* ]]; then
     #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
     #         constexpr value_type& value() &
     #                               ^
-    export CXXFLAGS="-mmacosx-version-min=10.14"
+    export CXXFLAGS="-mmacosx-version-min=10.15"
 fi
 
 if [[ ${target} == *mingw* ]]; then
