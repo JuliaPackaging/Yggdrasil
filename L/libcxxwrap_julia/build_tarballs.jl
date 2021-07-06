@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.6.0"
+julia_version = v"1.7.0"
 
 name = "libcxxwrap_julia"
-version = v"0.8.6"
+version = v"0.8.7"
 
 is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/JuliaInterop/libcxxwrap-julia.git" : joinpath(ENV["HOME"], "src/julia/libcxxwrap-julia/")
@@ -13,7 +13,7 @@ unpack_target = is_yggdrasil ? "" : "libcxxwrap-julia"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "15d30a1d5952ebacc6bb16a297a236b8be63b763", unpack_target=unpack_target),
+    GitSource(git_repo, "37743e11cda7363a17840fe2353ff78a7e964a2c", unpack_target=unpack_target),
 ]
 
 # Bash recipe for building across all platforms
