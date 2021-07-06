@@ -16,14 +16,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openmp-*/
-cmake . -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DLIBOMP_INSTALL_ALIASES=OFF
+
+if [[ "${target}" == *-freebsd* ]]; then
+    CMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt"
+fi
+cmake . -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" -DLIBOMP_INSTALL_ALIASES=OFF
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# disable for mingw for now, blocking on uasm
+platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.iswindows))
 
 # The products that we will ensure are always built
 products = [
