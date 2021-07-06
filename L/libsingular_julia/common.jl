@@ -33,7 +33,13 @@ install_license LICENSE.md
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
-platforms = filter!(!Sys.iswindows, platforms) # Singular does not support Windows
+filter!(!Sys.iswindows, platforms) # Singular does not support Windows
+# disable experimental platforms for now: support would require rebuilding
+# all dependencies; and it would require them to have julia_compat >= 1.6
+# (so either we drop support for all older Julia versions, or have to build
+# those dependencies twice)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # M1
+filter!(p -> arch(p) != "armv6l", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
