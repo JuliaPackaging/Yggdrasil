@@ -54,6 +54,8 @@ cmake \
 
 make -j${nproc}
 make install
+
+install_license ../LICENSE
 """
 
 products = [
