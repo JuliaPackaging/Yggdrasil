@@ -3,14 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "QPALM"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Benny44/QPALM_vLADEL.git", "e272603e833db9c6b6de0a7ca4630da2a7fd7268"),
     GitSource("https://github.com/Benny44/LADEL.git", "5af7a8d6a7ad76aeb00edf2f673fb3e6b703c5f2"),
     GitSource("https://github.com/kul-optec/QPALM.jl.git", "7b4424ce17ba232aa6e89648032c93572ca5a3e1"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +18,6 @@ cd $WORKSPACE/srcdir
 cd QPALM_vLADEL/
 ln -s ${WORKSPACE}/srcdir/LADEL/* ${WORKSPACE}/srcdir/QPALM_vLADEL/LADEL/
 ln -s ${WORKSPACE}/srcdir/QPALM.jl/* ${WORKSPACE}/srcdir/QPALM_vLADEL/interfaces/QPALM.jl/
-[[ $target == *-freebsd* ]] && patch -p1 < $WORKSPACE/srcdir/patches/freebsd.patch
 mkdir -p build
 cd build
 mkdir lib debug
@@ -63,7 +61,7 @@ install_license LICENSE.LADEL
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -78,4 +76,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.3", preferred_llvm_version=v"11")
