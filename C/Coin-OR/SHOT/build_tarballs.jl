@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
 atomic_patch -p1 ../patches/0001-Fix-whole-archive-linker-options-for-macOS.patch
-
+atomic_patch -p1 ../patches/0002-cmake.patch
 if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
@@ -58,6 +58,7 @@ make install
 
 products = [
     ExecutableProduct("SHOT", :amplexe),
+    LibraryProduct("libSHOTSolver", :libshotsolver),
 ]
 
 dependencies = [
