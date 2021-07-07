@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "QPALM"
-version = v"0.1.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Benny44/QPALM_vLADEL.git", "370ccbeb33baaa566c3de2bde5a69944994593e2"),
-    GitSource("https://github.com/Benny44/LADEL.git", "585b766da25e028f368e4d9039ef69e326baeb5b"),
+    GitSource("https://github.com/Benny44/QPALM_vLADEL.git", "e272603e833db9c6b6de0a7ca4630da2a7fd7268"),
+    GitSource("https://github.com/Benny44/LADEL.git", "5af7a8d6a7ad76aeb00edf2f673fb3e6b703c5f2"),
     GitSource("https://github.com/kul-optec/QPALM.jl.git", "7b4424ce17ba232aa6e89648032c93572ca5a3e1"),
     DirectorySource("./bundled"),
 ]
@@ -78,4 +78,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
