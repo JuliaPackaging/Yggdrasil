@@ -3,7 +3,7 @@ include("../coin-or-common.jl")
 name = "SHOT"
 version = v"1.0.1"
 
-# Not actually v1.0.1. This is the latest commit as of the 08-07-2021 
+# Not actually v1.0.1. This is the latest commit as of the 08-07-2021
 # https://github.com/coin-or/SHOT/commit/080c8c564c157c6a396452ae75238715c3897cb6
 sources = [
     GitSource(
@@ -18,6 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
+# Disable run_source_test in CppAD
+cp ../patches/run_source_test.cmake ThirdParty/CppAD/cmake/run_source_test.cmake
 if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
