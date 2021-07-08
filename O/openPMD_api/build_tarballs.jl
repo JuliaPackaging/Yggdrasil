@@ -15,7 +15,6 @@ sources = [
     # version because the Julia bindings are not release yet
     ArchiveSource("https://github.com/eschnett/openPMD-api/archive/91b07e7ff4ef5b4b5cefb198865af6cbeb81274c.tar.gz",
                   "37a178a0664224c4e53b1a8b169082dc2d342973f45868ab50e67111ef0723cf"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
