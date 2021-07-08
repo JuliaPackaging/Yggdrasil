@@ -44,8 +44,8 @@ products = Product[]
 dependencies = [
     # Essential dependencies
     Dependency("boost_jll"; compat="=1.71.0"),
-    Dependency("GMP_jll", v"6.1.2"; compat=">=4.2"),
-    Dependency("MPFR_jll", v"4.0.2"; compat=">=2.2.1"),
+    Dependency("GMP_jll"; compat="6.1.2"),
+    Dependency("MPFR_jll"; compat="4.0.2"),
     Dependency("Zlib_jll"),
 ]
 
