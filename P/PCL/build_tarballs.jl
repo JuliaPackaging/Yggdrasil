@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PCL"
-version = v"1.11.1"
+version = v"1.12.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/PointCloudLibrary/pcl/releases/download/pcl-$version/source.tar.gz",
-                  "19d1a0bee2bc153de47c05da54fc6feb23393f306ab2dea2e25419654000336e"),
+                  "606a2d5c7af304791731d6b8ea79365bc8f2cd75908006484d71ecee01d9b51c"),
     DirectorySource("./bundled")
 ]
 
@@ -18,12 +18,6 @@ cd $WORKSPACE/srcdir/pcl*
 
 # Patch to simplify CMake checks
 atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
-
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/windows-cases.patch
-    atomic_patch -p1 ../patches/pcl_io-link-ws2_32.patch
-    atomic_patch -p1 ../patches/ssize_t-mingw.patch
-fi
 
 mkdir build && cd build
 
