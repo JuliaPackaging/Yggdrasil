@@ -7,12 +7,16 @@ version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pothosware/SoapySDR.git", "de454b1f64d6a9ffba2dbce66b576db23be2687d")
+    GitSource("https://github.com/pothosware/SoapySDR.git", "de454b1f64d6a9ffba2dbce66b576db23be2687d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SoapySDR/
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p2 ${f}
+done
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
