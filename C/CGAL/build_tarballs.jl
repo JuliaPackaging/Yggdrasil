@@ -33,7 +33,7 @@ install_license CGAL-*/LICENSE*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 # CGAL is, as of 5.0, a header-only library, removing support for lib
