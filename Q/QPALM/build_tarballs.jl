@@ -76,4 +76,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.3", preferred_llvm_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.3")
