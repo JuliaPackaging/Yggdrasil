@@ -1,0 +1,77 @@
+Submodule ThirdParty/CppAD contains modified content
+diff --git a/ThirdParty/CppAD/cmake/run_source_test.cmake b/ThirdParty/CppAD/cmake/run_source_test.cmake
+index 378276aef..0477e338a 100644
+--- a/ThirdParty/CppAD/cmake/run_source_test.cmake
++++ b/ThirdParty/CppAD/cmake/run_source_test.cmake
+@@ -25,26 +25,26 @@
+ # CMAKE_REQUIRED_name is set to the empty string.
+ #
+ MACRO(run_source_test source variable)
+-    IF( DEFINED ${variable} )
+-        MESSAGE(ERROR
+-            "run_source_test: ${variable} is defined before expected"
+-        )
+-    ENDIF( DEFINED ${variable} )
+-    SET(CMAKE_REQUIRED_DEFINITIONS "" )
+-    SET(CMAKE_REQUIRED_INCLUDES    "" )
+-    SET(CMAKE_REQUIRED_LIBRARIES   "" )
+-    IF( cppad_cxx_flags )
+-        SET(CMAKE_REQUIRED_FLAGS   "${cppad_cxx_flags} ${CMAKE_CXX_FLAGS}" )
+-    ELSE( cppad_cxx_flags )
+-        SET(CMAKE_REQUIRED_FLAGS   "" )
+-    ENDIF( cppad_cxx_flags )
+-    CHECK_CXX_SOURCE_RUNS("${source}" ${variable} )
+-    IF( ${variable} )
+-        SET(${variable} 1)
+-    ELSE( ${variable} )
+-        SET(${variable} 0)
+-    ENDIF( ${variable} )
+-    MESSAGE(STATUS "${variable} = ${${variable}}" )
+-    #
+-    SET(CMAKE_REQUIRED_FLAGS        "" )
++    # IF( DEFINED ${variable} )
++    #     MESSAGE(ERROR
++    #         "run_source_test: ${variable} is defined before expected"
++    #     )
++    # ENDIF( DEFINED ${variable} )
++    # SET(CMAKE_REQUIRED_DEFINITIONS "" )
++    # SET(CMAKE_REQUIRED_INCLUDES    "" )
++    # SET(CMAKE_REQUIRED_LIBRARIES   "" )
++    # IF( cppad_cxx_flags )
++    #     SET(CMAKE_REQUIRED_FLAGS   "${cppad_cxx_flags} ${CMAKE_CXX_FLAGS}" )
++    # ELSE( cppad_cxx_flags )
++    #     SET(CMAKE_REQUIRED_FLAGS   "" )
++    # ENDIF( cppad_cxx_flags )
++    # CHECK_CXX_SOURCE_RUNS("${source}" ${variable} )
++    # IF( ${variable} )
++    #     SET(${variable} 1)
++    # ELSE( ${variable} )
++    #     SET(${variable} 0)
++    # ENDIF( ${variable} )
++    # MESSAGE(STATUS "${variable} = ${${variable}}" )
++    # #
++    # SET(CMAKE_REQUIRED_FLAGS        "" )
+ ENDMACRO( run_source_test )
+diff --git a/ThirdParty/CppAD/include/cppad/CMakeLists.txt b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+index 495ab659d..0d6653b31 100644
+--- a/ThirdParty/CppAD/include/cppad/CMakeLists.txt
++++ b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+@@ -140,12 +140,12 @@ IF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+         "cppad_max_num_threads_is_integer_ge_4 is defined before expected"
+     )
+ ENDIF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+-CHECK_CXX_SOURCE_RUNS("${source}" cppad_max_num_threads_is_integer_ge_4 )
+-IF( NOT cppad_max_num_threads_is_integer_ge_4 )
+-    MESSAGE(FATAL_ERROR
+-    "cppad_max_num_threads is not an integer greater than or equal 4"
+-    )
+-ENDIF( NOT cppad_max_num_threads_is_integer_ge_4 )
++# CHECK_CXX_SOURCE_RUNS("${source}" cppad_max_num_threads_is_integer_ge_4 )
++# IF( NOT cppad_max_num_threads_is_integer_ge_4 )
++#     MESSAGE(FATAL_ERROR
++#     "cppad_max_num_threads is not an integer greater than or equal 4"
++#     )
++# ENDIF( NOT cppad_max_num_threads_is_integer_ge_4 )
+ # -----------------------------------------------------------------------------
+ # cppad_has_mkstemp
+ #

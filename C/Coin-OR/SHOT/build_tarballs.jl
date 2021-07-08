@@ -19,7 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
 # Disable run_source_test in CppAD
-cp ../patches/run_source_test.cmake ThirdParty/CppAD/cmake/run_source_test.cmake
+atomic_patch -p1 ../patches/CppAD.patch
 if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
