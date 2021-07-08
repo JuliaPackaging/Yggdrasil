@@ -8,7 +8,7 @@ repo = "https://github.com/maleadt/LLVM.jl.git"
 version = v"0.0.5"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "031e3d8d3c66afcca3b96f6801c063150a325218")]
+sources = [GitSource(repo, "7cde296a11011ab6267502782c394dc62a9a606c")]
 
 
 # Bash recipe for building across all platforms
