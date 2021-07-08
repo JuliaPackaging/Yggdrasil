@@ -59,7 +59,10 @@ install_license ../COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# platforms = supported_platforms()
+# Use only platforms where libcxxwrap_julia is supported.
+include("../../L/libjulia/common.jl")
+platforms = libjulia_platforms(julia_version)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
