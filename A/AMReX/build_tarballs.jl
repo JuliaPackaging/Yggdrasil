@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"21.6.0"
+version = v"21.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.06/amrex-21.06.tar.gz",
-                  "6982c22837d7c0bc4583065d9da55e0aebcf07b54386e4b90a779391fe73fd53")
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.07/amrex-21.07.tar.gz",
+                  "9630b8c0c7ffbf3f5ea4d973a3fdb40b9b10fec0f8df33b9e24d76d2c1d15771")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ cd amrex
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
-    # Apple's Clang does not support OpenMP (at least cmake thinks so)
+    # Apple's Clang does not support OpenMP
     omp_opts="-DAMReX_OMP=OFF"
 else
     omp_opts="-DAMReX_OMP=ON"
@@ -48,8 +48,8 @@ cmake \
     ${ompopts} \
     ${mpiopts} \
     ..
-cmake --build . --config Release --parallel $nproc
-cmake --build . --config Release --parallel $nproc --target install
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 """
 
 # These are the platforms we will build for by default, unless further
