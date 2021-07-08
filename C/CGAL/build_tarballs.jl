@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name     = "CGAL"
-rversion = "5.2.1"
+rversion = "5.3"
 version  = VersionNumber(rversion)
 
 # Collection of sources required to build CGAL
 sources = [
     ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion-library.tar.xz",
-                  "390aa87c4f21609c19397c4b14abb5ccad3edd1e33933a0089b266f67ce7b111"),
+                  "1c9c32814eb9b0abfd368c8145194b49d7c6ade76eec613b1eac6ebb93470bdb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,6 @@ cmake -B build \
   -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
   `# cgal specific` \
-  -DCGAL_HEADER_ONLY=OFF \
   -DWITH_CGAL_Core=ON \
   -DWITH_CGAL_ImageIO=ON \
   -DWITH_CGAL_Qt5=OFF \
@@ -41,19 +40,19 @@ install_license CGAL-*/LICENSE*
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libCGAL", :libCGAL),
-    LibraryProduct("libCGAL_Core", :libCGAL_Core),
-    LibraryProduct("libCGAL_ImageIO", :libCGAL_ImageIO),
+# CGAL is, as of 5.0, a header-only library, removing support for lib
+# compilation in 5.3
+products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Essential dependencies
     Dependency("boost_jll"; compat="=1.71.0"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("GMP_jll", v"6.1.2"; compat=">=4.2"),
+    Dependency("MPFR_jll", v"4.0.2"; compat=">=2.2.1"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
