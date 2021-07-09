@@ -46,7 +46,6 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("GMP_jll"; compat="6.1.2"),
     Dependency("MPFR_jll"; compat="4.0.2"),
-    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs.
