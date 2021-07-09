@@ -6,7 +6,7 @@ version = v"0.1.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sigrokproject/libserialport.git",
-        "6f9b03e597ea7200eb616a4e410add3dd1690cb1"
+        "6f9b03e597ea7200eb616a4e410add3dd1690cb1")
 ]
 
 # Bash recipe for building across all platforms
