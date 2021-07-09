@@ -29,7 +29,7 @@ function build_julia(ARGS, version::VersionNumber)
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
         v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
         v"1.6.0" => "c253360d29abb9a3a9e6e01493e0f7bb537d88014fd58ac561b5ba30fcb44cad",
-        v"1.7.0-beta2" => "7bd9ae5b20f9a03ef97f830285007eaa318a780675ab59b6528cd8ef242aa8cb",
+        v"1.7.0-beta3" => "d2f30bd0b25b9cb8c837276342710643dd9420baaa4d27bcb583a3c7f66563f4",
     )
 
     sources = [
