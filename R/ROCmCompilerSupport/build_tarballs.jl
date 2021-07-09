@@ -14,18 +14,20 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-ln -s $WORKSPACE/destdir/tools/* $WORKSPACE/destdir/bin/
+ln -s ${bindir}/../tools/* ${bindir}/
 
 cd ${WORKSPACE}/srcdir/ROCm-CompilerSupport*/lib/comgr
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-1031.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-tests.patch
 mkdir build && cd build
-export CC=clang
-export CXX=clang++
 # TODO: -DROCM_DIR=${prefix}
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
+      -DLLVM_DIR="${prefix}/lib/cmake/llvm" \
+      -DClang_DIR="${prefix}/lib/cmake/clang" \
+      -DLLD_DIR="${prefix}/lib/cmake/ldd" \
       ..
 make -j${nproc}
 make install
@@ -51,7 +53,7 @@ products = [
 dependencies = [
     Dependency("hsa_rocr_jll"),
     Dependency("ROCmDeviceLibs_jll"),
-    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
+    # HostBuildsependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
     BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
 ]
 
