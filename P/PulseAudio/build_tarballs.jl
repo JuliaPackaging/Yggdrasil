@@ -158,8 +158,10 @@ dependencies = [
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
     Dependency(PackageSpec(name="Libtool_jll", uuid="a76c16ae-fb8f-5ff0-8826-da3b7a640f0b"))
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
     Dependency(PackageSpec(name="SBC_jll", uuid="da37f231-8920-5702-a09a-bdd970cb6ddc"))
     Dependency(PackageSpec(name="SoXResampler_jll", uuid="fbe68eb6-6641-54c6-99e3-f7c7c4d73a57"))
+    Dependency(PackageSpec(name="SpeexDSP_jll", uuid="f2f9631b-9a4e-5b48-9975-88f638ec36a7"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
