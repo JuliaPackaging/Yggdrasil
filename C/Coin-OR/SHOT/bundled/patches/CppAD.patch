@@ -1,0 +1,111 @@
+Submodule ThirdParty/CppAD contains modified content
+diff --git a/ThirdParty/CppAD/CMakeLists.txt b/ThirdParty/CppAD/CMakeLists.txt
+index 08ceb1736..e97b6a020 100644
+--- a/ThirdParty/CppAD/CMakeLists.txt
++++ b/ThirdParty/CppAD/CMakeLists.txt
+@@ -45,7 +45,7 @@ INCLUDE_DIRECTORIES( ${cppad_SOURCE_DIR}/include )
+ # return zero status. You can set
+ # CMAKE_REQUIRED_LIBRARIES, CMAKE_REQUIRED_FLAGS and CMAKE_REQUIRED_INCLUDES
+ # accordingly if additional libraries or compiler flags are required.
+-INCLUDE(CheckCXXSourceRuns)
++INCLUDE(CheckCXXSourceCompiles)
+ 
+ # ============================================================================
+ # Some local cmake language
+diff --git a/ThirdParty/CppAD/cmake/run_source_test.cmake b/ThirdParty/CppAD/cmake/run_source_test.cmake
+index 378276aef..e937a2b4d 100644
+--- a/ThirdParty/CppAD/cmake/run_source_test.cmake
++++ b/ThirdParty/CppAD/cmake/run_source_test.cmake
+@@ -38,7 +38,7 @@ MACRO(run_source_test source variable)
+     ELSE( cppad_cxx_flags )
+         SET(CMAKE_REQUIRED_FLAGS   "" )
+     ENDIF( cppad_cxx_flags )
+-    CHECK_CXX_SOURCE_RUNS("${source}" ${variable} )
++    CHECK_CXX_SOURCE_COMPILES("${source}" ${variable} )
+     IF( ${variable} )
+         SET(${variable} 1)
+     ELSE( ${variable} )
+diff --git a/ThirdParty/CppAD/include/cppad/CMakeLists.txt b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+index 495ab659d..5b3fd0687 100644
+--- a/ThirdParty/CppAD/include/cppad/CMakeLists.txt
++++ b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+@@ -140,7 +140,7 @@ IF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+         "cppad_max_num_threads_is_integer_ge_4 is defined before expected"
+     )
+ ENDIF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+-CHECK_CXX_SOURCE_RUNS("${source}" cppad_max_num_threads_is_integer_ge_4 )
++CHECK_CXX_SOURCE_COMPILES("${source}" cppad_max_num_threads_is_integer_ge_4 )
+ IF( NOT cppad_max_num_threads_is_integer_ge_4 )
+     MESSAGE(FATAL_ERROR
+     "cppad_max_num_threads is not an integer greater than or equal 4"
+diff --git a/src/ModelingSystem/ModelingSystemAMPL.cpp b/src/ModelingSystem/ModelingSystemAMPL.cpp
+index 6ee9b010..0d26cba2 100644
+--- a/src/ModelingSystem/ModelingSystemAMPL.cpp
++++ b/src/ModelingSystem/ModelingSystemAMPL.cpp
+@@ -416,12 +416,12 @@ public:
+     private:
+         AMPLProblemHandler& amplph;
+ 
+-        // type of suffix that is handled, or IGNORE if unsupported suffix
++        // type of suffix that is handled, or SUFFIX_IGNORE if unsupported suffix
+         enum
+         {
+-            IGNORE,
+-            VARSOSNO,
+-            VARREF,
++            SUFFIX_IGNORE,
++            SUFFIX_VARSOSNO,
++            SUFFIX_VARREF,
+         } suffix;
+ 
+     public:
+@@ -430,7 +430,7 @@ public:
+             fmtold::StringRef name, ///< name of suffix
+             mp::suf::Kind kind ///< whether suffix applies to var, cons, etc
+             )
+-            : amplph(amplph_), suffix(IGNORE)
++            : amplph(amplph_), suffix(SUFFIX_IGNORE)
+         {
+             switch(kind)
+             {
+@@ -445,12 +445,12 @@ public:
+                 if(strncmp(name.data(), "sosno", name.size()) == 0)
+                 {
+                     // SOS membership
+-                    suffix = VARSOSNO;
++                    suffix = SUFFIX_VARSOSNO;
+                 }
+                 else if(strncmp(name.data(), "ref", name.size()) == 0)
+                 {
+                     // SOS weights
+-                    suffix = VARREF;
++                    suffix = SUFFIX_VARREF;
+                     amplph.sosweights.resize(amplph.destination->allVariables.size(), 0);
+                 }
+                 else
+@@ -481,15 +481,15 @@ public:
+             assert(index >= 0);
+             switch(suffix)
+             {
+-            case IGNORE:
++            case SUFFIX_IGNORE:
+                 return;
+ 
+-            case VARSOSNO:
++            case SUFFIX_VARSOSNO:
+                 // remember that variable index belongs to SOS identified by value
+                 amplph.sosvars[(int)value].push_back(index);
+                 break;
+ 
+-            case VARREF:
++            case SUFFIX_VARREF:
+                 // remember that variable index has weight value
+                 amplph.sosweights[index] = (int)value;
+                 break;
+@@ -703,4 +703,4 @@ E_ProblemCreationStatus ModelingSystemAMPL::createProblem(ProblemPtr& problem, c
+ 
+ void ModelingSystemAMPL::finalizeSolution() { }
+ 
+-} // Namespace SHOT
+\ No newline at end of file
++} // Namespace SHOT

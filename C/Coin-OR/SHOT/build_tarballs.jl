@@ -3,10 +3,12 @@ include("../coin-or-common.jl")
 name = "SHOT"
 version = v"1.0.1"
 
+# Not actually v1.0.1. This is the latest commit as of the 08-07-2021
+# https://github.com/coin-or/SHOT/commit/080c8c564c157c6a396452ae75238715c3897cb6
 sources = [
     GitSource(
         "https://github.com/coin-or/SHOT.git",
-        "d2c99ba451689bd4a80b5e170855b94f0d300b05",
+        "080c8c564c157c6a396452ae75238715c3897cb6",
     ),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
@@ -16,8 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
-atomic_patch -p1 ../patches/0001-Fix-whole-archive-linker-options-for-macOS.patch
-atomic_patch -p1 ../patches/0002-cmake.patch
+# Disable run_source_test in CppAD
+atomic_patch -p1 ../patches/CppAD.patch
 if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
