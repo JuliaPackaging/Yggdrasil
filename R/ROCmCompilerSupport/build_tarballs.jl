@@ -44,14 +44,15 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libamd_comgr"], :libamd_comgr),
+    LibraryProduct(["libamd_comgr"], :libamd_comgr, dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("hsa_rocr_jll"),
     Dependency("ROCmDeviceLibs_jll"),
-    Dependency("LLVM_full_jll", v"11.0.1"),
+    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
