@@ -78,7 +78,8 @@ dependencies = [
     Dependency("CFITSIO_jll", v"3.49"; compat="~3.49"),
     Dependency("GSL_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
     # This is a bit complicated because LibGit2 is a dependency of Julia.
     # `LibGit2_jll` v1.2.3, corresponding to upstream v1.1.0, is what is used in
     # Julia v1.6.

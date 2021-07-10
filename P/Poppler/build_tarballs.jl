@@ -67,7 +67,8 @@ dependencies = [
     # Dependency("GTK3_jll"),
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
     Dependency("OpenJpeg_jll"),
     # Dependency("gdk_pixbuf_jll"),
     Dependency("libpng_jll"),
