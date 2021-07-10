@@ -9,13 +9,17 @@ version = v"5.2.1"
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(version).tar.gz",
                   "31da5562f44c5f15d63340a09a4fd62b48c45620cd302f77a6d9acf0077879bd"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/giflib-*/
+# Apply patch to make it possible to build for non Linux-like platforms.
+# Adapted from also https://sourceforge.net/p/giflib/bugs/133/
+atomic_patch -p1 ../patches/makefile.patch
 make -j${nproc}
-make install PREFIX="${prefix}" LIBDIR="${libdir}"
+make install
 rm "${libdir}/libgif.a"
 install_license COPYING
 """
