@@ -39,7 +39,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="LittleCMS_jll", uuid="d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"))
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
-    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
+    Dependency("Libtiff_jll"; compat="4.3.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -34,7 +34,8 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll")
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

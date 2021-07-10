@@ -113,7 +113,8 @@ function configure(version_offset, min_julia_version, proj_jll_version)
         Dependency("OpenJpeg_jll"),
         Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
         Dependency("Zstd_jll"),
-        Dependency("Libtiff_jll"),
+        # TODO: v4.3.0 is available, use that next time
+        Dependency("Libtiff_jll"; compat="4.1.0"),
         Dependency("libgeotiff_jll"),
     ]
 

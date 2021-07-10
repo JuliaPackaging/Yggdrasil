@@ -54,7 +54,8 @@ dependencies = [
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
     Dependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_kbproto_jll"),

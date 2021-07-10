@@ -88,7 +88,8 @@ function configure(version_offset, min_julia_version)
         # Host SQLite needed to build proj.db
         HostBuildDependency("SQLite_jll"),
         Dependency("SQLite_jll"),
-        Dependency("Libtiff_jll"),
+        # TODO: v4.3.0 is available, use that next time
+        Dependency("Libtiff_jll"; compat="4.1.0"),
         Dependency("Zlib_jll"),
     ]
 
