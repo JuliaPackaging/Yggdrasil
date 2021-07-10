@@ -43,7 +43,7 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"),
     Dependency("Leptonica_jll"),
     Dependency("CompilerSupportLibraries_jll"),
