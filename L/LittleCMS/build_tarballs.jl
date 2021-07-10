@@ -3,16 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "LittleCMS"
-version = v"2.9.0"
+version = v"2.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/lcms/lcms2-2.9.tar.gz", "48c6fdf98396fa245ed86e622028caf49b96fa22f3e5734f853f806fbc8e7d20")
+    ArchiveSource("https://github.com/mm2/Little-CMS/releases/download/lcms$(version.major).$(version.minor)/lcms2-$(version.major).$(version.minor).tar.gz",
+                  "18663985e864100455ac3e507625c438c3710354d85e5cbb7cd4043e11fe10f5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lcms2-2.9/
+cd $WORKSPACE/srcdir/lcms2*/
 if [[ "${target}" == powerpc64le-* ]]; then
     autoreconf -vi
 fi
@@ -24,8 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -42,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
