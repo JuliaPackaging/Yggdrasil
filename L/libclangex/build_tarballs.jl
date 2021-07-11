@@ -29,7 +29,7 @@ make install
 install_license ../COPYRIGHT ../LICENSE-APACHE ../LICENSE-MIT
 """
 
-function configure(julia_version, llvm_version)
+function configure(julia_version, llvm_version, clang_version)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
@@ -45,7 +45,7 @@ function configure(julia_version, llvm_version)
 
     dependencies = [
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
-        Dependency("Clang_jll", llvm_version; compat=string(llvm_version))
+        Dependency("Clang_jll", clang_version; compat=string(clang_version))
         #Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
         # ^ is given through julia_version tag
     ]
@@ -55,13 +55,13 @@ end
 
 # TODO: Don't require build-id on LLVM version
 supported = (
-    (v"1.6", v"11.0.1"),
-    (v"1.7", v"12.0.0"),
-    (v"1.8", v"12.0.0"),
+    (v"1.6", v"11.0.1+3", v"11.0.1"),
+    (v"1.7", v"12.0.0+0", v"12.0.0"),
+    (v"1.8", v"12.0.0+0", v"12.0.0"),
 )
 
-for (julia_version, llvm_version) in supported
-    platforms, products, dependencies = configure(julia_version, llvm_version)
+for (julia_version, llvm_version, clang_version) in supported
+    platforms, products, dependencies = configure(julia_version, llvm_version, clang_version)
 
     any(should_build_platform.(triplet.(platforms))) || continue
 
