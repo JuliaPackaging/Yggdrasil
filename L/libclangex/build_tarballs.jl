@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl")
 
 name = "libclangex"
-version = v"0.0.1"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "d9bc41481e66e22ff700668bc4897b0ed059b120")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "2770c58ab8927b069a473bbfae8e94da01746266")
 ]
 
 # Bash recipe for building across all platforms
