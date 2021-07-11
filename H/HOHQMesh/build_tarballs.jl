@@ -7,7 +7,7 @@ version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v1.0.1/HOHQMesh-v1.0.1.tar.gz", "83c2c48aec9cd6b1ade0d9b04a0d68782ea7e0a5d9fb28ac7510d4ad401e64ee"),
+    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "83c2c48aec9cd6b1ade0d9b04a0d68782ea7e0a5d9fb28ac7510d4ad401e64ee"),
 ]
 
 # Bash recipe for building across all platforms
