@@ -45,6 +45,7 @@ function configure(julia_version, llvm_version)
 
     dependencies = [
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
+        Dependency("Clang_jll", llvm_version; compat=string(llvm_version))
         #Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
         # ^ is given through julia_version tag
     ]
@@ -54,9 +55,9 @@ end
 
 # TODO: Don't require build-id on LLVM version
 supported = (
-    (v"1.6", v"11.0.1+3"),
-    (v"1.7", v"12.0.0+0"),
-    (v"1.8", v"12.0.0+0"),
+    (v"1.6", v"11.0.1"),
+    (v"1.7", v"12.0.0"),
+    (v"1.8", v"12.0.0"),
 )
 
 for (julia_version, llvm_version) in supported
