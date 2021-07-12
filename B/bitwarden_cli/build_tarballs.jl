@@ -24,7 +24,7 @@ install_license LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"),
+    Platform("x86_64", "linux"; cxxstring_abi="cxx11"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows")
 ]
