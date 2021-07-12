@@ -16,9 +16,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-file = "bw${exeext}"
-cp ${target}/${file} ${bindir}
-chmod +x ${bindir}/*
+cp ${target}/bw ${bindir}
+chmod +x ${bindir}/bw
 install_license LICENSE.txt
 """
 
