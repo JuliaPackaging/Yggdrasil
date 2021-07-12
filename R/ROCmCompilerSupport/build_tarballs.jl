@@ -17,9 +17,20 @@ script = raw"""
 ln -s ${bindir}/../tools/* ${bindir}/
 
 cd ${WORKSPACE}/srcdir/ROCm-CompilerSupport*/lib/comgr
+
+# first manually build bc2h utility
+cd cmake && mkdir bc2h && cd bc2h
+cp ../bc2h.cmake CMakeLists.txt
+CC=$HOSTCC cmake -DCMAKE_C_COMPILER=$HOSTCC .
+make
+cd ../..
+
+# then build everything else
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-1031.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-tests.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-bc2h.patch
 mkdir build && cd build
+cp ../cmake/bc2h/bc2h .
 # TODO: -DROCM_DIR=${prefix}
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -29,9 +40,8 @@ cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DClang_DIR="${prefix}/lib/cmake/clang" \
       -DLLD_DIR="${prefix}/lib/cmake/ldd" \
       ..
-make -j${nproc}
+PATH=../cmake/bc2h:$PATH make -j${nproc}
 make install
-ldd $WORKSPACE/destdir/lib64/libamd_comgr.so
 
 find $WORKSPACE/destdir/bin -type l -delete
 """
@@ -39,21 +49,20 @@ find $WORKSPACE/destdir/bin -type l -delete
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
+    # TODO: cxx03
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
-platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libamd_comgr"], :libamd_comgr, dont_dlopen=true),
+    LibraryProduct(["libamd_comgr"], :libamd_comgr; dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("hsa_rocr_jll"),
     Dependency("ROCmDeviceLibs_jll"),
-    # HostBuildsependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
     BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
 ]
 
