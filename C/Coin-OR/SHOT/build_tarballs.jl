@@ -3,12 +3,12 @@ include("../coin-or-common.jl")
 name = "SHOT"
 version = v"1.0.1"
 
-# Not actually v1.0.1. This is the latest commit as of the 08-07-2021
-# https://github.com/coin-or/SHOT/commit/080c8c564c157c6a396452ae75238715c3897cb6
+# Not actually v1.0.1. This is the latest commit as of the 13-07-2021
+# https://github.com/coin-or/SHOT/commit/edbff51d392d2f347331a28364cbffa89b44218f
 sources = [
     GitSource(
         "https://github.com/coin-or/SHOT.git",
-        "080c8c564c157c6a396452ae75238715c3897cb6",
+        "edbff51d392d2f347331a28364cbffa89b44218f",
     ),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
