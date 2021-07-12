@@ -16,7 +16,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-cp ${target}/bw ${bindir}
+if [[ "${target}" != *-mingw* ]]; then
+    subdir="bin/"
+fi
+cp ${target}/${subdir}bw ${bindir}
 chmod +x ${bindir}/bw
 install_license LICENSE.txt
 """
