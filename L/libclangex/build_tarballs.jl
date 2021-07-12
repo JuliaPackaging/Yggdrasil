@@ -44,8 +44,9 @@ function configure(julia_version, llvm_version, clang_version)
     ]
 
     dependencies = [
-        BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
-        Dependency("Clang_jll", clang_version; compat=string(clang_version))
+        # BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version)),
+        Dependency("libLLVM_jll", llvm_version, compat=string(clang_version)), 
+        Dependency("Clang_jll", clang_version; compat=string(clang_version)),
         #Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
         # ^ is given through julia_version tag
     ]
