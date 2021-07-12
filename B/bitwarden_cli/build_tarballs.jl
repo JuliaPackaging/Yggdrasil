@@ -16,12 +16,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-if [[ "${target}" != *-mingw* ]]; then
-    subdir="bin/"
-fi
-ls ${target}
-cp ${target}/${subdir}bw ${bindir}
-chmod +x ${bindir}/bw
+file = "bw${exeext}"
+cp ${target}/${file} ${bindir}
+chmod +x ${bindir}/*
 install_license LICENSE.txt
 """
 
