@@ -19,6 +19,7 @@ mkdir -p "${bindir}"
 if [[ "${target}" != *-mingw* ]]; then
     subdir="bin/"
 fi
+ls ${target}
 cp ${target}/${subdir}bw ${bindir}
 chmod +x ${bindir}/bw
 install_license LICENSE.txt
