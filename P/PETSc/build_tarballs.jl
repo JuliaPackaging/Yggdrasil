@@ -23,7 +23,7 @@ if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 else
-    MPI_LIBS="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]"
+    MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
 fi
 
 ./configure --prefix=${prefix} \
