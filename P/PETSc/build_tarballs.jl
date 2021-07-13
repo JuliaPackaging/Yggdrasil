@@ -30,6 +30,7 @@ fi
     CC=${CC} \
     FC=${FC} \
     CXX=${CXX} \
+    CFLAGS='-fno-stack-protector' \
     COPTFLAGS='-O3' \
     CXXOPTFLAGS='-O3' \
     FOPTFLAGS='-O3' \
