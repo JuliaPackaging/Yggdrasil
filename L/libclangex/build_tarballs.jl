@@ -10,7 +10,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "2770c58ab8927b069a473bbfae8e94da01746266")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "f7e5278397aefec99f18bf24875ba9afae8540e5")
 ]
 
 # Bash recipe for building across all platforms
@@ -42,10 +42,10 @@ function configure(julia_version, llvm_version)
     products = Product[
         LibraryProduct("libclangex", :libclangex)
     ]
-
+    # ver = "$(llvm_version.major).$(llvm_version.minor).$(llvm_version.patch)"
     dependencies = [
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
-        #Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1"))
+        # Dependency("LLVM_full_jll", llvm_version, compat=ver),
         # ^ is given through julia_version tag
     ]
 
