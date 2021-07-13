@@ -10,8 +10,9 @@ version = VersionNumber(upstream_version.major, upstream_version.minor, upstream
 
 # Collection of sources required to build libpolymake_julia
 sources = [
-    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
-                  "f7733a8eb2b2e75d63db6cb6b035b9fae24ce7f6c2992253a3df0529a914ad37"),
+#    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
+#                  "f7733a8eb2b2e75d63db6cb6b035b9fae24ce7f6c2992253a3df0529a914ad37"),
+    GitSource("https://github.com/oscar-system/libpolymake-julia.git", "ae511cfa548044a81918fe885af5226bd4bb8cfc"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +31,7 @@ cmake libpolymake-j*/ -B build \
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
-install_license $WORKSPACE/srcdir/libpolymake-j*/LICENSE.md
+install_license libpolymake-j*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
