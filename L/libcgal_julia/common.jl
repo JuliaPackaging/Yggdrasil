@@ -57,7 +57,7 @@ install_license $jlcgaldir/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(v"1.6") # HACK: filter out experimental platforms
+platforms = libjulia_platforms(julia_version)
 # generates an abundance of linker errors and notes about using older versions
 # of GCC.  Among many things, this could be related to boost as well.  However,
 # requiring newer versions would, much like libsingular_julia, require the
@@ -65,6 +65,9 @@ platforms = libjulia_platforms(v"1.6") # HACK: filter out experimental platforms
 # notices when configured against newer versions of boost, so it's probably best
 # to avoid it for now as well.
 filter!(p -> arch(p) ≠ "armv7l", platforms)
+# filter experimental platforms
+filter!(p -> arch(p) ≠ "armv6l", platforms)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -85,5 +88,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"9",
+               preferred_gcc_version=gcc_version,
                julia_compat = "$(julia_version.major).$(julia_version.minor)")
