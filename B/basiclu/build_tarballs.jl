@@ -14,11 +14,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+if [[ ${target} == *mingw32* ]]; then
+    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+        atomic_patch -p1 ${f}
+    done
+end
 cd basiclu/
-make
+if [[ ${target} == *mingw32* ]]; then
+    make CC99="cc -std=c99"
+elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]];
+    make CC99="cc -std=c99" -D_DARWIN_C_SOURCE
+else
+    make CC99="cc -std=c99" LDLIBS="-lm -lrt"
+fi
 cp -r lib/ $prefix
 """
 
