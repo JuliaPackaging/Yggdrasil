@@ -9,7 +9,7 @@ function configure(version_offset, min_julia_version)
     # So for example version 2.6.3 would become 200.600.300.
 
     name = "NetCDF"
-    upstream_version = v"4.7.4"
+    upstream_version = v"4.8.0"
     version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                             upstream_version.minor * 100 + version_offset.minor,
                             upstream_version.patch * 100 + version_offset.patch)
@@ -17,7 +17,7 @@ function configure(version_offset, min_julia_version)
     # Collection of sources required to build NetCDF
     sources = [
         ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(upstream_version).zip",
-                      "170c9c9020f8909811b06e1034d5ea9288b3d5bd90793e3dd27490191faa7566")
+                      "b34f217f55e8d13fe91943344dd34e7917c3d605803322da59c23bd2989d07bc")
     ]
 
     # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -25,7 +25,10 @@ function configure(version_offset, min_julia_version)
     script = raw"""
 cd $WORKSPACE/srcdir/netcdf-c-*
 
-export CPPFLAGS="-I${includedir}"
+# -DH5_USE_110_API work-around for the error:
+# recompile your libhdf5 install using '--with-default-api-version=v18'
+# https://github.com/Unidata/netcdf-c/issues/1978
+export CPPFLAGS="-I${includedir} -DH5_USE_110_API"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 
@@ -73,7 +76,7 @@ nc-config --all
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency(PackageSpec(name="HDF5_jll", version="1.12.0")),
+        Dependency("HDF5_jll", v"1.12.0"; compat="=1.12.0"),
         Dependency("Zlib_jll"),
     ]
 
