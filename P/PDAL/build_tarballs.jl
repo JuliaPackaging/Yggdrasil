@@ -43,6 +43,9 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-portableendian.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sbetwriter.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sparsematrix.patch
+    if [[ "${nbits}" -eq 32 ]]; then
+        atomic_patch -p1 ../patches/mingw-trapoline-stdcall.patch
+    fi
 fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
