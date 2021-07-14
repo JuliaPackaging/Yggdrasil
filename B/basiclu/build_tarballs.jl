@@ -27,7 +27,8 @@ elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
 else
     make CC99="cc -std=c99" LDLIBS="-lm -lrt"
 fi
-cp -r lib/ $prefix
+cp lib/* $libdir
+cp include/* $includedir
 """
 
 # These are the platforms we will build for by default, unless further
