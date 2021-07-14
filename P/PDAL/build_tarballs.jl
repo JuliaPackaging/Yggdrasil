@@ -19,6 +19,10 @@ cd $WORKSPACE/srcdir/PDAL-*/
 if [[ "${target}" == x86_64-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
+    # Convince to link `pdal` to libcurl.  Honestly I don't understand why this
+    # doesn't work out-of-the-box, like it does for other platforms, this is a
+    # quick patch to make it work.
+    atomic_patch -p1 ../patches/x86_64-linux-musl-pdal-curl.patch
 fi
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
@@ -45,7 +49,6 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 
 # Build dimbuilder with the host compiler.
 (
-
     # For some reason, CMake seems to ignore the toolchain file, let's force the
     # compiler with the CXX environment variable
     export CXX=${HOST_CXX}
