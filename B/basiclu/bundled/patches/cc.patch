@@ -1,0 +1,22 @@
+diff --git before/basiclu/config.mk after/basiclu/config.mk
+index 981f6a4..10eccad 100644
+--- before/basiclu/config.mk
++++ after/basiclu/config.mk
+@@ -40,15 +40,14 @@ BASICLU_VERSION = 2.1.0
+     # standard conformant compiler. The default assumes that the system provides
+     # the c99 command.
+ 
+-    CC99 ?= c99
+-    #CC99 ?= gcc -std=c99
++    CC99 ?= cc -std=c99
+ 
+     #---------------------------------------------------------------------------
+     # required libraries
+     #---------------------------------------------------------------------------
+ 
+     # basiclu requires the -lm (Math) libraries.
+-    LDLIBS = -lm
++    LDLIBS = -lm -lrt
+ 
+     #---------------------------------------------------------------------------
+     # shell commands
