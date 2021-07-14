@@ -22,7 +22,7 @@ end
 cd basiclu/
 if [[ ${target} == *mingw32* ]]; then
     make CC99="cc -std=c99"
-elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]];
+elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     make CC99="cc -std=c99" -D_DARWIN_C_SOURCE
 else
     make CC99="cc -std=c99" LDLIBS="-lm -lrt"
