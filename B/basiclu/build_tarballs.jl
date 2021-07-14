@@ -18,7 +18,7 @@ if [[ ${target} == *mingw32* ]]; then
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
     done
-end
+fi
 cd basiclu/
 if [[ ${target} == *mingw32* ]]; then
     make CC99="cc -std=c99"
