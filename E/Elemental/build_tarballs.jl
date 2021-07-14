@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Elemental"
-version = v"0.87.7"
+version = v"1.5.1"
 
 # Collection of sources required to build Elemental
 sources = [
-    GitSource("https://github.com/elemental/Elemental.git",
-              "477e503a7a840cc1a75173552711b980505a0b06"),
+    GitSource("https://github.com/llnl/Elemental",
+              "85a74ed25461bd8d8c638105663b6ea663451db8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,11 +29,11 @@ else
   BLAS_INT64="OFF"
 fi
 
-mkdir "$WORKSPACE/srcdir/$SRC_NAME/build"
-cd "$WORKSPACE/srcdir/$SRC_NAME/build"
+cd ${WORKSPACE}/srcdir/Elemental
+mkdir -p build && cd build
 
 cmake \
-  -DCMAKE_INSTALL_PREFIX="$prefix" \
+  -DCMAKE_INSTALL_PREFIX="${prefix}" \
   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
   -DCMAKE_BUILD_TYPE="Release" \
   -DEL_USE_64BIT_INTS="$INT64" \
@@ -46,7 +46,7 @@ cmake \
   -DLAPACK_LIBRARIES="$BLAS_LAPACK_LIB" \
   -DEL_BLAS_SUFFIX="$BLAS_LAPACK_SUFFIX" \
   -DEL_LAPACK_SUFFIX="$BLAS_LAPACK_SUFFIX" \
-  "$WORKSPACE/srcdir/$SRC_NAME"
+  ..
 
 make "-j$nproc"
 make install
@@ -54,7 +54,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 platforms = expand_cxxstring_abis(platforms)
 filter!(!Sys.iswindows, platforms)
 
@@ -72,4 +72,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
