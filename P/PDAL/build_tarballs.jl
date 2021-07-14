@@ -26,9 +26,18 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Replace-non-standard-endian-functions-with-alternati.patch
-    #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Use-consistent-lowercase-for-Windows-header-files.patch
-    #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Fix-type-of-arguments-of-ifstream-ofstream.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bulk-mingw-patches.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-arbiter.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-charbuf.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-cmake-patches.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-delete-japanese-unicode-test.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-dynamiclibrary.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-fileutils.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-greedyprojection.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-optech.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-pointlayout.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-portableendian.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sbetwriter.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sparsematrix.patch
 fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
