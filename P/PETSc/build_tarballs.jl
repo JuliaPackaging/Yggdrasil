@@ -85,6 +85,8 @@ build_petsc()
     fi
     # Remove useless links
     rm ${prefix}/lib/libpetsc.*
+    # Remove duplicated file
+    rm ${prefix}/lib/pkgconfig/PETSc.pc
 }
 
 build_petsc double real Int32
