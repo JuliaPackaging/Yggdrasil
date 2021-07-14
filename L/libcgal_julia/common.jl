@@ -57,7 +57,7 @@ install_license $jlcgaldir/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = libjulia_platforms(v"1.6") # HACK: filter out experimental platforms
 # generates an abundance of linker errors and notes about using older versions
 # of GCC.  Among many things, this could be related to boost as well.  However,
 # requiring newer versions would, much like libsingular_julia, require the
