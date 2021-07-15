@@ -116,4 +116,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # PDAL GitHub CI scripts currently run on GCC 7.5, so we'll match them in major version at least
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.6")
