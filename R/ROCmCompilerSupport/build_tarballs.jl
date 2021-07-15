@@ -57,7 +57,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libamd_comgr"], :libamd_comgr; dont_dlopen=true),
+    LibraryProduct(["libamd_comgr"], :libamd_comgr),
 ]
 
 # Dependencies that must be installed before this package can be built
