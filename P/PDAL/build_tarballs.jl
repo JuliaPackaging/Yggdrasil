@@ -29,7 +29,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
 # We'll build `dimbuilder` separately.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
 if [[ "${target}" == *-mingw* ]]; then
-    #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Replace-non-standard-endian-functions-with-alternati.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-arbiter.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-charbuf.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-cmake-macros.patch
