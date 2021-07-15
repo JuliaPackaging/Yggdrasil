@@ -96,7 +96,7 @@ ninja install
 #    Platform("x86_64", "linux"; libc = "glibc")
 #]
 
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built
