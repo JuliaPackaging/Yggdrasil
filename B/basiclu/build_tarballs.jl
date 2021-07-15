@@ -18,6 +18,9 @@ if [[ ${target} == *mingw32* ]]; then
     for f in ${WORKSPACE}/srcdir/patches/*.patch; do
         atomic_patch -p1 ${f}
     done
+    UNAME="Windows"
+else
+    UNAME="$(uname)"
 fi
 cd basiclu/
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -25,7 +28,7 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *freebsd* ]]; then
 elif [[ "${target}" == *-linux-* ]]; then
     LDLIBS="-lm -lrt"
 fi
-make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}"
+make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
 cp lib/* $libdir
 """
 
