@@ -20,13 +20,12 @@ if [[ ${target} == *mingw32* ]]; then
     done
 fi
 cd basiclu/
-if [[ ${target} == *mingw32* ]]; then
-    make CC99="cc -std=c99"
-elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    make CC99="cc -std=c99" -D_DARWIN_C_SOURCE="ON"
-else
-    make CC99="cc -std=c99" LDLIBS="-lm -lrt"
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *freebsd* ]]; then
+    CFLAGS="-D_DARWIN_C_SOURCE"
+elif [[ "${target}" == *-linux-* ]]; then
+    LDLIBS="-lm -lrt"
 fi
+make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}"
 cp lib/* $libdir
 """
 
