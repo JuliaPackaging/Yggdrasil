@@ -29,6 +29,7 @@ cd ../..
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-1031.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-tests.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-bc2h.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-objdump-clopt.patch
 mkdir build && cd build
 cp ../cmake/bc2h/bc2h .
 # TODO: -DROCM_DIR=${prefix}
