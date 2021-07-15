@@ -23,12 +23,11 @@ cd basiclu/
 if [[ ${target} == *mingw32* ]]; then
     make CC99="cc -std=c99"
 elif [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    make CC99="cc -std=c99" -D_DARWIN_C_SOURCE
+    make CC99="cc -std=c99" -D_DARWIN_C_SOURCE="ON"
 else
     make CC99="cc -std=c99" LDLIBS="-lm -lrt"
 fi
 cp lib/* $libdir
-cp include/* $includedir
 """
 
 # These are the platforms we will build for by default, unless further
