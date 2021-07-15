@@ -23,12 +23,16 @@ else
     UNAME="$(uname)"
 fi
 cd basiclu/
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *freebsd* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
     CFLAGS="-D_DARWIN_C_SOURCE"
 elif [[ "${target}" == *-linux-* ]]; then
     LDLIBS="-lm -lrt"
 fi
-make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
+if [[ "${target}" == *freebsd* ]]; then
+    make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}" -DCLOCK_MONOTONIC_RAW=CLOCK_MONOTONIC
+else
+    make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
+fi
 cp lib/* $libdir
 """
 
