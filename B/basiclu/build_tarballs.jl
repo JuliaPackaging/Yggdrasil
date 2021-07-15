@@ -27,8 +27,6 @@ if [[ "${target}" == *-apple-* ]]; then
     CFLAGS="-D_DARWIN_C_SOURCE"
 elif [[ "${target}" == *-linux-* ]]; then
     LDLIBS="-lm -lrt"
-elif [[ "${target}" == *freebsd* ]]; then
-    CFLAGS="-DCLOCK_MONOTONIC_RAW=CLOCK_MONOTONIC"
 fi
 make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
 cp lib/* $libdir
@@ -36,7 +34,7 @@ cp lib/* $libdir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = filter!(!Sys.isfreebsd, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
