@@ -27,12 +27,10 @@ if [[ "${target}" == *-apple-* ]]; then
     CFLAGS="-D_DARWIN_C_SOURCE"
 elif [[ "${target}" == *-linux-* ]]; then
     LDLIBS="-lm -lrt"
+elif [[ "${target}" == *freebsd* ]]; then
+    CFLAGS="-DCLOCK_MONOTONIC_RAW=CLOCK_MONOTONIC"
 fi
-if [[ "${target}" == *freebsd* ]]; then
-    make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}" -DCLOCK_MONOTONIC_RAW=CLOCK_MONOTONIC
-else
-    make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
-fi
+make CC99="cc -std=c99" CFLAGS="${CFLAGS}" LDLIBS="${LDLIBS}" UNAME="${UNAME}"
 cp lib/* $libdir
 """
 
