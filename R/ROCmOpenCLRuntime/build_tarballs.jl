@@ -20,8 +20,11 @@ OPENCL_SRC=$(realpath $WORKSPACE/srcdir/ROCm-OpenCL-Runtime-*)
 ROCCLR_SRC=$(realpath $WORKSPACE/srcdir/ROCclr-*)
 
 cd $ROCCLR_SRC
-atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/rocclr-install-prefix.patch
+if [[ "${target}" == *-musl* ]]; then
+atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/rocclr-disable-initial-exec.patch
+fi
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -36,7 +39,9 @@ make -j${nproc}
 make install
 
 cd $OPENCL_SRC
+if [[ "${target}" == *-musl* ]]; then
 atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-opencl.patch
+fi
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -68,8 +73,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libamdocl64"], :libamdocl; dont_dlopen=true),
-    LibraryProduct(["libOpenCL"], :libOpenCL; dont_dlopen=true),
+    LibraryProduct(["libamdocl64"], :libamdocl),
+    LibraryProduct(["libOpenCL"], :libOpenCL),
 ]
 
 # Dependencies that must be installed before this package can be built
