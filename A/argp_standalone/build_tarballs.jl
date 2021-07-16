@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "argp_standalone"
-version = v"1.3.0"
+version = v"1.3.1"
 
 # Collection of sources required to build argp-standalone
 sources = [
