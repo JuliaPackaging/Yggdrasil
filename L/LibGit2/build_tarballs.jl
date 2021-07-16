@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/libgit2*/
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-continue-zlib.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-nfs-permissions.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -59,10 +60,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
+    Dependency("MbedTLS_jll", compat="~2.24.0"),
     Dependency("LibSSH2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
