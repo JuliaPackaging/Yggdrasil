@@ -1,43 +1,93 @@
 using BinaryBuilder
 
 name = "kubectl"
-version = v"1.20.0"
+version = v"1.20.7"
 
-# Links to downloads can found at: https://kubernetes.io/docs/tasks/tools/
+# Collection of sources required to complete build
+#
+# Take note that different Kubernetes versions require minimum versions of Go:
+# https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go
 sources = [
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/linux/amd64/kubectl", "a5895007f331f08d2e082eb12458764949559f30bcc5beae26c38f3e2724262c"; filename="x86_64-linux-gnu-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/linux/arm64/kubectl", "25e4465870c99167e6c466623ed8f05a1d20fbcb48cab6688109389b52d87623"; filename="aarch64-linux-gnu-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/darwin/amd64/kubectl", "82046a4abb056005edec097a42cc3bb55d1edd562d6f6f38c07318603fcd9fca"; filename="x86_64-apple-darwin14-kubectl"),
-    FileSource("https://dl.k8s.io/release/v$(version)/bin/windows/amd64/kubectl.exe", "ee7be8e93349fb0fd1db7f5cdb5985f5698cef69b7b7be012fc0e6bed06b254d"; filename="x86_64-w64-mingw32-kubectl"),
-    FileSource("https://raw.githubusercontent.com/kubernetes/kubernetes/v$(version)/LICENSE", "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30")
+    ArchiveSource(
+        "https://github.com/kubernetes/kubernetes/archive/refs/tags/v$(version).tar.gz",
+        "3e4e698e142dbbdc6a5c84b140eb20477a4e0da1903395d59de84d0d254ae7fd",
+    ),
 ]
 
 # Bash recipe for building across all platforms
+#
+# Build instructions adapted from:
+# - https://github.com/kubernetes/kubernetes/#to-start-developing-k8s
+# - https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#building-kubernetes
 script = raw"""
-cd ${WORKSPACE}/srcdir/
-mkdir -p ${bindir}
+# Use the larger WORKSPACE volume for tmp to avoid: "No space left on device"
+export TMPDIR=${WORKSPACE}/tmp
+mkdir -p $TMPDIR
+
+# Switch to using the host toolchain so Kubernetes can generate some build tools
+go_cross=$([ "$(go env GOHOSTOS)/$(go env GOHOSTARCH)" = "$(go env GOOS)/$(go env GOARCH)" ]; echo $? )
+if [ $go_cross -eq 1 ]; then
+    cd /opt/bin/x86_64-linux-musl-*/
+    for f in x86_64-linux-musl-*; do
+        ln -s "$f" "${f//x86_64-linux-musl-/}"
+    done
+    ORG_PATH="$PATH"
+    export PATH="$(pwd):$PATH"
+    cd -
+fi
+
+mkdir -p $GOPATH/src/k8s.io
+mv kubernetes-* $GOPATH/src/k8s.io/kubernetes
+cd $GOPATH/src/k8s.io/kubernetes
+
+# Revise bash process substitution as this fails in the build environment.
+# Symptoms of this failure look like:
+# `./hack/run-in-gopath.sh: line 34: _output/bin/prerelease-lifecycle-gen: Permission denied`
+# and when running a clean build with `DBG_MAKEFILE` you can see the actual issue:
+# `hack/lib/golang.sh: line 867: /dev/fd/62: No such file or directory`
+sed -ri 's/<\s+<\(/<<< \$(/' hack/lib/golang.sh hack/make-rules/clean.sh
+
+# Need to avoid using `GOBIN` to allow for cross-compilation.
+# ```
+# go install: cannot install cross-compiled binaries when GOBIN is set
+# make[1]: *** [Makefile.generated_files:627: gen_bindata] Error 1
+# ```
+sed -ri 's/^export GOBIN|^PATH/# \0/' hack/generate-bindata.sh
+
+if [ $go_cross -eq 1 ]; then
+    # Build for the host first to generate some tools need to be run on the host
+    make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOHOSTOS)/$(go env GOHOSTARCH)
+
+    # Restore the target toolchain
+    export PATH=$ORG_PATH
+fi
+
+# Note: Using `-E DBG_MAKEFILE=1` is helpful for debugging Makefile issues
+make WHAT=cmd/kubectl KUBE_BUILD_PLATFORMS=$(go env GOOS)/$(go env GOARCH)
 
 install_license LICENSE
+mkdir -p ${bindir}
 
-mv "${target}-kubectl" "${bindir}/kubectl${exeext}"
-chmod 755 "${bindir}/kubectl${exeext}"
+if [ $go_cross -eq 1 ]; then
+    output_dir="_output/local/go/bin/$(go env GOOS)_$(go env GOARCH)"
+else
+    output_dir="_output/local/bin/$(go env GOOS)/$(go env GOARCH)"
+fi
+
+mv ${output_dir}/kubectl ${bindir}/kubectl${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("kubectl", :kubectl),
 ]
 
+# Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat="1.6")
