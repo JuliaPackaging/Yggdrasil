@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index aa82cab..f21fada 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -72,7 +72,7 @@ target_link_libraries(entwine
+         ${PDAL_LIBRARIES}
+         ${CURL_LIBRARIES}
+         ${OPENSSL_LIBRARIES}
+-        ${SHLWAPI}
++        shlwapi
+ )
+ 
+ set_target_properties(
