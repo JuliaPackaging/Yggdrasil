@@ -27,6 +27,9 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-bb-paths.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rocclr-not-hcc-platform.patch"
 #sed -e "s:\$HIP_PLATFORM eq \"hcc\" and \$HIP_COMPILER eq \"clang\":\$HIP_PLATFORM eq \"rocclr\" and \$HIP_COMPILER eq \"clang\":" -i bin/hipcc
 
+# force hipcc to pass paths to clang
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-force-paths.patch"
+
 apk add coreutils dateutils
 
 mkdir build && cd build
