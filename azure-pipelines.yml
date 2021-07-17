@@ -142,7 +142,12 @@ jobs:
               # "project source hash" is a combination of meta.json (to absorb
               # changes from include()'ing a `common.jl`) as well as the entire
               # tree the project lives in (to absorb changes from patches)
-              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${PROJECT}\")))")
+              # In order to support symlinked directories as dependencies we calculate
+              # the tree hash on a TMP_PROJECT using `cp -RL` to resolve the symlink and
+              # hash the actual content.
+              TMP_PROJECT=$(mktemp -d)
+              cp -RL ${PROJECT} ${TMP_PROJECT}
+              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${TMP_PROJECT}\")))")
               META_HASH=$(shasum -a 256 "$(Agent.TempDirectory)/${NAME}.meta.json" | cut -d' ' -f1)
               PROJ_HASH=$(echo -n ${TREE_HASH}${META_HASH} | shasum -a 256 | cut -d' ' -f1)
 
