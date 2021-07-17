@@ -23,9 +23,8 @@ if [[ ${target} == *mingw* ]]; then
     #this is needed for v2.1.0, but has been fixed on master, so can probably get rid of next version release
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-shlwapi.patch
 
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-msvc-shlwapi-lib-search.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-replace-msvc-find-shlwapi.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-msvc-warning-options.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-shwlapi-hardcode.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-dupenv-branch.patch
 fi
 
