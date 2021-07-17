@@ -28,6 +28,14 @@ if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-shwlapi-hardcode.patch
 fi
 
+if [[ ${target} == *-linux-musl* ]]; then
+    # otherwise get "undefined reference to getrandom" error message
+    rm /usr/lib/libexpat*
+    
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-remove-backtrace-detection.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-hardcode-curl-link.patch
+fi
+
 mkdir build
 cd build
 
