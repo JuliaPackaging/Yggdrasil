@@ -13,6 +13,7 @@ const llvm_tags = Dict(
     v"11.0.0" => "176249bd6732a8044d457092ed932768724a6f06",
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
+    v"12.0.1" => "fed41342a82f5a3a9201819a82bf7a48313e296b",
 )
 
 const buildscript = raw"""
@@ -87,7 +88,11 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
+if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+    ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
+else
+    ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
+fi
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -174,6 +179,10 @@ fi
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
+if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
+    CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
+fi
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
@@ -230,14 +239,12 @@ if [[ "${target}" == *freebsd* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
 
-
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
-cmake -LA || true
 ninja -j${nproc} -vv
 
 # Install!
@@ -347,15 +354,20 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
+        LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "tools"),
+        ExecutableProduct("clang", :clang, "bin"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+    end
+    if version >= v"12"
+        push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
+        push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
     end
 
     name = "LLVM_full"
@@ -389,13 +401,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = clangscript
         products = [
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
-            ExecutableProduct("clang", :clang, "tools"),
+            LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
+            ExecutableProduct("clang", :clang, "bin"),
         ]
     elseif name == "MLIR"
         script = mlirscript
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
-        ]        
+        ]
     elseif name == "LLVM"
         script = llvmscript
         products = [
@@ -410,7 +423,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
     dependencies = BinaryBuilder.AbstractDependency[]
-    
+
     # Parse out some args
     if "--assert" in ARGS
         assert = true
