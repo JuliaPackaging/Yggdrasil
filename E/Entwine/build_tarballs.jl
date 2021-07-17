@@ -26,6 +26,7 @@ if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-msvc-shlwapi-lib-search.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-msvc-warning-options.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-shwlapi-hardcode.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-dupenv-branch.patch
 fi
 
 if [[ ${target} == *-linux-musl* ]]; then
