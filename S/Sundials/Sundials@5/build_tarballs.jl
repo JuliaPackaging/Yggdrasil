@@ -19,6 +19,11 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
+    # See https://github.com/LLNL/sundials/issues/35
+    atomic_patch -p1 ../patches/Sundials_lapackband.patch
+    # When looking for KLU libraries, CMake searches only for import libraries,
+    # this patch ensures we look also for shared libraries.
+    atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
 elif [[ "${target}" == powerpc64le-* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
