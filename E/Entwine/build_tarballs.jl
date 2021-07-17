@@ -28,7 +28,7 @@ if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-shwlapi-hardcode.patch
 fi
 
-if [[ ${target} == *-linux-musl ]]; then
+if [[ ${target} == *-linux-musl* ]]; then
 
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-remove-backtrace-detection.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-hardcode-curl-link.patch
