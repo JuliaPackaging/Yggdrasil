@@ -15,6 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/basiclu/
 if [[ ${target} == *mingw32* ]]; then
     UNAME="Windows"
+else
+    UNAME="$(uname)"
 fi
 make CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER" UNAME="${UNAME}"
 cp lib/* $libdir
