@@ -45,10 +45,18 @@ install_license ./LICENSE
 # Requires XCode and MSVC to compile on Mac OS and Windows, respectively.
 # TODO: support FreeBSD/Mac/Windows
 platforms = [
-    x for x in supported_platforms()
-    if BinaryBuilder.os(x) ∉ ("freebsd", "windows", "macos") &&
-        nbits(x) ≡ 64 && !startswith(arch(x), "powerpc")
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+
+    # Platform("x86_64", "macos"),
+    # Platform("aarch64", "macos"),
+
+    # Platform("x86_64", "windows"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,6 +75,7 @@ init_block = raw"""
 build_tarballs(
     ARGS, name, version, sources, script,
     platforms, products, dependencies;
-    preferred_gcc_version = v"10.2.0",
+    julia_compat="1.6",
+    preferred_gcc_version = v"7",
     init_block = init_block
 )
