@@ -316,7 +316,7 @@ mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/lib/mlir ${prefix}/lib/mlir
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
