@@ -13,13 +13,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/basiclu/
+ARGS=(CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER")
 if [[ ${target} == *mingw32* ]]; then
-    UNAME="Windows"
+    ARGS+=(UNAME="Windows" SO_OPTS="-shared")
 else
-    UNAME="$(uname)"
+    ARGS+=(UNAME="$(uname)")
 fi
-make CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER" UNAME="${UNAME}"
-cp lib/* $libdir
+make "${ARGS[@]}"
+cp lib/* "${libdir}/."
 """
 
 # These are the platforms we will build for by default, unless further
