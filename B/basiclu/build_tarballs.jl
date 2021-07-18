@@ -13,7 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/basiclu/
-make CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER"
+if [[ ${target} == *mingw32* ]]; then
+    UNAME="Windows"
+fi
+make CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER" UNAME="${UNAME}"
 cp lib/* $libdir
 """
 
@@ -27,9 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-]
+dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
