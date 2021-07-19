@@ -1,4 +1,3 @@
-diff --git before/WCPG-0.9/TestProgram/testProgram after/WCPG-0.9/TestProgram/testProgram
 diff --git before/WCPG-0.9/autogen.sh after/WCPG-0.9/autogen.sh
 old mode 100644
 new mode 100755
