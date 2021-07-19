@@ -25,7 +25,6 @@ cmake .. -G"Unix Makefiles" \
     -DCMAKE_BUILD_TYPE="Release" \
     -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="`pwd`/Release" \
     -DCMAKE_JS_INC="${prefix}/include/node" \
-    -DCMAKE_JS_SRC="" \
     -DNAPI_INC="$NAPI_INC" \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
