@@ -17,8 +17,10 @@ cd $WORKSPACE/srcdir/TauDEM-*
 
 #this has been added on master, so can probably get rid of next version release
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add-cxx-standard.patch
+# Explicitly cast initial values of `float` array to `float` values
+atomic_patch -p1 ../patches/float-list-init.patch
 
-if [[ ${target} == *mingw* ]]; then
+if [[ ${target} != *linux* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-enable-fortran.patch
 fi
 
