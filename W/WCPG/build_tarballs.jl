@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/WCPG-0.9/
+cd $WORKSPACE/srcdir/WCPG-0.9.1/
 sh autogen.sh
 ./configure CFLAGS="-I${WORKSPACE}/srcdir/ -I${includedir}/" --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
