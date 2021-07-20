@@ -3,27 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "WCPG"
-version = v"0.9.0"
+version = v"0.9.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/fixif/WCPG/archive/refs/tags/0.9.tar.gz", "4f6b1d2abc298891ae9e3966428c2d8b4e8bbc3528e917d261d8613dea41ab7d"),
+    ArchiveSource("https://github.com/remi-garcia/WCPG/archive/refs/tags/v0.9.1.tar.gz", "b794f0df05d8e0a42a077dafe445ddaba550659f370ef64a40ac84bc91c8b744"),
     FileSource("https://www.netlib.org/clapack/f2c.h", "7d323c009951dbd40201124b9302cb21daab2d98bed3d4a56b51b48958bc76ef"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-ln -s ${libdir}/libopenblas.${dlext} ${libdir}/libblas.${dlext}
-ln -s ${libdir}/libopenblas.${dlext} ${libdir}/liblapack.${dlext}
-mv $WORKSPACE/srcdir/f2c.h $WORKSPACE/destdir/include/
 cd $WORKSPACE/srcdir/WCPG-0.9/
-chmod +x autogen.sh 
-./autogen.sh 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+sh autogen.sh
+./configure CFLAGS="-I${WORKSPACE}/srcdir/ -I${includedir}/" --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
 """
@@ -35,7 +27,12 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("x86_64", "macos"; )
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "macos"; ),
+    Platform("x86_64", "freebsd"; )
 ]
 
 
@@ -49,7 +46,7 @@ dependencies = [
     Dependency("GMP_jll"; compat="6.1.2")
     Dependency("MPFR_jll")
     Dependency("MPFI_jll")
-    Dependency("OpenBLAS32_jll")
+    Dependency("OpenBLAS_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
