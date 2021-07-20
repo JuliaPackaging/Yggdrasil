@@ -8,6 +8,7 @@ version = v"0.9.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/fixif/WCPG/archive/refs/tags/0.9.tar.gz", "4f6b1d2abc298891ae9e3966428c2d8b4e8bbc3528e917d261d8613dea41ab7d"),
+    FileSource("https://www.netlib.org/clapack/f2c.h", "7d323c009951dbd40201124b9302cb21daab2d98bed3d4a56b51b48958bc76ef"),
     DirectorySource("./bundled")
 ]
 
@@ -18,15 +19,13 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 ln -s ${libdir}/libopenblas.${dlext} ${libdir}/libblas.${dlext}
 ln -s ${libdir}/libopenblas.${dlext} ${libdir}/liblapack.${dlext}
-cd $WORKSPACE/destdir/include/
-wget https://www.netlib.org/clapack/f2c.h
+mv $WORKSPACE/srcdir/f2c.h $WORKSPACE/destdir/include/
 cd $WORKSPACE/srcdir/WCPG-0.9/
 chmod +x autogen.sh 
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
