@@ -47,9 +47,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll"; compat="6.1.2")
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
-    Dependency(PackageSpec(name="MPFI_jll", uuid="e8b5fb6c-218f-5c08-bc3d-6b0e551bbffd"))
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    Dependency("MPFR_jll")
+    Dependency("MPFI_jll")
+    Dependency("OpenBLAS32_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
