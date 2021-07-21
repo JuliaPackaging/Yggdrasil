@@ -53,7 +53,7 @@ cmake \
 -DTrilinos_ENABLE_Zoltan2=OFF \
 $SRCDIR >> test_output.txt 2>&1
 
-make -j${nproc} install
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -128,7 +128,6 @@ products = [
     LibraryProduct("libshylu", :libshylu),
     LibraryProduct("libsimpi", :libsimpi),
     LibraryProduct("libspqr", :libspqr),
-    LibraryProduct("libssp", :libssp),
     LibraryProduct("libstokhos_amesos2", :libstokhos_amesos2),
     LibraryProduct("libstokhos_ifpack2", :libstokhos_ifpack2),
     LibraryProduct("libstokhos_muelu", :libstokhos_muelu),
