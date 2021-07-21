@@ -20,10 +20,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add-cxx-standard.patch
 # Explicitly cast initial values of `float` array to `float` values
 atomic_patch -p1 ../patches/float-list-init.patch
 
-if [[ ${target} != *linux* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-enable-fortran.patch
-fi
-
 cd src
 mkdir build && cd build
 
