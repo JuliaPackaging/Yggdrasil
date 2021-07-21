@@ -32,7 +32,7 @@ cmake \
 -DTPL_ENABLE_UMFPACK=ON \
 -DUMFPACK_LIBRARY_DIRS="${libdir}" \
 -DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
--DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" \
+-DTPL_UMFPACK_INCLUDE_DIRS="${includedir}" \
 -DTPL_ENABLE_Cholmod=ON \
 -DCholmod_LIBRARY_DIRS="${prefix/lib}" \
 -DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
