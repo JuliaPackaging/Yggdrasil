@@ -38,7 +38,7 @@ cmake \
 -DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
 -DBLAS_LIBRARY_DIRS="${libdir}" \
 -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
--DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
+-DLAPACK_LIBRARY_DIRS="${libdir}" \
 -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
 -DTrilinos_ENABLE_COMPLEX=ON \
 -DTPL_ENABLE_Boost=OFF \
