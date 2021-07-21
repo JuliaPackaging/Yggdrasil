@@ -28,12 +28,13 @@ cmake \
 -DCMAKE_MAKE_PROGRAM="make" \
 -DCMAKE_INSTALL_PREFIX="$prefix" \
 -DBUILD_SHARED_LIBS=ON \
--DAMD_LIBRARY_DIRS="/${libdir}" \
+-DTPL_ENABLE_AMD=ON \
+-DAMD_LIBRARY_DIRS="${prefix/lib}" \
 -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
--DAMD_INCLUDE_DIRS="${prefix}/include" \
--DUMFPACK_LIBRARY_DIRS="/${libdir}" \
--DAMD_LIBRARY_NAMES="libumfpack.${dlext}" \
--DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" \
+-DTPL_ENABLE_UMFPACK=ON \
+-DTPL_ENABLE_Cholmod=ON \
+-DCholmod_LIBRARY_DIRS="${prefix/lib}" \
+-DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
 -DBLAS_LIBRARY_DIRS="${prefix}/lib" \
 -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
 -DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
@@ -44,7 +45,7 @@ cmake \
 -DTrilinos_ENABLE_PyTrilinos=OFF \
 -DCMAKE_BUILD_TYPE=Release \
 -DTrilinos_ENABLE_SEACAS=OFF \
-$SRCDIR
+$SRCDIR >> test_output.txt 2>&1
 
 make -j${nproc} install
 """
