@@ -28,7 +28,7 @@ cmake \
 -DTPL_ENABLE_AMD=ON \
 -DAMD_LIBRARY_DIRS="${libdir}" \
 -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
--DTPL_AMD_INCLUDE_DIRS="${prefix}/include" \
+-DTPL_AMD_INCLUDE_DIRS="${includedir}" \
 -DTPL_ENABLE_UMFPACK=ON \
 -DUMFPACK_LIBRARY_DIRS="${prefix/lib}" \
 -DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
