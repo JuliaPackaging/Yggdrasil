@@ -10,7 +10,6 @@ sources = [
     GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir trilbuild
@@ -18,9 +17,36 @@ cd trilbuild
 install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS="-O3 -fPIC"
-cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_Fortran_FLAGS="$FLAGS" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_MAKE_PROGRAM="make" -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_LOCA=ON -DTrilinos_ENABLE_EpetraExt=ON   -DEpetraExt_BUILD_BTF=ON   -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON -DTrilinos_ENABLE_TrilinosCouplings=ON -DTrilinos_ENABLE_Ifpack=ON -DTrilinos_ENABLE_Isorropia=ON -DTrilinos_ENABLE_AztecOO=ON -DTrilinos_ENABLE_Belos=ON -DTrilinos_ENABLE_Teuchos=ON -DTeuchos_ENABLE_COMPLEX=ON -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON -DTrilinos_ENABLE_Sacado=ON -DTrilinos_ENABLE_Kokkos=OFF -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF -DTrilinos_ENABLE_CXX11=ON -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS="/${libdir}" -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" -DAMD_INCLUDE_DIRS="${prefix}/include" -DTPL_ENABLE_UMFPACK=ON -DUMFPACK_LIBRARY_DIRS="/${libdir}" -DAMD_LIBRARY_NAMES="libumfpack.${dlext}" -DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" -DTPL_ENABLE_BLAS=ON -DTPL_ENABLE_LAPACK=ON -DBLAS_LIBRARY_DIRS="${prefix}/lib" -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" -DLAPACK_LIBRARY_DIRS="${prefix}/lib" -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" -DCMAKE_BUILD_TYPE=Release $SRCDIR
-make -j${nprocs}
-make install
+cmake \
+-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
+-DCMAKE_Fortran_FLAGS="$FLAGS" \
+-DCMAKE_C_COMPILER=gcc \
+-DCMAKE_CXX_COMPILER=g++ \
+-DCMAKE_Fortran_COMPILER=gfortran \
+-DTrilinos_ENABLE_CXX11=ON \
+-DTrilinos_ENABLE_ALL_PACKAGES=ON \
+-DCMAKE_MAKE_PROGRAM="make" \
+-DCMAKE_INSTALL_PREFIX="$prefix" \
+-DBUILD_SHARED_LIBS=ON \
+-DAMD_LIBRARY_DIRS="/${libdir}" \
+-DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
+-DAMD_INCLUDE_DIRS="${prefix}/include" \
+-DUMFPACK_LIBRARY_DIRS="/${libdir}" \
+-DAMD_LIBRARY_NAMES="libumfpack.${dlext}" \
+-DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" \
+-DBLAS_LIBRARY_DIRS="${prefix}/lib" \
+-DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
+-DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
+-DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
+-DTPL_ENABLE_Boost=OFF \
+-DTPL_ENABLE_Netcdf=OFF \
+-DTPL_ENABLE_X11=OFF \
+-DTrilinos_ENABLE_PyTrilinos=OFF \
+-DCMAKE_BUILD_TYPE=Release \
+-DTrilinos_ENABLE_SEACAS=OFF \
+$SRCDIR
+
+make -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,31 +58,112 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libamd", :libamd),
+    LibraryProduct("libamesos2", :libamesos2),
+    LibraryProduct("libamesos", :libamesos),
+    LibraryProduct("libanasaziepetra", :libanasaziepetra),
+    LibraryProduct("libanasazi", :libanasazi),
+    LibraryProduct("libanasazitpetra", :libanasazitpetra),
     LibraryProduct("libaztecoo", :libaztecoo),
-    LibraryProduct("liblocalapack", :liblocalapack),
-    LibraryProduct("libifpack", :libifpack),
-    LibraryProduct("libloca", :libloca),
-    LibraryProduct("libzoltan", :libzoltan),
-    LibraryProduct("libisorropia", :libisorropia),
+    LibraryProduct("libbelosepetra", :libbelosepetra),
     LibraryProduct("libbelos", :libbelos),
-    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
+    LibraryProduct("libbelostpetra", :libbelostpetra),
+    LibraryProduct("libdomi", :libdomi),
+    LibraryProduct("libdpliris", :libdpliris),
+    LibraryProduct("libepetraext", :libepetraext),
+    LibraryProduct("libepetra", :libepetra),
+    LibraryProduct("libfei_base", :libfei_base),
+    LibraryProduct("libfei_trilinos", :libfei_trilinos),
+    LibraryProduct("libgaleri-epetra", :libgaleri_epetra),
+    LibraryProduct("libgaleri-xpetra", :libgaleri_xpetra),
+    LibraryProduct("libglobipack", :libglobipack),
+    LibraryProduct("libgtest", :libgtest),
+    LibraryProduct("libifpack2-adapters", :libifpack2_adapters),
+    LibraryProduct("libifpack2", :libifpack2),
+    LibraryProduct("libifpack", :libifpack),
+    LibraryProduct("libintrepid2", :libintrepid2),
+    LibraryProduct("libintrepid", :libintrepid),
+    LibraryProduct("libisorropia", :libisorropia),
+    LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
+    LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
+    LibraryProduct("libkokkoscore", :libkokkoscore),
+    LibraryProduct("libkokkoskernels", :libkokkoskernels),
+    LibraryProduct("libkokkostsqr", :libkokkostsqr),
+    LibraryProduct("libkomplex", :libkomplex),
+    LibraryProduct("liblocaepetra", :liblocaepetra),
+    LibraryProduct("liblocalapack", :liblocalapack),
+    LibraryProduct("libloca", :libloca),
+    LibraryProduct("liblocathyra", :liblocathyra),
+    LibraryProduct("libml", :libml),
+    LibraryProduct("libModeLaplace", :libModeLaplace),
+    LibraryProduct("libmoertel", :libmoertel),
+    LibraryProduct("libmpx", :libmpx),
+    LibraryProduct("libmpxwrappers", :libmpxwrappers),
+    LibraryProduct("libmuelu-adapters", :libmuelu_adapters),
+    LibraryProduct("libmuelu-interface", :libmuelu_interface),
+    LibraryProduct("libmuelu", :libmuelu),
+    LibraryProduct("libnoxepetra", :libnoxepetra),
     LibraryProduct("libnoxlapack", :libnoxlapack),
     LibraryProduct("libnox", :libnox),
-    LibraryProduct("libteuchoscore", :libteuchoscore),
-    LibraryProduct("libsimpi", :libsimpi),
-    LibraryProduct("libteuchosremainder", :libteuchosremainder),
-    LibraryProduct("liblocaepetra", :liblocaepetra),
-    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
-    LibraryProduct("libteuchoscomm", :libteuchoscomm),
-    LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
-    LibraryProduct("libepetraext", :libepetraext),
-    LibraryProduct("libtriutils", :libtriutils),
-    LibraryProduct("libbelosepetra", :libbelosepetra),
-    LibraryProduct("libepetra", :libepetra),
-    LibraryProduct("libtrilinosss", :libtrilinosss),
-    LibraryProduct("libnoxepetra", :libnoxepetra),
+    LibraryProduct("libobjc", :libobjc),
+    LibraryProduct("liboptipack", :liboptipack),
+    LibraryProduct("libpamgen_extras", :libpamgen_extras),
+    LibraryProduct("libpamgen", :libpamgen),
+    LibraryProduct("libpanzer-core", :libpanzer_core),
+    LibraryProduct("libphalanx", :libphalanx),
+    LibraryProduct("libpiro", :libpiro),
+    LibraryProduct("libquadmath", :libquadmath),
+    LibraryProduct("librbio", :librbio),
+    LibraryProduct("librol", :librol),
+    LibraryProduct("librtop", :librtop),
+    LibraryProduct("librythmos", :librythmos),
     LibraryProduct("libsacado", :libsacado),
-    LibraryProduct("libamesos", :libamesos)
+    LibraryProduct("libshards", :libshards),
+    LibraryProduct("libshylu", :libshylu),
+    LibraryProduct("libsimpi", :libsimpi),
+    LibraryProduct("libspqr", :libspqr),
+    LibraryProduct("libssp", :libssp),
+    LibraryProduct("libstokhos_amesos2", :libstokhos_amesos2),
+    LibraryProduct("libstokhos_ifpack2", :libstokhos_ifpack2),
+    LibraryProduct("libstokhos_muelu", :libstokhos_muelu),
+    LibraryProduct("libstokhos_sacado", :libstokhos_sacado),
+    LibraryProduct("libstokhos", :libstokhos),
+    LibraryProduct("libstokhos_tpetra", :libstokhos_tpetra),
+    LibraryProduct("libstratimikosamesos", :libstratimikosamesos),
+    LibraryProduct("libstratimikosaztecoo", :libstratimikosaztecoo),
+    LibraryProduct("libstratimikosbelos", :libstratimikosbelos),
+    LibraryProduct("libstratimikosifpack", :libstratimikosifpack),
+    LibraryProduct("libstratimikosml", :libstratimikosml),
+    LibraryProduct("libstratimikos", :libstratimikos),
+    LibraryProduct("libsuitesparseconfig", :libsuitesparseconfig),
+    LibraryProduct("libteko", :libteko),
+    LibraryProduct("libtempus", :libtempus),
+    LibraryProduct("libteuchoscomm", :libteuchoscomm),
+    LibraryProduct("libteuchoscore", :libteuchoscore),
+    LibraryProduct("libteuchoskokkoscomm", :libteuchoskokkoscomm),
+    LibraryProduct("libteuchoskokkoscompat", :libteuchoskokkoscompat),
+    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
+    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
+    LibraryProduct("libteuchosremainder", :libteuchosremainder),
+    LibraryProduct("libthyracore", :libthyracore),
+    LibraryProduct("libthyraepetraext", :libthyraepetraext),
+    LibraryProduct("libthyraepetra", :libthyraepetra),
+    LibraryProduct("libthyratpetra", :libthyratpetra),
+    LibraryProduct("libtpetraclassiclinalg", :libtpetraclassiclinalg),
+    LibraryProduct("libtpetraclassicnodeapi", :libtpetraclassicnodeapi),
+    LibraryProduct("libtpetraclassic", :libtpetraclassic),
+    LibraryProduct("libtpetraext", :libtpetraext),
+    LibraryProduct("libtpetrainout", :libtpetrainout),
+    LibraryProduct("libtpetra", :libtpetra),
+    LibraryProduct("libtpi", :libtpi),
+    LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
+    LibraryProduct("libtrilinosss", :libtrilinosss),
+    LibraryProduct("libtriutils", :libtriutils),
+    LibraryProduct("libumfpack", :libumfpack),
+    LibraryProduct("libxpetra", :libxpetra),
+    LibraryProduct("libxpetra-sup", :libxpetra_sup),
+    LibraryProduct("libzoltan2", :libzoltan2),
+    LibraryProduct("libzoltan", :libzoltan),
 ]
 
 # Dependencies that must be installed before this package can be built
