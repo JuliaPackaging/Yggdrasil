@@ -28,8 +28,16 @@ cp include/* "${includedir}/."
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux", libc = "glibc"),
+    Platform("aarch64", "linux", libc = "musl"),
+    Platform("powerpc64le", "linux"),
+    Platform("x86_64", "freebsd")
+]
 
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
