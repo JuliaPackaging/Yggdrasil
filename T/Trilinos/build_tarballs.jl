@@ -103,7 +103,6 @@ products = [
     LibraryProduct("libml", :libml),
     LibraryProduct("libModeLaplace", :libModeLaplace),
     LibraryProduct("libmoertel", :libmoertel),
-    LibraryProduct("libmpx", :libmpx),
     LibraryProduct("libmpxwrappers", :libmpxwrappers),
     LibraryProduct("libmuelu-adapters", :libmuelu_adapters),
     LibraryProduct("libmuelu-interface", :libmuelu_interface),
