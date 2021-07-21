@@ -27,9 +27,37 @@ fi
 cd src
 mkdir build && cd build
 
+# Adapted from Erik Schnetter's build for AMReX
+ARGS=()
+if [[ "$target" == *-apple-* ]]; then
+    # MPICH's pkgconfig file "mpich.pc" lists these options:
+    #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
+    #     Cflags:   -I${includedir}
+    # cmake doesn't know how to handle the "-framework OpenCL" option
+    # and wants to use "-framework" as a stand-alone option. This fails,
+    # and cmake concludes that MPI is not available.
+    for lang in C CXX; do
+        ARGS+=(
+            -DMPI_${lang}_ADDITIONAL_INCLUDE_DIRS=''
+            -DMPI_${lang}_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'
+        )
+    done
+elif [[ "$target" == x86_64-w64-mingw32 ]]; then
+    ARGS+=(
+        -DMPI_HOME=${prefix}
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+    )
+    if [[ "${target}" == x86_64-* ]]; then
+        for lang in C CXX; do
+            ARGS+=(-DMPI_${lang}_LIBRARIES=msmpi64)
+        done
+    fi
+fi
+
 cmake .. \
--DCMAKE_INSTALL_PREFIX=${prefix} \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    "${ARGS[@]}"
 
 make -j${nproc}
 make install
