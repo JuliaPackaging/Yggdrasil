@@ -1,0 +1,70 @@
+diff --git before/libxml2-2.9.10/include/libxml/xmlversion.h after/libxml2-2.9.10/include/libxml/xmlversion.h
+index 6614df6..02c7d48 100644
+--- before/libxml2-2.9.10/include/libxml/xmlversion.h
++++ after/libxml2-2.9.10/include/libxml/xmlversion.h
+@@ -50,7 +50,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
+  *
+  * extra version information, used to show a CVS compilation
+  */
+-#define LIBXML_VERSION_EXTRA "-GITv2.9.10-rc1-2-ga5bb6aaa2"
++#define LIBXML_VERSION_EXTRA ""
+ 
+ /**
+  * LIBXML_TEST_VERSION:
+@@ -395,7 +395,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
+  *
+  * Whether the Zlib support is compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_ZLIB_ENABLED
+ #endif
+ 
+@@ -404,7 +404,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
+  *
+  * Whether the Lzma support is compiled in
+  */
+-#if 1
++#if 0
+ #define LIBXML_LZMA_ENABLED
+ #endif
+ 
+diff --git before/libxml2-2.9.10/libxml2.spec after/libxml2-2.9.10/libxml2.spec
+index dbb0278..b42590d 100644
+--- before/libxml2-2.9.10/libxml2.spec
++++ after/libxml2-2.9.10/libxml2.spec
+@@ -204,6 +204,6 @@ rm -fr %{buildroot}
+ %endif # with_python3
+ 
+ %changelog
+-* Wed Oct 30 2019 Daniel Veillard <veillard@redhat.com>
++* Tue Jul 20 2021 Daniel Veillard <veillard@redhat.com>
+ - upstream release 2.9.10 see http://xmlsoft.org/news.html
+ 
+diff --git before/libxml2-2.9.10/python/setup.py after/libxml2-2.9.10/python/setup.py
+index 651391f..9c6f423 100755
+--- before/libxml2-2.9.10/python/setup.py
++++ after/libxml2-2.9.10/python/setup.py
+@@ -8,7 +8,7 @@ from distutils.core import setup, Extension
+ # Below ROOT, we expect to find include, include/libxml2, lib and bin.
+ # On *nix, it is not needed (but should not harm),
+ # on Windows, it is set by configure.js.
+-ROOT = r'/usr'
++ROOT = r'/workspace/destdir'
+ 
+ # Thread-enabled libxml2
+ with_threads = 1
+diff --git before/msquic/.git/config after/msquic/.git/config
+index d660366..ab0da14 100644
+--- before/msquic/.git/config
++++ after/msquic/.git/config
+@@ -9,3 +9,9 @@
+ [branch "main"]
+ 	remote = origin
+ 	merge = refs/heads/main
++[submodule "submodules/googletest"]
++	active = true
++	url = https://github.com/google/googletest
++[submodule "submodules/openssl"]
++	active = true
++	url = https://github.com/quictls/openssl.git
