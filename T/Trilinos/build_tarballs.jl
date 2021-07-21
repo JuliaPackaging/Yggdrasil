@@ -18,37 +18,38 @@ install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS="-O3 -fPIC"
 cmake \
--DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
--DCMAKE_Fortran_FLAGS="$FLAGS" \
--DTrilinos_ENABLE_CXX11=ON \
--DTrilinos_ENABLE_ALL_PACKAGES=ON \
--DCMAKE_MAKE_PROGRAM="make" \
--DCMAKE_INSTALL_PREFIX="$prefix" \
--DBUILD_SHARED_LIBS=ON \
--DTPL_ENABLE_AMD=ON \
--DAMD_LIBRARY_DIRS="${libdir}" \
--DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
--DTPL_AMD_INCLUDE_DIRS="${includedir}" \
--DTPL_ENABLE_UMFPACK=ON \
--DUMFPACK_LIBRARY_DIRS="${libdir}" \
--DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
--DTPL_UMFPACK_INCLUDE_DIRS="${includedir}" \
--DTPL_ENABLE_Cholmod=ON \
--DCholmod_LIBRARY_DIRS="${libdir}" \
--DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
--DBLAS_LIBRARY_DIRS="${libdir}" \
--DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
--DLAPACK_LIBRARY_DIRS="${libdir}" \
--DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
--DTrilinos_ENABLE_COMPLEX=ON \
--DTPL_ENABLE_Boost=OFF \
--DTPL_ENABLE_Netcdf=OFF \
--DTPL_ENABLE_X11=OFF \
--DTrilinos_ENABLE_PyTrilinos=OFF \
--DCMAKE_BUILD_TYPE=Release \
--DTrilinos_ENABLE_SEACAS=OFF \
--DTrilinos_ENABLE_Zoltan2=OFF \
-$SRCDIR >> test_output.txt 2>&1
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
+    -DCMAKE_Fortran_FLAGS="$FLAGS" \
+    -DTrilinos_ENABLE_CXX11=ON \
+    -DTrilinos_ENABLE_ALL_PACKAGES=ON \
+    -DCMAKE_MAKE_PROGRAM="make" \
+    -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DTPL_ENABLE_AMD=ON \
+    -DAMD_LIBRARY_DIRS="${libdir}" \
+    -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
+    -DTPL_AMD_INCLUDE_DIRS="${includedir}" \
+    -DTPL_ENABLE_UMFPACK=ON \
+    -DUMFPACK_LIBRARY_DIRS="${libdir}" \
+    -DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
+    -DTPL_UMFPACK_INCLUDE_DIRS="${includedir}" \
+    -DTPL_ENABLE_Cholmod=ON \
+    -DCholmod_LIBRARY_DIRS="${libdir}" \
+    -DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
+    -DBLAS_LIBRARY_DIRS="${libdir}" \
+    -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
+    -DLAPACK_LIBRARY_DIRS="${libdir}" \
+    -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
+    -DTrilinos_ENABLE_COMPLEX=ON \
+    -DTPL_ENABLE_Boost=OFF \
+    -DTPL_ENABLE_Netcdf=OFF \
+    -DTPL_ENABLE_X11=OFF \
+    -DTrilinos_ENABLE_PyTrilinos=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTrilinos_ENABLE_SEACAS=OFF \
+    -DTrilinos_ENABLE_Zoltan2=OFF \
+    $SRCDIR
 
 make install
 """
