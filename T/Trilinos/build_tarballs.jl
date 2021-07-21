@@ -31,7 +31,11 @@ cmake \
 -DTPL_ENABLE_AMD=ON \
 -DAMD_LIBRARY_DIRS="${prefix/lib}" \
 -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" \
+-DTPL_AMD_INCLUDE_DIRS="${prefix}/include" \
 -DTPL_ENABLE_UMFPACK=ON \
+-DUMFPACK_LIBRARY_DIRS="${prefix/lib}" \
+-DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
+-DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" \
 -DTPL_ENABLE_Cholmod=ON \
 -DCholmod_LIBRARY_DIRS="${prefix/lib}" \
 -DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
@@ -39,12 +43,14 @@ cmake \
 -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
 -DLAPACK_LIBRARY_DIRS="${prefix}/lib" \
 -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
+-DTrilinos_ENABLE_COMPLEX=ON \
 -DTPL_ENABLE_Boost=OFF \
 -DTPL_ENABLE_Netcdf=OFF \
 -DTPL_ENABLE_X11=OFF \
 -DTrilinos_ENABLE_PyTrilinos=OFF \
 -DCMAKE_BUILD_TYPE=Release \
 -DTrilinos_ENABLE_SEACAS=OFF \
+-DTrilinos_ENABLE_Zoltan2=OFF \
 $SRCDIR >> test_output.txt 2>&1
 
 make -j${nproc} install
@@ -59,7 +65,6 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libamd", :libamd),
     LibraryProduct("libamesos2", :libamesos2),
     LibraryProduct("libamesos", :libamesos),
     LibraryProduct("libanasaziepetra", :libanasaziepetra),
@@ -160,10 +165,8 @@ products = [
     LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
     LibraryProduct("libtrilinosss", :libtrilinosss),
     LibraryProduct("libtriutils", :libtriutils),
-    LibraryProduct("libumfpack", :libumfpack),
     LibraryProduct("libxpetra", :libxpetra),
     LibraryProduct("libxpetra-sup", :libxpetra_sup),
-    LibraryProduct("libzoltan2", :libzoltan2),
     LibraryProduct("libzoltan", :libzoltan),
 ]
 
