@@ -18,7 +18,7 @@ install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS="-O3 -fPIC"
 cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
     -DCMAKE_Fortran_FLAGS="$FLAGS" \
     -DTrilinos_ENABLE_CXX11=ON \
