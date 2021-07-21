@@ -34,7 +34,7 @@ cmake \
 -DUMFPACK_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libumfpack.${dlext}" \
 -DTPL_UMFPACK_INCLUDE_DIRS="${includedir}" \
 -DTPL_ENABLE_Cholmod=ON \
--DCholmod_LIBRARY_DIRS="${prefix/lib}" \
+-DCholmod_LIBRARY_DIRS="${libdir}" \
 -DCholmod_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libcholmod.${dlext};libcolamd.${dlext}" \
 -DBLAS_LIBRARY_DIRS="${prefix}/lib" \
 -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
