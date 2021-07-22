@@ -9,7 +9,9 @@ version = v"12.12.1"
 sources = [
     GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
 ]
-
+# We are manually specifying the compilers rather than using the toolchain file.
+# Does not build due to TRY_RUN errors with TEUCHOS, BLAS, and company.
+# Much of this is lifted directly from Debian
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir trilbuild
@@ -18,11 +20,19 @@ install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS="-O3 -fPIC"
 cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_C_COMPILER=cc \
+    -DCMAKE_CXX_COMPILER=c++ \
+    -DCMAKE_Fortran_COMPILER=gfortran \
     -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
     -DCMAKE_Fortran_FLAGS="$FLAGS" \
+    -DTrilinos_INSTALL_TriBITS=OFF \
+    -DTrilinos_ENABLE_DEVELOPMENT_MODE=OFF \
+    -DTrilinos_ASSERT_MISSING_PACKAGES=OFF \
+    -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON \
+    -DTrilinos_ENABLE_EXPORT_MAKEFILES=OFF \
+    -DTrilinos_ENABLE_EXAMPLES=OFF \
+    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_CXX11=ON \
-    -DTrilinos_ENABLE_ALL_PACKAGES=ON \
     -DCMAKE_MAKE_PROGRAM="make" \
     -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DBUILD_SHARED_LIBS=ON \
@@ -41,17 +51,89 @@ cmake \
     -DBLAS_LIBRARY_NAMES="libopenblas.${dlext}" \
     -DLAPACK_LIBRARY_DIRS="${libdir}" \
     -DLAPACK_LIBRARY_NAMES="libopenblas.${dlext}" \
+    -DTrilinos_ENABLE_OpenMP=ON \
     -DTrilinos_ENABLE_COMPLEX=ON \
-    -DTPL_ENABLE_Boost=OFF \
-    -DTPL_ENABLE_Netcdf=OFF \
-    -DTPL_ENABLE_X11=OFF \
-    -DTrilinos_ENABLE_PyTrilinos=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DTrilinos_ENABLE_Amesos=ON \
+    -DTrilinos_ENABLE_Amesos2=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Anasazi=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_AztecOO=ON \
+    -DTrilinos_ENABLE_Belos=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Epetra=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_EpetraExt=ON \
+    -DTrilinos_ENABLE_Galeri=ON \
+    -DTrilinos_ENABLE_GlobiPack=ON \
+    -DTrilinos_ENABLE_Ifpack=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Ifpack2=ON \
+    -DTrilinos_ENABLE_Intrepid=ON \
+    -DTrilinos_ENABLE_Intrepid2=ON \
+    -DTrilinos_ENABLE_Isorropia=ON \
+    -DTrilinos_ENABLE_Kokkos=ON \
+    -DTrilinos_ENABLE_KokkosKernels=ON \
+    -DTrilinos_ENABLE_Komplex=ON \
+    -DTrilinos_ENABLE_ML=ON \
+    -DTrilinos_ENABLE_Moertel=ON \
+    -DTrilinos_ENABLE_MueLu=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_NOX=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_OptiPack=ON \
+    -DTrilinos_ENABLE_Pamgen=ON \
+    -DTrilinos_ENABLE_Phalanx=ON \
+    -DTrilinos_ENABLE_Pike=ON \
+    -DTrilinos_ENABLE_Piro=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Pliris=ON \
+    -DTrilinos_ENABLE_ROL=ON \
+    -DTrilinos_ENABLE_RTOp=ON \
+    -DTrilinos_ENABLE_Rythmos=ON \
+    -DTrilinos_ENABLE_Sacado=ON \
+    -DTrilinos_ENABLE_Shards=ON \
+    -DTrilinos_ENABLE_ShyLU=ON \
+    -DTrilinos_ENABLE_Stokhos=ON \
+    -DTrilinos_ENABLE_Stratimikos=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Teko=ON \
+    -DTrilinos_ENABLE_Teuchos=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Thyra=ON \
+    -DTrilinos_ENABLE_Tpetra=ON \
+    -DTrilinos_ENABLE_TrilinosCouplings=ON \
+    -DTrilinos_ENABLE_Triutils=ON \
+    -DTrilinos_ENABLE_Xpetra=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Zoltan=ON  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Zoltan2=OFF  \
+    -DTrilinos_ENABLE_TESTS=OFF \
+    -DTrilinos_ENABLE_Gtest=OFF \
+    -DTrilinos_ENABLE_MiniTensor=OFF \
+    -DTrilinos_ENABLE_MOOCHO=OFF \
     -DTrilinos_ENABLE_SEACAS=OFF \
-    -DTrilinos_ENABLE_Zoltan2=OFF \
-    $SRCDIR
+    -DTrilinos_ENABLE_STK=OFF \
+    -DTrilinos_ENABLE_Tempus=OFF \
+    -DTPL_ENABLE_BinUtils=OFF \
+    -DTPL_ENABLE_Boost=OFF \
+    -DTPL_ENABLE_HDF5=OFF \
+    -DTPL_ENABLE_Matio=OFF \
+    -DTPL_ENABLE_MATLAB=OFF \
+    -DTPL_ENABLE_MPI=OFF \
+    -DTPL_ENABLE_MUMPS=OFF \
+    -DTPL_ENABLE_Netcdf=OFF \
+    -DTPL_ENABLE_ParMETIS=OFF \
+    -DTPL_ENABLE_Scotch=OFF \
+    -DTPL_ENABLE_SuperLU=OFF \
+    -DTPL_ENABLE_TBB=OFF \
+    -DTPL_ENABLE_X11=OFF \
+    -DTPL_ENABLE_Zlib=OFF \
+    -DTrilinos_ENABLE_PyTrilinos=OFF \
+    $SRCDIR >> testoutput.txt 2>&1
 
-make install
+make -j${nprocs} install
 """
 
 # These are the platforms we will build for by default, unless further
