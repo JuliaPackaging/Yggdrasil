@@ -19,6 +19,8 @@ cd $WORKSPACE/srcdir/TauDEM-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add-cxx-standard.patch
 # Explicitly cast initial values of `float` array to `float` values
 atomic_patch -p1 ../patches/float-list-init.patch
+# Fix linking to MPI libraries
+atomic_patch -p1 ../patches/cmake-link-mpi.patch
 
 cd src
 mkdir build && cd build
