@@ -9,9 +9,12 @@ version = v"12.12.1"
 sources = [
     GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
 ]
+
 # We are manually specifying the compilers rather than using the toolchain file.
 # Does not build due to TRY_RUN errors with TEUCHOS, BLAS, and company.
-# Much of this is lifted directly from Debian
+# Much of this is lifted directly from the Debian build script.
+# Specifically to avoid accidentally building additional products we explicitly enable or
+# disable all major packages.
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir trilbuild
@@ -115,7 +118,7 @@ cmake \
     -DTrilinos_ENABLE_MOOCHO=OFF \
     -DTrilinos_ENABLE_SEACAS=OFF \
     -DTrilinos_ENABLE_STK=OFF \
-    -DTrilinos_ENABLE_Tempus=OFF \
+    -DTrilinos_ENABLE_Tempus=ON \
     -DTPL_ENABLE_BinUtils=OFF \
     -DTPL_ENABLE_Boost=OFF \
     -DTPL_ENABLE_HDF5=OFF \
@@ -131,7 +134,8 @@ cmake \
     -DTPL_ENABLE_X11=OFF \
     -DTPL_ENABLE_Zlib=OFF \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
-    $SRCDIR >> testoutput.txt 2>&1
+    -DTrilinos_DUMP_PACKAGE_DEPENDENCIES=ON \
+    $SRCDIR
 
 make -j${nprocs} install
 """
@@ -154,7 +158,6 @@ products = [
     LibraryProduct("libbelosepetra", :libbelosepetra),
     LibraryProduct("libbelos", :libbelos),
     LibraryProduct("libbelostpetra", :libbelostpetra),
-    LibraryProduct("libdomi", :libdomi),
     LibraryProduct("libdpliris", :libdpliris),
     LibraryProduct("libepetraext", :libepetraext),
     LibraryProduct("libepetra", :libepetra),
@@ -213,7 +216,6 @@ products = [
     LibraryProduct("libstratimikosifpack", :libstratimikosifpack),
     LibraryProduct("libstratimikosml", :libstratimikosml),
     LibraryProduct("libstratimikos", :libstratimikos),
-    LibraryProduct("libsuitesparseconfig", :libsuitesparseconfig),
     LibraryProduct("libteko", :libteko),
     LibraryProduct("libtempus", :libtempus),
     LibraryProduct("libteuchoscomm", :libteuchoscomm),
