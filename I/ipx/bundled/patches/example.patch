@@ -1,0 +1,30 @@
+--- a/Makefile
++++ b/Makefile
+@@ -7,7 +7,7 @@
+ # The default creates the static and shared library in the lib/ subdirectory and
+ # compiles the examples in the example/ subdirectory.
+ 
+-default: static shared examples
++default: static shared
+ 
+ #-------------------------------------------------------------------------------
+ # files
+@@ -46,13 +46,6 @@
+ 	$(CXX) $(CF) $(IFLAGS) -c $< -o $@
+ 
+ #-------------------------------------------------------------------------------
+-# compile examples
+-#-------------------------------------------------------------------------------
+-
+-examples:
+-	@( cd example; $(MAKE); )
+-
+-#-------------------------------------------------------------------------------
+ # clean and purge
+ #-------------------------------------------------------------------------------
+ 
+@@ -62,4 +55,3 @@
+ 
+ purge: clean
+ 	$(RM) lib/$(AR_TARGET) lib/$(SO_TARGET) lib/$(SO_PLAIN) lib/$(SO_MAIN)
+-	@( cd example; $(MAKE) purge; )

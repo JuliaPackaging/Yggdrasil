@@ -8,13 +8,15 @@ version = v"1.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ERGO-Code/ipx.git", "234d484ed1813ce1d95e49c2d86da79d2df18f95"),
-    GitSource("https://github.com/ERGO-Code/basiclu.git", "fe63cd34ab0259329e5a979df7f19ff0de59cfae")
+    GitSource("https://github.com/ERGO-Code/basiclu.git", "fe63cd34ab0259329e5a979df7f19ff0de59cfae"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cp $WORKSPACE/srcdir/basiclu/include/* "${includedir}/."
 cd $WORKSPACE/srcdir/ipx/
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/example.patch"
 ARGS=(CXX="c++ -std=c++11" BASICLUROOT="$prefix")
 if [[ ${target} == *mingw32* ]]; then
     ARGS+=(UNAME="Windows" SO_OPTS="-shared")
