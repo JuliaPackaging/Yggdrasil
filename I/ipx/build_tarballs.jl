@@ -7,38 +7,26 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/ipx.git", "234d484ed1813ce1d95e49c2d86da79d2df18f95"),
-    GitSource("https://github.com/ERGO-Code/basiclu.git", "fe63cd34ab0259329e5a979df7f19ff0de59cfae"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/ERGO-Code/ipx.git", "234d484ed1813ce1d95e49c2d86da79d2df18f95")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cp $WORKSPACE/srcdir/basiclu/include/* "${includedir}/."
 cd $WORKSPACE/srcdir/ipx/
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/example.patch"
-ARGS=(CXX="c++ -std=c++11" BASICLUROOT="$prefix")
+ARGS=(CXX="c++" CFLAGS="-std=c++11" BASICLUROOT="$prefix")
 if [[ ${target} == *mingw32* ]]; then
     ARGS+=(UNAME="Windows" SO_OPTS="-shared")
 else
     ARGS+=(UNAME="$(uname)")
 fi
-make "${ARGS[@]}"
+make shared "${ARGS[@]}"
 cp lib/* "${libdir}/."
 cp include/* "${includedir}/."
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux", libc = "glibc"),
-    Platform("aarch64", "linux", libc = "musl"),
-    Platform("powerpc64le", "linux"),
-    Platform("x86_64", "freebsd")
-]
-
+platforms = filter!(p -> (Sys.islinux(p) || Sys.isfreebsd(p)) && nbits(p) == 64, supported_platforms(;experimental=true))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
