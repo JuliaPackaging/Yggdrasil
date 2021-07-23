@@ -74,7 +74,8 @@ function inlogdir(hdr)
     if startswith(path, "./")
         path = path[3:end]
     end
-    return dirname(path) == "logs"
+    # Log files can be either directly under `logs` or in its subdirectories
+    return dirname(path) == "logs" || occursin(r"^logs/", dirname(path))
 end
 
 function collect_tar_tree(io::IO;
