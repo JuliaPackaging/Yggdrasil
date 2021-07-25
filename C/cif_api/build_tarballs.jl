@@ -16,23 +16,16 @@ cd $WORKSPACE/srcdir/cif_api-*
 
 update_configure_scripts
 
-if [[ "${target}" == *-linux-* ]]; then
-# Hint to find libstdc++, required to link against C++ libs when using C compiler
-    if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-    else
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-    fi
-fi
+#export flags to help *-musl-* builds configure scripts find sqlite3.h
+export CPPFLAGS="-I{includedir}"
 
 ./configure \
---prefix=${prefix} \
---libdir=${libdir} \
---includedir=${includedir} \
---build=${MACHTYPE} \
---host=${target} \
---with-docs=no \
-CPPFLAGS="-I/workspace/destdir/include"
+    --prefix=${prefix} \
+    --libdir=${libdir} \
+    --includedir=${includedir} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-docs=no
 
 make -j${nproc}
 make install
@@ -50,9 +43,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"))
+    Dependency("ICU_jll"; compat="69.1")
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
