@@ -12,39 +12,27 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd userspace-rcu/
+cd $WORKSPACE/srcdir/userspace-rcu/
 ./bootstrap 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liburcu-memb", :urcu_memb),
-    LibraryProduct("liburcu-mb", :urcu_mb),
-    LibraryProduct("liburcu-qsbr", :urcu_qsbr),
-    LibraryProduct("liburcu-signal", :urcu_signal),
-    LibraryProduct("liburcu-cds", :urcu_cds),
-    LibraryProduct("liburcu", :urcu),
-    LibraryProduct("liburcu-common", :urcu_common),
-    LibraryProduct("liburcu-bp", :urcu_bp)
+    LibraryProduct("liburcu-memb", :liburcu_memb),
+    LibraryProduct("liburcu-mb", :liburcu_mb),
+    LibraryProduct("liburcu-qsbr", :liburcu_qsbr),
+    LibraryProduct("liburcu-signal", :liburcu_signal),
+    LibraryProduct("liburcu-cds", :liburcu_cds),
+    LibraryProduct("liburcu", :liburcu),
+    LibraryProduct("liburcu-common", :liburcu_common),
+    LibraryProduct("liburcu-bp", :liburcu_bp)
 ]
 
 # Dependencies that must be installed before this package can be built
