@@ -31,7 +31,8 @@ fi
 --includedir=${includedir} \
 --build=${MACHTYPE} \
 --host=${target} \
---with-docs=no
+--with-docs=no \
+CPPFLAGS="-I/workspace/destdir/include"
 
 make -j${nproc}
 make install
