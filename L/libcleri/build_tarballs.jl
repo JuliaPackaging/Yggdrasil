@@ -18,6 +18,11 @@ cd $WORKSPACE/srcdir
 cd libcleri/
 make -C Release -f makefile
 make -C Release -f makefile install INSTALL_PATH=${prefix}
+if [[ ${target} == *-mingw-* ]]; then
+   for f in ${prefix}/lib/libcleri.so*; do
+       ln -s $f $(echo $f | sed -e 's/.so/.dll/')
+   done
+fi
 """
 
 # These are the platforms we will build for by default, unless further
