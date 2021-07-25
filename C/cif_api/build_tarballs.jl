@@ -16,12 +16,22 @@ cd $WORKSPACE/srcdir/cif_api-*
 
 update_configure_scripts
 
+if [[ "${target}" == *-linux-* ]]; then
+# Hint to find libstdc++, required to link against C++ libs when using C compiler
+    if [[ "${nbits}" == 32 ]]; then
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+    else
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    fi
+fi
+
 ./configure \
 --prefix=${prefix} \
 --libdir=${libdir} \
 --includedir=${includedir} \
 --build=${MACHTYPE} \
---host=${target}
+--host=${target} \
+--with-docs=no
 
 make -j${nproc}
 make install
