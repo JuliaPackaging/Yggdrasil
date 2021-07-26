@@ -99,14 +99,9 @@ function configure(julia_version, libjulia_version)
 
     if julia_version >= v"1.6"
         # add julia_version to platform tuple
-
-    #= disabled for now, until we have way to build versions of the JLL against
-       Julia dev versions
-
         foreach(platforms) do p
             BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
         end
-=#
     end
 
     return platforms
