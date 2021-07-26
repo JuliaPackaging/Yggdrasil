@@ -16,8 +16,7 @@ cd $WORKSPACE/srcdir/cif_api-*
 
 update_configure_scripts
 
-#export flags to help *-musl-* builds configure scripts find sqlite3.h
-export CPPFLAGS="-I{includedir}"
+#CPP flags needed in configure statement to help *-musl-* builds configure scripts find sqlite3.h, unsure exactly why?
 
 ./configure \
     --prefix=${prefix} \
@@ -25,7 +24,8 @@ export CPPFLAGS="-I{includedir}"
     --includedir=${includedir} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --with-docs=no
+    --with-docs=no \
+    CPPFLAGS="-I{includedir}"
 
 make -j${nproc}
 make install
@@ -48,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;preferred_gcc_version=v"5", julia_compat="1.6")
