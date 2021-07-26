@@ -16,7 +16,8 @@ cd $WORKSPACE/srcdir/cif_api-*
 
 update_configure_scripts
 
-#CPP flags needed in configure statement to help *-musl-* builds configure scripts find sqlite3.h, unsure exactly why?
+#CPP flags needed to help *-musl-* builds configure scripts find sqlite3.h, unsure exactly why?
+export CPPFLAGS="-I${includedir}"
 
 ./configure \
     --prefix=${prefix} \
@@ -25,7 +26,6 @@ update_configure_scripts
     --build=${MACHTYPE} \
     --host=${target} \
     --with-docs=no \
-    CPPFLAGS="-I{includedir}"
 
 make -j${nproc}
 make install
