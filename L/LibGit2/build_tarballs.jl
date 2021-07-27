@@ -1,12 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "LibGit2"
-version = v"1.2.3"
+version = v"1.2.4"
+# Upstream version v1.1.1
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "7f4fa178629d559c037a1f72f79f79af9c1ef8ce"),
+              "8a0dc6783c340e61a44c179c48f832165ad2053c"),
     DirectorySource("./bundled"),
 ]
 
