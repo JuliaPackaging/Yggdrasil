@@ -7,7 +7,8 @@ version = v"0.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/COMCIFS/cif_api/archive/refs/tags/v0.4.2.tar.gz", "803fa1d0525bb51407754fa63b9439ba350178f45372103e84773ed4871b3924")
+    ArchiveSource("https://github.com/COMCIFS/cif_api/archive/refs/tags/v0.4.2.tar.gz", "803fa1d0525bb51407754fa63b9439ba350178f45372103e84773ed4871b3924"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +16,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/cif_api-*
 
 update_configure_scripts
+
+if [[ ${target} == *mingw* ]]; then
+    #remove win32 if branch to prevent file not found errors on make install?
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-install-hook.patch
+    autoreconf -vi
+fi
 
 #CPP flags needed to help *-musl-* builds configure scripts find sqlite3.h, unsure exactly why?
 export CPPFLAGS="-I${includedir}"
