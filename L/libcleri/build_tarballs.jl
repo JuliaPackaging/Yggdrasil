@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir
 cd libcleri/
 make -C Release FN="libcleri.${dlext}"
 make -C Release FN="libcleri.${dlext}" install INSTALL_PATH=${prefix}
+if [[ "${target}" == *-apple-* ]]; then
+    install_name_tool -id @rpath/libcleri.dylib.0 ${prefix}/lib/libcleri.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
