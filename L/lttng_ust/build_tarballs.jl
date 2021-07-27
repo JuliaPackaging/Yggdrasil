@@ -12,7 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lttng-ust-2.12.2
+cd $WORKSPACE/srcdir/lttng-ust*
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man-pages --disable-examples
 make -j${nproc}
 make install
@@ -21,7 +22,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
-
 
 # The products that we will ensure are always built
 products = [
