@@ -17,7 +17,6 @@ cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-continue-zlib.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
