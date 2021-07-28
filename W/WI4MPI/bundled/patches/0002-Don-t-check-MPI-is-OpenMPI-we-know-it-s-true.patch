@@ -1,0 +1,56 @@
+From d3af4c9fdff4cd07ab1a39acd6de77b0995b145e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Thu, 29 Jul 2021 01:33:59 +0100
+Subject: [PATCH 2/3] Don't check MPI is OpenMPI: we know it's true
+
+Also, the check is broken and wouldn't even work in cross-compilation.
+---
+ CMakeLists.txt | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f1befa1..ba9f567 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -105,22 +105,22 @@ endif()
+ 
+ find_package(MPI REQUIRED) 
+ if(MPI_C_FOUND AND MPI_Fortran_FOUND) #Need to be OpenMPI
+-    execute_process(COMMAND "${MPI_C_COMPILER}" -show
+-                    OUTPUT_VARIABLE ERR_VAR1
+-                    OUTPUT_FILE "compiler_out"
+-                    ERROR_QUIET)
+-    execute_process(COMMAND "grep" openmpi
+-                    INPUT_FILE "compiler_out"
+-                    OUTPUT_VARIABLE ERR_VAR2
+-                    RESULT_VARIABLE COMMAND_RESULT1
+-                    ERROR_QUIET)
+-    #execute_process(COMMAND "${MPI_C_COMPILER}" -show
+-    #                COMMAND "grep" -io openmpi
+-    #                 RESULT_VARIABLE RV)
+-    #message(STATUS "res command : ${ERR_VAR2}")
+-    if(NOT ERR_VAR2)
+-      message(FATAL_ERROR "Be sure to have an OpenMPI librarie in your PATH")
+-    endif()
++    # execute_process(COMMAND "${MPI_C_COMPILER}" -show
++    #                 OUTPUT_VARIABLE ERR_VAR1
++    #                 OUTPUT_FILE "compiler_out"
++    #                 ERROR_QUIET)
++    # execute_process(COMMAND "grep" openmpi
++    #                 INPUT_FILE "compiler_out"
++    #                 OUTPUT_VARIABLE ERR_VAR2
++    #                 RESULT_VARIABLE COMMAND_RESULT1
++    #                 ERROR_QUIET)
++    # #execute_process(COMMAND "${MPI_C_COMPILER}" -show
++    # #                COMMAND "grep" -io openmpi
++    # #                 RESULT_VARIABLE RV)
++    # #message(STATUS "res command : ${ERR_VAR2}")
++    # if(NOT ERR_VAR2)
++    #   message(FATAL_ERROR "Be sure to have an OpenMPI librarie in your PATH")
++    # endif()
+         get_filename_component(OPENMPI_ROOT ${MPI_C_INCLUDE_PATH} DIRECTORY)
+ endif()
+ 
+-- 
+2.26.3
+

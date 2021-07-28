@@ -1,0 +1,27 @@
+From 6bc8b086ce14d2d0ba41370062e0b670b5658f91 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Thu, 29 Jul 2021 01:34:47 +0100
+Subject: [PATCH 3/3] Do not use `get_filename_component`
+
+`MPI_C_INCLUDE_PATH` is a list, and guess what, `get_filename_component` doesn't
+work on lists.
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ba9f567..8d89cd6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -121,7 +121,7 @@ if(MPI_C_FOUND AND MPI_Fortran_FOUND) #Need to be OpenMPI
+     # if(NOT ERR_VAR2)
+     #   message(FATAL_ERROR "Be sure to have an OpenMPI librarie in your PATH")
+     # endif()
+-        get_filename_component(OPENMPI_ROOT ${MPI_C_INCLUDE_PATH} DIRECTORY)
++    # get_filename_component(OPENMPI_ROOT ${MPI_C_INCLUDE_PATH} DIRECTORY)
+ endif()
+ 
+ find_package(Threads)
+-- 
+2.26.3
+
