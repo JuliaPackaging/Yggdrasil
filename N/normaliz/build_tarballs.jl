@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.800.901"
-upstream_version = v"3.8.9"
+version = v"300.900.0"
+upstream_version = v"3.9.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-                  "a4c3eda39ffe42120adfd3bda9433b01d9965516e3f98e401b62752a54bee5dd")
+                  "d90a2636745a858b5d59953daed1cc8d14abbf7d745f03d3af3e4726ae1759fe")
 ]
 
 # Bash recipe for building across all platforms
@@ -58,8 +58,8 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
-    Dependency(PackageSpec(name="nauty_jll", uuid="55c6dc9b-343a-50ca-8ff2-b71adb3733d5")),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
+    Dependency(PackageSpec(name="nauty_jll"), compat = "~2.6.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
