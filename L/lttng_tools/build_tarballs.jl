@@ -7,7 +7,8 @@ version = v"2.12.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://lttng.org/files/lttng-tools/lttng-tools-2.12.4.tar.bz2", "d729f8c2373a41194f171aeb0da0a9bb35ac181f31afa7e260786d19a500dea1")
+    ArchiveSource("http://lttng.org/files/lttng-tools/lttng-tools-$(version).tar.bz2",
+                  "d729f8c2373a41194f171aeb0da0a9bb35ac181f31afa7e260786d19a500dea1")
 ]
 
 # Bash recipe for building across all platforms
@@ -42,4 +43,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
