@@ -7,14 +7,14 @@ version = v"3.24.30"
 
 # Collection of sources required to build GTK
 sources = [
-    ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/gtk+/$(version.major).$(version.minor)/gtk+-$(version).tar.xz",
-                  "ba75bfff320ad1f4cfbee92ba813ec336322cc3c660d406aad014b07087a3ba9"),
+    GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
+              "d4e2d05cd9518ba04d6fbe1cbcec27142788ac95"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gtk+-*/
+cd $WORKSPACE/srcdir/gtk*/
 
 # We need to run some commands with a native Glib
 apk add glib-dev gtk+3.0
