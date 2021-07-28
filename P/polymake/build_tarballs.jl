@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.4"
-version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,0)
+version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,1)
 
 # Collection of sources required to build polymake
 sources = [
@@ -140,14 +140,14 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("FLINT_jll", compat = "~200.700"),
+    Dependency("FLINT_jll", compat = "~200.800"),
     Dependency("PPL_jll", compat = "~1.2"),
     Dependency("Perl_jll", compat = "=5.30.3"),
     Dependency("bliss_jll", compat = "~0.73"),
-    Dependency("boost_jll", compat = "~1.71"),
-    Dependency("cddlib_jll", compat = "~0.94"),
-    Dependency("lrslib_jll", compat = "~0.1, ~0.2"),
-    Dependency("normaliz_jll", compat = "~300.800.900"),
+    Dependency("boost_jll", compat = "=1.71.0"),
+    Dependency("cddlib_jll", compat = "~0.94.10"),
+    Dependency("lrslib_jll", compat = "~0.3.2"),
+    Dependency("normaliz_jll", compat = "~300.900"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
