@@ -33,6 +33,9 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11_backend=false -Dwayland_backend=false)
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland_backend=false)
+elif [[ "${target}" == *-mingw* ]]; then
+    # Need to tell we're targeting at least Windows 7 so that `GC_ALLGESTURES` is defined
+    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
 fi
 
 mkdir build-gtk && cd build-gtk
@@ -66,7 +69,7 @@ dependencies = [
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.47.0"),
     Dependency("FriBidi_jll"),
