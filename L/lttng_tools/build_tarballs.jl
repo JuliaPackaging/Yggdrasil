@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lttng-tools-*
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-man-pages
 make -j${nproc}
 make install
