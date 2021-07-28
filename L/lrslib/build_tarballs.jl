@@ -3,42 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "lrslib"
-version = v"0.3.1"
+version = v"0.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://cgm.cs.mcgill.ca/~avis/C/lrslib/archive/lrslib-071a.tar.gz",
-                  "926636ea68de46625f141f6e025dce967cc7e68cf4bf4a597375c063f5c11673"),
-    DirectorySource("./bundled"),
+    ArchiveSource("http://cgm.cs.mcgill.ca/~avis/C/lrslib/archive/lrslib-071b.tar.gz",
+                  "df22682cd742315fe04f866cfe4804d5950f7dc7f514d5b5f36f5b7f5aff9188"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lrslib*
-atomic_patch -p1 ../patches/random.patch
-atomic_patch -p1 ../patches/cflags.patch
-atomic_patch -p1 ../patches/firsttime.patch
 extraargs=""
 cflags="-fPIC -O3 -Wall -DLRS_QUIET"
 
 # 32bit linux, arm and windows:
 if [[ $target == i686* ]] || [[ $target == arm* ]]; then
-  # no 128 bit ... patch makefile
-  atomic_patch -p1 ../patches/no128bit.patch
+  # no 128 bit support needs extra flags
+  extraargs="BITS=-DB32 MPLRSOBJ2= SHLIBOBJ2= "
 fi
 
 if [[ $target == *apple* ]]; then
   export CC=gcc
   sed -i -e 's#-Wl,-soname=#-install_name #' makefile
-  extraargs="SONAME=liblrs.0.dylib SHLINK=liblrs.dylib SHLIB=liblrs.0.0.0.dylib"
+  extraargs="SONAME=liblrs.0.dylib SHLINK=liblrs.dylib SHLIB=liblrs.0.0.0.dylib ${extraargs}"
 elif [[ $target == *freebsd* ]]; then
   export CC="gcc"
 elif [[ $target == *mingw* ]]; then
-  extraargs="SONAME=liblrs-0.dll SHLINK=liblrs.dll SHLIB=liblrs-0-0-0.dll"
+  extraargs="SONAME=liblrs-0.dll SHLINK=liblrs.dll SHLIB=liblrs-0-0-0.dll ${extraargs}"
   cflags="$cflags -DSIGNALS -DTIMES"
 fi
 
-make prefix=$prefix INCLUDEDIR=$prefix/include LIBDIR=${libdir} CFLAGS="$cflags" $extraargs -j ${nproc} install
+make prefix=${prefix} \
+     INCLUDEDIR=${includedir} \
+     LIBDIR=${libdir} \
+     CFLAGS="${cflags}" \
+     ${extraargs} \
+     -j ${nproc} \
+   install
+
 if [[ $target == *mingw* ]]; then
   # rename binaries and move libraries
   for file in ${bindir}/{lrs,lrsnash}; do mv $file $file.exe; done
