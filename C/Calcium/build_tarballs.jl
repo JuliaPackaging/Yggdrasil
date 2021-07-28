@@ -63,7 +63,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
     Dependency(PackageSpec(name="Arb_jll"), compat = "~200.2000"),
-    Dependency(PackageSpec(name="Antic_jll"), compat = "~0.200"),
+    Dependency(PackageSpec(name="Antic_jll"), compat = "~0.200.500"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
