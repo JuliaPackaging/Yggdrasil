@@ -17,8 +17,14 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
     end
 
+    for p in platforms
+        p["julia_version"] = string(julia_version)
+    end
+
     return platforms
 end
+
+libjulia_platforms() = [libjulia_platforms(v"1.6.0"); libjulia_platforms(v"1.7.0")]
 
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber)
@@ -44,10 +50,14 @@ function build_julia(ARGS, version::VersionNumber)
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
-
+    splitversion=( ${version//./ } )
+    patchdir=$WORKSPACE/srcdir/patches
+    if (( splitversion[0] > 1 || splitversion[1] >= 6 )); then
+        patchdir=$patchdir/$version
+    fi
     # Apply patches
-    if [ -d $WORKSPACE/srcdir/patches ]; then
-    for f in $WORKSPACE/srcdir/patches/*.patch; do
+    if [ -d $patchdir ]; then
+    for f in $patchdir/*.patch; do
         echo "Applying path ${f}"
         atomic_patch -p1 ${f}
     done
@@ -257,10 +267,6 @@ function build_julia(ARGS, version::VersionNumber)
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
     platforms = expand_cxxstring_abis(platforms)
 
-    for p in platforms
-        p["julia_version"] = string(version)
-    end
-
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libjulia", :libjulia; dont_dlopen=true),
@@ -296,7 +302,7 @@ function build_julia(ARGS, version::VersionNumber)
     end
 
     if version < v"1.7"
-        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10.31")))
+        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10")))
     #else
     #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
@@ -315,9 +321,9 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
         push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="0.28.2")))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.10"))
-        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
-        push!(dependencies, BuildDependency("LibGit2_jll", compat="1.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.10")))
+        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="1.2")))
     elseif version.major == 1 && version.minor == 7
         #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
         #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
@@ -331,7 +337,8 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.0+0")))
 
         # starting with Julia 1.7, we need LLVMLibUnwind_jll
-        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
+        # this seems to replace libunwind.h and the build then fails on Linux?
+        #push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
     else
         error("Unsupported Julia version")
     end
