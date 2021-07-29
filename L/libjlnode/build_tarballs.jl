@@ -7,7 +7,7 @@ version = v"14.17.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunoru/jlnode.git", "d89e011f0ea6e5575c2309e8c53fc93abddffd2c"),
+    GitSource("https://github.com/sunoru/jlnode.git", "1bb0c23e7f0200fdb9dd5bcd82e153d353264e37"),
     ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/4.0.0.tar.gz", "a61019de219cfbb4943b109fd1c56466c48dedbfcce10567f8e7826992be9c0d")
 ]
 
