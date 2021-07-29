@@ -21,6 +21,14 @@ function libjulia_platforms(julia_version)
         p["julia_version"] = string(julia_version)
     end
 
+    # While the "official" Julia kernel ABI itself does not involve any C++
+    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
+    # dependent on the C++ strings ABI (coming from LLVM related code). This
+    # doesn't matter if the client code is pure C, but as soon as there are
+    # other (actual) C++ dependencies, we must make sure to use the matching C++
+    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
+    platforms = expand_cxxstring_abis(platforms)
+
     return platforms
 end
 
@@ -259,14 +267,6 @@ function build_julia(ARGS, version::VersionNumber)
     # platforms are passed in on the command line
     platforms = libjulia_platforms(version)
 
-    # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
-    # dependent on the C++ strings ABI (coming from LLVM related code). This
-    # doesn't matter if the client code is pure C, but as soon as there are
-    # other (actual) C++ dependencies, we must make sure to use the matching C++
-    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(platforms)
-
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libjulia", :libjulia; dont_dlopen=true),
@@ -345,6 +345,8 @@ function build_julia(ARGS, version::VersionNumber)
 
     julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
 
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    if any(should_build_platform.(triplet.(platforms)))
+        build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
+    end
 end
