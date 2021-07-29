@@ -35,7 +35,7 @@ end
 libjulia_platforms() = [libjulia_platforms(v"1.6.0"); libjulia_platforms(v"1.7.0")]
 
 # Collection of sources required to build Julia
-function build_julia(ARGS, version::VersionNumber)
+function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
 
     checksums = Dict(
@@ -346,7 +346,7 @@ function build_julia(ARGS, version::VersionNumber)
     julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
 
     if any(should_build_platform.(triplet.(platforms)))
-        build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+        build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
     end
 end
