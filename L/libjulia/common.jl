@@ -84,9 +84,9 @@ function build_julia(ARGS, version::VersionNumber)
     # a HostDependency, now that we have those
     LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
     if [[ "${version}" == 1.[0-5].* ]]; then
-        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++11""
+        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++11"
     else
-        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++14""
+        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++14"
     fi
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
@@ -269,7 +269,6 @@ function build_julia(ARGS, version::VersionNumber)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
-        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
         BuildDependency("utf8proc_jll"),
@@ -286,16 +285,17 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
     elseif version < v"1.7"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
+        push!(dependencies, Dependency("LibUV_jll"))
     end
 
     if version < v"1.6"
-        push!(dependencies, BuildDependency("SuiteSparse_jll", compat="5.4.0"))
+        push!(dependencies, BuildDependency(PackageSpec(name="SuiteSparse_jll", version="5.4.0")))
     else
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
     end
 
     if version < v"1.7"
-        push!(dependencies, BuildDependency("PCRE2_jll", compat="10.31"))
+        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10.31")))
     #else
     #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
@@ -310,9 +310,9 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
         push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.9"))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.9")))
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
-        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="0.28.2")))
     elseif version.major == 1 && version.minor == 6
         push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.10"))
         push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
@@ -335,7 +335,7 @@ function build_julia(ARGS, version::VersionNumber)
         error("Unsupported Julia version")
     end
 
-    julia_compat = version ≥ v"1.7" ? "1.6" : "1.0"
+    julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
 
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
