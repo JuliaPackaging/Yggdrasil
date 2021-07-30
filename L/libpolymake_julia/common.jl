@@ -6,7 +6,7 @@ import Pkg.Types: VersionSpec
 
 name = "libpolymake_julia"
 upstream_version = v"0.4.1"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + 10 + julia_version.minor)
+version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + 20 + julia_version.minor)
 
 # Collection of sources required to build libpolymake_julia
 sources = [
@@ -55,8 +55,9 @@ dependencies = [
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FLINT_jll", compat = "~200.800"),
     Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
-    Dependency("polymake_jll", v"400.400.0"; compat = "~400.400.0"),
+    Dependency("polymake_jll", v"400.400.1"; compat = "~400.400.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
