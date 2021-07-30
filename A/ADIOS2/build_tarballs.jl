@@ -84,10 +84,10 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
-    ExecutableProduct("adios_iotest", :adios_iotest),
-    ExecutableProduct("adios_reorganize", :adios_reorganize),
-    ExecutableProduct("adios_reorganize_mpi", :adios_reorganize_mpi),
+    # ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
+    # ExecutableProduct("adios_iotest", :adios_iotest),
+    # ExecutableProduct("adios_reorganize", :adios_reorganize),
+    # ExecutableProduct("adios_reorganize_mpi", :adios_reorganize_mpi),
     ExecutableProduct("bp4dbg", :bp4dbg),
     ExecutableProduct("bpls", :bpls),
     ExecutableProduct("sst_conn_tool", :sst_conn_tool),
