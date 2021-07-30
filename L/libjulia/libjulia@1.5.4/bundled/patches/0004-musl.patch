@@ -1,0 +1,42 @@
+From f0dd7818f04ea3d68d534f460b69a6c3b4afbfd2 Mon Sep 17 00:00:00 2001
+From: Julian Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Mon, 18 May 2020 20:58:07 -0500
+Subject: [PATCH] Make processor_arm.cpp compile on musl (#34777)
+
+---
+ src/processor_arm.cpp | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/src/processor_arm.cpp b/src/processor_arm.cpp
+index 7b5fe0003bb5..96ca1789f593 100644
+--- a/src/processor_arm.cpp
++++ b/src/processor_arm.cpp
+@@ -10,10 +10,16 @@
+ #include <fstream>
+ #include <algorithm>
+ 
+-#if defined(_CPU_AARCH64_) || __GLIBC_PREREQ(2, 16)
++// This nesting is required to allow compilation on musl
++#define USE_DYN_GETAUXVAL
++#if defined(_CPU_AARCH64_)
++#  undef USE_DYN_GETAUXVAL
+ #  include <sys/auxv.h>
+-#else
+-#  define DYN_GETAUXVAL
++#elif defined(__GLIBC_PREREQ)
++#  if __GLIBC_PREREQ(2, 16)
++#    undef USE_DYN_GETAUXVAL
++#    include <sys/auxv.h>
++#  endif
+ #endif
+ 
+ namespace ARM {
+@@ -498,7 +504,7 @@ static constexpr size_t ncpu_names = sizeof(cpus) / sizeof(cpus[0]);
+ #  define AT_HWCAP2 26
+ #endif
+ 
+-#if defined(DYN_GETAUXVAL)
++#if defined(USE_DYN_GETAUXVAL)
+ static unsigned long getauxval_procfs(unsigned long type)
+ {
+     int fd = open("/proc/self/auxv", O_RDONLY);
