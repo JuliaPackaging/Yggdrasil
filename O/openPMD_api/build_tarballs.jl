@@ -13,8 +13,8 @@ sources = [
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We temporarily use a feature branch instead of a released
     # version because the Julia bindings are not release yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/58391348d6efd8ce529dcc1548019904a63bcdd4.tar.gz",
-                  "70e9e432893f8dbc094fd887b53f53c396f225c5f2bacc43783f0b94e83313ea"),
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/1f6559bd7891fa1bbd0313c84137289dc8cc6757.tar.gz",
+                  "3c060d8180dcac9dc1d82ed4628e823e57995e0f86788d6ddb10017127e8391f"),
 ]
 
 # Bash recipe for building across all platforms
