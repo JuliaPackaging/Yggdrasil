@@ -337,8 +337,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.0+0")))
 
         # starting with Julia 1.7, we need LLVMLibUnwind_jll
-        # this seems to replace libunwind.h and the build then fails on Linux?
-        #push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
     else
         error("Unsupported Julia version")
     end
