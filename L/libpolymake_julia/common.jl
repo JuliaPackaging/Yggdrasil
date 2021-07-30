@@ -57,7 +57,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~200.800"),
     Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
-    Dependency("polymake_jll", v"400.400.1"; compat = "~400.400.1"),
+    Dependency("polymake_jll"; compat = "~400.400.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
