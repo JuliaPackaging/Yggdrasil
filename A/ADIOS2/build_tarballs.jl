@@ -23,6 +23,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gettid.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ndims.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sockaddr_in.patch
+# PR <https://github.com/ornladios/ADIOS2/issues/2808>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/adios2_init_config_serial.patch
 
 mkdir build
 cd build
