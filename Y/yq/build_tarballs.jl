@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "yq"
 
-version = v"0.5.0"
+version = v"4.11.2"
 
 # Collection of sources required to build yq
 sources = [
