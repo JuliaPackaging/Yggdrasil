@@ -88,9 +88,9 @@ products = [
     # ExecutableProduct("adios_iotest", :adios_iotest),
     # ExecutableProduct("adios_reorganize", :adios_reorganize),
     # ExecutableProduct("adios_reorganize_mpi", :adios_reorganize_mpi),
-    ExecutableProduct("bp4dbg", :bp4dbg),
+    # ExecutableProduct("bp4dbg", :bp4dbg),
     ExecutableProduct("bpls", :bpls),
-    ExecutableProduct("sst_conn_tool", :sst_conn_tool),
+    # ExecutableProduct("sst_conn_tool", :sst_conn_tool),
 
     LibraryProduct("libadios2_c", :libadios2_c),
     LibraryProduct("libadios2_c_mpi", :libadios2_c_mpi),
