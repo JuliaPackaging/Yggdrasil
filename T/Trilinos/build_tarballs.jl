@@ -120,7 +120,7 @@ cmake \
     -DTPL_ENABLE_Zlib=OFF \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
     $SRCDIR
-    make -j10 install
+    make -j${nprocs} install
         """
 
 # These are the platforms we will build for by default, unless further
