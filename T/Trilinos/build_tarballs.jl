@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "Trilinos"
 version = v"12.12.1"
-
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
@@ -28,7 +27,6 @@ cmake \
     -DCMAKE_Fortran_COMPILER=gfortran \
     -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
     -DCMAKE_Fortran_FLAGS="$FLAGS" \
-    -DTrilinos_INSTALL_TriBITS=OFF \
     -DTrilinos_ENABLE_DEVELOPMENT_MODE=OFF \
     -DTrilinos_ASSERT_MISSING_PACKAGES=OFF \
     -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION=ON \
@@ -58,19 +56,14 @@ cmake \
     -DTrilinos_ENABLE_COMPLEX=ON \
     -DTrilinos_ENABLE_Amesos=ON \
     -DTrilinos_ENABLE_Amesos2=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Anasazi=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_AztecOO=ON \
     -DTrilinos_ENABLE_Belos=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Epetra=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_EpetraExt=ON \
     -DTrilinos_ENABLE_Galeri=ON \
     -DTrilinos_ENABLE_GlobiPack=ON \
     -DTrilinos_ENABLE_Ifpack=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Ifpack2=ON \
     -DTrilinos_ENABLE_Intrepid=ON \
     -DTrilinos_ENABLE_Intrepid2=ON \
@@ -81,15 +74,12 @@ cmake \
     -DTrilinos_ENABLE_ML=ON \
     -DTrilinos_ENABLE_Moertel=ON \
     -DTrilinos_ENABLE_MueLu=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_NOX=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_OptiPack=ON \
     -DTrilinos_ENABLE_Pamgen=ON \
     -DTrilinos_ENABLE_Phalanx=ON \
     -DTrilinos_ENABLE_Pike=ON \
     -DTrilinos_ENABLE_Piro=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Pliris=ON \
     -DTrilinos_ENABLE_ROL=ON \
     -DTrilinos_ENABLE_RTOp=ON \
@@ -99,20 +89,15 @@ cmake \
     -DTrilinos_ENABLE_ShyLU=ON \
     -DTrilinos_ENABLE_Stokhos=ON \
     -DTrilinos_ENABLE_Stratimikos=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Teko=ON \
     -DTrilinos_ENABLE_Teuchos=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Thyra=ON \
     -DTrilinos_ENABLE_Tpetra=ON \
     -DTrilinos_ENABLE_TrilinosCouplings=ON \
     -DTrilinos_ENABLE_Triutils=ON \
     -DTrilinos_ENABLE_Xpetra=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Zoltan=ON  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Zoltan2=OFF  \
-    -DTrilinos_ENABLE_TESTS=OFF \
     -DTrilinos_ENABLE_Gtest=OFF \
     -DTrilinos_ENABLE_MiniTensor=OFF \
     -DTrilinos_ENABLE_MOOCHO=OFF \
@@ -134,11 +119,9 @@ cmake \
     -DTPL_ENABLE_X11=OFF \
     -DTPL_ENABLE_Zlib=OFF \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
-    -DTrilinos_DUMP_PACKAGE_DEPENDENCIES=ON \
     $SRCDIR
-
-make -j${nprocs} install
-"""
+    make -j10 install
+        """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
