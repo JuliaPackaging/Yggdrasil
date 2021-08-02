@@ -125,7 +125,7 @@ cmake \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p), supported_platforms())
+platforms = filter(p -> (Sys.islinux(p) && nbits(p) != 32), supported_platforms())
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
