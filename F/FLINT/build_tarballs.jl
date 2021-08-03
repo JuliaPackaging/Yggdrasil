@@ -32,7 +32,8 @@ upstream_version = v"2.8.0"
 sources = [
 #    GitSource("https://github.com/wbhart/flint2.git", "12c069ea98cd8d2c1b556bbd85568c4891f126fa"),
     ArchiveSource("https://github.com/wbhart/flint2/archive/refs/tags/v$(upstream_version).tar.gz", #"https://www.flintlib.org/flint-$(upstream_version).tar.gz",
-                  "32b9bed06a43c69cc97a2afcb043b6efb6d03b5b4845482d1d65a25b1b6b91bd")
+                  "32b9bed06a43c69cc97a2afcb043b6efb6d03b5b4845482d1d65a25b1b6b91bd"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,6 +45,11 @@ if [[ ${target} == *musl* ]]; then
 elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
+
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
