@@ -2,12 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-version = v"6.9.10-12"
+version = v"6.9.12-19"
 
 # Collection of sources required to build imagemagick
 sources = [
-    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/6.9.10-12.tar.gz",
-    "efaae51489af9f895762bcb7090636f03194daaa026eda97dae230098d2ccec7"),
+    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/6.9.12-19.tar.gz",
+    "2f184f1f5c3e19849347b2b4acb6dd074290903d36fa5924956ee06c85ddf783"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -39,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
