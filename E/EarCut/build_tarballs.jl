@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "EarCut"
-version = v"2.1.5"
+version = v"2.1.6"
 # Collection of sources required to build Clipper
 sources = [
     GitSource("https://github.com/SimonDanisch/EarCutBuilder.git",
@@ -19,7 +19,7 @@ ${CXX} -std=c++11 -fPIC -shared -o "${libdir}/libearcut.${dlext}" cwrapper.cpp
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental_platforms=true)
 
 # The products that we will ensure are always built
 products = [
