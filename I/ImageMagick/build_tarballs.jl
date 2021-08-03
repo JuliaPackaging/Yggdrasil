@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-version = v"6.9.12-19"
+version = v"6.9.12"
 
 # Collection of sources required to build imagemagick
 sources = [
