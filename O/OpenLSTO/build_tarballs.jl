@@ -14,8 +14,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 atomic_patch -p1 patches/fixeigenpath.patch
-cp makefile $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
+cp makefile_FEA $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA/makefile
+cp makefile_LSM $WORKSPACE/srcdir/OpenLSTO/M2DO_LSM/makefile
+cd $WORKSPACE/srcdir/OpenLSTO
+atomic_patch -p1 ../patches/include.patch
 cd $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
+make all
+make install
+cd ../M2DO_LSM
+mkdir bin
 make all
 make install
 install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
@@ -24,7 +31,7 @@ install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> !Sys.isapple(p), platforms)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("m2do_fea", :m2do_fea)
@@ -32,7 +39,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Eigen_jll")
+    Dependency("Eigen_jll"),
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
