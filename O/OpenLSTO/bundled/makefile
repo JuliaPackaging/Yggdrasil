@@ -1,6 +1,6 @@
 
-CPPFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC
-LDFLAGS = -shared
+CPPFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
+LDFLAGS = -shared -fopenmp
 # CHANGE TO directory where FEA and LSM include folders are
 # parent directory for FEA files
 # parent directory for FEA files
