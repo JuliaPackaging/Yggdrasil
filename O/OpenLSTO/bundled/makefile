@@ -30,7 +30,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
 ###############################################################################
 # List of targets for executables you write
 
-m2do_fea.so: $(OBJ_FILES)
+m2do_fea.$(dlext): $(OBJ_FILES)
 	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -43,7 +43,7 @@ all: m2do_fea.so
 
 install: m2do_fea.so
 	install -d $(libdir)
-	install -m 644 m2do_fea.so $(libdir)
+	install -m 644 m2do_fea.$(dlext) $(libdir)
 	install -m 644 include/*.h $(includedir)
 clean:
 	rm -f M2DO_FEA ${M2DO_OBJ}
