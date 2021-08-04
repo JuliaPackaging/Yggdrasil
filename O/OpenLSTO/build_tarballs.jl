@@ -13,6 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+atomic_patch -p1 patches/fixeigenpath.patch
 cp makefile $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
 cd $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
 make all
@@ -30,7 +31,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Eigen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
