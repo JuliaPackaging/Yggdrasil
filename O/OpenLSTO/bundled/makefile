@@ -46,4 +46,4 @@ install: m2do_fea.$(dlext)
 	install -m 644 m2do_fea.$(dlext) $(libdir)
 	install -m 644 include/*.h $(includedir)
 clean:
-	rm -f M2DO_FEA ${M2DO_OBJ}
+	rm -f m2do_fea.$(dlext) $(OBJ_FILES)

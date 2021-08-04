@@ -24,7 +24,7 @@ install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
+filter!(p -> !Sys.isapple(p), platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("m2do_fea", :m2do_fea)
