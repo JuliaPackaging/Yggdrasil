@@ -39,9 +39,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 .PHONY: clean install all
 
-all: m2do_fea.so
+all: m2do_fea.$(dlext)
 
-install: m2do_fea.so
+install: m2do_fea.$(dlext)
 	install -d $(libdir)
 	install -m 644 m2do_fea.$(dlext) $(libdir)
 	install -m 644 include/*.h $(includedir)
