@@ -3,23 +3,23 @@ using BinaryBuilder
 include("../../../fancy_toys.jl")
 
 name = "CUDA_full"
-version = v"11.4.0"
+version = v"11.4.1"
 
 sources_linux = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.0/local_installers/cuda_11.4.0_470.42.01_linux.run",
-               "d219db30f7415a115a4ea22bdbb5984b0a18f7f891cad6074c5da45d223aaa4b", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_470.57.02_linux.run",
+               "dd6c339a719989d2518f5d54eeac1ed707d0673f8664ba0c4d4b2af7c3ba0005", "installer.run")
 ]
 sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.0/local_installers/cuda_11.4.0_470.42.01_linux_ppc64le.run",
-               "6eb2fd0d9d5bc39fb243b5e1789ff827f325d098cd1fbb828a0499552b9544cc", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_470.57.02_linux_ppc64le.run",
+               "dd92ca04f76ad938da3480e2901c0e52dbff6028ada63c09071ed9e3055dc361", "installer.run")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.0/local_installers/cuda_11.4.0_470.42.01_linux_sbsa.run",
-               "f0c8e80d98a601ddca031b6764459984366008c7d3847e7c7f99b36bd4438e3c", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_470.57.02_linux_sbsa.run",
+               "8efa725a41dfd3c0c0f453c2dd535d149154102bf2b791718859417b4f84f922", "installer.run")
 ]
 sources_win10 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.0/local_installers/cuda_11.4.0_471.11_win10.exe",
-               "7efd0ae930e751b5ebbf72b187d60be0408ccb6d1198ae2b1ad7d746312b748b", "installer.exe")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_471.41_win10.exe",
+               "2aea308dea1b19fa79eba061c7ca94d956d6e0478b07bf1eb8ff771ea77b0ce9", "installer.exe")
 ]
 
 script = raw"""
@@ -125,4 +125,3 @@ if should_build_platform("x86_64-w64-mingw32")
                    [Platform("x86_64", "windows")], products, dependencies;
                    skip_audit=true)
 end
-
