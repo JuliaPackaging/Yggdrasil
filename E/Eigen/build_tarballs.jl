@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Eigen"
-version = v"3.3.7"
+version = v"3.3.8" #Version number artificially bumped by 1.
 
 sources = [
     ArchiveSource("https://gitlab.com/libeigen/eigen/-/archive/$(version)/eigen-$(version).tar.bz2",
