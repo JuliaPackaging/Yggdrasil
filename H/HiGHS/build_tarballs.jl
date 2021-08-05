@@ -4,10 +4,10 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"0.3.1"
+version = v"0.4.0"
 
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "a9b4b4b2ee23f22c4c3d41c2d00369146fc2c6e2"),
+    GitSource("https://github.com/ERGO-Code/HiGHS.git", "822f5d0fb9b36a25a21e44b8440c127935980cfa"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,7 +23,6 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-apk del ninja
 apk add --upgrade cmake
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
