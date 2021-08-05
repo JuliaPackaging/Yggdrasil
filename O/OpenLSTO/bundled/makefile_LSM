@@ -1,4 +1,4 @@
-CPPFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
+CXXFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
 LDFLAGS = -shared -fopenmp
 
 LSM_DIR = .
@@ -25,7 +25,7 @@ m2do_lsm.$(dlext): $(OBJ_FILES)
 	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CPPFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 
 .PHONY: clean install all

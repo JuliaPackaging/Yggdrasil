@@ -1,5 +1,5 @@
 
-CPPFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
+CXXFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
 LDFLAGS = -shared -fopenmp
 # CHANGE TO directory where FEA and LSM include folders are
 # parent directory for FEA files
@@ -34,7 +34,7 @@ m2do_fea.$(dlext): $(OBJ_FILES)
 	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CPPFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 
 .PHONY: clean install all
