@@ -1,0 +1,13 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index a13a235..bae3bd2 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -1,6 +1,8 @@
+ cmake_minimum_required(VERSION 2.8.9)
+ project(TauDEM)
+ 
++set (CMAKE_CXX_STANDARD 11)
++
+ set (shape_srcs ReadOutlets.cpp)
+ set (common_srcs commonLib.cpp tiffIO.cpp)
+ 

@@ -23,6 +23,7 @@ fi
     --enable-shared=yes \
     --enable-static=no \
     --without-cs-fs \
+    --enable-mpi-fortran=usempif08 \
     --with-cross=${WORKSPACE}/srcdir/${target}
 
 # Build the library
@@ -50,7 +51,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# For the time being we need to use LLVM 11 because LLVM 12 has troubles with GCC 4-5
-# on FreeBSD: https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_llvm_version=v"11")
+               julia_compat="1.6", preferred_gcc_version=v"5")

@@ -23,6 +23,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gettid.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ndims.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sockaddr_in.patch
+# PR <https://github.com/ornladios/ADIOS2/issues/2808>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/adios2_init_config_serial.patch
 
 mkdir build
 cd build
@@ -67,8 +69,8 @@ cmake \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     ..
-cmake --build . --config Release --parallel $nproc
-cmake --build . --config Release --parallel $nproc --target install
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license ../Copyright.txt ../LICENSE
 """
 
@@ -84,6 +86,14 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
+    # ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
+    # ExecutableProduct("adios_iotest", :adios_iotest),
+    # ExecutableProduct("adios_reorganize", :adios_reorganize),
+    # ExecutableProduct("adios_reorganize_mpi", :adios_reorganize_mpi),
+    # ExecutableProduct("bp4dbg", :bp4dbg),
+    ExecutableProduct("bpls", :bpls),
+    # ExecutableProduct("sst_conn_tool", :sst_conn_tool),
+
     LibraryProduct("libadios2_c", :libadios2_c),
     LibraryProduct("libadios2_c_mpi", :libadios2_c_mpi),
     LibraryProduct("libadios2_core", :libadios2_core),
@@ -107,13 +117,13 @@ dependencies = [
     # We don't want to use Bzip2 because this would lock us into Julia ≥1.6
     # Dependency(PackageSpec(name="Bzip2_jll")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # We cannot use HDF5 because we need an HDF5 configuration with MPI support
+    # Dependency(PackageSpec(name="HDF5_jll")),
     Dependency(PackageSpec(name="MPICH_jll")),
     Dependency(PackageSpec(name="MicrosoftMPI_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
-    # We cannot use HDF5 because we need a HDF5 configuration with MPI support
-    # Dependency(PackageSpec(name="HDF5_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -7,20 +7,22 @@ version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/basiclu.git", "199952ba4f62b3ffb4d73a764c5de386be00bd17")
+    GitSource("https://github.com/ERGO-Code/basiclu.git", "fe63cd34ab0259329e5a979df7f19ff0de59cfae")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/basiclu/
-ARGS=(CC99="cc -std=c99" CPPFLAGS="-DBASICLU_NOTIMER")
+ARGS=(CC99="cc" CFLAGS="-std=c99" CPPFLAGS="-DBASICLU_NOTIMER")
 if [[ ${target} == *mingw32* ]]; then
-    ARGS+=(UNAME="Windows" SO_OPTS="-shared")
+    ARGS+=(UNAME="Windows")
 else
     ARGS+=(UNAME="$(uname)")
 fi
 make "${ARGS[@]}"
 cp lib/* "${libdir}/."
+mkdir -p ${includedir}
+cp include/* "${includedir}/."
 """
 
 # These are the platforms we will build for by default, unless further

@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Calcium"
-version = v"000.400.000"
-upstream_version = v"0.4.0"
+version = v"000.400.100"
+upstream_version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/fredrik-johansson/calcium/archive/refs/tags/$(upstream_version).tar.gz",
-                  "019469d2c7991e4077a9b32769451e891b105f763ab71f9c3585ce636df18918"),
+                  "5fbc997e8c9e76c88cd85c12a86f0f14c4ebe602e9f7f11e11f0ca1f89c5d81c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -61,9 +61,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
-    Dependency(PackageSpec(name="Arb_jll"), compat = "~200.1900"),
-    Dependency(PackageSpec(name="Antic_jll"), compat = "~0.200"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
+    Dependency(PackageSpec(name="Arb_jll"), compat = "~200.2000"),
+    Dependency(PackageSpec(name="Antic_jll"), compat = "~0.200.500"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
