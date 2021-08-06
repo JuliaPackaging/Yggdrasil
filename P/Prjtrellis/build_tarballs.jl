@@ -11,7 +11,7 @@ sources = [
 ]
 
 dependencies = [
-    Dependency("Python_jll"),
+    Dependency("Python_jll"; compat="~3.8.1"),
     Dependency("boost_jll"; compat="=1.76.0"), # max gcc7
 ]
 
