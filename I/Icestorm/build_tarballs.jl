@@ -28,7 +28,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("iceunpack", :iceunpack),
-    ExecutableProduct("iceboxdiff", :iceboxdiff),
+    ExecutableProduct("icebox_diff", :icebox_diff),
     ExecutableProduct("icebox_stat", :icebox_stat),
     ExecutableProduct("icebox_colbuf", :icebox_colbuf),
     ExecutableProduct("icebox_maps", :icebox_maps),
