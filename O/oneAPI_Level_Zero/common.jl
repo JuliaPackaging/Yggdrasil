@@ -1,6 +1,6 @@
 
-version = v"1.3.6"
-api_version = v"1.1.2"
+version = v"1.4.1"
+api_version = v"1.2.13"
 
 # Collection of sources required to build this package
 #
@@ -8,5 +8,5 @@ api_version = v"1.1.2"
 # which are versioned independently.
 sources = [
     GitSource("https://github.com/oneapi-src/level-zero.git",
-              "bb89202bfd8c5e05b54d16fc8d9ad9e6c7142a09"),
+              "551dd5810a3cea7a7e26ac4441da31878e804b53"),
 ]
