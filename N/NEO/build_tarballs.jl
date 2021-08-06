@@ -74,7 +74,7 @@ products = [
 dependencies = [
     Dependency("gmmlib_jll"; compat="=21.2.1"),
     Dependency("libigc_jll"; compat="=1.0.7862"),
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="~1.2.13"),  # XXX: don't specify patch version
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.2.13"; compat="~1.2"),  # XXX: don't specify patch version
 ]
 
 # GCC 4 has constexpr incompatibilities
