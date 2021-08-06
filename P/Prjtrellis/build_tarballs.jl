@@ -19,7 +19,7 @@ dependencies = [
 script = raw"""
 cd prjtrellis/libtrellis
 cmake -DCMAKE_INSTALL_PREFIX=${prefix}
-make
+make -j${nproc}
 make install
 """
 
