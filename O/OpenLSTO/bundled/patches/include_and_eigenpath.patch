@@ -1,3 +1,237 @@
+diff --git a/M2DO_3D_LSM/lsm_3d.cpp b/M2DO_3D_LSM/lsm_3d.cpp
+index bffa6e3..6d66211 100644
+--- a/M2DO_3D_LSM/lsm_3d.cpp
++++ b/M2DO_3D_LSM/lsm_3d.cpp
+@@ -1,4 +1,7 @@
+-
++#include "lsm_3d.h"
++#include <ostream>
++#include <iostream>
++#include <fstream>
+ void LevelSet3D::CalculateVolumeFractions()
+ {
+   /*
+diff --git a/M2DO_3D_LSM/lsm_3d.h b/M2DO_3D_LSM/lsm_3d.h
+index 94e0f43..c979b98 100755
+--- a/M2DO_3D_LSM/lsm_3d.h
++++ b/M2DO_3D_LSM/lsm_3d.h
+@@ -8,9 +8,6 @@
+ #include "marching_cubes_cross.h"
+ #include "mp_vector.h"
+ 
+-#include "marching_cubes_cross.cpp"
+-#include "mp_vector.cpp"
+-
+ 
+ 
+ typedef unsigned int uint;
+@@ -129,8 +126,4 @@ class LevelSet3D
+   void WriteSTL(int box_smooth);
+ };
+ 
+-
+-
+-#include "lsm_3d.cpp"
+-
+ #endif
+diff --git a/M2DO_3D_LSM/lsm_opti_3d.cpp b/M2DO_3D_LSM/lsm_opti_3d.cpp
+index 273e6c5..32779b7 100755
+--- a/M2DO_3D_LSM/lsm_opti_3d.cpp
++++ b/M2DO_3D_LSM/lsm_opti_3d.cpp
+@@ -1,6 +1,4 @@
+-
+-
+-
++#include "lsm_opti_3d.h"
+ void PerformOptimization ( SensitivityData &SensData) {
+ 
+   // number of elements in x, y, and z directions
+diff --git a/M2DO_3D_LSM/lsm_opti_3d.h b/M2DO_3D_LSM/lsm_opti_3d.h
+index 6b8ed23..5e0f26b 100755
+--- a/M2DO_3D_LSM/lsm_opti_3d.h
++++ b/M2DO_3D_LSM/lsm_opti_3d.h
+@@ -3,7 +3,8 @@
+ 
+ #include <cmath>
+ #include <vector>
+-
++#include "M2DO_FEA.h"
++#include <Eigen/Dense>
+ 
+ 
+ namespace FEA = M2DO_FEA ;
+@@ -67,6 +68,4 @@ void PerformOptimization (SensitivityData &SensData); // optimizes the boundary
+ 
+ void PerformOptimization_Stress_LBeam (SensitivityData &SensData); // optimized the boundary velocities for the L beam
+ 
+-#include "lsm_opti_3d.cpp"
+-
+ #endif
+diff --git a/M2DO_FEA/include/M2DO_FEA.h b/M2DO_FEA/include/M2DO_FEA.h
+index a61d070..f32a6d1 100755
+--- a/M2DO_FEA/include/M2DO_FEA.h
++++ b/M2DO_FEA/include/M2DO_FEA.h
+@@ -14,8 +14,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/boundary_conditions.h b/M2DO_FEA/include/boundary_conditions.h
+index 72b9211..b69857d 100755
+--- a/M2DO_FEA/include/boundary_conditions.h
++++ b/M2DO_FEA/include/boundary_conditions.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/heaviside_function.h b/M2DO_FEA/include/heaviside_function.h
+index 6b9e2e4..2c549e0 100755
+--- a/M2DO_FEA/include/heaviside_function.h
++++ b/M2DO_FEA/include/heaviside_function.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/linear_shape_function.h b/M2DO_FEA/include/linear_shape_function.h
+index 0d3b4f8..510c980 100755
+--- a/M2DO_FEA/include/linear_shape_function.h
++++ b/M2DO_FEA/include/linear_shape_function.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/mesh.h b/M2DO_FEA/include/mesh.h
+index 96d3230..2224acb 100755
+--- a/M2DO_FEA/include/mesh.h
++++ b/M2DO_FEA/include/mesh.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "quadrature.h"
+ #include "linear_shape_function.h"
+diff --git a/M2DO_FEA/include/node.h b/M2DO_FEA/include/node.h
+index 4e5a66e..1144a51 100755
+--- a/M2DO_FEA/include/node.h
++++ b/M2DO_FEA/include/node.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/pressure_load_study.h b/M2DO_FEA/include/pressure_load_study.h
+index 11e61ac..0b6804d 100755
+--- a/M2DO_FEA/include/pressure_load_study.h
++++ b/M2DO_FEA/include/pressure_load_study.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "mesh.h"
+ #include "boundary_conditions.h"
+diff --git a/M2DO_FEA/include/sensitivity.h b/M2DO_FEA/include/sensitivity.h
+index db8e80b..ce41a4f 100755
+--- a/M2DO_FEA/include/sensitivity.h
++++ b/M2DO_FEA/include/sensitivity.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/solid_element.h b/M2DO_FEA/include/solid_element.h
+index a010ac6..7d2140f 100755
+--- a/M2DO_FEA/include/solid_element.h
++++ b/M2DO_FEA/include/solid_element.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/solid_material.h b/M2DO_FEA/include/solid_material.h
+index 93f7735..1add8fd 100755
+--- a/M2DO_FEA/include/solid_material.h
++++ b/M2DO_FEA/include/solid_material.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/stationary_study.h b/M2DO_FEA/include/stationary_study.h
+index a4f4898..33117ab 100755
+--- a/M2DO_FEA/include/stationary_study.h
++++ b/M2DO_FEA/include/stationary_study.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "mesh.h"
+ #include "boundary_conditions.h"
 diff --git a/M2DO_LSM/include/boundary.h b/M2DO_LSM/include/boundary.h
 index b2f25a2..1191660 100755
 --- a/M2DO_LSM/include/boundary.h

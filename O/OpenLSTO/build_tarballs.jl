@@ -12,17 +12,22 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# New makefiles added, the patches fix some weird include issues mostly.
+# There is likely a better way to fix them, or upstream the fixes.
 script = raw"""
-atomic_patch -p1 patches/fixeigenpath.patch
 cp makefile_FEA $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA/makefile
 cp makefile_LSM $WORKSPACE/srcdir/OpenLSTO/M2DO_LSM/makefile
+cp makefile_3D_LSM $WORKSPACE/srcdir/OpenLSTO/M2DO_3D_LSM/makefile
 cd $WORKSPACE/srcdir/OpenLSTO
-atomic_patch -p1 ../patches/include.patch
+atomic_patch -p1 ../patches/include_and_eigenpath.patch
 cd $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
 make all
 make install
 cd ../M2DO_LSM
 mkdir bin
+make all
+make install
+cd ../M2DO_3D_LSM
 make all
 make install
 install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
