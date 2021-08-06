@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"0.3.2"
+version = v"0.3.3"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "4a5dd7499522f1fa730a31c59bba419b2bcc6839",
+        "363dd4e8639f8f811ce031c9f6c8c35944e91615",
     ),
     DirectorySource("./bundled"),
 ]
@@ -49,10 +49,12 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libhighs", :libhighs),
+    ExecutableProduct("highs", :highs),
 ]
 
 # Dependencies that must be installed before this package can be built
