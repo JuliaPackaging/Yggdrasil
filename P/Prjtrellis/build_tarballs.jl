@@ -31,7 +31,7 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("ecpunpack", :ecpunpack),
     ExecutableProduct("ecppll", :ecppll),
     ExecutableProduct("ecpbram", :ecpbram),
