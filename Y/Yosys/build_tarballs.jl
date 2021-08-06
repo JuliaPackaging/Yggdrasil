@@ -33,6 +33,7 @@ make install PREFIX=${prefix}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p -> Sys.isapple(p) || Sys.islinux(p), supported_platforms())
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
