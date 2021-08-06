@@ -34,6 +34,8 @@ make install PREFIX=${prefix}
 # platforms are passed in on the command line
 platforms = filter!(p -> Sys.isapple(p) || Sys.islinux(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
+# For some reasons, building for CXX03 string ABI doesn't actually work, skip it
+filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = Product[
