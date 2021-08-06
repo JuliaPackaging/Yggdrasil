@@ -1,3 +1,5 @@
+# -*- makefile -*-
+
 CXXFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
 LDFLAGS = -shared -fopenmp
 

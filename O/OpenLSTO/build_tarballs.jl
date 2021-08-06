@@ -18,24 +18,27 @@ script = raw"""
 cp makefile_FEA $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA/makefile
 cp makefile_LSM $WORKSPACE/srcdir/OpenLSTO/M2DO_LSM/makefile
 cp makefile_3D_LSM $WORKSPACE/srcdir/OpenLSTO/M2DO_3D_LSM/makefile
+# At the moment we need GCC to build with OpenMP
+export CXX=g++
 cd $WORKSPACE/srcdir/OpenLSTO
 atomic_patch -p1 ../patches/include_and_eigenpath.patch
 cd $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
-make all
+make all -j${nproc}
 make install
 cd ../M2DO_LSM
 mkdir bin
-make all
+make all -j${nproc}
 make install
 cd ../M2DO_3D_LSM
-make all
+make all -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true); skip=p->false)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("m2do_fea", :m2do_fea)
