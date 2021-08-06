@@ -10,7 +10,7 @@ sources = [
     GitSource("https://github.com/YosysHQ/icestorm.git", "c495861c19bd0976c88d4964f912abe76f3901c3")
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Bash recipe for building across all platforms
