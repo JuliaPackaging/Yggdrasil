@@ -13,7 +13,7 @@ sources = [
 dependencies = [
     Dependency("Bison_jll"; compat="~3.5.2"),
     Dependency("Readline_jll"; compat="~8.1.1"),
-    Dependency("gperf_jll"; compat="~3.1.0"),
+    HostBuildDependency("gperf_jll"),
     Dependency("Zlib_jll"; compat="~1.2.11"),
 ]
 
