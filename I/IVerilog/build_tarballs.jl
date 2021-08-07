@@ -33,7 +33,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("iverilog", :iverilog),
     ExecutableProduct("iverilog-vpi", :iverilog_vpi)
 ]
