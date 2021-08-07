@@ -28,15 +28,14 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) == "x86_64" && Sys.islinux(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 # For some reason, building for CXX03 string ABI doesn't actually work, skip it
 
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("iverilog", :iverilog),
-    ExecutableProduct("iverilog-vpi", :iverilog_vpi),
-    LibraryProduct("libvpi", :libvpi)
+    ExecutableProduct("iverilog-vpi", :iverilog_vpi)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
