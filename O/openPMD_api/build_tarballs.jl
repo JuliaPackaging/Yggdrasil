@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_version = v"1.6.0"        # Must probably be the same as in libcxxwrap_julia
 
 name = "openPMD_api"
-version = v"0.14.0"
+version = v"0.14.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,8 +13,8 @@ sources = [
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We temporarily use a feature branch instead of a released
     # version because the Julia bindings are not release yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/1f6559bd7891fa1bbd0313c84137289dc8cc6757.tar.gz",
-                  "3c060d8180dcac9dc1d82ed4628e823e57995e0f86788d6ddb10017127e8391f"),
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/d7ebecba2972e5ad0df75b53fe9aabf11632b651.tar.gz",
+                  "8aed2bd1fb9fbbb32e1592b504017cff4f9573fa13a3658e8cdfe930b4006670"),
 ]
 
 # Bash recipe for building across all platforms
