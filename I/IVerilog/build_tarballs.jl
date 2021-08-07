@@ -3,11 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "IVerilog"
-version = v"11.0.0"
+version = v"12.0.0"
 
 # Collection of sources required to complete build
+# This is a patched master including https://github.com/steveicarus/iverilog/pull/511/
+# to allow for cross compilation 
+# TODO use upstream + stable once available
 sources = [
-   GitSource("https://github.com/steveicarus/iverilog.git", "84b4ebee0cfcda28a242d89a07020cd70b1d3e7f")
+   GitSource("https://github.com/sjkelly/iverilog.git", "1f09b041f1060116840b901c21938ad31d79bb98")
 ]
 
 dependencies = [
