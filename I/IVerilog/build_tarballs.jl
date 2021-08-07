@@ -29,7 +29,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) == "x86_64" && Sys.islinux(p), supported_platforms())
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 # For some reason, building for CXX03 string ABI doesn't actually work, skip it
 
