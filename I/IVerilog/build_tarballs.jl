@@ -31,7 +31,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-# For some reason, building for CXX03 string ABI doesn't actually work, skip it
 
 # The products that we will ensure are always built
 products = Product[
