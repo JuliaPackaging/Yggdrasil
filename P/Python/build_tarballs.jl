@@ -25,7 +25,7 @@ echo '#!/bin/bash' >> /usr/bin/arch
 if [[ "${target}" == *-apple-* ]]; then
     echo 'echo i386'  >> /usr/bin/arch
 else
-    echo `echo $target | cut -d - -f 1`  >> /usr/bin/arch
+    echo 'echo `echo $target | cut -d - -f 1`'  >> /usr/bin/arch
 fi
 chmod +x /usr/bin/arch
 
