@@ -22,7 +22,11 @@ apk add zlib-dev libffi-dev
 
 # Create fake `arch` command:
 echo '#!/bin/bash' >> /usr/bin/arch
-echo 'echo i386'   >> /usr/bin/arch
+if [[ "${target}" == *-apple-* ]]; then
+    echo `echo i386`  >> /usr/bin/arch
+else
+    echo `echo $target | cut -d - -f 1`  >> /usr/bin/arch
+fi
 chmod +x /usr/bin/arch
 
 # Patch out cross compile limitations
