@@ -2,14 +2,14 @@
 set(CMAKE_SYSTEM_NAME FreeBSD)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
-set(CMAKE_SYSROOT /opt/x86_64-unknown-freebsd11.1/x86_64-unknown-freebsd11.1/sys-root/)
+set(CMAKE_SYSROOT /opt/x86_64-unknown-freebsd12.2/x86_64-unknown-freebsd12.2/sys-root/)
 set(CMAKE_INSTALL_PREFIX $ENV{prefix})
 
 set(CMAKE_C_COMPILER /opt/x86_64-linux-gnu/tools/clang)
 set(CMAKE_CXX_COMPILER /opt/x86_64-linux-gnu/tools/clang++)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-unknown-freebsd11.1 --sysroot ${CMAKE_SYSROOT} -gcc-toolchain /opt/x86_64-unknown-freebsd11.1")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-unknown-freebsd11.1 --sysroot ${CMAKE_SYSROOT} -gcc-toolchain /opt/x86_64-unknown-freebsd11.1")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-unknown-freebsd12.2 --sysroot ${CMAKE_SYSROOT} -gcc-toolchain /opt/x86_64-unknown-freebsd12.2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-unknown-freebsd12.2 --sysroot ${CMAKE_SYSROOT} -gcc-toolchain /opt/x86_64-unknown-freebsd12.2")
 
 if( $ENV{CC} MATCHES ccache )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)

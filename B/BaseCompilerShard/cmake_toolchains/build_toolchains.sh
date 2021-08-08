@@ -55,7 +55,7 @@ function simple_targets()
     echo "arm-linux-gnueabihf"
     echo "arm-linux-musleabihf"
     # FreeBSD is free again!
-    echo "x86_64-unknown-freebsd11.1"
+    echo "x86_64-unknown-freebsd12.2"
     # Power Overwhelming
     echo "powerpc64le-linux-gnu"
     # Clean your windows
@@ -76,7 +76,7 @@ for TARGET in $(simple_targets); do
 done
 
 # On FreeBSD we actually want to default to clang. :P
-TARGET=x86_64-unknown-freebsd11.1
+TARGET=x86_64-unknown-freebsd12.2
 ln -fs ${TARGET}_clang.toolchain ${TARGET}/${TARGET}.toolchain
 
 # macOS has its own templates because it is a special snoflake
