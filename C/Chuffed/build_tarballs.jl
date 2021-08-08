@@ -26,7 +26,7 @@ make -j ${nproc}
 make install
 """
 
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 products = [
     ExecutableProduct("fzn-chuffed", :fznchuffed),
