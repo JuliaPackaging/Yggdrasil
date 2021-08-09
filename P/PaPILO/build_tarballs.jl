@@ -54,6 +54,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"5.2.0",
+    preferred_gcc_version = v"7",
     julia_compat = "1.6",
 )
