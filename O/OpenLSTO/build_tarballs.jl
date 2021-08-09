@@ -41,7 +41,9 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true); skip
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("m2do_fea", :m2do_fea)
+    LibraryProduct("m2do_fea", :m2do_fea),
+    LibraryProduct("m2do_lsm", :m2do_lsm),
+    LibraryProduct("m2do_3d_lsm", :m2do_3d_lsm)
 ]
 
 # Dependencies that must be installed before this package can be built
