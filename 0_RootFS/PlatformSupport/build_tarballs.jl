@@ -1,3 +1,30 @@
+### Instructions for adding a new version
+#
+# Check out a branch of BinaryBuilderBase from the current master of that repo.
+# Run this script for each target platform. The following will do the job:
+# ```
+# using BinaryBuilder
+# using BinaryBuilder: aatriplet
+# for platform in supported_platforms(; experimental=true)
+#     # Append version numbers for BSD systems
+#     if Sys.isapple(platform)
+#         suffix = arch(platform) == "aarch64" ? "20" : "14"
+#     elseif Sys.isfreebsd(platform)
+#         suffix = "12.2"
+#     else
+#         suffix = ""
+#     end
+#     target = aatriplet(platform) * suffix
+#     run(`julia build_tarballs.jl --debug --verbose --deploy $target`)
+# end
+# ```
+# (Note that `--deploy` requires a GitHub personal access token in a `GITHUB_TOKEN`
+# environment variable with write access to Yggdrasil.)
+# Running this will update BinaryBuilderBase/Artifacts.toml with the entries formatted as
+# `PlatformSupport-<target triplet>.v<today's date>.<builder triplet>.<squashfs|unpacked>`.
+# You can open a PR to BinaryBuilderBase with this change and update the default
+# PlatformSupport version to use in `choose_shards` to be `v<today's date>`.
+
 using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
@@ -27,7 +54,6 @@ sources = [
                   "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                   "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
-    DirectorySource("./bundled"),
 ]
 
 macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
