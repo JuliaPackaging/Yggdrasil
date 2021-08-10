@@ -23,16 +23,13 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
 ###############################################################################
 # List of targets for executables you write
 
+all: m2do_lsm.$(dlext)
+
 m2do_lsm.$(dlext): $(OBJ_FILES)
 	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
-
-
-.PHONY: clean install all
-
-all: m2do_lsm.$(dlext)
 
 install: m2do_lsm.$(dlext)
 	install -d $(libdir)
@@ -40,3 +37,5 @@ install: m2do_lsm.$(dlext)
 	install -m 644 include/*.h $(includedir)
 clean:
 	rm -f m2do_lsm.$(dlext) $(OBJ_FILES)
+
+all: m2do_lsm.$(dlext)

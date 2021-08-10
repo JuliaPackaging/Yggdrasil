@@ -23,14 +23,14 @@ export CXX=g++
 cd $WORKSPACE/srcdir/OpenLSTO
 atomic_patch -p1 ../patches/include_and_eigenpath.patch
 cd $WORKSPACE/srcdir/OpenLSTO/M2DO_FEA
-make all -j${nproc}
+make -j${nproc}
 make install
 cd ../M2DO_LSM
 mkdir bin
-make all -j${nproc}
+make -j${nproc}
 make install
 cd ../M2DO_3D_LSM
-make all -j${nproc}
+make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
 """
