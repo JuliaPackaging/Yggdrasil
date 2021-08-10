@@ -32,7 +32,7 @@ function libjulia_platforms(julia_version)
     return platforms
 end
 
-libjulia_platforms() = [libjulia_platforms(v"1.6.0"); libjulia_platforms(v"1.7.0")]
+libjulia_platforms() = vcat(libjulia_platforms(v"1.6.0"), libjulia_platforms(v"1.7.0"))
 
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber; jllversion=version)
@@ -58,6 +58,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
+    # use the Julia version to determine the directory from which to read patches
     splitversion=( ${version//./ } )
     patchdir=$WORKSPACE/srcdir/patches
     if (( splitversion[0] > 1 || splitversion[1] >= 6 )); then
@@ -276,6 +277,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
+        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
         BuildDependency("utf8proc_jll"),
@@ -292,7 +294,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
     elseif version < v"1.7"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
-        push!(dependencies, Dependency("LibUV_jll"))
     end
 
     if version < v"1.6"
