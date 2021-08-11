@@ -54,6 +54,9 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
+# work around sigchld-handler conflicts with other libraries
+atomic_patch -p1 ../patches/sigchld.patch
+
 # fix bug in minkowski_sum_fukuda (until 4.5)
 atomic_patch -p1 ../patches/minkowski_sum.patch
 
