@@ -29,7 +29,7 @@ products = [
     ExecutableProduct("lzmainfo", :lzmainfo),
     ExecutableProduct("xz", :xz),
     LibraryProduct("liblzma", :liblzma),
-    ExecutableProduct("lzmadec", :lzmadec)
+    ExecutableProduct("lzmadec", :lzmadec),
 ]
 
 # Dependencies that must be installed before this package can be built
