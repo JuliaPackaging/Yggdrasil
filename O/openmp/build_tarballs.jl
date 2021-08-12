@@ -2,10 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "openmp"
+name = "LLVMOpenMP"
 version = v"12.0.0"
 
-# Collection of sources required to build mpg123
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$version/openmp-$version.src.tar.xz",
