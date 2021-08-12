@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "MPFR"
 version = v"4.1.0"
@@ -34,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
