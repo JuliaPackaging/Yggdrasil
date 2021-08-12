@@ -63,7 +63,7 @@ rm -f ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 # Make sure expansions aren't empty
 shopt -s nullglob
 
-# copy out all the libraries we can find, excepting libstdc++ and libgomp.
+# copy out all the libraries we can find except libstdc++ and libgomp,
 # which we copied out in the extraction step above.
 for lib in /opt/${target}/${target}/lib*/*.${dlext}*; do
     if [[ "${lib}" != *libstdc++* ]] && [[ "${lib}" != *libgomp* ]]; then
