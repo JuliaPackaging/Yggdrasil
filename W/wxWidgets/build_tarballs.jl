@@ -15,13 +15,19 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/wxWidgets-*
 
-if [[ "${target}" == *-linux-musl ]]; then
+if [[ "${target}" == *-linux-musl* ]]; then
     
     #help find zlib for some reason
     export CPPFLAGS="-I${includedir}"
 
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
+
+elif [[ "${target}" == *-freebsd* ]]; then
+
+    #help find libpng for some reason
+    export CPPFLAGS="-I${includedir}"
+
 fi
 
 ./configure \
