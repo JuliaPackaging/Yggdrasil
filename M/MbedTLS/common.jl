@@ -39,6 +39,12 @@ if [[ -f ${P} ]]; then
     atomic_patch -p1 ${P}
 fi
 
+# MbedTLS 2.24.0 also needs a patch for platforms that build with Clang 12
+P=${WORKSPACE}/srcdir/patches/0003-Prevent-triggering-Clang-12--Wstring-concatenation.patch
+if [[ -f ${P} ]]; then
+    atomic_patch -p1 ${P}
+fi
+
 # enable MD4
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
 
