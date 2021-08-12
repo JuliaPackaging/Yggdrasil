@@ -54,9 +54,6 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
-# work around sigchld-handler conflicts with other libraries
-atomic_patch -p1 ../patches/sigchld.patch
-
 # fix bug in minkowski_sum_fukuda (until 4.5)
 atomic_patch -p1 ../patches/minkowski_sum.patch
 
@@ -74,6 +71,9 @@ if [[ $target == *darwin* ]]; then
   atomic_patch -p1 ../patches/polymake-cross.patch
   atomic_patch -p1 ../patches/polymake-cross-build.patch
 else
+  # work around sigchld-handler conflicts with other libraries
+  atomic_patch -p1 ../patches/sigchld.patch
+
   ./configure CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
               PERL=${prefix}/deps/Perl_jll/bin/perl \
               LDFLAGS="$LDFLAGS -L${prefix}/deps/Perl_jll/lib -Wl,-rpath,${prefix}/deps/Perl_jll/lib" \
