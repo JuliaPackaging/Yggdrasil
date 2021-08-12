@@ -34,7 +34,6 @@ cd build/
 cmake -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_BENCHMARKS=0 -DBUILD_TESTING=0 -DBUILD_FILTERS=0 ..
 make
 make install
-ls $WORKSPACE/destdir/lib
 """
 
 # These are the platforms we will build for by default, unless further
