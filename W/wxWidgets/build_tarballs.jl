@@ -7,7 +7,8 @@ version = v"3.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v$version.tar.gz", "e8fd5f9fbff864562aa4d9c094f898c97f5e1274c90f25beb0bfd5cb61319dea")
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v$version.tar.gz", "e8fd5f9fbff864562aa4d9c094f898c97f5e1274c90f25beb0bfd5cb61319dea"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +17,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/wxWidgets-*
 
 if [[ "${target}" == *-linux-musl* ]]; then
+
+    #derived from https://github.com/wxWidgets/wxWidgets/commit/f4eae4df2a256d0c1bab1657438c2de449cdcd67?branch=f4eae4df2a256d0c1bab1657438c2de449cdcd67&diff=split
+    #this was merged on master, so probably can get rid of next release
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-add-locale-functions.patch
     
     #help find zlib for some reason
     export CPPFLAGS="-I${includedir}"
