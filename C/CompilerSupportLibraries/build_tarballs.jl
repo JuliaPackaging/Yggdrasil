@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -63,7 +63,7 @@ rm -f ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 # Make sure expansions aren't empty
 shopt -s nullglob
 
-# copy out all the libraries we can find, excepting libstdc++ and libgomp.
+# copy out all the libraries we can find except libstdc++ and libgomp,
 # which we copied out in the extraction step above.
 for lib in /opt/${target}/${target}/lib*/*.${dlext}*; do
     if [[ "${lib}" != *libstdc++* ]] && [[ "${lib}" != *libgomp* ]]; then
