@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "libblastrampoline"
 version = v"3.1.0"
 
-# Collection of sources required to build Libtiff
+# Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/staticfloat/libblastrampoline",
               "c6c7bc5d4ae088bd7c519d58e3fb8b686d00db0c")
