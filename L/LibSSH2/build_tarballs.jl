@@ -1,12 +1,12 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "LibSSH2"
 version = v"1.9.0"
 
 # Collection of sources required to build LibSSH2
 sources = [
-   "https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz" =>
-   "d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd",
+    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
+                  "d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,11 +42,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(Pkg.Types.PackageSpec(name="MbedTLS_jll", version=v"2.24.0")),
+    Dependency("MbedTLS_jll", v"2.24.0"),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
 version = v"1.9.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
