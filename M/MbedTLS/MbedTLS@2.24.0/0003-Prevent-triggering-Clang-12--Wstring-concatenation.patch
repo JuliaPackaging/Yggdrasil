@@ -1,0 +1,181 @@
+From 027fe00d2e32f65815202ed1f2115b32a3a0c0d8 Mon Sep 17 00:00:00 2001
+From: Guido Vranken <guidovranken@gmail.com>
+Date: Fri, 21 Aug 2020 10:05:52 +0200
+Subject: [PATCH 1/2] Prevent triggering Clang 12 -Wstring-concatenation
+ warning
+
+Wrap multi-line string literals in parentheses
+to prevent a Clang 12 -Wstring-concatenation warning
+(activated by -Wall), which caused the build to fail.
+
+Fixes https://github.com/ARMmbed/mbedtls/issues/3586
+
+Signed-off-by: Guido Vranken <guidovranken@gmail.com>
+---
+ library/md2.c       | 4 ++--
+ library/md4.c       | 4 ++--
+ library/md5.c       | 4 ++--
+ library/ripemd160.c | 4 ++--
+ library/sha512.c    | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/library/md2.c b/library/md2.c
+index 5ebf07232ac..e6e39c0ac14 100644
+--- a/library/md2.c
++++ b/library/md2.c
+@@ -287,8 +287,8 @@ static const unsigned char md2_test_str[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { "12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890" }
++    { ("12345678901234567890123456789012345678901234567890123456789012"
++      "345678901234567890") }
+ };
+ 
+ static const size_t md2_test_strlen[7] =
+diff --git a/library/md4.c b/library/md4.c
+index ac9507454b0..7fadfca64eb 100644
+--- a/library/md4.c
++++ b/library/md4.c
+@@ -408,8 +408,8 @@ static const unsigned char md4_test_str[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { "12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890" }
++    { ("12345678901234567890123456789012345678901234567890123456789012"
++      "345678901234567890") }
+ };
+ 
+ static const size_t md4_test_strlen[7] =
+diff --git a/library/md5.c b/library/md5.c
+index 8cea902aea4..147e94b4b8f 100644
+--- a/library/md5.c
++++ b/library/md5.c
+@@ -422,8 +422,8 @@ static const unsigned char md5_test_buf[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { "12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890" }
++    { ("12345678901234567890123456789012345678901234567890123456789012"
++      "345678901234567890") }
+ };
+ 
+ static const size_t md5_test_buflen[7] =
+diff --git a/library/ripemd160.c b/library/ripemd160.c
+index 830f61b3cd5..abb92b7a2fe 100644
+--- a/library/ripemd160.c
++++ b/library/ripemd160.c
+@@ -478,8 +478,8 @@ static const unsigned char ripemd160_test_str[TESTS][81] =
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { "12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890" },
++    { ("12345678901234567890123456789012345678901234567890123456789012"
++      "345678901234567890") },
+ };
+ 
+ static const size_t ripemd160_test_strlen[TESTS] =
+diff --git a/library/sha512.c b/library/sha512.c
+index 80219d42816..a3a28525c3d 100644
+--- a/library/sha512.c
++++ b/library/sha512.c
+@@ -516,8 +516,8 @@ void mbedtls_sha512( const unsigned char *input,
+ static const unsigned char sha512_test_buf[3][113] =
+ {
+     { "abc" },
+-    { "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
+-      "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu" },
++    { ("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
++      "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu") },
+     { "" }
+ };
+ 
+
+From 962e4ee4a6b3bc2f9a116358973fa7f991f60c65 Mon Sep 17 00:00:00 2001
+From: Guido Vranken <guidovranken@gmail.com>
+Date: Fri, 21 Aug 2020 21:08:56 +0200
+Subject: [PATCH 2/2] Use single-line string literals.
+
+Signed-off-by: Guido Vranken <guidovranken@gmail.com>
+---
+ library/md2.c       | 3 +--
+ library/md4.c       | 3 +--
+ library/md5.c       | 3 +--
+ library/ripemd160.c | 3 +--
+ library/sha512.c    | 3 +--
+ 5 files changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/library/md2.c b/library/md2.c
+index e6e39c0ac14..b4f7cc6bebf 100644
+--- a/library/md2.c
++++ b/library/md2.c
+@@ -287,8 +287,7 @@ static const unsigned char md2_test_str[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { ("12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890") }
++    { "12345678901234567890123456789012345678901234567890123456789012345678901234567890" }
+ };
+ 
+ static const size_t md2_test_strlen[7] =
+diff --git a/library/md4.c b/library/md4.c
+index 7fadfca64eb..1cac0a44ab3 100644
+--- a/library/md4.c
++++ b/library/md4.c
+@@ -408,8 +408,7 @@ static const unsigned char md4_test_str[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { ("12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890") }
++    { "12345678901234567890123456789012345678901234567890123456789012345678901234567890" }
+ };
+ 
+ static const size_t md4_test_strlen[7] =
+diff --git a/library/md5.c b/library/md5.c
+index 147e94b4b8f..1e702b4bbc5 100644
+--- a/library/md5.c
++++ b/library/md5.c
+@@ -422,8 +422,7 @@ static const unsigned char md5_test_buf[7][81] =
+     { "message digest" },
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { ("12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890") }
++    { "12345678901234567890123456789012345678901234567890123456789012345678901234567890" }
+ };
+ 
+ static const size_t md5_test_buflen[7] =
+diff --git a/library/ripemd160.c b/library/ripemd160.c
+index abb92b7a2fe..603b6ba86e9 100644
+--- a/library/ripemd160.c
++++ b/library/ripemd160.c
+@@ -478,8 +478,7 @@ static const unsigned char ripemd160_test_str[TESTS][81] =
+     { "abcdefghijklmnopqrstuvwxyz" },
+     { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" },
+     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+-    { ("12345678901234567890123456789012345678901234567890123456789012"
+-      "345678901234567890") },
++    { "12345678901234567890123456789012345678901234567890123456789012345678901234567890" },
+ };
+ 
+ static const size_t ripemd160_test_strlen[TESTS] =
+diff --git a/library/sha512.c b/library/sha512.c
+index a3a28525c3d..e88119853ba 100644
+--- a/library/sha512.c
++++ b/library/sha512.c
+@@ -516,8 +516,7 @@ void mbedtls_sha512( const unsigned char *input,
+ static const unsigned char sha512_test_buf[3][113] =
+ {
+     { "abc" },
+-    { ("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
+-      "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu") },
++    { "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu" },
+     { "" }
+ };
+ 
