@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "Objconv"
 version = v"2.49.1"
 
-# Collection of sources required to build CMake
+# Collection of sources required to build objconv
 sources = [
     ArchiveSource("https://github.com/staticfloat/objconv/archive/v2.49.tar.gz",
                   "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
