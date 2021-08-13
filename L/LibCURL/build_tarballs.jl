@@ -7,7 +7,7 @@ version = v"7.73.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
+    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz",
                   "ba98332752257b47b9dea6d8c0ad25ec1745c20424f1dd3ff2c99ab59e97cf91"),
 ]
 
@@ -80,4 +80,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
