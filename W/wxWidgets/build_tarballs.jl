@@ -33,6 +33,12 @@ elif [[ "${target}" == *-freebsd* ]]; then
     #help find libpng for some reason
     export CPPFLAGS="-I${includedir}"
 
+elif [[ "${target}" == *-apple* ]]; then
+
+    #see https://trac.wxwidgets.org/ticket/19159 for issue tracker and https://github.com/wxWidgets/wxWidgets/pull/2354 for source of patch
+    #this has since been merged into master, unsure about future status?
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/apple-add-bridging-commit.patch    
+
 fi
 
 ./configure \
