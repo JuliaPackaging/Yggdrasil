@@ -15,27 +15,28 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tinyxml
 
-c++ -c -Wall -Wno-unknown-pragmas -Wno-format -O3 tinyxml.cpp -o tinyxml.o
-c++ -c -Wall -Wno-unknown-pragmas -Wno-format -O3 tinyxmlparser.cpp -o tinyxmlparser.o
-c++ -c -Wall -Wno-unknown-pragmas -Wno-format -O3 xmltest.cpp -o xmltest.o
-c++ -c -Wall -Wno-unknown-pragmas -Wno-format -O3 tinyxmlerror.cpp -o tinyxmlerror.o
-c++ -c -Wall -Wno-unknown-pragmas -Wno-format -O3 tinystr.cpp -o tinystr.o
-mkdir -p "${bindir}"
-c++ -o "${bindir}/xmltest${exeext}" tinyxml.o tinyxmlparser.o xmltest.o tinyxmlerror.o tinystr.o  
-
-install_license readme.txt
+CPPFLAGS="-DTIXML_USE_STL"
+CXXFLAGS="-fPIC -Wall -Wno-unknown-pragmas -Wno-format -O3"
+c++ -c "${CPPFLAGS}" ${CXXFLAGS} tinyxml.cpp -o tinyxml.o
+c++ -c "${CPPFLAGS}" ${CXXFLAGS} tinyxmlparser.cpp -o tinyxmlparser.o
+c++ -c "${CPPFLAGS}" ${CXXFLAGS} tinyxmlerror.cpp -o tinyxmlerror.o
+c++ -c "${CPPFLAGS}" ${CXXFLAGS} tinystr.cpp -o tinystr.o
+mkdir -p "${libdir}"
+c++ -shared -o "${libdir}/libtinyxml.${dlext}" tinyxml.o tinyxmlparser.o tinyxmlerror.o tinystr.o
 
 mkdir -p "${includedir}"
 cp *.h "${includedir}/."
+
+install_license readme.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("xmltest", :xmltest)
+    LibraryProduct("libtinyxml", :libtinyxml),
 ]
 
 # Dependencies that must be installed before this package can be built
