@@ -38,7 +38,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("xmltest", :xmltest)
+    FileProduct("bin/xmltest", :xmltest)
 ]
 
 # Dependencies that must be installed before this package can be built
