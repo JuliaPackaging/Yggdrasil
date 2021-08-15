@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Yosys"
-version = v"0.1.0"
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -14,7 +14,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.76.0"), # max gcc7
     Dependency("Readline_jll"),
     Dependency("Tcl_jll"),
-    Dependency("Zlib_jll"; compat="~1.2.11"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
@@ -23,11 +23,16 @@ script = raw"""
 cd yosys
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CONFIG=clang
+    OS=Darwin
 else
     CONFIG=gcc
+    OS=Linux
 fi
-make CONFIG=${CONFIG} PREFIX=${prefix} -j${nproc}
-make install PREFIX=${prefix}
+make ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} -j${nproc}
+make install OS=${OS} PREFIX=${prefix} ENABLE_LIBYOSYS=1
+if [[ "${target}" == *-apple-* ]]; then
+    mv ${prefix}/lib/yosys/libyosys.so  ${prefix}/lib/yosys/libyosys.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,11 +44,12 @@ filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = Product[
-	ExecutableProduct("yosys", :yosys)
-	ExecutableProduct("yosys-config", :yosys_config)
-	ExecutableProduct("yosys-filterlib", :yosys_filterlib)
-	ExecutableProduct("yosys-smtbmc", :yosys_smtbmc)
-	ExecutableProduct("yosys-abc", :yosys_abc)
+    ExecutableProduct("yosys", :yosys),
+    ExecutableProduct("yosys-config", :yosys_config),
+    ExecutableProduct("yosys-filterlib", :yosys_filterlib),
+    ExecutableProduct("yosys-smtbmc", :yosys_smtbmc),
+    ExecutableProduct("yosys-abc", :yosys_abc),
+    LibraryProduct("libyosys", :libyosys, ["lib/yosys"])
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
