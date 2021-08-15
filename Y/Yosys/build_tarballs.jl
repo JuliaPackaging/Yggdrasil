@@ -15,7 +15,7 @@ dependencies = [
     Dependency("Readline_jll"),
     Dependency("Tcl_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Libffi_jll"; compat="3.2.2"),
+    Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
 # Bash recipe for building across all platforms
