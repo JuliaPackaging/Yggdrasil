@@ -23,11 +23,16 @@ script = raw"""
 cd yosys
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CONFIG=clang
+    OS=Darwin
 else
     CONFIG=gcc
+    OS=Linux
 fi
-make ENABLE_LIBYOSYS=1 CONFIG=${CONFIG} PREFIX=${prefix} -j${nproc}
-make install PREFIX=${prefix} ENABLE_LIBYOSYS=1
+make ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} -j${nproc}
+make install OS=${OS} PREFIX=${prefix} ENABLE_LIBYOSYS=1
+if [[ "${target}" == *-apple-* ]]; then
+    mv ${prefix}/lib/yosys/libyosys.so  ${prefix}/lib/yosys/libyosys.dylib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
