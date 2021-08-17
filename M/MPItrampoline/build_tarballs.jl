@@ -7,8 +7,8 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/c79516ce4a015ea2e3cf6f417b826f80660a07af.tar.gz",
-                  "a07b0d898f0d39d5ac64baf2116d1fb5d49fa8d6f8ef20f1cc456db718408184"),
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/d31bba9c3de5b37049bf3dc5343122dca264841a.tar.gz",
+                  "ba1646970ae6923d35b5b3aed8018c4e129386955a4a9bea41a1846d9b23e98b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,7 @@ platforms = supported_platforms()
 # Apple: Dynamically loaded libraries (`dlopen`) are not handled correctly.
 # Windows: Does not have `dlopen`.
 # musl: Does not define `RTLD_DEEPBIND` for `dlopen`.
-platforms = filter(p -> !(Sys.isapple(p) || Sys.iswindows(p) || libc(p) == "musl")), platforms)
+platforms = filter(p -> !(Sys.isapple(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
 platforms = expand_gfortran_versions(platforms)
 # libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
 # could in principle build without Fortran support there.)
@@ -58,4 +58,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
