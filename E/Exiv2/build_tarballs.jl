@@ -7,7 +7,8 @@ version = v"0.27.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Exiv2/exiv2/archive/refs/tags/v$(version).tar.gz", "9fb2752c92f63c9853e0bef9768f21138eeac046280f40ded5f37d06a34880d9")
+    ArchiveSource("https://github.com/Exiv2/exiv2/archive/refs/tags/v$(version).tar.gz", "9fb2752c92f63c9853e0bef9768f21138eeac046280f40ded5f37d06a34880d9"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,14 @@ cd $WORKSPACE/srcdir/exiv2-*
 if [[ "${target}" == x86_64-linux-musl ]]; then
     # Delete libexpat to prevent it from being picked up by mistake
     rm /usr/lib/libexpat.so*
+
+elif [[ "${target}" == i686-linux-musl ]]; then
+
+    #otherwise, patch fails with different line endings message
+    dos2unix cmake/compilerFlags.cmake
+    
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/i686-musl-comment-stack-protector-strong.patch
+
 fi
 
 mkdir build
