@@ -14,7 +14,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.76.0"), # max gcc7
     Dependency("Readline_jll"),
     Dependency("Tcl_jll"),
-    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zlib_jll"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
