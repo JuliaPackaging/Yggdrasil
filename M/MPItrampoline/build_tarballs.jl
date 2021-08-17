@@ -30,9 +30,16 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# Dynamically loaded libraries (`dlopen`) are not handled correctly on macOS
-platforms = filter(p -> !Sys.isapple(p), platforms)
+# Apple: Dynamically loaded libraries (`dlopen`) are not handled correctly.
+# Windows: Does not have `dlopen`.
+# musl: Does not define `RTLD_DEEPBIND` for `dlopen`.
+platforms = filter(p -> !(Sys.isapple(p) || Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = expand_gfortran_versions(platforms)
+# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
+# could in principle build without Fortran support there.)
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+
+# TODO: on 32-bit systems, Fortran `MPI_Status` has the wrong size
 
 # The products that we will ensure are always built
 products = [
