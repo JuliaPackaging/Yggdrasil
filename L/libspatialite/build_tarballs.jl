@@ -15,6 +15,8 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/libspatialite-*
 
+export CPPFLAGS="-I${includedir}"
+
 update_configure_scripts
 
 ./configure \
@@ -62,6 +64,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("SQLite_jll")
     Dependency(PackageSpec(name="GEOS_jll", uuid="d604d12d-fa86-5845-992e-78dc15976526"))
     Dependency(PackageSpec(name="PROJ_jll", uuid="58948b4f-47e0-5654-a9ad-f609743f8632"))
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
