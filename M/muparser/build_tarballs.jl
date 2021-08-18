@@ -15,15 +15,25 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/muparser-*
 
-cmake . \
--DCMAKE_INSTALL_PREFIX=$prefix \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Release \
--DENABLE_SAMPLES=OFF \
--DBUILD_TESTING=OFF \
--DENABLE_OPENMP=ON \
--DBUILD_SHARED_LIBS=ON
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+            -DCMAKE_BUILD_TYPE=Release
+            -DENABLE_SAMPLES=OFF
+            -DBUILD_TESTING=OFF
+            -DBUILD_SHARED_LIBS=ON)
 
+# Apple's Clang does not support OpenMP? - taken from AMRex build_tarballs.jl
+if [[ ${target} == *-apple-* ]]; then
+
+    CMAKE_FLAGS+=(-DENABLE_OPENMP=OFF)
+    
+else
+
+    CMAKE_FLAGS+=(-DENABLE_OPENMP=ON)
+
+fi
+
+cmake . ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
 """
