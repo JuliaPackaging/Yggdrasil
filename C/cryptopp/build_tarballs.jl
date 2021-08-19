@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "cryptopp"
-version = v"8.2"
+version = v"8.5"
 
 # Collection of sources required to build CFITSIO
 sources = [
