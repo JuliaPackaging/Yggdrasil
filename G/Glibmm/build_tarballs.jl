@@ -27,9 +27,9 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libglibmm-$(version.major).$(version.minor)", :libglibmm),
-    LibraryProduct("libglibmm_generate_extra_defs-$(version.major).$(version.minor)", :libglibmm_generate_extra_defs),
-    LibraryProduct("libgiomm-$(version.major).$(version.minor)", :libgiomm)
+    LibraryProduct(["libglibmm-$(version.major).$(version.minor)", "libglibmm-$(version.major)"], :libglibmm),
+    LibraryProduct(["libglibmm_generate_extra_defs-$(version.major).$(version.minor)", "libglibmm_generate_extra_defs-$(version.major)"], :libglibmm_generate_extra_defs),
+    LibraryProduct(["libgiomm-$(version.major).$(version.minor)", "libgiomm-$(version.major)"], :libgiomm)
 ]
 
 # Dependencies that must be installed before this package can be built
