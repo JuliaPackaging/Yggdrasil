@@ -23,12 +23,11 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsigc-3.0", :libsigc)
+    LibraryProduct(["libsigc-3.0", "libsigc-3"], :libsigc)
 ]
 
 # Dependencies that must be installed before this package can be built
