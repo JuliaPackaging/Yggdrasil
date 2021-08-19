@@ -28,6 +28,10 @@ elif [[ "${target}" == *-mingw* ]]; then
 
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-include.patch
 
+    #this allows it to at least compile otherwise get "libtool: error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified" message
+    #derived from https://issues.apache.org/jira/browse/XERCESC-2048
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-ltmain-fixme.patch
+
 fi
 
 ./configure \

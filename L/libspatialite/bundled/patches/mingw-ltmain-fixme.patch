@@ -1,0 +1,13 @@
+diff --git a/ltmain.sh b/ltmain.sh
+index bb9035a..4f48ad1 100644
+--- a/ltmain.sh
++++ b/ltmain.sh
+@@ -6504,7 +6504,7 @@ func_mode_link ()
+       # even a static library is built.  For now, we need to specify
+       # -no-undefined on the libtool link line when we can be certain
+       # that all symbols are satisfied, otherwise we get a static library.
+-      allow_undefined=yes
++      allow_undefined=no
+       ;;
+     *)
+       allow_undefined=yes
