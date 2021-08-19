@@ -18,6 +18,8 @@ cd $WORKSPACE/srcdir/libspatialite-*
 
 update_configure_scripts
 
+autoreconf -vi
+
 if [[ ${target} == *-linux-musl* ]]; then
     #help find sqlite.h header usually
     export CPPFLAGS="-I${includedir}"
