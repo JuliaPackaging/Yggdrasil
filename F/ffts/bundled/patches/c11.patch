@@ -1,13 +1,31 @@
 diff --git a/ffts/CMakeLists.txt b/ffts/CMakeLists.txt
-index a02f11a..86f6551 100644
+index a02f11a..5b1a612 100644
 --- a/ffts/CMakeLists.txt
 +++ b/ffts/CMakeLists.txt
 @@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
  
  project(ffts C ASM)
  
-+set(CMAKE_C_STANDARD 11)
++set(CMAKE_C_STANDARD 90)
 +
  # TODO: to support AutoConfigure building, this should came from "template" file
  set(FFTS_MAJOR 0)
  set(FFTS_MINOR 9)
+@@ -514,7 +516,7 @@ if(ENABLE_STATIC)
+   install( TARGETS ffts_static DESTINATION ${LIB_INSTALL_DIR} )
+ endif(ENABLE_STATIC)
+ 
+-if(ENABLE_STATIC OR ENABLE_SHARED)
++if(FALSE)
+   add_executable(ffts_test
+     tests/test.c
+   )
+@@ -530,7 +532,7 @@ if(ENABLE_STATIC OR ENABLE_SHARED)
+     ffts
+     ${FFTS_EXTRA_LIBRARIES}
+   )
+-endif(ENABLE_STATIC OR ENABLE_SHARED)
++endif(FALSE)
+ 
+ # generate packageconfig file
+ if(UNIX)
