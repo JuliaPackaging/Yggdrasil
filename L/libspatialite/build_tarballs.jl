@@ -7,7 +7,8 @@ version = v"5.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.gaia-gis.it/gaia-sins/libspatialite-$(version).tar.gz", "eecbc94311c78012d059ebc0fae86ea5ef6eecb13303e6e82b3753c1b3409e98")
+    ArchiveSource("http://www.gaia-gis.it/gaia-sins/libspatialite-$(version).tar.gz", "eecbc94311c78012d059ebc0fae86ea5ef6eecb13303e6e82b3753c1b3409e98"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,9 +16,17 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/libspatialite-*
 
-export CPPFLAGS="-I${includedir}"
-
 update_configure_scripts
+
+if [[ ${target} == *-linux-musl* ]]; then
+    #help find sqlite.h header usually
+    export CPPFLAGS="-I${includedir}"
+
+elif [[ "${target}" == *-mingw* ]]; then
+
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-include.patch
+
+fi
 
 ./configure \
 --prefix=${prefix} \
