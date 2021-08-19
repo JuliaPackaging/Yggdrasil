@@ -7,28 +7,26 @@ version = v"1.16.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.cairographics.org/releases/cairomm-1.16.1.tar.xz", "6f6060d8e98dd4b8acfee2295fddbdd38cf487c07c26aad8d1a83bb9bff4a2c6")
+    ArchiveSource("https://www.cairographics.org/releases/cairomm-$(version).tar.xz",
+                  "6f6060d8e98dd4b8acfee2295fddbdd38cf487c07c26aad8d1a83bb9bff4a2c6")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd cairomm-1.16.1/
-mkdir output
-cd output/
+cd $WORKSPACE/srcdir/cairomm*/
+mkdir output && cd output/
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} ..
-ninja
+ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcairomm", :libcariomm)
+    LibraryProduct("libcairomm-$(version.major).$(version.minor)", :libcariomm)
 ]
 
 # Dependencies that must be installed before this package can be built
