@@ -20,7 +20,7 @@ update_configure_scripts
 
 autoreconf -vi
 
-if [[ ${target} == *-linux-musl* ]]; then
+if [[ ${target} == *-linux-musl* ]] || [[ ${target} == *-freebsd* ]]; then
     #help find sqlite.h header usually
     export CPPFLAGS="-I${includedir}"
 
