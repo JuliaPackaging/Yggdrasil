@@ -7,17 +7,17 @@ version = v"3.0.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/libsigc++/3.0/libsigc%2B%2B-3.0.7.tar.xz", "bfbe91c0d094ea6bbc6cbd3909b7d98c6561eea8b6d9c0c25add906a6e83d733")
+    ArchiveSource("https://download.gnome.org/sources/libsigc++/3.0/libsigc%2B%2B-$(version).tar.xz",
+                  "bfbe91c0d094ea6bbc6cbd3909b7d98c6561eea8b6d9c0c25add906a6e83d733")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libsigc++-3.0.7/
+cd $WORKSPACE/srcdir/libsigc++*/
 mkdir meson
 cd meson
 meson --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja
+ninja -j${nproc}
 ninja install
 """
 
@@ -28,7 +28,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsigc", :libsigc)
+    LibraryProduct("libsigc-3.0", :libsigc)
 ]
 
 # Dependencies that must be installed before this package can be built
