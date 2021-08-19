@@ -7,7 +7,7 @@ version = v"8.2"
 
 # Collection of sources required to build CFITSIO
 sources = [
-    GitSource("https://github.com/weidai11/cryptopp.git", "9dcc26c58213abb8351fbb1b2a7a1d2c667366e4"),
+    GitSource("https://github.com/weidai11/cryptopp.git", "f2102243e6fdd48c0b2a393a0993cca228f20573"),
 ]
 
 # Bash recipe for building across all platforms
