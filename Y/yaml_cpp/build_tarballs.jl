@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/yaml-cpp*/
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DYAML_BUILD_SHARED_LIBS=ON \
     ..
@@ -27,7 +27,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms; skip=p->false)
 
 # The products that we will ensure are always built
 products = [
