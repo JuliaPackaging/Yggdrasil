@@ -1,4 +1,4 @@
-From a6816f4d663e759cb6e9f7c1af96e4171d6c0558 Mon Sep 17 00:00:00 2001
+From e1adccd8992c7c1c0e38acef936d294f835d6c03 Mon Sep 17 00:00:00 2001
 From: Pepijn de Vos <pepijndevos@gmail.com>
 Date: Fri, 20 Aug 2021 11:04:37 +0200
 Subject: [PATCH] replace color with string
@@ -9,12 +9,12 @@ Subject: [PATCH] replace color with string
  scopehal/CMakeLists.txt       |  2 +-
  scopehal/Filter.cpp           | 20 ++++++++++----------
  scopehal/Filter.h             |  4 ++--
- scopehal/MockOscilloscope.cpp |  1 +
+ scopehal/MockOscilloscope.cpp |  5 +++--
  scopehal/PacketDecoder.cpp    | 18 +++++++++---------
  scopehal/PacketDecoder.h      |  6 +++---
  scopehal/scopehal.cpp         |  7 ++++++-
  scopehal/scopehal.h           | 13 +++++++++----
- 10 files changed, 54 insertions(+), 34 deletions(-)
+ 10 files changed, 56 insertions(+), 36 deletions(-)
 
 diff --git a/.gitmodules b/.gitmodules
 index 86185b9..7acf360 100644
@@ -141,7 +141,7 @@ index ee76781..730bbfb 100644
  
  	//Helpers for sub-sample interoplation
 diff --git a/scopehal/MockOscilloscope.cpp b/scopehal/MockOscilloscope.cpp
-index af9609a..ae72dd6 100644
+index af9609a..cdbe646 100644
 --- a/scopehal/MockOscilloscope.cpp
 +++ b/scopehal/MockOscilloscope.cpp
 @@ -36,6 +36,7 @@
@@ -151,6 +151,24 @@ index af9609a..ae72dd6 100644
 +#include <sys/stat.h>
  
  using namespace std;
+ 
+@@ -1742,7 +1743,7 @@ bool MockOscilloscope::LoadWAV(const string& path)
+ 	}
+ 
+ 	//Get timestamp of the file
+-	int64_t timestamp = 0;
++	time_t timestamp = 0;
+ 	int64_t fs = 0;
+ 	GetTimestampOfFile(path, timestamp, fs);
+ 
+@@ -1851,7 +1852,7 @@ bool MockOscilloscope::LoadTouchstone(const string& path)
+ 	if(!parser.Load(path, params))
+ 		return false;
+ 
+-	int64_t timestamp = 0;
++	time_t timestamp = 0;
+ 	int64_t fs = 0;
+ 	GetTimestampOfFile(path, timestamp, fs);
  
 diff --git a/scopehal/PacketDecoder.cpp b/scopehal/PacketDecoder.cpp
 index cbcf4f4..50c3e9a 100644
