@@ -1,11 +1,11 @@
-From 7adea47ea9772905fac53cde5e578fbe9462aee2 Mon Sep 17 00:00:00 2001
+From a6816f4d663e759cb6e9f7c1af96e4171d6c0558 Mon Sep 17 00:00:00 2001
 From: Pepijn de Vos <pepijndevos@gmail.com>
 Date: Fri, 20 Aug 2021 11:04:37 +0200
 Subject: [PATCH] replace color with string
 
 ---
  .gitmodules                   |  6 +++---
- scopehal/AlignedAllocator.h   |  3 ++-
+ scopehal/AlignedAllocator.h   | 11 ++++++++++-
  scopehal/CMakeLists.txt       |  2 +-
  scopehal/Filter.cpp           | 20 ++++++++++----------
  scopehal/Filter.h             |  4 ++--
@@ -14,7 +14,7 @@ Subject: [PATCH] replace color with string
  scopehal/PacketDecoder.h      |  6 +++---
  scopehal/scopehal.cpp         |  7 ++++++-
  scopehal/scopehal.h           | 13 +++++++++----
- 10 files changed, 46 insertions(+), 34 deletions(-)
+ 10 files changed, 54 insertions(+), 34 deletions(-)
 
 diff --git a/.gitmodules b/.gitmodules
 index 86185b9..7acf360 100644
@@ -37,20 +37,29 @@ index 86185b9..7acf360 100644
  	path = OpenCL-CLHPP
  	url = https://github.com/KhronosGroup/OpenCL-CLHPP.git
 diff --git a/scopehal/AlignedAllocator.h b/scopehal/AlignedAllocator.h
-index 10c2879..665fa05 100644
+index 10c2879..7d5eb85 100644
 --- a/scopehal/AlignedAllocator.h
 +++ b/scopehal/AlignedAllocator.h
-@@ -39,6 +39,7 @@
+@@ -38,6 +38,10 @@
+ 
  #ifdef _WIN32
  #include <windows.h>
- #endif
++#elif __APPLE__
++#include <stdlib.h>
++#else
 +#include <malloc.h>
+ #endif
  
  /**
- 	@brief Aligned memory allocator for STL containers
-@@ -119,7 +120,7 @@ public:
+@@ -118,8 +122,13 @@ public:
+ 		//Do the actual allocation
  #ifdef _WIN32
  		T* ret = static_cast<T*>(_aligned_malloc(n*sizeof(T), alignment));
++#elif __APPLE__
++        void* p;
++		if (posix_memalign(&p, alignment, n*sizeof(T)))
++			p = NULL;
++		T* ret = static_cast<T*>(p);
  #else
 -		T* ret = static_cast<T*>(aligned_alloc(alignment, n*sizeof(T)));
 +		T* ret = static_cast<T*>(memalign(alignment, n*sizeof(T)));
