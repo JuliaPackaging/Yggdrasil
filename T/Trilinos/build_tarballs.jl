@@ -109,7 +109,7 @@ cmake \
     -DTPL_ENABLE_HDF5=OFF \
     -DTPL_ENABLE_Matio=OFF \
     -DTPL_ENABLE_MATLAB=OFF \
-    -DTPL_ENABLE_MPI=OFF \
+    -DTPL_ENABLE_MPI=ON \
     -DTPL_ENABLE_MUMPS=OFF \
     -DTPL_ENABLE_Netcdf=OFF \
     -DTPL_ENABLE_ParMETIS=OFF \
@@ -120,12 +120,12 @@ cmake \
     -DTPL_ENABLE_Zlib=OFF \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
     $SRCDIR
-    make -j${nprocs} install
+    make -j8 install
         """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> (nbits(p) != 32), supported_platforms())
+platforms = filter(p -> (Sys.islinux(p) && nbits(p) != 32), supported_platforms())
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
@@ -228,6 +228,7 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency("MPICH_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
