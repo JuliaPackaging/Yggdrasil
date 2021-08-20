@@ -20,7 +20,12 @@ cd $WORKSPACE/srcdir/cryptopp
 # only having `getauxval`.
 atomic_patch -p1 ../patches/powerpc-getauxval.patch
 make -j${nproc} dynamic
-make -j${nproc} install PREFIX=${prefix}
+make -j${nproc} install-lib PREFIX=${prefix}
+if [[ "${target}" == *-mingw* ]]; then
+    # The build system creates the shared library with the wrong name...
+    mkdir -p "${libdir}"
+    mv "${prefix}/lib/libcryptopp.so" "${libdir}/libcryptopp.${dlext}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
