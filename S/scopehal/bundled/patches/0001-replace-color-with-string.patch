@@ -1,0 +1,271 @@
+From 37fac2215eb3dcf32fa039fde503f8cf130f078b Mon Sep 17 00:00:00 2001
+From: Pepijn de Vos <pepijndevos@gmail.com>
+Date: Fri, 20 Aug 2021 11:04:37 +0200
+Subject: [PATCH] replace color with string
+
+---
+ .gitmodules                   |  6 +++---
+ scopehal/AlignedAllocator.h   |  3 ++-
+ scopehal/CMakeLists.txt       |  2 +-
+ scopehal/Filter.cpp           | 20 ++++++++++----------
+ scopehal/Filter.h             |  4 ++--
+ scopehal/MockOscilloscope.cpp |  1 +
+ scopehal/PacketDecoder.cpp    | 18 +++++++++---------
+ scopehal/PacketDecoder.h      |  6 +++---
+ scopehal/scopehal.cpp         |  7 ++++++-
+ scopehal/scopehal.h           | 13 +++++++++----
+ 10 files changed, 46 insertions(+), 34 deletions(-)
+
+diff --git a/.gitmodules b/.gitmodules
+index 86185b9..7acf360 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,12 +1,12 @@
+ [submodule "xptools"]
+ 	path = xptools
+-	url = ../xptools.git
++	url = https://github.com/azonenberg/xptools.git
+ [submodule "log"]
+ 	path = log
+-	url = ../logtools.git
++	url = https://github.com/azonenberg/logtools.git
+ [submodule "graphwidget"]
+ 	path = graphwidget
+-	url = ../graphwidget.git
++	url = https://github.com/azonenberg/graphwidget.git
+ [submodule "OpenCL-CLHPP"]
+ 	path = OpenCL-CLHPP
+ 	url = https://github.com/KhronosGroup/OpenCL-CLHPP.git
+diff --git a/scopehal/AlignedAllocator.h b/scopehal/AlignedAllocator.h
+index 10c2879..665fa05 100644
+--- a/scopehal/AlignedAllocator.h
++++ b/scopehal/AlignedAllocator.h
+@@ -39,6 +39,7 @@
+ #ifdef _WIN32
+ #include <windows.h>
+ #endif
++#include <malloc.h>
+ 
+ /**
+ 	@brief Aligned memory allocator for STL containers
+@@ -119,7 +120,7 @@ public:
+ #ifdef _WIN32
+ 		T* ret = static_cast<T*>(_aligned_malloc(n*sizeof(T), alignment));
+ #else
+-		T* ret = static_cast<T*>(aligned_alloc(alignment, n*sizeof(T)));
++		T* ret = static_cast<T*>(memalign(alignment, n*sizeof(T)));
+ #endif
+ 
+ 		//Error check
+diff --git a/scopehal/CMakeLists.txt b/scopehal/CMakeLists.txt
+index 2725f3e..be134b7 100644
+--- a/scopehal/CMakeLists.txt
++++ b/scopehal/CMakeLists.txt
+@@ -115,7 +115,7 @@ configure_file(config.h.in config.h)
+ 
+ add_library(scopehal SHARED
+ 	${SCOPEHAL_SOURCES})
+-target_link_libraries(scopehal ${SIGCXX_LIBRARIES} ${GTKMM_LIBRARIES} xptools log graphwidget ${YAML_LIBRARIES}
++target_link_libraries(scopehal ${SIGCXX_LIBRARIES} ${GTKMM_LIBRARIES} xptools log ${YAML_LIBRARIES}
+ 	${LXI_LIBRARIES} ${WIN_LIBS} ${LIN_LIBS} ${LIBFFTS_LIBRARIES} ${OpenCL_LIBRARIES} ${CLFFT_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+ 
+ target_include_directories(scopehal
+diff --git a/scopehal/Filter.cpp b/scopehal/Filter.cpp
+index 0a8903c..055e565 100644
+--- a/scopehal/Filter.cpp
++++ b/scopehal/Filter.cpp
+@@ -44,16 +44,16 @@ set<Filter*> Filter::m_filters;
+ mutex Filter::m_cacheMutex;
+ map<pair<WaveformBase*, float>, vector<int64_t> > Filter::m_zeroCrossingCache;
+ 
+-Gdk::Color Filter::m_standardColors[STANDARD_COLOR_COUNT] =
++std::string Filter::m_standardColors[STANDARD_COLOR_COUNT] =
+ {
+-	Gdk::Color("#336699"),	//COLOR_DATA
+-	Gdk::Color("#c000a0"),	//COLOR_CONTROL
+-	Gdk::Color("#ffff00"),	//COLOR_ADDRESS
+-	Gdk::Color("#808080"),	//COLOR_PREAMBLE
+-	Gdk::Color("#00ff00"),	//COLOR_CHECKSUM_OK
+-	Gdk::Color("#ff0000"),	//COLOR_CHECKSUM_BAD
+-	Gdk::Color("#ff0000"),	//COLOR_ERROR
+-	Gdk::Color("#404040")	//COLOR_IDLE
++	std::string("#336699"),	//COLOR_DATA
++	std::string("#c000a0"),	//COLOR_CONTROL
++	std::string("#ffff00"),	//COLOR_ADDRESS
++	std::string("#808080"),	//COLOR_PREAMBLE
++	std::string("#00ff00"),	//COLOR_CHECKSUM_OK
++	std::string("#ff0000"),	//COLOR_CHECKSUM_BAD
++	std::string("#ff0000"),	//COLOR_ERROR
++	std::string("#404040")	//COLOR_IDLE
+ };
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -805,7 +805,7 @@ void Filter::LoadParameters(const YAML::Node& node, IDTable& table)
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ // Complex protocol decodes
+ 
+-Gdk::Color Filter::GetColor(int /*i*/)
++std::string Filter::GetColor(int /*i*/)
+ {
+ 	return m_standardColors[COLOR_ERROR];
+ }
+diff --git a/scopehal/Filter.h b/scopehal/Filter.h
+index ee76781..730bbfb 100644
+--- a/scopehal/Filter.h
++++ b/scopehal/Filter.h
+@@ -163,7 +163,7 @@ public:
+ 		STANDARD_COLOR_COUNT
+ 	};
+ 
+-	static Gdk::Color m_standardColors[STANDARD_COLOR_COUNT];
++	static std::string m_standardColors[STANDARD_COLOR_COUNT];
+ 
+ protected:
+ 
+@@ -203,7 +203,7 @@ protected:
+ 
+ public:
+ 	//Text formatting for CHANNEL_TYPE_COMPLEX decodes
+-	virtual Gdk::Color GetColor(int i);
++	virtual std::string GetColor(int i);
+ 	virtual std::string GetText(int i);
+ 
+ 	//Helpers for sub-sample interoplation
+diff --git a/scopehal/MockOscilloscope.cpp b/scopehal/MockOscilloscope.cpp
+index af9609a..ae72dd6 100644
+--- a/scopehal/MockOscilloscope.cpp
++++ b/scopehal/MockOscilloscope.cpp
+@@ -36,6 +36,7 @@
+ #include "scopehal.h"
+ #include "OscilloscopeChannel.h"
+ #include "MockOscilloscope.h"
++#include <sys/stat.h>
+ 
+ using namespace std;
+ 
+diff --git a/scopehal/PacketDecoder.cpp b/scopehal/PacketDecoder.cpp
+index cbcf4f4..50c3e9a 100644
+--- a/scopehal/PacketDecoder.cpp
++++ b/scopehal/PacketDecoder.cpp
+@@ -33,15 +33,15 @@
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ // Color schemes
+ 
+-Gdk::Color PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
++std::string PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
+ {
+-	Gdk::Color("#101010"),		//PROTO_COLOR_DEFAULT
+-	Gdk::Color("#800000"),		//PROTO_COLOR_ERROR
+-	Gdk::Color("#000080"),		//PROTO_COLOR_STATUS
+-	Gdk::Color("#808000"),		//PROTO_COLOR_CONTROL
+-	Gdk::Color("#336699"),		//PROTO_COLOR_DATA_READ
+-	Gdk::Color("#339966"),		//PROTO_COLOR_DATA_WRITE
+-	Gdk::Color("#600050"),		//PROTO_COLOR_COMMAND
++	std::string("#101010"),		//PROTO_COLOR_DEFAULT
++	std::string("#800000"),		//PROTO_COLOR_ERROR
++	std::string("#000080"),		//PROTO_COLOR_STATUS
++	std::string("#808000"),		//PROTO_COLOR_CONTROL
++	std::string("#336699"),		//PROTO_COLOR_DATA_READ
++	std::string("#339966"),		//PROTO_COLOR_DATA_WRITE
++	std::string("#600050"),		//PROTO_COLOR_COMMAND
+ };
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -50,7 +50,7 @@ Gdk::Color PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
+ Packet::Packet()
+ 	: m_offset(0)
+ 	, m_len(0)
+-	, m_displayForegroundColor(Gdk::Color("#ffffff"))
++	, m_displayForegroundColor(std::string("#ffffff"))
+ 	, m_displayBackgroundColor(PacketDecoder::m_backgroundColors[PacketDecoder::PROTO_COLOR_DEFAULT])
+ {
+ }
+diff --git a/scopehal/PacketDecoder.h b/scopehal/PacketDecoder.h
+index 5063543..b568b14 100644
+--- a/scopehal/PacketDecoder.h
++++ b/scopehal/PacketDecoder.h
+@@ -55,10 +55,10 @@ public:
+ 	std::vector<uint8_t> m_data;
+ 
+ 	//Text color of the packet
+-	Gdk::Color m_displayForegroundColor;
++	std::string m_displayForegroundColor;
+ 
+ 	//Background color of the packet
+-	Gdk::Color m_displayBackgroundColor;
++	std::string m_displayBackgroundColor;
+ };
+ 
+ /**
+@@ -100,7 +100,7 @@ public:
+ 		PROTO_STANDARD_COLOR_COUNT
+ 	};
+ 
+-	static Gdk::Color m_backgroundColors[PROTO_STANDARD_COLOR_COUNT];
++	static std::string m_backgroundColors[PROTO_STANDARD_COLOR_COUNT];
+ 
+ protected:
+ 	void ClearPackets();
+diff --git a/scopehal/scopehal.cpp b/scopehal/scopehal.cpp
+index b94e750..9c7110b 100644
+--- a/scopehal/scopehal.cpp
++++ b/scopehal/scopehal.cpp
+@@ -33,7 +33,6 @@
+ 	@brief Implementation of global functions
+  */
+ #include "scopehal.h"
+-#include <gtkmm/drawingarea.h>
+ #include <libgen.h>
+ 
+ #include "AgilentOscilloscope.h"
+@@ -69,6 +68,12 @@
+ #include <clFFT.h>
+ #endif
+ 
++float GetTime() {
++	struct timespec tp;
++	clock_gettime(CLOCK_MONOTONIC, &tp);
++	return tp.tv_sec+tp.tv_nsec*1e9;
++}
++
+ using namespace std;
+ 
+ bool g_hasAvx512F = false;
+diff --git a/scopehal/scopehal.h b/scopehal/scopehal.h
+index 74643a8..6a02081 100644
+--- a/scopehal/scopehal.h
++++ b/scopehal/scopehal.h
+@@ -44,14 +44,14 @@
+ #include <stdint.h>
+ #include <chrono>
+ #include <thread>
+-
+-#include <sigc++/sigc++.h>
+-#include <cairomm/context.h>
++#include <cstring>
++#include <cfloat>
++#include <climits>
++#include <algorithm>
+ 
+ #include <yaml-cpp/yaml.h>
+ 
+ #include "../log/log.h"
+-#include "../graphwidget/Graph.h"
+ 
+ #include "config.h"
+ #ifdef HAVE_OPENCL
+@@ -68,6 +68,11 @@
+ #pragma GCC diagnostic pop
+ #endif
+ 
++#include <time.h>
++#include <dirent.h>
++
++float GetTime();
++
+ #include "Unit.h"
+ #include "Bijection.h"
+ #include "IDTable.h"
+-- 
+2.32.0
+
