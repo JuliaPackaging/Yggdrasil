@@ -13,9 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/
-# git clone --recursive https://github.com/azonenberg/scopehal.git
-cd scopehal/
+cd $WORKSPACE/srcdir/scopehal/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-replace-color-with-string.patch
 git submodule update --init
 cd xptools
@@ -25,15 +23,14 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     .
-make
+make -j${nproc}
 make install
 install_license scopehal/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = filter!(p -> BinaryBuilder.proc_family(p) == "intel", platforms)
+platforms = filter!(p -> BinaryBuilder.proc_family(p) == "intel", supported_platforms())
 platforms = expand_cxxstring_abis(platforms; skip=p->false)
 
 
