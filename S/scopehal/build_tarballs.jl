@@ -21,7 +21,10 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 git submodule update --init
 cd ..
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    .
 make
 make install
 install_license scopehal/LICENSE
