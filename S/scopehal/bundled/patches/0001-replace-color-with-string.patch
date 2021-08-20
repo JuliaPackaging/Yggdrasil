@@ -1,4 +1,4 @@
-From 9bf2be7dfb62058237088a4c9318e4d0d6b878b7 Mon Sep 17 00:00:00 2001
+From 4a2a125fdfdea6bca5f52187ac583c817f0a16d1 Mon Sep 17 00:00:00 2001
 From: Pepijn de Vos <pepijndevos@gmail.com>
 Date: Fri, 20 Aug 2021 11:04:37 +0200
 Subject: [PATCH] replace color with string
@@ -12,10 +12,12 @@ Subject: [PATCH] replace color with string
  scopehal/MockOscilloscope.cpp |  5 +++--
  scopehal/PacketDecoder.cpp    | 18 +++++++++---------
  scopehal/PacketDecoder.h      |  6 +++---
- scopehal/base64.cpp           |  6 +++---
+ scopehal/Unit.cpp             |  8 ++++----
+ scopehal/Unit.h               |  2 +-
+ scopehal/base64.cpp           | 14 +++++++-------
  scopehal/scopehal.cpp         |  7 ++++++-
  scopehal/scopehal.h           | 13 +++++++++----
- 11 files changed, 59 insertions(+), 39 deletions(-)
+ 13 files changed, 68 insertions(+), 48 deletions(-)
 
 diff --git a/.gitmodules b/.gitmodules
 index 86185b9..7acf360 100644
@@ -234,22 +236,76 @@ index 5063543..b568b14 100644
  
  protected:
  	void ClearPackets();
+diff --git a/scopehal/Unit.cpp b/scopehal/Unit.cpp
+index a06115f..449a7db 100644
+--- a/scopehal/Unit.cpp
++++ b/scopehal/Unit.cpp
+@@ -31,7 +31,7 @@
+ 
+ using namespace std;
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ string Unit::m_slocale;
+ #else
+ locale_t Unit::m_locale;
+@@ -364,7 +364,7 @@ Unit Unit::operator*(const Unit& rhs)
+ 
+ void Unit::SetLocale(const char* locale)
+ {
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ 	m_slocale = locale;
+ #else
+ 	m_locale = newlocale(LC_ALL, locale, 0);
+@@ -378,7 +378,7 @@ void Unit::SetLocale(const char* locale)
+  */
+ void Unit::SetPrintingLocale()
+ {
+-	#ifdef _WIN32
++	#if defined(_WIN32) || defined(__APPLE__)
+ 		setlocale(LC_NUMERIC, m_slocale.c_str());
+ 	#else
+ 		uselocale(m_locale);
+@@ -390,7 +390,7 @@ void Unit::SetPrintingLocale()
+  */
+ void Unit::SetDefaultLocale()
+ {
+-	#ifdef _WIN32
++	#if defined(_WIN32) || defined(__APPLE__)
+ 		setlocale(LC_NUMERIC, "C");
+ 	#else
+ 		uselocale(m_defaultLocale);
+diff --git a/scopehal/Unit.h b/scopehal/Unit.h
+index 3647bbf..4a3bfe7 100644
+--- a/scopehal/Unit.h
++++ b/scopehal/Unit.h
+@@ -101,7 +101,7 @@ public:
+ protected:
+ 	UnitType m_type;
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ 	/**
+ 		@brief String form of m_locale for use on Windows
+ 	 */
 diff --git a/scopehal/base64.cpp b/scopehal/base64.cpp
-index aa47405..a57fe26 100644
+index aa47405..aedd194 100644
 --- a/scopehal/base64.cpp
 +++ b/scopehal/base64.cpp
-@@ -7,9 +7,9 @@ For details, see http://sourceforge.net/projects/libb64
+@@ -9,10 +9,10 @@ For details, see http://sourceforge.net/projects/libb64
  
- #include "base64.h"
- 
--int base64_decode_value(char value_in)
-+int base64_decode_value(signed char value_in)
+ int base64_decode_value(char value_in)
  {
 -	static const char decoding[] = {62,-1,-1,-1,63,52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-2,-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,-1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
 +	static const signed char decoding[] = {62,-1,-1,-1,63,52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-2,-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,-1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
  	static const char decoding_size = sizeof(decoding);
  	value_in -= 43;
- 	if (value_in < 0 || value_in >= decoding_size) return -1;
+-	if (value_in < 0 || value_in >= decoding_size) return -1;
++	if ((int)value_in < 0 || (int)value_in >= decoding_size) return -1;
+ 	return decoding[(int)value_in];
+ }
+ 
 @@ -26,7 +26,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
  {
  	const char* codechar = code_in;
@@ -259,6 +315,42 @@ index aa47405..a57fe26 100644
  
  	*plainchar = state_in->plainchar;
  
+@@ -42,7 +42,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar    = (fragment & 0x03f) << 2;
+ 
+@@ -55,7 +55,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++ |= (fragment & 0x030) >> 4;
+ 			*plainchar    = (fragment & 0x00f) << 4;
+@@ -69,7 +69,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++ |= (fragment & 0x03c) >> 2;
+ 			*plainchar    = (fragment & 0x003) << 6;
+@@ -83,7 +83,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++   |= (fragment & 0x03f);
+ 		}
 diff --git a/scopehal/scopehal.cpp b/scopehal/scopehal.cpp
 index b94e750..40dcc4d 100644
 --- a/scopehal/scopehal.cpp
