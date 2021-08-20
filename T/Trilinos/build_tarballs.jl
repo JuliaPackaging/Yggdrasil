@@ -118,7 +118,7 @@ cmake \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
     -DTrilinos_DUMP_PACKAGE_DEPENDENCIES=ON \
     $SRCDIR
-    make -j{nprocs} install
+    make -j${nprocs} install
         """
 
 # These are the platforms we will build for by default, unless further
