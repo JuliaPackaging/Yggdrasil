@@ -62,7 +62,6 @@ cmake \
     -DTrilinos_ENABLE_Epetra=ON  \
     -DTrilinos_ENABLE_EpetraExt=ON \
     -DTrilinos_ENABLE_Galeri=ON \
-    -DTrilinos_ENABLE_GlobiPack=ON \
     -DTrilinos_ENABLE_Ifpack=ON  \
     -DTrilinos_ENABLE_Ifpack2=ON \
     -DTrilinos_ENABLE_Intrepid=ON \
@@ -75,7 +74,6 @@ cmake \
     -DTrilinos_ENABLE_Moertel=ON \
     -DTrilinos_ENABLE_MueLu=ON  \
     -DTrilinos_ENABLE_NOX=ON  \
-    -DTrilinos_ENABLE_OptiPack=ON \
     -DTrilinos_ENABLE_Pamgen=ON \
     -DTrilinos_ENABLE_Phalanx=ON \
     -DTrilinos_ENABLE_Pike=ON \
@@ -86,7 +84,7 @@ cmake \
     -DTrilinos_ENABLE_Rythmos=ON \
     -DTrilinos_ENABLE_Sacado=ON \
     -DTrilinos_ENABLE_Shards=ON \
-    -DTrilinos_ENABLE_ShyLU=ON \
+    -DTrilinos_ENABLE_ShyLU=OFF \
     -DTrilinos_ENABLE_Stokhos=ON \
     -DTrilinos_ENABLE_Stratimikos=ON  \
     -DTrilinos_ENABLE_Teko=ON \
@@ -97,10 +95,9 @@ cmake \
     -DTrilinos_ENABLE_Triutils=ON \
     -DTrilinos_ENABLE_Xpetra=ON  \
     -DTrilinos_ENABLE_Zoltan=ON  \
-    -DTrilinos_ENABLE_Zoltan2=OFF  \
+    -DTrilinos_ENABLE_Zoltan2=ON  \
     -DTrilinos_ENABLE_Gtest=OFF \
     -DTrilinos_ENABLE_MiniTensor=OFF \
-    -DTrilinos_ENABLE_MOOCHO=OFF \
     -DTrilinos_ENABLE_SEACAS=OFF \
     -DTrilinos_ENABLE_STK=OFF \
     -DTrilinos_ENABLE_Tempus=ON \
@@ -119,8 +116,9 @@ cmake \
     -DTPL_ENABLE_X11=OFF \
     -DTPL_ENABLE_Zlib=OFF \
     -DTrilinos_ENABLE_PyTrilinos=OFF \
+    -DTrilinos_DUMP_PACKAGE_DEPENDENCIES=ON \
     $SRCDIR
-    make -j8 install
+    make -j{nprocs} install
         """
 
 # These are the platforms we will build for by default, unless further
@@ -131,96 +129,92 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libamesos2", :libamesos2),
-    LibraryProduct("libamesos", :libamesos),
-    LibraryProduct("libanasaziepetra", :libanasaziepetra),
-    LibraryProduct("libanasazi", :libanasazi),
-    LibraryProduct("libanasazitpetra", :libanasazitpetra),
-    LibraryProduct("libaztecoo", :libaztecoo),
-    LibraryProduct("libbelosepetra", :libbelosepetra),
-    LibraryProduct("libbelos", :libbelos),
-    LibraryProduct("libbelostpetra", :libbelostpetra),
-    LibraryProduct("libdpliris", :libdpliris),
-    LibraryProduct("libepetraext", :libepetraext),
-    LibraryProduct("libepetra", :libepetra),
-    LibraryProduct("libgaleri-epetra", :libgaleri_epetra),
-    LibraryProduct("libgaleri-xpetra", :libgaleri_xpetra),
-    LibraryProduct("libglobipack", :libglobipack),
-    LibraryProduct("libifpack2-adapters", :libifpack2_adapters),
-    LibraryProduct("libifpack2", :libifpack2),
-    LibraryProduct("libifpack", :libifpack),
-    LibraryProduct("libintrepid2", :libintrepid2),
-    LibraryProduct("libintrepid", :libintrepid),
-    LibraryProduct("libisorropia", :libisorropia),
-    LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
-    LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
-    LibraryProduct("libkokkoscore", :libkokkoscore),
-    LibraryProduct("libkokkoskernels", :libkokkoskernels),
-    LibraryProduct("libkokkostsqr", :libkokkostsqr),
-    LibraryProduct("libkomplex", :libkomplex),
-    LibraryProduct("liblocaepetra", :liblocaepetra),
-    LibraryProduct("liblocalapack", :liblocalapack),
-    LibraryProduct("libloca", :libloca),
-    LibraryProduct("liblocathyra", :liblocathyra),
-    LibraryProduct("libml", :libml),
-    LibraryProduct("libModeLaplace", :libModeLaplace),
-    LibraryProduct("libmoertel", :libmoertel),
-    LibraryProduct("libmuelu-adapters", :libmuelu_adapters),
-    LibraryProduct("libmuelu-interface", :libmuelu_interface),
-    LibraryProduct("libmuelu", :libmuelu),
-    LibraryProduct("libnoxepetra", :libnoxepetra),
-    LibraryProduct("libnoxlapack", :libnoxlapack),
-    LibraryProduct("libnox", :libnox),
-    LibraryProduct("liboptipack", :liboptipack),
-    LibraryProduct("libpamgen_extras", :libpamgen_extras),
-    LibraryProduct("libpamgen", :libpamgen),
-    LibraryProduct("libphalanx", :libphalanx),
-    LibraryProduct("libpiro", :libpiro),
-    LibraryProduct("librol", :librol),
-    LibraryProduct("librtop", :librtop),
-    LibraryProduct("librythmos", :librythmos),
-    LibraryProduct("libsacado", :libsacado),
-    LibraryProduct("libshards", :libshards),
-    LibraryProduct("libshylu", :libshylu),
-    LibraryProduct("libsimpi", :libsimpi),
-    LibraryProduct("libstokhos_amesos2", :libstokhos_amesos2),
-    LibraryProduct("libstokhos_ifpack2", :libstokhos_ifpack2),
-    LibraryProduct("libstokhos_muelu", :libstokhos_muelu),
-    LibraryProduct("libstokhos_sacado", :libstokhos_sacado),
-    LibraryProduct("libstokhos", :libstokhos),
-    LibraryProduct("libstokhos_tpetra", :libstokhos_tpetra),
-    LibraryProduct("libstratimikosamesos", :libstratimikosamesos),
-    LibraryProduct("libstratimikosaztecoo", :libstratimikosaztecoo),
-    LibraryProduct("libstratimikosbelos", :libstratimikosbelos),
-    LibraryProduct("libstratimikosifpack", :libstratimikosifpack),
-    LibraryProduct("libstratimikosml", :libstratimikosml),
-    LibraryProduct("libstratimikos", :libstratimikos),
-    LibraryProduct("libteko", :libteko),
-    LibraryProduct("libtempus", :libtempus),
-    LibraryProduct("libteuchoscomm", :libteuchoscomm),
-    LibraryProduct("libteuchoscore", :libteuchoscore),
-    LibraryProduct("libteuchoskokkoscomm", :libteuchoskokkoscomm),
-    LibraryProduct("libteuchoskokkoscompat", :libteuchoskokkoscompat),
-    LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
-    LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
-    LibraryProduct("libteuchosremainder", :libteuchosremainder),
-    LibraryProduct("libthyracore", :libthyracore),
-    LibraryProduct("libthyraepetraext", :libthyraepetraext),
-    LibraryProduct("libthyraepetra", :libthyraepetra),
-    LibraryProduct("libthyratpetra", :libthyratpetra),
-    LibraryProduct("libtpetraclassiclinalg", :libtpetraclassiclinalg),
-    LibraryProduct("libtpetraclassicnodeapi", :libtpetraclassicnodeapi),
-    LibraryProduct("libtpetraclassic", :libtpetraclassic),
-    LibraryProduct("libtpetraext", :libtpetraext),
-    LibraryProduct("libtpetrainout", :libtpetrainout),
-    LibraryProduct("libtpetra", :libtpetra),
-    LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
-    LibraryProduct("libtrilinosss", :libtrilinosss),
-    LibraryProduct("libtriutils", :libtriutils),
-    LibraryProduct("libxpetra", :libxpetra),
-    LibraryProduct("libxpetra-sup", :libxpetra_sup),
-    LibraryProduct("libzoltan", :libzoltan),
+products = LibraryProduct[
+    #LibraryProduct("libamesos2", :libamesos2),
+    #LibraryProduct("libamesos", :libamesos),
+    #LibraryProduct("libanasaziepetra", :libanasaziepetra),
+    #LibraryProduct("libanasazi", :libanasazi),
+    #LibraryProduct("libanasazitpetra", :libanasazitpetra),
+    #LibraryProduct("libaztecoo", :libaztecoo),
+    #LibraryProduct("libbelosepetra", :libbelosepetra),
+    #LibraryProduct("libbelos", :libbelos),
+    #LibraryProduct("libbelostpetra", :libbelostpetra),
+    #LibraryProduct("libdpliris", :libdpliris),
+    #LibraryProduct("libepetraext", :libepetraext),
+    #LibraryProduct("libepetra", :libepetra),
+    #LibraryProduct("libgaleri-epetra", :libgaleri_epetra),
+    #LibraryProduct("libgaleri-xpetra", :libgaleri_xpetra),
+    #LibraryProduct("libifpack2-adapters", :libifpack2_adapters),
+    #LibraryProduct("libifpack2", :libifpack2),
+    #LibraryProduct("libifpack", :libifpack),
+    #LibraryProduct("libintrepid2", :libintrepid2),
+    #LibraryProduct("libintrepid", :libintrepid),
+    #LibraryProduct("libisorropia", :libisorropia),
+    #LibraryProduct("libkokkosalgorithms", :libkokkosalgorithms),
+    #LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
+    #LibraryProduct("libkokkoscore", :libkokkoscore),
+    #LibraryProduct("libkokkoskernels", :libkokkoskernels),
+    #LibraryProduct("libkokkostsqr", :libkokkostsqr),
+    #LibraryProduct("libkomplex", :libkomplex),
+    #LibraryProduct("liblocaepetra", :liblocaepetra),
+    #LibraryProduct("liblocalapack", :liblocalapack),
+    #LibraryProduct("libloca", :libloca),
+    #LibraryProduct("liblocathyra", :liblocathyra),
+    #LibraryProduct("libml", :libml),
+    #LibraryProduct("libModeLaplace", :libModeLaplace),
+    #LibraryProduct("libmoertel", :libmoertel),
+    #LibraryProduct("libmuelu-adapters", :libmuelu_adapters),
+    #LibraryProduct("libmuelu-interface", :libmuelu_interface),
+    #LibraryProduct("libmuelu", :libmuelu),
+    #LibraryProduct("libnoxepetra", :libnoxepetra),
+    #LibraryProduct("libnoxlapack", :libnoxlapack),
+    #LibraryProduct("libnox", :libnox),
+    #LibraryProduct("libpamgen_extras", :libpamgen_extras),
+    #LibraryProduct("libpamgen", :libpamgen),
+    #LibraryProduct("libphalanx", :libphalanx),
+    #LibraryProduct("libpiro", :libpiro),
+    #LibraryProduct("librol", :librol),
+    #LibraryProduct("librtop", :librtop),
+    #LibraryProduct("librythmos", :librythmos),
+    #LibraryProduct("libsacado", :libsacado),
+    #LibraryProduct("libshards", :libshards),
+    #LibraryProduct("libstokhos_amesos2", :libstokhos_amesos2),
+    #LibraryProduct("libstokhos_ifpack2", :libstokhos_ifpack2),
+    #LibraryProduct("libstokhos_muelu", :libstokhos_muelu),
+    #LibraryProduct("libstokhos_sacado", :libstokhos_sacado),
+    #LibraryProduct("libstokhos", :libstokhos),
+    #LibraryProduct("libstokhos_tpetra", :libstokhos_tpetra),
+    #LibraryProduct("libstratimikosamesos", :libstratimikosamesos),
+    #LibraryProduct("libstratimikosaztecoo", :libstratimikosaztecoo),
+    #LibraryProduct("libstratimikosbelos", :libstratimikosbelos),
+    #LibraryProduct("libstratimikosifpack", :libstratimikosifpack),
+    #LibraryProduct("libstratimikosml", :libstratimikosml),
+    #LibraryProduct("libstratimikos", :libstratimikos),
+    #LibraryProduct("libteko", :libteko),
+    #LibraryProduct("libtempus", :libtempus),
+    #LibraryProduct("libteuchoscomm", :libteuchoscomm),
+    #LibraryProduct("libteuchoscore", :libteuchoscore),
+    #LibraryProduct("libteuchoskokkoscomm", :libteuchoskokkoscomm),
+    #LibraryProduct("libteuchoskokkoscompat", :libteuchoskokkoscompat),
+    #LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
+    #LibraryProduct("libteuchosparameterlist", :libteuchosparameterlist),
+    #LibraryProduct("libteuchosremainder", :libteuchosremainder),
+    #LibraryProduct("libthyracore", :libthyracore),
+    #LibraryProduct("libthyraepetraext", :libthyraepetraext),
+    #LibraryProduct("libthyraepetra", :libthyraepetra),
+    #LibraryProduct("libthyratpetra", :libthyratpetra),
+    #LibraryProduct("libtpetraclassiclinalg", :libtpetraclassiclinalg),
+    #LibraryProduct("libtpetraclassicnodeapi", :libtpetraclassicnodeapi),
+    #LibraryProduct("libtpetraclassic", :libtpetraclassic),
+    #LibraryProduct("libtpetraext", :libtpetraext),
+    #LibraryProduct("libtpetrainout", :libtpetrainout),
+    #LibraryProduct("libtpetra", :libtpetra),
+    #LibraryProduct("libtrilinoscouplings", :libtrilinoscouplings),
+    #LibraryProduct("libtrilinosss", :libtrilinosss),
+    #LibraryProduct("libtriutils", :libtriutils),
+    #LibraryProduct("libxpetra", :libxpetra),
+    #LibraryProduct("libxpetra-sup", :libxpetra_sup),
+    #LibraryProduct("libzoltan", :libzoltan),
 ]
 
 # Dependencies that must be installed before this package can be built
