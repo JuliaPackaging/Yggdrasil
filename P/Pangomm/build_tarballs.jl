@@ -31,7 +31,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libpangomm-$(version.major)", "libpangomm-$(version.major).$(version.minor)"], :libpangomm)
+    LibraryProduct(["libpangomm-$(version.major)", "libpangomm-$(version.major).48"], :libpangomm)
 ]
 
 # Dependencies that must be installed before this package can be built
