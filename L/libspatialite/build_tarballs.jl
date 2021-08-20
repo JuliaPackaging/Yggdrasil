@@ -13,11 +13,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd $WORKSPACE/srcdir/libspatialite-*
 
-update_configure_scripts
+# Detection of MinGW and macOS is totally wrong: `target_alias` is empty.  We
+# could use `host_alias` (why not `host`?), but we should do regex matching,
+# which doesn't work very well with Alpine's (da)sh, easiest thing is to check
+# `uname -s`, which is easier to test.
+atomic_patch -p1 ../patches/configure-ac-system-detection.patch
 
+update_configure_scripts
 autoreconf -vi
 
 if [[ ${target} == *-linux-musl* ]] || [[ ${target} == *-freebsd* ]]; then
@@ -28,38 +32,34 @@ elif [[ "${target}" == *-mingw* ]]; then
 
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-include.patch
 
-    #this allows it to at least compile otherwise get "libtool: error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified" message
-    #derived from https://issues.apache.org/jira/browse/XERCESC-2048
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-ltmain-fixme.patch
-
 fi
 
 ./configure \
---prefix=${prefix} \
---build=${MACHTYPE} \
---host=${target} \
---includedir=${includedir} \
---libdir=${libdir} \
---enable-shared=yes \
---enable-static=no \
---enable-geocallbacks=yes \
---enable-knn=yes \
---enable-proj=yes \
---enable-iconv=yes \
---enable-freexl=no \
---enable-epsg=yes \
---enable-geos=yes \
---enable-geosadvanced=yes \
---enable-geosreentrant=yes \
---enable-geos370=yes \
---enable-gcp=no \
---enable-rttopo=no \
---enable-libxml2=yes \
---enable-minizip=no \
---enable-geopackage=yes \
---enable-gcov=no \
---enable-examples=no \
---enable-module-only=no
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --includedir=${includedir} \
+    --libdir=${libdir} \
+    --enable-shared=yes \
+    --enable-static=no \
+    --enable-geocallbacks=yes \
+    --enable-knn=yes \
+    --enable-proj=yes \
+    --enable-iconv=yes \
+    --enable-freexl=no \
+    --enable-epsg=yes \
+    --enable-geos=yes \
+    --enable-geosadvanced=yes \
+    --enable-geosreentrant=yes \
+    --enable-geos370=yes \
+    --enable-gcp=no \
+    --enable-rttopo=no \
+    --enable-libxml2=yes \
+    --enable-minizip=no \
+    --enable-geopackage=yes \
+    --enable-gcov=no \
+    --enable-examples=no \
+    --enable-module-only=no
 
 make -j${nproc}
 make install
