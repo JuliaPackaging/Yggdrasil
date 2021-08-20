@@ -1,4 +1,4 @@
-From 37fac2215eb3dcf32fa039fde503f8cf130f078b Mon Sep 17 00:00:00 2001
+From 7adea47ea9772905fac53cde5e578fbe9462aee2 Mon Sep 17 00:00:00 2001
 From: Pepijn de Vos <pepijndevos@gmail.com>
 Date: Fri, 20 Aug 2021 11:04:37 +0200
 Subject: [PATCH] replace color with string
@@ -207,7 +207,7 @@ index 5063543..b568b14 100644
  protected:
  	void ClearPackets();
 diff --git a/scopehal/scopehal.cpp b/scopehal/scopehal.cpp
-index b94e750..9c7110b 100644
+index b94e750..40dcc4d 100644
 --- a/scopehal/scopehal.cpp
 +++ b/scopehal/scopehal.cpp
 @@ -33,7 +33,6 @@
@@ -222,17 +222,17 @@ index b94e750..9c7110b 100644
  #include <clFFT.h>
  #endif
  
-+float GetTime() {
-+	struct timespec tp;
-+	clock_gettime(CLOCK_MONOTONIC, &tp);
-+	return tp.tv_sec+tp.tv_nsec*1e9;
++int64_t GetTime() {
++	auto t = std::chrono::steady_clock::now();
++	auto ts = t.time_since_epoch();
++	return std::chrono::duration_cast<std::chrono::microseconds>(ts).count();
 +}
 +
  using namespace std;
  
  bool g_hasAvx512F = false;
 diff --git a/scopehal/scopehal.h b/scopehal/scopehal.h
-index 74643a8..6a02081 100644
+index 74643a8..ce57548 100644
 --- a/scopehal/scopehal.h
 +++ b/scopehal/scopehal.h
 @@ -44,14 +44,14 @@
@@ -258,10 +258,10 @@ index 74643a8..6a02081 100644
  #pragma GCC diagnostic pop
  #endif
  
-+#include <time.h>
++#include <chrono>
 +#include <dirent.h>
 +
-+float GetTime();
++int64_t GetTime();
 +
  #include "Unit.h"
  #include "Bijection.h"
