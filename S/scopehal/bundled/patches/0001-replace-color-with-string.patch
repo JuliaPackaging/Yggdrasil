@@ -1,4 +1,4 @@
-From 4a2a125fdfdea6bca5f52187ac583c817f0a16d1 Mon Sep 17 00:00:00 2001
+From 0e56841938baf7b33d7a2adf7e8bd8e9e92f0870 Mon Sep 17 00:00:00 2001
 From: Pepijn de Vos <pepijndevos@gmail.com>
 Date: Fri, 20 Aug 2021 11:04:37 +0200
 Subject: [PATCH] replace color with string

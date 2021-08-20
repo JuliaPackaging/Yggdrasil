@@ -16,11 +16,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/
 # git clone --recursive https://github.com/azonenberg/scopehal.git
 cd scopehal/
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-replace-color-with-string.patch
 git submodule update --init
-cd ..
+cd xptools
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-musl.patch
+cd ../..
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
