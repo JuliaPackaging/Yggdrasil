@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "Trilinos"
-version = v"12.12.1"
+version = v"13.0"
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4")
+    GitSource("https://github.com/trilinos/Trilinos.git", "9fec35276d846a667bc668ff4cbdfd8be0dfea08")
 ]
 
 # We are manually specifying the compilers rather than using the toolchain file.
@@ -125,7 +125,7 @@ cmake \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> (Sys.islinux(p) && nbits(p) != 32), supported_platforms())
+platforms = filter(p -> (nbits(p) != 32), supported_platforms())
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
