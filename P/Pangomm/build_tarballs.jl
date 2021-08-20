@@ -7,17 +7,20 @@ version = v"2.49.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/pangomm/2.49/pangomm-2.49.1.tar.xz", "a2272883152618fddea016a62f50eb23b9b056ab3c08f3b64422591e6a507bd5")
+    ArchiveSource("https://download.gnome.org/sources/pangomm/$(version.major).$(version.minor)/pangomm-$(version).tar.xz",
+                  "a2272883152618fddea016a62f50eb23b9b056ab3c08f3b64422591e6a507bd5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd pangomm-2.49.1/
-mkdir output
-cd output/
+cd $WORKSPACE/srcdir/pangomm*/
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Delete host libexpat.so to avoid confusion 
+    rm /usr/lib/libexpat*
+fi
+mkdir output && cd output
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} ..
-ninja
+ninja -j${nproc}
 ninja install
 """
 
@@ -28,14 +31,14 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libpangomm", "libpangomm-2", "libpangomm-2.48"], :pangomm)
+    LibraryProduct(["libpangomm-$(version.major)", "libpangomm-$(version.major).$(version.minor)"], :libpangomm)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Cairomm_jll", uuid="af74c99f-f0eb-54aa-aecc-a10e8fc65c17"))
-    Dependency(PackageSpec(name="Glibmm_jll", uuid="5d85a9da-21f7-5855-afec-cdc5039c46e8"))
-    Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3"))
+    Dependency(PackageSpec(name="Cairomm_jll", uuid="af74c99f-f0eb-54aa-aecc-a10e8fc65c17"); compat="~1.16.1")
+    Dependency(PackageSpec(name="Glibmm_jll", uuid="5d85a9da-21f7-5855-afec-cdc5039c46e8"); compat="~2.68.1")
+    Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3"); compat="1.47.0")
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
 ]
 
