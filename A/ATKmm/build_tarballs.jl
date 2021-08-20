@@ -27,7 +27,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libatkmm", :atkmm)
+    LibraryProduct(["libatkmm-2.36", "libatkmm-2", "libatkmm"], :atkmm)
 ]
 
 # Dependencies that must be installed before this package can be built
