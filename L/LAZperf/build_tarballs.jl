@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "laz_perf"
+name = "LAZperf"
 version = v"2.1.0"
 
 # Collection of sources required to complete build
