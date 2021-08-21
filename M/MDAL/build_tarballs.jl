@@ -33,7 +33,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DBUILD_EXTERNAL_DRIVERS=OFF)
 
 #NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-if [-f ${libdir}/libnetcdf*.${dlext}]; then
+if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
     CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
 else
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
