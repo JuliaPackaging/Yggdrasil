@@ -15,6 +15,7 @@ dependencies = [
     Dependency("Readline_jll"),
     Dependency("Tcl_jll"),
     Dependency("Zlib_jll"),
+    Dependency("ABC_jll"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
@@ -24,14 +25,22 @@ cd yosys
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
     CONFIG=clang
     OS=Darwin
+elif [[ "${target}" == *-x86_64-w64-mingw32* ]]; then
+    CONFIG=msys2-64
+    OS=Windows
+elif [[ "${target}" == *-i686-w64-mingw32* ]]; then
+    CONFIG=msys2-32
+    OS=Windows
 else
     CONFIG=gcc
     OS=Linux
 fi
-make ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} -j${nproc}
-make install OS=${OS} PREFIX=${prefix} ENABLE_LIBYOSYS=1
+# TODO: we need mingw-dlfcn wrappers for windows plugin support
+# TODO: ABC does not build on windows
+make ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} LIBDIR=${libdir} -j${nproc}
+make install ENABLE_LIBYOSYS=1 OS=${OS} PREFIX=${prefix} LIBDIR=${libdir}
 if [[ "${target}" == *-apple-* ]]; then
-    mv ${prefix}/lib/yosys/libyosys.so  ${prefix}/lib/yosys/libyosys.dylib
+    mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dylib
 fi
 """
 
@@ -49,7 +58,7 @@ products = Product[
     ExecutableProduct("yosys-filterlib", :yosys_filterlib),
     ExecutableProduct("yosys-smtbmc", :yosys_smtbmc),
     ExecutableProduct("yosys-abc", :yosys_abc),
-    LibraryProduct("libyosys", :libyosys, ["lib/yosys"])
+    LibraryProduct("libyosys", :libyosys)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
