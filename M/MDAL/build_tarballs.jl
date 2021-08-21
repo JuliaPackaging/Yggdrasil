@@ -18,9 +18,6 @@ cd $WORKSPACE/srcdir/MDAL-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rename-findsqlite-library.patch
 
-#NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-netcdf_platforms=(aarch64-linux-gnu i686-w64-mingw32 x86_64-apple-darwin x86_64-linux-gnu x86_64-w64-mingw32)
-
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
@@ -35,7 +32,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DBUILD_TOOLS=OFF
 -DBUILD_EXTERNAL_DRIVERS=OFF)
 
-if (printf '%s\n' "${netcdf_platforms[@]}" | grep -xq ${target}); then
+#NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if [-f ${libdir}/libnetcdf*.${dlext}]; then
     CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
 else
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
