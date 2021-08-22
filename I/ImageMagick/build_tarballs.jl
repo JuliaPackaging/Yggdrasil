@@ -17,7 +17,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
 if [[ "${target}" == *-linux-gnu ]]; then
     atomic_patch -p1 ../patches/utilities-link-rt.patch
+elif [[ "${target}" == *-mingw* ]]; then
+    # Link to ws2_32 to fix undefined reference to `__imp_WSAStartup`.
+    atomic_patch -p1 ../patches/windows-undefined-reference-__imp_WSAStartup.patch
 fi
+atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
