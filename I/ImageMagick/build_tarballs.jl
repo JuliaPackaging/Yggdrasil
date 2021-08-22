@@ -2,18 +2,33 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-version = v"6.9.12"
+upstream_version = v"6.9.12-19"
+version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
-    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/6.9.12-19.tar.gz",
-    "2f184f1f5c3e19849347b2b4acb6dd074290903d36fa5924956ee06c85ddf783"),
+    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/$(upstream_version).tar.gz",
+                  "2f184f1f5c3e19849347b2b4acb6dd074290903d36fa5924956ee06c85ddf783"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl --disable-docs --disable-static
+if [[ "${target}" == *-linux-gnu ]]; then
+    atomic_patch -p1 ../patches/utilities-link-rt.patch
+fi
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --without-x \
+    --disable-openmp \
+    --disable-installed \
+    --disable-dependency-tracking \
+    --without-frozenpaths \
+    --without-perl \
+    --disable-docs \
+    --disable-static
 make -j${nproc}
 make install
 """
