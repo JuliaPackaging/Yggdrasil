@@ -51,8 +51,15 @@ platforms = filter!(!Sys.isapple,   platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pw.x", :pwscf),
+    ExecutableProduct("bands.x", :bands),
+    ExecutableProduct("dos.x", :dos),
+    ExecutableProduct("ibrav2cell.x", :ibrav2cell),
+    ExecutableProduct("kpoints.x", :kpoints),
     ExecutableProduct("cp.x", :carparinello),
     ExecutableProduct("ph.x", :phonon),
+    ExecutableProduct("q2r.x", :q2r),
+    ExecutableProduct("matdyn.x", :matdyn),
+    ExecutableProduct("dynmat.x", :dynmat),
     ExecutableProduct("hp.x", :hubbardparams),
 ]
 
