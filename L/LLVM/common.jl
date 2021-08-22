@@ -123,7 +123,7 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir;libcxx;libcxxabi;libunwind')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld')
 fi
@@ -243,6 +243,16 @@ fi
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
+
+# Some libunwind-specific things
+if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+    CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
+    CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
+    if [[ ${target} == x86_64-w64-mingw32 ]]; then
+        # Support for threading requires Windows Vista
+        export CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -D_WIN32_WINNT=0x0600"
+    fi
+fi
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 ninja -j${nproc} -vv
