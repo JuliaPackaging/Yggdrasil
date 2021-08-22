@@ -46,7 +46,6 @@ script = raw"""
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter!(!Sys.iswindows, platforms)
-platforms = filter!(!Sys.isapple,   platforms)
 
 # The products that we will ensure are always built
 products = [
