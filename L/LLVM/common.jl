@@ -354,7 +354,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
-        LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
@@ -368,6 +367,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
         push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
+        push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
     end
 
     name = "LLVM_full"
