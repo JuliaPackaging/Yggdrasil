@@ -122,8 +122,10 @@ LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir')
+if [[ "${LLVM_MAJ_VER}" -ge "12" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir;libcxx;libunwind')
+elif [[ "${LLVM_MAJ_VER}" -eq "11" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;libcxx;libunwind')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld')
 fi
@@ -244,6 +246,16 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
+# Some libunwind-specific things (note: libunwind is only built for LLVM 11+)
+if [[ "${LLVM_MAJ_VER}" -ge "11" ]]; then
+    CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
+    CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
+    if [[ ${target} == x86_64-w64-mingw32 ]]; then
+        # Support for threading requires Windows Vista
+        CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -D_WIN32_WINNT=0x0600"
+    fi
+fi
+
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
 ninja -j${nproc} -vv
 
@@ -340,6 +352,20 @@ rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 """
 
+const unwindscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# We only need libunwind; it needs to be in the monorepo to build (for LLVM 12+) but
+# otherwise doesn't depend on anything else
+mkdir -p ${libdir}
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*unwind*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
 function configure_build(ARGS, version; experimental_platforms=false, assert=false)
     # Parse out some args
     if "--assert" in ARGS
@@ -419,6 +445,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
+    elseif name == "LLVMLibUnwind"
+        script = unwindscript
+        products = [
+            LibraryProduct("libunwind", :libunwind; dont_dlopen=true),
+        ]
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
