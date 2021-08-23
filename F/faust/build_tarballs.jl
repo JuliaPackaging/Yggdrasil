@@ -4,12 +4,12 @@
 using BinaryBuilder
 
 name = "faust"
-version = v"2.32.16"
+version = v"2.34.4"
 
 # Collection of sources required to build faust
 sources = [
     GitSource("https://github.com/grame-cncm/faust.git",
-              "53055b47f0ac81bee92b32db3c12729759e005f4"),
+              "fab2d11fde2a2205c6effc81c271787086523d21"),
     DirectorySource("./bundled"),
 ]
 
