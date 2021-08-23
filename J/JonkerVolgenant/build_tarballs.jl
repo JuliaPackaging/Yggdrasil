@@ -12,22 +12,18 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Jonker-Volgenant
-cd src
-gcc -I -Wall -std=c99 -shared -fPIC -O3 -o bipartite_assignement.so *.c
-exit
-cd $WORKSPACE/srcdir
-install_license
-logout
+cd $WORKSPACE/srcdir/Jonker-Volgenant/src
+mkdir -p "${libdir}"
+cc -I -Wall -std=c99 -shared -fPIC -O3 -o "${libdir}/bipartite_assignement.${dlext}" *.c
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
-products = Product[
+products = [
+    LibraryProduct("bipartite_assignement", :bipartite_assignement),
 ]
 
 # Dependencies that must be installed before this package can be built
