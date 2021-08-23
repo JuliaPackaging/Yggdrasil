@@ -41,20 +41,32 @@ elif [[ "${target}" == *-apple* ]]; then
 
 fi
 
-./configure \
---prefix=${prefix} \
---build=${MACHTYPE} \
---host=${target} \
---includedir=${includedir} \
---libdir=${libdir} \
---with-gtk=3 \
---with-libiconv=ON \
---with-libcurl=ON \
---with-libpng=sys \
---with-libjpeg=sys \
---with-libtiff=sys \
---with-zlib=sys \
---disable-tests
+CONFIGURE_FLAGS=(--prefix=${prefix}
+                --build=${MACHTYPE}
+                --host=${target}
+                --includedir=${includedir}
+                --libdir=${libdir}
+                --with-libiconv=ON
+                --with-libcurl=ON
+                --with-libpng=sys
+                --with-libjpeg=sys
+                --with-libtiff=sys
+                --with-zlib=sys
+                --with-expat=sys
+                --disable-tests
+                )
+
+#wxWidgets has a couple of variants available (see "Supported Platforms" section https://www.wxwidgets.org/about/). For x86_64-apple-darwin, we'll build the OSX/OSCocoa variant, everything else we build the wxGTK variant.
+
+if [[ "${target}" == *-apple* ]]; then
+    #configure should auto-detect oscocoa build platform
+    CONFIGURE_FLAGS+=(--with-macosx-version-min=10.12)
+else
+    #manually specify we want wxGTK build platform
+    CONFIGURE_FLAGS+=(--with-gtk=3)
+fi
+
+./configure ${CONFIGURE_FLAGS[@]}
 
 make -j${nproc}
 make install
@@ -95,6 +107,7 @@ dependencies = [
     Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6"))
     Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a"))
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    Dependency("Expat_jll"; compat="2.2.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
