@@ -41,6 +41,8 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
 make all "${make_args[@]}" -j $nproc
 make install
+# Manually make all binary executables...executable.  Sigh
+chmod +x "${bindir}"/*
 """
 
 # These are the platforms we will build for by default, unless further
