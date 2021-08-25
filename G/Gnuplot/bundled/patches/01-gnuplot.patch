@@ -1,6 +1,6 @@
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/config/mingw/Makefile gnuplot-5.4.0/config/mingw/Makefile
---- gnuplot-5.4.0.orig/config/mingw/Makefile	2020-04-10 09:15:40.000000000 +0530
-+++ gnuplot-5.4.0/config/mingw/Makefile	2020-09-06 20:38:04.140186600 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/config/mingw/Makefile gnuplot-5.4.2/config/mingw/Makefile
+--- gnuplot-5.4.2.orig/config/mingw/Makefile	2020-04-10 09:15:40.000000000 +0530
++++ gnuplot-5.4.2/config/mingw/Makefile	2020-09-06 20:38:04.140186600 +0530
 @@ -784,19 +784,19 @@
  $(HELPFILE): $(BUILDHELPFILE)
  	$(CP) $^ $@
@@ -33,9 +33,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/config/mingw/Makefile gnuplo
  
  # Working directory for patched Japanese sources 
  JA = ja/
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/configure.ac gnuplot-5.4.0/configure.ac
---- gnuplot-5.4.0.orig/configure.ac	2020-07-12 05:59:47.000000000 +0530
-+++ gnuplot-5.4.0/configure.ac	2020-09-06 20:04:48.475405900 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/configure.ac gnuplot-5.4.2/configure.ac
+--- gnuplot-5.4.2.orig/configure.ac	2020-07-12 05:59:47.000000000 +0530
++++ gnuplot-5.4.2/configure.ac	2020-09-06 20:04:48.475405900 +0530
 @@ -37,6 +37,8 @@
  AC_C_STRINGIZE
  AC_PROG_LN_S
@@ -75,9 +75,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/configure.ac gnuplot-5.4.0/c
  dnl Enable subsystem to generate statistical summary of file contents
  AC_ARG_ENABLE(stats,dnl
  [  --disable-stats         Omit calculation of statistical summary of data],
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/demo/plugin/Makefile.am gnuplot-5.4.0/demo/plugin/Makefile.am
---- gnuplot-5.4.0.orig/demo/plugin/Makefile.am	2017-12-22 23:02:30.000000000 +0530
-+++ gnuplot-5.4.0/demo/plugin/Makefile.am	2020-09-06 20:05:12.659453700 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/demo/plugin/Makefile.am gnuplot-5.4.2/demo/plugin/Makefile.am
+--- gnuplot-5.4.2.orig/demo/plugin/Makefile.am	2017-12-22 23:02:30.000000000 +0530
++++ gnuplot-5.4.2/demo/plugin/Makefile.am	2020-09-06 20:05:12.659453700 +0530
 @@ -4,7 +4,7 @@
  noinst_PROGRAMS = demo_plugin.so
  
@@ -87,9 +87,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/demo/plugin/Makefile.am gnup
  demo_plugin_so_LDFLAGS = -shared
  
  # Note: Solaris SunPro C compiler needs these flags instead
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/docs/Makefile.am gnuplot-5.4.0/docs/Makefile.am
---- gnuplot-5.4.0.orig/docs/Makefile.am	2020-04-10 22:24:28.000000000 +0530
-+++ gnuplot-5.4.0/docs/Makefile.am	2020-09-06 20:03:02.506859700 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/docs/Makefile.am gnuplot-5.4.2/docs/Makefile.am
+--- gnuplot-5.4.2.orig/docs/Makefile.am	2020-04-10 22:24:28.000000000 +0530
++++ gnuplot-5.4.2/docs/Makefile.am	2020-09-06 20:03:02.506859700 +0530
 @@ -50,6 +50,11 @@
  
  AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/term
@@ -102,9 +102,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/docs/Makefile.am gnuplot-5.4
  # Documentation will be prepared for all terminals in CORETERM
  # even if the terminal itself is not included in the build.
  
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/Makefile.am gnuplot-5.4.0/Makefile.am
---- gnuplot-5.4.0.orig/Makefile.am	2020-03-31 22:58:16.000000000 +0530
-+++ gnuplot-5.4.0/Makefile.am	2020-09-06 20:01:49.907467200 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/Makefile.am gnuplot-5.4.2/Makefile.am
+--- gnuplot-5.4.2.orig/Makefile.am	2020-03-31 22:58:16.000000000 +0530
++++ gnuplot-5.4.2/Makefile.am	2020-09-06 20:01:49.907467200 +0530
 @@ -7,6 +7,8 @@
  PATCHLEVEL PGPKEYS README RELEASE_NOTES \
  configure.vms win
@@ -114,9 +114,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/Makefile.am gnuplot-5.4.0/Ma
  DISTCLEANFILES = stamp-h
  
  ACLOCAL_AMFLAGS = -I m4
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/command.c gnuplot-5.4.0/src/command.c
---- gnuplot-5.4.0.orig/src/command.c	2020-06-11 03:03:34.000000000 +0530
-+++ gnuplot-5.4.0/src/command.c	2020-09-06 19:57:28.950915200 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/src/command.c gnuplot-5.4.2/src/command.c
+--- gnuplot-5.4.2.orig/src/command.c	2020-06-11 03:03:34.000000000 +0530
++++ gnuplot-5.4.2/src/command.c	2020-09-06 19:57:28.950915200 +0530
 @@ -112,7 +112,7 @@
  int thread_rl_RetCode = -1; /* return code from readline in a thread */
  #endif /* OS2_IPC */
@@ -209,9 +209,9 @@ diff --unified -r gnuplot-5.4.1.orig/src/Makefile.am gnuplot-5.4.1/src/Makefile.
  if DEVELOPMENT_VERSION
  DISTCLEANFILES = timestamp.h
  BUILT_SOURCES = timestamp.h
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/win/winmain.c gnuplot-5.4.0/src/win/winmain.c
---- gnuplot-5.4.0.orig/src/win/winmain.c	2020-04-10 22:24:28.000000000 +0530
-+++ gnuplot-5.4.0/src/win/winmain.c	2020-09-06 19:58:17.437576400 +0530
+diff --unified '--color=auto' -r gnuplot-5.4.2.orig/src/win/winmain.c gnuplot-5.4.2/src/win/winmain.c
+--- gnuplot-5.4.2.orig/src/win/winmain.c	2020-04-10 22:24:28.000000000 +0530
++++ gnuplot-5.4.2/src/win/winmain.c	2020-09-06 19:58:17.437576400 +0530
 @@ -368,7 +368,8 @@
      else
  	lang = GetLanguageCode();
