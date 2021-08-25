@@ -56,13 +56,13 @@ CONFIGURE_FLAGS=(--prefix=${prefix}
                 --disable-tests
                 )
 
-#wxWidgets has a couple of variants available (see "Supported Platforms" section https://www.wxwidgets.org/about/). For x86_64-apple-darwin, we'll build the OSX/OSCocoa variant, everything else we build the wxGTK variant.
+#wxWidgets has a couple of variants available (see "Supported Platforms" section https://www.wxwidgets.org/about/). On Unix platforms, we'll build the wxGTK variant, on MinGW platforms we'll build the wxMSW variant, and we'll build the OSX/OSCocoa variant on mac platforms.
 
 if [[ "${target}" == *-apple* ]]; then
-    #configure should auto-detect oscocoa build platform
-    CONFIGURE_FLAGS+=(--with-macosx-version-min=10.12)
+    CONFIGURE_FLAGS+=(--with-osx_cocoa)
+elif [[ "${target}" == *-mingw* ]]; then
+    CONFIGURE_FLAGS+=(--with-msw)
 else
-    #manually specify we want wxGTK build platform
     CONFIGURE_FLAGS+=(--with-gtk=3)
 fi
 
@@ -82,19 +82,19 @@ platforms = expand_cxxstring_abis(supported_platforms())
 #see https://github.com/wxWidgets/wxWidgets/blob/master/docs/contributing/about-platform-toolkit-and-library-names.md for more info on naming
 products = [
     ExecutableProduct("wxrc-$(version.major).$(version.minor)", :wxrc),
-    LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom"], :libwx_gtk3u_adv),
-    LibraryProduct(["libwx_gtk3u_core-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_core_gcc_custom"], :libwx_gtk3u_core),
-    LibraryProduct(["libwx_gtk3u_richtext-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_richtext_gcc_custom"], :libwx_gtk3u_richtext),
-    LibraryProduct(["libwx_gtk3u_html-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_html_gcc_custom"], :libwx_gtk3u_html),
-    LibraryProduct(["libwx_baseu_xml-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_xml_gcc_custom"], :libwx_baseu_xml),
-    LibraryProduct(["libwx_gtk3u_aui-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_aui_gcc_custom"], :libwx_gtk3u_aui),
-    LibraryProduct(["libwx_gtk3u_stc-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_stc_gcc_custom"], :libwx_gtk3u_stc),
-    LibraryProduct(["libwx_baseu-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_gcc_custom"], :libwx_baseu),
-    LibraryProduct(["libwx_gtk3u_qa-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_qa_gcc_custom"], :libwx_gtk3u_qa),
-    LibraryProduct(["libwx_gtk3u_ribbon-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_ribbon_gcc_custom"], :libwx_gtk3u_ribbon),
-    LibraryProduct(["libwx_gtk3u_propgrid-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_propgrid_gcc_custom"], :libwx_gtk3u_propgrid),
-    LibraryProduct(["libwx_gtk3u_xrc-$(version.major).$(version.minor)","wxgtk3$(version.major)$(version.minor)$(version.patch)u_xrc_gcc_custom"], :libwx_gtk3u_xrc),
-    LibraryProduct(["libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom"], :libwx_baseu_net)
+    LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom"], :adv),
+    LibraryProduct(["libwx_gtk3u_core-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_core_gcc_custom"], :core),
+    LibraryProduct(["libwx_gtk3u_richtext-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_richtext_gcc_custom"], :richtext),
+    LibraryProduct(["libwx_gtk3u_html-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_html_gcc_custom"], :html),
+    LibraryProduct(["libwx_baseu_xml-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_xml_gcc_custom"], :baseu_xml),
+    LibraryProduct(["libwx_gtk3u_aui-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_aui_gcc_custom"], :aui),
+    LibraryProduct(["libwx_gtk3u_stc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_stc_gcc_custom"], :stc),
+    LibraryProduct(["libwx_baseu-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_gcc_custom"], :baseu),
+    LibraryProduct(["libwx_gtk3u_qa-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_qa_gcc_custom"], :qa),
+    LibraryProduct(["libwx_gtk3u_ribbon-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_ribbon_gcc_custom"], :ribbon),
+    LibraryProduct(["libwx_gtk3u_propgrid-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_propgrid_gcc_custom"], :propgrid),
+    LibraryProduct(["libwx_gtk3u_xrc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_xrc_gcc_custom"], :xrc),
+    LibraryProduct(["libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom"], :baseu_net)
 ]
 
 
