@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "soapyrtlsdr"
+name = "SoapyRTLSDR"
 version = v"0.3.2"
 
 # Collection of sources required to complete build
