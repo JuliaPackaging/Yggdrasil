@@ -260,8 +260,8 @@ fi
 # Work around llvm-config bug by creating versioned symlink to libLLVM
 # https://github.com/JuliaLang/julia/pull/30033
 if [[ "${target}" == *darwin* ]]; then
-    LLVM_VER=$(basename $(echo ${prefix}/tools/clang-*.*))
-    ln -s libLLVM.dylib ${prefix}/lib/libLLVM-${LLVM_VER##*-}.dylib
+    LLVM_VER=$(${WORKSPACE}/bootstrap/bin/llvm-config --version | cut -d. -f1-2)
+    ln -s libLLVM.dylib ${prefix}/lib/libLLVM-${LLVM_VER}.dylib
 fi
 
 # Lit is a python dependency and there is no proper install target
