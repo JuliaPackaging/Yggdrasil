@@ -11,6 +11,7 @@ sources = [
 ]
 
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("librtlsdr_jll"; compat="0.6.0"),
     Dependency("soapysdr_jll"; compat="0.8.0")
 ]
