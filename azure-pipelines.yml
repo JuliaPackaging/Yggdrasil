@@ -24,6 +24,21 @@ jobs:
       # Be fragile, like a beautiful porcelain doll
       set -e
 
+      # Add check for projects with similar names
+      $(JULIA) -O0 -e '
+          # Collect all projects (== directories containing file called "build_tarballs.jl")
+          const projects = unique(split(basename(root), "@")[begin] for (root, dirs, files) in walkdir(".") if "build_tarballs.jl" ∈ files)
+          # Iterate over all projects
+          for project ∈ projects
+              # Iterate over all projects excluding the current one
+              for other ∈ filter(!=(project), projects)
+                  # Compare current project and the other, modulo case and underscores
+                  if lowercase(replace(project, "_" => "")) == lowercase(replace(other, "_" => ""))
+                      error("Projects $(project) and $(other) cannot coexist")
+                  end
+              end
+          end'
+
       # Normally we look at the last pushed commit
       COMPARE_AGAINST="HEAD~1"
       # Keyword to be used in the commit message to skip a rebuild
