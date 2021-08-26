@@ -7,40 +7,37 @@ version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/open62541/open62541.git", "ecf5a703785877a8719a0cda863a98455f7d5d12")
+    GitSource("https://github.com/open62541/open62541.git",
+              "ecf5a703785877a8719a0cda863a98455f7d5d12"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd open62541/
-mkdir build
-cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUA_MULTITHREADING=100 -DUA_ENABLE_SUBSCRIPTIONS=ON -DUA_ENABLE_METHODCALLS=ON -DUA_ENABLE_PARSING=ON -DUA_ENABLE_NODEMANAGEMENT=ON -DUA_ENABLE_AMALGAMATION=ON -DUA_ENABLE_IMMUTABLE_NODES=ON -DBUILD_SHARED_LIBS=ON ..
-make
+cd $WORKSPACE/srcdir/open62541/
+atomic_patch -p1 ../patches/0001-fix-core-Explicit-cast-to-avoid-compiler-warning-420.patch
+atomic_patch -p1 ../patches/0002-refactor-pubsub-Fix-check-macros-and-slightly-clean-.patch
+mkdir build && cd build/
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUA_MULTITHREADING=100 \
+    -DUA_ENABLE_SUBSCRIPTIONS=ON \
+    -DUA_ENABLE_METHODCALLS=ON \
+    -DUA_ENABLE_PARSING=ON \
+    -DUA_ENABLE_NODEMANAGEMENT=ON \
+    -DUA_ENABLE_AMALGAMATION=ON \
+    -DUA_ENABLE_IMMUTABLE_NODES=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    ..
+make -j${nproc}
 make install
-cd ..
-install_license LICENSE
-exit
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
