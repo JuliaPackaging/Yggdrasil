@@ -6,11 +6,11 @@ include("../../fancy_toys.jl")
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.16"
+auto_version = "refs/tags/v0.0.17"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "1196783e7c2d26c6eaa9e5be4ccc01a5d07f36ca")]
+sources = [GitSource(repo, "51cd8528880c63bc123421b0257861c62402fcfe")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -38,7 +38,7 @@ ninja -C build -j ${nproc} install
 function configure(julia_version, llvm_version)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = expand_cxxstring_abis(supported_platforms())
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=julia_version>=v"1.7"))
 
     foreach(platforms) do p
         BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
