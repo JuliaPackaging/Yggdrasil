@@ -14,9 +14,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    #atomic_patch -p1 ${f}
-#done
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 cd ffts/
 mkdir build
 cd build
@@ -34,9 +34,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 # filter failing ARM targets
-# filter!(p -> arch(p) ≠ "armv7l", platforms)
-# filter!(p -> arch(p) ≠ "armv6l", platforms)
-# filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+ filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
