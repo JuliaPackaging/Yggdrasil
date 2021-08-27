@@ -22,7 +22,7 @@ cd xptools
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-musl.patch
 cd ../..
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DJulia_PREFIX=${prefix} \
     .
@@ -35,7 +35,10 @@ install_license scopehal/LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
+# ARM targets are not supported
 platforms = filter!(p -> BinaryBuilder.proc_family(p) == "intel", platforms)
+# LLVM does not yet support OpenMP on BinaryBuilder
+ filter!(p -> !Sys.isapple(p), platforms)
 platforms = expand_cxxstring_abis(platforms; skip=p->false)
 
 
