@@ -34,7 +34,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 # filter failing ARM targets
- filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
