@@ -255,9 +255,15 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 fi
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
+
+# Build and install libc++ and libc++abi explicitly first, for some reason
+ninja -j${nproc} -vv cxx cxxabi
+ninja install-cxx install-cxxabi
+
+# Now build everything
 ninja -j${nproc} -vv
 
-# Install!
+# Install everything!
 ninja install
 
 # Life is harsh on Windows and dynamic libraries are
