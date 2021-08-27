@@ -104,3 +104,19 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/scopehal/xptools")
 set_property(TARGET scopehal PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET log PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET xptools PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+find_package(JlCxx)
+get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
+get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
+
+message(STATUS "Found JlCxx at ${JlCxx_location}")
+
+add_library(scopehalwrapper SHARED scopehalwrapper.cpp)
+
+target_link_libraries(scopehalwrapper
+  JlCxx::cxxwrap_julia
+  scopehal
+)
+
+install(TARGETS scopehalwrapper LIBRARY)
