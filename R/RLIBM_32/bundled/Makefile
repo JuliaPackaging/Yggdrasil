@@ -1,5 +1,4 @@
-CC := gcc
-CFLAGS := -std=c11 -O3 -fPIC
+CFLAGS = -std=c11 -O3 -fPIC
 
 floatFNames = log log2 log10 exp exp2 exp10 sinh cosh sinpi cospi log2_8 log10_8
 
