@@ -1,7 +1,7 @@
-diff --git a/ffts/CMakeLists.txt b/ffts/CMakeLists.txt
-index a02f11a..5b1a612 100644
---- a/ffts/CMakeLists.txt
-+++ b/ffts/CMakeLists.txt
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 748f412..4d3bffe 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
 @@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
  
  project(ffts C ASM)
@@ -11,19 +11,19 @@ index a02f11a..5b1a612 100644
  # TODO: to support AutoConfigure building, this should came from "template" file
  set(FFTS_MAJOR 0)
  set(FFTS_MINOR 9)
-@@ -514,7 +516,7 @@ if(ENABLE_STATIC)
+@@ -530,7 +532,7 @@ if(ENABLE_STATIC)
    install( TARGETS ffts_static DESTINATION ${LIB_INSTALL_DIR} )
  endif(ENABLE_STATIC)
  
 -if(ENABLE_STATIC OR ENABLE_SHARED)
 +if(FALSE)
-   add_executable(ffts_test
-     tests/test.c
+   find_path(MPFR_INCLUDES
+     NAMES mpfr.h
+     PATHS ${INCLUDE_INSTALL_DIR}
+@@ -589,7 +591,7 @@ if(ENABLE_STATIC OR ENABLE_SHARED)
    )
-@@ -530,7 +532,7 @@ if(ENABLE_STATIC OR ENABLE_SHARED)
-     ffts
-     ${FFTS_EXTRA_LIBRARIES}
-   )
+ 
+   set_target_properties(ffts_cpu_test PROPERTIES COMPILE_DEFINITIONS FFTS_BUILDING_CPU_TEST)
 -endif(ENABLE_STATIC OR ENABLE_SHARED)
 +endif(FALSE)
  
