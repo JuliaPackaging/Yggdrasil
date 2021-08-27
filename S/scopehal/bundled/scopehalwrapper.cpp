@@ -1,16 +1,20 @@
 #include "jlcxx/jlcxx.hpp"
 #include <scopehal.h>
 
-jlcxx::ArrayRef<float> AnalogWaveformData(WaveformBase* wf) {
+jlcxx::Array<float> AnalogWaveformData(WaveformBase* wf) {
   auto awf = dynamic_cast<AnalogWaveform*>(wf);
   std::cout << "pointer " << awf << " base ptr " << wf;
-  if(awf == nullptr) return jlcxx::ArrayRef<float>(nullptr, 0);
+  size_t zero = 0;
+  if(awf == nullptr) return jlcxx::Array<float>(zero);
   auto samples = awf->m_samples;
-  jlcxx::ArrayRef<float, 1> ja((float*)&samples[0], samples.size());
-//   jlcxx::Array<float>ja(samples.size());
-//   for (int i=0; i<samples.size(); i++) {
-//       jl_arrayset(ja.wrapped(), jl_box_float32(samples[i]), i);
-//   }
+  // jlcxx::ArrayRef<float, 1> ja((float*)&samples[0], samples.size());
+  // for (int i=0; i<samples.size(); i++) {
+  //     jl_arrayset(ja.wrapped(), jl_box_float32(samples[i]), i);
+  // }
+  jlcxx::Array<float>ja(zero);
+  for(float i : samples) {
+    ja.push_back(i);
+  }
   return ja;
 }
 
