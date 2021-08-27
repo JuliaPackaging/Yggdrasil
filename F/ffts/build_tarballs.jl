@@ -7,20 +7,25 @@ version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/anthonix/ffts.git", "fe86885ecafd0d16eb122f3212403d1d5a86e24e"),
+    GitSource("https://github.com/ValveSoftware/ffts.git", "2c8da4877588e288ff4cd550f14bec2dc7bf668c"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    #atomic_patch -p1 ${f}
+#done
 cd ffts/
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=ON ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_SHARED=ON \
+    -DDISABLE_DYNAMIC_CODE=ON \
+    ..
 make
 make install
 """
@@ -29,9 +34,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 # filter failing ARM targets
-filter!(p -> arch(p) ≠ "armv7l", platforms)
-filter!(p -> arch(p) ≠ "armv6l", platforms)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+# filter!(p -> arch(p) ≠ "armv7l", platforms)
+# filter!(p -> arch(p) ≠ "armv6l", platforms)
+# filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
