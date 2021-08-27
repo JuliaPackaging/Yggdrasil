@@ -18,6 +18,12 @@ jlcxx::Array<float> AnalogWaveformData(WaveformBase* wf) {
   return ja;
 }
 
+FunctionGenerator* GetFunctionGenerator(Instrument* inst) {
+  unsigned int t = inst->GetInstrumentTypes();
+  if ((t & Instrument::INST_FUNCTION) == 0) return nullptr;
+  return dynamic_cast<FunctionGenerator*>(inst);
+}
+
 namespace jlcxx
 {
   // Needed for upcasting
@@ -242,8 +248,38 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("CreateOscilloscope", &Oscilloscope::CreateOscilloscope)
         .method("GetDriverName", &Oscilloscope::GetDriverName);
 
+    mod.add_bits<FunctionGenerator::WaveShape>("WaveShape", jlcxx::julia_type("CppEnum"));
+    mod.set_const("SHAPE_SINE", FunctionGenerator::SHAPE_SINE);
+    mod.set_const("SHAPE_SQUARE", FunctionGenerator::SHAPE_SQUARE);
+    mod.set_const("SHAPE_TRIANGLE", FunctionGenerator::SHAPE_TRIANGLE);
+    mod.set_const("SHAPE_PULSE", FunctionGenerator::SHAPE_PULSE);
+    mod.set_const("SHAPE_DC", FunctionGenerator::SHAPE_DC);
+    mod.set_const("SHAPE_NOISE", FunctionGenerator::SHAPE_NOISE);
+    mod.set_const("SHAPE_ARB", FunctionGenerator::SHAPE_ARB);
+
+    mod.add_type<FunctionGenerator>("FunctionGenerator", jlcxx::julia_base_type<Instrument>())
+        .method("GetFunctionChannelCount", &FunctionGenerator::GetFunctionChannelCount)
+        .method("GetFunctionChannelName", &FunctionGenerator::GetFunctionChannelName)
+        .method("GetFunctionChannelActive", &FunctionGenerator::GetFunctionChannelActive)
+        .method("SetFunctionChannelActive", &FunctionGenerator::SetFunctionChannelActive)
+        .method("GetFunctionChannelDutyCycle", &FunctionGenerator::GetFunctionChannelDutyCycle)
+        .method("SetFunctionChannelDutyCycle", &FunctionGenerator::SetFunctionChannelDutyCycle)
+        .method("GetFunctionChannelAmplitude", &FunctionGenerator::GetFunctionChannelAmplitude)
+        .method("SetFunctionChannelAmplitude", &FunctionGenerator::SetFunctionChannelAmplitude)
+        .method("GetFunctionChannelOffset", &FunctionGenerator::GetFunctionChannelOffset)
+        .method("SetFunctionChannelOffset", &FunctionGenerator::SetFunctionChannelOffset)
+        .method("GetFunctionChannelFrequency", &FunctionGenerator::GetFunctionChannelFrequency)
+        .method("SetFunctionChannelFrequency", &FunctionGenerator::SetFunctionChannelFrequency)
+        .method("GetFunctionChannelShape", &FunctionGenerator::GetFunctionChannelShape)
+        .method("SetFunctionChannelShape", &FunctionGenerator::SetFunctionChannelShape)
+        .method("GetFunctionChannelRiseTime", &FunctionGenerator::GetFunctionChannelRiseTime)
+        .method("SetFunctionChannelRiseTime", &FunctionGenerator::SetFunctionChannelRiseTime)
+        .method("GetFunctionChannelFallTime", &FunctionGenerator::GetFunctionChannelFallTime)
+        .method("SetFunctionChannelFallTime", &FunctionGenerator::SetFunctionChannelFallTime);
+
     mod.method("TransportStaticInit", &TransportStaticInit);
     mod.method("DriverStaticInit", &DriverStaticInit);
 
     mod.method("AnalogWaveformData", &AnalogWaveformData);
+    mod.method("GetFunctionGenerator", &GetFunctionGenerator);
 }

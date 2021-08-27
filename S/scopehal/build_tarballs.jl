@@ -18,6 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/scopehal/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-replace-color-with-string.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-avx2-fma-on-llvm.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-rigol-function-generator.patch
 git submodule update --init
 cd xptools
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-musl.patch
