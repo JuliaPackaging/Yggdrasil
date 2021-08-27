@@ -1,16 +1,4 @@
-diff --git a/ffts/CMakeLists.txt b/ffts/CMakeLists.txt
-index a02f11a..5b1a612 100644
---- a/ffts/CMakeLists.txt
-+++ b/ffts/CMakeLists.txt
-@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
- 
- project(ffts C ASM)
- 
-+set(CMAKE_C_STANDARD 90)
-+
- # TODO: to support AutoConfigure building, this should came from "template" file
- set(FFTS_MAJOR 0)
- set(FFTS_MINOR 9)diff --git a/CMakeLists.txt b/CMakeLists.txt
+diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 748f412..4d3bffe 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
