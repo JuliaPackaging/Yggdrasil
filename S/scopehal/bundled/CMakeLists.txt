@@ -119,8 +119,4 @@ target_link_libraries(scopehalwrapper
   scopehal
 )
 
-install(TARGETS
-  scopehalwrapper
-LIBRARY DESTINATION lib
-ARCHIVE DESTINATION lib
-RUNTIME DESTINATION lib)
+install(TARGETS scopehalwrapper LIBRARY)
