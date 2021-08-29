@@ -17,11 +17,25 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
     end
 
+    for p in platforms
+        p["julia_version"] = string(julia_version)
+    end
+
+    # While the "official" Julia kernel ABI itself does not involve any C++
+    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
+    # dependent on the C++ strings ABI (coming from LLVM related code). This
+    # doesn't matter if the client code is pure C, but as soon as there are
+    # other (actual) C++ dependencies, we must make sure to use the matching C++
+    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
+    platforms = expand_cxxstring_abis(platforms)
+
     return platforms
 end
 
+libjulia_platforms() = vcat(libjulia_platforms(v"1.6.0"), libjulia_platforms(v"1.7.0"))
+
 # Collection of sources required to build Julia
-function build_julia(ARGS, version::VersionNumber)
+function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
 
     checksums = Dict(
@@ -44,10 +58,15 @@ function build_julia(ARGS, version::VersionNumber)
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
-
+    # use the Julia version to determine the directory from which to read patches
+    splitversion=( ${version//./ } )
+    patchdir=$WORKSPACE/srcdir/patches
+    if (( splitversion[0] > 1 || splitversion[1] >= 6 )); then
+        patchdir=$patchdir/$version
+    fi
     # Apply patches
-    if [ -d $WORKSPACE/srcdir/patches ]; then
-    for f in $WORKSPACE/srcdir/patches/*.patch; do
+    if [ -d $patchdir ]; then
+    for f in $patchdir/*.patch; do
         echo "Applying path ${f}"
         atomic_patch -p1 ${f}
     done
@@ -249,18 +268,6 @@ function build_julia(ARGS, version::VersionNumber)
     # platforms are passed in on the command line
     platforms = libjulia_platforms(version)
 
-    # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
-    # dependent on the C++ strings ABI (coming from LLVM related code). This
-    # doesn't matter if the client code is pure C, but as soon as there are
-    # other (actual) C++ dependencies, we must make sure to use the matching C++
-    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(platforms)
-
-    for p in platforms
-        p["julia_version"] = string(version)
-    end
-
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libjulia", :libjulia; dont_dlopen=true),
@@ -270,6 +277,7 @@ function build_julia(ARGS, version::VersionNumber)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
+        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
         BuildDependency("utf8proc_jll"),
@@ -286,7 +294,6 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
     elseif version < v"1.7"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
-        push!(dependencies, Dependency("LibUV_jll"))
     end
 
     if version < v"1.6"
@@ -296,7 +303,7 @@ function build_julia(ARGS, version::VersionNumber)
     end
 
     if version < v"1.7"
-        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10.31")))
+        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10")))
     #else
     #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
@@ -315,9 +322,9 @@ function build_julia(ARGS, version::VersionNumber)
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
         push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="0.28.2")))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.10"))
-        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
-        push!(dependencies, BuildDependency("LibGit2_jll", compat="1.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.10")))
+        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="1.2")))
     elseif version.major == 1 && version.minor == 7
         #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
         #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
@@ -338,6 +345,8 @@ function build_julia(ARGS, version::VersionNumber)
 
     julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
 
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    if any(should_build_platform.(triplet.(platforms)))
+        build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
+    end
 end
