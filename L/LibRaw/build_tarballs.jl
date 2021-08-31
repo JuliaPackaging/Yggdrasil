@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd LibRaw-*
 autoreconf --install
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-jasper
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 exit
