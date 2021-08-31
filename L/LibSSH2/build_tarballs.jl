@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibSSH2"
-version = v"1.9.0"
+version = v"1.10.0"
 
 # Collection of sources required to build LibSSH2
 sources = [
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
-                  "d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd"),
+                  "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,5 +47,5 @@ dependencies = [
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
-version = v"1.9.1"
+version = v"1.10.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
