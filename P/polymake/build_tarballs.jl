@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.4"
-version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,1)
+version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,2)
 
 # Collection of sources required to build polymake
 sources = [
@@ -149,6 +149,7 @@ dependencies = [
     Dependency("bliss_jll", compat = "~0.73"),
     Dependency("boost_jll", compat = "=1.71.0"),
     Dependency("cddlib_jll", compat = "~0.94.10"),
+    Dependency("lib4ti2_jll"),
     Dependency("lrslib_jll", compat = "~0.3.2"),
     Dependency("normaliz_jll", compat = "~300.900"),
 ]

@@ -44,8 +44,25 @@ function prepare_deps_tree()
       for dep in deps
          symlink(full_artifact_dir(dep), joinpath(art_dir,"deps","$dep"))
       end
-      for dir in readdir(polymake_jll.artifact_dir)
+      for dir in filter(d -> d!="bin", readdir(polymake_jll.artifact_dir))
          symlink(joinpath(polymake_jll.artifact_dir,dir), joinpath(art_dir,dir))
+      end
+      bindir(name) = joinpath(art_dir,"bin", name)
+      mkpath(bindir(""))
+      for file in ("polymake", "polymake-config")
+         symlink(joinpath(polymake_jll.artifact_dir, "bin", file), bindir(file))
+      end
+      # wrappers for 4ti2 utilities which set the correct LIBPATH
+      bin4ti2 = joinpath(polymake_jll.lib4ti2_jll.artifact_dir,"bin","\$(basename \$0)")
+      wrapper = bindir("4ti2_wrapper")
+      write(wrapper, """
+         #!/bin/sh
+         export $(polymake_jll.JLLWrappers.LIBPATH_env)="$(polymake_jll.lib4ti2_jll.LIBPATH[])"
+         exec $(bin4ti2) "\$@"
+         """)
+      chmod(wrapper, 0o755)
+      for name in ("circuits", "groebner", "zsolve")
+         symlink("4ti2_wrapper", bindir(name))
       end
    end
 
