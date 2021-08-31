@@ -11,7 +11,8 @@ sources = [
 ]
 
 dependencies = [
-    Dependency("soapysdr_jll"; compat="0.8.0")
+    Dependency("soapysdr_jll"; compat="0.8.0"),
+    Dependency("libusb_jll"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,7 +51,6 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(;experimental=true))
 platforms = filter!(p -> os(p) != "windows", supported_platforms(;experimental=true))
 platforms = expand_cxxstring_abis(platforms)
 
