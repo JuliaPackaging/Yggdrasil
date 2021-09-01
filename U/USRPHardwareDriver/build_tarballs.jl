@@ -38,7 +38,7 @@ make install
 # platforms are passed in on the command line
 # TODO: Windows has several issues with boost threads. There is a WIP branch:
 # https://github.com/JuliaTelecom/uhd/tree/juliatelecom/patch-v4.1.0.1
-platforms = filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true))
+platforms = expand_cxxstring_abis(filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true)))
 
 # The products that we will ensure are always built
 products = Product[
