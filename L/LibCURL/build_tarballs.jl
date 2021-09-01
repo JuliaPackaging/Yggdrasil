@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibCURL"
-version = v"7.73.0"
+version = v"7.78.0"
 
 # Collection of sources required to build LibCURL
 sources = [
