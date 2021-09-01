@@ -52,15 +52,18 @@ platforms = filter!(!Sys.isapple,   platforms)
 products = [
     ExecutableProduct("pw.x", :pwscf),
     ExecutableProduct("bands.x", :bands),
-    ExecutableProduct("dos.x", :dos),
+    ExecutableProduct("plotband.x", :plotband),
+    ExecutableProduct("plotrho.x", :plotrho),
+    ExecutableProduct("dos.x", :densityofstates),
     ExecutableProduct("ibrav2cell.x", :ibrav2cell),
     ExecutableProduct("kpoints.x", :kpoints),
     ExecutableProduct("cp.x", :carparinello),
     ExecutableProduct("ph.x", :phonon),
-    ExecutableProduct("q2r.x", :q2r),
+    ExecutableProduct("q2r.x", :reciprocal2real),
     ExecutableProduct("matdyn.x", :matdyn),
     ExecutableProduct("dynmat.x", :dynmat),
     ExecutableProduct("hp.x", :hubbardparams),
+    ExecutableProduct("neb.x", :nudged_elastic_band),
 ]
 
 # Dependencies that must be installed before this package can be built
