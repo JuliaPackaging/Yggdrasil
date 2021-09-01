@@ -1,4 +1,7 @@
 #include "jlcxx/jlcxx.hpp"
+// This define comes from the wingdi.h and causes problems with
+// Xyce. Undefine it.
+#undef ERROR
 #include <Xyce_config.h>
 #include <N_CIR_GenCouplingSimulator.h>
 
