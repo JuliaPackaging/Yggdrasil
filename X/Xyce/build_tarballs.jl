@@ -17,6 +17,7 @@ export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
 cd $WORKSPACE/srcdir
 apk add flex-dev
+update_configure_scripts --reconf
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
@@ -37,10 +38,9 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = filter(Sys.islinux, supported_platforms())
+platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
