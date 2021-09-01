@@ -39,9 +39,6 @@ make install
 # TODO: Windows has several issues with boost threads. There is a WIP branch:
 # https://github.com/JuliaTelecom/uhd/tree/juliatelecom/patch-v4.1.0.1
 platforms = filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true))
-platforms = expand_cxxstring_abis(platforms)
-# For some reasons, building for CXX03 string ABI doesn't actually work, skip it
-filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = Product[
