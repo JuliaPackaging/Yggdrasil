@@ -1,8 +1,6 @@
 project(XyceLib)
 
-cmake_policy(SET CMP0025 NEW)
-
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
@@ -26,8 +24,4 @@ target_link_libraries(xycelib
   teuchoscore 
 )
 
-install(TARGETS
-  xycelib
-LIBRARY DESTINATION lib
-ARCHIVE DESTINATION lib
-RUNTIME DESTINATION lib)
+install(TARGETS xycelib LIBRARY)
