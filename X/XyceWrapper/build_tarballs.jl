@@ -29,7 +29,6 @@ install_license /usr/share/licenses/MIT
 
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
-platforms = filter!(Sys.islinux, platforms) # Xyce only supports Linux
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
