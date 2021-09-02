@@ -31,9 +31,9 @@ else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
 fi
 
-if [[ "${target}" == *apple* ]]; then
-    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
-fi
+#if [[ "${target}" == *apple* ]]; then
+#    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
+#fi
 
 if [[ "${target}" == arm-* ]]; then
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
@@ -91,11 +91,12 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Pixman_jll"),
-#    Dependency("Qhull_jll"),
     Dependency("Qt5Base_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("ZeroMQ_jll"),
+#    Dependency("Qhull_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
-    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
