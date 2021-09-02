@@ -60,8 +60,8 @@ products = [
     ExecutableProduct("cp.x", :carparinello),
     ExecutableProduct("ph.x", :phonon),
     ExecutableProduct("q2r.x", :reciprocal_to_real),
-    ExecutableProduct("matdyn.x", :matdyn),
-    ExecutableProduct("dynmat.x", :dynmat),
+    ExecutableProduct("matdyn.x", :dynamical_matrix_generic),
+    ExecutableProduct("dynmat.x", :dynamical_matrix_gamma),
     ExecutableProduct("hp.x", :hubbardparams),
     ExecutableProduct("neb.x", :nudged_elastic_band),
 ]
