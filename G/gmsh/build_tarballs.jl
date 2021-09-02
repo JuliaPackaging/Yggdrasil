@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.8.1"
+version = v"4.8.4"
 
 # Collection of sources required to build Gmsh
 sources = [
@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/gmsh-4.8.1-source
+cd ${WORKSPACE}/srcdir/gmsh-4.8.4-source
 install_license LICENSE.txt
 mkdir build
 cd build
