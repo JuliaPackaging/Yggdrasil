@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/curl-*
 FLAGS=(
     # Disable....almost everything
     --without-ssl --without-gnutls --without-gssapi
-    --without-libidn --without-libidn2 --without-libmetalink --without-librtmp
+    --without-libidn --without-libidn2 --without-librtmp
     --without-nss --without-polarssl
     --without-spnego --without-libpsl --disable-ares --disable-manual
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
