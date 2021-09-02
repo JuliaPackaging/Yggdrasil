@@ -1,3 +1,4 @@
+cmake_policy(SET CMP0025 NEW)
 project(XyceLib)
 
 cmake_minimum_required(VERSION 3.14)
@@ -21,7 +22,7 @@ add_library(xycelib SHARED xycelib.cpp)
 target_link_libraries(xycelib
   JlCxx::cxxwrap_julia
   ${XYCE_LIBRARY}
-  teuchoscore 
+  teuchoscore
 )
 
 install(TARGETS xycelib LIBRARY)
