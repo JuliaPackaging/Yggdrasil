@@ -3,12 +3,11 @@
 using BinaryBuilder
 
 name = "EarCut"
-# Version is a bit unclear with the git wrapper, but commit says 2.2.3:
-# https://github.com/mapbox/earcut.hpp/commit/966abaa052cafbdcc7fdc9c61eceabfd8b8d38c4
+# use https://github.com/mapbox/earcut.hpp/releases/tag/v2.2.3
 version = v"2.2.3"
 sources = [
     GitSource("https://github.com/mapbox/earcut.hpp.git",
-              "966abaa052cafbdcc7fdc9c61eceabfd8b8d38c4"),
+              "b28acde132cdb8e0ef536a96ca7ada8a651f9169"),
     DirectorySource("./bundled")
 
 ]
