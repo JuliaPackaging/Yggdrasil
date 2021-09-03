@@ -22,7 +22,7 @@ fi
 
 update_configure_scripts
 
-make -C 3rdparty/qhull -j${nproc}
+#make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
@@ -41,7 +41,8 @@ fi
 
 mkdir build
 cd build
-cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
+#cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
+cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} $tifflags -DCMAKE_BUILD_TYPE=Release ..
 
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
@@ -94,7 +95,7 @@ dependencies = [
     Dependency("Qt5Base_jll"),
     Dependency("Zlib_jll"),
     Dependency("ZeroMQ_jll"),
-#    Dependency("Qhull_jll"),
+    Dependency("Qhull_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
 ]
