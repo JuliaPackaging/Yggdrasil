@@ -29,13 +29,14 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 if [[ "${target}" == *-apple-* ]]; then
-    mv ${libdir}/SoapySDR/modules0.8/libUHDSupport.so  ${libdir}/SoapySDR/modules0.8/libUHDSupport.dylib
+    mv ${libdir}/SoapySDR/modules0.8/libuhdSupport.so  ${libdir}/SoapySDR/modules0.8/libuhdSupport.dylib
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true))
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
