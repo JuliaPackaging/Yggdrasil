@@ -12,41 +12,43 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-    cd qe-*
-    atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
+cd qe-*
+atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
 
-    export BLAS_LIBS="-L${libdir} -lopenblas"
-    export LAPACK_LIBS="-L${libdir} -lopenblas"
-    export FFTW_INCLUDE=${includedir}
-    export FFT_LIBS="-L${libdir} -lfftw3"
-    export FC=mpif90
-    export CC=mpicc
+export BLAS_LIBS="-L${libdir} -lopenblas"
+export LAPACK_LIBS="-L${libdir} -lopenblas"
+export FFTW_INCLUDE=${includedir}
+export FFT_LIBS="-L${libdir} -lfftw3"
+export FC=mpif90
+export CC=mpicc
+export LD=
 
-    flags=(--enable-parallel=yes)
-    if [ "${nbits}" == 64 ]; then
-        # Enable Libxc support only on 64-bit platforms
-        atomic_patch -p1 ../patches/0001-libxc-prefix.patch
-        flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
-    fi
+flags=(--enable-parallel=yes)
+if [ "${nbits}" == 64 ]; then
+    # Enable Libxc support only on 64-bit platforms
+    atomic_patch -p1 ../patches/0001-libxc-prefix.patch
+    flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
+fi
 
-    if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-        # No scalapack binary available on PowerPC
-        flags+=(--with-scalapack=no)
-    else
-        export SCALAPACK_LIBS="-L${libdir} -lscalapack"
-        flags+=(--with-scalapack=yes)
-    fi
+if [[ "${target}" == powerpc64le-linux-gnu ]]; then
+    # No scalapack binary available on PowerPC
+    flags+=(--with-scalapack=no)
+else
+    export SCALAPACK_LIBS="-L${libdir} -lscalapack"
+    flags+=(--with-scalapack=yes)
+fi
 
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
-    make all "${make_args[@]}" -j $nproc
-    make install
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
+make all "${make_args[@]}" -j $nproc
+make install
+# Manually make all binary executables...executable.  Sigh
+chmod +x "${bindir}"/*
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter!(!Sys.iswindows, platforms)
-platforms = filter!(!Sys.isapple,   platforms)
 
 # The products that we will ensure are always built
 products = [
