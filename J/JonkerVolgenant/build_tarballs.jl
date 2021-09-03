@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "JonkerVolgenant"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fypc/Jonker-Volgenant.git", "d4c4db3ba9353858496d27170e4a26db1ec1520a")
+    GitSource("https://github.com/fypc/Jonker-Volgenant.git", "8dd04610f678d7d35992ae4ad3af8f5eecc9b553")
 ]
 
 # Bash recipe for building across all platforms
