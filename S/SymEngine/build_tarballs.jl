@@ -23,7 +23,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DBUILD_SHARED_LIBS=yes \
       -DWITH_MPC=yes \
       -DWITH_COTIRE=no \
-      -DINTEGER_CLASS=flint \
       -DWITH_SYMENGINE_THREAD_SAFE=yes ..
 make -j${nproc}
 make install
@@ -41,7 +40,6 @@ dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
     Dependency("MPC_jll", v"1.1.0"),
-    Dependency("FLINT_jll", v"2.8.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
