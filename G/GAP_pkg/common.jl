@@ -70,8 +70,11 @@ function setup_gap_package(gap_version::VersionNumber; uses_cxx::Bool = false)
     cp sysinfo.gap ${prefix}/share/gap/
 
     # ensure #including src/compiled.h or src/profile.h from GAP_jll works
-    ln -s . /workspace/destdir/include/gap/src
-    """ * script
+    ln -s . ${prefix}/include/gap/src
+    """ * script * raw"""
+    rm -rf ${prefix}/include
+    rm -rf ${prefix}/share/gap
+    """
 
     return platforms, dependencies
 end
