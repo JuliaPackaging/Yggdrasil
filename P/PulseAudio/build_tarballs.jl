@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "PulseAudio"
-version = v"14.2.0"
+version = v"15.0.0"
 
 short_version = "$(version.major).$(version.minor)"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-$short_version.tar.gz", "902dd1928801bb5dc7b121754aa4110ce55768b5dff94a700e7bd58d3f597970")
+    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-$short_version.tar.gz", "a570b592351586541daf27b5e4b82555d6ac46bb6920eb847bcf5818e92f4c1e")
 ]
 
 # Bash recipe for building across all platforms
