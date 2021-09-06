@@ -1,0 +1,11 @@
+--- pulseaudio-15.0-1/meson.build
++++ pulseaudio-15.0/meson.build
+@@ -235,7 +235,7 @@
+   'sched.h',
+   'stdint.h',
+   'sys/atomic.h',
+-  
++  'sys/capability.h',
+   'sys/conf.h',
+   'sys/dl.h',
+   'sys/eventfd.h',
