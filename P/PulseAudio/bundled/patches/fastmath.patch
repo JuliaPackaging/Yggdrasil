@@ -1,0 +1,11 @@
+--- pulseaudio-15.0/src/daemon/meson.build
++++ pulseaudio-15.0-1/src/daemon/meson.build
+@@ -29,7 +29,7 @@
+   install: true,
+   install_rpath : '$ORIGIN/pulseaudio',
+   include_directories : [configinc, topinc],
+-  
++  link_args : ['-ffast-math'],
+   link_with : [libpulsecore, libpulsecommon, libpulse],
+   dependencies : [ltdl_dep, cap_dep, dbus_dep, libsystemd_dep, dl_dep, libintl_dep, platform_dep, platform_socket_dep],
+   c_args : pa_c_args,
