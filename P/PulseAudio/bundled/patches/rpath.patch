@@ -1,0 +1,214 @@
+--- pulseaudio-15.0/src/daemon/meson.build
++++ pulseaudio-15.0-1/src/daemon/meson.build
+@@ -27,7 +27,7 @@
+   pulseaudio_sources,
+   pulseaudio_headers,
+   install: true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   include_directories : [configinc, topinc],
+   link_args : ['-ffast-math'],
+   link_with : [libpulsecore, libpulsecommon, libpulse],
+--- pulseaudio-15.0/src/modules/alsa/meson.build
++++ pulseaudio-15.0-1/src/modules/alsa/meson.build
+@@ -34,7 +34,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, alsa_dep, dbus_dep, libatomic_ops_dep, libm_dep, udev_dep, libintl_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+--- pulseaudio-15.0/src/modules/bluetooth/meson.build
++++ pulseaudio-15.0-1/src/modules/bluetooth/meson.build
+@@ -37,6 +37,6 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, bluez_dep, dbus_dep, sbc_dep, libintl_dep, bluez5_gst_dep, bluez5_gstapp_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+--- pulseaudio-15.0/src/modules/echo-cancel/meson.build
++++ pulseaudio-15.0-1/src/modules/echo-cancel/meson.build
+@@ -17,6 +17,6 @@
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, libatomic_ops_dep, webrtc_dep, libintl_dep],
+   link_args : [nodelete_link_args, '-Wl,--unresolved-symbols=ignore-in-object-files'],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+--- pulseaudio-15.0/src/modules/gsettings/meson.build
++++ pulseaudio-15.0-1/src/modules/gsettings/meson.build
+@@ -11,7 +11,7 @@
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [gio_dep],
+   install_dir : pulselibexecdir,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install : true,
+ )
+ 
+--- pulseaudio-15.0/src/modules/oss/meson.build
++++ pulseaudio-15.0-1/src/modules/oss/meson.build
+@@ -13,6 +13,6 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+--- pulseaudio-15.0/src/modules/rtp/meson.build
++++ pulseaudio-15.0-1/src/modules/rtp/meson.build
+@@ -28,7 +28,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, libatomic_ops_dep, gst_dep, gstapp_dep, gstrtp_dep, gio_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+--- pulseaudio-15.0/src/pulse/meson.build
++++ pulseaudio-15.0-1/src/pulse/meson.build
+@@ -84,7 +84,7 @@
+   c_args : [pa_c_args],
+   link_args : [nodelete_link_args, versioning_link_args],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   dependencies : [libm_dep, thread_dep, libpulsecommon_dep, dbus_dep, dl_dep, iconv_dep, libintl_dep, platform_dep, platform_socket_dep],
+   implicit_include_directories : false)
+ 
+@@ -104,7 +104,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+ )
+ 
+ libpulse_simple_dep = declare_dependency(link_with: libpulse_simple)
+@@ -119,7 +119,7 @@
+     include_directories : [configinc, topinc],
+     dependencies : [libpulse_dep, libpulsecommon_dep, glib_dep],
+     install : true,
+-    install_rpath : '$ORIGIN/pulseaudio',
++    install_rpath : privlibdir,
+   )
+ 
+   libpulse_mainloop_glib_dep = declare_dependency(link_with: libpulse_mainloop_glib)
+--- pulseaudio-15.0/src/pulsecore/meson.build
++++ pulseaudio-15.0-1/src/pulsecore/meson.build
+@@ -219,7 +219,7 @@
+   c_args : [pa_c_args, server_c_args],
+   link_args : [nodelete_link_args],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : privlibdir,
+   link_with : libpulsecore_simd_lib,
+   dependencies : [libm_dep, libpulsecommon_dep, ltdl_dep, shm_dep, sndfile_dep, database_dep, dbus_dep, libatomic_ops_dep, orc_dep, samplerate_dep, soxr_dep, speex_dep, x11_dep, libintl_dep, platform_dep, platform_socket_dep,],
+@@ -239,7 +239,7 @@
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, avahi_dep],
+   implicit_include_directories : false, # pulsecore/poll.h <vs> /usr/include/poll.h
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -251,7 +251,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -280,7 +280,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -292,7 +292,7 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, dbus_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -304,6 +304,6 @@
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   install_dir : modlibexecdir,
+ )
+--- pulseaudio-15.0/src/utils/meson.build
++++ pulseaudio-15.0-1/src/utils/meson.build
+@@ -12,7 +12,7 @@
+ executable('pacat',
+   pacat_sources,
+   install: true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   include_directories : [configinc, topinc],
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [sndfile_dep, libintl_dep],
+@@ -35,7 +35,7 @@
+ executable('pactl',
+   pactl_sources,
+   install: true,
+-  install_rpath : '$ORIGIN/pulseaudio',
++  install_rpath : privlibdir,
+   include_directories : [configinc, topinc],
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [sndfile_dep, libintl_dep],
+@@ -51,7 +51,7 @@
+     executable('pasuspender',
+       pasuspender_sources,
+       install: true,
+-      install_rpath : '$ORIGIN/pulseaudio',
++      install_rpath : privlibdir,
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       dependencies: [libintl_dep],
+@@ -65,7 +65,7 @@
+     executable('pacmd',
+       pacmd_sources,
+       install: true,
+-      install_rpath : '$ORIGIN/pulseaudio',
++      install_rpath : privlibdir,
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       dependencies: [libintl_dep],
+@@ -82,7 +82,7 @@
+   executable('pax11publish',
+     pax11publish_sources,
+     install: true,
+-    install_rpath : '$ORIGIN/pulseaudio',
++    install_rpath : privlibdir,
+     include_directories : [configinc, topinc],
+     link_with : [libpulsecommon, libpulse],
+     dependencies : [x11_dep, libintl_dep],
+@@ -99,7 +99,7 @@
+     libpulsecommon_sources,
+     install: true,
+     install_dir : padsplibdir,
+-    install_rpath : '$ORIGIN/pulseaudio',
++    install_rpath : privlibdir,
+     include_directories : [configinc, topinc],
+     link_with : [libpulsecommon, libpulse],
+     link_args : [nodelete_link_args],
