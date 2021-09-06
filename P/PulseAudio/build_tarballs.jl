@@ -15,21 +15,20 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-apk add bash-completion gettext glib orc-compiler perl-xml-parser 
+apk update
+apk add bash-completion doxygen gettext glib orc-compiler perl-xml-parser 
 # make sure meson can find everything
 sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
-# I guess pulseaudio doesn't set install_rpath correctly?
-find pulseaudio-* -type f | xargs sed -i "s~install_rpath : privlibdir~install_rpath : '\$ORIGIN/pulseaudio'~"
 cd pulseaudio-*
-# Disable ffast-math. I repented.
-sed -i -e "s/link_args : \['-ffast-math'],//" src/daemon/meson.build
-# pulseaudio seems to check for iconv_open but use libiconv_open?
-sed -i -e "s/cc.has_function('iconv_open')/cc.has_function('libiconv_open')/" meson.build
+# make rpath work with cross compilation
+atomic_patch -p1 $WORKSPACE/srcdir/patches/rpath.patch --reverse
+# disable fastmath
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fastmath.patch --reverse
 # sys/capability.h doesn't seem to be workig on PowerPC
 if [[ "${target}" == powerpc64le-* ]]; then
-    sed -i -e "s~'sys/capability.h',~~"  meson.build;
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/capabilities.patch --reverse
 fi
 mkdir build
 cd build
@@ -160,6 +159,8 @@ dependencies = [
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
     Dependency(PackageSpec(name="SBC_jll", uuid="da37f231-8920-5702-a09a-bdd970cb6ddc"))
     Dependency(PackageSpec(name="SoXResampler_jll", uuid="fbe68eb6-6641-54c6-99e3-f7c7c4d73a57"))
+    Dependency(PackageSpec(name="SpeexDSP_jll", uuid="f2f9631b-9a4e-5b48-9975-88f638ec36a7"))
+                                        
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
