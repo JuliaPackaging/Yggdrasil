@@ -29,13 +29,7 @@ platforms = expand_cxxstring_abis(libjulia_platforms(julia_version))
 products = [LibraryProduct("libGeographicLibWrapper", :libGeographicLibWrapper)]
 
 dependencies = [
-    Dependency(
-        PackageSpec(;
-            name="GeographicLib_jll",
-            uuid="a660ed4b-f19b-5b77-bc0d-0bc97335ea30",
-            url="https://github.com/twadleigh/GeographicLib_jll.jl",
-        ),
-    ),
+    Dependency("GeographicLib_jll"),
     Dependency("libcxxwrap_julia_jll"),
     BuildDependency(PackageSpec(; name="libjulia_jll", version=julia_version)),
 ]
