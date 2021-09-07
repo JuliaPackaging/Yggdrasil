@@ -9,7 +9,8 @@ short_version = "$(version.major).$(version.minor)"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-$short_version.tar.gz", "a570b592351586541daf27b5e4b82555d6ac46bb6920eb847bcf5818e92f4c1e")
+    ArchiveSource("https://freedesktop.org/software/pulseaudio/releases/pulseaudio-$short_version.tar.gz", "a570b592351586541daf27b5e4b82555d6ac46bb6920eb847bcf5818e92f4c1e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,12 +24,12 @@ sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_T
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
 # make rpath work with cross compilation
-atomic_patch -p2 $WORKSPACE/srcdir/bundled/patches/rpath.patch
+atomic_patch -p2 $WORKSPACE/srcdir/patches/rpath.patch
 # disable fastmath
-atomic_patch -p2 $WORKSPACE/srcdir/bundled/patches/fastmath.patch
+atomic_patch -p2 $WORKSPACE/srcdir/patches/fastmath.patch
 # sys/capability.h doesn't seem to be workig on PowerPC
 if [[ "${target}" == powerpc64le-* ]]; then
-    atomic_patch -p2 $WORKSPACE/srcdir/bundled/patches/capabilities.patch
+    atomic_patch -p2 $WORKSPACE/srcdir/patches/capabilities.patch
 fi
 mkdir build
 cd build
