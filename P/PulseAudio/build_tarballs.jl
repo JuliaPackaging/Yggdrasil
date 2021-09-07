@@ -23,12 +23,12 @@ sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_T
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 cd pulseaudio-*
 # make rpath work with cross compilation
-atomic_patch -p1 $WORKSPACE/srcdir/patches/rpath.patch -R
+atomic_patch -p1 $WORKSPACE/srcdir/patches/rpath.patch
 # disable fastmath
-atomic_patch -p1 $WORKSPACE/srcdir/patches/fastmath.patch -R
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fastmath.patch
 # sys/capability.h doesn't seem to be workig on PowerPC
 if [[ "${target}" == powerpc64le-* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/capabilities.patch --reverse
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/capabilities.patch
 fi
 mkdir build
 cd build
