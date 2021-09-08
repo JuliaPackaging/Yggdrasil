@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_loader"
-version = v"0.2"
+version = v"0.2.1"
 
 cuda_versions = [v"9.0", v"9.2",
                  v"10.0", v"10.1", v"10.2",
