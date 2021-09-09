@@ -18,11 +18,15 @@ cd $WORKSPACE/srcdir/openmp-*/
 
 if [[ "${target}" == *-freebsd* ]]; then
     CMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt"
+elif [[ "${target}" == *-mingw* ]]; then
+    apt install uasm
+    CMAKE_ASM_MASM_COMPILER="uasm"
 fi
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" \
+    -DCMAKE_ASM_MASM_COMPILER="${CMAKE_ASM_MASM_COMPILER}" \
     -DLIBOMP_INSTALL_ALIASES=OFF \
     ..
 make -j${nproc}
@@ -32,7 +36,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # disable for mingw for now, blocking on uasm
-platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.iswindows))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
