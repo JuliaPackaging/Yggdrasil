@@ -31,9 +31,6 @@ elif [[ "${target}" == *-linux-* ]]; then
 fi
 
 LDFLAGS="-L${libdir} -ljulia"
-if [[ "${target}" == *-mingw* ]]; then
-  LDFLAGS="${LDFLAGS} -lopenlibm"
-fi
 
 $CC $CFLAGS $LDFLAGS task.c -o "${libdir}/libtask_julia.${dlext}"
 
