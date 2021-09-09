@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/openmp-*/
 if [[ "${target}" == *-freebsd* ]]; then
     CMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt"
 elif [[ "${target}" == *-mingw* ]]; then
-    apt install uasm
+    apk add uasm
     CMAKE_ASM_MASM_COMPILER="uasm"
 fi
 mkdir build && cd build
