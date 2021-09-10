@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "alsa"
-version = v"1.2.4"
+version = v"1.2.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -24,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms())
+platforms = filter(Sys.islinux, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -37,5 +37,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
