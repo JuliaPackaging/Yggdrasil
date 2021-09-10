@@ -15,8 +15,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/alsa-lib*/
-# TODO: remove for version >= 1.2.5
-atomic_patch -p1 $WORKSPACE/srcdir/patches/plugin_dir_no_DL.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
