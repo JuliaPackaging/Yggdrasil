@@ -8,7 +8,7 @@ version = v"1.2.5"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$version.tar.bz2",
-                  "f7554be1a56cdff468b58fc1c29b95b64864c590038dd309c7a978c7116908f7"),
+                  "9092894a8c083b33acf8d6deb901b58f5d20d6da583789f814e8e46f2850ef18"),
     DirectorySource("./bundled"),
 ]
 
