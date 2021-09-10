@@ -81,7 +81,7 @@ CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;mlir')
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi;compiler-rt')
     CMAKE_FLAGS+=(-DLLVM_RUNTIME_TARGETS=${MACHTYPE})
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
@@ -92,6 +92,7 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     ninja -j${nproc} runtimes
+    ninja -j${nproc} install-runtimes
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
