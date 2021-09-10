@@ -9,7 +9,6 @@ version = v"1.2.5"
 sources = [
     ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$version.tar.bz2",
                   "9092894a8c083b33acf8d6deb901b58f5d20d6da583789f814e8e46f2850ef18"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
