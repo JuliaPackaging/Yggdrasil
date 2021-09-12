@@ -7,7 +7,7 @@ version = v"21.09.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://poppler.freedesktop.org/poppler-21.09.0.tar.xz", "a00bb4f55e680d6681982b0fe2d64aab1e9569e47e21605f168b9af09b771742")
+    ArchiveSource("https://poppler.freedesktop.org/poppler-21.09.0.tar.xz", "5a47fef738c2b99471f9b459a8bf8b40aefb7eed92caa4861c3798b2e126d05b")
 ]
 
 # Bash recipe for building across all platforms
