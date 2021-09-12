@@ -29,6 +29,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DENABLE_CMS=lcms2 \
     -DENABLE_GLIB=ON \
     -DENABLE_QT5=OFF \
+    -DENABLE_BOOST=OFF \
     -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
     -DWITH_GObjectIntrospection=OFF \
     ..
