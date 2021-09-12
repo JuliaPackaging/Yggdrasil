@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version = v"0.87.0"
+version = v"21.09.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://poppler.freedesktop.org/poppler-0.87.0.tar.xz", "6f602b9c24c2d05780be93e7306201012e41459f289b8279a27a79431ad4150e")
+    ArchiveSource("https://poppler.freedesktop.org/poppler-$(version).tar.xz", "a00bb4f55e680d6681982b0fe2d64aab1e9569e47e21605f168b9af09b771742")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,7 +38,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental_platforms=true))
 
 # The products that we will ensure are always built
 products = [
@@ -75,4 +75,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5", julia_compat="1.6")
