@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, Base.BinaryPlatforms
 
 name = "rtmidi"
 version = v"4.0.0"
@@ -26,6 +26,9 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+    
+# Apparently there are no known MIDI backends for FreeBSD :(
+platforms = filter(p -> !os(p) == "freebsd", platforms)
 
 # The products that we will ensure are always built
 products = [
