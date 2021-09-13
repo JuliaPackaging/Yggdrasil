@@ -50,7 +50,7 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"),
-    Dependency(PackageSpec(; name="ICU_jll", version=v"69.1")),
+    Dependency("ICU_jll", v"69.1"),
     Dependency("OpenSSL_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
