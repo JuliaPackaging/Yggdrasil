@@ -28,7 +28,7 @@ make install
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
     
 # Apparently there are no known MIDI backends for FreeBSD :(
-platforms = filter(p -> !os(p) == "freebsd", platforms)
+platforms = filter(p -> os(p) != "freebsd", platforms)
 
 # The products that we will ensure are always built
 products = [
