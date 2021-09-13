@@ -12,8 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd rtmidi/
+cd $WORKSPACE/srcdir/rtmidi/
+
+# Autotools doesn't add `${includedir}` as an include directory on some platforms, for some reason
+export CPPFLAGS="-I${includedir}"
+
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
