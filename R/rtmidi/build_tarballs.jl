@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "rtmidi"
-version = v"5.0.0"
+version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
