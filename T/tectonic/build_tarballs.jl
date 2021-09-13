@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.1.15"
+version = v"0.7.1"
 
 # Collection of sources required to build tar
 sources = [
     ArchiveSource(
         "https://github.com/tectonic-typesetting/tectonic/archive/tectonic@$(version).tar.gz",
-        "0e55188eafc1b58f3660a303fcdd6adc071051b9eb728119837fbeed2309914f"
+        "0082f3aca5e9e8cf827aacbe260383faf1e036d0e8d04a3aef11deeadfff2baf"
     )
 ]
 
@@ -33,6 +33,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     # Platform("x86_64", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),    
     # Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
@@ -49,11 +50,11 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"),
-    Dependency(PackageSpec(; name="ICU_jll", version=v"67.1.0")),
+    Dependency(PackageSpec(; name="ICU_jll", version=v"69.1")),
     Dependency("OpenSSL_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
