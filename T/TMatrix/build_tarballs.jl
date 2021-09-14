@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaRemoteSensing/TMatrix-fortran.git", "87a098629bfe40ac28d6aa925f8884d7d7fef5c0")
+    GitSource("https://github.com/JuliaRemoteSensing/TMatrix-fortran.git", "550a45f7abbef583931bae7c356f1cc02e54a99c")
 ]
 
 # Bash recipe for building across all platforms
