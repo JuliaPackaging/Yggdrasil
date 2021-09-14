@@ -16,6 +16,7 @@ sources = [
                "c1ef65260024f9f2e5999d77e327ff20369b4814f4a3e9d644fe548011a92b0a"),
 ]
 
+# Trivial change to trigger build
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
 cd ${WORKSPACE}/srcdir
