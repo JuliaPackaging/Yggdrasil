@@ -16,7 +16,6 @@ sources = [
                "c1ef65260024f9f2e5999d77e327ff20369b4814f4a3e9d644fe548011a92b0a"),
 ]
 
-# Trivial change to trigger build
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
 cd ${WORKSPACE}/srcdir
@@ -63,6 +62,7 @@ dependencies = [
     Dependency("OpenSSL_jll"),
 ]
 ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
+rustup_version = v"1.23.0"
 build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # We don't actually need the .tar.gz it creates, so delete that to save space
@@ -131,4 +131,5 @@ unpacked_hash = create_artifact() do dir
 end
 
 squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustBase", version; platform=rust_host)
+version = v"1.44.0"
 upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustBase", version, unpacked_hash, squashfs_hash, rust_host)
