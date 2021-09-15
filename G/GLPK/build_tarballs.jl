@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "GLPK"
-version = v"5.0"
+version = v"5.0.1" # <-- This is a lie, we're bumping from 5.0 to 5.0.1 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build GLPK
 sources = [
@@ -24,7 +24,7 @@ make install
 """
 
 # Build for all platforms
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -38,4 +38,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Use the same preferred_gcc_version as GMP.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat=v"1.6")
