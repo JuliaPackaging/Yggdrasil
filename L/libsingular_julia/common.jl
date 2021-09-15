@@ -50,8 +50,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
-    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
+    # Work around dependency bugs
+    BuildDependency(PackageSpec(name="GMP_jll", version=julia_version < v"1.6" ? v"6.1.2" : v"6.2.0")),
+    BuildDependency(PackageSpec(name="MPFR_jll", version=julia_version <v"1.6" ? v"4.0.2" : v"4.1.1")),
     Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
     Dependency("Singular_jll", compat = "~402.100.101"),
 ]
