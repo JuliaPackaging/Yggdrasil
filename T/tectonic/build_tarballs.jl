@@ -16,7 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
-cargo build --release -j${nproc}
+cargo build --release -j${nproc} --target ${rust_target}
 cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
 
