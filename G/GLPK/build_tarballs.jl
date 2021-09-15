@@ -33,7 +33,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    # We use GMP_jll v6.2.0 because we're requiring Julia v1.6+
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
