@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "FFTW"
-version = v"3.3.10" # <-- this is a lie, we're building v3.3.8, but we need to bump version to build for julia v1.6
-source_version = v"3.3.9"
+version = v"3.3.10"
 
 # Collection of sources required to build FFTW
 sources = [
-   ArchiveSource("http://fftw.org/fftw-$(source_version).tar.gz",	
+   ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
                   "bf2c7ce40b04ae811af714deb512510cc2c17b9ab9d6ddcf49fe4487eea7af3d"),
 ]
 
