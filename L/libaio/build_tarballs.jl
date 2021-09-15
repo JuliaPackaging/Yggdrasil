@@ -21,7 +21,7 @@ make -j${nproc} install prefix=${prefix}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> Sys.islinux(p), supported_platforms())
+platforms = filter!(p -> Sys.islinux(p), supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = Product[
@@ -29,4 +29,4 @@ products = Product[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
