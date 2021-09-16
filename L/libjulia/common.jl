@@ -17,8 +17,10 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
     end
 
-    for p in platforms
-        p["julia_version"] = string(julia_version)
+    if julia_version >= v"1.6"
+        for p in platforms
+            p["julia_version"] = string(julia_version)
+        end
     end
 
     # While the "official" Julia kernel ABI itself does not involve any C++
