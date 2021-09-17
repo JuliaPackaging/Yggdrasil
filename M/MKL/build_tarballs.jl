@@ -4,6 +4,9 @@ name = "MKL"
 version = v"2021.1.1"
 
 # Bash recipes for building across all platforms
+script = read(joinpath(@__DIR__, "script.sh"), String)
+script_macos = read(joinpath(@__DIR__, "script_macos.sh"), String)
+
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 platform_sources = Dict(
@@ -17,6 +20,7 @@ platform_sources = Dict(
         # have a soname, so we can't ccall it without specifying the path:
         # https://github.com/JuliaSparse/Pardiso.jl/issues/69
         autofix = true,
+        script = script,
         args = ARGS,
     ),
     Platform("i686", "linux"; libc="glibc") => (
@@ -26,6 +30,7 @@ platform_sources = Dict(
             unpack_target = "mkl-i686-linux-gnu"
         ),
         autofix = true,
+        script = script,
         args = ARGS,
     ),
     Platform("x86_64", "macos") => (
@@ -38,6 +43,7 @@ platform_sources = Dict(
         # macOS causes runtime issues:
         # https://github.com/JuliaPackaging/Yggdrasil/issues/915.
         autofix = false,
+        script = script_macos,
         args = non_reg_ARGS,
     ),
     Platform("i686", "windows") => (
@@ -47,6 +53,7 @@ platform_sources = Dict(
             unpack_target = "mkl-i686-w64-mingw32"
         ),
         autofix = false,
+        script = script,
         args = non_reg_ARGS,
     ),
     Platform("x86_64", "windows") => (
@@ -56,21 +63,10 @@ platform_sources = Dict(
             unpack_target = "mkl-x86_64-w64-mingw32"
         ),
         autofix = false,
+        script = script,
         args = non_reg_ARGS,
     ),
 )
-
-# Bash recipe for building across all platforms
-script = raw"""
-cd ${WORKSPACE}/srcdir/mkl-${target}
-if [[ ${target} == *-mingw* ]]; then
-    cp -r Library/bin/* ${libdir}
-else
-    cp -r lib/* ${libdir}
-fi
-
-install_license info/licenses/*.txt
-"""
 
 # The products that we will ensure are always built
 products = [
@@ -87,6 +83,6 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 filter!(p -> should_build_platform(triplet(first(p))), platform_sources)
 
-for (platform, (source, autofix, args)) in pairs(platform_sources)
+for (platform, (source, autofix, script, args)) in pairs(platform_sources)
     build_tarballs(args, name, version, [source], script, [platform], products, dependencies; lazy_artifacts = true, autofix = autofix)
 end
