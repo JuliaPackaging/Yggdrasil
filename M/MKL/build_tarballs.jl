@@ -9,8 +9,9 @@ script_macos = read(joinpath(@__DIR__, "script_macos.sh"), String)
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
-platform_sources = Dict(
-    Platform("x86_64", "linux"; libc="glibc") => (
+platform_sources = [
+    (
+        platform = Platform("x86_64", "linux"; libc="glibc"),
         source = ArchiveSource(
             "https://anaconda.org/intel/mkl/2021.1.1/download/linux-64/mkl-2021.1.1-intel_52.tar.bz2",
             "bfb0fd056576cad99ae1d9c69ada2745420da9f9cf052551d5b91f797538bda2";
@@ -21,9 +22,9 @@ platform_sources = Dict(
         # https://github.com/JuliaSparse/Pardiso.jl/issues/69
         autofix = true,
         script = script,
-        args = ARGS,
     ),
-    Platform("i686", "linux"; libc="glibc") => (
+    (
+        platform = Platform("i686", "linux"; libc="glibc"),
         source = ArchiveSource(
             "https://anaconda.org/intel/mkl/2021.1.1/download/linux-32/mkl-2021.1.1-intel_52.tar.bz2",
             "7b6f55a30886154bd96d4b4c6b7428494a59397b87779b58e5b3de00250343f9";
@@ -31,9 +32,9 @@ platform_sources = Dict(
         ),
         autofix = true,
         script = script,
-        args = ARGS,
     ),
-    Platform("x86_64", "macos") => (
+    (
+        platform = Platform("x86_64", "macos"),
         source = ArchiveSource(
             "https://anaconda.org/intel/mkl/2021.1.1/download/osx-64/mkl-2021.1.1-intel_50.tar.bz2",
             "819fb8875909d4d024e2a936c54b561aebd1e3aebe58fc605c70aa1ad9a66b70";
@@ -44,9 +45,9 @@ platform_sources = Dict(
         # https://github.com/JuliaPackaging/Yggdrasil/issues/915.
         autofix = false,
         script = script_macos,
-        args = non_reg_ARGS,
     ),
-    Platform("i686", "windows") => (
+    (
+        platform = Platform("i686", "windows"),
         source = ArchiveSource(
             "https://anaconda.org/intel/mkl/2021.1.1/download/win-32/mkl-2021.1.1-intel_52.tar.bz2",
             "dba6a12a481407ec55fba9895b68afacb15f044905dcb5e185db341b688e6177";
@@ -54,9 +55,9 @@ platform_sources = Dict(
         ),
         autofix = false,
         script = script,
-        args = non_reg_ARGS,
     ),
-    Platform("x86_64", "windows") => (
+    (
+        platform = Platform("x86_64", "windows"),
         source = ArchiveSource(
             "https://anaconda.org/intel/mkl/2021.1.1/download/win-64/mkl-2021.1.1-intel_52.tar.bz2",
             "4024391b8a45836d5a7ee92405b7767874b3c3bbf2f490349fda042db3b60dfd";
@@ -64,9 +65,8 @@ platform_sources = Dict(
         ),
         autofix = false,
         script = script,
-        args = non_reg_ARGS,
     ),
-)
+]
 
 # The products that we will ensure are always built
 products = [
@@ -83,6 +83,12 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 filter!(p -> should_build_platform(triplet(first(p))), platform_sources)
 
-for (platform, (source, autofix, script, args)) in pairs(platform_sources)
+for (idx, (platform, source, autofix, script)) in enumerate(platform_sources)
+    # Use "--register" only on the last invocation of build_tarballs
+    if idx < length(platform_sources)
+        args = non_reg_ARGS
+    else
+        args = ARGS
+    end
     build_tarballs(args, name, version, [source], script, [platform], products, dependencies; lazy_artifacts = true, autofix = autofix)
 end
