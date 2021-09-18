@@ -1,4 +1,3 @@
-# Only required for 6.2.1 to enable Apple Silicon to work
 # HG changeset patch
 # User Torbjorn Granlund <tg@gmplib.org>
 # Date 1606685500 -3600
