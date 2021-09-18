@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "libportaudio"
-version = v"19.6.0"
+version = v"19.7.0"
 
 # Collection of sources required to build libportaudio. Not all of these
 # are used for all platforms.
 sources = [
-    ArchiveSource("http://portaudio.com/archives/pa_stable_v190600_20161030.tgz",
-               "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513"),
+    ArchiveSource("https://github.com/PortAudio/portaudio/archive/refs/tags/v19.7.0.tar.gz", 
+    "5af29ba58bbdbb7bbcefaaecc77ec8fc413f0db6f4c4e286c40c3e1b83174fa0"),
 
     # This includes a patch
-    DirectorySource("./bundled"),
+    # DirectorySource("./bundled"),
 
     # uncomment the following lines to include ASIO support. To distribute the
     # resulting binaries you'll need to sign the licence agreement included with
@@ -32,7 +32,7 @@ if [ -d "asiosdk2.3.1" ]; then
 fi
 
 # apply the patch
-patch -dportaudio -p1 < portaudio_alsa_epipe_v3.diff
+# patch -dportaudio -p1 < portaudio_alsa_epipe_v3.diff
 
 # First, build libportaudio
 mkdir build
@@ -41,15 +41,15 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
-    ../portaudio/
+    ../portaudio-19.7.0/
 make
 make install
-install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
+install_license "${WORKSPACE}/srcdir/portaudio-19.7.0/LICENSE.txt"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -63,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
