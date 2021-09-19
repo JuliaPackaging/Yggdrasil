@@ -87,6 +87,7 @@ make topopt
 cp topopt ${bindir}/topopt
 make libtopopt
 cp libtopopt.$dlext ${libdir}/libtopopt.$dlext
+install_license ${WORKSPACE}/srcdir/lesser.txt
 """
 
 # These are the platforms we will build for by default, unless further
