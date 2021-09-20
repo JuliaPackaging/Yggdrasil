@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-continue-zlib.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -59,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll", v"2.24.0"),
+    Dependency("MbedTLS_jll", v"2.27.0"),
     Dependency("LibSSH2_jll"),
 ]
 
