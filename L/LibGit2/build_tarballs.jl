@@ -58,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll", v"2.27.0"),
+    Dependency("MbedTLS_jll", v"2.26.0"),
     Dependency("LibSSH2_jll"),
 ]
 
