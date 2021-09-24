@@ -40,7 +40,7 @@ fi
 """
 
 products = [
-    LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
+    LibraryProduct("libhelics", :libhelics),
 ]
 
 platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
