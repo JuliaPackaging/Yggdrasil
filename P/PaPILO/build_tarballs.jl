@@ -41,6 +41,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.7"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("GMP_jll"; compat="6.1.2"),
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
