@@ -33,7 +33,9 @@ cd $WORKSPACE/srcdir/wget2*
 --without-libpcre2 \
 --without-libpcre \
 --without-libmicrohttpd \
---without-plugin-support
+--without-plugin-support \
+--disable-doc \
+--disable-manylibs
 
 make -j${nproc}
 make install
@@ -48,30 +50,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("wget2", :wget2),
     #ExecutableProduct("wget2_noinstall", :wget2_noinstall),
-    LibraryProduct("libwget_common", :libwget_common),
-    LibraryProduct("libwget_ip", :libwget_ip),
-    LibraryProduct("libwget_netrc", :libwget_netrc),
-    LibraryProduct("libwget_hpkp_db", :libwget_hpkp_db),
-    LibraryProduct("libwget_thread", :libwget_thread),
-    LibraryProduct("libwget_dns", :libwget_dns),
-    LibraryProduct("libwget_iri", :libwget_iri),
-    LibraryProduct("libwget_metalink", :libwget_metalink),
-    LibraryProduct("libwget_progress", :libwget_progress),
-    LibraryProduct("libwget_robots", :libwget_robots),
-    LibraryProduct("libwget_css", :libwget_css),
-    LibraryProduct("libwget_hashfile", :libwget_hashfile),
-    LibraryProduct("libwget_dnscache", :libwget_dnscache),
-    LibraryProduct("libwget_http_parse", :libwget_http_parse),
-    LibraryProduct("libwget", :libwget),
-    LibraryProduct("libwget_decompress", :libwget_decompress),
-    LibraryProduct("libwget_tls_session", :libwget_tls_session),
-    LibraryProduct("libwget_alloc", :libwget_alloc),
-    LibraryProduct("libwget_hsts", :libwget_hsts),
-    LibraryProduct("libwget_io", :libwget_io),
-    LibraryProduct("libwget_encoding", :libwget_encoding),
-    LibraryProduct("libwget_logger", :libwget_logger),
-    LibraryProduct("libwget_ocsp", :libwget_ocsp),
-    LibraryProduct("libwget_xml", :libwget_xml)
+    LibraryProduct("libwget", :libwget)
 ]
 
 # Dependencies that must be installed before this package can be built
