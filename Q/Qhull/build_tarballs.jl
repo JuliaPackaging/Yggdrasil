@@ -3,14 +3,12 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"2020.2"
+version = v"8.1-alpha1"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource(
-        "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz", # URL
-        "59356b229b768e6e2b09a701448bfa222c37b797a84f87f864f97462d8dbc7c5"                 # sha256 hash
-    ),
+    GitSource("https://github.com/qhull/qhull.git",
+              "a22c735d6a8d1b5eac5773790aeae28f3b088655"), # v8.1-alpha1
 ]
 
 # Bash recipe for building across all platforms
