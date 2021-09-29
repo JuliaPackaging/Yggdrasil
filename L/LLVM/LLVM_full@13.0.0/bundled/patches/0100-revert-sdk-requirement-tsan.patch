@@ -1,8 +1,8 @@
-From 2c3903ec175d21759d5eaaa297356a55f500c749 Mon Sep 17 00:00:00 2001
+From 7153578a234068c510e1a95453b1498a1d087a5c Mon Sep 17 00:00:00 2001
 From: Valentin Churavy <v.churavy@gmail.com>
-Date: Thu, 1 Oct 2020 00:06:09 -0400
-Subject: [PATCH 1/2] Revert "[TSan] Add CMake check for minimal SDK
- requirements on Darwin"
+Date: Wed, 29 Sep 2021 18:04:10 -0400
+Subject: [PATCH] Revert "[TSan] Add CMake check for minimal SDK requirements
+ on Darwin"
 
 This reverts commit 3bf3996cd4ef2d4898b32d4cef52d6549bbe6820.
 ---
@@ -10,11 +10,11 @@ This reverts commit 3bf3996cd4ef2d4898b32d4cef52d6549bbe6820.
  1 file changed, 8 deletions(-)
 
 diff --git a/compiler-rt/lib/tsan/CMakeLists.txt b/compiler-rt/lib/tsan/CMakeLists.txt
-index c99b16d8aaa..9fd3e2d7792 100644
+index a60c8f842a2d..82117c62cf10 100644
 --- a/compiler-rt/lib/tsan/CMakeLists.txt
 +++ b/compiler-rt/lib/tsan/CMakeLists.txt
-@@ -114,14 +114,6 @@ set(TSAN_RUNTIME_LIBRARIES)
- add_compiler_rt_component(tsan)
+@@ -114,14 +114,6 @@ if("${CMAKE_C_FLAGS}" MATCHES "-Wno-(error=)?unused-command-line-argument")
+ endif()
  
  if(APPLE)
 -  # Ideally we would check the SDK version for the actual platform we are
@@ -25,9 +25,9 @@ index c99b16d8aaa..9fd3e2d7792 100644
 -    message(FATAL_ERROR "Building the TSan runtime requires at least macOS SDK 10.12 (or aligned SDK on other platforms)")
 -  endif()
 -
-   add_asm_sources(TSAN_ASM_SOURCES rtl/tsan_rtl_amd64.S rtl/tsan_rtl_aarch64.S)
- 
-   set(TSAN_LINK_LIBS ${SANITIZER_COMMON_LINK_LIBS})
+   add_asm_sources(TSAN_ASM_SOURCES
+     rtl/tsan_rtl_amd64.S
+     rtl/tsan_rtl_aarch64.S
 -- 
-2.28.0
+2.33.0
 
