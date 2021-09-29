@@ -3,18 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "librttopo"
-version = v"0.1.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.osgeo.org/gitea/rttopo/librttopo.git", "ffcdc7ee67375c5874b09101dca3fc9fc98ecc08")
+    ArchiveSource("https://download.osgeo.org/librttopo/src/librttopo-$(version).tar.gz", "a77d8b787ba13f685de819348d5146f9f6ec56fd3bcf71e880dfc5e0086d4cb0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/librttopo/
-
-./autogen.sh
+cd $WORKSPACE/srcdir/librttopo*
 
 if [[ ${target} == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
