@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ThriftJuliaCompiler"
-version = v"0.12.0"
+version = v"0.12.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tanmaykm/thrift.git", "5fa011a2b55a5fdffaa5b5674772b18c82b8a320")
+    GitSource("https://github.com/tanmaykm/thrift.git", "3f8f69d9bb4f65e487a13e7bfd76ed88792ad36e")
 ]
 
 # Bash recipe for building across all platforms
