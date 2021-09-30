@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"2020.2"
+version = v"8.0.2"
 
 # Collection of sources required to build
 sources = [
