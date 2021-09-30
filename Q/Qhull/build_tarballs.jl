@@ -8,7 +8,7 @@ version = v"8.0.2"
 # Collection of sources required to build
 sources = [
     ArchiveSource(
-        "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz", # URL
+        "https://github.com/qhull/qhull/archive/2020.2.tar.gz", # URL
         "59356b229b768e6e2b09a701448bfa222c37b797a84f87f864f97462d8dbc7c5"                 # sha256 hash
     ),
 ]
