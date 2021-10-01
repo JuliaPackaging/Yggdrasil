@@ -4,7 +4,7 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "NCCL"
-version = v"2.9.9"
+version = v"2.11.4"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -27,7 +27,7 @@ products = [
 
 dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-cuda_versions = [v"10.2", v"11.0", v"11.3"]
+cuda_versions = [v"10.2", v"11.0", v"11.4"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
