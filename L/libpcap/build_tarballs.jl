@@ -2,21 +2,22 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "GDB"
-version = v"10.1.0"
+name = "libpcap"
+version = v"1.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz", "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0")
+    GitSource("https://github.com/the-tcpdump-group/libpcap.git", "1babd5dd63e4d5266e111d7f4f710ea77f4d7b5c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add texinfo
-cd $WORKSPACE/srcdir/gdb-10.1/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-expat
-make -j${nproc} all
+cd $WORKSPACE/srcdir
+cd libpcap/
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make
 make install
+exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,23 +27,23 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
+    Platform("x86_64", "freebsd"; )
 ]
-platforms = expand_cxxstring_abis(platforms)
+
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("gdbserver", :gdbserver),
-    ExecutableProduct("gdb", :gdb)
+    LibraryProduct("libpcap", :libpcap)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
-    Dependency("Expat_jll"),
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
