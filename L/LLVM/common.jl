@@ -357,7 +357,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "bin"),
+        ExecutableProduct("clang", :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
