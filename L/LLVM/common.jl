@@ -13,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.0" => "176249bd6732a8044d457092ed932768724a6f06",
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
-    v"12.0.1" => "fed41342a82f5a3a9201819a82bf7a48313e296b",
+    v"12.0.1" => "8f6e49e8a3c0f31a55c342a2a41dda630508c5eb", # julia-12.0.1-3
 )
 
 const buildscript = raw"""
@@ -347,7 +347,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     end
     sources = [
-        GitSource("https://github.com/llvm/llvm-project.git", llvm_tags[version]),
+        GitSource("https://github.com/JuliaLang/llvm-project.git", llvm_tags[version]),
         DirectorySource("./bundled"),
     ]
 
@@ -357,7 +357,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "bin"),
+        ExecutableProduct("clang", :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
