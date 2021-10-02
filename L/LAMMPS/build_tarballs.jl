@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+
+include("../../fancy_toys.jl")
 
 name = "LAMMPS"
 version = v"1.0.0" # Equivalent to 2020-10-29
@@ -12,13 +15,23 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cp `which c++` `which c++`.bak
+cp `which cc` `which cc`.bak
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
+sed -i '$d' `which c++`
+sed -i '/march=[^"]/d' `which c++`
+echo "vrun \${CCACHE} ${host_prefix}/tools/clang++ \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which c++`
+sed -i '$d' `which cc`
+sed -i '/march=[^"]/d' `which cc`
+echo "vrun \${CCACHE} ${host_prefix}/tools/clang \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which cc`
 cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
+    -DCMAKE_CXX_COMPILER=`which c++` \
+    -DCMAKE_C_COMPILER=`which cc` \
+    -DCMAKE_CXX_FLAGS="-fuse-ld=lld -flto" \
     -DPKG_SNAP=ON
 make -j${nproc}
 make install
@@ -31,8 +44,10 @@ fi
 function configure(julia_version, llvm_version)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-    filter!(p -> libc(p) != "musl", platforms)
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=false))
+    filter!(p -> libc(p) != "musl" , platforms)
+    filter!(p -> Sys.islinux(p) && BinaryBuilder.proc_family(p) == "intel", platforms)
+
 
     foreach(platforms) do p
         BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
