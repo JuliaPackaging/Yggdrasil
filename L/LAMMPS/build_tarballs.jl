@@ -28,21 +28,45 @@ if [[ "${target}" == *mingw* ]]; then
 fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> libc(p) != "musl", platforms)
+function configure(julia_version, llvm_version)
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+    filter!(p -> libc(p) != "musl", platforms)
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("liblammps", :liblammps),
-    ExecutableProduct("lmp", :lmp),
-]
+    foreach(platforms) do p
+        BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
+    end
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"))
-]
+    # The products that we will ensure are always built
+    products = [
+        LibraryProduct("liblammps", :liblammps),
+        ExecutableProduct("lmp", :lmp),
+        ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+    # Dependencies that must be installed before this package can be built
+    dependencies = [
+        Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
+        HostBuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
+    ]
+
+    return platforms, products, dependencies
+end
+
+# TODO: Don't require build-id on LLVM version
+supported = (
+    (v"1.6", v"11.0.1+3"),
+    (v"1.7", v"12.0.0+0"),
+    (v"1.8", v"12.0.0+0"),
+)
+
+
+for (julia_version, llvm_version) in supported
+    platforms, products, dependencies = configure(julia_version, llvm_version)
+
+    any(should_build_platform.(triplet.(platforms))) || continue
+
+    # Build the tarballs.
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                preferred_gcc_version=v"8", julia_compat="1.6")
+end
