@@ -295,9 +295,9 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}/*
 
 # Copy over `clang`, `libclang` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
-mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/bin/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -331,6 +331,7 @@ rm -rf ${prefix}/*
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
 rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
 rm -vrf ${libdir}/*MLIR*.${dlext}*
@@ -402,7 +403,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         products = [
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
             LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
-            ExecutableProduct("clang", :clang, "bin"),
+            ExecutableProduct("clang", :clang, "tools"),
         ]
     elseif name == "MLIR"
         script = mlirscript
