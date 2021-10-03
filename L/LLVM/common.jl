@@ -297,7 +297,6 @@ rm -rf ${prefix}/*
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
-mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/bin/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
