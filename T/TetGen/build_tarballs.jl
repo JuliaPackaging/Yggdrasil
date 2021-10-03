@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.5.1"
+version = v"1.5.2"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
