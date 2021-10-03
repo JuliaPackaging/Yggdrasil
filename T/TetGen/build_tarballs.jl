@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.5.1"
+version = v"1.5.2"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
@@ -56,7 +56,7 @@ ${CXX} $LDFLAGS -shared -fPIC tetgen.o predicates.o  cwrapper.o -o ${libdir}/lib
 install_license LICENSE
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 # platforms=[Platform("x86_64", "linux"; libc="glibc")]
 
 products = [
@@ -64,4 +64,4 @@ products = [
 ]
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
