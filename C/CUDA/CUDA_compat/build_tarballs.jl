@@ -34,11 +34,10 @@ products = [
     LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler),
 ]
 
+non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+
 cuda_versions = [v"11.4"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
-
-    any(should_build_platform.(triplet.(platforms))) || continue
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
 end
