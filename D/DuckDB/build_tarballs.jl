@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.2.1"
+version = v"0.2.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cwida/duckdb.git", "d9bceddc7209a7e0b5c0402958d1191e19a491e7")
+    ArchiveSource("https://github.com/duckdb/duckdb/archive/refs/tags/v0.2.9.tar.gz", "ede74256ca8811ae37001d238c4ffb156861c408453e95e02096773465619ccf")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd duckdb/
+cd duckdb*/
 if [[ "${target}" == *-mingw32 ]]; then
     sed -i -E "/add_executable\(duckdb_rest_server server.cpp\)$/aif\(\$\{WIN32\}\)\n  set\(LINK_EXTRA -lwsock32 -lws2_32\)\nendif\(\)\n" tools/rest/CMakeLists.txt
 fi
