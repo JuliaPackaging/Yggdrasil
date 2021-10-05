@@ -13,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.0" => "176249bd6732a8044d457092ed932768724a6f06",
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
-    v"12.0.1" => "8f6e49e8a3c0f31a55c342a2a41dda630508c5eb", # julia-12.0.1-3
+    v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
 )
 
 const buildscript = raw"""
@@ -132,8 +132,9 @@ CMAKE_FLAGS+=(-DLLVM_TOOL_CLANG_TOOLS_EXTRA_BUILD=OFF)
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
-# Turn off ZLIB and XML2
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+# Turn on ZLIB
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+# Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 # Disable useless things like docs, terminfo, etc....
@@ -378,8 +379,10 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         name = "$(name)_assert"
     end
     # Dependencies that must be installed before this package can be built
-    # TODO: Zlib, LibXML2
-    dependencies = Dependency[]
+    # TODO: LibXML2
+    dependencies = Dependency[
+        Dependency("Zlib_jll"), # for LLD&LTO
+    ]
     return name, version, sources, config * buildscript, platforms, products, dependencies
 end
 
@@ -423,7 +426,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
 
-    dependencies = BinaryBuilder.AbstractDependency[]
+    dependencies = BinaryBuilder.AbstractDependency[
+        Dependency("Zlib_jll"), # for LLD&LTO
+    ]
 
     # Parse out some args
     if "--assert" in ARGS
