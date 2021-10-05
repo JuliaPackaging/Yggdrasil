@@ -45,14 +45,21 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
         v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
         v"1.5.4" => "852122bf1bdefd39307b1dd2aa546e3885d76ede7c07cb04d90814b9510ea9f9",
-        v"1.6.0" => "c253360d29abb9a3a9e6e01493e0f7bb537d88014fd58ac561b5ba30fcb44cad",
-        v"1.7.0-beta3" => "d2f30bd0b25b9cb8c837276342710643dd9420baaa4d27bcb583a3c7f66563f4",
+        v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
+        v"1.7.0-rc1" => "0da8a3597ab3841457877ad1e4740e9ee49c08f55a00c10a2a21c8165e68f1aa",
     )
 
-    sources = [
-        ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
-        DirectorySource("./bundled"),
-    ]
+    if version == v"1.8.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia", "5b7bb084d478050b5265f66a571969c7df280f6b"),
+            DirectorySource("./bundled"),
+        ]
+    else
+        sources = [
+            ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
+            DirectorySource("./bundled"),
+        ]
+    end
 
     # Bash recipe for building across all platforms
     script = raw"""
@@ -61,11 +68,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
     # use the Julia version to determine the directory from which to read patches
-    splitversion=( ${version//./ } )
-    patchdir=$WORKSPACE/srcdir/patches
-    if (( splitversion[0] > 1 || splitversion[1] >= 6 )); then
-        patchdir=$patchdir/$version
-    fi
+    patchdir=$WORKSPACE/srcdir/patches/$version
     # Apply patches
     if [ -d $patchdir ]; then
     for f in $patchdir/*.patch; do
@@ -131,6 +134,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         elif [[ "${version}" == 1.6.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-11jl"
         elif [[ "${version}" == 1.7.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
+        elif [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
         else
             echo "Error, LLVM version not specified"
@@ -337,10 +342,13 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         # So we use get_addable_spec below to "fake it" for now.
         # This means the resulting package has fewer dependencies declared, but at least it
         # will work and allow people to build JLL binaries ready for Julia 1.7
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.0+0")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
 
         # starting with Julia 1.7, we need LLVMLibUnwind_jll
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
+    elseif version.major == 1 && version.minor == 8
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
     else
         error("Unsupported Julia version")
     end
