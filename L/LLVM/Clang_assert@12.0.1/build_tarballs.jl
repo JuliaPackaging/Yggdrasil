@@ -1,6 +1,6 @@
 name = "Clang"
-llvm_full_version = v"12.0.1+3"
-libllvm_version = v"12.0.1+3"
+llvm_full_version = v"12.0.1+4"
+libllvm_version = v"12.0.1+4"
 
 
 # Include common LLVM stuff
