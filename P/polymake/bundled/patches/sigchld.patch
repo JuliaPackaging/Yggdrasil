@@ -1,13 +1,16 @@
-diff --git a/perllib/Polymake/Core/CPlusPlusGenerator.pm b/perllib/Polymake/Core/CPlusPlusGenerator.pm
-index 5c6a9781c2..5651027e11 100644
---- a/perllib/Polymake/Core/CPlusPlusGenerator.pm
-+++ b/perllib/Polymake/Core/CPlusPlusGenerator.pm
-@@ -913,7 +913,7 @@ sub build_temp_shared_module {
+diff --git a/perllib/Polymake/Main.pm b/perllib/Polymake/Main.pm
+index 607d9fa57f..523bd679b3 100644
+--- a/perllib/Polymake/Main.pm
++++ b/perllib/Polymake/Main.pm
+@@ -26,9 +26,8 @@ sub import {
+    local $SIG{INT} = 'IGNORE';
  
-    warn_print( "Compiling temporary shared module, please be patient..." ) if $Verbose::cpp;
+    # these redefinitions must happen before the whole slew of polymake perl code is loaded!
+-   if ($must_reset_SIGCHLD) {
+-      *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe(@_) };
+-   }
++   *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe(@_) };
++   *CORE::GLOBAL::system=sub { local $SIG{CHLD}='DEFAULT'; CORE::system(@_) };
  
--   if (system(($Verbose::cpp>1 && "cat $dir/$cpperl_filename.cpperl >&2; ") .
-+   if (Interrupts::system(($Verbose::cpp>1 && "cat $dir/$cpperl_filename.cpperl >&2; ") .
-               "ninja -C $dir $so_name ".($Verbose::cpp ? ">&2" : ">/dev/null")." 2>$dir/err.log")) {
-       if ($Verbose::cpp) {
-          die "C++/perl Interface module compilation failed; see the generated code and the error log below.\n\n",
+    require DynaLoader;
+    Polymake::Ext::bootstrap();
