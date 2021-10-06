@@ -1,17 +1,18 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
-import Pkg: PackageSpec
-import Pkg.Types: VersionSpec
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+
 
 name = "libpolymake_julia"
-upstream_version = v"0.4.3"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch * 100 + julia_version.minor)
+version = v"0.5.0"
+
+julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libpolymake_julia
 sources = [
-    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(upstream_version).tar.gz",
-                  "dc1f727cadfe11529b66a6c592a780457e52492a83384f298f3bba8c28dc06ca"),
+    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
+                  "5af8ccce9928b05c2c30f6adcddc7f07bdbef79d69d7d28aa6671846e742d2fb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,6 +42,17 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 
+# expand julia platforms
+julia_platforms = []
+foreach(platforms) do platform
+    foreach(julia_versions) do jv
+        p = deepcopy(platform)
+        BinaryPlatforms.add_tag!(p.tags, "julia_version", string(jv))
+        push!(julia_platforms, p)
+    end
+end
+
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("polymake_run_script", :polymake_run_script),
@@ -50,16 +62,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
-    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
+    BuildDependency("libjulia_jll"),
+    BuildDependency("GMP_jll"),
+    BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~200.800"),
-    Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
-    Dependency("polymake_jll"; compat = "~400.400.2"),
+    Dependency("libcxxwrap_julia_jll"),
+    Dependency("polymake_jll"; compat = "~400.500.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    julia_compat = "1.6")
