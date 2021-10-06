@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"8.1-alpha1"
+version = v"8.0.999" # really 8.1-alpha1, but Julia Pkg doesn't support prerelease versions
 
 # Collection of sources required to build
 sources = [
