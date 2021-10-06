@@ -233,6 +233,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
     fi
 
+    # first build flisp, as we need that for compilation; instruct the build system
+    # to build it for the cross compilation host architecture, not the final target
     make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} VERBOSE=1 -C src/flisp host/flisp
     make clean -C src
     make clean -C src/support
@@ -246,13 +248,17 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # Mac build complains about checksum
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
-    # compile libjulia but don't try to build a sysimage
+    # choose make targets which compile libjulia but don't try to build a sysimage
     if [[ "${version}" == 1.[0-5].* ]]; then
         MAKE_TARGET=julia-ui-release
     else
         MAKE_TARGET="julia-src-release julia-cli-release"
     fi
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET}
+
+    # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
+    # unnecessary step calling dsymutil, which in our cross compilation
+    # environment results in a segfault.
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET} DSYMUTIL=true
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
