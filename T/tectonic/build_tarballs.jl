@@ -25,9 +25,9 @@ install_license LICENSE
 platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux")
+    Platform("aarch64", "linux"),
     Platform("x86_64", "windows"),
-    Platform("x86_64", "macos"),
+    Platform("x86_64", "macos")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
