@@ -17,14 +17,20 @@ sources = [
 script = raw"""
 cp `which c++` `which c++`.bak
 cp `which cc` `which cc`.bak
+export OLDCC=$(tail `which cc`.bak | grep '[^ ]*gcc' -o)
+export OLDCXX=$(tail `which cc`.bak | grep '[^ ]*g++' -o)
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
+mv ${host_prefix}/bin/lld ${host_prefix}/tools/
 sed -i '$d' `which c++`
 sed -i '/march=[^"]/d' `which c++`
-echo "vrun \${CCACHE} ${host_prefix}/tools/clang++ \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which c++`
+
+
+export FLAGS="-B $(dirname `$OLDCC -print-file-name=crtbeginS.o`) --sysroot `$OLDCC -print-sysroot` -L $(dirname `$OLDCC -print-libgcc-file-name`) --gcc-toolchain=$(dirname $OLDCC) -fuse-ld=lld -I `$OLDCC -print-sysroot`/../include/c++/*/ -I `$OLDCC -print-sysroot`/../include/c++/*/x86*"
+echo "vrun \${CCACHE} ${host_prefix}/tools/clang++ $FLAGS \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which c++`
 sed -i '$d' `which cc`
 sed -i '/march=[^"]/d' `which cc`
-echo "vrun \${CCACHE} ${host_prefix}/tools/clang \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which cc`
+echo "vrun \${CCACHE} ${host_prefix}/tools/clang $FLAGS \"\${PRE_FLAGS[@]}" \"\${ARGS[@]}\" \"\${POST_FLAGS[@]}\"" >> `which cc`
 cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
@@ -46,8 +52,11 @@ function configure(julia_version, llvm_version)
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=false))
     filter!(p -> libc(p) != "musl" , platforms)
-    filter!(p -> Sys.islinux(p) && BinaryBuilder.proc_family(p) == "intel", platforms)
-
+    filter!(p -> Sys.islinux(p), platforms)
+    # filter!(p -> Sys.islinux(p) && BinaryBuilder.proc_family(p) == "intel", platforms)
+    filter!(p -> arch(p) == "x86_64", platforms)
+    @show platforms
+    # platforms = [Pkg.BinaryPlatforms.Linux(:x86_64, libc=:glibc)]
 
     foreach(platforms) do p
         BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
@@ -70,10 +79,10 @@ end
 
 # TODO: Don't require build-id on LLVM version
 supported = (
-    (v"1.6", v"11.0.1+3"),
-    (v"1.7", v"12.0.0+0"),
-    (v"1.8", v"12.0.0+0"),
+    (v"1.7", v"12.0.1+4"),
 )
+    #(v"1.6", v"11.0.1+3"),
+    #(v"1.8", v"12.0.0+0"),
 
 
 for (julia_version, llvm_version) in supported
