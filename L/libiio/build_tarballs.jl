@@ -48,7 +48,7 @@ products = [
 ]
 
 products_apple = [
-    FrameworkProduct("iio", :iio)
+    FrameworkProduct("iio", :libiio)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
