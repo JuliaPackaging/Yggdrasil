@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "libsharp2"
  # ↓ This version number is a lie to be able to build for experimental
  # ↓ platforms, but it shouldn't be a problem as the library is abandoned.
-version = v"1.0.1"
+version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -19,9 +19,10 @@ cd libsharp/
 sed -i 's/LT_INIT.*/LT_INIT\(\[win32-dll\]\)/g' configure.ac
 sed -i 's/libsharp2_la_LDFLAGS = -version-info 0:0:0/libsharp2_la_LDFLAGS = -version-info 0:0:0 -no-undefined/g' Makefile.am
 autoreconf -i
-if [[ "${target}" == x86_64-* ]] && [[ "${target}" != *-apple-* ]]; then
-    # Enable runtime multiarch, but not for macOS, see
+if [[ "${target}" == x86_64-* ]] && [[ "${target}" != *-apple-* ]] && [[ "${target}" != *-w64-* ]]; then
+    # Enable runtime multiarch, but not for macOS nor Windows. For Mac OS X, see
     # https://gitlab.mpcdf.mpg.de/mtr/libsharp/-/blob/6374a3a1ffb935443c56f09b371b11cf982a7e28/COMPILE
+    # For Windows, see https://github.com/ziotom78/Libsharp.jl/issues/3
     export CFLAGS="-DMULTIARCH"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
