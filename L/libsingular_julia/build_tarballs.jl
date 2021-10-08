@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.8.10"
+version = v"0.18.10"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
