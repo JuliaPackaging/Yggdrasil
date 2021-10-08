@@ -12,7 +12,8 @@ sources = [
 
 dependencies = [
     Dependency("libiio_jll"; compat="~0.23.0"),
-    Dependency("soapysdr_jll"; compat="~0.8.0")    
+    Dependency("soapysdr_jll"; compat="~0.8.0"),
+    Dependency("libad9361_iio_jll"; compat="~0.2.0")    
 ]
 
 # Bash recipe for building across all platforms
@@ -34,6 +35,8 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_BUILD_TYPE=Release \
         -DLibIIO_INCLUDE_DIR=${libdir}/iio.framework/Versions/0.23/Headers/ \
         -DLibIIO_LIBRARY=${libdir}/iio.framework/Versions/0.23/iio \
+        -DLibAD9361_INCLUDE_DIR=${libdir}/ad9361.framework/Versions/0.2/Headers/ \
+        -DLibAD9361_LIBRARY=${libdir}/ad9361.framework/Versions/0.2/ad9361 \
         ..
     make -j${nproc}
     make install
