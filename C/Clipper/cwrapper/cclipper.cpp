@@ -319,4 +319,51 @@ extern "C"
             }
         }
     }
+    DLL_PUBLIC void CDECL minkowski_sum(
+        const ClipperLib::IntPoint *path1, size_t n1,
+        const ClipperLib::IntPoint *path2, size_t n2,
+        void *outputArray,
+        void (*append)(void *array, size_t idx, ClipperLib::IntPoint pt),
+        bool is_closed)
+    {
+        ClipperLib::Path p1 = ClipperLib::Path(), p2 = ClipperLib::Path();
+        ClipperLib::Paths s = ClipperLib::Paths();
+        for(size_t i = 0; i < n1; i++) {
+            p1.emplace(p1.end(), path1[i].X, path1[i].Y);
+        }
+        for(size_t i = 0; i < n2; i++) {
+            p2.emplace(p2.end(), path2[i].X, path2[i].Y);
+        }
+
+        ClipperLib::MinkowskiSum(p1, p2, s, is_closed);
+
+        for(size_t i = 0; i < s.size(); i++) {
+            for (auto &point: s[i]) {
+                append(outputArray, i, point);
+            }
+        }
+    }
+    DLL_PUBLIC void CDECL minkowski_difference(
+        const ClipperLib::IntPoint *path1, size_t n1,
+        const ClipperLib::IntPoint *path2, size_t n2,
+        void *outputArray,
+        void (*append)(void *array, size_t idx, ClipperLib::IntPoint pt))
+    {
+        ClipperLib::Path p1 = ClipperLib::Path(), p2 = ClipperLib::Path();
+        ClipperLib::Paths s = ClipperLib::Paths();
+        for(size_t i = 0; i < n1; i++) {
+            p1.emplace(p1.end(), path1[i].X, path1[i].Y);
+        }
+        for(size_t i = 0; i < n2; i++) {
+            p2.emplace(p2.end(), path2[i].X, path2[i].Y);
+        }
+
+        ClipperLib::MinkowskiDiff(p1, p2, s);
+
+        for(size_t i = 0; i < s.size(); i++) {
+            for (auto &point: s[i]) {
+                append(outputArray, i, point);
+            }
+        }
+    }
 }
