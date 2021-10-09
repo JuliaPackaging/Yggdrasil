@@ -24,7 +24,7 @@ platforms = supported_platforms();
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libluajit", :libluajit, "usr/local/lib"),
+    LibraryProduct("libluajit-5.1", :libluajit, "usr/local/lib"),
     ExecutableProduct("luajit-2.1.0-beta3", :luajit, "usr/local/bin")
 ]
 
