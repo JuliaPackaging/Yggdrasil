@@ -21,12 +21,10 @@ mkdir -p $WORKSPACE/destdir/shared/licenses
 if [ "$(uname)" == "Darwin" ]; then
     make lib/libwigxjpf_shared.dylib
     cp lib/libwigxjpf_shared.dylib $WORKSPACE/destdir/lib/  
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    make lib/libwigxjpf_shared.so
-    cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/bin/libwigxjpf_shared.dll
 else
     make lib/libwigxjpf_shared.so
     cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/lib/
+    cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/bin/libwigxjpf_shared.dll
 fi
 
 cp README $WORKSPACE/destdir/shared/licenses/LICENSE
