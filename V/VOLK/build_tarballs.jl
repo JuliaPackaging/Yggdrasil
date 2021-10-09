@@ -18,6 +18,10 @@ cd $WORKSPACE/srcdir/volk-*
 if [[ ${target} == *-freebsd* ]]; then
     #this is not in 0.6.0 release, but has been added on master, can probably remove after next release
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/add-freebsd-macros.patch"
+elif [[ ${target} == x86_64-w64-mingw* ]]; then
+    #disable avx512 on x86_64-mingw to avoid "Error: invalid register for .seh_savexmm". This is not needed on i686-mingw for some reason?
+    #copied from https://github.com/xianyi/OpenBLAS/issues/1801 
+    export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
 fi
 
 mkdir build
