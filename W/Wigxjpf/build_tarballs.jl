@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/wigxjpf-1.11
 
 mkdir -p $WORKSPACE/destdir/lib
+mkdir -p $WORKSPACE/destdir/bin
 mkdir -p $WORKSPACE/destdir/shared/licenses
 
 if [[ $(uname) == "Darwin" ]]
@@ -23,7 +24,12 @@ then
     cp lib/libwigxjpf_shared.dylib $WORKSPACE/destdir/lib/
 else
     make lib/libwigxjpf_shared.so
-    cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/lib/
+    if [[ $(uname) == "Linux" ]]
+    then
+        cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/lib/
+    else
+        cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/bin/
+    fi
 fi
 
 cp README $WORKSPACE/destdir/shared/licenses/LICENSE
