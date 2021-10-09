@@ -7,7 +7,7 @@ version = v"2.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/LuaJIT/LuaJIT/archive/refs/heads/v$(version).zip", "9f06038cc7b74672a479cbbfc4a7560ea35b2776fffa85358de4e2fbbb3d6dfe")
+    ArchiveSource("https://github.com/LuaJIT/LuaJIT/archive/refs/heads/v2.1.zip", "9f06038cc7b74672a479cbbfc4a7560ea35b2776fffa85358de4e2fbbb3d6dfe")
 ]
 
 # Bash recipe for building across all platforms
