@@ -9,7 +9,7 @@ version = v"0.1.0"
 sources = [
     GitSource(
         "https://github.com/scipopt/papilo.git",
-        "8f6c96e8926e258e1012a14b2d2815ce947dd18e",
+        "090151047d383a4f5031548f5b199f3a46676ec1",
     ),
 ]
 
