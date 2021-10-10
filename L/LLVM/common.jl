@@ -411,7 +411,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if name == "libLLVM"
         script = libllvmscript
         products = [
-            LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
             ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ]
     elseif name == "Clang"
