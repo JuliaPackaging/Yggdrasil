@@ -62,7 +62,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    Dependency("boost_jll"; compat="=1.76.0")
     HostBuildDependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
 ]
 
