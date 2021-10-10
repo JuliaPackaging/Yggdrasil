@@ -367,7 +367,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
-        LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+        LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ExecutableProduct("clang", :clang, "tools"),
