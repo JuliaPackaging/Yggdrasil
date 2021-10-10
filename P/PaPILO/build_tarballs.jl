@@ -23,7 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 make
-make install
+cp bin/papilo ${prefix}/bin/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,7 +32,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("papilo-executable", :papilo),
+    ExecutableProduct("papilo", :papilo),
 ]
 
 # Dependencies that must be installed before this package can be built
