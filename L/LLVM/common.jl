@@ -94,6 +94,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
 fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    ninja -j${nproc} mlir-linalg-ods-yaml-gen
+fi
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -184,6 +187,9 @@ CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
 fi
 
 # Explicitly use our cmake toolchain file
