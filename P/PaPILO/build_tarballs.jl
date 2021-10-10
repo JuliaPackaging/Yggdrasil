@@ -32,7 +32,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("papilo", :papilo),
+    ExecutableProduct("papilo-executable", :papilo),
 ]
 
 # Dependencies that must be installed before this package can be built
