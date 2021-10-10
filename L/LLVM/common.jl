@@ -81,10 +81,11 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt')
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
@@ -124,10 +125,11 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;lld;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;lld')
 fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt')
 CMAKE_FLAGS+=(-DLLVM_TOOL_CLANG_TOOLS_EXTRA_BUILD=OFF)
 
 # We want a build with no bindings
