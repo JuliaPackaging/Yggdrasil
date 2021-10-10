@@ -30,6 +30,10 @@ cp bin/papilo ${prefix}/bin/
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+filter!(platforms) do p
+    !occursin("arm", arch(p)) && !occursin("windows", p.tags["os"]) && libc(p) != "musl"
+end
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("papilo", :papilo),
