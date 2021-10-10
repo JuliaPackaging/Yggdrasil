@@ -219,6 +219,10 @@ if [[ "${target}" == *apple* ]]; then
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
     fi
+
+    if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+        CMAKE_FLAGS+=(-DLLVM_HAVE_LIBXAR=OFF)
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
