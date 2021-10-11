@@ -6,7 +6,7 @@ version = v"0.1.1"
 # Collection of sources required to build NLopt
 sources = [
     GitSource("https://github.com/eco-hydro/nlminb.f.git",
-              "6b2d460b866911e8bfca32b1217c08fb78c3111f"), # v0.1.0
+              "4d8d42e4b03629cacf4d7531b4d496f44261d18f"), # v0.1.1
 ]
 
 # Bash recipe for building across all platforms
@@ -18,13 +18,9 @@ if [[ "${proc_family}" == "intel" ]]; then
     FLAGS="-mfpmath=sse -msse2 -mstackrealign"
 fi
 
-CFLAGS="-fPIC -DNDEBUG  -Iinclude -O2 -Wall -std=gnu99 ${FLAGS}"
-FFLAGS="-fPIC -fno-optimize-sibling-calls -O2 ${FLAGS}"
-
-gfortran ${FFLAGS} -c src/portsrc.f -o src/portsrc.o 
-gfortran ${FFLAGS} -c src/d1mach.f -o src/d1mach.o 
-gcc ${CFLAGS} -c src/port2.c -o src/port.o
-gfortran -shared -static-libgcc -lm -o ${libdir}/libnlminb.${dlext} src/portsrc.o src/d1mach.o src/port.o -lopenblas
+CFLAGS="-fPIC -DNDEBUG  -Iinclude -O2 -Wall -std=gnu99 ${FLAGS}" \
+    FFLAGS="-fPIC -fno-optimize-sibling-calls -O2 ${FLAGS}" \
+    target=${libdir}/libnlminb.${dlext} make
 """
 
 # These are the platforms we will build for by default, unless further
