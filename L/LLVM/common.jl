@@ -14,6 +14,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
+    v"13.0.0" => "6ced34d2b63487a88184c3c468ceda166d10abba", # julia-13.0.0-0
 )
 
 const buildscript = raw"""
@@ -80,9 +81,9 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -92,6 +93,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 popd
 
@@ -123,11 +127,11 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld')
 fi
-CMAKE_FLAGS+=(-DLLVM_TOOL_CLANG_TOOLS_EXTRA_BUILD=OFF)
+# CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt')
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
@@ -184,6 +188,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
 fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
+fi
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
@@ -211,6 +218,10 @@ if [[ "${target}" == *apple* ]]; then
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
+    fi
+
+    if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+        CMAKE_FLAGS+=(-DLLVM_HAVE_LIBXAR=OFF)
     fi
 fi
 
@@ -356,7 +367,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
-        LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+        LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ExecutableProduct("clang", :clang, "tools"),
@@ -366,9 +377,11 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
+    if version == v"12"
+        push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
+    end
     if version >= v"12"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
-        push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
     end
 
@@ -398,7 +411,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if name == "libLLVM"
         script = libllvmscript
         products = [
-            LibraryProduct(["LLVM", "libLLVM"], :libllvm, dont_dlopen=true),
+            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
             ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ]
     elseif name == "Clang"
