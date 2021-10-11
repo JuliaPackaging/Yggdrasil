@@ -383,6 +383,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
+        push!(products, ExecutableProduct("lld", :lld, "bin"))
     end
 
     name = "LLVM_full"
@@ -435,6 +436,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         ]
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+        end
+        if version >= v"12"
+            push!(products, ExecutableProduct("lld", :lld, "bin"))
         end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
