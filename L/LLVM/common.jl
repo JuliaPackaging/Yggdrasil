@@ -373,6 +373,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         ExecutableProduct("clang", :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
+        ExecutableProduct("lld", :lld, "bin"),
     ]
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
@@ -432,6 +433,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
+            ExecutableProduct("lld", :lld, "bin"),
         ]
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
