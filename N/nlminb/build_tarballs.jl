@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/nlminb.f
 if [[ "${proc_family}" == "intel" ]]; then
     FLAGS="-mfpmath=sse -msse2 -mstackrealign"
 fi
+
 CFLAGS="-fPIC -DNDEBUG  -Iinclude -O2 -Wall -std=gnu99 ${FLAGS}"
 FFLAGS="-fPIC -fno-optimize-sibling-calls -O2 ${FLAGS}"
 
@@ -38,7 +39,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
