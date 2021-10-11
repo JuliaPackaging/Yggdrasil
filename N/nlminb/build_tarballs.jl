@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "nlminb"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build NLopt
 sources = [
-    GitSource("https://github.com/geo-julia/nlminb.f.git",
+    GitSource("https://github.com/eco-hydro/nlminb.f.git",
               "6b2d460b866911e8bfca32b1217c08fb78c3111f"), # v0.1.0
 ]
 
@@ -38,7 +38,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("OpenBLAS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
