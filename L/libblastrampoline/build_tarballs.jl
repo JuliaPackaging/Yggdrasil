@@ -37,7 +37,6 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.6",
                init_block = """
                 @static if VERSION < v"1.7.0-DEV.641"
-                    using Libdl
                     ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32),
                            Libdl.dlpath(Base.libblas_name) , 1, 0)
                 end
