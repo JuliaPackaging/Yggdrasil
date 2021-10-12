@@ -1,6 +1,7 @@
 name = "MLIR"
-llvm_full_version = v"12.0.1+2"
-libllvm_version = v"12.0.1+2"
+llvm_full_version = v"12.0.1+4"
+libllvm_version = v"12.0.1+4"
+
 
 # Include common LLVM stuff
 include("../common.jl")

@@ -1,5 +1,8 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
+# FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
+ENV["GODEBUG"] = "http2client=0"
+
 verbose = "--verbose" in ARGS
 
 # Read in input `.json` file
@@ -125,7 +128,7 @@ mktempdir() do download_dir
 
     if !skip_build
         # Upload the tarballs to GitHub releases
-        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
+        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose, ncpu=8)
     end
 end
 
