@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/modflow6
 # lower the minimum required meson version
 sed -i s/0.59.0/0.58.0/ meson.build
 
-meson --debug=false --optimization=2 --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
+meson -Ddebug=false -Doptimization=2 --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
 meson compile -C builddir -j${nproc}
 meson install -C builddir
 """
