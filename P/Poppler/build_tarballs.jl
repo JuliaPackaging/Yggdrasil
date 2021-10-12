@@ -63,13 +63,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Cairo_jll"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("Fontconfig_jll"),
     # Dependency("GTK3_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("JpegTurbo_jll"),
-    # TODO: v4.3.0 is available, use that next time
-    Dependency("Libtiff_jll"; compat="4.1.0"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("OpenJpeg_jll"),
     # Dependency("gdk_pixbuf_jll"),
     Dependency("libpng_jll"),
