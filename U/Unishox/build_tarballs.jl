@@ -10,7 +10,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Unishox-1.0.0
 mkdir -p "${libdir}"
-gcc -o ${libdir}/libunishox.${dlext} unishox2.c -shared -std=gnu11 -Werror -Wall -Wcast-align -Wpointer-arith -Wformat-security -Wmissing-format-attribute -W -Wno-error=format-nonliteral 
+gcc -o ${libdir}/libunishox.${dlext} unishox2.c -shared -std=gnu11 -fPIC -Werror -Wall -Wcast-align -Wpointer-arith -Wformat-security -Wmissing-format-attribute -W -Wno-error=format-nonliteral 
 
 """
 
@@ -24,4 +24,4 @@ products = [
 dependencies = [
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
