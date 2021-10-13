@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Clipper"
-version = v"6.4.2"
+version = v"6.4.3"
 
 # Collection of sources required to build Clipper
 sources = [
