@@ -10,30 +10,30 @@ sources = [
     GitSource("https://github.com/mlabbe/nativefiledialog.git", "67345b80ebb429ecc2aeda94c478b3bcc5f7888e")
 ]
 
-# Bash recipe for building across all platforms
-script = raw"""
+# Bash recipes for building across all platforms
+script_gtk = raw"""
 cd $WORKSPACE/srcdir
 cd nativefiledialog/src/
-gcc nfd_common.c nfd_gtk.c -Iinclude $(pkg-config --cflags --libs gtk+-3.0) -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o libnfd.so
+gcc nfd_common.c nfd_gtk.c -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o libnfd.so
+mv libnfd.so ${prefix}/lib/
+"""
+
+script_win = raw"""
+cd $WORKSPACE/srcdir
+cd nativefiledialog/src/
+g++ nfd_common.c nfd_win.cpp -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o libnfd.dll
+mv libnfd.so ${prefix}/lib/
+"""
+script_mac = raw"""
+cd $WORKSPACE/srcdir
+cd nativefiledialog/src/
+clang nfd_cocoa.m nfd_common.c -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o libnfd.dylib
 mv libnfd.so ${prefix}/lib/
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
