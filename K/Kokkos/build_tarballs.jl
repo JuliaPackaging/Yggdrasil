@@ -19,9 +19,10 @@ OPENMP_FLAG=()
 
 #inspired by https://github.com/JuliaPackaging/Yggdrasil/blob/b15a45949bf007072af7a2f335fe6e49165f7627/E/Entwine/build_tarballs.jl#L31-L40
 if [[ ${target} == *-linux-musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-disable-stacktrace-macro.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
 
 elif [[  ${target} == *-mingw*  ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
 
 elif [[  ${target} == *-apple-*  ]]; then
