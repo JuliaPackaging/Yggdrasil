@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "e62794b7bd3b7c34fca5364017c278e116abc1ab"),
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "0e6de1bab447381b7fdf42c3c414caa6ed2a8f88"),
     #= ArchiveSource("https://www.mathematik.uni-kl.de/~ederc/msolve-0.1.2.tar.gz", "ce6454b28477cb3b5670042faf7b3282e234fe1e0ee5a62c184d0512ef4126e1") =#
 ]
 
