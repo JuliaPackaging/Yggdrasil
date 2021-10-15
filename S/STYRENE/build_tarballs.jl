@@ -14,11 +14,9 @@ sources = [
 script = raw"""
 mkdir -p $bindir
 cd $WORKSPACE/srcdir/styrene/blackbox/surrogate
-make COMPILATOR="c++" LIBS="-lm" EXE="surrogate"
-cp "surrogate${exeext}" "${bindir}/surrogate${exeext}"
+make COMPILATOR="c++" LIBS="-lm" EXE="${bindir}/surrogate${exeext}"
 cd $WORKSPACE/srcdir/styrene/blackbox/truth
-make COMPILATOR="c++" LIBS="-lm" EXE="truth"
-cp "truth${exeext}" "${bindir}/truth${exeext}"
+make COMPILATOR="c++" LIBS="-lm" EXE="${bindir}/truth${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
