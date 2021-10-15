@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.0.1"
+version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/nomad.git","f6a4b4f18111372e3e7190b019e76ed86b915ddc"),
+    GitSource("https://github.com/bbopt/nomad.git","89234cb599530c76d336be3485841b0ac84175a6"),
     DirectorySource("./bundled"),
 ]
 
