@@ -1,0 +1,235 @@
+From d1e3897c55c011090bf543a5127d4edbca52a148 Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Fri, 15 Oct 2021 00:24:21 +0200
+Subject: [PATCH] Revert "Allow disabling of dependency tracking."
+
+This reverts commit fe2ab3e641bed5a77c4c221663c92ecaf308c79a.
+---
+ Makefile.in      | 42 +++++++++++++++++++++---------------------
+ Makefile.subdirs | 24 +++++++-----------------
+ configure        |  8 +-------
+ 3 files changed, 29 insertions(+), 45 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 1c3c43ba0..ee0894f6f 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -68,8 +68,8 @@ verbose:
+ 	$(MAKE) AT= QUIET_CC= QUIET_CXX= QUIET_AR=
+ 
+ clean:
+-	$(AT)$(foreach dir, $(BUILD_DIRS), WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) clean || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), BUILD_DIR=$(CURDIR)/build/$(dir); WANTDEPS=$(WANT_DEPS); export WANTDEPS; export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) clean || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) clean || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) clean || exit $$?;))
+ 	rm -rf test_helpers.o profiler.o
+ 	rm -f $(OBJS) $(LOBJS) $(TESTS) $(PROFS) $(EXMPS)
+ 	rm -f libflint.a
+@@ -88,17 +88,17 @@ profile: library $(PROF_SOURCES) $(EXT_PROF_SOURCES) build/profiler.o
+ 	mkdir -p build/profile
+ ifndef MOD
+ 	$(AT)$(foreach prog, $(PROFS), $(CC) $(CFLAGS) -std=gnu99 $(INCS) $(prog).c build/profiler.o -o build/$(prog) $(LIBS) || exit $$?;)
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/profile; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) profile || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir)/profile; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) profile || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/profile; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) profile || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir)/profile; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) profile || exit $$?;))
+ else
+-	$(AT)$(foreach dir, $(MOD), mkdir -p build/$(dir)/profile; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) profile || exit $$?;)
++	$(AT)$(foreach dir, $(MOD), mkdir -p build/$(dir)/profile; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) profile || exit $$?;)
+ endif
+ 
+ tune: library $(TUNE_SOURCES) $(EXT_TUNE_SOURCES)
+ 	mkdir -p build/tune
+ 	$(AT)$(foreach prog, $(TUNE), $(CC) $(CFLAGS) $(INCS) $(prog).c -o build/$(prog) $(LIBS) || exit $$?;)
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/tune; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) tune || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/tune; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) tune || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/tune; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) tune || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/tune; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) tune || exit $$?;))
+ 
+ examples: library $(EXMP_SOURCES) $(EXT_EXMP_SOURCES) $(EXT_HEADERS)
+ 	mkdir -p build/examples
+@@ -106,8 +106,8 @@ examples: library $(EXMP_SOURCES) $(EXT_EXMP_SOURCES) $(EXT_HEADERS)
+ 	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach prog, $(patsubst $(ext)/examples/%.c, %, $(wildcard $(ext)/examples/*.c)), $(CC) $(CFLAGS) $(INCS) $(ext)/examples/$(prog).c -o build/examples/$(prog) $(LIBS) || exit $$?;))
+ 
+ $(FLINT_LIB): $(LOBJS) $(LIB_SOURCES) $(EXT_SOURCES) $(HEADERS) $(EXT_HEADERS) | build build/interfaces
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir); WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) shared || exit $$?;))
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir); WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) shared || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir); BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) shared || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir); BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) shared || exit $$?;)
+ 	$(AT)if [ "$(WANT_NTL)" -eq "1" ]; then \
+ 	  $(MAKE) build/interfaces/NTL-interface.lo; \
+ 	  $(CXX) $(CXXFLAGS) $(ABI_FLAG) -shared $(EXTRA_SHARED_FLAGS) build/interfaces/NTL-interface.lo $(LOBJS) $(MOD_LOBJS) $(EXT_OBJS) -o $(FLINT_LIB) $(LDFLAGS) $(LIBS2); \
+@@ -122,8 +122,8 @@ $(FLINT_LIB): $(LOBJS) $(LIB_SOURCES) $(EXT_SOURCES) $(HEADERS) $(EXT_HEADERS) |
+ 	ln -sf "$(FLINT_LIB)" "$(FLINT_LIBNAME).$(FLINT_MAJOR)"; \
+ 
+ libflint.a: $(OBJS) $(LIB_SOURCES) $(EXT_SOURCES) $(HEADERS) $(EXT_HEADERS) | build build/interfaces
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir); WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) static || exit $$?;))
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir); WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) static || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(filter-out %templates, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h))), mkdir -p build/$(dir); BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) static || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir); BUILD_DIR=../build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) static || exit $$?;)
+ 	$(AT)if [ "$(FLINT_SHARED)" -eq "0" ]; then \
+ 		touch test/t-*.c; \
+ 		$(foreach dir, $(BUILD_DIRS), touch $(dir)/test/t-*.c;) \
+@@ -150,8 +150,8 @@ shared: $(FLINT_LIB)
+ static: libflint.a
+ 
+ tests: library test_helpers.o $(TESTS)
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) tests || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) tests || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) tests || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) tests || exit $$?;))
+ 	mkdir -p build/interfaces/test
+ 	$(AT)if [ "$(WANT_NTL)" -eq "1" ]; then \
+ 		$(MAKE) build/interfaces/test/t-NTL-interface$(EXEEXT); \
+@@ -162,7 +162,7 @@ define test_mod
+ 	$(eval dir := $(firstword $(vl)))
+ 	$(eval uset_tests :=$(wordlist 2,$(words $(vl)),$(vl)))
+ 	$(eval USER_SET_TESTS_VAR := USER_SET_TESTS=$(uset_tests))
+-	$(AT)test ! -d $(dir) || mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; test ! -d $(dir)  || $(MAKE) $(USER_SET_TESTS_VAR) -f ../Makefile.subdirs -C $(dir) check
++	$(AT)test ! -d $(dir) || mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; test ! -d $(dir)  || $(MAKE) $(USER_SET_TESTS_VAR) -f ../Makefile.subdirs -C $(dir) check
+ endef
+ 
+ define test_mod_ext
+@@ -171,16 +171,16 @@ define test_mod_ext
+ 	$(eval dir := $(firstword $(vl)))
+ 	$(eval uset_tests :=$(wordlist 2,$(words $(vl)),$(vl)))
+ 	$(eval USER_SET_TESTS_VAR := USER_SET_TESTS=$(uset_tests))
+-	$(AT)MOD_DIR=$(dir); export MOD_DIR; test ! -d $(ext)/$(dir) || mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; test ! -d $(ext)/$(dir) || $(MAKE) $(USER_SET_TESTS_VAR) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) check
++	$(AT)MOD_DIR=$(dir); export MOD_DIR; test ! -d $(ext)/$(dir) || mkdir -p build/$(dir)/test; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; test ! -d $(ext)/$(dir) || $(MAKE) $(USER_SET_TESTS_VAR) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) check
+ endef
+ 
+ check: LDFLAGS:=$(LDFLAGS) -Wl,-rpath,$(GMP_LIB_DIR) -Wl,-rpath,$(MPFR_LIB_DIR) -Wl,-rpath,$(CURDIR)
+ check: library test_helpers.o
+ ifndef MOD
+ 	$(AT)$(MAKE) $(TESTS)
+-	$(AT)(WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=build; export BUILD_DIR; $(MAKE) -f Makefile.subdirs -C . check || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) check || exit $$?;))
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) check || exit $$?;)
++	$(AT)(BUILD_DIR=build; export BUILD_DIR; $(MAKE) -f Makefile.subdirs -C . check || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) check || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) check || exit $$?;)
+ 	mkdir -p build/interfaces/test
+ 	$(AT)if [ "$(WANT_NTL)" -eq "1" ]; then \
+ 		$(MAKE) build/interfaces/test/t-NTL-interface$(EXEEXT); \
+@@ -193,10 +193,10 @@ endif
+ 
+ valgrind: library
+ ifndef MOD
+-	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) valgrind || exit $$?;)
+-	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) valgrind || exit $$?;))
++	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) valgrind || exit $$?;)
++	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) valgrind || exit $$?;))
+ else
+-	$(AT)$(foreach dir, $(MOD), mkdir -p build/$(dir)/test; WANTDEPS=$(WANT_DEPS); export WANTDEPS; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) valgrind || exit $$?;)
++	$(AT)$(foreach dir, $(MOD), mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) valgrind || exit $$?;)
+ endif
+ 
+ install: library
+diff --git a/Makefile.subdirs b/Makefile.subdirs
+index 0fbc73364..a4792e1e4 100644
+--- a/Makefile.subdirs
++++ b/Makefile.subdirs
+@@ -2,18 +2,8 @@ ifeq ($(strip $(VERBOSE)),)
+ 	QUIET_CC  = @echo '   ' CC  ' ' $@;
+ 	QUIET_CXX = @echo '   ' CXX ' ' $@;
+ else
+-	QUIET_CC  = ;
+-	QUIET_CXX = ;
+-endif
+-
+-ifeq ($(WANTDEPS), 1)
+-	DEPFLAGS1 = -MMD -MP -MF $@.d -MT "$@" -MT "$@.d";
+-	DEPFLAGS2 = -MMD -MP -MF "$(BUILD_DIR)/$(MOD_DIR)_$*.d" -MT "$(BUILD_DIR)/$(MOD_DIR)_$*.d" -MT "$@";
+-	DEPFLAGS3 = -MMD -MP -MF "$(BUILD_DIR)/$*.d" -MT "$(BUILD_DIR)/$*.d" -MT "$@";
+-else
+-    DEPFLAGS1 = ; 
+-    DEPFLAGS2 = ;
+-    DEPFLAGS3 = ;
++	QUIET_CC  =
++	QUIET_CXX =
+ endif
+ 
+ AT=@
+@@ -64,7 +54,7 @@ profile: $(PROFS)
+ -include $(patsubst %, %.d, $(PROFS))
+ 
+ $(BUILD_DIR)/profile/%$(EXEEXT): profile/%.c $(BUILD_DIR)/../profiler.o
+-	$(QUIET_CC) $(CC) $(CFLAGS) -std=gnu99 $(INCS) $< $(BUILD_DIR)/../profiler.o -o $@ $(LIBS) $(DEPFLAGS1)
++	$(QUIET_CC) $(CC) $(CFLAGS) -std=gnu99 $(INCS) $< $(BUILD_DIR)/../profiler.o -o $@ $(LIBS)  -MMD -MP -MF $@.d -MT "$@" -MT "$@.d"
+ 
+ tune: $(TUNE_SOURCES) $(HEADERS)
+ 	$(AT)$(foreach prog, $(TUNE), $(CC) $(CFLAGS) $(INCS) $(prog).c -o $(BUILD_DIR)/$(prog) $(LIBS) || exit $$?;)
+@@ -72,7 +62,7 @@ tune: $(TUNE_SOURCES) $(HEADERS)
+ -include $(OBJS:.o=.d)
+ 
+ $(BUILD_DIR)/$(MOD_DIR)_%.o: %.c
+-	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) -c $< -o $@ $(DEPFLAGS2)
++	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) -c $< -o $@ -MMD -MP -MF "$(BUILD_DIR)/$(MOD_DIR)_$*.d" -MT "$(BUILD_DIR)/$(MOD_DIR)_$*.d" -MT "$@"
+ 
+ $(MOD_LOBJ): $(LOBJS)
+ 	$(QUIET_CC) $(CC) $(ABI_FLAG) -r $^ -o $@ -nostdlib
+@@ -80,7 +70,7 @@ $(MOD_LOBJ): $(LOBJS)
+ -include $(LOBJS:.lo=.d)
+ 
+ $(BUILD_DIR)/%.lo: %.c
+-	$(QUIET_CC) $(CC) $(PIC_FLAG) $(CFLAGS) $(INCS) -c $< -o $@ $(DEPFLAGS3)
++	$(QUIET_CC) $(CC) $(PIC_FLAG) $(CFLAGS) $(INCS) -c $< -o $@ -MMD -MP -MF "$(BUILD_DIR)/$*.d" -MT "$(BUILD_DIR)/$*.d" -MT "$@"
+ 
+ clean:
+ 	rm -rf $(BUILD_DIR) $(MOD_LOBJ)
+@@ -98,10 +88,10 @@ $(BUILD_DIR)/test/%$(EXEEXT): $(BUILD_DIR)/../../libflint.a
+ endif
+ 
+ $(BUILD_DIR)/test/%$(EXEEXT): test/%.c $(BUILD_DIR)/../../test_helpers.o
+-	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) $(LDFLAGS) $< $(BUILD_DIR)/../../test_helpers.o -o $@ $(LIBS) $(DEPFLAGS1)
++	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) $(LDFLAGS) $< $(BUILD_DIR)/../../test_helpers.o -o $@ $(LIBS) -MMD -MP -MF $@.d -MT "$@" -MT "$@.d"
+ 
+ $(BUILD_DIR)/test/%$(EXEEXT): test/%.cpp $(BUILD_DIR)/../../test_helpers.o
+-	$(QUIET_CXX) $(CXX) $(CXXFLAGS) $(INCS) $(LDFLAGS) $< $(BUILD_DIR)/../../test_helpers.o -o $@ $(LIBS) $(DEPFLAGS1)
++	$(QUIET_CXX) $(CXX) $(CXXFLAGS) $(INCS) $(LDFLAGS) $< $(BUILD_DIR)/../../test_helpers.o -o $@ $(LIBS) -MMD -MP -MF $@.d -MT "$@" -MT "$@.d"
+ 
+ %_RUN: %
+ 	@$<
+diff --git a/configure b/configure
+index bc7a81a44..b261bec17 100755
+--- a/configure
++++ b/configure
+@@ -13,7 +13,6 @@ GC_DIR="/usr/local"
+ BLAS_DIR="/usr"
+ WANT_NTL=0
+ WANT_BLAS=0
+-WANT_DEPS=1
+ SHARED=1
+ STATIC=1
+ TLS=1
+@@ -94,7 +93,6 @@ usage()
+    echo "     --disable-assert     Disable use of asserts (default)"
+    echo "     --enable-cxx         Enable C++ wrapper tests"
+    echo "     --disable-cxx        Disable C++ wrapper tests (default)"
+-   echo "     --disable-dependency-tracking Disable gcc automated dependency tracking"
+    echo "     CC=<name>            Use the C compiler with the given name (default: gcc)"
+    echo "     CXX=<name>           Use the C++ compiler with the given name (default: g++)"
+    echo "     AR=<name>            Use the AR library builder with the given name (default: ar)"
+@@ -210,9 +208,6 @@ while [ "$1" != "" ]; do
+       --disable-cxx)
+          WANT_CXX=0
+          ;;
+-      --disable-dependency-tracking)
+-         WANT_DEPS=0
+-         ;; 
+       AR)
+          AR="$VALUE"
+          ;;
+@@ -851,8 +846,7 @@ echo "" >> Makefile
+ echo "EXTENSIONS=$EXTENSIONS" >> Makefile
+ echo "EXTRA_BUILD_DIRS=$EXTRA_BUILD" >> Makefile
+ echo "" >> Makefile
+-echo "WANT_DEPS=$WANT_DEPS" >> Makefile
+-echo "" >> Makefile
++
+ 
+ cat Makefile.in >> Makefile
+ 
+-- 
+2.33.0
+
