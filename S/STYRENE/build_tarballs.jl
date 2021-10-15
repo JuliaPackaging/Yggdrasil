@@ -14,10 +14,10 @@ sources = [
 script = raw"""
 mkdir -p $bindir
 cd $WORKSPACE/srcdir/styrene/blackbox/surrogate
-make COMPILATOR="c++" LIBS="-lm"
+make COMPILATOR="c++" LIBS="-lm" EXE="surrogate"
 cp "surrogate${exeext}" "${bindir}/surrogate${exeext}"
 cd $WORKSPACE/srcdir/styrene/blackbox/truth
-make COMPILATOR="c++" LIBS="-lm"
+make COMPILATOR="c++" LIBS="-lm" EXE="truth"
 cp "truth${exeext}" "${bindir}/truth${exeext}"
 """
 
