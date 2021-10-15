@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.7.0"
-
 name = "libcxxwrap_julia"
-version = v"0.8.7"
+version = v"0.8.8"
+
+julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/JuliaInterop/libcxxwrap-julia.git" : joinpath(ENV["HOME"], "src/julia/libcxxwrap-julia/")
@@ -35,7 +35,7 @@ install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -46,9 +46,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency("libjulia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"9", julia_compat = "^$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version = v"9", julia_compat = "1.6")
