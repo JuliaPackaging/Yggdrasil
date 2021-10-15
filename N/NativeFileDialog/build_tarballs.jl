@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "nativefiledialog"
+name = "NativeFileDialog"
 version = v"1.1.6"
 
 # Collection of sources required to complete build
