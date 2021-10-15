@@ -1,9 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, BinaryBuilderBase, Pkg
-
-include("../../fancy_toys.jl")
-
+using BinaryBuilder, Pkg
 
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
@@ -24,16 +21,18 @@ include("../../fancy_toys.jl")
 # to all components.
 
 name = "GAP"
-base_version = v"400.1190.200"
 upstream_version = v"4.12.0-dev"
+version = v"400.1191.000"
+
+julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to complete build
 sources = [
     # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "3c581ce4d4f9fb5cf68f963d2b71dd8b9f6cb349"),
+    GitSource("https://github.com/gap-system/gap.git", "401c797476b787e748a3890be4ce95ae4e5d52ae"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
-    DirectorySource("../bundled"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -83,34 +82,15 @@ cp gac sysinfo.gap ${prefix}/share/gap/
 # independent artifact to ship them to the user.
 """
 
-function configure(julia_version, libjulia_version)
-    # These are the platforms we will build for by default, unless further
-    # platforms are passed in on the command line
-    platforms = supported_platforms(; experimental=(julia_version > v"1.6"))
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+filter!(!Sys.iswindows, platforms)
 
-    # we only care about 64bit builds
-    filter!(p -> nbits(p) == 64, platforms)
+# we only care about 64bit builds
+filter!(p -> nbits(p) == 64, platforms)
 
-    # Windows is not supported
-    filter!(!Sys.iswindows, platforms)
-
-    # adjust the JLL version
-    global version = VersionNumber(base_version.major, base_version.minor, base_version.patch + julia_version.minor)
-
-    if julia_version >= v"1.6"
-        # add julia_version to platform tuple
-
-    #= disabled for now, until we have way to build versions of the JLL against
-       Julia dev versions
-
-        foreach(platforms) do p
-            BinaryPlatforms.add_tag!(p.tags, "julia_version", string(julia_version))
-        end
-=#
-    end
-
-    return platforms
-end
+# Windows is not supported
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -118,8 +98,18 @@ products = [
     LibraryProduct("libgap", :libgap),
 ]
 
-const init_block = """
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("GMP_jll"),
+    Dependency("Readline_jll"),
+    Dependency("Zlib_jll"),
+    BuildDependency("libjulia_jll"),
+]
+
+# Build the tarballs.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
 
     sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
     ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
-"""
+""")
