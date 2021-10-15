@@ -12,23 +12,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd nativefiledialog/src/
+cd $WORKSPACE/srcdir/nativefiledialog/src/
 if [[ "${target}" == *-mingw* ]]; then
-    $CXX nfd_common.c nfd_win.cpp -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o libnfd.dll
-    mv libnfd.dll ${libdir}
+    c++ nfd_common.c nfd_win.cpp -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o "${libdir}/libnfd.${dlext}"
 elif [[ "${target}" == *-apple* ]]; then
-    $CC nfd_cocoa.m nfd_common.c -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o libnfd.dylib
-    mv libnfd.dylib ${libdir}
+    cc nfd_cocoa.m nfd_common.c -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 else
-    $CC nfd_common.c nfd_gtk.c -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o libnfd.so
-    mv libnfd.so ${libdir}
+    cc nfd_common.c nfd_gtk.c -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 
 # The products that we will ensure are always built
