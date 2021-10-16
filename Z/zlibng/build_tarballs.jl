@@ -25,7 +25,7 @@ platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libz", :libz)
+    LibraryProduct(["libz", "libzlib1"], :libz)
 ]
 
 # Dependencies that must be installed before this package can be built
