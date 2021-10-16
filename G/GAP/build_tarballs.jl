@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP"
 upstream_version = v"4.12.0-dev"
-version = v"400.1191.000"
+version = v"400.1191.001"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
@@ -43,11 +43,25 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-# run autogen.sh if compiling from it source and/or if configure was patched
+# must run autogen.sh if compiling from git snapshot and/or if configure was patched;
+# it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
-# provide some generated code
-cp ${WORKSPACE}/srcdir/generated/c_*.c src/
+# compile a native version of GAP to generate c_oper1.c and c_type1.c
+mkdir native-build
+cd native-build
+rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/lib'
+../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --with-gmp=${host_prefix} \
+    --without-readline \
+    --with-zlib=${host_prefix} \
+    CC=${CC_BUILD} CXX=${CXX_BUILD}
+make -j${nproc}
+cp build/c_*.c ../src/
+cd ..
+
+# remove the native build, it has done its job
+rm -rf native-build
 
 # compile GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -100,6 +114,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # for the "native" build that generates c_oper1.c and c_type1.c
+    HostBuildDependency("GMP_jll"),
+    HostBuildDependency("Zlib_jll"),
+
     Dependency("GMP_jll"),
     Dependency("Readline_jll"),
     Dependency("Zlib_jll"),
