@@ -26,8 +26,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/d9f83182075b7e627dfbea4f86f7f8134c48a5a5/x86_64/alpine-minirootfs-3.12.8-x86_64.tar.gz"
-rootfs_hash = "1f4e8181c76727591323cb5c3a508898b7a41d16ace67b0f20858e0fd746e223"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/6046c206b93945695d9c3efedcafe629a327fd85/x86_64/alpine-minirootfs-3.14.2-x86_64.tar.gz"
+rootfs_hash = "4591f811a5515b13d60ab76f78bb8fd1cb9d9857a98cf7e2e5b200e89701e62c"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
