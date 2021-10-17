@@ -113,7 +113,7 @@ sources = [
               "a949ff23315bbb5863627c4655fe216ecbf341a2"),
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.59.2/meson-0.59.2.tar.gz",
-                  "3144a3da662fcf79f1e5602fa929f2821cba4eba28c2c923fe0a7d3e3db04d5d"),
+                  "13dee549a7ba758b7e33ce7719f28d1d337a98d10d378a4779ccc996f5a2fc49"),
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
