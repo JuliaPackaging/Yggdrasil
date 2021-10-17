@@ -7,7 +7,7 @@ version = v"1.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mlabbe/nativefiledialog.git", "67345b80ebb429ecc2aeda94c478b3bcc5f7888e"),
+    GitSource("https://github.com/mlabbe/nativefiledialog.git", "2850c97af02e6b4cce6ffb91a0445acb5eb9b241"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,13 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/nativefiledialog/src/
 if [[ "${target}" == *-mingw* ]]; then
-    c++ nfd_common.c nfd_win.cpp -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o "${libdir}/libnfd.${dlext}"
+    c++ nfd_common.c nfd_win.cpp -DNDEBUG -DUNICODE -D_UNICODE -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o "${libdir}/libnfd.${dlext}"
 elif [[ "${target}" == *-apple* ]]; then
-    # https://github.com/mlabbe/nativefiledialog/compare/mlabbe:67345b8...mlabbe:eb29acc
-    atomic_patch -p2 ../../patches/macos-focus-bugfix.patch
-    cc nfd_cocoa.m nfd_common.c -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
+    cc nfd_cocoa.m nfd_common.c -DNDEBUG -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 else
-    cc nfd_common.c nfd_gtk.c -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
+    # runtime gtk detection taken from https://github.com/btzy/nativefiledialog-extended/blob/master/src/nfd_gtk.cpp#L396-L403
+    atomic_patch -p2 ../../patches/runtime-gtk-detection.diff
+    cc nfd_common.c nfd_gtk.c -DNDEBUG -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 fi
 """
 
@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6"))
+    BuildDependency("GTK3_jll")
     BuildDependency("Xorg_xorgproto_jll")
 ]
 

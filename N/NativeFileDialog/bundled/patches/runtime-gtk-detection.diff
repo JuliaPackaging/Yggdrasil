@@ -1,0 +1,21 @@
+diff --git a/src/nfd_gtk.c b/src/nfd_gtk.c
+index cdb1305..406dd1d 100644
+--- a/src/nfd_gtk.c
++++ b/src/nfd_gtk.c
+@@ -230,6 +230,16 @@ ConfigureFocus(GtkWidget* dialog)
+ 
+ /* public */
+ 
++nfdresult_t
++NFD_Init(void) {
++    // Init GTK
++    if (!gtk_init_check(NULL, NULL)) {
++        NFDi_SetError(INIT_FAIL_MSG);
++        return NFD_ERROR;
++    }
++    return NFD_OKAY;
++}
++
+ nfdresult_t
+ NFD_OpenDialog(const nfdchar_t* filterList, const nfdchar_t* defaultPath, nfdchar_t** outPath)
+ {
