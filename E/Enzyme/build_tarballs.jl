@@ -6,11 +6,11 @@ include("../../fancy_toys.jl")
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.19"
+auto_version = "refs/tags/v0.0.20"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "cc89bab6a9872996af46332323b86283fca9d643")]
+sources = [GitSource(repo, "24310d2af63bdb8cfc12fdff509f30d372f64533")]
 
 # Bash recipe for building across all platforms
 script = raw"""
