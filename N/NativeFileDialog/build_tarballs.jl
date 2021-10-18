@@ -18,6 +18,10 @@ if [[ "${target}" == *-mingw* ]]; then
     c++ nfd_common.c nfd_win.cpp -DNDEBUG -DUNICODE -D_UNICODE -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o "${libdir}/libnfd.${dlext}"
 elif [[ "${target}" == *-apple* ]]; then
     cc nfd_cocoa.m nfd_common.c -DNDEBUG -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
+elif [[ "${target}" == *-linux-* && "${nbits}" == 32 ]]; then
+    # runtime gtk detection taken from https://github.com/btzy/nativefiledialog-extended/blob/master/src/nfd_gtk.cpp#L396-L403
+    atomic_patch -p2 ../../patches/32bit-linux-fix.diff
+    cc nfd_common.c nfd_gtk.c -D_FILE_OFFSET_BITS=64 -DNDEBUG -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 else
     # runtime gtk detection taken from https://github.com/btzy/nativefiledialog-extended/blob/master/src/nfd_gtk.cpp#L396-L403
     atomic_patch -p2 ../../patches/runtime-gtk-detection.diff
@@ -37,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("GTK3_jll")
+    Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6")) 
     BuildDependency("Xorg_xorgproto_jll")
 ]
 
