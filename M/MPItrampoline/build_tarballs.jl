@@ -22,13 +22,6 @@ script = raw"""
 # MPItrampoline
 ################################################################################
 
-# File suffix for shared libraries
-if [[ "${target}" == *-apple-* ]]; then
-    dlsuffix=dylib
-else
-    dlsuffix=so
-fi
-
 cd $WORKSPACE/srcdir/MPItrampoline-*
 mkdir build
 cd build
@@ -38,7 +31,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
-    -DMPITRAMPOLINE_DEFAULT_PRELOAD="@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpi.${dlsuffix}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpicxx.${dlsuffix}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpifort.${dlsuffix}" \
+    -DMPITRAMPOLINE_DEFAULT_PRELOAD="@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpi.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpicxx.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpifort.${dlext}" \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
@@ -135,7 +128,7 @@ mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries.
-if [ -f ${prefix}/lib/mpich/lib/libpmpi.${dlsuffix} ]; then
+if [ -f ${prefix}/lib/mpich/lib/libpmpi.${dlext} ]; then
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
@@ -146,10 +139,10 @@ if [ -f ${prefix}/lib/mpich/lib/libpmpi.${dlsuffix} ]; then
         -DMPI_Fortran_COMPILER=gfortran \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlsuffix} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlsuffix} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlsuffix} \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${dlsuffix} \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlext} \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlext} \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlext} \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${dlext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 else
@@ -163,9 +156,9 @@ else
         -DMPI_Fortran_COMPILER=gfortran \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlsuffix} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlsuffix} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlsuffix} \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlext} \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlext} \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 fi
