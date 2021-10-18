@@ -19,12 +19,10 @@ if [[ "${target}" == *-mingw* ]]; then
 elif [[ "${target}" == *-apple* ]]; then
     cc nfd_cocoa.m nfd_common.c -DNDEBUG -framework Foundation -framework AppKit -Iinclude -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 elif [[ "${target}" == *-linux-* && "${nbits}" == 32 ]]; then
-    # runtime gtk detection taken from https://github.com/btzy/nativefiledialog-extended/blob/master/src/nfd_gtk.cpp#L396-L403
+    # patch for old gcc in 32bit linux and other for musl
     atomic_patch -p2 ../../patches/32bit-linux-fix.diff
     cc nfd_common.c nfd_gtk.c -D_FILE_OFFSET_BITS=64 -DNDEBUG -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 else
-    # runtime gtk detection taken from https://github.com/btzy/nativefiledialog-extended/blob/master/src/nfd_gtk.cpp#L396-L403
-    atomic_patch -p2 ../../patches/runtime-gtk-detection.diff
     cc nfd_common.c nfd_gtk.c -DNDEBUG -Iinclude `pkg-config --cflags --libs gtk+-3.0` -O2 -Wall -Wextra -fno-exceptions -fPIC -shared -o "${libdir}/libnfd.${dlext}"
 fi
 """

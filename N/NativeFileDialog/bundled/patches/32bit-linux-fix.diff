@@ -28,20 +28,3 @@ index cdb1305..f356f58 100644
  static void
  AddTypeToFilterName(const char* typebuf, char* filterName, size_t bufsize)
  {
-@@ -230,6 +226,16 @@ ConfigureFocus(GtkWidget* dialog)
- 
- /* public */
- 
-+nfdresult_t
-+NFD_Init(void) {
-+    // Init GTK
-+    if (!gtk_init_check(NULL, NULL)) {
-+        NFDi_SetError(INIT_FAIL_MSG);
-+        return NFD_ERROR;
-+    }
-+    return NFD_OKAY;
-+}
-+
- nfdresult_t
- NFD_OpenDialog(const nfdchar_t* filterList, const nfdchar_t* defaultPath, nfdchar_t** outPath)
- {
