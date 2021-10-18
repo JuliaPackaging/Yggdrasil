@@ -201,6 +201,10 @@ products = [
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
+    # Note the `dont_dlopen=true` below. Without these, Julia would
+    # load these libraries automatically into the global namespace,
+    # conflicting with MPItrampoline. These settings are also why we
+    # can't reuse `MPICH_jll`.
     LibraryProduct("libmpi", :mpich_libmpi, ["lib/mpich/lib"]; dont_dlopen=true),
     LibraryProduct("libmpicxx", :mpich_libmpicxx, ["lib/mpich/lib"]; dont_dlopen=true),
     LibraryProduct("libmpifort", :mpich_libmpifort, ["lib/mpich/lib"]; dont_dlopen=true),
