@@ -189,7 +189,7 @@ platforms = supported_platforms(; experimental=true)
 # and thus does not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
 platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(p -> !Sys.isbsd(p) || Sys.isapple(p), platforms)
+platforms = filter(!Sys.isfreebsd, platforms)
 platforms = expand_gfortran_versions(platforms)
 # libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
 # could in principle build without Fortran support there.)
