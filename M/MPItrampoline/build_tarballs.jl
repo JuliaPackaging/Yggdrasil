@@ -9,7 +9,15 @@ version = v"2.0.0"
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v2.0.0.tar.gz",
                   "50d4483f73ea4a79a9b6d025d3abba42f76809cba3165367f4810fb8798264b6"),
+
     # TODO: Split MPICH and MPIwrapper out into a separate package
+    # Idea 1: Add a flag to MPItrampoline to not initialize itself
+    #     during initialization. Instead, something else must call
+    #     MPItrampoline's initialization function -- early enough,
+    #     i.e. still during load time.
+    # Idea 2: Don't be a plugin. Rely solely on ELF interposing and
+    #     RTLD_DEEPBIND. This would be really cool; think about it
+    #     more.
     ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.0.0.tar.gz",
@@ -165,6 +173,12 @@ fi
 
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
+# Install licenses
+################################################################################
+
+install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
