@@ -188,7 +188,8 @@ platforms = supported_platforms(; experimental=true)
 # musl: Does not define `RTLD_DEEPBIND` for `dlopen`.
 # BSD: Does not define `RTLD_DEEPBIND` for `dlopen`.
 # TODO: Check for which BSD systems this is (still) true.
-platforms = filter(p -> !(Sys.isbsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
+platforms = filter(p -> !Sys.isbsd(p) || Sys.isapple(p), platforms)
 platforms = expand_gfortran_versions(platforms)
 # libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
 # could in principle build without Fortran support there.)
