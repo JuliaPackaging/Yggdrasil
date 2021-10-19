@@ -32,17 +32,10 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-# filter!(p -> libc(p) != "musl", platforms)
-
+# platforms = supported_platforms(; experimental=true)
 platforms = supported_platforms()
-platforms = filter(p -> !(Sys.isbsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+platforms = filter(p -> !(Sys.isbsd(p) || libc(p) == "musl"), platforms)
 platforms = expand_cxxstring_abis(platforms)
-
 
 # The products that we will ensure are always built
 products = [
@@ -52,8 +45,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"))
-    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2")
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
+    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
