@@ -184,10 +184,10 @@ install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/m
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-# Windows: Does not have `dlopen`.
-# musl: Does not define `RTLD_DEEPBIND` for `dlopen`.
-# BSD: Does not define `RTLD_DEEPBIND` for `dlopen`.
-# TODO: Check for which BSD systems this is (still) true.
+
+# MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`,
+# and thus does not support musl or BSD.
+# FreeBSD: https://reviews.freebsd.org/D24841
 platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
 platforms = filter(p -> !Sys.isbsd(p) || Sys.isapple(p), platforms)
 platforms = expand_gfortran_versions(platforms)
