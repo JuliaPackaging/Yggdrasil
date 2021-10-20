@@ -89,7 +89,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+if [[ "${LLVM_MAJ_VER}" -gt "12" && "${LLVM_PATCH_VER}" -gt "0" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
@@ -110,7 +110,7 @@ CMAKE_C_FLAGS=""
 
 CMAKE_FLAGS=()
 
-# Release build for best perofrmance
+# Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${ASSERTS}" == "1" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS:BOOL=ON)
@@ -126,7 +126,7 @@ LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+if [[ "${LLVM_MAJ_VER}" -gt "12" && "${LLVM_PATCH_VER}" -gt "0" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld;mlir')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld')
@@ -184,11 +184,9 @@ fi
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "12" && "${LLVM_PATCH_VER}" -gt "0" ]]; then
     CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
-fi
-if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
 fi
 
@@ -353,14 +351,16 @@ rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 """
 
-function configure_build(ARGS, version; experimental_platforms=false, assert=false)
+function configure_build(ARGS, version; experimental_platforms=false, assert=false,
+                         git_path="https://github.com/JuliaLang/llvm-project.git",
+                         git_ver=llvm_tags[version], custom_version=version)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
         deleteat!(ARGS, findfirst(ARGS .== "--assert"))
     end
     sources = [
-        GitSource("https://github.com/JuliaLang/llvm-project.git", llvm_tags[version]),
+        GitSource(git_path, git_ver),
         DirectorySource("./bundled"),
     ]
 
@@ -377,17 +377,19 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
-    if v"12" <= version < v"13"
+    if v"12" < version < v"13"
         push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
     end
-    if version >= v"12"
+    if version >= v"12.0.1"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
+    end
+    if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "bin"))
     end
 
     name = "LLVM_full"
-    config = "LLVM_MAJ_VER=$(version.major)\n"
+    config = "LLVM_MAJ_VER=$(version.major)\nLLVM_MIN_VER=$(version.minor)\nLLVM_PATCH_VER=$(version.patch)\n"
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
@@ -397,7 +399,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     dependencies = Dependency[
         Dependency("Zlib_jll"), # for LLD&LTO
     ]
-    return name, version, sources, config * buildscript, platforms, products, dependencies
+    return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
 function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false)
