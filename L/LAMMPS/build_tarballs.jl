@@ -34,7 +34,14 @@ fi
 # platforms are passed in on the command line
 # platforms = supported_platforms(; experimental=true)
 platforms = supported_platforms()
-platforms = filter(p -> !(Sys.isbsd(p) || libc(p) == "musl"), platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
+
+# We need this since currently MPItrampoline_jll has a dependency on gfortran
+platforms = expand_gfortran_versions(platforms)
+# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
+# could in principle build without Fortran support there.)
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
