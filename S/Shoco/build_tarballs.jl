@@ -10,16 +10,8 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/shoco/
-if [[ ${target} == *apple* ]]; then
-    flag=-dynamiclib
-else
-    flag=-shared
-fi
-${CC} shoco.c -o libshoco.${dlext} -fPIC -std=c99 ${flag}
-if [ ! -d ${prefix}/lib ]; then
-    mkdir -p ${prefix}/lib
-fi
-cp libshoco.* ${prefix}/lib
+mkdir -p ${libdir}
+${CC} shoco.c -o "${libdir}/libshoco.${dlext}" -fPIC -std=c99 -shared
 """
 
 platforms = supported_platforms(; experimental=true)
