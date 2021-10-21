@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/shoco-*
+cd ${WORKSPACE}/srcdir/shoco/
 if [[ ${target} == *apple* ]]; then
     flag=-dynamiclib
 else
