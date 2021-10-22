@@ -2,7 +2,7 @@
 cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1
 
 # Download and extract the lib folders from our CompilerSupportLibraries_jll.jl releases
-CSL_VERSION="0.5.0+0"
+CSL_VERSION="0.5.1+0"
 for arch in i686 x86_64; do
     rm -rf glibc-${arch} musl-${arch}
     mkdir -p glibc-${arch} musl-${arch}
