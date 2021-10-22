@@ -29,7 +29,7 @@ make -j${nproc}
 rm -f ${prefix}/share/gap/GNUmakefile
 
 # copy the loadable module
-mkdir -p ${prefix}/lib/gap/
+mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
 install_license GPL

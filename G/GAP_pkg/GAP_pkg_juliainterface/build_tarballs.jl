@@ -24,7 +24,7 @@ cd GAP.jl/pkg/JuliaInterface
 make -j${nproc}
 
 # copy the loadable module
-mkdir -p ${prefix}/lib/gap/
+mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
 # copy the sources, too, so that we can later compare them
@@ -40,6 +40,9 @@ platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
 julia_platforms = []
 for p in platforms
     for jv in julia_versions
+        if jv == v"1.6.0" && Sys.isapple(p) && arch(p) == "aarch64"
+            continue
+        end
         p = deepcopy(p)
         BinaryPlatforms.add_tag!(p.tags, "julia_version", string(jv))
         push!(julia_platforms, p)
