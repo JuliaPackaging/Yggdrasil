@@ -88,7 +88,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 #see https://github.com/wxWidgets/wxWidgets/blob/master/docs/contributing/about-platform-toolkit-and-library-names.md for more info on naming
 products = [
     ExecutableProduct("wxrc-$(version.major).$(version.minor)", :wxrc),
-    LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom", "libwx_osx_cocoau_adv-$(version.major).$(version.minor).$(version.patch)"], :adv),
+    #LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom", "libwx_osx_cocoau_adv-$(version.major).$(version.minor).$(version.patch)"], :adv),
     LibraryProduct(["libwx_gtk3u_core-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_core_gcc_custom", "libwx_osx_cocoau_core-$(version.major).$(version.minor).$(version.patch)"], :core),
     LibraryProduct(["libwx_gtk3u_richtext-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_richtext_gcc_custom", "libwx_osx_cocoau_richtext-$(version.major).$(version.minor).$(version.patch)"], :richtext),
     LibraryProduct(["libwx_gtk3u_html-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_html_gcc_custom", "libwx_osx_cocoau_html-$(version.major).$(version.minor).$(version.patch)"], :html),
