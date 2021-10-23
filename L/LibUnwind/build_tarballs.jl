@@ -5,7 +5,7 @@ version = v"1.5.0"
 
 # XXX: The git tag for libunwind v1.5.0 is just v1.5 rather than v1.5.0. Check this
 # when updating to the next libunwind version.
-version_short = v"1.5"
+version_short = "v1.5"
 
 # Collection of sources required to build libffi
 sources = [
