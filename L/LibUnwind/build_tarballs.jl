@@ -1,11 +1,15 @@
 using BinaryBuilder
 
 name = "LibUnwind"
-version = v"1.3.2"
+version = v"1.5.0"
+
+# XXX: The git tag for libunwind v1.5.0 is just v1.5 rather than v1.5.0. Check this
+# when updating to the next libunwind version.
+version_short = v"1.5"
 
 # Collection of sources required to build libffi
 sources = [
-    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
+    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version_short)/libunwind-$(version).tar.gz",
                   "0a4b5a78d8c0418dfa610245f75fa03ad45d8e5e4cc091915d2dbed34c01178e"),
     DirectorySource("./bundled"),
 ]
