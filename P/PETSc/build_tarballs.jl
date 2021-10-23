@@ -73,7 +73,7 @@ build_petsc()
     
     make install
     # Sym link into the correct directory.
-    ln -s $libdir/petsc/${target}_${1}_${2}_${3}/lib/libpetsc.${dlext} $libdir/libpetsc_${target}_${1}_${2}_${3}.${dlext}
+    ln -s $libdir/petsc/${target}_${1}_${2}_${3}/lib/libpetsc.${dlext} $libdir/libpetsc_${1}_${2}_${3}.${dlext}
 }
 
 build_petsc double real Int32
