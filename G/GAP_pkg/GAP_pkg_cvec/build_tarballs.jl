@@ -22,7 +22,7 @@ cd cvec*
 make -j${nproc}
 
 # copy the loadable module
-mkdir -p ${prefix}/lib/gap/
+mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
 install_license LICENSE

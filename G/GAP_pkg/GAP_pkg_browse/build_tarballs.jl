@@ -29,7 +29,7 @@ make -j${nproc} CFLAGS="-I$prefix/include/ncurses"
 rm -f ${prefix}/share/gap/sysinfo.gap-default64
 
 # copy the loadable module
-mkdir -p ${prefix}/lib/gap/
+mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
 install_license /usr/share/licenses/GPL3
