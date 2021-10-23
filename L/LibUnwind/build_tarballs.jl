@@ -10,7 +10,7 @@ version_short = "1.5"
 # Collection of sources required to build libffi
 sources = [
     ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version_short)/libunwind-$(version).tar.gz",
-                  "0a4b5a78d8c0418dfa610245f75fa03ad45d8e5e4cc091915d2dbed34c01178e"),
+                  "90337653d92d4a13de590781371c604f9031cdb50520366aa1e3a91e1efb1017"),
     DirectorySource("./bundled"),
 ]
 
