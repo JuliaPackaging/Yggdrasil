@@ -24,7 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
 else
     MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
 fi
-
+mkdir $libdir/petsc
 build_petsc()
 {
 
@@ -33,8 +33,8 @@ build_petsc()
     else
         USE_INT64=0
     fi
-
-    ./configure --prefix=${prefix} \
+    mkdir $libdir/petsc/${target}_${1}_${2}_${3}
+    ./configure --prefix=${libdir}/petsc/${target}_${1}_${2}_${3} \
         CC=${CC} \
         FC=${FC} \
         CXX=${CXX} \
@@ -69,27 +69,15 @@ build_petsc()
         CPPFLAGS="${CPPFLAGS}" \
         CFLAGS="${CFLAGS}" \
         FFLAGS="${FFLAGS}" \
-        DEST_DIR="${prefix}" \
         all
-
-    make PETSC_DIR=$PWD PETSC_ARCH=${target}_${1}_${2}_${3} DEST_DIR=$prefix install
-
-    # add suffix to library name
-    if [[ "${target}" == *-mingw* ]]; then
-        # changing the extension from so to dll.
-        mv ${prefix}/lib/libpetsc.so.*.*.* "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
-    elif [[ "${target}" == *-apple* ]]; then
-        mv ${prefix}/lib/libpetsc.*.*.*.${dlext} "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
-    else
-        mv ${prefix}/lib/libpetsc.${dlext}.*.*.* "${libdir}/libpetsc_${1}_${2}_${3}.${dlext}"
-    fi
-    # Remove useless links
-    rm ${prefix}/lib/libpetsc.*
-    # Remove duplicated file
-    rm ${prefix}/lib/pkgconfig/PETSc.pc
+    
+    make install
+    # Sym link into the correct directory.
+    ln -s $libdir/petsc/${target}_${1}_${2}_${3}/lib/libpetsc.${dlext} $libdir/libpetsc_${target}_${1}_${2}_${3}.${dlext}
 }
 
 build_petsc double real Int32
+cp -a $libdir/petsc/x86_64-linux-gnu_double_real_Int32/include/*.h $includedir/
 build_petsc single real Int32
 build_petsc double complex Int32
 build_petsc single complex Int32
