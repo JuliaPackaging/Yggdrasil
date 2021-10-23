@@ -77,7 +77,7 @@ build_petsc()
 }
 
 build_petsc double real Int32
-cp -a $libdir/petsc/x86_64-linux-gnu_double_real_Int32/include/*.h $includedir/
+cp -a $libdir/petsc/${target}-gnu_double_real_Int32/include/*.h $includedir/
 build_petsc single real Int32
 build_petsc double complex Int32
 build_petsc single complex Int32
