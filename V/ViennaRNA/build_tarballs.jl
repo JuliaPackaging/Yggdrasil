@@ -32,7 +32,7 @@ export CC=cc
 export CXX=c++
 
 # help freebsd find include files for mpfr, gsl
-export CPPFLAGS="-I${WORKSPACE}/destdir/include/"
+export CPPFLAGS="-I${includedir}"
 
 # configure script fails (only in sandbox) without
 # setting ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
