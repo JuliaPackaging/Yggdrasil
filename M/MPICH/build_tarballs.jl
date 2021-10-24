@@ -18,16 +18,6 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
-# if [[ "${target}" == powerpc64le-* ]]; then
-    # I don't understand why, but the extra link flags we append in the gfortran
-    # wrapper confuse the build system: the rule to build libmpifort has an
-    # extra lone `-l` flag, without any library to link to.  The following sed
-    # script basically reverts
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
-    # extra link flags are not appended to the gfortran wrapper
-    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/${target}*/gfortran
-# fi
-
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
     # Define some obscure undocumented variables needed for cross compilation of
@@ -66,6 +56,13 @@ fi
     --with-device=ch3 --disable-dependency-tracking \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
+
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
 # Build the library
 make -j${nproc}
