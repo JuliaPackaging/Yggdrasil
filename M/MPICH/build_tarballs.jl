@@ -6,8 +6,8 @@ version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.2.0.tar.gz",
-                  "2e658150ffb895b70f1503b4d609460986bb9008fc2e72383102cbcc28535e7e"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.3.0.tar.gz",
+                  "1385ccaff34b2ae595ef169f7eb1f0362daff6db8ee13684ccc8436db1ee83d1"),
 ]
 
 script = raw"""
