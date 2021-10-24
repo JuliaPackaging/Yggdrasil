@@ -26,6 +26,8 @@ cp build/libkissat.${dlext} "$libdir/."
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # The products that we will ensure are always built
 products = Product[
+    ExecutableProduct("kissat", :kissat),
+    LibraryProduct("libkissat", :libkissat)
 ]
 
 # Dependencies that must be installed before this package can be built
