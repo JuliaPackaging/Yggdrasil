@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "CryptoMiniSat"
+name = "Kissat"
 version = v"5.8.0"
 
 # Collection of sources required to complete build
@@ -16,15 +16,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/kissat
 ./configure -shared
 make
-mkdir $libdir
-mkdir $bindir
-cp build/kissat $bindir
-cp build/libkissat.so $libdir
+mkdir -p ${libdir} ${bindir}
+cp build/kissat${exeext} ${bindir}/.
+cp build/libkissat.${dlext} "$libdir/."
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # The products that we will ensure are always built
 products = Product[
 ]
