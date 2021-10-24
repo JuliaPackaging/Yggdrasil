@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/kissat
 make
 mkdir -p ${libdir} ${bindir}
 cp build/kissat${exeext} ${bindir}/.
-cp build/libkissat.${dlext} "$libdir/."
+cp build/libkissat.so "$libdir/libkissat.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
