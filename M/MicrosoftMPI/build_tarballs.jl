@@ -52,7 +52,7 @@ cd ${WORKSPACE}/srcdir/MPIconstants*
 mkdir build
 cd build
 
-elif [[ "$target" == x86_64-w64-mingw32 ]]; then
+if [[ "$target" == x86_64-w64-mingw32 ]]; then
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH=${prefix} \
