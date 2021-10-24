@@ -80,7 +80,7 @@ fi
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
-install_license LICENSE.md
+install_license $WORKSPACE/srcdir/MPIconstants*/LICENSE.md
 """
 
 platforms = filter!(Sys.iswindows, supported_platforms())
