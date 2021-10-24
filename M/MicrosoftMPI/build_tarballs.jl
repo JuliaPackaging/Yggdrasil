@@ -51,37 +51,31 @@ mv *.txt *.rtf share/licenses/MicrosoftMPI
 cd ${WORKSPACE}/srcdir/MPIconstants*
 mkdir build
 cd build
-# # Yes, this is tedious. No, without being this explicit, cmake will
-# # not properly auto-detect the MPI libraries.
-# if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
-#     cmake \
-#         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#         -DCMAKE_FIND_ROOT_PATH=${prefix} \
-#         -DCMAKE_INSTALL_PREFIX=${prefix} \
-#         -DBUILD_SHARED_LIBS=ON \
-#         -DMPI_C_COMPILER=cc \
-#         -DMPI_C_LIB_NAMES='mpi;pmpi' \
-#         -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-#         -DMPI_pmpi_LIBRARY=${prefix}/lib/libpmpi.${dlext} \
-#         ..
-# else
-#     cmake \
-#         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#         -DCMAKE_FIND_ROOT_PATH=${prefix} \
-#         -DCMAKE_INSTALL_PREFIX=${prefix} \
-#         -DBUILD_SHARED_LIBS=ON \
-#         -DMPI_C_COMPILER=cc \
-#         -DMPI_C_LIB_NAMES='mpi' \
-#         -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-#         ..
-# fi
 
-cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBUILD_SHARED_LIBS=ON \
-    ..
+elif [[ "$target" == x86_64-w64-mingw32 ]]; then
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_HOME=$prefix \
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI \
+        -DMPI_C_LIBRARIES=msmpi64 \
+        -DMPI_CXX_LIBRARIES=msmpi64 \
+        -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' \
+        ..
+elif [[ "$target" == *-mingw* ]]; then
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_HOME=$prefix \
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI \
+        ..
+else
+    exit 1
+fi
 
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
