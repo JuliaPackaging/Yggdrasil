@@ -6,9 +6,15 @@ version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.0.0.tar.gz",
+                  "48bf7ae86c9a2dfdd9a2386ce5e0b22336c0eb381efb3e469e7ffee878b01937"),
 ]
 
 script = raw"""
+################################################################################
+# Install MPICH
+################################################################################
+
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
@@ -66,15 +72,60 @@ make -j${nproc}
 
 # Install the library
 make install
+
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+# Yes, this is tedious. No, without being this explicit, cmake will
+# not properly auto-detect the MPI libraries.
+if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/libpmpi.${dlext} \
+        ..
+else
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
+        -DMPI_C_LIB_NAMES='mpi' \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
+        ..
+fi
+
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
+# Install licenses
+################################################################################
+
+install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
 products = [
+    # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
     LibraryProduct("libmpifort", :libmpifort),
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
