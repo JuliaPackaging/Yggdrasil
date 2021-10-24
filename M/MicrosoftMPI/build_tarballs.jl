@@ -7,8 +7,8 @@ sources = [
                   "c305ce3f05d142d519f8dd800d83a4b894fc31bcad30512cefb557feaccbe8b4"),
     FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisdk.msi",
                   "f9174c54feda794586ebd83eea065be4ad38b36f32af6e7dd9158d8fd1c08433"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.3.0.tar.gz",
-                  "1385ccaff34b2ae595ef169f7eb1f0362daff6db8ee13684ccc8436db1ee83d1"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.3.1.tar.gz",
+                  "711d31aa6ef932e892b564dd87aa5d75a197c5f717d854f10f9f9a806d0078e5"),
 ]
 
 script = raw"""
