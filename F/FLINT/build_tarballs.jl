@@ -26,7 +26,8 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.8.1"
-version_offset = v"0.0.0"
+build_for_julia16_or_newer = true
+version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -58,7 +59,7 @@ make install LIBDIR=$(basename ${libdir})
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=build_for_julia16_or_newer)
 
 # The products that we will ensure are always built
 products = [
@@ -70,9 +71,16 @@ dependencies = [
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]
+if build_for_julia16_or_newer
+    dependencies = [
+        Dependency("GMP_jll", v"6.2.0"),
+        Dependency("MPFR_jll", v"4.1.1"),
+    ]
+end
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = build_for_julia16_or_newer ? "1.6" : "1.0",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

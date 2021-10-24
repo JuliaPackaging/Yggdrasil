@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.36.0"
+version = v"3.36.1" # Temporary fake version (actual is 3.36) to trigger experimental platform rebuild
 
 # Collection of sources required to complete build
 sources = [
@@ -43,7 +43,7 @@ install_license "${WORKSPACE}/srcdir/LICENSE"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -57,4 +57,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LAMMPS"
-version = v"1.0.0" # Equivalent to 2020-10-29
+version = v"1.0.1" # Equivalent to 2020-10-29
 
 # Collection of sources required to complete build
 sources = [
@@ -19,7 +19,9 @@ cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DPKG_SNAP=ON
+    -DPKG_SNAP=ON \
+    -DBUILD_MPI=ON
+
 make -j${nproc}
 make install
 
@@ -30,8 +32,17 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> libc(p) != "musl", platforms)
+# platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
+platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
+
+# We need this since currently MPItrampoline_jll has a dependency on gfortran
+platforms = expand_gfortran_versions(platforms)
+# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
+# could in principle build without Fortran support there.)
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -41,7 +52,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
+    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
