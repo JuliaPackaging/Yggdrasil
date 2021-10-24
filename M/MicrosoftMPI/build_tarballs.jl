@@ -6,9 +6,9 @@ sources = [
     FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe",
                   "c305ce3f05d142d519f8dd800d83a4b894fc31bcad30512cefb557feaccbe8b4"),
     FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisdk.msi",
-                  "d8c07fc079d35d373e14a6894288366b74147539096d43852cb0bbae32b33e44"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.1.0.tar.gz",
-                  "9bdc7ce731241389af3300e742f59ac89eda4beae470c3d5e4aa36ccdc6ad580"),
+                  "f9174c54feda794586ebd83eea065be4ad38b36f32af6e7dd9158d8fd1c08433"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.2.0.tar.gz",
+                  "2e658150ffb895b70f1503b4d609460986bb9008fc2e72383102cbcc28535e7e"),
 ]
 
 script = raw"""

@@ -5,8 +5,8 @@ version = v"4.1.1"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "d80b9219e80ea1f8bcfe5ad921bd9014285c4948c5965f4156a3831e60776444"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.1.0.tar.gz",
-                  "9bdc7ce731241389af3300e742f59ac89eda4beae470c3d5e4aa36ccdc6ad580"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.2.0.tar.gz",
+                  "2e658150ffb895b70f1503b4d609460986bb9008fc2e72383102cbcc28535e7e"),
     DirectorySource("./bundled"),
 ]
 

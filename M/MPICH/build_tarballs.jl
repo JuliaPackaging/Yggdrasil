@@ -6,8 +6,8 @@ version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.1.0.tar.gz",
-                  "9bdc7ce731241389af3300e742f59ac89eda4beae470c3d5e4aa36ccdc6ad580"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.2.0.tar.gz",
+                  "2e658150ffb895b70f1503b4d609460986bb9008fc2e72383102cbcc28535e7e"),
 ]
 
 script = raw"""
@@ -18,7 +18,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
-if [[ "${target}" == powerpc64le-* ]]; then
+# if [[ "${target}" == powerpc64le-* ]]; then
     # I don't understand why, but the extra link flags we append in the gfortran
     # wrapper confuse the build system: the rule to build libmpifort has an
     # extra lone `-l` flag, without any library to link to.  The following sed
@@ -26,7 +26,7 @@ if [[ "${target}" == powerpc64le-* ]]; then
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
     # extra link flags are not appended to the gfortran wrapper
     sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/${target}*/gfortran
-fi
+# fi
 
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then

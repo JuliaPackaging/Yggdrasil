@@ -9,8 +9,8 @@ version = v"2.0.0"
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v2.0.0.tar.gz",
                   "50d4483f73ea4a79a9b6d025d3abba42f76809cba3165367f4810fb8798264b6"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.1.0.tar.gz",
-                  "9bdc7ce731241389af3300e742f59ac89eda4beae470c3d5e4aa36ccdc6ad580"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.2.0.tar.gz",
+                  "2e658150ffb895b70f1503b4d609460986bb9008fc2e72383102cbcc28535e7e"),
 
     # TODO: Split MPICH and MPIwrapper out into a separate package
     # Idea 1: Add a flag to MPItrampoline to not initialize itself
