@@ -45,6 +45,7 @@ make install
 cd ${WORKSPACE}/srcdir/MPIconstants*
 mkdir build
 cd build
+
 # # Yes, this is tedious. No, without being this explicit, cmake will
 # # not properly auto-detect the MPI libraries.
 # if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
@@ -73,11 +74,19 @@ cd build
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DMPI_HOME=${prefix} \
+    -DMPIEXEC_EXECUTABLE=${prefix}/bin/mpiexec \
     -DMPI_C_COMPILER=mpicc \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     .. ||
 {
+    echo ls -l ${prefix}/bin
+    ls -l ${prefix}/bin
+    echo ls -l ${prefix}/include
+    ls -l ${prefix}/include
+    echo ls -l ${prefix}/lib
+    ls -l ${prefix}/lib
     echo /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeOutput.log
     cat /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeOutput.log
     echo /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeError.log
