@@ -148,10 +148,12 @@ CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
 CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
 
 # We want a shared library
-CMAKE_FLAGS+=(-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON)
-CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
-# set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
-CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
+if [ -z "${LLVM_WANT_STATIC}" ]; then
+    CMAKE_FLAGS+=(-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
+    # set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
+    CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
+fi
 
 if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
@@ -355,7 +357,8 @@ rm -vrf ${prefix}/lib/mlir
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
                          git_path="https://github.com/JuliaLang/llvm-project.git",
-                         git_ver=llvm_tags[version], custom_version=version)
+                         git_ver=llvm_tags[version], custom_version=version,
+                         static=false)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -369,13 +372,15 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
-        LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "tools"),
+        ExecutableProduct("clang", :clang, "bin"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
+    if !static
+        push!(products, LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true))
+    end
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
@@ -392,6 +397,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
 
     name = "LLVM_full"
     config = "LLVM_MAJ_VER=$(version.major)\nLLVM_MIN_VER=$(version.minor)\nLLVM_PATCH_VER=$(version.patch)\n"
+    if static
+        config *= "LLVM_WANT_STATIC=1\n"
+    end
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
