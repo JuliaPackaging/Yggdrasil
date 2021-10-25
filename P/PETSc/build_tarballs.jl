@@ -33,19 +33,19 @@ build_petsc()
     else
         USE_INT64=0
     fi
-    mkdir $libdir/petsc/${target}_${1}_${2}_${3}
-    ./configure --prefix=${libdir}/petsc/${target}_${1}_${2}_${3} \
+    mkdir $libdir/petsc/${1}_${2}_${3}
+    ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
         CC=${CC} \
         FC=${FC} \
         CXX=${CXX} \
         COPTFLAGS='-O3' \
         CXXOPTFLAGS='-O3' \
         CFLAGS='-fno-stack-protector' \
+        LDFLAGS="-L${libdir}" \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=0 \
         --with-batch \
-        --PETSC_ARCH=${target}_${1}_${2}_${3} \
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
         --known-64-bit-blas-indices=0 \
@@ -66,16 +66,11 @@ build_petsc()
     make -j${nproc} \
         CPPFLAGS="${CPPFLAGS}" \
         CFLAGS="${CFLAGS}" \
-        FFLAGS="${FFLAGS}" \
-        all
-
+        FFLAGS="${FFLAGS}"
     make install
-    # Sym link into the correct directory.
-    ln -s $libdir/petsc/${target}_${1}_${2}_${3}/lib/libpetsc.${dlext} $libdir/libpetsc_${1}_${2}_${3}.${dlext}
 }
 
 build_petsc double real Int32
-cp -a $libdir/petsc/${target}_double_real_Int32/include/*.h $includedir/
 build_petsc single real Int32
 build_petsc double complex Int32
 build_petsc single complex Int32
@@ -89,15 +84,15 @@ build_petsc single complex Int64
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
 
 products = [
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc), # Current default build
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64),
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64),
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64),
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64),
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32),
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32),
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32),
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32),
+    # Current default build, equivalent to Float64_Real_Int32
+    LibraryProduct("libpetsc", :libpetsc, "lib/petsc/double_real_Int32/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int64, "lib/petsc/double_real_Int64/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int64, "lib/petsc/single_real_Int64/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float64_Complex_Int64, "lib/petsc/double_complex_Int64/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float32_Complex_Int64, "lib/petsc/single_complex_Int64/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int32, "lib/petsc/single_real_Int32/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float64_Complex_Int32, "lib/petsc/double_complex_Int32/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float32_Complex_Int32, "lib/petsc/single_complex_Int32/lib"),
 ]
 
 dependencies = [
