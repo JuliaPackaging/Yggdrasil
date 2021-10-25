@@ -7,8 +7,10 @@ version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v2.0.0.tar.gz",
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
                   "50d4483f73ea4a79a9b6d025d3abba42f76809cba3165367f4810fb8798264b6"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.3.2.tar.gz",
+                  "3437eb7913cf213de80cef4ade7d73f0b3adfe9eadabe993b923dc50a21bd65e"),
 
     # TODO: Split MPICH and MPIwrapper out into a separate package
     # Idea 1: Add a flag to MPItrampoline to not initialize itself
@@ -41,6 +43,24 @@ cmake \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_PRELOAD="@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpi.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpicxx.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpifort.${dlext}" \
     ..
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
+    ..
+
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
@@ -206,6 +226,10 @@ products = [
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
     LibraryProduct("libmpi", :libmpi),
+
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
