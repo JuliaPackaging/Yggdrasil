@@ -29,6 +29,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-static-arm.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-dwarf4-cie.patch
 
 CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include"
 ./configure \
