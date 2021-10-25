@@ -64,13 +64,11 @@ build_petsc()
     fi
 
     make -j${nproc} \
-        PETSC_DIR="${PWD}" \
-        PETSC_ARCH="${target}_${1}_${2}_${3}" \
         CPPFLAGS="${CPPFLAGS}" \
         CFLAGS="${CFLAGS}" \
         FFLAGS="${FFLAGS}" \
         all
-    
+
     make install
     # Sym link into the correct directory.
     ln -s $libdir/petsc/${target}_${1}_${2}_${3}/lib/libpetsc.${dlext} $libdir/libpetsc_${1}_${2}_${3}.${dlext}
