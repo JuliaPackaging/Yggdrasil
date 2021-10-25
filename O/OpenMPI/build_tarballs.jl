@@ -46,31 +46,6 @@ cd ${WORKSPACE}/srcdir/MPIconstants*
 mkdir build
 cd build
 
-# # Yes, this is tedious. No, without being this explicit, cmake will
-# # not properly auto-detect the MPI libraries.
-# if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
-#     cmake \
-#         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#         -DCMAKE_FIND_ROOT_PATH=${prefix} \
-#         -DCMAKE_INSTALL_PREFIX=${prefix} \
-#         -DBUILD_SHARED_LIBS=ON \
-#         -DMPI_C_COMPILER=cc \
-#         -DMPI_C_LIB_NAMES='mpi;pmpi' \
-#         -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-#         -DMPI_pmpi_LIBRARY=${prefix}/lib/libpmpi.${dlext} \
-#         ..
-# else
-#     cmake \
-#         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#         -DCMAKE_FIND_ROOT_PATH=${prefix} \
-#         -DCMAKE_INSTALL_PREFIX=${prefix} \
-#         -DBUILD_SHARED_LIBS=ON \
-#         -DMPI_C_COMPILER=cc \
-#         -DMPI_C_LIB_NAMES='mpi' \
-#         -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-#         ..
-# fi
-
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -79,21 +54,7 @@ cmake \
     -DMPI_C_COMPILER=cc \
     -DMPI_C_LIB_NAMES='mpi' \
     -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-    .. ||
-{
-    echo ls -l ${prefix}/bin
-    ls -l ${prefix}/bin
-    echo ls -l ${prefix}/include
-    ls -l ${prefix}/include
-    echo ls -l ${prefix}/lib
-    ls -l ${prefix}/lib
-    echo /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeOutput.log
-    cat /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeOutput.log
-    echo /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeError.log
-    cat /workspace/srcdir/MPIconstants-*/build/CMakeFiles/CMakeError.log
-    echo false
-    false
-}
+    ..
 
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
