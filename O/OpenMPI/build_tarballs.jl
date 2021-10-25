@@ -74,11 +74,11 @@ cd build
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DMPI_HOME=${prefix} \
-    -DMPIEXEC_EXECUTABLE=${prefix}/bin/mpiexec \
-    -DMPI_C_COMPILER=mpicc \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
+    -DMPI_C_COMPILER=cc \
+    -DMPI_C_LIB_NAMES='mpi' \
+    -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
     .. ||
 {
     echo ls -l ${prefix}/bin
