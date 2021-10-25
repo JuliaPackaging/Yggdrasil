@@ -75,7 +75,15 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
-    ..
+    .. ||
+{
+    echo /workspace/srcdir/MPIconstants-1.3.1/build/CMakeFiles/CMakeOutput.log
+    cat /workspace/srcdir/MPIconstants-1.3.1/build/CMakeFiles/CMakeOutput.log
+    echo /workspace/srcdir/MPIconstants-1.3.1/build/CMakeFiles/CMakeError.log
+    cat /workspace/srcdir/MPIconstants-1.3.1/build/CMakeFiles/CMakeError.log
+    echo false
+    false
+}
 
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
