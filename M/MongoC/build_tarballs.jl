@@ -28,6 +28,9 @@ if [[ "${nbits}" == 32 ]]; then
 elif [[ "${target}" != *-apple-* ]]; then 
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
+if [[ "${target}" == *-mingw* ]]; then
+    export CFLAGS="$CFLAGS -D__USE_MINGW_ANSI_STDIO=1"
+fi
 
 cmake \
     -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF \
