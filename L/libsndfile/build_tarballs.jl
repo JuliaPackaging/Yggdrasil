@@ -14,14 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+autoreconf -fvi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = filter(z-> z.tags["os"] == "macos", supported_platforms())
+#platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -40,10 +42,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FLAC_jll"),
-    Dependency("Ogg_jll"),
-    Dependency("libvorbis_jll"),
     Dependency("alsa_jll"),
+    Dependency("FLAC_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
