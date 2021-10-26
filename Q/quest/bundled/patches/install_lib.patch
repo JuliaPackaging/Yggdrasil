@@ -1,0 +1,13 @@
+diff --git before/QuEST/CMakeLists.txt after/QuEST/CMakeLists.txt
+index 3f581f2..afea940 100644
+--- before/QuEST/CMakeLists.txt
++++ after/QuEST/CMakeLists.txt
+@@ -53,6 +53,8 @@ if (NOT TESTING)
+     endif()
+ endif()
+ 
++install(TARGETS QuEST DESTINATION lib)
++
+ # -----------------------------------------------------------------------------
+ # ----- TESTS -----------------------------------------------------------------
+ # -----------------------------------------------------------------------------
