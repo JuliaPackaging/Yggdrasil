@@ -68,6 +68,10 @@ build_petsc()
         CFLAGS="${CFLAGS}" \
         FFLAGS="${FFLAGS}"
     make install
+    if [[ "${target}" == *-mingw* ]]; then
+        # changing the extension from so to dll.
+        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.so "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.${dlext}"
+    fi
 }
 
 build_petsc double real Int32
@@ -86,6 +90,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc", :libpetsc, "lib/petsc/double_real_Int32/lib"),
+    LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int32, "lib/petsc/double_real_Int32/lib"),
     LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int64, "lib/petsc/double_real_Int64/lib"),
     LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int64, "lib/petsc/single_real_Int64/lib"),
     LibraryProduct("libpetsc", :libpetsc_Float64_Complex_Int64, "lib/petsc/double_complex_Int64/lib"),
