@@ -89,18 +89,18 @@ platforms = expand_cxxstring_abis(supported_platforms())
 products = [
     ExecutableProduct("wxrc-$(version.major).$(version.minor)", :wxrc),
     #LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom", "libwx_osx_cocoau_adv-$(version.major).$(version.minor).$(version.patch)"], :adv),
-    LibraryProduct(["libwx_gtk3u_core-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_core_gcc_custom", "libwx_osx_cocoau_core-$(version.major).$(version.minor).$(version.patch)"], :core),
-    LibraryProduct(["libwx_gtk3u_richtext-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_richtext_gcc_custom", "libwx_osx_cocoau_richtext-$(version.major).$(version.minor).$(version.patch)"], :richtext),
-    LibraryProduct(["libwx_gtk3u_html-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_html_gcc_custom", "libwx_osx_cocoau_html-$(version.major).$(version.minor).$(version.patch)"], :html),
-    LibraryProduct(["libwx_baseu_xml-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_xml_gcc_custom", "libwx_baseu_xml-$(version.major).$(version.minor).$(version.patch)"], :baseu_xml),
-    LibraryProduct(["libwx_gtk3u_aui-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_aui_gcc_custom", "libwx_osx_cocoau_aui-$(version.major).$(version.minor).$(version.patch)"], :aui),
-    LibraryProduct(["libwx_gtk3u_stc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_stc_gcc_custom", "libwx_osx_cocoau_stc-$(version.major).$(version.minor).$(version.patch)"], :stc),
-    LibraryProduct(["libwx_baseu-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_gcc_custom", "libwx_baseu-$(version.major).$(version.minor).$(version.patch)"], :baseu),
-    LibraryProduct(["libwx_gtk3u_qa-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_qa_gcc_custom", "libwx_osx_cocoau_qa-$(version.major).$(version.minor).$(version.patch)"], :qa),
-    LibraryProduct(["libwx_gtk3u_ribbon-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_ribbon_gcc_custom", "libwx_osx_cocoau_ribbon-$(version.major).$(version.minor).$(version.patch)"], :ribbon),
-    LibraryProduct(["libwx_gtk3u_propgrid-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_propgrid_gcc_custom", "libwx_osx_cocoau_propgrid-$(version.major).$(version.minor).$(version.patch)"], :propgrid),
-    LibraryProduct(["libwx_gtk3u_xrc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_xrc_gcc_custom", "libwx_osx_cocoau_xrc-$(version.major).$(version.minor).$(version.patch)"], :xrc),
-    LibraryProduct(["libwx_baseu_net-$(version.major)","libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom", "libwx_baseu_net-$(version.major).$(version.minor).$(version.patch)"], :baseu_net)
+    LibraryProduct(["libwx_gtk3u_core-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_core_gcc_custom", "libwx_osx_cocoau_core-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :core),
+    LibraryProduct(["libwx_gtk3u_richtext-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_richtext_gcc_custom", "libwx_osx_cocoau_richtext-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :richtext),
+    LibraryProduct(["libwx_gtk3u_html-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_html_gcc_custom", "libwx_osx_cocoau_html-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :html),
+    LibraryProduct(["libwx_baseu_xml-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_xml_gcc_custom", "libwx_baseu_xml-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :baseu_xml),
+    LibraryProduct(["libwx_gtk3u_aui-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_aui_gcc_custom", "libwx_osx_cocoau_aui-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :aui),
+    LibraryProduct(["libwx_gtk3u_stc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_stc_gcc_custom", "libwx_osx_cocoau_stc-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :stc),
+    LibraryProduct(["libwx_baseu-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_gcc_custom", "libwx_baseu-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :baseu),
+    LibraryProduct(["libwx_gtk3u_qa-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_qa_gcc_custom", "libwx_osx_cocoau_qa-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :qa),
+    LibraryProduct(["libwx_gtk3u_ribbon-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_ribbon_gcc_custom", "libwx_osx_cocoau_ribbon-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :ribbon),
+    LibraryProduct(["libwx_gtk3u_propgrid-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_propgrid_gcc_custom", "libwx_osx_cocoau_propgrid-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :propgrid),
+    LibraryProduct(["libwx_gtk3u_xrc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_xrc_gcc_custom", "libwx_osx_cocoau_xrc-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :xrc),
+    LibraryProduct(["libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom", "libwx_baseu_net-$(version.major).$(version.minor)-x86_64-apple-darwin14"], :baseu_net)
 ]
 
 
