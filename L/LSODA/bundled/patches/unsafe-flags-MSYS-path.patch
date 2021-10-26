@@ -1,0 +1,36 @@
+From af8315b472f8880ba45e0d60048e1790554145a8 Mon Sep 17 00:00:00 2001
+From: Venkateshprasad <vensadk@gmail.com>
+Date: Wed, 7 Apr 2021 14:36:56 -0400
+Subject: [PATCH] Drop unsafe flags and add MSYS_NT
+
+---
+ Make.inc | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/Make.inc b/Make.inc
+index 85351fe..eea0547 100644
+--- a/Make.inc
++++ b/Make.inc
+@@ -9,7 +9,7 @@ FFLAGS-add += -O3
+ USEGCC = 1
+ USECLANG = 0
+
+-CFLAGS-add += -Wall -O3 -ffast-math -DCFODE_STATIC
++CFLAGS-add += -Wall -O3 -DCFODE_STATIC
+
+ ifeq ($(USECLANG),1)
+ USEGCC = 0
+@@ -56,6 +56,10 @@ ifeq ($(OS), MINGW32_NT-10.0-WOW)
+ SHLIB_EXT = dll
+ endif
+
++ifeq ($(OS), MSYS_NT-6.3)
++SHLIB_EXT = dll
++endif
++
+ # SunOS with gcc
+ ifeq ($(OS), SunOS)
+ SHLIB_EXT = so
+--
+2.17.1
+

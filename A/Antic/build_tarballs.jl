@@ -22,13 +22,14 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Antic"
-version = v"0.200.301"
-upstream_version = v"0.2.3"
+version = v"0.200.500"
+upstream_version = v"0.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
-                  "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
+    GitSource("https://github.com/wbhart/antic.git", "a071e65dd82884b3a048c6436830cea6c6ce59b8"),
+#    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
+#                  "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -57,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]

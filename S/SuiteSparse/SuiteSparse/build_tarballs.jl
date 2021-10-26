@@ -1,5 +1,12 @@
 include("../common.jl")
 
+name = "SuiteSparse"
+
+sources = [
+    sources;
+    DirectorySource("./bundled")
+]
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
@@ -60,14 +67,6 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 install_license LICENSE.txt
-
-# Compile SuiteSparse_wrapper shim
-cd $WORKSPACE/srcdir/SuiteSparse_wrapper
-"${CC}" -O2 -shared -fPIC -I${prefix}/include SuiteSparse_wrapper.c -o ${libdir}/libsuitesparse_wrapper.${dlext} -L${libdir} -lcholmod
 """
 
-
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-#version = 5.4.1
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")

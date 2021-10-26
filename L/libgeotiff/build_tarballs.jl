@@ -55,7 +55,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="PROJ_jll", uuid="58948b4f-47e0-5654-a9ad-f609743f8632")),
-    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -53,7 +53,7 @@ function configure(version_offset, min_julia_version, proj_jll_version)
     rm -f ${prefix}/lib/*.la
 
     ./configure --help
-    ./configure --prefix=$prefix --host=$target \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
         --with-geos=${bindir}/geos-config \
         --with-proj=$prefix \
         --with-tiff=$prefix \
@@ -111,9 +111,10 @@ function configure(version_offset, min_julia_version, proj_jll_version)
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),
         Dependency("OpenJpeg_jll"),
-        Dependency("Expat_jll"),
+        Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
         Dependency("Zstd_jll"),
-        Dependency("Libtiff_jll"),
+        # TODO: v4.3.0 is available, use that next time
+        Dependency("Libtiff_jll"; compat="4.1.0"),
         Dependency("libgeotiff_jll"),
     ]
 

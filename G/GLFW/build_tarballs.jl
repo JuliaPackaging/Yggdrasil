@@ -1,13 +1,15 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = v"3.3.2"
+version = v"3.3.4"
 
 # Collection of sources required to build glfw
 sources = [
     ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
-    "08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7")
+    "bbd2c42c660b725e9755eb417e40b373f0d4c03138c9b2e210d02cd308bd99cd")
 ]
+
+version = v"3.3.5" # <--- This version number is a lie to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -25,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -43,4 +45,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

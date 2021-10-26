@@ -1,0 +1,23 @@
+diff --git a/bin/hipcc b/bin/hipcc
+index eeab8222..17baf93a 100755
+--- a/bin/hipcc
++++ b/bin/hipcc
+@@ -249,6 +249,18 @@ if ($HIP_PLATFORM eq "hcc" and $HIP_COMPILER eq "clang") {
+       $HIPCFLAGS .= " -D__HIP_ROCclr__";
+     }
+ 
++    # BinaryBuilder compile flags
++    $SYSTEM_TARGET = $ENV{'target'};
++    $HIPCXXFLAGS .= " -isystem " . glob "/opt/$SYSTEM_TARGET/$SYSTEM_TARGET/include/c++/*";
++    $HIPCXXFLAGS .= " -isystem " . glob "/opt/$SYSTEM_TARGET/$SYSTEM_TARGET/include/c++/*/$SYSTEM_TARGET";
++    $HIPCXXFLAGS .= " --sysroot=/opt/$SYSTEM_TARGET/$SYSTEM_TARGET/sys-root";
++
++    # BinaryBuilder link flags
++    $HIPLDFLAGS .= " --sysroot=/opt/$SYSTEM_TARGET/$SYSTEM_TARGET/sys-root";
++    $HIPLDFLAGS .= " -B" . glob "/opt/$SYSTEM_TARGET/lib/gcc/$SYSTEM_TARGET/*";
++    $HIPLDFLAGS .= " -L" . glob "/opt/$SYSTEM_TARGET/lib/gcc/$SYSTEM_TARGET/*";
++    $HIPLDFLAGS .= " -L/opt/$SYSTEM_TARGET/$SYSTEM_TARGET/lib64";
++
+ } elsif ($HIP_PLATFORM eq "hcc" and $HIP_COMPILER eq "hcc") {
+     $HIP_INCLUDE_PATH = "$HIP_PATH/include";
+     if (! defined $HIP_LIB_PATH) {

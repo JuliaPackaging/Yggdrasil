@@ -1,3 +1,30 @@
+### Instructions for adding a new version
+#
+# Check out a branch of BinaryBuilderBase from the current master of that repo.
+# Run this script for each target platform. The following will do the job:
+# ```
+# using BinaryBuilder
+# using BinaryBuilder: aatriplet
+# for platform in supported_platforms(; experimental=true)
+#     # Append version numbers for BSD systems
+#     if Sys.isapple(platform)
+#         suffix = arch(platform) == "aarch64" ? "20" : "14"
+#     elseif Sys.isfreebsd(platform)
+#         suffix = "12.2"
+#     else
+#         suffix = ""
+#     end
+#     target = aatriplet(platform) * suffix
+#     run(`julia build_tarballs.jl --debug --verbose --deploy $target`)
+# end
+# ```
+# (Note that `--deploy` requires a GitHub personal access token in a `GITHUB_TOKEN`
+# environment variable with write access to Yggdrasil.)
+# Running this will update BinaryBuilderBase/Artifacts.toml with the entries formatted as
+# `PlatformSupport-<target triplet>.v<today's date>.<builder triplet>.<squashfs|unpacked>`.
+# You can open a PR to BinaryBuilderBase with this change and update the default
+# PlatformSupport version to use in `choose_shards` to be `v<today's date>`.
+
 using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
@@ -23,11 +50,10 @@ sources = [
                   "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
                   "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
-    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
-                  "3bac8257bdd5e5b071f7b80cc591ebecd01b9314ca7839a2903096cbf82169f9"),
+    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/12.2-RELEASE/base.txz",
+                  "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                   "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
-    DirectorySource("./bundled"),
 ]
 
 macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"

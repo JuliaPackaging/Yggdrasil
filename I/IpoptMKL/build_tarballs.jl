@@ -31,6 +31,7 @@ fi
             --with-lapack="${libmkl[*]}" \
             --with-asl-cflags="-I${prefix}/include" \
             --with-asl-lflags="${LIBASL[*]}" \
+            --build=${MACHTYPE} \
             --host=${target}
 
 # parallel build fails

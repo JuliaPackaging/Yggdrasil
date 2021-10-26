@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"3.49.0"
+version = v"3.49.1" # <--- This version number is a lie to build for experimental platforms
 
 # Collection of sources required to build CFITSIO
 sources = [
@@ -24,7 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # renames `TBYTE` to `_TBYTE`.
     atomic_patch -p1 ../patches/tbyte.patch
 fi
-./configure --prefix=$prefix --host=$target --enable-reentrant
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
 # Delete the static library
@@ -38,7 +38,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -47,8 +47,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll", v"7.71.1"),
+    Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -3,6 +3,10 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.17" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
+                          "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
+        ],
         v"0.3.13" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.13.tar.gz",
                           "79197543b17cc314b7e43f7a33148c308b0807cd6381ee77f77e15acf3e6459e")
@@ -86,9 +90,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         # Before OpenBLAS 0.3.13, there appears to be a miscompilation bug with `clang` on setting `TARGET=GENERIC`
         # As that is the case, we're just going to be safe and only use `TARGET=GENERIC` on 0.3.13+
         if [ ${version_patch} -gt 12 ]; then
-            FLAGS+=(TARGET=GENERIC)
+            flags+=(TARGET=GENERIC)
         else
-            FLAGS+=(TARGET=)
+            flags+=(TARGET=)
         fi
     elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
         flags+=(TARGET=ARMV8 DYNAMIC_ARCH=1)

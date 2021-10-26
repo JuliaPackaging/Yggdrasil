@@ -27,12 +27,12 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.000.104" # actually 4.2.0p1 plus some more changes
-upstream_version = v"4.2.0"
+version = v"402.100.101" # actually 4.2.1p1 plus some more changes
+upstream_version = v"4.2.1"
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "7b8e28f635afde923bf9ebc01c3821ba6d67ece8"),
+    GitSource("https://github.com/Singular/Singular.git", "6d6e14e2098b18d473ba6b37065ba3830d790a35"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -89,7 +89,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
 ]

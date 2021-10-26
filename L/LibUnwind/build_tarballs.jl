@@ -27,7 +27,7 @@ atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.pat
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
 
 CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include"
-./configure --prefix=$prefix --host=$target CFLAGS="${CFLAGS}" --libdir=${libdir} --enable-minidebuginfo --disable-tests
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CFLAGS="${CFLAGS}" --libdir=${libdir} --enable-minidebuginfo --disable-tests
 make -j${nproc}
 make install
 
@@ -42,7 +42,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
-platforms = [p for p in supported_platforms(;experimental=true) if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [

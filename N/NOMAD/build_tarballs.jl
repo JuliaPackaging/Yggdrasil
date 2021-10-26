@@ -13,20 +13,16 @@ sources = [
 script = raw"""
 cd "${WORKSPACE}/srcdir/nomad"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/nomad-no-headers-generation.patch"
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    CC=gcc
-    CXX=g++
-fi
 mkdir build
 cd build
-cmake -DTEST_OPENMP=OFF -DBUILD_INTERFACES=ON -DBUILD_LIBMODE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DTEST_OPENMP=OFF -DBUILD_INTERFACES=ON -DBUILD_LIBMODE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(); skip=Sys.isapple)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -44,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")

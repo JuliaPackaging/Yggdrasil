@@ -3,29 +3,27 @@ using BinaryBuilder
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
-# Actually, this should be v"0.3.6.4".
-version = v"0.3.6"
-crossref_ver = "0.3.6.4"
-pandoc_ver = "2.9.2.1"
+version = v"0.3.11"
+crossref_ver = "0.3.11.0"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
-    ArchiveSource("$(url_prefix)-Linux-$(pandoc_ver).tar.xz", "57e8f71d46c401daf0a3247b7405b49503b836e93893730e6e5907f6cb2c0885"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS-$(pandoc_ver).tar.xz", "b63ac830d7164279eb80041cd5f793e6b611ce1a701a86308ce5b2a3a99d33b2"; unpack_target = "x86_64-apple-darwin14"),
-    FileSource("$(url_prefix)-Windows-$(pandoc_ver).7z", "3e943fcdd3f91951fe18f9900e136ccb9ea810b2582f4bd929760357eaf83ef4"; filename = "x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/lierdakil/pandoc-crossref/65858c01a76f75990e7e30bcdb571cd84a69d47c/LICENSE", "39db8f9acf036595a2566ea3fe560bc7bd65d8749f088e0f4a4ef2f8a6cb4b34"),
+    ArchiveSource("$(url_prefix)-Linux.tar.xz", "eca741b75d909a60b8ab52653d4b8797058ec90ae168f10189ea94b6b6cd5f5e"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS.tar.xz", "a1866a1d35e8afc16faf13b7cbbc7e492163e3ab91a9705b284006c4c5eb049b"; unpack_target = "x86_64-apple-darwin14"),
+    FileSource("$(url_prefix)-Windows.7z", "7eeea4920876e0432b07813be064ab993c52c3a47387a48274415bce7ab881ab"; filename = "x86_64-w64-mingw32"),
+    FileSource("https://raw.githubusercontent.com/lierdakil/pandoc-crossref/v$(crossref_ver)/LICENSE", "39db8f9acf036595a2566ea3fe560bc7bd65d8749f088e0f4a4ef2f8a6cb4b34"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-subdir="${target}"
+dirprefix="${target}/"
 if [[ "${target}" == *-mingw* ]]; then
     7z x "${target}"
-    subdir="windows-build"
+    dirprefix=""
 fi
-install -m 755 "${subdir}/pandoc-crossref${exeext}" "${bindir}/pandoc-crossref${exeext}"
+install -m 755 "${dirprefix}pandoc-crossref${exeext}" "${bindir}/pandoc-crossref${exeext}"
 install_license LICENSE
 """
 

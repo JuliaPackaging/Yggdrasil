@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "protoc"
-version = v"3.14.0"
+version = v"3.15.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "6aa539bf0195f188ff86efe6fb8bfa2b676cdd46"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/winmutex.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd_endian.patch
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -36,4 +36,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"9")

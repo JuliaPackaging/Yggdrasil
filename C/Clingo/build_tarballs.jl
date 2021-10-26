@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clingo"
-version = v"5.4.1"
+version = v"5.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/potassco/clingo.git", "330932bf5b9c7715bcd722a0c9656fcd20830591")
+    GitSource("https://github.com/potassco/clingo.git", "e1c20131b708439c7e1c317bb96b58e5a527b1a2")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,8 @@ products = [
     ExecutableProduct("clingo", :clingo),
     ExecutableProduct("gringo", :gringo),
     ExecutableProduct("reify", :reify),
-    ExecutableProduct("clasp", :clasp)
+    ExecutableProduct("clasp", :clasp),
+    LibraryProduct("libclingo",:libclingo)
 ]
 
 # Dependencies that must be installed before this package can be built

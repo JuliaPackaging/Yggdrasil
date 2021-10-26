@@ -1,22 +1,20 @@
-commit 8c41bc584cabc9051ab1a30126d0faa989fc4ce3
-Author: Keno Fischer <keno@juliacomputing.com>
-Date:   Mon Oct 5 05:45:22 2020 -0400
+From d9a4913cf45eb87885b72d2126f7491ac94f58e9 Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Wed, 24 Mar 2021 14:43:17 -0400
+Subject: [PATCH] Add missing rule for ngicon.rc
 
-    Add missing rule for ngicon.rc
+---
+ src/Makefile.am | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/src/Makefile.am b/src/Makefile.am
-index a8fb22e6a..0698c15c2 100644
+index ede7a9e69..0e064dc0c 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -193,13 +193,16 @@ endif
+@@ -192,9 +192,12 @@ endif
  endif
  
- if WINGUI
--ngspice_LDADD += ngicon.o
-+ngspice_SOURCES += ngicon.rc
- endif
- 
- if WINCONSOLE
+ if WINRESOURCE
 -ngspice_LDADD += ngicon.o
 +ngspice_SOURCES += ngicon.rc
  endif
@@ -27,7 +25,7 @@ index a8fb22e6a..0698c15c2 100644
  if OLDAPPS
  ## nutmeg:
  
-@@ -306,7 +309,7 @@ ngmakeidx_LDADD =  \
+@@ -301,7 +304,7 @@ ngmakeidx_LDADD =  \
  	frontend/libfte.la \
  	frontend/parser/libparser.la \
  	misc/libmisc.la
@@ -36,3 +34,6 @@ index a8fb22e6a..0698c15c2 100644
  ## create index for online help:
  
  ngspice.idx: ngmakeidx$(EXEEXT) $(srcdir)/ngspice.txt
+-- 
+2.25.1
+

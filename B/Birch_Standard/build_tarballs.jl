@@ -59,10 +59,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("Eigen_jll"),
-    Dependency(PackageSpec(name = "LibBirch_jll", version = version)),
+    Dependency("LibBirch_jll", version),
     Dependency("LibYAML_jll"),
 ]
 

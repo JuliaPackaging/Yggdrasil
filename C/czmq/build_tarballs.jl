@@ -26,6 +26,7 @@ fi
 atomic_patch -p1 ../patches/ntohll.patch
 
 ./configure --prefix=$prefix \
+    --build=${MACHTYPE} \
     --host=${target} \
     --enable-drafts \
     --disable-static \

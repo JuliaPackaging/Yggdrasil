@@ -12,6 +12,8 @@ sources = [
     DirectorySource("./bundled")
 ]
 
+version = v"4.1.100" # <--- This version number is a lie, we just need to bump it to build for experimental platforms
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tesseract-*/
@@ -21,14 +23,14 @@ if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
 ./autogen.sh
-./configure --prefix=$prefix --host=$target
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -41,15 +43,15 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"),
     Dependency("Leptonica_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
     # Dependency("ICU_jll"),
-    Dependency("Cairo_jll"),
-    Dependency("Pango_jll"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Pango_jll"; compat="1.47.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,0 +1,11 @@
+diff --git a/cmake/backtrace.cmake b/cmake/backtrace.cmake
+index fd51a5c..e69de29 100644
+--- a/cmake/backtrace.cmake
++++ b/cmake/backtrace.cmake
+@@ -1,6 +0,0 @@
+-if (NOT WIN32)
+-    find_package(Backtrace)
+-    if (${Backtrace_FOUND})
+-        set(BACKTRACE_DEFS ENTWINE_HAVE_BACKTRACE)
+-    endif()
+-endif()

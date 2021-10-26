@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
-./configure --prefix=$prefix --host=$target --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl --disable-docs --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-x --disable-openmp --disable-installed --disable-dependency-tracking --without-frozenpaths --without-perl --disable-docs --disable-static
 make -j${nproc}
 make install
 """
@@ -34,7 +34,8 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll")
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

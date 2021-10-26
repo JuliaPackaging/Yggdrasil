@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "PCRE2"
 version = v"10.36"
@@ -26,7 +26,7 @@ export CFLAGS="${CFLAGS} -O3"
 atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-apple-silicon-support.patch
 atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-nomprotect.patch
 
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-static \
     --enable-jit \
     --enable-pcre2-16 \

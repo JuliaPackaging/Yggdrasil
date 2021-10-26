@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "eccodes"
-version = v"2.19.1"
+version = v"2.21.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-$version-Source.tar.gz", "9964bed5058e873d514bd4920951122a95963128b12f55aa199d9afbafdd5d4b"),
+    ArchiveSource("https://confluence.ecmwf.int/download/attachments/45757960/eccodes-$version-Source.tar.gz", "da0a0bf184bb436052e3eae582defafecdb7c08cdaab7216780476e49b509755"),
     DirectorySource("./bundled"),
 ]
 

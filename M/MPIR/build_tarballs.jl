@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/mpir-*
 # We need `yasm`
 apk add yasm
 
-./configure --enable-cxx --prefix=$prefix --host=${target} --disable-static --enable-shared
+./configure --enable-cxx --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j
 make install
 """

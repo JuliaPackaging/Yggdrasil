@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.5.1"
+julia_version = v"1.3.1"
 
 name = "Libtask"
-version = v"0.4.2"
+version = v"0.5.1"
 
 # Collection of sources required to build Libtask
 sources = [
@@ -58,5 +58,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "~$(julia_version.major).$(julia_version.minor)",
+               julia_compat = "^1.3",
                lock_microarchitecture = false)

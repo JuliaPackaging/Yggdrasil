@@ -24,7 +24,7 @@ update_configure_scripts
 #
 # and I don't have the time to investigate it.
 sed -i -e 's/elf64ppc/elf64lppc/g' configure
-./configure --prefix=${prefix} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
 make -j${nproc}
 make install
 """

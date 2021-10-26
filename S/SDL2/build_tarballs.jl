@@ -23,7 +23,7 @@ fi
 export CPPFLAGS="-I${prefix}/include"
 export LDFLAGS="-L${libdir}"
 
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \
     "${FLAGS[@]}"

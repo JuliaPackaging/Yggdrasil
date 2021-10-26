@@ -1,0 +1,11 @@
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -316,7 +316,7 @@
+ 	@ln -sf libjulia-internal.$(JL_MAJOR_MINOR_SHLIB_EXT) $(build_shlibdir)/libjulia-internal.$(JL_MAJOR_SHLIB_EXT)
+ 	@ln -sf libjulia-internal.$(JL_MAJOR_MINOR_SHLIB_EXT) $(build_shlibdir)/libjulia-internal.$(SHLIB_EXT)
+ endif
+-	$(DSYMUTIL) $@
++	# $(DSYMUTIL) $@
+ 
+ $(BUILDDIR)/libjulia-internal.a: $(SRCDIR)/julia.expmap $(OBJS) $(BUILDDIR)/flisp/libflisp.a $(BUILDDIR)/support/libsupport.a
+ 	rm -f $@

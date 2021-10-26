@@ -3,11 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "HiGHS"
-version = v"0.2.2"
 
-# Collection of sources required to complete build
+version = v"0.3.3"
+
 sources = [
-    GitSource("https://github.com/ERGO-Code/HiGHS.git", "7f4f0a58c415fa6cd678395d109155a3f5a7c670"),
+    GitSource(
+        "https://github.com/ERGO-Code/HiGHS.git",
+        "363dd4e8639f8f811ce031c9f6c8c35944e91615",
+    ),
     DirectorySource("./bundled"),
 ]
 
@@ -23,31 +26,51 @@ if [[ "${target}" == *86*-linux-musl* ]]; then
 fi
 mkdir -p HiGHS/build
 cd HiGHS/build
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DFAST_BUILD=ON \
     -DJULIA=ON \
-    -DIPX=OFF ..
-cmake --build . --config Release --parallel
+    -DIPX=ON ..
+
+if [[ "${target}" == *-linux-* ]]; then
+        make -j ${nproc}
+else
+    if [[ "${target}" == *-mingw* ]]; then
+        cmake --build . --config Release
+    else
+        cmake --build . --config Release --parallel
+    fi
+fi
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libhighs", :libhighs),
+    ExecutableProduct("highs", :highs),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"4.9")
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = v"4.9",
+)

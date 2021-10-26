@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/*
 sed -i '/^libcddgmp_la_LDFLAGS/ s/$/  $(CDD_LDFLAGS)/' lib-src/Makefile.gmp.am
 ./bootstrap # needed because we are building a commit and not a release
-CPPFLAGS=-I${prefix}/include ./configure --prefix=${prefix} --host=${target}
+CPPFLAGS=-I${prefix}/include ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 cd lib-src # Call make in the lib-src subfolder to avoid building the doc folder since pdflatex is not installed
 make -j${nproc}
 make install

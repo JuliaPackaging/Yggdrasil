@@ -35,7 +35,7 @@ fi
 sed -i.bak -e 's&cssparser = "0.23"&cssparser = "0.25"&' rust/Cargo.toml
 (cd rust && cargo vendor)
 
-LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64" ./configure --prefix=$prefix --host=$target \
+LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-static \
     --enable-pixbuf-loader \
     --disable-introspection \
@@ -86,7 +86,7 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"),
+    Dependency("Pango_jll", v"1.42.4"; compat="1.42.4"),
     Dependency("Libcroco_jll"),
 ]
 

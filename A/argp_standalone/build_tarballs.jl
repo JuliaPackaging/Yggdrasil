@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "argp_standalone"
-version = v"1.3.0"
+version = v"1.3.1"
 
 # Collection of sources required to build argp-standalone
 sources = [
@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/argp-*/
-CFLAGS="-fPIC" ./configure --prefix=${prefix} --host=${target}
+CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 install_license $WORKSPACE/srcdir/LICENSE
 install -D -m644 argp.h ${includedir}/argp.h
@@ -23,7 +23,7 @@ install -D -m755 libargp.a ${libdir}/libargp.a
 """
 
 # Select Unix platforms
-platforms = [p for p in supported_platforms() if Sys.islinux(p) && libc(p) == "musl"]
+platforms = filter(p->Sys.islinux(p) && libc(p) == "musl", supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +36,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

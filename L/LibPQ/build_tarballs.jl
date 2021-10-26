@@ -34,7 +34,7 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # other tests.
     sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
 fi
-./configure --prefix=$prefix --host=$target --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
 make -C src/interfaces/libpq install
 install_license COPYRIGHT
 """

@@ -1,0 +1,24 @@
+From 597f1bb5638e64521dc861691ec9678e3aa8b578 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Wed, 7 Apr 2021 17:27:46 +0100
+Subject: [PATCH] Allow disabling building static library for Windows
+
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8a311094..89d7c51e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -21,10 +21,6 @@ option(WITH_FLOAT128       "Use __float128 (requires libquadmath)" OFF)
+ option(WITH_JEMALLOC       "Use jemalloc allocator"                OFF)
+ option(WITH_MPI            "Enable MPI support"                    OFF)
+ 
+-if(WIN32)
+-    set(BUILD_SHARED_LIBS OFF)
+-endif()
+-
+ if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+     message(FATAL_ERROR "One or both of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be set to ON")
+ endif()
+-- 
+2.26.2
+

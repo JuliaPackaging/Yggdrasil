@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "SCS"
-version = v"2.1.2"
+version = v"2.1.4"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "4ed6c2abf28399c01a0417ff3456b2639560afa6")
+    GitSource("https://github.com/cvxgrp/scs.git", "a70a42c8c740ee756f787760ed59a8a41531e891")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,7 +40,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll")
+#     OpenBLAS_jll-0.3.13-3 opted into using ILP64 on aarch64
+#     (see https://github.com/JuliaPackaging/Yggdrasil/pull/2590)
+#     but we still try to compile with `-lopenblas` there.
+    Dependency("OpenBLAS_jll", v"0.3.12", compat="<0.3.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well

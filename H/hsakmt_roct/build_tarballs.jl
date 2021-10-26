@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsakmt_roct"
-version = v"3.8.0"
+version = v"4.0.0"
 
 # Collection of sources required to build ROCT-Thunk-Interface
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
-                  "cd5440f31f592737b5d05448704bd01f91f73cfcab8a7829922e81332575cfe8"),
+                  "a6960fffc8388731ee18953faae12d1449c582e3b3594418845a544455895f42"),
     DirectorySource("./bundled"),
 ]
 
