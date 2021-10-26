@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
 autoreconf -fvi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -41,6 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("alsa_jll"),
     Dependency("FLAC_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
