@@ -4,20 +4,20 @@ include("../common.jl")
 
 gap_version = v"400.1191.001"
 gap_lib_version = v"400.1191.000"
-name = "cvec"
-upstream_version = v"2.7.5" # when you increment this, reset offset to v"0.0.0"
+name = "json"
+upstream_version = v"2.0.2" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.bz2",
-                  "b9b51356e88f5a4bbdb25edaa41738338567dcdaa0b8a04e4b2807803953e5c5"),
+    ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.gz",
+                  "da69122fc99c412ebeca0635439a74498797834696c54e1b27efebe921b6a66a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd cvec*
+cd json*
 ./configure ${prefix}/share/gap
 make -j${nproc}
 
@@ -29,11 +29,11 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms, dependencies = setup_gap_package(gap_version, gap_lib_version; uses_cxx = true)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/gap/cvec.so", :cvec),
+    FileProduct("lib/gap/json.so", :json),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

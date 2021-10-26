@@ -28,9 +28,9 @@ function gap_pkg_name(name::String)
     return "GAP_pkg_$(lowercase(name))"
 end
 
-function setup_gap_package(gap_version::VersionNumber; uses_cxx::Bool = false)
+function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionNumber = gap_version; uses_cxx::Bool = false)
 
-    platforms = supported_platforms()
+    platforms = supported_platforms(; experimental=true)
     filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
     filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
@@ -38,12 +38,9 @@ function setup_gap_package(gap_version::VersionNumber; uses_cxx::Bool = false)
         platforms = expand_cxxstring_abis(platforms)
     end
 
-    # the added 5 corresponds to "Julia 1.5". Doesn't really matter, except if
-    # we don't add this, then BB tries to install the JLL "for Julia 1.0" which doesn't exist.
-    mod_gap_version = VersionNumber(gap_version.major, gap_version.minor, gap_version.patch + 5)
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("GAP_jll", mod_gap_version; compat="~$(gap_version)"),
-        Dependency("GAP_lib_jll", gap_version; compat="~$(gap_version)"),
+        Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
+        Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
 
 
@@ -70,8 +67,11 @@ function setup_gap_package(gap_version::VersionNumber; uses_cxx::Bool = false)
     cp sysinfo.gap ${prefix}/share/gap/
 
     # ensure #including src/compiled.h or src/profile.h from GAP_jll works
-    ln -s . /workspace/destdir/include/gap/src
-    """ * script
+    ln -s . ${prefix}/include/gap/src
+    """ * script * raw"""
+    rm -rf ${prefix}/include
+    rm -rf ${prefix}/share/gap
+    """
 
     return platforms, dependencies
 end

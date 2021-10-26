@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "bliss"
-version = v"0.73.0"
+version = v"0.73.1" # <-- This is a lie, we're bumping from 0.73 to 0.73.1 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to complete build
 sources = [
@@ -31,7 +31,7 @@ install -p libbliss.$dlext $libdir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -40,8 +40,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
