@@ -41,7 +41,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("alsa_jll"),
     Dependency("FLAC_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
