@@ -100,7 +100,7 @@ products = [
     LibraryProduct(["libwx_gtk3u_ribbon-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_ribbon_gcc_custom", "libwx_osx_cocoau_ribbon-$(version.major).$(version.minor).$(version.patch)"], :ribbon),
     LibraryProduct(["libwx_gtk3u_propgrid-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_propgrid_gcc_custom", "libwx_osx_cocoau_propgrid-$(version.major).$(version.minor).$(version.patch)"], :propgrid),
     LibraryProduct(["libwx_gtk3u_xrc-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_xrc_gcc_custom", "libwx_osx_cocoau_xrc-$(version.major).$(version.minor).$(version.patch)"], :xrc),
-    LibraryProduct(["libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom", "libwx_baseu_net-$(version.major).$(version.minor).$(version.patch)"], :baseu_net)
+    LibraryProduct(["libwx_baseu_net-$(version.major)","libwx_baseu_net-$(version.major).$(version.minor)","wxbase$(version.major)$(version.minor)$(version.patch)u_net_gcc_custom", "libwx_baseu_net-$(version.major).$(version.minor).$(version.patch)"], :baseu_net)
 ]
 
 
