@@ -15,8 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
 export CFLAGS="-I${includedir}" 
-autoreconf -fvi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
