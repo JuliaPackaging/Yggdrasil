@@ -14,7 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+export CFLAGS="-I${includedir}" 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
@@ -40,10 +41,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FLAC_jll"),
-    Dependency("Ogg_jll"),
-    Dependency("libvorbis_jll"),
     Dependency("alsa_jll"),
+    Dependency("FLAC_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
