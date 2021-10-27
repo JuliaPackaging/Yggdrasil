@@ -86,7 +86,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct("libpetsc", :libpetsc, "$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
