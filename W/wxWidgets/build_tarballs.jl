@@ -84,6 +84,8 @@ fi
 make -j${nproc}
 make install
 
+install_license docs/preamble.txt docs/licence.txt docs/licendoc.txt docs/gpl.txt docs/lgpl.txt docs/xserver.txt
+
 """
 
 # These are the platforms we will build for by default, unless further
