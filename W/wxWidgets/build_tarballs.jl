@@ -8,6 +8,11 @@ version = v"3.1.5"
 version_mm = "$(version.major).$(version.minor)"
 version_no_sep = "$(version.major)$(version.minor)$(version.patch)"
 
+gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
+                    "wxmsw$(version_no_sep)u_$(lib)_gcc_custom",
+                    "libwx_osx_cocoau_$(lib)-$(version_mm)-x86_64-apple-darwin14",
+                    "libwx_osx_cocoau_$(lib)-$(version_mm)-aarch64-apple-darwin20"]
+
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v$version.tar.gz", "e8fd5f9fbff864562aa4d9c094f898c97f5e1274c90f25beb0bfd5cb61319dea"),
@@ -91,19 +96,20 @@ filter!(p -> arch(p) != "armv6l", platforms)
 #see https://github.com/wxWidgets/wxWidgets/blob/master/docs/contributing/about-platform-toolkit-and-library-names.md for more info on naming
 products = [
     ExecutableProduct("wxrc-$(version_mm)", :wxrc),
-    #LibraryProduct(["libwx_gtk3u_adv-$(version.major).$(version.minor)","wxmsw$(version.major)$(version.minor)$(version.patch)u_adv_gcc_custom", "libwx_osx_cocoau_adv-$(version.major).$(version.minor).$(version.patch)"], :adv),
-    LibraryProduct(["libwx_gtk3u_core-$(version_mm)","wxmsw$(version_no_sep)u_core_gcc_custom", "libwx_osx_cocoau_core-$(version_mm)-x86_64-apple-darwin14"], :core),
-    LibraryProduct(["libwx_gtk3u_richtext-$(version_mm)","wxmsw$(version_no_sep)u_richtext_gcc_custom", "libwx_osx_cocoau_richtext-$(version_mm)-x86_64-apple-darwin14"], :richtext),
-    LibraryProduct(["libwx_gtk3u_html-$(version_mm)","wxmsw$(version_no_sep)u_html_gcc_custom", "libwx_osx_cocoau_html-$(version_mm)-x86_64-apple-darwin14"], :html),
-    LibraryProduct(["libwx_baseu_xml-$(version_mm)","wxbase$(version_no_sep)u_xml_gcc_custom", "libwx_baseu_xml-$(version_mm)-x86_64-apple-darwin14"], :baseu_xml),
-    LibraryProduct(["libwx_gtk3u_aui-$(version_mm)","wxmsw$(version_no_sep)u_aui_gcc_custom", "libwx_osx_cocoau_aui-$(version_mm)-x86_64-apple-darwin14"], :aui),
-    LibraryProduct(["libwx_gtk3u_stc-$(version_mm)","wxmsw$(version_no_sep)u_stc_gcc_custom", "libwx_osx_cocoau_stc-$(version_mm)-x86_64-apple-darwin14"], :stc),
     LibraryProduct(["libwx_baseu-$(version_mm)","wxbase$(version_no_sep)u_gcc_custom", "libwx_baseu-$(version_mm)-x86_64-apple-darwin14"], :baseu),
-    LibraryProduct(["libwx_gtk3u_qa-$(version_mm)","wxmsw$(version_no_sep)u_qa_gcc_custom", "libwx_osx_cocoau_qa-$(version_mm)-x86_64-apple-darwin14"], :qa),
-    LibraryProduct(["libwx_gtk3u_ribbon-$(version_mm)","wxmsw$(version_no_sep)u_ribbon_gcc_custom", "libwx_osx_cocoau_ribbon-$(version_mm)-x86_64-apple-darwin14"], :ribbon),
-    LibraryProduct(["libwx_gtk3u_propgrid-$(version_mm)","wxmsw$(version_no_sep)u_propgrid_gcc_custom", "libwx_osx_cocoau_propgrid-$(version_mm)-x86_64-apple-darwin14"], :propgrid),
-    LibraryProduct(["libwx_gtk3u_xrc-$(version_mm)","wxmsw$(version_no_sep)u_xrc_gcc_custom", "libwx_osx_cocoau_xrc-$(version_mm)-x86_64-apple-darwin14"], :xrc),
-    LibraryProduct(["libwx_baseu_net-$(version_mm)","wxbase$(version_no_sep)u_net_gcc_custom", "libwx_baseu_net-$(version_mm)-x86_64-apple-darwin14"], :baseu_net)
+    LibraryProduct(["libwx_baseu_net-$(version_mm)","wxbase$(version_no_sep)u_net_gcc_custom", "libwx_baseu_net-$(version_mm)-x86_64-apple-darwin14"], :baseu_net),
+    LibraryProduct(["libwx_baseu_xml-$(version_mm)","wxbase$(version_no_sep)u_xml_gcc_custom", "libwx_baseu_xml-$(version_mm)-x86_64-apple-darwin14"], :baseu_xml),
+    LibraryProduct(gen_libnames("aui"), :aui),
+    #LibraryProduct(gen_libnames("adv"), :adv),
+    LibraryProduct(gen_libnames("core"), :core),
+    LibraryProduct(gen_libnames("html"), :html),
+    LibraryProduct(gen_libnames("propgrid"), :propgrid),
+    LibraryProduct(gen_libnames("qa"), :qa),
+    LibraryProduct(gen_libnames("ribbon"), :ribbon),
+    LibraryProduct(gen_libnames("richtext"), :richtext),
+    LibraryProduct(gen_libnames("stc"), :stc),
+    LibraryProduct(gen_libnames("xrc"), :xrc)
+    
 ]
 
 
