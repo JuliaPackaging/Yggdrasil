@@ -42,11 +42,11 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # libcurl changed compatibility version for macOS from v7.71 to v7.73 (v11
     # to v12)
-    Dependency("LibCURL_jll", v"7.71.1"),
+    Dependency("LibCURL_jll", v"7.73.0"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
     Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll", v"2.16.0"),
+    Dependency("MbedTLS_jll", v"2.24.0"),
     Dependency("nghttp2_jll"),
     Dependency("Zlib_jll"),
 ]
