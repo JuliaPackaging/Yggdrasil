@@ -96,9 +96,9 @@ filter!(p -> arch(p) != "armv6l", platforms)
 #see https://github.com/wxWidgets/wxWidgets/blob/master/docs/contributing/about-platform-toolkit-and-library-names.md for more info on naming
 products = [
     ExecutableProduct("wxrc-$(version_mm)", :wxrc),
-    LibraryProduct(["libwx_baseu-$(version_mm)","wxbase$(version_no_sep)u_gcc_custom", "libwx_baseu-$(version_mm)-x86_64-apple-darwin14"], :baseu),
-    LibraryProduct(["libwx_baseu_net-$(version_mm)","wxbase$(version_no_sep)u_net_gcc_custom", "libwx_baseu_net-$(version_mm)-x86_64-apple-darwin14"], :baseu_net),
-    LibraryProduct(["libwx_baseu_xml-$(version_mm)","wxbase$(version_no_sep)u_xml_gcc_custom", "libwx_baseu_xml-$(version_mm)-x86_64-apple-darwin14"], :baseu_xml),
+    LibraryProduct(["libwx_baseu-$(version_mm)","wxbase$(version_no_sep)u_gcc_custom", "libwx_baseu-$(version_mm)-x86_64-apple-darwin14", "libwx_baseu-$(version_mm)-aarch64-apple-darwin20"], :baseu),
+    LibraryProduct(["libwx_baseu_net-$(version_mm)","wxbase$(version_no_sep)u_net_gcc_custom", "libwx_baseu_net-$(version_mm)-x86_64-apple-darwin14", "libwx_baseu_net-$(version_mm)-aarch64-apple-darwin20"], :baseu_net),
+    LibraryProduct(["libwx_baseu_xml-$(version_mm)","wxbase$(version_no_sep)u_xml_gcc_custom", "libwx_baseu_xml-$(version_mm)-x86_64-apple-darwin14", "libwx_baseu_xml-$(version_mm)-aarch64-apple-darwin20"], :baseu_xml),
     LibraryProduct(gen_libnames("aui"), :aui),
     #LibraryProduct(gen_libnames("adv"), :adv),
     LibraryProduct(gen_libnames("core"), :core),
