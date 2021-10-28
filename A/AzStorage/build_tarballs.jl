@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "AzStorage"
-version = v"0.3.0"
+version = v"0.4.0"
 
 # Collection of sources required to build AzStorage
 sources = [
