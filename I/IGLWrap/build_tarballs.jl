@@ -46,6 +46,7 @@ dependencies = [
 	Dependency("GMP_jll"),
 	Dependency("MPFR_jll"),
 	Dependency("OpenBLAS_jll"),
+	Dependency("CGAL_jll"),
  ]
 
 build_tarballs(ARGS, "IGLWrap", version,
