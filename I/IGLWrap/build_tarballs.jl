@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 ls -l ${WORKSPACE} >&2
 ls -l ${WORKSPACE}/srcdir >&2
-echo a
 mkdir build||true; cd build
 cmake \
   -DCMAKE_INSTALL_PREFIX=$prefix \
