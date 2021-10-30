@@ -73,6 +73,7 @@ void to_jl(Mesh m, int *nv, int *nf, double **mv, int **mf) {/*««*/
   }
 }/*»»*/
 
+extern "C" {
 int mesh_boolean(/*««*/
   int op,
   int nv1, int nf1, const double *mv1, const int *mf1,
@@ -282,5 +283,6 @@ int swept_volume(int nv, int nf, const double *mv, const int *mf,
 	return 0;
 }
 
+}
 
 // vim: noet ts=2 sw=2 fmr=««,»»:

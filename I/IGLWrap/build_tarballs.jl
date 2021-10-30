@@ -16,18 +16,14 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir
-ls -l ${WORKSPACE} >&2
-ls -l ${WORKSPACE}/srcdir >&2
 mkdir build||true; cd build
 cmake \
   -DCMAKE_INSTALL_PREFIX=$prefix \
 	-DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/libigl/cmake\; \
 	..
 make && make install
-echo "blah" >&2
 
-
-install_license ${WORKSPACE}/srcdir/LICENSE
+# install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 products = [
