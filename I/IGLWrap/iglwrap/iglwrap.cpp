@@ -12,7 +12,6 @@
 #include <igl/swept_volume.h>
 // #include <igl/embree/reorient_facets_raycast.h>
 #include <igl/copyleft/cgal/intersect_with_half_space.h>
-#include "iglwrap.h"
 #include <boost/bind/bind.hpp>
 
 using namespace boost::placeholders;
