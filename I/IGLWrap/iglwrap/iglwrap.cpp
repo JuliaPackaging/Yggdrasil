@@ -19,6 +19,8 @@ using namespace Eigen;
 
 typedef Matrix<double,Dynamic,3> VertexMatrix;
 typedef Matrix<int,Dynamic,3> FaceMatrix;
+typedef double vec3d[3];
+typedef double mat3d[3][3];
 
 // typedef Matrix<double, Dynamic, 3, RowMajor> vertices_t;
 // typedef Matrix<int, Dynamic, 3, RowMajor> faces_t;
@@ -258,7 +260,6 @@ int intersect_with_half_space(int nv, int nf, /*««*/
 	}
 	return 0;
 }/*»»*/
-typedef void (*affine3d_func_t)(double, mat3d*, vec3d*);
 int swept_volume(int nv, int nf, const double *mv, const int *mf,
 	void (*ctransform)(double, mat3d*, vec3d*),
 	size_t steps, size_t gridres, double isolevel,
