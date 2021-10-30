@@ -16,6 +16,8 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir
+ls -l ${WORKSPACE} >&2
+ls -l ${WORKSPACE}/srcdir >&2
 echo a
 mkdir build||true; cd build
 cmake \
@@ -23,6 +25,9 @@ cmake \
 	-DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/libigl/cmake\; \
 	..
 make && make install
+echo "blah" >&2
+
+
 install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
