@@ -16,12 +16,15 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir build||true; cd build
+mkdir -p build
+cd build
 cmake \
-  -DCMAKE_INSTALL_PREFIX=$prefix \
-	-DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/libigl/cmake\; \
-	..
-make && make install
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/libigl/cmake\; \
+    ..
+make -j${nproc}
+make install
 
 # install_license ${WORKSPACE}/srcdir/LICENSE
 """
