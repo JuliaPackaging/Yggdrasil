@@ -6,6 +6,7 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Boost
 set(Boost_USE_STATIC_LIBS OFF)
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CROSS_COMPILING TRUE)
 find_package(Boost 1.71 COMPONENTS thread REQUIRED)
 #  include(FindBoost)
 
