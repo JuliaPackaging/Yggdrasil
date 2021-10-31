@@ -7,12 +7,19 @@ version = v"1.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dlcdn.apache.org//apr/apr-$(version).tar.gz", "48e9dbf45ae3fdc7b491259ffb6ccf7d63049ffacbc1c0977cced095e4c2d5a2")
+    ArchiveSource("https://dlcdn.apache.org//apr/apr-$(version).tar.gz", "48e9dbf45ae3fdc7b491259ffb6ccf7d63049ffacbc1c0977cced095e4c2d5a2"),
+    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/apr-*
+
+#stop libtool from building gen_test_char for non-native host
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-libtool-compile-gen_test_char.patch
+
+#compile it with host compiler manually
+${HOSTCC} -Wall -O2 -DCROSS_COMPILE tools/gen_test_char.c -s -o tools/gen_test_char
 
 #CPPFLAGS trick and configure hints are from https://bz.apache.org/bugzilla/show_bug.cgi?id=50146
 export CPPFLAGS="-DAPR_IOVEC_DEFINED"
