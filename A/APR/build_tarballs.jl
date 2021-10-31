@@ -28,6 +28,7 @@ export CPPFLAGS="-DAPR_IOVEC_DEFINED"
 --prefix=${prefix} \
 --build=${MACHTYPE} \
 --host=${target} \
+--with-installbuilddir=$(mktemp -d) \
 --enable-shared=yes \
 --enable-static=no \
 --disable-libtool-lock \
