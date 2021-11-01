@@ -6,11 +6,11 @@ include("../../fancy_toys.jl")
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.19"
+auto_version = "refs/tags/v0.0.21"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "cc89bab6a9872996af46332323b86283fca9d643")]
+sources = [GitSource(repo, "63311793ca5e5b7f6854d9c0b1f2fda26b60ac41")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -31,6 +31,9 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+if [[ "${target}" == *apple* ]]; then
+  CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=12)
+fi
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 """
