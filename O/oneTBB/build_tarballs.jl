@@ -3,15 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.2.1"
+version = v"2021.4.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              # Note: this isn't actually 2021.2.1 (there is no such versions at
-              # the moment), this seems to be the revision where most platforms
-              # are successful
-              "9e15720bc7744f85dff611d34d65e9099e077da4"),
+              "4e021eafc03519cb1081ed775c9502cae72f8d8d"),
     DirectorySource("./bundled"),
 ]
 
@@ -37,10 +34,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-# Windows with MinGW at the moment doesn't work, but it may change in the near
-# future, watch out <https://github.com/oneapi-src/oneTBB/pull/351>. See also
-# <https://stackoverflow.com/q/67572880/2442087>.
-filter!(!Sys.iswindows, platforms)
+
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
