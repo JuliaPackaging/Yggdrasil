@@ -8,7 +8,6 @@ version = v"2.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/cli/cli.git", "a843cbd72813025817a2293a09b31c4597a3f655"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
