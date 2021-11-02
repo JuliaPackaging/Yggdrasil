@@ -19,7 +19,7 @@ export CGO_ENABLED=0
 
 go build -v ./cmd/gh
 mkdir ${bindir}
-mv ./gh ${bindir}/gh${exeext}
+mv ./gh${exeext} ${bindir}/gh${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
