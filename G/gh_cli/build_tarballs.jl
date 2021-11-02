@@ -13,10 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cli/
-
 go build -v ./cmd/gh
 mkdir ${bindir}
-mv ./gh${exeext} ${bindir}/gh${exeext}
+mv gh${exeext} ${bindir}/gh${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
