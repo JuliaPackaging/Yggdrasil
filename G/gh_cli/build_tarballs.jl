@@ -17,20 +17,7 @@ cd $WORKSPACE/srcdir/cli/
 export GO_LDFLAGS="-s -w"
 export CGO_ENABLED=0
 
-if [[ "${target}" == *-apple-* ]]; then
-    export GOARCH=darwin
-fi
-
-if [[ "${target}" == aarch64* ]]; then
-    export GOARCH=arm
-fi
-
-if [[ "${target}" == x86_64-* ]]; then
-    export GOARCH=amd64
-fi
-
-export CGO_ENABLED=0
-make clean bin/gh
+go build -v ./cmd/gh
 mkdir ${bindir}
 mv ./bin/gh ${bindir}/gh${exeext}
 """
