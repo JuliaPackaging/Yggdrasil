@@ -32,7 +32,8 @@ cmake --build . --config Release --target install -- -j${nproc}
 Sadly, no windows support yet. It looks to me like the upstream treats
 `defined(_WIN32)` as synonymous with `build with MSVC`.
 =#
-platforms = filter(p -> p.tags["os"] != "windows", supported_platforms())
+platforms =
+    filter(p -> p.tags["os"] != "windows", expand_cxxstring_abis(supported_platforms()))
 
 products = [
     FileProduct("lib/libonnx.a", :libonnx),
