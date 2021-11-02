@@ -14,9 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cli/
 
-export GO_LDFLAGS="-s -w"
-export CGO_ENABLED=0
-
 go build -v ./cmd/gh
 mkdir ${bindir}
 mv ./gh${exeext} ${bindir}/gh${exeext}
