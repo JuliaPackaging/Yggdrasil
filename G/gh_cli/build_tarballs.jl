@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cli/
 
-make
+GO_LDFLAGS="-s -w -X main.updaterEnabled=cli/cli" make
 mkdir ${bindir}
 mv ./bin/gh ${bindir}/gh${exeext}
 """
