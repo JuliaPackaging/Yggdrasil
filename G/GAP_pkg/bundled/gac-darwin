@@ -66,12 +66,12 @@ gap_compiler="${abs_top_builddir}/gap"
 . "${abs_top_builddir}/sysinfo.gap"
 
 # These three should be filled in by the standard autoconf procedures
-c_compiler="gcc -fno-common -DPIC"
-cxx_compiler="g++ -fno-common -DPIC"
+c_compiler="cc -fno-common -DPIC"
+cxx_compiler="c++ -fno-common -DPIC"
 c_linker="echo static linking not supported ; exit 1 ;"
 
 # These will need special care
-c_dyn_linker="gcc -bundle -lgap"
+c_dyn_linker="clang -bundle -lgap"
 
 c_addlibs="-lgap"
 
