@@ -7,7 +7,7 @@ name = "SymEngine"
 version = v"0.8.1"
 sources = [
     ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
-                  "ebe71d3c42661d12fa991040097ff383e193006af4e76d1adaabb8cee45cf94c"),
+                  "41eb6ae6901c09e53d7f61f0758f9201e81fc534bfeecd4b2bd4b4e6f6768693"),
 ]
 
 # Bash recipe for building across all platforms
