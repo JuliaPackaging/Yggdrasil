@@ -53,6 +53,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# For the time being use LLVM 11 because LLVM 12 has troubles with GCC 4-5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", preferred_llvm_version=v"11")
+               preferred_gcc_version=v"5")
