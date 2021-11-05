@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.8.3"
-build_for_julia16_or_newer = false
+build_for_julia16_or_newer = true
 version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
