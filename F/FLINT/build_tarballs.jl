@@ -25,8 +25,8 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.8.1"
-build_for_julia16_or_newer = true
+upstream_version = v"2.8.3"
+build_for_julia16_or_newer = false
 version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -34,7 +34,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "e3ef7bc1fa9b89f2df72fa6501cac21f518e6f15"), # git tag v2.8.1
+    GitSource("https://github.com/wbhart/flint2.git", "b3ecb8fe3d20a25963968831551b2c9c6ec04b2e"), # git tag v2.8.3
     DirectorySource("./bundled"),
 ]
 
@@ -68,19 +68,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
+    Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
 ]
-if build_for_julia16_or_newer
-    dependencies = [
-        Dependency("GMP_jll", v"6.2.0"),
-        Dependency("MPFR_jll", v"4.1.1"),
-    ]
-end
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = build_for_julia16_or_newer ? "1.6" : "1.0",
+               julia_compat = build_for_julia16_or_newer ? "1.6" : "1.0-1.5",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones
