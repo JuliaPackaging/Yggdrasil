@@ -71,8 +71,7 @@ cmake .. \
 make -j${nproc}
 make install
 
-cd ..
-install_license LICENSE.md
+install_license ../LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
