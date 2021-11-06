@@ -1,0 +1,15 @@
+--- configure.orig	2019-03-26 03:46:55.540423566 -0400
++++ configure	2019-03-27 15:51:29.215795054 -0400
+@@ -17182,12 +17182,6 @@
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_dwarf" >&5
+ $as_echo "$use_dwarf" >&6; }
+ 
+-if test x$target_arch = xppc64; then
+-        libdir='${exec_prefix}/lib64'
+-        { $as_echo "$as_me:${as_lineno-$LINENO}: PowerPC64 detected, lib will be installed ${libdir}" >&5
+-$as_echo "$as_me: PowerPC64 detected, lib will be installed ${libdir}" >&6;};
+-
+-fi
+ 
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to restrict build to remote support" >&5
+ $as_echo_n "checking whether to restrict build to remote support... " >&6; }
