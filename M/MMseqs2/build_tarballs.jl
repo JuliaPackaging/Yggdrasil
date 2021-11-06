@@ -74,7 +74,7 @@ install_license ../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
+platforms = supported_platforms(; experimental=true, exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 # also expand cxxstring abis on macos because we use g++
 platforms = expand_cxxstring_abis(platforms; skip=Sys.isfreebsd)
 
