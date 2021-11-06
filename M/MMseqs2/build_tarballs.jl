@@ -27,22 +27,23 @@ version_commitprefix = "45111"
 #     error: ‘posix_memalign’ was not declared in this scope
 #     (and more following errors)
 # - i686: compile error due to bitwidth issues, haven't investigated more
-# - aarch64-linux with cmake option -DHAVE_ARM8=1, had to deactivate
-#   - compile wants to set -march=armv8-a+simd, but BinaryBuild
-#     wrappers don't allow that
 # - powerpc build fails with gcc-7.x
 
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
-                  "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2")
+                  "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd MMseqs2-*/
+
+# patch CMakeLists.txt so it doesn't set -march unnecessarily on ARM
+atomic_patch -p1 ../patches/arm-simd-march-cmakefile.patch
 
 # macos, freebsd: use gcc/g++ so we can use openmp
 if [[ "${target}" == *-darwin* || "${target}" == -freebsd* ]]; then
@@ -57,10 +58,7 @@ if [[ "${target}" == x86_64-* || "${target}" == i686-* ]]; then
 elif [[ "${target}" == powerpc64le-* ]]; then
     ARCH_FLAGS="-DHAVE_POWER8=1 -DHAVE_POWER9=1"
 elif [[ "${target}" == aarch64-* ]]; then
-    # TODO: commented out because this causes -march=armv8-a+simd to be added to CFLAGS
-    #       which is not allowed by the BinaryBuilder toolchain
-    # ARCH_FLAGS="-DHAVE_ARM8=1"
-    ARCH_FLAGS=
+    ARCH_FLAGS="-DHAVE_ARM8=1"
 fi
 
 mkdir build
