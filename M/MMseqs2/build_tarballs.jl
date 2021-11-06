@@ -3,7 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "MMseqs2"
-version = v"13.45111.0"
+version = v"13"
+
+# MMseqs2 seem to use as versioning scheme of "major version + first 5
+# characters of the tagged commit"
+# https://github.com/soedinglab/MMseqs2/releases
+version_commitprefix = "45111"
+
 
 # Possible build variants
 # - OpenMP (default)
@@ -33,7 +39,7 @@ version = v"13.45111.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version.minor).tar.gz",
+    ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
                   "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2")
 ]
 
