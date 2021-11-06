@@ -20,10 +20,6 @@ version_commitprefix = "45111"
 # - built-in zstd, replace with Zstd_jll? (-DUSE_SYSTEM_ZSTD=1 cmake option)
 # - os-specific build script examples under util/build_{osx,windows}
 
-# Auditor warnings
-# - freebsd (x86_64-unknown-freebsd)
-#   Warning: Linked library libomp.so could not be resolved and could not be auto-mapped
-
 # Build failures
 # - windows:
 #   - cmake can't find openmp, this check can be avoided by passing -DREQUIRE_OPENMP=0 to cmake
