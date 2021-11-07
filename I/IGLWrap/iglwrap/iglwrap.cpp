@@ -58,7 +58,7 @@ void to_jl(Mesh m, int *nv, int *nf, double **mv, int **mf) {/*««*/
   }
   *mf = (int *) malloc(3* (*nf)*sizeof(int));
   if(*mf == 0) {
-    free(mv);
+    free(*mv);
     *mv = 0;
     return;
   }
