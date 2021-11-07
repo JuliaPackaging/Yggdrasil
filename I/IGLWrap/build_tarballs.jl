@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p build
 cd build
-# this line seems to prevent compilation; removed for testing:
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
