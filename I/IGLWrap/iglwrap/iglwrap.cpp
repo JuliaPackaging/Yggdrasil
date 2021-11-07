@@ -1,4 +1,5 @@
-// TODO: write conversion functions Julia ↔ C++
+// This file copyright 2021 by Jérôme Plût <plut.jerome@gmail.org>,
+// licensed under the MIT license <https://opensource.org/licenses/MIT>.
 #include <Eigen/Dense>
 #include <stdlib.h>
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS

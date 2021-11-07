@@ -11,7 +11,9 @@ sources = [
 	DirectorySource("./iglwrap"),
 	# 2.3.0 stable release:
 	GitSource("https://github.com/libigl/libigl.git",
-		"e60423e28c86b6aa2a3f6eb0112e8fd881f96777")
+		"e60423e28c86b6aa2a3f6eb0112e8fd881f96777"),
+	FileSource("https://www.gnu.org/licenses/gpl-3.0.txt",
+		"3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"),
 ]
 
 script = raw"""
@@ -27,6 +29,7 @@ cmake \
     ..
 make -j${nproc}
 make install
+install_license gpl-3.0.txt
 """
 
 products = [
