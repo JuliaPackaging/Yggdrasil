@@ -18,6 +18,7 @@ version_commitprefix = "45111"
 
 # TODO
 # - built-in zstd, replace with Zstd_jll? (-DUSE_SYSTEM_ZSTD=1 cmake option)
+# - aarch64 macos: single-threaded, openmp not used
 # - os-specific build script examples under util/build_{osx,windows}
 
 # Build failures
@@ -26,8 +27,12 @@ version_commitprefix = "45111"
 #   - compile error afterwards
 #     error: ‘posix_memalign’ was not declared in this scope
 #     (and more following errors)
+# - macos aarch64
+#   - g++-11 build fails (tries to compile for x86 simd)
+#   - compiles with clang, but openmp doesn't work
 # - i686: compile error due to bitwidth issues, haven't investigated more
-# - powerpc build fails with gcc-7.x
+# - powerpc build fails with g++-7.x (tries to compile for x86 simd),
+#   works with g++-8.x and above
 
 
 # Collection of sources required to complete build
@@ -45,10 +50,16 @@ cd MMseqs2-*/
 # patch CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/arm-simd-march-cmakefile.patch
 
-# macos, freebsd: use gcc/g++ so we can use openmp
-if [[ "${target}" == *-darwin* || "${target}" == -freebsd* ]]; then
+# macos x86_64: use gcc/g++ so we can use openmp
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     CMAKE_TARGET_TOOLCHAIN="${CMAKE_TARGET_TOOLCHAIN/%.cmake/_gcc.cmake}"
     echo "[INFO] setting CMAKE_TARGET_TOOLCHAIN = ${CMAKE_TARGET_TOOLCHAIN}"
+fi
+
+# macos aarch64: disable openmp as it doesn't work with clang
+EXTRA_CMAKE_FLAGS=
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    EXTRA_CMAKE_FLAGS="-DREQUIRE_OPENMP=0"
 fi
 
 # architecture extensions
@@ -65,7 +76,7 @@ mkdir build
 cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RELEASE \
-    -DNATIVE_ARCH=0 ${ARCH_FLAGS}
+    -DNATIVE_ARCH=0 ${EXTRA_CMAKE_FLAGS} ${ARCH_FLAGS}
 make -j${nproc}
 make install
 
@@ -75,8 +86,8 @@ install_license ../LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true, exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
-# also expand cxxstring abis on macos because we use g++
-platforms = expand_cxxstring_abis(platforms; skip=Sys.isfreebsd)
+# expand cxxstring abis on platforms where we use g++
+platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
 # The products that we will ensure are always built
 products = [
