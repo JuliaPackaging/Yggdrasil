@@ -11,14 +11,16 @@ version = v"1.9.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/doxygen/doxygen/archive/refs/tags/Release_$(version.major)_$(version.minor)_$(version.patch).tar.gz",
-                  "40f429241027ea60f978f730229d22e971786172fdb4dc74db6406e7f6c034b3")
+                  "40f429241027ea60f978f730229d22e971786172fdb4dc74db6406e7f6c034b3"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd doxygen-*/
-
+cd $WORKSPACE/srcdir/doxygen*/
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/skip-iconv-in-glibc-test.patch
+fi
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
@@ -39,7 +41,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency(PackageSpec(name="Libiconv_jll")),
 ]
 
