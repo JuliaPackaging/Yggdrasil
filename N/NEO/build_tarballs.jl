@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"21.41.21220"
+version = v"21.44.21506"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "3016ed1c395711a1a2b48d05836733f455c3899c"),
+              "586eaeaf2ebceeb9c0095ecd2f774a272038afbc"),
 ]
 
 # Bash recipe for building across all platforms
