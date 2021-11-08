@@ -10,13 +10,13 @@ sources = [
     GitSource("https://github.com/pciutils/pciutils.git", "864aecdea9c7db626856d8d452f6c784316a878c")
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd pciutils
-make install PREFIX=${prefix} SHARED=yes SBINDIR=${prefix}/bin
+make install PREFIX=${prefix} SHARED=yes SBINDIR=${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
