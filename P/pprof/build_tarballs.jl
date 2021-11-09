@@ -7,7 +7,7 @@ name = "pprof"
 # main branch.
 
 hash = "20978b51388db0648809a2c5cc88b494c7945ec1"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build pprof
 sources = [
@@ -32,8 +32,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat="1.6")
