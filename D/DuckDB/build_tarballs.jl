@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.3.0"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,7 +20,7 @@ fi
 
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DDISABLE_UNITY=TRUE -DENABLE_SANITIZER=FALSE -DBUILD_UNITTESTS=FALSE ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_PARQUET_EXTENSION=1 -DDISABLE_UNITY=TRUE -DENABLE_SANITIZER=FALSE -DBUILD_UNITTESTS=FALSE ..
 make -j${nproc}
 make install
 
