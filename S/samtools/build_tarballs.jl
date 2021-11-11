@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/samtools/
 autoheader
 autoconf -Wno-syntax
 export CPPFLAGS="-I${includedir}"
+if [[ "${target}" != *-darwin* ]]; then
+    # Need to pass `-lcurl` because it's needed by libhts
+    export LIBS="-lcurl"
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -34,6 +38,11 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Ncurses_jll", uuid="68e3532b-a499-55ff-9963-d1c0c0748b3a"))
     Dependency(PackageSpec(name="htslib_jll", uuid="f06fe41e-9474-5571-8c61-5634d2b2700c"))
+    # `MbedTLS_jll` is an indirect dependency through `htslib_jll` (-> `LibCURL_jll` ->
+    # `MbedTLS_jll`).  For some reasons that aren't clear to me at the moment, we are
+    # getting a version of `MbedTLS_jll` which doesn't match the one `LibCURL_jll` was
+    # compiled with.
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
