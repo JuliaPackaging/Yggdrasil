@@ -15,10 +15,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/samtools/
 autoheader
 autoconf -Wno-syntax
-      ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+export CPPFLAGS="-I${includedir}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
