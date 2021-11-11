@@ -1,19 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Infernal"
 version = v"1.1.4"
 
 easel_version = v"0.48"
 hmmer_version = v"3.3.2"
-
-# Notes
-# - Infernal requires SSE or VMX vector instructions,
-#   VMX only on big-endian platforms (ppc64 not ppc64le)
-# - ARM vector instruction support coming soon
-# - build fails on windows
-#   easel.c:39:20: fatal error: syslog.h: No such file or directory
 
 # Collection of sources required to complete build
 sources = [
@@ -32,10 +25,9 @@ cd $WORKSPACE/srcdir/infernal-*/
 mv ../easel-*/ easel
 mv ../hmmer-*/ hmmer
 
-# Replace the config.sub from infernal with a newer config.sub from
-# easel.  Otherwise we get an error when running configure: "Invalid
-# configuration `x86_64-linux-musl'."
-cp easel/config.sub .
+# Update the config.sub from infernal.  Otherwise we get an error when running
+# configure: "Invalid configuration `x86_64-linux-musl'."
+update_configure_scripts
 
 # generate configure script
 autoreconf -vi
@@ -43,7 +35,7 @@ autoreconf -vi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-pic --enable-threads --with-gsl
 
-make
+make -j${nproc}
 make install
 
 install_license LICENSE
@@ -51,7 +43,13 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || (arch(p) != "x86_64" && arch(p) != "i686"))
+# Notes
+# - Infernal requires SSE or VMX vector instructions,
+#   VMX only on big-endian platforms (ppc64 not ppc64le)
+# - ARM vector instruction support coming soon
+# - build fails on windows
+#   easel.c:39:20: fatal error: syslog.h: No such file or directory
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || proc_family(p) != "intel")
 
 # The products that we will ensure are always built
 products = [
