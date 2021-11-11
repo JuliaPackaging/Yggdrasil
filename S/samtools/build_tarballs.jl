@@ -8,16 +8,11 @@ version = v"1.10.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/samtools/samtools.git", "f01547ee339b68629f754702ba678a63121fbdfa"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd samtools/
+cd $WORKSPACE/srcdir/samtools/
 autoheader
 autoconf -Wno-syntax
       ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -28,14 +23,7 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; )
-]
+platforms = supported_platforms(; experimental=true)
 
 
 # The products that we will ensure are always built
