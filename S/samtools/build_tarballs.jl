@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "samtools"
-version = v"1.10.0"
+version = v"1.14"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/samtools/samtools.git", "f01547ee339b68629f754702ba678a63121fbdfa"),
+    GitSource("https://github.com/samtools/samtools.git", "c29621d3ae075573fce83e229a5e02348d4e8147"),
 ]
 
 # Bash recipe for building across all platforms
