@@ -18,7 +18,7 @@ cd build/
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 make -j${nproc}
 make install
-install_license ${WORKSPACE}/srcdir/pinchot-c-api/LICENSE.txt
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
