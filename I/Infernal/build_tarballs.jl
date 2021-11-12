@@ -25,12 +25,7 @@ cd $WORKSPACE/srcdir/infernal-*/
 mv ../easel-*/ easel
 mv ../hmmer-*/ hmmer
 
-# Update the config.sub from infernal.  Otherwise we get an error when running
-# configure: "Invalid configuration `x86_64-linux-musl'."
-update_configure_scripts
-
-# generate configure script
-autoreconf -vi
+update_configure_scripts --reconf
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-pic --enable-threads --with-gsl
