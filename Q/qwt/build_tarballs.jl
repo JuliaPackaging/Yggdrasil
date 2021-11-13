@@ -43,12 +43,12 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+platforms_linux = filter(p -> Sys.islinux(p), platforms)
+platforms_win = filter(p -> Sys.iswindows(p), platforms)
+
 if any(should_build_platform.(triplet.(platforms_linux)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
 end
 if any(should_build_platform.(triplet.(platforms_win)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8")
-end
-if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
 end
