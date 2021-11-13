@@ -19,8 +19,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBLAS_LIBRARIES="-lopenblas" \
-    -DWITH_RANGE_COULOMB
+    -DBLAS_LIBRARIES="-lopenblas"
 
 make
 make install
@@ -41,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
