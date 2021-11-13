@@ -12,9 +12,9 @@ sources = [
 
 dependencies = [
     Dependency("boost_jll"; compat="=1.76.0"), # max gcc7
-    Dependency("Readline_jll"; compat="~8.1.1"),
-    Dependency("Tcl_jll"; compat="~8.6.11"),
-    Dependency("Zlib_jll"; compat="~1.2.11"),
+    Dependency("Readline_jll"; compat="8.1.1"),
+    Dependency("Tcl_jll"; compat="8.6.11"),
+    Dependency("Zlib_jll"; compat="1.2.11"),
     Dependency("Libffi_jll"; compat="~3.2.2")
 ]
 
