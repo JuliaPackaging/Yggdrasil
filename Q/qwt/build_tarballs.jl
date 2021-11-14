@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qwt
-qmake
+qmake QMAKE_CXXFLAGS+="-isystem $includedir/QtSvg"
 make -j${nproc}
 make install
 """
