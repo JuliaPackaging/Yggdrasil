@@ -7,33 +7,29 @@ version = v"17.1.83"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.nikhef.nl/~h24/download/qcdnum170183.tar.gz", "ae1380d3bf8c8c13af4c1e9fe889213f0ef900a073e2d25229f6744ff040fa82")
+    ArchiveSource("https://www.nikhef.nl/~h24/download/qcdnum170183.tar.gz",
+                  "ae1380d3bf8c8c13af4c1e9fe889213f0ef900a073e2d25229f6744ff040fa82"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd qcdnum-17-01-83/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+cd $WORKSPACE/srcdir/qcdnum*/
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Fix the error:
+    #     Rank mismatch between actual argument at (1) and actual argument at (2) (rank-1 and scalar)
+    export FFLAGS="-fallow-argument-mismatch"
+elif [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/link-no-undefined-windows.patch
+fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = supported_platforms(; experimental=true)
 platforms = expand_gfortran_versions(platforms)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -43,7 +39,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
