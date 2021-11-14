@@ -13,8 +13,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+prefixqmake=$(which qmake)
+realqmake=$(readlink $prefixqmake)
+rm $prefixqmake
+cp $bindir/$realqmake $prefixqmake
+
 cd $WORKSPACE/srcdir/qwt
-qmake QMAKE_CXXFLAGS+="-isystem $includedir/QtSvg"
+qmake
 make -j${nproc}
 make install
 """
