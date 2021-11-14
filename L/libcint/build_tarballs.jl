@@ -29,8 +29,7 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows")
+    Platform("x86_64", "macos")
 ]
 
 # The products that we will ensure are always built
