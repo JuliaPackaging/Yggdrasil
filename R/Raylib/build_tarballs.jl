@@ -7,30 +7,27 @@ version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/raysan5/raylib.git", "0851960397f02a477d80eda2239f90fae14dec64")
+    GitSource("https://github.com/raysan5/raylib.git",
+              "0851960397f02a477d80eda2239f90fae14dec64"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd raylib/src/
-CFLAGS="-D_POSIX_C_SOURCE=199309L -I${prefix}/include" make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
-DESTDIR="${prefix}" make install RAYLIB_LIBTYPE=SHARED
+cd $WORKSPACE/srcdir/raylib/src/
+atomic_patch -p1 ../../patches/make-install-everywhere.patch
+export CFLAGS="-D_POSIX_C_SOURCE=200112L -I${includedir}"
+if [[ "${target}" == *-freebsd* ]]; then
+    # Allow definition of `u_char`, `u_short`, `u_int`, and `u_long` in sys/types.h
+    CFLAGS="${CFLAGS} -D__BSD_VISIBLE"
+fi
+make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
+make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-]
+platforms = supported_platforms(; experimental=true, exclude=p->arch(p)=="armv6l" || Sys.iswindows(p))
 
 
 # The products that we will ensure are always built
