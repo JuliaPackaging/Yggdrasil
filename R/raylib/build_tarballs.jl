@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "raylib"
+name = "Raylib"
 version = v"4.0.0"
 
 # Collection of sources required to complete build
@@ -35,7 +35,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libraylib", :raylib)
+    LibraryProduct("libraylib", :libraylib)
 ]
 
 # Dependencies that must be installed before this package can be built
