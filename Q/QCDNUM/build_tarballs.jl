@@ -34,7 +34,8 @@ platforms = [
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("x86_64", "freebsd"; )
 ]
-
+platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
