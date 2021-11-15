@@ -12,16 +12,3 @@ The authors of NOVAS ask that if you use their software in your work,
 that you let them know at help@aa.usno.navy.mil since a record of who is
 using their software helps them justify the excellent work that they are
 doing by making the software available to the public.
-
-.. _precession: http://asa.usno.navy.mil/SecM/Glossary.html#precession
-.. _nutation: http://asa.usno.navy.mil/SecM/Glossary.html#nutation
-.. _aberration: http://asa.usno.navy.mil/SecM/Glossary.html#aberration
-.. _parallax: http://asa.usno.navy.mil/SecM/Glossary.html#parallax
-.. _deflection of light: http://asa.usno.navy.mil/SecM/Glossary.html#deflection-light
-.. _webpage: http://ssd.jpl.nasa.gov/?planet_eph_export
-.. _unittest2 module: http://pypi.python.org/pypi/unittest2
-.. _NOVAS home page: http://aa.usno.navy.mil/software/novas/novas_py/novaspy_intro.php
-.. _NOVAS FAQ: http://aa.usno.navy.mil/software/novas/novas_faq.php
-.. _GitHub repository: https://github.com/brandon-rhodes/python-novas
-.. _User’s Guide to NOVAS: https://github.com/brandon-rhodes/python-novas/raw/master/Cdist/NOVAS_C3.1_Guide.pdf
-.. _Brandon Rhodes: https://rhodesmill.org/brandon/
