@@ -8,7 +8,7 @@ version = v"7.4"
 # Collection of sources required to complete build
 sources = [
             GitSource("https://github.com/Xyce/Xyce.git", "82f96bbe05bac5921cd6fa1e8bb6a2983a797bf8"),
-            # DirectorySource("./bundled")
+            DirectorySource("./bundled")
           ]
 
 # Bash recipe for building across all platforms
