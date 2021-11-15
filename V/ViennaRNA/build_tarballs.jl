@@ -63,6 +63,7 @@ if [[ $target == *-linux-* ]]; then
     ldflags="$ldflags -flto -ffat-lto-objects"
 elif [[ $target == *-w64-mingw32* ]]; then
     ldflags="$ldflags -flto -ffat-lto-objects"
+    # needed for dlib
     libs="$libs -lws2_32"
 fi
 if [[ $target != *-darwin* ]]; then
