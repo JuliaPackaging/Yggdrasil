@@ -3,25 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.4.18"
+version = v"2.5.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ViennaRNA/ViennaRNA/releases/download/v$(version)/ViennaRNA-$(version).tar.gz",
-                  "b276cfed7c3bea4821c8272750b5b22fa6fed614d71a98cfb25eb0095369657c")
+                  "feb2af9457a1818e71d8610608edf2382b4bbb71c0f9109812ea144ca6d8e9ca"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
-# Notes:
-# - openmp not supported on darwin
-# - libsvm is included in the ViennaRNA sources, and it's not
-#   immediately obvious how to make the build script use libsvm_jll
-# --with-forester fails to compile on windows
-#     In file included from aligner.cpp:3:
-#     aligner.h:21:10: fatal error: sys/times.h: No such file or directory
+# Build issues
+# - openmp not found on darwin, possible with CompilerSupportLibraries?
+# - powerpc64le: build fails in vectorisation routines of dlib
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ViennaRNA-*/
+cd $WORKSPACE/srcdir/ViennaRNA-*/
 
 # configure script needs bash
 sed -i -e '1s|#! /bin/sh|#! /bin/bash|' configure
@@ -31,8 +27,18 @@ sed -i -e '1s|#! /bin/sh|#! /bin/bash|' configure
 export CC=cc
 export CXX=c++
 
-# help freebsd find include files for mpfr, gsl
+# where to find dependencies
 export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
+
+if [[ $target == *-w64-mingw32* ]]; then
+    # time measurement in RNAforester doesn't compile on windows (mingw32),
+    # so we disable it
+    atomic_patch -p1 ../patches/windows-forester-remove-time-measurement.patch
+
+    # needed for compilation of dlib on windows
+    export LIBS="-lwinmm"
+fi
 
 # configure script fails (only in sandbox) without
 # setting ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
@@ -41,33 +47,50 @@ ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
-    --without-forester --with-cluster --with-kinwalker \
+    --with-cluster --with-kinwalker \
     --without-perl --without-python --without-python3 \
-    --without-doc --without-tutorial --without-tutorial-pdf
+    --without-doc --without-tutorial --without-cla
 
 make -j${nproc}
 make install
 
 # create and install a shared library libRNA
-ldflags="-g -O2 -fno-strict-aliasing -ftree-vectorize -pthread"
-# add for gcc (linux,windows): -flto -ffat-lto-objects
-# TODO: how to check if compiler is gcc/g++ ?
+ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread"
+libs="-lpthread -lmpfr -lgmp -lstdc++ -lgsl -lgslcblas -lm $LIBS"
+
+# TODO: setting -flto -ffat-lto-objects assumes we are using gcc
+if [[ $target == *-linux-* ]]; then
+    ldflags="$ldflags -flto -ffat-lto-objects"
+elif [[ $target == *-w64-mingw32* ]]; then
+    ldflags="$ldflags -flto -ffat-lto-objects"
+    # needed for dlib
+    libs="$libs -lws2_32"
+fi
 if [[ $target != *-darwin* ]]; then
     ldflags="$ldflags -fopenmp"
 fi
-ldflags_libs="-lpthread -lmpfr -lgmp -lstdc++ -lgsl -lgslcblas -lm"
+
 $CC -shared -o "${libdir}/libRNA.${dlext}" \
     $ldflags \
     -Wl,$(flagon --whole-archive) ./src/ViennaRNA/libRNA.a -Wl,$(flagon --no-whole-archive) \
-    $ldflags_libs
+    $libs
 
+cp src/cthreadpool/LICENSE LICENSE-cthreadpool
+cp src/dlib-*/LICENSE.txt LICENSE-dlib
+cp src/json/LICENSE LICENSE-json
+cp src/libsvm-*/COPYRIGHT COPYRIGHT-libsvm
+cp src/RNAforester/COPYING COPYING-RNAforester
+install_license LICENSE-cthreadpool
+install_license LICENSE-dlib
+install_license LICENSE-json
+install_license COPYRIGHT-libsvm
+install_license COPYING-RNAforester
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-# remedy for std::string incompatibilities across the GCC 4/5 version boundary
-# (suggested by BinaryBuilder)
+platforms = supported_platforms(; experimental=true, exclude = p -> arch(p) == "powerpc64le")
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -88,13 +111,13 @@ products = [
     ExecutableProduct("RNAduplex", :RNAduplex),
     ExecutableProduct("RNAeval", :RNAeval),
     ExecutableProduct("RNAfold", :RNAfold),
-    # enable with --with-forester
-    # ExecutableProduct("RNAforester", :RNAforester),
+    ExecutableProduct("RNAforester", :RNAforester),
     ExecutableProduct("RNAheat", :RNAheat),
     ExecutableProduct("RNAinverse", :RNAinverse),
     ExecutableProduct("RNALalifold", :RNALalifold),
     ExecutableProduct("RNALfold", :RNALfold),
     ExecutableProduct("RNAlocmin", :RNAlocmin),
+    ExecutableProduct("RNAmultifold", :RNAmultifold),
     ExecutableProduct("RNApaln", :RNApaln),
     ExecutableProduct("RNAparconv", :RNAparconv),
     ExecutableProduct("RNApdist", :RNApdist),
@@ -110,7 +133,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# CompilerSupportLibraries_jll suggested by BinaryBuilder for OpenMP support
 dependencies = [
     Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
@@ -119,4 +141,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"11")
+               julia_compat="1.6", preferred_gcc_version = v"7")
