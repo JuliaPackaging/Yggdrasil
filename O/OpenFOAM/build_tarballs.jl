@@ -16,7 +16,14 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/OpenFOAM*
 atomic_patch -p1 ../patches/etc-bashrc.patch
-source etc/bashrc
+# Set rpaths in all C/C++ compilers
+LDFLAGS=""
+for dir in "" "/dummy" "/openmpi-system"; do
+    LDFLAGS="${LDFLAGS} -Wl,-rpath=\$\$ORIGIN${dir} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
+done
+sed -i "s?-m64?-m64 ${LDFLAGS}?g" wmake/rules/*/c*
+# Allow failures, sigh
+source etc/bashrc || true
 ./Allwmake -j${nproc}
 """
 
@@ -30,9 +37,12 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # TODO: Try to use MPICH_jll, like PTSCHOT_jll, otherwise we have a conflict
+    # between the two dependencies.
     Dependency("OpenMPI_jll"),
     Dependency("flex_jll"),
     Dependency("SCOTCH_jll"),
+    Dependency("PTSCOTCH_jll"),
     Dependency("METIS_jll"),
     Dependency("Zlib_jll"),
 ]
