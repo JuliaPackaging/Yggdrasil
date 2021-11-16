@@ -1,7 +1,7 @@
-diff --git before/topcom-0.17.8/lib-src/PlainHashTable.hh after/topcom-0.17.8/lib-src/PlainHashTable.hh
+diff --git before/lib-src/PlainHashTable.hh after/lib-src/PlainHashTable.hh
 index a1718e0..5e915ba 100644
---- before/topcom-0.17.8/lib-src/PlainHashTable.hh
-+++ after/topcom-0.17.8/lib-src/PlainHashTable.hh
+--- before/lib-src/PlainHashTable.hh
++++ after/lib-src/PlainHashTable.hh
 @@ -279,7 +279,7 @@ void PlainHashTable<HashData>::_init_randvec(size_type* init_randvec, const size
      std::cerr << "_init_randvec:" << std::endl;
  #endif

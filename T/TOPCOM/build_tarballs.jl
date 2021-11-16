@@ -4,38 +4,34 @@ using BinaryBuilder, Pkg
 
 name = "TOPCOM"
 version = v"0.17.8"
+underscored = join([version.major,version.minor,version.patch],"_")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.wm.uni-bayreuth.de/de/team/rambau_joerg/TOPCOM-Downloads/TOPCOM-0_17_8.tgz", "3f83b98f51ee859ec321bacabf7b172c25884f14848ab6c628326b987bd8aaab"),
+    ArchiveSource("https://www.wm.uni-bayreuth.de/de/team/rambau_joerg/TOPCOM-Downloads/TOPCOM-$(underscored).tgz",
+                  "3f83b98f51ee859ec321bacabf7b172c25884f14848ab6c628326b987bd8aaab"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/topcom-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cd topcom-*
-mkdir -p external/lib
-ln -s ${libdir}/libgmp.${dlext} external/lib/libgmp.a
-ln -s ${libdir}/libgmpxx.${dlext} external/lib/libgmpxx.a
-if [[ $target == *mingw* ]]; then
-    ln -s ${libdir}/libcddgmp*.${dlext} external/lib/libcddgmp.a
-else
-    ln -s ${libdir}/libcddgmp.${dlext} external/lib/libcddgmp.a
-fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CPPFLAGS="-I${includedir}/cddlib -I${includedir}"
+#if [[ $target == *mingw* ]]; then
+#    sed -i '/_la_LDFLAGS/ s/$/ -no-undefined/g' lib-src/Makefile.am lib-src-reg/Makefile.am
+#fi
+autoreconf -vi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CPPFLAGS="-I${includedir}/cddlib -I${includedir}" --enable-shared --disable-static
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
-platforms = expand_cxxstring_abis(platforms)
-
+# windows does not work with shared libraries due to the libraries depending on each other
+platforms = expand_cxxstring_abis(filter!(!Sys.iswindows, supported_platforms(;experimental=true)))
 
 # The products that we will ensure are always built
 products = [
@@ -76,8 +72,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
-    Dependency(PackageSpec(name="cddlib_jll", uuid="f07e07eb-5685-515a-97c8-3014f6152feb"))
+    Dependency("GMP_jll")
+    Dependency("cddlib_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

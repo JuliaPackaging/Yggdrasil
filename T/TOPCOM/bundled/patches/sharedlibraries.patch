@@ -1,0 +1,101 @@
+diff -ur topcom-0.17.8-orig/configure.ac topcom-0.17.8/configure.ac
+--- topcom-0.17.8-orig/configure.ac	2016-09-26 16:03:05.000000000 +0200
++++ topcom-0.17.8/configure.ac	2021-11-16 22:53:03.000000000 +0100
+@@ -1,10 +1,15 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(TOPCOM, 0.17.8)
++AC_INIT([TOPCOM],[0.17.8])
+ AC_CONFIG_SRCDIR(.)
+ 
+ dnl Init automake.
+ AM_INIT_AUTOMAKE
+ 
++AC_ENABLE_SHARED
++AC_DISABLE_STATIC
++
++LT_INIT
++
+ dnl Checks for programs.
+ AC_PROG_CC
+ AC_PROG_INSTALL
+@@ -19,9 +24,9 @@
+ dnl Replace `main' with a function in -lstdc++:
+ dnl AC_CHECK_LIB(stdc++, main)
+ dnl Make libgmp:
+-make -C external gmp
++#make -C external gmp
+ dnl Make libcddgmp:
+-make -C external cdd
++#make -C external cdd
+ dnl Check for soplex:
+ AC_CHECK_LIB(soplex, main, , csh -c 'echo soplex not found: --soplex will not work.')
+ 
+diff -ur topcom-0.17.8-orig/lib-src/Makefile.am topcom-0.17.8/lib-src/Makefile.am
+--- topcom-0.17.8-orig/lib-src/Makefile.am	2015-12-07 10:01:50.000000000 +0100
++++ topcom-0.17.8/lib-src/Makefile.am	2021-11-16 22:55:03.000000000 +0100
+@@ -1,6 +1,8 @@
+-lib_LIBRARIES       = libTOPCOM.a
++lib_LTLIBRARIES       = libTOPCOM.la
+ 
+-libTOPCOM_a_SOURCES = \
++libTOPCOM_la_LDFLAGS = -version-info 0:0:0
++
++libTOPCOM_la_SOURCES = \
+ Admissibles.cc \
+ CheckTriang.cc \
+ Circuits.cc \
+diff -ur topcom-0.17.8-orig/lib-src-reg/Makefile.am topcom-0.17.8/lib-src-reg/Makefile.am
+--- topcom-0.17.8-orig/lib-src-reg/Makefile.am	2015-12-07 10:01:50.000000000 +0100
++++ topcom-0.17.8/lib-src-reg/Makefile.am	2021-11-16 22:54:54.000000000 +0100
+@@ -1,6 +1,8 @@
+-lib_LIBRARIES = libCHECKREG.a
++lib_LTLIBRARIES = libCHECKREG.la
+ 
+-libCHECKREG_a_SOURCES = \
++libCHECKREG_la_LDFLAGS = -version-info 0:0:0
++
++libCHECKREG_la_SOURCES = \
+ SPXinterface.cc \
+ LPinterface.cc \
+ RegularityCheck.cc
+diff -ur topcom-0.17.8-orig/Makefile.am topcom-0.17.8/Makefile.am
+--- topcom-0.17.8-orig/Makefile.am	2016-09-26 16:02:16.000000000 +0200
++++ topcom-0.17.8/Makefile.am	2021-11-16 22:48:37.000000000 +0100
+@@ -1,4 +1,4 @@
+-SUBDIRS      = wrap-gmp-gmpxx lib-src-reg lib-src src-reg src examples
++SUBDIRS      = wrap-gmp-gmpxx lib-src-reg lib-src src-reg src
+ EXTRA_DIST   = external/Makefile
+ EXTRA_DIST  += external/gmp-6.1.1.tar.bz2
+ EXTRA_DIST  += external/cddlib-0.94f-TOPCOM.tar.gz
+diff -ur topcom-0.17.8-orig/src/Makefile.am topcom-0.17.8/src/Makefile.am
+--- topcom-0.17.8-orig/src/Makefile.am	2016-07-08 12:30:51.000000000 +0200
++++ topcom-0.17.8/src/Makefile.am	2021-11-16 22:47:33.000000000 +0100
+@@ -83,11 +83,7 @@
+ santos_dim4_triang_SOURCES         = santos_dim4_triang.cc
+ santos_22_triang_SOURCES           = santos_22_triang.cc
+ 
+-LDADD           = ../lib-src/libTOPCOM.a \
+-                  ../lib-src-reg/libCHECKREG.a \
+-                  ../external/lib/libcddgmp.a \
+-                  ../external/lib/libgmpxx.a \
+-                  ../external/lib/libgmp.a
++LDADD			= ../lib-src/libTOPCOM.la ../lib-src-reg/libCHECKREG.la -lcddgmp -lgmpxx -lgmp
+ 
+ AM_CPPFLAGS     = -I../lib-src
+ AM_CPPFLAGS    += -I../lib-src-reg
+diff -ur topcom-0.17.8-orig/src-reg/Makefile.am topcom-0.17.8/src-reg/Makefile.am
+--- topcom-0.17.8-orig/src-reg/Makefile.am	2015-12-07 10:01:50.000000000 +0100
++++ topcom-0.17.8/src-reg/Makefile.am	2021-11-16 22:47:45.000000000 +0100
+@@ -2,11 +2,7 @@
+ 
+ checkregularity_SOURCES = checkregularity.cc
+ 
+-LDADD           = ../lib-src-reg/libCHECKREG.a \
+-                  ../lib-src/libTOPCOM.a \
+-                  ../external/lib/libcddgmp.a \
+-                  ../external/lib/libgmpxx.a \
+-                  ../external/lib/libgmp.a
++LDADD			= ../lib-src/libTOPCOM.la ../lib-src-reg/libCHECKREG.la -lcddgmp -lgmpxx -lgmp
+ 
+ AM_CPPFLAGS     = -I../lib-src
+ AM_CPPFLAGS    += -I../lib-src-reg
