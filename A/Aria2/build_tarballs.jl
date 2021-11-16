@@ -21,7 +21,7 @@ export LDFLAGS="-L${libdir}"
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --enable-shared --enable-libaria2 \
-    --with-openssl --with-libxml2 --with-libz
+    --with-openssl --with-libxml2 --with-libz --with-libssh2
 
 make -j${nproc}
 make install
@@ -45,6 +45,12 @@ products = [
 dependencies = [
     # TODO
     # - libcares https://github.com/c-ares/c-ares
+    Dependency(PackageSpec(name="LibSSH2_jll")),
+    # `MbedTLS_jll` is a dependency of `LibSSH2_jll`.  Strangely, we
+    # are getting a newer version in the build than the one
+    # `LibSSH2_jll` was compiled with.  So we explicitly select the
+    # right version here.
+    BuildDependency(PackageSpec(name="MbedTLS_jll", version="2.24")),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="Zlib_jll")),
