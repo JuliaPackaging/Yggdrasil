@@ -19,9 +19,13 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 cd topcom-*
 mkdir -p external/lib
-ln -s ${libdir}/libgmp.so external/lib/libgmp.a
-ln -s ${libdir}/libgmpxx.so external/lib/libgmpxx.a
-ln -s ${libdir}/libcddgmp.so external/lib/libcddgmp.a
+ln -s ${libdir}/libgmp.${dlext} external/lib/libgmp.a
+ln -s ${libdir}/libgmpxx.${dlext} external/lib/libgmpxx.a
+if [[ $target == *mingw* ]]; then
+    ln -s ${libdir}/libcddgmp*.${dlext} external/lib/libcddgmp.a
+else
+    ln -s ${libdir}/libcddgmp.${dlext} external/lib/libcddgmp.a
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CPPFLAGS="-I${includedir}/cddlib -I${includedir}"
 make -j${nproc}
 make install
@@ -29,18 +33,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = supported_platforms(;experimental=true)
 platforms = expand_cxxstring_abis(platforms)
 
 
