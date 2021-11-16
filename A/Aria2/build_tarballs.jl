@@ -21,7 +21,7 @@ export LDFLAGS="-L${libdir}"
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --enable-shared --enable-libaria2 \
-    --with-openssl --with-libxml2 --with-libz --with-libssh2
+    --with-openssl --with-libxml2 --with-libz
 
 make -j${nproc}
 make install
@@ -45,7 +45,6 @@ products = [
 dependencies = [
     # TODO
     # - libcares https://github.com/c-ares/c-ares
-    Dependency(PackageSpec(name="LibSSH2_jll")),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="Zlib_jll")),
