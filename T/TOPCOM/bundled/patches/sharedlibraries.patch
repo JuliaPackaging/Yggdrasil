@@ -33,12 +33,13 @@ diff -ur topcom-0.17.8-orig/configure.ac topcom-0.17.8/configure.ac
 diff -ur topcom-0.17.8-orig/lib-src/Makefile.am topcom-0.17.8/lib-src/Makefile.am
 --- topcom-0.17.8-orig/lib-src/Makefile.am	2015-12-07 10:01:50.000000000 +0100
 +++ topcom-0.17.8/lib-src/Makefile.am	2021-11-16 22:55:03.000000000 +0100
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,9 @@
 -lib_LIBRARIES       = libTOPCOM.a
 +lib_LTLIBRARIES       = libTOPCOM.la
  
 -libTOPCOM_a_SOURCES = \
 +libTOPCOM_la_LDFLAGS = -version-info 0:0:0
++libTOPCOM_la_LIBADD = -lcddgmp -lgmpxx -lgmp
 +
 +libTOPCOM_la_SOURCES = \
  Admissibles.cc \
@@ -47,12 +48,13 @@ diff -ur topcom-0.17.8-orig/lib-src/Makefile.am topcom-0.17.8/lib-src/Makefile.a
 diff -ur topcom-0.17.8-orig/lib-src-reg/Makefile.am topcom-0.17.8/lib-src-reg/Makefile.am
 --- topcom-0.17.8-orig/lib-src-reg/Makefile.am	2015-12-07 10:01:50.000000000 +0100
 +++ topcom-0.17.8/lib-src-reg/Makefile.am	2021-11-16 22:54:54.000000000 +0100
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,9 @@
 -lib_LIBRARIES = libCHECKREG.a
 +lib_LTLIBRARIES = libCHECKREG.la
  
 -libCHECKREG_a_SOURCES = \
 +libCHECKREG_la_LDFLAGS = -version-info 0:0:0
++libCHECKREG_la_LIBADD = ../lib-src/libTOPCOM.la -lcddgmp -lgmpxx -lgmp
 +
 +libCHECKREG_la_SOURCES = \
  SPXinterface.cc \
@@ -99,3 +101,12 @@ diff -ur topcom-0.17.8-orig/src-reg/Makefile.am topcom-0.17.8/src-reg/Makefile.a
  
  AM_CPPFLAGS     = -I../lib-src
  AM_CPPFLAGS    += -I../lib-src-reg
+diff -ur topcom-0.17.8-orig/Makefile.am topcom-0.17.8/Makefile.am
+--- topcom-0.17.8-orig/Makefile.am	2021-11-16 23:59:35.983129525 +0100
++++ topcom-0.17.8/Makefile.am	2021-11-17 00:57:56.502127051 +0100
+@@ -1,4 +1,4 @@
+-SUBDIRS      = wrap-gmp-gmpxx lib-src-reg lib-src src-reg src
++SUBDIRS      = wrap-gmp-gmpxx lib-src lib-src-reg src-reg src
+ EXTRA_DIST   = external/Makefile
+ EXTRA_DIST  += external/gmp-6.1.1.tar.bz2
+ EXTRA_DIST  += external/cddlib-0.94f-TOPCOM.tar.gz

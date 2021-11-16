@@ -35,6 +35,8 @@ platforms = expand_cxxstring_abis(filter!(!Sys.iswindows, supported_platforms(;e
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libTOPCOM", :libTOPCOM),
+    LibraryProduct("libCHECKREG", :libCHECKREG),
     ExecutableProduct("chiro2allfinetriangs", :chiro2allfinetriangs),
     ExecutableProduct("chiro2ntriangs", :chiro2ntriangs),
     ExecutableProduct("points2nflips", :points2nflips),
