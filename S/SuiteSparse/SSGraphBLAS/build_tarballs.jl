@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "SSGraphBLAS"
-version = v"5.2.0"
+version = v"6.0.0"
 
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "d16f91f7d8597f5bfdfcdf3fa99b75a78c6c5e60")
+        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5")
 ]
 
 # Bash recipe for building across all platforms
