@@ -6,8 +6,7 @@ version = v"6.0.0"
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5"),
-        DirectorySource("./bundled"),
+        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5")
 ]
 
 # Bash recipe for building across all platforms
