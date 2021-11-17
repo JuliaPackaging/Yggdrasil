@@ -13,18 +13,8 @@ sources = [
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/GraphBLAS
-if [["${target}" == aarch64-linux*]]; then
-    cd $WORKSPACE/srcdir/GraphBLAS/alternative
-    make -j${nproc}
-    mkdir -p "${libdir}"
-    cp "libgraphblas.so.6.0.0" "${libdir}"
-    ln -sf "${libdir}/libgraphblas.so.6.0.0" "${libdir}/libgraphblas.so"
-    mkdir -p "${includedir}"
-    cp "../Include/GraphBLAS.h" "${includedir}"
-else
-    make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
-    make install
-fi
+make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+make install
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
     # For mysterious reasons, the shared library is not installed
     # when building for Windows
