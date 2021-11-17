@@ -57,9 +57,8 @@ done
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
-LIBOPENBLAS=openblas
+LBT=blastrampoline
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-    LIBOPENBLAS=openblas64_
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
@@ -70,18 +69,27 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLAS_LIBRARIES="-l${LIBOPENBLAS}" \
-    -DLAPACK_LIBRARIES="-l${LIBOPENBLAS}" \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
 
-# Arpack links against a _very_ specific version of OpenBLAS on macOS by default:
-if [[ ${target} == *apple* ]]; then
-    # Figure out what version it probably latched on to:
-    OPENBLAS_LINK=$(otool -L ${prefix}/lib/libarpack.dylib | grep libopenblas64_ | awk '{ print $1 }')
-    install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${prefix}/lib/libarpack.dylib
+# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
+# Eventually, this should be fixed upstream
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
+    echo "-- Modifying library name for Lbt"
+    for nm in libarpack; do
+        # Figure out what version it probably latched on to:
+        if [[ ${target} == *-apple-* ]]; then
+            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${LBT} | awk '{ print $1 }')
+            install_name_tool -change ${LBT_LINK} @rpath/lib${LBT}.dylib ${libdir}/${nm}.dylib
+        elif [[ ${target} == *freebsd* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
+        fi
+    done
 fi
 """
 
@@ -98,7 +106,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
