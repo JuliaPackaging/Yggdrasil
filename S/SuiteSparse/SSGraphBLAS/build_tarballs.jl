@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "SSGraphBLAS"
-version = v"5.1.7"
+version = v"6.0.0"
 
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "905b1d54bef971db70180933454f65ab1f6f364b")
+        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,4 +39,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", julia_compat="1.6")
+               preferred_gcc_version=v"7", julia_compat="1.6")
