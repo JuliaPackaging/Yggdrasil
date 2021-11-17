@@ -6,12 +6,14 @@ version = v"6.0.0"
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5")
+        "ccb8d243f1bb3ab9668f25011b01634eb7af53b5"),
+        DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rm_semiring.patch
 cd $WORKSPACE/srcdir/GraphBLAS
 make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 make install
