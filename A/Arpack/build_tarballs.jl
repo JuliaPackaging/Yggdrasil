@@ -97,7 +97,7 @@ fi
 # platforms are passed in on the command line.  We enable the full
 # combinatorial explosion of GCC versions because this package most
 # definitely links against libgfortran.
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -106,9 +106,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("libblastrampoline_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
 
