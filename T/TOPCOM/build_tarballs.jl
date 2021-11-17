@@ -16,27 +16,31 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/topcom-*
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+for f in ../patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-#if [[ $target == *mingw* ]]; then
-#    sed -i '/_la_LDFLAGS/ s/$/ -no-undefined/g' lib-src/Makefile.am lib-src-reg/Makefile.am
-#fi
+if [[ $target == *mingw* ]]; then
+    # unfortunately we cannot used shared libraries on windows because of circular dependencies
+    # until this improves the following extra ldflag is not needed
+    # sed -i '/_la_LDFLAGS/ s/$/ -no-undefined/g' lib-src/Makefile.am lib-src-reg/Makefile.am
+    libopts="--enable-static --disable-shared"
+else
+    libopts="--enable-shared --disable-static"
+fi
 autoreconf -vi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CPPFLAGS="-I${includedir}/cddlib -I${includedir}" --enable-shared --disable-static
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CPPFLAGS="-I${includedir}/cddlib -I${includedir}" $libopts
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# windows does not work with shared libraries due to the libraries depending on each other
-platforms = expand_cxxstring_abis(filter!(!Sys.iswindows, supported_platforms(;experimental=true)))
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms_win = filter(Sys.iswindows, platforms)
+platforms_unix = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libTOPCOM", :libTOPCOM),
-    LibraryProduct("libCHECKREG", :libCHECKREG),
+products_win = [
     ExecutableProduct("chiro2allfinetriangs", :chiro2allfinetriangs),
     ExecutableProduct("chiro2ntriangs", :chiro2ntriangs),
     ExecutableProduct("points2nflips", :points2nflips),
@@ -72,11 +76,24 @@ products = [
     ExecutableProduct("santos_triang", :santos_triang)
 ]
 
+products_unix = [
+    LibraryProduct("libTOPCOM", :libTOPCOM),
+    LibraryProduct("libCHECKREG", :libCHECKREG),
+    products_win...
+]
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll")
     Dependency("cddlib_jll")
 ]
 
+include("../../fancy_toys.jl")
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_unix)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_unix, products_unix, dependencies; julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms_win)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; julia_compat="1.6")
+end
