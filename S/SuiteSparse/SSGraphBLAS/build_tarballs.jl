@@ -14,9 +14,18 @@ sources = [
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/GraphBLAS
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rm_semiring.patch
-make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCFLAGS=-mmodel=medium"
-make install
+if [["${target}" == aarch64-linux*]]; then
+    cd $WORKSPACE/srcdir/GraphBLAS/alternative
+    make -j${nproc}
+    mkdir -p "${libdir}"
+    cp "libgraphblas.so.6.0.0" "${libdir}"
+    ln -sf "${libdir}/libgraphblas.so.6.0.0" "${libdir}/libgraphblas.so"
+    mkdir -p "${includedir}"
+    cp "../Include/GraphBLAS.h" "${includedir}"
+else
+    make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+    make install
+fi
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
     # For mysterious reasons, the shared library is not installed
     # when building for Windows
@@ -41,4 +50,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", julia_compat="1.6")
+               preferred_gcc_version=v"7", julia_compat="1.6")
