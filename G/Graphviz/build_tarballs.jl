@@ -32,6 +32,7 @@ fi
 # Do not build with -ffast-math
 atomic_patch -p1 ../patches/1001-no-ffast-math.patch
 atomic_patch -p1 ../patches/0001-windows-exports.patch
+atomic_patch -p1 ../patches/0003-gvc-def.patch
 
 # Rebuild the configure script
 autoreconf -fiv
