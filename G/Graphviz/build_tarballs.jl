@@ -63,8 +63,8 @@ if [[ "${target}" == *-linux* ]]; then
     cp ../config6-linux ${prefix}/lib/graphviz/config6
 # elif [[ "${target}" == *-mingw* ]]; then
     # TODO: Add config6 for mingw
-# elif [[ "${target}" == *-darwin* ]]; then
-    # TODO: Add config6 for darwin
+elif [[ "${target}" == *-darwin* ]]; then
+    cp ../config6-darwin ${prefix}/lib/graphviz/config6
 fi
 """
 
