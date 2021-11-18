@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Graphviz"
-version = v"2.42.3"
+version = v"2.49.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz",
-                  "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add"),
+    ArchiveSource("https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$(version)/graphviz-$(version).tar.gz",
+                  "f79b203ddc98e0f994d218acd6cb490b962003be7145f7e31de05b6ab0e2ccbf"),
 
     DirectorySource("./bundled"),
 ]
@@ -22,35 +22,24 @@ if [[ "${target}" == *-mingw* ]]; then
     # let's use `pcreposix.h` instead.
     cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
 
-    # Apply some fun patches
-    atomic_patch -p1 ../patches/0003-sfsetbuf_c_Stat_t_no_st_blksize.patch
-    atomic_patch -p1 ../patches/0004-win32_dllexport_dllimport.patch
-    atomic_patch -p1 ../patches/0005-missing_libs.patch
-    atomic_patch -p1 ../patches/0006-export_neatogen.patch
-    atomic_patch -p1 ../patches/0007-remove_missing_def.patch
-    atomic_patch -p1 ../patches/0008-export_gvc.patch
-
     export LDFLAGS="-lpcreposix -lexpat"
     export EXTRA_LDFLAGS="-no-undefined"
 
     # Remove wrong libtool archives
-    rm ${prefix}/lib/libharfbuzz*.la
+    #rm ${prefix}/lib/libharfbuzz*.la
 fi
 
 # Do not build with -ffast-math
 atomic_patch -p1 ../patches/1001-no-ffast-math.patch
+atomic_patch -p1 ../patches/0001-windows-exports.patch
 
 # Rebuild the configure script
 autoreconf -fiv
 
-# Apply patch to build a native `mkdefs` utility that can be run within the
-# build environment.
-atomic_patch -p1 ../patches/0001-gvpr-build-native-mkdefs.patch
-
 # This patch disable generation of dot's configuration
 atomic_patch -p1 ../patches/0002-do-not-build-dot-config.patch
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared
 
 make -j${nproc} LDFLAGS="${LDFLAGS} ${EXTRA_LDFLAGS}"
 make install
@@ -60,18 +49,20 @@ if [[ "${target}" == *-mingw* ]]; then
     rm ${prefix}/include/regex.h
 fi
 
-if [[ "${target}" == *-linux* ]]; then
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
     cp ../config6-linux ${prefix}/lib/graphviz/config6
 # elif [[ "${target}" == *-mingw* ]]; then
     # TODO: Add config6 for mingw
 elif [[ "${target}" == *-darwin* ]]; then
     cp ../config6-darwin ${prefix}/lib/graphviz/config6
 fi
+
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter!(p -> !Sys.isfreebsd(p) & !Sys.iswindows(p), supported_platforms()))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -101,7 +92,7 @@ products = [
     ExecutableProduct("gvcolor", :gvcolor),
     ExecutableProduct("gvgen", :gvgen),
     ExecutableProduct("gvmap", :gvmap),
-    ExecutableProduct("gvmap.sh", :gvmap_sh),
+    #ExecutableProduct("gvmap.sh", :gvmap_sh),
     ExecutableProduct("gvpack", :gvpack),
     ExecutableProduct("gvpr", :gvpr),
     ExecutableProduct("gxl2dot", :gxl2dot),
