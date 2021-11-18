@@ -51,6 +51,7 @@ atomic_patch -p1 ../patches/0001-gvpr-build-native-mkdefs.patch
 atomic_patch -p1 ../patches/0002-do-not-build-dot-config.patch
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
 make -j${nproc} LDFLAGS="${LDFLAGS} ${EXTRA_LDFLAGS}"
 make install
 
@@ -125,6 +126,8 @@ dependencies = [
     Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
     # PCRE is needed only for Windows.  Maybe it's only a build dependency?
     # Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")),
+    # Indirect dependency from pango, but without this, pkg-config doesn't pick up pango
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

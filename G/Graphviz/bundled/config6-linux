@@ -163,6 +163,26 @@ libgvplugin_neato_layout.so.6 neato_layout {
 		nop2 0
 	}
 }
+libgvplugin_pango.so.6 cairo {
+    render {
+        cairo 10
+    }
+    textlayout {
+        textlayout 10
+    }
+    loadimage {
+        png:cairo 1
+#FAILS      png:lasi 2
+        png:ps 2
+    }
+    device {
+        png:cairo 10
+        ps:cairo -10
+        eps:cairo -10
+        pdf:cairo 10
+        svg:cairo -10
+    }
+}
 libgvplugin_visio.so.6 visio {
 	device {
 		vdx:visio 1
@@ -170,4 +190,10 @@ libgvplugin_visio.so.6 visio {
 	render {
 		visio 1
 	}
+}
+libgvplugin_xlib.so.6 xlib {
+    device {
+        xlib:cairo 0
+        x11:cairo 0
+    }
 }
