@@ -52,7 +52,7 @@ fi
 
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
     cp ../config6-linux ${prefix}/lib/graphviz/config6
-# elif [[ "${target}" == *-mingw* ]]; then
+elif [[ "${target}" == *-mingw* ]]; then
     cp ../config6-mingw ${prefix}/bin/config6
 elif [[ "${target}" == *-darwin* ]]; then
     cp ../config6-darwin ${prefix}/lib/graphviz/config6
