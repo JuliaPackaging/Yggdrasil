@@ -7,15 +7,15 @@ version = v"2.49.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$(version)/graphviz-$(version).tar.gz",
-                  "f79b203ddc98e0f994d218acd6cb490b962003be7145f7e31de05b6ab0e2ccbf"),
+    GitSource("https://gitlab.com/magjac/graphviz",
+              "1c707291ec9ff6700c26a41a4978f6766ac4c3b7"),
 
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/graphviz-*/
+cd $WORKSPACE/srcdir/graphviz
 
 if [[ "${target}" == *-mingw* ]]; then
     # We need a `regex.h` header.  MinGW doesn't have one,
@@ -31,11 +31,11 @@ fi
 
 # Do not build with -ffast-math
 atomic_patch -p1 ../patches/1001-no-ffast-math.patch
-atomic_patch -p1 ../patches/0001-windows-exports.patch
+#atomic_patch -p1 ../patches/0001-windows-exports.patch
 atomic_patch -p1 ../patches/0003-gvc-def.patch
 
 # Rebuild the configure script
-autoreconf -fiv
+./autogen.sh
 
 # This patch disable generation of dot's configuration
 atomic_patch -p1 ../patches/0002-do-not-build-dot-config.patch
