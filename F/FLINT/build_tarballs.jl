@@ -25,8 +25,8 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.8.3"
-build_for_julia16_or_newer = true
+upstream_version = v"2.8.4"
+build_for_julia16_or_newer = false
 version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -34,7 +34,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "b3ecb8fe3d20a25963968831551b2c9c6ec04b2e"), # git tag v2.8.3
+    GitSource("https://github.com/wbhart/flint2.git", "432ce475efb1fa846518abf98a182ff5fa3bce4c"), # git tag v2.8.4
     DirectorySource("./bundled"),
 ]
 
