@@ -26,6 +26,8 @@ export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
     # Only on Windows the library name embeds the ABI version
     export NCURSES_ABI_VER=6
+fi
+if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
