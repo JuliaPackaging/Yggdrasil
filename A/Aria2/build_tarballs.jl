@@ -43,8 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # TODO
-    # - libcares https://github.com/c-ares/c-ares
+    Dependency(PackageSpec(name="Cares_jll")),
     Dependency(PackageSpec(name="LibSSH2_jll")),
     # `MbedTLS_jll` is a dependency of `LibSSH2_jll`.  Strangely, we
     # are getting a newer version in the build than the one
