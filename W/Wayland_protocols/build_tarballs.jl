@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wayland-protocols-*/
+cd $WORKSPACE/srcdir/wayland-protocols*/
 mkdir build && cd build
 meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
