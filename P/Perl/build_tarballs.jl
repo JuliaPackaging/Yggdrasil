@@ -136,7 +136,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Readline_jll", v"8.1.1"; compat="~8.1.1")
+    Dependency("Readline_jll"; compat="~8.1.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
