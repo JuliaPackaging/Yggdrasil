@@ -25,6 +25,9 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_DPD-BASIC=OFF \
 	-DPKG_DPD-MESO=OFF \
 	-DPKG_DPD-REACT=OFF \
+        -DPKG_USER-MESODPD=OFF \
+        -DPKG_USER-DPD=OFF \
+        -DPKG_USER-SDPD=OFF \
 	-DPKG_DPD-SMOOTH=OFF 
 	
 make -j${nproc}
