@@ -20,9 +20,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/comment-out-FixupOrdering.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-rename-libs.patch
-fi
-
-if [[ "${target}" == aarch64-linux-musl* ]] || [[ "${target}" == arm-linux-musleabihf ]]; then
+elif [[ "${target}" == aarch64-linux-musl* ]] || [[ "${target}" == arm-linux-musleabihf ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add-arch-macros.patch
 fi
 
