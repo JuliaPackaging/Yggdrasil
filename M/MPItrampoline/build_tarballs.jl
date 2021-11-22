@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MPItrampoline"
-version = v"2.0.0"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "50d4483f73ea4a79a9b6d025d3abba42f76809cba3165367f4810fb8798264b6"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.3.2.tar.gz",
-                  "3437eb7913cf213de80cef4ade7d73f0b3adfe9eadabe993b923dc50a21bd65e"),
+                  "5425085f4b8772990b28a643b7dfc7ac37a399ee35ffa3d6113a06e5b508dfac"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
+                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
 
     # TODO: Split MPICH and MPIwrapper out into a separate package
     # Idea 1: Add a flag to MPItrampoline to not initialize itself
@@ -22,8 +22,8 @@ sources = [
     #     more.
     ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
-    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.0.0.tar.gz",
-                  "cdc81f3fae459569d4073d99d068810689a19cf507d9c4e770fa91e93650dbe4"),
+    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.2.0.tar.gz",
+                  "9cc9cda6f09288b8694a82cb3a64cf8457e408eee01a612e669fee749c1cb0b8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,6 +43,18 @@ cmake \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_PRELOAD="@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpi.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpicxx.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpifort.${dlext}" \
     ..
+## # Delay initializing MPItrampoline so that we can set an environment variable in Julia pointing to the wrapped MPI library
+## false
+## # NOTE: We cannot do this since this would delay initialization until after PETSc etc. initialized themselves.
+## # Use an intermediate library, shipped with the wrapped MPI library, loaded by Julia by default, capturing its path,
+## # setting a global variable.
+## cmake \
+##     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+##     -DCMAKE_FIND_ROOT_PATH=$prefix \
+##     -DCMAKE_INSTALL_PREFIX=$prefix \
+##     -DBUILD_SHARED_LIBS=ON \
+##     -DMPITRAMPOLINE_DELAY_INIT=1 \
+##     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
@@ -124,14 +136,15 @@ fi
 # libraries and executable via MPIwrapper, because this happens
 # outside of Julia's control
 
-# Build static libraries because this library will only be used by
-# MPIwrapper, and this simplifies loading MPIwrapper
+# # Remove -Wl,-commons,use_dylibs
+# sed -i 's/-Wl,-commons,use_dylibs//g' configure
+
 ./configure \
     --build=${MACHTYPE} \
     --disable-dependency-tracking \
     --docdir=/tmp \
     --enable-shared=yes \
-    --enable-static=no \
+    --enable-static=yes \
     --host=${target} \
     --prefix=${prefix}/lib/mpich \
     --with-device=ch3 \
@@ -199,6 +212,7 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 ################################################################################
 
 install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
+## install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -226,6 +240,7 @@ products = [
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
     LibraryProduct("libmpi", :libmpi),
+    LibraryProduct("libmpifort", :libmpifort),
 
     # MPIconstants
     LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
@@ -240,7 +255,8 @@ products = [
     LibraryProduct("libmpi", :mpich_libmpi, ["lib/mpich/lib"]; dont_dlopen=true),
     LibraryProduct("libmpicxx", :mpich_libmpicxx, ["lib/mpich/lib"]; dont_dlopen=true),
     LibraryProduct("libmpifort", :mpich_libmpifort, ["lib/mpich/lib"]; dont_dlopen=true),
-
+    LibraryProduct("libpmpi", :mpich_libmpi, ["lib/mpich/lib"]; dont_dlopen=true),
+    
     # MPIwrapper
     ExecutableProduct("mpiwrapperexec", :mpiwrapperexec),
     # `libmpiwrapper` is a plugin, not a library, and thus has the
