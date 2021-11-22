@@ -11,17 +11,22 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# LAMMPS DPD packages do not work on all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
-cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DPKG_SNAP=ON \
-    -DBUILD_MPI=ON
-
+    -DPKG_MPI=ON \
+	-DPKG_SNAP=ON \
+    -DPKG_DPD-BASIC=OFF \
+	-DPKG_DPD-MESO=OFF \
+	-DPKG_DPD-REACT=OFF \
+	-DPKG_DPD-SMOOTH=OFF 
+	
 make -j${nproc}
 make install
 
