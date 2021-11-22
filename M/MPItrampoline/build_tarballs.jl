@@ -11,15 +11,6 @@ sources = [
                   "5425085f4b8772990b28a643b7dfc7ac37a399ee35ffa3d6113a06e5b508dfac"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
-
-    # TODO: Split MPICH and MPIwrapper out into a separate package
-    # Idea 1: Add a flag to MPItrampoline to not initialize itself
-    #     during initialization. Instead, something else must call
-    #     MPItrampoline's initialization function -- early enough,
-    #     i.e. still during load time.
-    # Idea 2: Don't be a plugin. Rely solely on ELF interposing and
-    #     RTLD_DEEPBIND. This would be really cool; think about it
-    #     more.
     ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.2.0.tar.gz",
@@ -41,20 +32,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
-    -DMPITRAMPOLINE_DEFAULT_PRELOAD="@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpi.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpicxx.${dlext}:@MPITRAMPOLINE_DIR@/lib/mpich/lib/libmpifort.${dlext}" \
     ..
-## # Delay initializing MPItrampoline so that we can set an environment variable in Julia pointing to the wrapped MPI library
-## false
-## # NOTE: We cannot do this since this would delay initialization until after PETSc etc. initialized themselves.
-## # Use an intermediate library, shipped with the wrapped MPI library, loaded by Julia by default, capturing its path,
-## # setting a global variable.
-## cmake \
-##     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-##     -DCMAKE_FIND_ROOT_PATH=$prefix \
-##     -DCMAKE_INSTALL_PREFIX=$prefix \
-##     -DBUILD_SHARED_LIBS=ON \
-##     -DMPITRAMPOLINE_DELAY_INIT=1 \
-##     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
@@ -65,14 +43,12 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 cd ${WORKSPACE}/srcdir/MPIconstants*
 mkdir build
 cd build
-
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     ..
-
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
@@ -132,22 +108,35 @@ if [[ "${target}" == *-apple-* ]]; then
     EXTRA_FLAGS+=(--enable-two-level-namespace)
 fi
 
-# Building with hwloc leads to problems loading the resulting
-# libraries and executable via MPIwrapper, because this happens
-# outside of Julia's control
+# Building with an external hwloc leads to problems loading the
+# resulting libraries and executable via MPIwrapper, because this
+# happens outside of Julia's control.
 
-# # Remove -Wl,-commons,use_dylibs
-# sed -i 's/-Wl,-commons,use_dylibs//g' configure
+# Produce static libraries since these are easier to handle
+# downstream. (MPIwrapper doesn't need to find its dependencies.) Also
+# make sure that these static libraries can be linked into shared
+# libraries.
+
+# Disable OpenCL since it requires the option `-framework OpenCL` on
+# macOS, and cmake does not handle this option well. cmake assumes
+# that this is one option and one file name and splits them up.
+
+export CFLAGS='-fPIC -DPIC'
+export CXXFLAGS='-fPIC -DPIC'
+export FFLAGS='-fPIC -DPIC'
+export FCFLAGS='-fPIC -DPIC'
 
 ./configure \
     --build=${MACHTYPE} \
+    --host=${target} \
     --disable-dependency-tracking \
     --docdir=/tmp \
-    --enable-shared=yes \
+    --enable-shared=no \
     --enable-static=yes \
-    --host=${target} \
-    --prefix=${prefix}/lib/mpich \
+    --enable-threads=multiple \
+    --enable-opencl=no \
     --with-device=ch3 \
+    --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
@@ -160,6 +149,11 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 make -j${nproc}
 make -j${nproc} install
 
+# Delete duplicate file
+if ar t $prefix/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
+    ar d $prefix/lib/mpich/lib/libmpifort.a setbotf.o
+fi
+
 ################################################################################
 # Install MPIwrapper
 ################################################################################
@@ -168,39 +162,31 @@ cd $WORKSPACE/srcdir/MPIwrapper-*
 mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
-# not properly auto-detect the MPI libraries.
-if [ -f ${prefix}/lib/mpich/lib/libpmpi.${dlext} ]; then
+# not properly auto-detect the MPI libraries on Darwin.
+if [[ "${target}" == *-apple-* ]]; then
+    ext='a'
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
         -DMPI_CXX_COMPILER=c++ \
         -DMPI_Fortran_COMPILER=gfortran \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlext} \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${dlext} \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 else
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${dlext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${dlext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${dlext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
         ..
 fi
 
@@ -212,7 +198,6 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 ################################################################################
 
 install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
-## install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -248,14 +233,6 @@ products = [
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
-    # Note the `dont_dlopen=true` below. Without these, Julia would
-    # load these libraries automatically into the global namespace,
-    # conflicting with MPItrampoline. These settings are also why we
-    # can't reuse `MPICH_jll`.
-    LibraryProduct("libmpi", :mpich_libmpi, ["lib/mpich/lib"]; dont_dlopen=true),
-    LibraryProduct("libmpicxx", :mpich_libmpicxx, ["lib/mpich/lib"]; dont_dlopen=true),
-    LibraryProduct("libmpifort", :mpich_libmpifort, ["lib/mpich/lib"]; dont_dlopen=true),
-    LibraryProduct("libpmpi", :mpich_libmpi, ["lib/mpich/lib"]; dont_dlopen=true),
     
     # MPIwrapper
     ExecutableProduct("mpiwrapperexec", :mpiwrapperexec),
