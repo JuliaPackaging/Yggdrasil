@@ -15,13 +15,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/raylib/src/
+atomic_patch -p1 ../../patches/add-missing-header.patch
 atomic_patch -p1 ../../patches/make-install-everywhere.patch
 export CFLAGS="-D_POSIX_C_SOURCE=200112L -I${includedir}"
 if [[ "${target}" == *-freebsd* ]]; then
     # Allow definition of `u_char`, `u_short`, `u_int`, and `u_long` in sys/types.h
     CFLAGS="${CFLAGS} -D__BSD_VISIBLE"
 fi
-make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
+CFLAGS="${CFLAGS} -DSUPPORT_EVENTS_AUTOMATION -DSUPPORT_FILEFORMAT_BMP -DSUPPORT_FILEFORMAT_JPG"
+make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE
 make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
 """
 
