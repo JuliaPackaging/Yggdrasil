@@ -1,0 +1,14 @@
+diff --git before/leveldb/.git/config after/leveldb/.git/config
+index b2e01d2..1cf0ad6 100644
+--- before/leveldb/.git/config
++++ after/leveldb/.git/config
+@@ -9,3 +9,9 @@
+ [branch "master"]
+ 	remote = origin
+ 	merge = refs/heads/master
++[submodule "third_party/benchmark"]
++	active = true
++	url = https://github.com/google/benchmark
++[submodule "third_party/googletest"]
++	active = true
++	url = https://github.com/google/googletest.git
