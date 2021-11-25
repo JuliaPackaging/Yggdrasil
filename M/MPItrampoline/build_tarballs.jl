@@ -13,8 +13,8 @@ sources = [
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
     ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
                   "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
-    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.2.0.tar.gz",
-                  "9cc9cda6f09288b8694a82cb3a64cf8457e408eee01a612e669fee749c1cb0b8"),
+    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.2.1.tar.gz",
+                  "4ce058d47e515ff3dc62a6e175a9b1f402d25cc3037be0d9c26add2d78ba8da9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -97,17 +97,6 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
     fi
 fi
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    export FFLAGS=-fallow-argument-mismatch
-fi
-
-if [[ "${target}" == *-apple-* ]]; then
-    # MPICH uses the link options `-flat_namespace` on Darwin. This
-    # conflicts with MPItrampoline, which requires the option
-    # `-twolevel_namespace`.
-    EXTRA_FLAGS+=(--enable-two-level-namespace)
-fi
-
 # Building with an external hwloc leads to problems loading the
 # resulting libraries and executable via MPIwrapper, because this
 # happens outside of Julia's control.
@@ -125,6 +114,17 @@ export CFLAGS='-fPIC -DPIC'
 export CXXFLAGS='-fPIC -DPIC'
 export FFLAGS='-fPIC -DPIC'
 export FCFLAGS='-fPIC -DPIC'
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    export FFLAGS="$FFLAGS -fallow-argument-mismatch"
+fi
+
+if [[ "${target}" == *-apple-* ]]; then
+    # MPICH uses the link options `-flat_namespace` on Darwin. This
+    # conflicts with MPItrampoline, which requires the option
+    # `-twolevel_namespace`.
+    EXTRA_FLAGS+=(--enable-two-level-namespace)
+fi
 
 ./configure \
     --build=${MACHTYPE} \
