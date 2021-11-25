@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "MPItrampoline"
-version = v"2.6.0"
+version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "5425085f4b8772990b28a643b7dfc7ac37a399ee35ffa3d6113a06e5b508dfac"),
+                  "b188657e41b240bba663ce5b3d7b73377a27a64edcc1e0aaa7c924cf00e30b42"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
     ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
