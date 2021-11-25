@@ -1,0 +1,17 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 5458239..723a37e 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -38,7 +38,11 @@ elseif (HAVE_POWER9)
+ elseif (HAVE_POWER8)
+     set(ARCH_FLAGS "${ARCH_FLAGS} -mcpu=power8 -mvsx")
+ elseif (HAVE_ARM8)
+-    set(ARCH_FLAGS "${ARCH_FLAGS} -march=armv8-a+simd")
++    # commented out for BinaryBuilder
++    # -march=armv8-a already implies -march=armv8-a+simd
++    # BinaryBuilder compiler wrappers don't accept -march
++    # Ref: https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html
++    #set(ARCH_FLAGS "${ARCH_FLAGS} -march=armv8-a+simd")
+ endif ()
+ 
+ if (NATIVE_ARCH AND (ARCH_FLAGS STREQUAL ""))
