@@ -57,7 +57,10 @@ install_license ../LICENSE
 # Build failures
 # - x86_64-w64-mingw32
 #   fatal error: err.h: No such file or directory
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p))
+# - powerpc64le-linux-gnu
+#   build tries to use x86 vector instructions
+#
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "powerpc64le")
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
