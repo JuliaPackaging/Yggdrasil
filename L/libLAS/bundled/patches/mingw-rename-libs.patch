@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4df28710..0ff6abeb 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,10 +23,10 @@ SET(OSGEO4W_UPSTREAM_RELEASE "1")
+ 
+ if(WIN32)
+   # Name of C++ library
+-  set(LIBLAS_LIB_NAME liblas)
++  set(LIBLAS_LIB_NAME las)
+ 
+   # Name of C library
+-  set(LIBLAS_C_LIB_NAME liblas_c)
++  set(LIBLAS_C_LIB_NAME las_c)
+ 
+ else()
+   # Name of C++ library
