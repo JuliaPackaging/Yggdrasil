@@ -38,6 +38,8 @@ make install
 # platforms are passed in on the command line
 
 platforms = expand_cxxstring_abis(supported_platforms())
+#only supports 64 bit compilers
+filter!(p -> nbits(p) != 32, platforms)
 
 
 
