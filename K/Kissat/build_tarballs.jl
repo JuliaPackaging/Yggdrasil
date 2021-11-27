@@ -23,15 +23,15 @@ cp build/libkissat.so "$libdir/libkissat.${dlext}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=Sys.iswindows; experimental=true)
+platforms = supported_platforms(; exclude=Sys.iswindows, experimental=true)
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("kissat", :kissat),
     LibraryProduct("libkissat", :libkissat)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
