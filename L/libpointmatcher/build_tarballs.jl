@@ -44,7 +44,7 @@ rm ${prefix}/share/libnabo/cmake/libnaboConfig.cmake
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
 #only supports 64 bit compilers
 filter!(p -> nbits(p) != 32, platforms)
 
