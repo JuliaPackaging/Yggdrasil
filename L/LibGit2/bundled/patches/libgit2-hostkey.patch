@@ -1,8 +1,16 @@
 diff --git a/src/transports/ssh.c b/src/transports/ssh.c
-index 471c3273ed..5ed7278ed6 100644
+index 471c3273ed..32189d0979 100644
 --- a/src/transports/ssh.c
 +++ b/src/transports/ssh.c
-@@ -636,7 +636,15 @@ post_extract:
+@@ -525,6 +525,7 @@ static int _git_ssh_setup_conn(
+ 	git_credential *cred = NULL;
+ 	LIBSSH2_SESSION *session=NULL;
+ 	LIBSSH2_CHANNEL *channel=NULL;
++	char *host_and_port;
+ 
+ 	t->current_stream = NULL;
+ 
+@@ -636,7 +637,15 @@ post_extract:
  
  		cert_ptr = &cert;
  
