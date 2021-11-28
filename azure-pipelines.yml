@@ -257,7 +257,7 @@ jobs:
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
     displayName: "initialize JLL package"
-    condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
+    condition: and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['projects'], ''))
 
 - job: build
   dependsOn:
