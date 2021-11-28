@@ -3,18 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"3.2.1"
+version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/pmix/pmix/releases/download/v3.2.1/pmix-3.2.1.tar.bz2", "7e5db8ada5828cf85c12f70db6bfcf777d13e5c4c73b2206bb5e394d47066a2b")
+    ArchiveSource("https://github.com/pmix/pmix/releases/download/v$(version)/pmix-$(version).tar.bz2", "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd pmix-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-pmi-backward-compatibility --enable-shared --with-libevent=${prefix} --with-hwloc=${prefix} --without-tests-examples --disable-man-pages
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-shared \
+    --with-libevent=${prefix} \
+    --with-hwloc=${prefix} \
+    --without-tests-examples \
+    --disable-man-pages
 make -j
 make install
 """
@@ -37,8 +42,6 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpmi", :libpmi),
-    LibraryProduct("libpmi2", :libpmi2),
     LibraryProduct("libpmix", :libpmix)
 ]
 
