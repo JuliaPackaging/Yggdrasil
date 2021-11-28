@@ -17,12 +17,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/sqlite-autoconf-*/
 
 # Use same flags as
-# https://git.archlinux.org/svntogit/packages.git/tree/trunk/PKGBUILD?h=packages/sqlite&id=d8b6ba561152179e943807054388462b7259e6df
+# https://github.com/archlinux/svntogit-packages/blob/packages/sqlite/trunk/PKGBUILD
 export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_ENABLE_UNLOCK_NOTIFY \
                  -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
                  -DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
                  -DSQLITE_SECURE_DELETE \
+                 -DSQLITE_ENABLE_STMTVTAB \
                  -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
                  -DSQLITE_MAX_EXPR_DEPTH=10000"
 
