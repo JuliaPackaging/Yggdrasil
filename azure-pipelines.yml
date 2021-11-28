@@ -34,8 +34,9 @@ jobs:
       if [[ $(Build.Reason) == "PullRequest" ]]; then
           # If we're on a PR though, we look at the entire branch at once
           TARGET_BRANCH="remotes/origin/master"
-          git remote -v
           git show-ref
+          git show-ref --heads
+          echo "$(Build.SourceBranch)"
           COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
           git fetch origin "refs/pull/$(System.PullRequest.PullRequestNumber)/head:refs/remotes/origin/pr/$(System.PullRequest.PullRequestNumber)"
           if [[ "$(git show -s --format=%B origin/pr/$(System.PullRequest.PullRequestNumber))" == *"${SKIP_BUILD_COOKIE}"* ]]; then
