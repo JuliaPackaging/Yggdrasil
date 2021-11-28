@@ -35,7 +35,7 @@ jobs:
           # If we're on a PR though, we look at the entire branch at once
           TARGET_BRANCH="remotes/origin/master"
           git show-ref
-          git show-ref --heads
+          git show-ref --heads || true
           echo "$(Build.SourceBranch)"
           COMPARE_AGAINST=$(git merge-base --fork-point ${TARGET_BRANCH} HEAD)
           git fetch origin "refs/pull/$(System.PullRequest.PullRequestNumber)/head:refs/remotes/origin/pr/$(System.PullRequest.PullRequestNumber)"
