@@ -19,8 +19,7 @@ cd pmix-*
     --with-libevent=${prefix} \
     --with-hwloc=${prefix} \
     --without-tests-examples \
-    --disable-man-pages \
-    --enable-debug
+    --disable-man-pages
 make -j${nproc}
 make install
 """
@@ -37,19 +36,32 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; )
+    Platform("x86_64", "macos"; ),
+    Platform("aarch64", "macos"; )
 ]
 
+# TODO: Configure fails on Windows with:
+```
+checking for library containing event_config_new... no
+checking for event_getcode4name in -levent... no
+checking will libevent support be built... no
+configure: WARNING: Either libevent or libev support is required, but neither
+configure: WARNING: was found. Please use the configure options to point us
+configure: WARNING: to where we can find one or the other library
+configure: error: Cannot continue
+```
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpmix", :libpmix)
+    ExecutableProduct("pmix_info", :pmix_info)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libevent_jll", uuid="1080aeaf-3a6a-583e-a51c-c537b09f60ec"))
-    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8"))
+    Dependency(PackageSpec(name="libevent_jll", uuid="1080aeaf-3a6a-583e-a51c-c537b09f60ec")),
+    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
