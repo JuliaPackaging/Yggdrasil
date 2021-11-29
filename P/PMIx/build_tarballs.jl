@@ -7,7 +7,7 @@ version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/pmix/pmix/releases/download/v$(version)/pmix-$(version).tar.bz2", "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
+    ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2", "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ cd pmix-*
     --with-hwloc=${prefix} \
     --without-tests-examples \
     --disable-man-pages
-make -j
+make -j${nproc}
 make install
 """
 
