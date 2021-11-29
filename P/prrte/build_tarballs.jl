@@ -20,8 +20,7 @@ cd prte-*
     --with-hwloc=${prefix} \
     --with-pmix=${prefix} \
     --without-tests-examples \
-    --disable-man-pages \
-    --enable-debug
+    --disable-man-pages
 make -j${nproc}
 make install
 """
@@ -45,6 +44,9 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("prte", :prte)
+    ExecutableProduct("prun", :prun)
+    ExecutableProduct("prte_info", :prte_info)
+    ExecutableProduct("prterun", :prterun)
 ]
 
 # Dependencies that must be installed before this package can be built

@@ -19,19 +19,42 @@ cd pmix-*
     --with-libevent=${prefix} \
     --with-hwloc=${prefix} \
     --without-tests-examples \
-    --disable-man-pages \
-    --enable-debug
+    --disable-man-pages
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "macos"; ),
+    Platform("aarch64", "macos"; )
+]
+
+# TODO: Configure fails on Windows with:
+```
+checking for library containing event_config_new... no
+checking for event_getcode4name in -levent... no
+checking will libevent support be built... no
+configure: WARNING: Either libevent or libev support is required, but neither
+configure: WARNING: was found. Please use the configure options to point us
+configure: WARNING: to where we can find one or the other library
+configure: error: Cannot continue
+```
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpmix", :libpmix)
+    ExecutableProduct("pmix_info", :pmix_info)
 ]
 
 # Dependencies that must be installed before this package can be built
