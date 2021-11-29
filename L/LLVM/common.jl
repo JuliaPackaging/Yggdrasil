@@ -357,8 +357,8 @@ rm -vrf ${prefix}/lib/mlir
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
                          git_path="https://github.com/JuliaLang/llvm-project.git",
-                         git_ver=llvm_tags[version], custom_version=version,
-                         static=false)
+                         git_ver=llvm_tags[version], custom_name=nothing,
+                         custom_version=version, static=false)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -403,6 +403,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if assert
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
+    end
+    if custom_name !== nothing
+        name = custom_name
     end
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
