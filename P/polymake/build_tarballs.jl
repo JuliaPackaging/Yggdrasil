@@ -92,6 +92,9 @@ else
               --without-prereq
 fi
 
+# C++ templates to need quite a lot of memory during compilation...
+(( nproc=1+nproc/3 ))
+
 ninja -v -C build/Opt -j${nproc}
 
 ninja -v -C build/Opt install
