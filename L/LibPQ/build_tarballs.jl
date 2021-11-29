@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "LibPQ"
 version = v"14.1"
 pg_version = string(version.major, '.', version.minor)
-tzcode_version = "2020a"
+tzcode_version = "2021e"
 
 # Collection of sources required to build LibPQ
 sources = [
@@ -15,7 +15,7 @@ sources = [
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
-        "7d2af7120ee03df71fbca24031ccaf42404752e639196fe93c79a41b38a6d669",
+        "584666393a5424d13d27ec01183da17703273664742e049d4f62f62dab631775",
     ),
 ]
 
