@@ -20,7 +20,8 @@ cd prte-*
     --with-hwloc=${prefix} \
     --with-pmix=${prefix} \
     --without-tests-examples \
-    --disable-man-pages
+    --disable-man-pages \
+    --enable-debug
 make -j${nproc}
 make install
 """

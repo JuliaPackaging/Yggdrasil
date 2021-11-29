@@ -19,7 +19,8 @@ cd pmix-*
     --with-libevent=${prefix} \
     --with-hwloc=${prefix} \
     --without-tests-examples \
-    --disable-man-pages
+    --disable-man-pages \
+    --enable-debug
 make -j${nproc}
 make install
 """
