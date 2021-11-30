@@ -46,6 +46,8 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libscip", :libscip),
+    LibraryProduct("libgcg", :libgcg),
+    LibraryProduct("libsoplexshared", :libsoplex),
 ]
 
 # Dependencies that must be installed before this package can be built
