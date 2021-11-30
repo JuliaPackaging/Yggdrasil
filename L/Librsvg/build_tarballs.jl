@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.42.2"
+version = v"2.52.4"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "0c550a0bffef768a436286116c03d9f6cd3f97f5021c13e7f093b550fac12562"),
+                  "660ec8836a3a91587bc9384920132d4c38d1d1718c67fe160c5213fe4dec2928"),
     DirectorySource("./bundled"),
 ]
 
