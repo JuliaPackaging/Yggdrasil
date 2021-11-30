@@ -21,6 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DPAPILO=0\
   -DZIMPL=OFF\
   -DGCG=0\
+  -DUG=0\
   -DREADLINE=OFF\
   -DBOOST=off\
   -DSYM=bliss\
