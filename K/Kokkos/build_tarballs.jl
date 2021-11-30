@@ -22,7 +22,6 @@ if [[ ${target} == *-linux-musl* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
 
 elif [[  ${target} == *-mingw*  ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
 
 elif [[  ${target} == *-apple-*  ]]; then
