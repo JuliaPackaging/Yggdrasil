@@ -20,6 +20,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_BUILD_TYPE=Release\
   -DPAPILO=0\
   -DZIMPL=OFF\
+  -DGCG=0\
   -DUG=0\
   -DAMPL=0\
   -DREADLINE=OFF\
@@ -33,7 +34,6 @@ mkdir -p ${prefix}/share/licenses/SCIP
 for dir in papilo scip soplex; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
-cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${gcg}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,7 +45,6 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libscip", :libscip),
-    LibraryProduct("libgcg", :libgcg),
     LibraryProduct("libsoplexshared", :libsoplex),
 ]
 
