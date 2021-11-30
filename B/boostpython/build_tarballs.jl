@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/python
-g++ -fPIC -o $libdir/libboost_python.$dlext -O3 -shared -L$libdir -lpython3.8 -I$includedir -I$includedir/python3.8 $(find src ! -path src/numpy/\* -name \*.cpp)
-cp -r include $includedir
+c++ -fPIC -o $libdir/libboost_python.$dlext -O3 -shared -L$libdir -lpython3.8 -I$includedir -I$includedir/python3.8 $(find src ! -path src/numpy/\* -name \*.cpp)
+cp -r include/* $includedir
 install_license LICENSE_1_0.txt
 """
 
