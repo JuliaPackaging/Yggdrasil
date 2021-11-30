@@ -3,25 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"0.1.3"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scip.zib.de/download/release/scipoptsuite-7.0.3.tgz", "5af5185a6e60cc62d1a89e3ac4fe22d32351a5158c2c04a95e180e76eb98cc07"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-v800-rc16.tgz", "0fc025f260e9e77e26e5d218707c04d03492e792c793d34221ada09fbb275b99"),
 ]
-
-
-# bliss script, ignored for now
-script_bliss = raw"""
-cd $WORKSPACE/srcdir
-cd bliss
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
-cd $WORKSPACE/srcdir
-"""
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -49,21 +36,7 @@ done
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd"),
-    Platform("i686", "windows"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
 
