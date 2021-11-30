@@ -20,7 +20,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_BUILD_TYPE=Release\
   -DPAPILO=0\
   -DZIMPL=OFF\
-  -DGCG=0\
   -DUG=0\
   -DAMPL=0\
   -DREADLINE=OFF\
