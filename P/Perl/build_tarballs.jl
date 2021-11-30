@@ -17,6 +17,10 @@ sources = [
     ArchiveSource("https://cpan.metacpan.org/authors/id/P/PE/PERIGRIN/XML-NamespaceSupport-1.12.tar.gz", "47e995859f8dd0413aa3f22d350c4a62da652e854267aa0586ae544ae2bae5ef"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/G/GR/GRANTM/XML-SAX-Base-1.09.tar.gz", "66cb355ba4ef47c10ca738bd35999723644386ac853abbeb5132841f5e8a2ad0"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/M/MA/MANWAR/SVG-2.86.tar.gz", "72c6eb6f86bb2c330280f9f3d342bb2673ad5da22d1f44fba3e04cfb5d30a67b"),
+    ArchiveSource("https://cpan.metacpan.org/authors/id/N/NE/NEILB/Exporter-Lite-0.08.tar.gz", "c05b3909af4cb86f36495e94a599d23ebab42be7a18efd0d141fc1586309dac2"),
+    ArchiveSource("https://cpan.metacpan.org/authors/id/P/PL/PLICEASE/File-Which-1.27.tar.gz", "3201f1a60e3f16484082e6045c896842261fc345de9fb2e620fd2a2c7af3a93a"),
+    ArchiveSource("https://cpan.metacpan.org/authors/id/G/GW/GWARD/Getopt-Tabular-0.3.tar.gz", "9bdf067633b5913127820f4e8035edc53d08372faace56ba6bfa00c968a25377"),
+    ArchiveSource("https://cpan.metacpan.org/authors/id/A/AB/ABIGAIL/Regexp-Common-2017060201.tar.gz", "ee07853aee06f310e040b6bf1a0199a18d81896d3219b9b35c9630d0eb69089b"),
     DirectorySource("./bundled")
 ]
 
@@ -97,8 +101,8 @@ else
                -Darchname=$perlarch \
                -Dsysroot=/opt/$target/$target/sys-root \
                -Dccflags="-DPERL_FPU_INIT -I${prefix}/include $extraflags" \
-               -Dldflags="-L${libdir} -Wl,-rpath,${libdir}" \
-               -Dlddlflags="-shared -L${libdir} -Wl,-rpath,${libdir}" \
+               -Dldflags="-L${libdir}" \
+               -Dlddlflags="-shared -L${libdir}" \
                -Adefine:libswanted="pthread dl m crypt util c"
 fi
 
