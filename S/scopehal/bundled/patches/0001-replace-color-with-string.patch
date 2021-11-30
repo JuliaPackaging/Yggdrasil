@@ -1,0 +1,416 @@
+From 0e56841938baf7b33d7a2adf7e8bd8e9e92f0870 Mon Sep 17 00:00:00 2001
+From: Pepijn de Vos <pepijndevos@gmail.com>
+Date: Fri, 20 Aug 2021 11:04:37 +0200
+Subject: [PATCH] replace color with string
+
+---
+ .gitmodules                   |  6 +++---
+ scopehal/AlignedAllocator.h   | 11 ++++++++++-
+ scopehal/CMakeLists.txt       |  2 +-
+ scopehal/Filter.cpp           | 20 ++++++++++----------
+ scopehal/Filter.h             |  4 ++--
+ scopehal/MockOscilloscope.cpp |  5 +++--
+ scopehal/PacketDecoder.cpp    | 18 +++++++++---------
+ scopehal/PacketDecoder.h      |  6 +++---
+ scopehal/Unit.cpp             |  8 ++++----
+ scopehal/Unit.h               |  2 +-
+ scopehal/base64.cpp           | 14 +++++++-------
+ scopehal/scopehal.cpp         |  7 ++++++-
+ scopehal/scopehal.h           | 13 +++++++++----
+ 13 files changed, 68 insertions(+), 48 deletions(-)
+
+diff --git a/.gitmodules b/.gitmodules
+index 86185b9..7acf360 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,12 +1,12 @@
+ [submodule "xptools"]
+ 	path = xptools
+-	url = ../xptools.git
++	url = https://github.com/azonenberg/xptools.git
+ [submodule "log"]
+ 	path = log
+-	url = ../logtools.git
++	url = https://github.com/azonenberg/logtools.git
+ [submodule "graphwidget"]
+ 	path = graphwidget
+-	url = ../graphwidget.git
++	url = https://github.com/azonenberg/graphwidget.git
+ [submodule "OpenCL-CLHPP"]
+ 	path = OpenCL-CLHPP
+ 	url = https://github.com/KhronosGroup/OpenCL-CLHPP.git
+diff --git a/scopehal/AlignedAllocator.h b/scopehal/AlignedAllocator.h
+index 10c2879..7d5eb85 100644
+--- a/scopehal/AlignedAllocator.h
++++ b/scopehal/AlignedAllocator.h
+@@ -38,6 +38,10 @@
+ 
+ #ifdef _WIN32
+ #include <windows.h>
++#elif __APPLE__
++#include <stdlib.h>
++#else
++#include <malloc.h>
+ #endif
+ 
+ /**
+@@ -118,8 +122,13 @@ public:
+ 		//Do the actual allocation
+ #ifdef _WIN32
+ 		T* ret = static_cast<T*>(_aligned_malloc(n*sizeof(T), alignment));
++#elif __APPLE__
++        void* p;
++		if (posix_memalign(&p, alignment, n*sizeof(T)))
++			p = NULL;
++		T* ret = static_cast<T*>(p);
+ #else
+-		T* ret = static_cast<T*>(aligned_alloc(alignment, n*sizeof(T)));
++		T* ret = static_cast<T*>(memalign(alignment, n*sizeof(T)));
+ #endif
+ 
+ 		//Error check
+diff --git a/scopehal/CMakeLists.txt b/scopehal/CMakeLists.txt
+index 2725f3e..be134b7 100644
+--- a/scopehal/CMakeLists.txt
++++ b/scopehal/CMakeLists.txt
+@@ -115,7 +115,7 @@ configure_file(config.h.in config.h)
+ 
+ add_library(scopehal SHARED
+ 	${SCOPEHAL_SOURCES})
+-target_link_libraries(scopehal ${SIGCXX_LIBRARIES} ${GTKMM_LIBRARIES} xptools log graphwidget ${YAML_LIBRARIES}
++target_link_libraries(scopehal ${SIGCXX_LIBRARIES} ${GTKMM_LIBRARIES} xptools log ${YAML_LIBRARIES}
+ 	${LXI_LIBRARIES} ${WIN_LIBS} ${LIN_LIBS} ${LIBFFTS_LIBRARIES} ${OpenCL_LIBRARIES} ${CLFFT_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
+ 
+ target_include_directories(scopehal
+diff --git a/scopehal/Filter.cpp b/scopehal/Filter.cpp
+index 0a8903c..055e565 100644
+--- a/scopehal/Filter.cpp
++++ b/scopehal/Filter.cpp
+@@ -44,16 +44,16 @@ set<Filter*> Filter::m_filters;
+ mutex Filter::m_cacheMutex;
+ map<pair<WaveformBase*, float>, vector<int64_t> > Filter::m_zeroCrossingCache;
+ 
+-Gdk::Color Filter::m_standardColors[STANDARD_COLOR_COUNT] =
++std::string Filter::m_standardColors[STANDARD_COLOR_COUNT] =
+ {
+-	Gdk::Color("#336699"),	//COLOR_DATA
+-	Gdk::Color("#c000a0"),	//COLOR_CONTROL
+-	Gdk::Color("#ffff00"),	//COLOR_ADDRESS
+-	Gdk::Color("#808080"),	//COLOR_PREAMBLE
+-	Gdk::Color("#00ff00"),	//COLOR_CHECKSUM_OK
+-	Gdk::Color("#ff0000"),	//COLOR_CHECKSUM_BAD
+-	Gdk::Color("#ff0000"),	//COLOR_ERROR
+-	Gdk::Color("#404040")	//COLOR_IDLE
++	std::string("#336699"),	//COLOR_DATA
++	std::string("#c000a0"),	//COLOR_CONTROL
++	std::string("#ffff00"),	//COLOR_ADDRESS
++	std::string("#808080"),	//COLOR_PREAMBLE
++	std::string("#00ff00"),	//COLOR_CHECKSUM_OK
++	std::string("#ff0000"),	//COLOR_CHECKSUM_BAD
++	std::string("#ff0000"),	//COLOR_ERROR
++	std::string("#404040")	//COLOR_IDLE
+ };
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -805,7 +805,7 @@ void Filter::LoadParameters(const YAML::Node& node, IDTable& table)
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ // Complex protocol decodes
+ 
+-Gdk::Color Filter::GetColor(int /*i*/)
++std::string Filter::GetColor(int /*i*/)
+ {
+ 	return m_standardColors[COLOR_ERROR];
+ }
+diff --git a/scopehal/Filter.h b/scopehal/Filter.h
+index ee76781..730bbfb 100644
+--- a/scopehal/Filter.h
++++ b/scopehal/Filter.h
+@@ -163,7 +163,7 @@ public:
+ 		STANDARD_COLOR_COUNT
+ 	};
+ 
+-	static Gdk::Color m_standardColors[STANDARD_COLOR_COUNT];
++	static std::string m_standardColors[STANDARD_COLOR_COUNT];
+ 
+ protected:
+ 
+@@ -203,7 +203,7 @@ protected:
+ 
+ public:
+ 	//Text formatting for CHANNEL_TYPE_COMPLEX decodes
+-	virtual Gdk::Color GetColor(int i);
++	virtual std::string GetColor(int i);
+ 	virtual std::string GetText(int i);
+ 
+ 	//Helpers for sub-sample interoplation
+diff --git a/scopehal/MockOscilloscope.cpp b/scopehal/MockOscilloscope.cpp
+index af9609a..cdbe646 100644
+--- a/scopehal/MockOscilloscope.cpp
++++ b/scopehal/MockOscilloscope.cpp
+@@ -36,6 +36,7 @@
+ #include "scopehal.h"
+ #include "OscilloscopeChannel.h"
+ #include "MockOscilloscope.h"
++#include <sys/stat.h>
+ 
+ using namespace std;
+ 
+@@ -1742,7 +1743,7 @@ bool MockOscilloscope::LoadWAV(const string& path)
+ 	}
+ 
+ 	//Get timestamp of the file
+-	int64_t timestamp = 0;
++	time_t timestamp = 0;
+ 	int64_t fs = 0;
+ 	GetTimestampOfFile(path, timestamp, fs);
+ 
+@@ -1851,7 +1852,7 @@ bool MockOscilloscope::LoadTouchstone(const string& path)
+ 	if(!parser.Load(path, params))
+ 		return false;
+ 
+-	int64_t timestamp = 0;
++	time_t timestamp = 0;
+ 	int64_t fs = 0;
+ 	GetTimestampOfFile(path, timestamp, fs);
+ 
+diff --git a/scopehal/PacketDecoder.cpp b/scopehal/PacketDecoder.cpp
+index cbcf4f4..50c3e9a 100644
+--- a/scopehal/PacketDecoder.cpp
++++ b/scopehal/PacketDecoder.cpp
+@@ -33,15 +33,15 @@
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ // Color schemes
+ 
+-Gdk::Color PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
++std::string PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
+ {
+-	Gdk::Color("#101010"),		//PROTO_COLOR_DEFAULT
+-	Gdk::Color("#800000"),		//PROTO_COLOR_ERROR
+-	Gdk::Color("#000080"),		//PROTO_COLOR_STATUS
+-	Gdk::Color("#808000"),		//PROTO_COLOR_CONTROL
+-	Gdk::Color("#336699"),		//PROTO_COLOR_DATA_READ
+-	Gdk::Color("#339966"),		//PROTO_COLOR_DATA_WRITE
+-	Gdk::Color("#600050"),		//PROTO_COLOR_COMMAND
++	std::string("#101010"),		//PROTO_COLOR_DEFAULT
++	std::string("#800000"),		//PROTO_COLOR_ERROR
++	std::string("#000080"),		//PROTO_COLOR_STATUS
++	std::string("#808000"),		//PROTO_COLOR_CONTROL
++	std::string("#336699"),		//PROTO_COLOR_DATA_READ
++	std::string("#339966"),		//PROTO_COLOR_DATA_WRITE
++	std::string("#600050"),		//PROTO_COLOR_COMMAND
+ };
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+@@ -50,7 +50,7 @@ Gdk::Color PacketDecoder::m_backgroundColors[PROTO_STANDARD_COLOR_COUNT] =
+ Packet::Packet()
+ 	: m_offset(0)
+ 	, m_len(0)
+-	, m_displayForegroundColor(Gdk::Color("#ffffff"))
++	, m_displayForegroundColor(std::string("#ffffff"))
+ 	, m_displayBackgroundColor(PacketDecoder::m_backgroundColors[PacketDecoder::PROTO_COLOR_DEFAULT])
+ {
+ }
+diff --git a/scopehal/PacketDecoder.h b/scopehal/PacketDecoder.h
+index 5063543..b568b14 100644
+--- a/scopehal/PacketDecoder.h
++++ b/scopehal/PacketDecoder.h
+@@ -55,10 +55,10 @@ public:
+ 	std::vector<uint8_t> m_data;
+ 
+ 	//Text color of the packet
+-	Gdk::Color m_displayForegroundColor;
++	std::string m_displayForegroundColor;
+ 
+ 	//Background color of the packet
+-	Gdk::Color m_displayBackgroundColor;
++	std::string m_displayBackgroundColor;
+ };
+ 
+ /**
+@@ -100,7 +100,7 @@ public:
+ 		PROTO_STANDARD_COLOR_COUNT
+ 	};
+ 
+-	static Gdk::Color m_backgroundColors[PROTO_STANDARD_COLOR_COUNT];
++	static std::string m_backgroundColors[PROTO_STANDARD_COLOR_COUNT];
+ 
+ protected:
+ 	void ClearPackets();
+diff --git a/scopehal/Unit.cpp b/scopehal/Unit.cpp
+index a06115f..449a7db 100644
+--- a/scopehal/Unit.cpp
++++ b/scopehal/Unit.cpp
+@@ -31,7 +31,7 @@
+ 
+ using namespace std;
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ string Unit::m_slocale;
+ #else
+ locale_t Unit::m_locale;
+@@ -364,7 +364,7 @@ Unit Unit::operator*(const Unit& rhs)
+ 
+ void Unit::SetLocale(const char* locale)
+ {
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ 	m_slocale = locale;
+ #else
+ 	m_locale = newlocale(LC_ALL, locale, 0);
+@@ -378,7 +378,7 @@ void Unit::SetLocale(const char* locale)
+  */
+ void Unit::SetPrintingLocale()
+ {
+-	#ifdef _WIN32
++	#if defined(_WIN32) || defined(__APPLE__)
+ 		setlocale(LC_NUMERIC, m_slocale.c_str());
+ 	#else
+ 		uselocale(m_locale);
+@@ -390,7 +390,7 @@ void Unit::SetPrintingLocale()
+  */
+ void Unit::SetDefaultLocale()
+ {
+-	#ifdef _WIN32
++	#if defined(_WIN32) || defined(__APPLE__)
+ 		setlocale(LC_NUMERIC, "C");
+ 	#else
+ 		uselocale(m_defaultLocale);
+diff --git a/scopehal/Unit.h b/scopehal/Unit.h
+index 3647bbf..4a3bfe7 100644
+--- a/scopehal/Unit.h
++++ b/scopehal/Unit.h
+@@ -101,7 +101,7 @@ public:
+ protected:
+ 	UnitType m_type;
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__APPLE__)
+ 	/**
+ 		@brief String form of m_locale for use on Windows
+ 	 */
+diff --git a/scopehal/base64.cpp b/scopehal/base64.cpp
+index aa47405..aedd194 100644
+--- a/scopehal/base64.cpp
++++ b/scopehal/base64.cpp
+@@ -9,10 +9,10 @@ For details, see http://sourceforge.net/projects/libb64
+ 
+ int base64_decode_value(char value_in)
+ {
+-	static const char decoding[] = {62,-1,-1,-1,63,52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-2,-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,-1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
++	static const signed char decoding[] = {62,-1,-1,-1,63,52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-2,-1,-1,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,-1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51};
+ 	static const char decoding_size = sizeof(decoding);
+ 	value_in -= 43;
+-	if (value_in < 0 || value_in >= decoding_size) return -1;
++	if ((int)value_in < 0 || (int)value_in >= decoding_size) return -1;
+ 	return decoding[(int)value_in];
+ }
+ 
+@@ -26,7 +26,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ {
+ 	const char* codechar = code_in;
+ 	char* plainchar = plaintext_out;
+-	char fragment;
++	signed char fragment;
+ 
+ 	*plainchar = state_in->plainchar;
+ 
+@@ -42,7 +42,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar    = (fragment & 0x03f) << 2;
+ 
+@@ -55,7 +55,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++ |= (fragment & 0x030) >> 4;
+ 			*plainchar    = (fragment & 0x00f) << 4;
+@@ -69,7 +69,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++ |= (fragment & 0x03c) >> 2;
+ 			*plainchar    = (fragment & 0x003) << 6;
+@@ -83,7 +83,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
+ 					state_in->plainchar = *plainchar;
+ 					return plainchar - plaintext_out;
+ 				}
+-				fragment = (char)base64_decode_value(*codechar++);
++				fragment = (signed char)base64_decode_value(*codechar++);
+ 			} while (fragment < 0);
+ 			*plainchar++   |= (fragment & 0x03f);
+ 		}
+diff --git a/scopehal/scopehal.cpp b/scopehal/scopehal.cpp
+index b94e750..40dcc4d 100644
+--- a/scopehal/scopehal.cpp
++++ b/scopehal/scopehal.cpp
+@@ -33,7 +33,6 @@
+ 	@brief Implementation of global functions
+  */
+ #include "scopehal.h"
+-#include <gtkmm/drawingarea.h>
+ #include <libgen.h>
+ 
+ #include "AgilentOscilloscope.h"
+@@ -69,6 +68,12 @@
+ #include <clFFT.h>
+ #endif
+ 
++int64_t GetTime() {
++	auto t = std::chrono::steady_clock::now();
++	auto ts = t.time_since_epoch();
++	return std::chrono::duration_cast<std::chrono::microseconds>(ts).count();
++}
++
+ using namespace std;
+ 
+ bool g_hasAvx512F = false;
+diff --git a/scopehal/scopehal.h b/scopehal/scopehal.h
+index 74643a8..ce57548 100644
+--- a/scopehal/scopehal.h
++++ b/scopehal/scopehal.h
+@@ -44,14 +44,14 @@
+ #include <stdint.h>
+ #include <chrono>
+ #include <thread>
+-
+-#include <sigc++/sigc++.h>
+-#include <cairomm/context.h>
++#include <cstring>
++#include <cfloat>
++#include <climits>
++#include <algorithm>
+ 
+ #include <yaml-cpp/yaml.h>
+ 
+ #include "../log/log.h"
+-#include "../graphwidget/Graph.h"
+ 
+ #include "config.h"
+ #ifdef HAVE_OPENCL
+@@ -68,6 +68,11 @@
+ #pragma GCC diagnostic pop
+ #endif
+ 
++#include <chrono>
++#include <dirent.h>
++
++int64_t GetTime();
++
+ #include "Unit.h"
+ #include "Bijection.h"
+ #include "IDTable.h"
+-- 
+2.32.0
+

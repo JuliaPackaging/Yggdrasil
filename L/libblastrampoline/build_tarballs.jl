@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"3.0.4"
+version = v"3.1.0"
 
-# Collection of sources required to build Libtiff
+# Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/staticfloat/libblastrampoline",
-              "23de7a09bf354fe6f655c457bab5bf47fdd2486d")
+              "c6c7bc5d4ae088bd7c519d58e3fb8b686d00db0c")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,4 +33,12 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               init_block = """
+               @static if VERSION < v"1.7.0-DEV.641"
+                       ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32),
+                             Libdl.dlpath(Base.libblas_name) , 1, 0)
+                   end
+               """
+)

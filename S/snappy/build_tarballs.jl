@@ -3,18 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "snappy"
-version = v"1.1.8"
+version = v"1.1.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/snappy/archive/$(version).tar.gz",
-                  "16b677f07832a612b0836178db7f374e414f94657c138e6993cbfc5dcc58651f")
+    GitSource("https://github.com/google/snappy.git",
+              "2b63814b15a2aaae54b7943f0cd935892fae628f"),
+    #ArchiveSource("https://github.com/google/snappy/archive/$(version).tar.gz",
+    #              "75c1fbb3d618dd3a0483bff0e26d0a92b495bbe5059c8b4f1c962b478b6e06e7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd snappy-*
+cd snappy*
+git submodule update --init
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/snappy.patch
+export CXXFLAGS="-I${includedir}"
 mkdir cmake-build
 cd cmake-build
 cmake \
@@ -22,6 +28,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DSNAPPY_BUILD_BENCHMARKS=OFF \
     -DSNAPPY_BUILD_TESTS=OFF \
     ..
 make -j${nproc}
@@ -30,7 +37,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -44,4 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

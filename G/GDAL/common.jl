@@ -106,14 +106,15 @@ function configure(version_offset, min_julia_version, proj_jll_version)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency("GEOS_jll"),
+        Dependency("GEOS_jll"; compat="~3.9"),
         Dependency(PackageSpec(name="PROJ_jll", version=proj_jll_version)),
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),
         Dependency("OpenJpeg_jll"),
         Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
         Dependency("Zstd_jll"),
-        Dependency("Libtiff_jll"),
+        # TODO: v4.3.0 is available, use that next time
+        Dependency("Libtiff_jll"; compat="4.1.0"),
         Dependency("libgeotiff_jll"),
     ]
 

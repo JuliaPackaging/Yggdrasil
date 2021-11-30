@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include("../../fancy_toys.jl") # for get_addable_spec
+
 # return the platforms supported by libjulia
 function libjulia_platforms(julia_version)
     platforms = supported_platforms(; experimental=julia_version ≥ v"1.7")
@@ -15,24 +17,49 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
     end
 
+    if julia_version >= v"1.6"
+        for p in platforms
+            p["julia_version"] = string(julia_version)
+        end
+    end
+
+    # While the "official" Julia kernel ABI itself does not involve any C++
+    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
+    # dependent on the C++ strings ABI (coming from LLVM related code). This
+    # doesn't matter if the client code is pure C, but as soon as there are
+    # other (actual) C++ dependencies, we must make sure to use the matching C++
+    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
+    platforms = expand_cxxstring_abis(platforms)
+
     return platforms
 end
 
+libjulia_platforms() = vcat(libjulia_platforms(v"1.6.0"), libjulia_platforms(v"1.7.0"))
+
 # Collection of sources required to build Julia
-function build_julia(ARGS, version)
+function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
 
     checksums = Dict(
         v"1.3.1" => "3d9037d281fb41ad67b443f42d8a8e400b016068d142d6fafce1952253ae93db",
         v"1.4.2" => "76a94e06e68fb99822e0876a37c2ed3873e9061e895ab826fd8c9fc7e2f52795",
         v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
-        v"1.6.0" => "c253360d29abb9a3a9e6e01493e0f7bb537d88014fd58ac561b5ba30fcb44cad",
+        v"1.5.4" => "852122bf1bdefd39307b1dd2aa546e3885d76ede7c07cb04d90814b9510ea9f9",
+        v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
+        v"1.7.0-rc1" => "0da8a3597ab3841457877ad1e4740e9ee49c08f55a00c10a2a21c8165e68f1aa",
     )
 
-    sources = [
-        ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
-        DirectorySource("./bundled"),
-    ]
+    if version == v"1.8.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia", "5b7bb084d478050b5265f66a571969c7df280f6b"),
+            DirectorySource("./bundled"),
+        ]
+    else
+        sources = [
+            ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
+            DirectorySource("./bundled"),
+        ]
+    end
 
     # Bash recipe for building across all platforms
     script = raw"""
@@ -40,10 +67,11 @@ function build_julia(ARGS, version)
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
-
+    # use the Julia version to determine the directory from which to read patches
+    patchdir=$WORKSPACE/srcdir/patches/$version
     # Apply patches
-    if [ -d $WORKSPACE/srcdir/patches ]; then
-    for f in $WORKSPACE/srcdir/patches/*.patch; do
+    if [ -d $patchdir ]; then
+    for f in $patchdir/*.patch; do
         echo "Applying path ${f}"
         atomic_patch -p1 ${f}
     done
@@ -77,10 +105,13 @@ function build_julia(ARGS, version)
     override OS=Linux
     EOM
 
+    # TODO: eventually we should get LLVM_CXXFLAGS from llvm-config from
+    # a HostDependency, now that we have those
+    LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
     if [[ "${version}" == 1.[0-5].* ]]; then
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++11 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++11"
     else
-        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_CXXFLAGS="${LLVM_CXXFLAGS} -std=c++14"
     fi
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
@@ -100,8 +131,15 @@ function build_julia(ARGS, version)
             LLVMLINK="-L${prefix}/lib -lLLVM-8jl"
         elif [[ "${version}" == 1.5.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
-        else
+        elif [[ "${version}" == 1.6.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-11jl"
+        elif [[ "${version}" == 1.7.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
+        elif [[ "${version}" == 1.8.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
+        else
+            echo "Error, LLVM version not specified"
+            exit 1
         fi
     fi
 
@@ -170,7 +208,7 @@ function build_julia(ARGS, version)
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
     EOM
-    else
+    elif [[ "${version}" == 1.[0-6].* ]]; then
         if [[ "${version}" == 1.[0-4].* ]]; then
             # remove broken dylib placeholder to force static linking
             rm -f ${prefix}/lib/libosxunwind.dylib
@@ -195,6 +233,8 @@ function build_julia(ARGS, version)
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
     fi
 
+    # first build flisp, as we need that for compilation; instruct the build system
+    # to build it for the cross compilation host architecture, not the final target
     make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} VERBOSE=1 -C src/flisp host/flisp
     make clean -C src
     make clean -C src/support
@@ -208,13 +248,17 @@ function build_julia(ARGS, version)
     # Mac build complains about checksum
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
-    # compile libjulia but don't try to build a sysimage
+    # choose make targets which compile libjulia but don't try to build a sysimage
     if [[ "${version}" == 1.[0-5].* ]]; then
         MAKE_TARGET=julia-ui-release
     else
         MAKE_TARGET="julia-src-release julia-cli-release"
     fi
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET}
+
+    # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
+    # unnecessary step calling dsymutil, which in our cross compilation
+    # environment results in a segfault.
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET} DSYMUTIL=true
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
@@ -229,21 +273,13 @@ function build_julia(ARGS, version)
     install_license LICENSE.md
     """
 
+    # HACK: JLLs are not allowed to use prerelease versions, so strip that out
+    # e.g. for 1.7.0-beta2
+    version = VersionNumber(version.major, version.minor, version.patch)
+
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = libjulia_platforms(version)
-
-    # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
-    # dependent on the C++ strings ABI (coming from LLVM related code). This
-    # doesn't matter if the client code is pure C, but as soon as there are
-    # other (actual) C++ dependencies, we must make sure to use the matching C++
-    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(platforms)
-
-    for p in platforms
-        p["julia_version"] = string(version)
-    end
 
     # The products that we will ensure are always built
     products = [
@@ -251,55 +287,82 @@ function build_julia(ARGS, version)
     ]
 
     # Dependencies that must be installed before this package can be built/used
-    dependencies = [
+
+    dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
-        Dependency("PCRE2_jll", compat="10.31"),
-        Dependency("OpenLibm_jll"),
-        Dependency("dSFMT_jll"),
         Dependency("LibUV_jll"),
-        Dependency("utf8proc_jll"),
-        Dependency("MbedTLS_jll"),
-        Dependency("LibSSH2_jll"),
-        Dependency("LibCURL_jll"),
-        Dependency("Zlib_jll"),
-        Dependency("p7zip_jll"),
-        Dependency("MPFR_jll"),
-        Dependency("GMP_jll"),
-        Dependency("Objconv_jll"),
+        BuildDependency("OpenLibm_jll"),
+        BuildDependency("dSFMT_jll"),
+        BuildDependency("utf8proc_jll"),
+        BuildDependency("MbedTLS_jll"),
+        BuildDependency("LibSSH2_jll"),
+        BuildDependency("LibCURL_jll"),
+        BuildDependency("Zlib_jll"),
+        BuildDependency("p7zip_jll"),
+        BuildDependency("MPFR_jll"),
+        BuildDependency("GMP_jll"),
+        BuildDependency("Objconv_jll"),
     ]
     if version < v"1.5.1"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
-    else
+    elseif version < v"1.7"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
     end
 
     if version < v"1.6"
-        push!(dependencies, Dependency("SuiteSparse_jll", compat="5.4.0"))
+        push!(dependencies, BuildDependency(PackageSpec(name="SuiteSparse_jll", version="5.4.0")))
     else
-        push!(dependencies, Dependency("SuiteSparse_jll"))
+        push!(dependencies, BuildDependency("SuiteSparse_jll"))
+    end
+
+    if version < v"1.7"
+        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10")))
+    #else
+    #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
 
     if version.major == 1 && version.minor == 3
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.5"))
         # there is no libLLVM_jll 6.0.1, so we use LLVM_jll instead
         push!(dependencies, Dependency("LLVM_jll", compat="6.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 4
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.5"))
+        push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.5"))
         push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.9"))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.9")))
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="0.28.2"))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="0.28.2")))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, Dependency("OpenBLAS_jll", compat="0.3.10"))
-        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.0"))
-        push!(dependencies, Dependency("LibGit2_jll", compat="1.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.10")))
+        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.1"))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="1.2")))
+    elseif version.major == 1 && version.minor == 7
+        #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
+        #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
+        #push!(dependencies, BuildDependency("LibGit2_jll", compat="1.0.1"))
+
+        # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
+        # for several other standard JLLs.
+        # So we use get_addable_spec below to "fake it" for now.
+        # This means the resulting package has fewer dependencies declared, but at least it
+        # will work and allow people to build JLL binaries ready for Julia 1.7
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
+
+        # starting with Julia 1.7, we need LLVMLibUnwind_jll
+        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
+    elseif version.major == 1 && version.minor == 8
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
+    else
+        error("Unsupported Julia version")
     end
 
-    julia_compat = version ≥ v"1.7" ? "1.6" : "1.0"
+    julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
 
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    if any(should_build_platform.(triplet.(platforms)))
+        build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
                    preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
+    end
 end

@@ -3,10 +3,10 @@ using BinaryBuilder, Pkg
 julia_version = v"1.6.0"
 
 name = "RDKit"
-version = v"2021.09.1pre"
+version = v"2021.09.2"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "f5a54af475cc38a82b2c69a8a44193a222fe92fc"),
+    GitSource("https://github.com/rdkit/rdkit.git", "333fa5ce222627583052ddffb2c27265994a3950"),
 ]
 
 script = raw"""
@@ -35,7 +35,7 @@ platforms = [
     Platform("i686", "linux"),
     Platform("aarch64", "linux"),
     Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),
+    Platform("aarch64", "macos"),
 ]
 
 platforms = expand_cxxstring_abis(platforms)
@@ -46,10 +46,10 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"),
-    Dependency("boost_jll"; compat="=1.71.0"),
+    Dependency("boost_jll"; compat="=1.76.0"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"5", julia_compat="^$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version=v"6", julia_compat="^$(julia_version.major).$(julia_version.minor)")

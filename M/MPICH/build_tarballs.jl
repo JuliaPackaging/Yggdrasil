@@ -1,32 +1,22 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.3.2"
+version = v"3.4.2"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "4bfaf8837a54771d3e4922c84071ef80ffebddbb6971a006038d91ee7ef959b9"),
-    DirectorySource("./bundled"),
+                  "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
+                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
 ]
 
 script = raw"""
+################################################################################
+# Install MPICH
+################################################################################
+
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/mpich-*
-
-if [[ "${target}" == powerpc64le-* ]]; then
-    # I don't understand why, but the extra link flags we append in the gfortran
-    # wrapper confuse the build system: the rule to build libmpifort has an
-    # extra lone `-l` flag, without any library to link to.  The following sed
-    # script basically reverts
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/749, so that the
-    # extra link flags are not appended to the gfortran wrapper
-    sed -i 's/POST_FLAGS+.*/POST_FLAGS=()/g' /opt/bin/gfortran
-fi
-
-atomic_patch -p1 ../patches/0001-romio-Use-tr-for-replacing-to-space-in-list-of-file-.patch
-pushd src/mpi/romio
-autoreconf -vi
-popd
+cd ${WORKSPACE}/srcdir/mpich*
 
 EXTRA_FLAGS=()
 if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
@@ -57,27 +47,82 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
     fi
 fi
 
+if [[ "${target}" == aarch64-apple-* ]]; then
+    export FFLAGS=-fallow-argument-mismatch
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes \
-    --enable-static=no \
-    --disable-dependency-tracking \
+    --enable-shared=yes --enable-static=no \
+    --with-device=ch3 --disable-dependency-tracking \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
+
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
 # Build the library
 make -j${nproc}
 
 # Install the library
 make install
+
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+# Yes, this is tedious. No, without being this explicit, cmake will
+# not properly auto-detect the MPI libraries.
+if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/libpmpi.${dlext} \
+        ..
+else
+    cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
+        -DMPI_C_LIB_NAMES='mpi' \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
+        ..
+fi
+
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
+# Install licenses
+################################################################################
+
+install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
 products = [
+    # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
     LibraryProduct("libmpifort", :libmpifort),
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
@@ -85,4 +130,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,0 +1,40 @@
+Submodule ThirdParty/CppAD contains modified content
+diff --git a/ThirdParty/CppAD/CMakeLists.txt b/ThirdParty/CppAD/CMakeLists.txt
+index 08ceb1736..e97b6a020 100644
+--- a/ThirdParty/CppAD/CMakeLists.txt
++++ b/ThirdParty/CppAD/CMakeLists.txt
+@@ -45,7 +45,7 @@ INCLUDE_DIRECTORIES( ${cppad_SOURCE_DIR}/include )
+ # return zero status. You can set
+ # CMAKE_REQUIRED_LIBRARIES, CMAKE_REQUIRED_FLAGS and CMAKE_REQUIRED_INCLUDES
+ # accordingly if additional libraries or compiler flags are required.
+-INCLUDE(CheckCXXSourceRuns)
++INCLUDE(CheckCXXSourceCompiles)
+ 
+ # ============================================================================
+ # Some local cmake language
+diff --git a/ThirdParty/CppAD/cmake/run_source_test.cmake b/ThirdParty/CppAD/cmake/run_source_test.cmake
+index 378276aef..e937a2b4d 100644
+--- a/ThirdParty/CppAD/cmake/run_source_test.cmake
++++ b/ThirdParty/CppAD/cmake/run_source_test.cmake
+@@ -38,7 +38,7 @@ MACRO(run_source_test source variable)
+     ELSE( cppad_cxx_flags )
+         SET(CMAKE_REQUIRED_FLAGS   "" )
+     ENDIF( cppad_cxx_flags )
+-    CHECK_CXX_SOURCE_RUNS("${source}" ${variable} )
++    CHECK_CXX_SOURCE_COMPILES("${source}" ${variable} )
+     IF( ${variable} )
+         SET(${variable} 1)
+     ELSE( ${variable} )
+diff --git a/ThirdParty/CppAD/include/cppad/CMakeLists.txt b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+index 495ab659d..5b3fd0687 100644
+--- a/ThirdParty/CppAD/include/cppad/CMakeLists.txt
++++ b/ThirdParty/CppAD/include/cppad/CMakeLists.txt
+@@ -140,7 +140,7 @@ IF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+         "cppad_max_num_threads_is_integer_ge_4 is defined before expected"
+     )
+ ENDIF( DEFINED cppad_max_num_threads_is_integer_ge_4 )
+-CHECK_CXX_SOURCE_RUNS("${source}" cppad_max_num_threads_is_integer_ge_4 )
++CHECK_CXX_SOURCE_COMPILES("${source}" cppad_max_num_threads_is_integer_ge_4 )
+ IF( NOT cppad_max_num_threads_is_integer_ge_4 )
+     MESSAGE(FATAL_ERROR
+     "cppad_max_num_threads is not an integer greater than or equal 4"

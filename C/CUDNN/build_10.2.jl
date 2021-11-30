@@ -1,8 +1,8 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.0.53/10.2_04222021/cudnn-10.2-linux-x64-v8.2.0.53.tgz",
-                      "6ecbc98b3795e940ce0831ffb7cd2c0781830fdd6b1911f950bcaf6d569f807c")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/10.2_07062021/cudnn-10.2-linux-x64-v8.2.2.26.tgz",
+                      "b4a2067774f509e65a1d8ba3bd86162b9e09de5946bb636887b4cc605dddeb6e")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.0.53/10.2_04222021/cudnn-10.2-windows10-x64-v8.2.0.53.zip",
-                      "1dc2182e2c8ff995e81cf812dd81d628fc5e4b9bcd5eb838ac71acc2928409d8")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/10.2_07062021/cudnn-10.2-windows10-x64-v8.2.2.26.zip",
+                      "27dee1094c49f4993754ddecd1e3bf4a14b1d4d43951cc5956d2375eb3bcb9f8")],
 )

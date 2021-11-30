@@ -1,3 +1,17 @@
+### Instructions for adding a new version
+#
+# * Update the bits you want to update, for example:
+#   * version of the Alpine RootFS: visit https://github.com/alpinelinux/docker-alpine,
+#     select the branch corresponding to the version of Alpine you want to use, browse to
+#     the directory `x86_64` and obtain the permanent link of the image (press `Y`)
+#   * version of Meson
+#   * version of patchelf
+#   * version of CSL in `bundled/libs/csl/download_csls.sh`
+#   * etc...
+# * to build and deploy the new image, run
+#
+#     julia build_tarballs.jl --debug --verbose --deploy
+
 using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
     error("This must be run with Julia 1.3+!")
@@ -12,8 +26,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.12/x86_64/alpine-minirootfs-3.12.6-x86_64.tar.gz"
-rootfs_hash = "21e8b78d55088f4e00c4424510b0ec0d7ad8686887055c944add7596ae27f21a"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/d9f83182075b7e627dfbea4f86f7f8134c48a5a5/x86_64/alpine-minirootfs-3.12.8-x86_64.tar.gz"
+rootfs_hash = "1f4e8181c76727591323cb5c3a508898b7a41d16ace67b0f20858e0fd746e223"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
@@ -96,10 +110,10 @@ sources = [
                   "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
-              "e1e39f3639e39360ceebb2f7ed533cede4623070"),
+              "a949ff23315bbb5863627c4655fe216ecbf341a2"),
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz",
-                  "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32"),
+    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.59.2/meson-0.59.2.tar.gz",
+                  "13dee549a7ba758b7e33ce7719f28d1d337a98d10d378a4779ccc996f5a2fc49"),
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",

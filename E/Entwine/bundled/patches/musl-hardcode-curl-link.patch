@@ -1,0 +1,12 @@
+diff --git a/app/CMakeLists.txt b/app/CMakeLists.txt
+index 850a668..110a751 100644
+--- a/app/CMakeLists.txt
++++ b/app/CMakeLists.txt
+@@ -24,6 +24,7 @@ target_link_libraries(app
+         ${CMAKE_DL_LIBS}
+         ${CMAKE_THREAD_LIBS_INIT}
+         ${JSONCPP_LIBRARY}
++        ${CURL_LIBRARIES}
+ )
+ set_target_properties(app PROPERTIES OUTPUT_NAME entwine)
+ 

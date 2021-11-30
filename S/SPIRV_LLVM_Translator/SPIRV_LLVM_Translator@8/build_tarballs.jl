@@ -3,7 +3,7 @@ include("../common.jl")
 version = v"8.0"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "5706cec9d10fbc85c2832d5785dea84af26fc335")]
+sources = [GitSource(repo, "69dfe971642822cb324b9a360b801584946cd6d7")]
 
 # LLVM 8's add_llvm_library does not work on Windows
 platforms = filter(!Sys.iswindows, platforms)

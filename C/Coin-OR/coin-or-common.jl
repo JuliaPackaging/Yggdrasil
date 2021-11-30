@@ -51,6 +51,28 @@ CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
 Ipopt_version = v"3.13.4"
 Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
 
+ALPS_upstream_version = v"1.5.7"
+# This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
+ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
+ALPS_version_offset = v"0.0.1"
+ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
+
+BiCePS_version = v"0.9.4"
+BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
+
+CHiPPS_BLIS_upstream_version = v"0.94.8"
+# This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
+CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
+CHiPPS_BLIS_version_offset = v"0.0.1"
+CHiPPS_BLIS_version =
+    offset_version(CHiPPS_BLIS_upstream_version, CHiPPS_BLIS_version_offset)
+
+SYMPHONY_version = v"5.6.17"
+SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
+
+MibS_version = v"1.1.3"
+MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
+
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.2"
 METIS_version = v"5.1.0"

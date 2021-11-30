@@ -3,6 +3,10 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.17" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
+                          "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
+        ],
         v"0.3.13" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.13.tar.gz",
                           "79197543b17cc314b7e43f7a33148c308b0807cd6381ee77f77e15acf3e6459e")
@@ -34,7 +38,7 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=512, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)

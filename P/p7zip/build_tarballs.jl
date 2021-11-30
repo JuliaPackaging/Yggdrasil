@@ -38,7 +38,7 @@ else
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/13-CVE-2017-17969.patch
     atomic_patch -p4 ${WORKSPACE}/srcdir/patches/15-Enhanced-encryption-strength.patch
 
-    # Convert from target to makefile:
+    # Convert from target to makefile
     target_makefile()
     {
         case "${target}" in
