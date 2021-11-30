@@ -34,6 +34,7 @@ mkdir -p ${prefix}/share/licenses/SCIP
 for dir in papilo scip soplex; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
+cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${gcg}
 """
 
 # These are the platforms we will build for by default, unless further
