@@ -15,53 +15,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
-
-# Pango's `.la` files are wrong on certain platforms, and we don't need them anyway
-rm -f ${prefix}/lib/*.la
-
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/librsvg_link_order.patch"
-autoreconf -f -i
-
-# We need this for bootstrapping purposes
-apk add gdk-pixbuf
-
-FLAGS=()
-if [[ "${target}" == *-apple-* ]]; then
-    # We purposefully use an old binutils, so we must disable -Bsymbolic
-    FLAGS+=(--disable-Bsymbolic)
-fi
-
-# cssparser must be upgraded as it doesn't build properly anymore
-sed -i.bak -e 's&cssparser = "0.23"&cssparser = "0.25"&' rust/Cargo.toml
-(cd rust && cargo vendor)
-
-LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-static \
-    --enable-pixbuf-loader \
-    --disable-introspection \
-    --disable-gtk-doc-html \
-    --enable-shared \
-    "${FLAGS[@]}"
-
-if [[ ${target} == *mingw* ]]; then
-    # pass static rust package to linker
-    sed -i "s/^deplibs_check_method=.*/deplibs_check_method=\"pass_all\"/g" libtool
-    # add missing crt libs (ws2_32 and userenv) to LIBRSVG_LIBS
-    sed -i "s/^LIBRSVG_LIBS = .*/& -lws2_32 -luserenv/g" Makefile
-fi
-
-# Don't try to unwind on i686-w64-mingw32, just panic because rust doesn't know how to SLJL
-# https://github.com/rust-lang/rust/issues/12859#issuecomment-185081071
-if [[ ${target} == i686-w64-mingw32 ]]; then
-    export RUSTFLAGS="-C panic=abort"
-fi
-
-# Manually build rust library because rust target doesn't match C target
-(cd rust && PKG_CONFIG_ALLOW_CROSS=1 cargo build --release)
-
-RUST_LIB="$(pwd)/rust/target/${rust_target}/release/librsvg_internals.a"
-make RUST_LIB="${RUST_LIB}" -j${nproc}
-make RUST_LIB="${RUST_LIB}" install
+./configure --host=${target} --build=${MACHTYPE} --prefix=${prefix} --disable-static --enable-pixbuf-loader --disable-introspection --disable-gtk-doc-html --enable-shared
+make
 """
 
 # These are the platforms we will build for by default, unless further
@@ -86,7 +41,7 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll", v"1.42.4"; compat="1.42.4"),
+    Dependency("Pango_jll"),
     Dependency("Libcroco_jll"),
 ]
 
