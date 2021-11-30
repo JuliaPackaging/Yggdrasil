@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version = v"3.4.1"
+version = v"3.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.4.01.tar.gz", "146d5e233228e75ef59ca497e8f5872d9b272cb93e8e9cdfe05ad34a23f483d1"),
+    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.5.00.tar.gz", "748f06aed63b1e77e3653cd2f896ef0d2c64cb2e2d896d9e5a57fec3ff0244ff"),
     DirectorySource("./bundled")
 ]
 
