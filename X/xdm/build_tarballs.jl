@@ -7,34 +7,22 @@ version = v"2.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xyce/xdm.git", "c87548b0bdd4d696ea103008d452082907951fc3")
+    GitSource("https://github.com/xyce/xdm.git", "c87548b0bdd4d696ea103008d452082907951fc3"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xdm
+atomic_patch -p1 ../patches/*
 mv $prefix/lib/libboost_python.$dlext /workspace/destdir/lib/libboost_python38.$dlext || true
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBoost_NO_BOOST_CMAKE=ON
 make -j$nproc
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("x86_64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
+# No windows python support in Yggdrasil at the moment
+platforms = filter(!Sys.iswindows, supported_platforms())
 
 
 # The products that we will ensure are always built
