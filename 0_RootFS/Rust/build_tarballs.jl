@@ -1,3 +1,13 @@
+### Instructions for adding a new version of the Rust toolchain
+#
+# * update the `version` variable
+# * To deploy the shard and automatically update your BinaryBuilderBase's
+#   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
+#   You can build & deploy by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy
+#
+
 using BinaryBuilderBase, BinaryBuilder, Pkg.Artifacts
 using BinaryBuilderBase: map_rust_target
 
@@ -8,7 +18,7 @@ rustup_name = "RustStage1"
 rustup_version = v"1.22.0"
 
 # This is the version of the Rust toolchain we install
-version = v"1.43.0"
+version = v"1.56.1"
 
 sources = [
     # We'll use rustup v1.22.0 to install rust
@@ -28,8 +38,11 @@ chmod +x rustup-init
 
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
+    aarch64-apple-darwin
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
+    arm-unknown-linux-gnueabihf
+    arm-unknown-linux-musleabihf
     armv7-unknown-linux-gnueabihf
     armv7-unknown-linux-musleabihf
     i686-unknown-linux-gnu
@@ -72,7 +85,7 @@ mega_rust_path = artifact_path(first(values(build_info))[3])
 rust_host = Platform("x86_64", "linux"; libc="musl")
 rust_host_triplet = map_rust_target(rust_host)
 
-for target_platform in supported_platforms()
+for target_platform in supported_platforms(; experimental=true)
     rust_target_triplet = map_rust_target(target_platform)
     @info("Generating artifacts for $(rust_target_triplet)...")
     unpacked_hash = create_artifact() do dir
@@ -108,24 +121,8 @@ unpacked_hash = create_artifact() do dir
     cp(joinpath(mega_rust_path, "toolchains"), joinpath(dir, "toolchains"))
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "share"); recursive=true)
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "etc"); recursive=true)
-    for rust_target_triplet in map_rust_target.(supported_platforms())
+    for rust_target_triplet in map_rust_target.(supported_platforms(; experimental=true))
         rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
-    end
-
-    # Also generate "config" file for Cargo where we give it the linkers for all our targets
-    open(joinpath(dir, "config"), "w") do io
-        write(io, """
-        # Configuration file for `cargo`
-        """)
-        for platform in supported_platforms()
-            # Use `aatriplet` for the linker to match how the wrappers are
-            # written in
-            # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/30d056ef68f81dca9cb91ededcce6b68c6466b37/src/Runner.jl#L599.
-            write(io, """
-            [target.$(map_rust_target(platform))]
-            linker = "$(BinaryBuilderBase.aatriplet(platform))-gcc"
-            """)
-        end
     end
 end
 
