@@ -30,6 +30,7 @@ fi
 
 mkdir build_glib && cd build_glib
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
     -Dman=false \
     -Diconv=external \
     "${MESON_FLAGS[@]}" \
