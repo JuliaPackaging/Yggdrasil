@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"8.0.999" # really 8.1-alpha1, but Julia Pkg doesn't support prerelease versions
+version = v"8.0.1000" # alpha release of 8.1, but Julia Pkg doesn't support prerelease versions
 
 # Collection of sources required to build
 sources = [
     GitSource("https://github.com/qhull/qhull.git",
-              "a22c735d6a8d1b5eac5773790aeae28f3b088655"), # v8.1-alpha1
+              "42b11489c2f93d4648b2e839acf80be11178bbfd"), # v8.1-alpha1 + patches
 ]
 
 # Bash recipe for building across all platforms

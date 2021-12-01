@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"12.3"
+version = v"14.1"
 pg_version = string(version.major, '.', version.minor)
-tzcode_version = "2020a"
+tzcode_version = "2021e"
 
 # Collection of sources required to build LibPQ
 sources = [
     ArchiveSource(
         "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "708fd5b32a97577679d3c13824c633936f886a733fc55ab5a9240b615a105f50"
+        "b29030525e1314d676f41e6007a96d4489ba0d03fa93e67b477c1d5386790c8f"
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
-        "7d2af7120ee03df71fbca24031ccaf42404752e639196fe93c79a41b38a6d669",
+        "584666393a5424d13d27ec01183da17703273664742e049d4f62f62dab631775",
     ),
 ]
 
@@ -41,7 +41,7 @@ install_license COPYRIGHT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

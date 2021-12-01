@@ -66,8 +66,8 @@ gap_compiler="${abs_top_builddir}/gap"
 . "${abs_top_builddir}/sysinfo.gap"
 
 # These three should be filled in by the standard autoconf procedures
-c_compiler="gcc -fPIC -DPIC"
-cxx_compiler="g++ -fPIC -DPIC"
+c_compiler="cc -fPIC -DPIC"
+cxx_compiler="c++ -fPIC -DPIC"
 c_linker="echo static linking not supported ; exit 1 ;"
 
 # These will need special care
