@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.7.0"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "68b88aca6692c75a9f686187e6c4a4e196ae60a9")
+    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -60,18 +61,31 @@ case ${target} in
         export BLI_THREAD=none
         ;;
     *)
+        # Default (Generic) configuration without optimized kernel.
+        export BLI_CONFIG=generic
+        export BLI_THREAD=none
         ;; 
 
 esac
 
-./configure -p ${prefix} -t ${BLI_THREAD} ${BLI_CONFIG}
+# For 64-bit builds, add _64 suffix to exported BLAS routines.
+# This corresponds to ILP64 handling of OpenBLAS thus Julia.
+if [ ${nbits} = 64 ]; then
+    patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
+fi
+
+export BLI_F77BITS=${nbits}
+./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
 make -j${nproc}
 make install
 
+# Static library is not needed.
+rm ${prefix}/lib/libblis.a
+
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/libblis.3.dll ${prefix}/bin/libblis.dll
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/libblis.3.dll ${libdir}/libblis.dll
 fi
 """
 

@@ -1,35 +1,72 @@
-using BinaryBuilder, Dates, Pkg
+### Instructions for adding a new version
+#
+# Check out a branch of BinaryBuilderBase from the current master of that repo.
+# Run this script for each target platform. The following will do the job:
+# ```
+# using BinaryBuilder
+# using BinaryBuilder: aatriplet
+# for platform in supported_platforms(; experimental=true)
+#     # Append version numbers for BSD systems
+#     if Sys.isapple(platform)
+#         suffix = arch(platform) == "aarch64" ? "20" : "14"
+#     elseif Sys.isfreebsd(platform)
+#         suffix = "12.2"
+#     else
+#         suffix = ""
+#     end
+#     target = aatriplet(platform) * suffix
+#     run(`julia build_tarballs.jl --debug --verbose --deploy $target`)
+# end
+# ```
+# (Note that `--deploy` requires a GitHub personal access token in a `GITHUB_TOKEN`
+# environment variable with write access to Yggdrasil.)
+# Running this will update BinaryBuilderBase/Artifacts.toml with the entries formatted as
+# `PlatformSupport-<target triplet>.v<today's date>.<builder triplet>.<squashfs|unpacked>`.
+# You can open a PR to BinaryBuilderBase with this change and update the default
+# PlatformSupport version to use in `choose_shards` to be `v<today's date>`.
+
+using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
 Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
 
-compiler_target = platform_key_abi(ARGS[end])
-if isa(compiler_target, UnknownPlatform)
+compiler_target = try
+    parse(Platform, ARGS[end])
+catch
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
 deleteat!(ARGS, length(ARGS))
 name = "PlatformSupport"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 
+# Add check that FreeBSD and MacOS shards have version numbers embedded
+if (Sys.isapple(compiler_target) || Sys.isfreebsd(compiler_target)) && os_version(compiler_target) === nothing
+    error("Compiler target $(triplet(compiler_target)) does not have an `os_version` tag!")
+end
+
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
                   "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
                   "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
-    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/11.4-RELEASE/base.txz",
-                  "3bac8257bdd5e5b071f7b80cc591ebecd01b9314ca7839a2903096cbf82169f9"),
+    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/12.2-RELEASE/base.txz",
+                  "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                   "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
-    DirectorySource("./bundled"),
 ]
 
-if compiler_target isa MacOS && compiler_target.arch == :aarch64
-    push!(sources, DirectorySource(joinpath(@__DIR__, "..", "DarwinSDKs")))
+macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
+    # MacOSX11.1 is not yet available on phracker/MacOSX-SDKs
+    # https://github.com/phracker/MacOSX-SDKs/pull/32#issuecomment-749230532
+    ArchiveSource("https://github.com/larskanis/MacOSX-SDKs/releases/download/11.1/MacOSX11.1.sdk.tar.xz",
+                  "97f44b22949cea4522408ccca9a8d87f2d09779b2878423d2d7a2cb805c3d42d")
 else
-    push!(sources, ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-        "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"))
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                  "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774")
 end
+
+push!(sources, macos_sdk)
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
@@ -116,8 +153,7 @@ case "${COMPILER_TARGET}" in
                  -DCMAKE_INSTALL_PREFIX="${sysroot}/usr" \
                  -DCMAKE_CROSSCOMPILING=True \
                  -DLLVM_HOST_TRIPLE=${COMPILER_TARGET} \
-                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}" \
-                 -DDARWIN_osx_ARCHS=x86_64
+                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}"
         make install-cxx-headers
         ;;
     *)
@@ -125,11 +161,6 @@ case "${COMPILER_TARGET}" in
         exit 1
         ;;
 esac
-
-# Install cmake templates
-cd ${WORKSPACE}/srcdir/buildsystem_toolchains
-./build_toolchains.sh ${COMPILER_TARGET}
-mv ${COMPILER_TARGET}/* ${prefix}
 
 # We create a link from ${COMPILER_TARGET}/sys-root/usr/local to ${prefix}.
 # This is the most reliable way for our sysroot'ed compilers to find destination
@@ -139,8 +170,8 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 """
 
 # Build the artifacts
-ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
-if deploy
+if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
 end

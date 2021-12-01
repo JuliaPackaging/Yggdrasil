@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Chafa"
-version = v"1.4.1"
+version = v"1.8.0"
 
 sources = [
     ArchiveSource("https://hpjansson.org/chafa/releases/chafa-$(version).tar.xz",
-                  "46d34034f4c96d120e0639f87a26590427cc29e95fe5489e903a48ec96402ba3"),
+                  "21ff652d836ba207098c40c459652b2f1de6c8a64fbffc62e7c6319ced32286b"),
 ]
 
 script = raw"""
@@ -40,7 +40,7 @@ products = [
 
 dependencies = [
     Dependency("FreeType2_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("ImageMagick_jll"),
 ]
 

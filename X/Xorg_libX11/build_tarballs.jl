@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/libX11-*/
 CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
 # For some obscure reason, this Makefile may not get the value of CPPFLAGS
 sed -i "s?CPPFLAGS = ?CPPFLAGS = ${CPPFLAGS}?" src/util/Makefile
 make -j${nproc}

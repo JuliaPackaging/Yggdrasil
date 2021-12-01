@@ -11,6 +11,8 @@ pool: Native
 
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
+    # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
+    BINARYBUILDER_NPROC: 64
 
 jobs:
 - job: generator
@@ -43,7 +45,27 @@ jobs:
           fi
       fi
 
-      $(JULIA) -e "using InteractiveUtils; versioninfo()"
+      $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
+          versioninfo()
+          if !isnothing(Pkg.pkg_server())
+              resp = Downloads.request("$(Pkg.pkg_server())/registries")
+              last_mod_idx = findfirst(h -> first(h) == "last-modified", resp.headers)
+              msg = "PkgServer: " * resp.url
+              delay = if !isnothing(last_mod_idx)
+                  last_mod = last(resp.headers[last_mod_idx])
+                  msg *= " -- last updated: " * last_mod
+                  # Manually strip the "GMT" timezone and hope it never changes.
+                  # Do not error out if parsing fails.
+                  dt = tryparse(DateTime, replace(last_mod, " GMT"=>""), dateformat"e, d u y H:M:S")
+                  # If parsing did fail, set the delay to 0.
+                  isnothing(dt) ? Second(0) : now(UTC) - dt
+              else
+                  Second(0)
+              end
+              @info(msg)
+              tolerance = Hour(1)
+              delay > tolerance && @warn "The PkgServer registry is older than $(tolerance)"
+          end'
 
       # Get the directories holding changed files
       # 1. All changed files
@@ -97,10 +119,15 @@ jobs:
           fi
 
           # Next, we're going to ensure that our BB is up to date and precompiled
-          $(JULIA) -e "import Pkg; Pkg.instantiate(); using BinaryBuilder"
+          $(JULIA) -e "import Pkg; Pkg.instantiate(); Pkg.precompile()"
 
-          # We're going to snarf out the BB tree hash, to be used later in our build cache
-          BB_HASH=$($(JULIA) -e "using Pkg; print(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\")].tree_hash)")
+          # We're going to snarf out the BB and BBB tree hashes and combine them to be used later in our build cache
+          BB_HASH=$($(JULIA) -e "using Pkg, SHA; \
+                                 gethash(uuid) = collect(Pkg.Types.Context().env.manifest[Pkg.Types.UUID(uuid)].tree_hash.bytes); \
+                                 print(bytes2hex(sha256(vcat( \
+                                     gethash(\"7f725544-6523-48cd-82d1-3fa08ff4056e\"), \
+                                     gethash(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\"), \
+                                 ))));")
 
           # Next, for each project, download its sources. We do this by generating meta.json
           # files, then parsing them with `download_sources.jl`
@@ -135,7 +162,12 @@ jobs:
               # "project source hash" is a combination of meta.json (to absorb
               # changes from include()'ing a `common.jl`) as well as the entire
               # tree the project lives in (to absorb changes from patches)
-              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${PROJECT}\")))")
+              # In order to support symlinked directories as dependencies we calculate
+              # the tree hash on a TMP_PROJECT using `cp -RL` to resolve the symlink and
+              # hash the actual content.
+              TMP_PROJECT=$(mktemp -d)
+              cp -RL ${PROJECT} ${TMP_PROJECT}
+              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${TMP_PROJECT}\")))")
               META_HASH=$(shasum -a 256 "$(Agent.TempDirectory)/${NAME}.meta.json" | cut -d' ' -f1)
               PROJ_HASH=$(echo -n ${TREE_HASH}${META_HASH} | shasum -a 256 | cut -d' ' -f1)
 
@@ -279,6 +311,7 @@ jobs:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
       S3KEY: $(S3KEY)
       S3SECRET: $(S3SECRET)
+      BINARYBUILDER_NPROC: $(BINARYBUILDER_NPROC)
     displayName: "run build_tarballs.jl"
     condition: and(ne(variables['projplatforms'], ''), ne(variables['projplatforms'], '{ }'))
 
@@ -307,4 +340,3 @@ jobs:
     displayName: "register JLL package"
     # We only register if this is on `master`; same as setting `${DEPLOY}` above.
     condition: and(and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')), ne(variables['projects'], ''))
-

@@ -3,7 +3,7 @@ include("../common.jl")
 version = v"9.0"
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "17b72562e002a4653e31829e89cf14ce35892896")]
+sources = [GitSource(repo, "d30dc2111d672c25a1969560021147289de4f823")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -13,4 +13,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7")
+               preferred_gcc_version=v"7", julia_compat="~1.5")

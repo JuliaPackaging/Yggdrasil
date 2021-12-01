@@ -1,0 +1,9 @@
+--- a/source/config/mh-linux
++++ b/source/config/mh-linux
+@@ -21,7 +21,8 @@ LD_RPATH= -Wl,-zorigin,-rpath,'$$'ORIGIN
+ LD_RPATH_PRE = -Wl,-rpath,
+
+ ## These are the library specific LDFLAGS
+-LDFLAGSICUDT=-nodefaultlibs -nostdlib
++#LDFLAGSICUDT=-nodefaultlibs -nostdlib
++LDFLAGSICUDT=

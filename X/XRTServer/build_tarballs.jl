@@ -8,21 +8,19 @@ version = v"2018.11.12"
 
 # Collection of sources required
 sources = [
-    "https://github.com/JuliaComputing/tensorflow.git" =>
-    "36c34bd2d744f0027c24e3afae118b5d956ce741",
-    "https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-linux-x86_64" =>
-    "674757d40d4ac0f0175df7fe84cd7250cbf67ac7ebac565e905fdc7e24c0fac5",
+    GitSource("https://github.com/JuliaComputing/tensorflow.git", "36c34bd2d744f0027c24e3afae118b5d956ce741"),
+    FileSource("https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-linux-x86_64",
+               "674757d40d4ac0f0175df7fe84cd7250cbf67ac7ebac565e905fdc7e24c0fac5"),
 
     # CuDAAAAAA
-    "http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run" =>
-    "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217",
-    "https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux" =>
-    "92351f0e4346694d0fcb4ea1539856c9eb82060c25654463bfd8574ec35ee39a",
-    "http://developer.download.nvidia.com/compute/redist/cudnn/v7.3.0/cudnn-10.0-linux-x64-v7.3.0.29.tgz" =>
-    "7526a33bc3c152ca5d8f3eddedaa4a0b3c721a3c0000eeb80ebfe5cbc54696b7",
-    "https://github.com/NVIDIA/nccl.git" =>
-    "f93fe9bfd94884cec2ba711897222e0df5569a53",
-    "./bundled",
+    FileSource("http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run",
+                  "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
+    FileSource("https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux",
+                  "92351f0e4346694d0fcb4ea1539856c9eb82060c25654463bfd8574ec35ee39a"),
+    ArchiveSource("http://developer.download.nvidia.com/compute/redist/cudnn/v7.3.0/cudnn-10.0-linux-x64-v7.3.0.29.tgz",
+                  "7526a33bc3c152ca5d8f3eddedaa4a0b3c721a3c0000eeb80ebfe5cbc54696b7"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "f93fe9bfd94884cec2ba711897222e0df5569a53"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,8 +29,7 @@ script = raw"""
 apk add grep
 
 # bazel always looks for `ar` in `/usr/bin/ar`
-ln -sf "$AR" /usr/bin/ar
-
+ln -sf /opt/bin/ar /usr/bin/ar
 
 # Install CUDA driver libraries
 mkdir -p ${prefix}/lib
@@ -113,13 +110,13 @@ done
 # We attempt to build for only x86_64-linux-gnu
 platforms = [Platform("x86_64", "linux")]
 
-products(prefix) = [
-    ExecutableProduct(prefix, "xrt_server", :xrt_server),
-    ExecutableProduct(prefix, "dumped_computation_to_text", :dumped_computation_to_text),
+products = [
+    ExecutableProduct("xrt_server", :xrt_server),
+    ExecutableProduct("dumped_computation_to_text", :dumped_computation_to_text),
 ]
 
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.2/build_Zlib.v1.2.11.jl",
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -1,5 +1,8 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
+# FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
+ENV["GODEBUG"] = "http2client=0"
+
 verbose = "--verbose" in ARGS
 
 # Read in input `.json` file
@@ -23,7 +26,7 @@ name = merged["name"]
 version = merged["version"]
 # Filter out build-time dependencies that will not go into the dependencies of
 # the JLL packages.
-dependencies = Dependency[dep for dep in merged["dependencies"] if !isa(dep, BuildDependency)]
+dependencies = Dependency[dep for dep in merged["dependencies"] if !(isa(dep, BuildDependency) || isa(dep, HostBuildDependency))]
 lazy_artifacts = merged["lazy_artifacts"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 repo = "JuliaBinaryWrappers/$(name)_jll.jl"
@@ -37,6 +40,14 @@ BinaryBuilder.init_jll_package(
     repo,
 )
 
+function reset_downloader()
+    # Downloads.jl hangs when downloading multiple large files (JuliaLang/Downloads.jl#99).
+    # Work around that issue by using a fresh Downloader each time.
+    lock(Downloads.DOWNLOAD_LOCK) do
+        Downloads.DOWNLOADER[] = nothing
+    end
+end
+
 function download_cached_binaries(download_dir, platforms)
     # Grab things out of the aether for maximum consistency
     bb_hash = ENV["BB_HASH"]
@@ -45,7 +56,10 @@ function download_cached_binaries(download_dir, platforms)
     for platform in platforms
         url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
         filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
+        reset_downloader()
+        println("Downloading $url...")
         Downloads.download(url, joinpath(download_dir, filename))
+        println()
     end
 end
 
@@ -54,7 +68,10 @@ function download_binaries_from_release(download_dir)
         url = info["url"]
         hash = info["sha256"]
         filename = basename(url)
+        reset_downloader()
+        print("Downloading $url... ")
         BinaryBuilderBase.download_verify(url, hash, joinpath(download_dir, filename))
+        println("done")
     end
 
     # Doownload the tarballs reading the information in the current `Artifacts.toml`.
@@ -74,7 +91,7 @@ end
 
 # Filter out build-time dependencies also here
 for json_obj in [merged, objs_unmerged...]
-    json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if !isa(dep, BuildDependency)]
+    json_obj["dependencies"] = Dependency[dep for dep in json_obj["dependencies"] if BinaryBuilderBase.is_runtime_dependency(dep)]
 end
 skip_build = get(ENV, "SKIP_BUILD", "false") == "true"
 mktempdir() do download_dir
@@ -101,13 +118,19 @@ mktempdir() do download_dir
         BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
     end
 
+    # Restore Artifacts.toml
     if skip_build
-        # Restore Artifacts.toml
         write(joinpath(code_dir, "Artifacts.toml"), artifacts_toml)
-    else
+    end
+
+    # Push JLL package _before_ uploading to GitHub releases, so that this version of the code is what gets tagged
+    BinaryBuilder.push_jll_package(name, build_version)
+
+    if !skip_build
         # Upload the tarballs to GitHub releases
         BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
     end
 end
-BinaryBuilder.push_jll_package(name, build_version)
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat)
+
+# Sub off to Registrator to create a PR to General
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; lazy_artifacts=lazy_artifacts)

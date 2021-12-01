@@ -3,18 +3,24 @@
 using BinaryBuilder
 
 name = "ICU"
-version = v"67.1"
+version = v"69.1"
 
 # Collection of sources required to build ICU
 sources = [
     ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
-                  "94a80cd6f251a53bd2a997f6f1b5ac6653fe791dfab66e1eb0227740fb86d5dc"),
+                  "4cba7b7acd1d3c42c44bb0c14be6637098c7faf2b330ce876bc5f3b915d09745"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/icu/
+
+# Apply patch to link `libicudata` against the default standard libraries
+# to avoid toolchain weirdness when you have a dynamic library that has
+# _no_ dependencies (not even `libc`).  See this bug report for more:
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
+atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
 
 # Do the native build
 (
@@ -58,11 +64,11 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libicudata", "icudt$(version.major)"], :libicudata),
+    LibraryProduct(["libicudata", "icudt$(version.major)"], :libicudata; dont_dlopen=true),
     LibraryProduct(["libicui18n", "icuin$(version.major)"], :libicui18n),
     LibraryProduct(["libicuio", "icuio$(version.major)"], :libicuio),
     LibraryProduct(["libicutest", "icutest$(version.major)"], :libicutest),
@@ -75,4 +81,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

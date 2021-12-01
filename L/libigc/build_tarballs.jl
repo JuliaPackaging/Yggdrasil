@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.5186"
+version = v"1.0.8744"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -11,15 +11,18 @@ version = v"1.0.5186"
 # in-tree build with known-good versions.
 
 # Collection of sources required to build IGC
+# NOTE: these hashes are taken from the release notes in GitHub,
+#       https://github.com/intel/intel-graphics-compiler/releases
+# NOTE: the SPIRV-LLVM-Translator doesn't match what's in the release notes,
+#       but gets checked out to $SPIRV_REV_PATCH in IGC/VectorCompiler/cmake/spirv.cmake,
+#       https://github.com/intel/intel-graphics-compiler/blob/master/IGC/VectorCompiler/cmake/spirv.cmake
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "aaed3363afb9f7298f0e6d02cdc5885b50bc5d3a"),
-    # use LLVM 10 as provided by the official packages for Ubuntu 18.04
-    GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
-    GitSource("https://github.com/intel/opencl-clang.git", "fdcfda343f493efdd262f0b6f2fae99809030c2f"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "0db501ebb43a5eec03469a226dc1822940e640b1"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "c8c52b5fb14b33e32de9df573b7de186a0c97c94"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3ba8dde8c414a0e47df58b1bba12a64f8ba2089e"),
+    GitSource("https://github.com/intel/opencl-clang.git", "fd68f64b33e67d58f6c36b9e25c31c1178a1962a"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "d8d516efa27a8b3d9c40d8c78390c5c53c6e99d6"),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "e5ad7e02aa4aa21a3cd7b3e5d1f3ec9b95f58872"),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
     # patches
-    GitSource("https://github.com/intel/llvm-patches.git", "cfc800519a71522194efcaa9a5dd67ecbff43ffa"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,32 +33,11 @@ export HOME=$(pwd)
 git config --global user.name "Binary Builder"
 git config --global user.email "your@email.com"
 
-# apply opencl-clang's patches ourself, which is more robust than letting the build system do it
-if [[ -d opencl-clang/patches/clang ]]; then
-    pushd llvm-project
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-if [[ -d opencl-clang/patches/spirv ]]; then
-    pushd SPIRV-LLVM-Translator
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-
 # move everything in places where it will get detected by the IGC build system
-mv llvm-project/clang llvm-project/llvm/tools/
 mv opencl-clang llvm-project/llvm/projects/opencl-clang
 mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
-mv llvm-patches llvm_patches
 
 # Work around compilation failures
-atomic_patch -p0 patches/cmake.patch
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
 

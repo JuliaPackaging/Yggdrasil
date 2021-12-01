@@ -1,0 +1,49 @@
+diff --git a/include/wx/osx/private/available.h b/include/wx/osx/private/available.h
+index a9e7cf8..0b64007 100644
+--- a/include/wx/osx/private/available.h
++++ b/include/wx/osx/private/available.h
+@@ -14,21 +14,21 @@
+ // builtin which should be used instead of manual checks for API availability
+ // as using this builtin suppresses the compiler -Wunguarded-availability
+ // warnings, so use it if possible for the implementation of our own macro.
+-#if defined(__clang__) && __has_builtin(__builtin_available)
+-    #define WX_IS_MACOS_AVAILABLE(major, minor) \
+-        __builtin_available(macOS major ## . ## minor, *)
+-
+-    #define WX_IS_MACOS_OR_IOS_AVAILABLE(macmajor, macminor, imajor, iminor) \
+-        __builtin_available(macOS macmajor ## . ## macminor, iOS imajor ##. ## iminor, *)
+-
+-    #define WX_IS_MACOS_AVAILABLE_FULL(major, minor, micro) \
+-        __builtin_available(macOS major ## . ## minor ## . ## micro, *)
+-
+-    // Note that we can't easily forward to API_AVAILABLE macro here, so go
+-    // directly to its expansion instead.
+-    #define WX_API_AVAILABLE_MACOS(major, minor) \
+-         __attribute__((availability(macos,introduced=major ## . ## minor)))
+-#else // Not clang or old clang version without __builtin_available
++//#if defined(__clang__) && __has_builtin(__builtin_available)
++//    #define WX_IS_MACOS_AVAILABLE(major, minor) \
++//        __builtin_available(macOS major ## . ## minor, *)
++//
++//    #define WX_IS_MACOS_OR_IOS_AVAILABLE(macmajor, macminor, imajor, iminor) \
++//        __builtin_available(macOS macmajor ## . ## macminor, iOS imajor ##. ## iminor, *)
++//
++//    #define WX_IS_MACOS_AVAILABLE_FULL(major, minor, micro) \
++//        __builtin_available(macOS major ## . ## minor ## . ## micro, *)
++//
++//    // Note that we can't easily forward to API_AVAILABLE macro here, so go
++//    // directly to its expansion instead.
++//    #define WX_API_AVAILABLE_MACOS(major, minor) \
++//         __attribute__((availability(macos,introduced=major ## . ## minor)))
++//#else // Not clang or old clang version without __builtin_available
+     #include "wx/platinfo.h"
+ 
+     #define WX_IS_MACOS_AVAILABLE(major, minor) \
+@@ -46,6 +46,6 @@
+         wxPlatformInfo::Get().CheckOSVersion(major, minor, micro)
+ 
+     #define WX_API_AVAILABLE_MACOS(major, minor)
+-#endif
++//#endif
+ 
+ #endif // _WX_OSX_PRIVATE_AVAILABLE_H_

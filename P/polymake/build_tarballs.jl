@@ -1,13 +1,34 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+import Pkg.Types: VersionSpec
+
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version, except when upstream itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
 
 name = "polymake"
-version = v"4.2.0"
+upstream_version = v"4.5"
+version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,0)
 
 # Collection of sources required to build polymake
 sources = [
-    ArchiveSource("https://github.com/polymake/polymake/archive/V$(version.major).$(version.minor).tar.gz", "d308f551ef4c9f490a3a848d45a1ab41ae6461b1daf5be3deeaebad7df3816d4")
+    ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
+                  "77e98f1d41ed7d0eee8e983814bcb3f1a1b2b6100420ccd432bd2e796f0bc48a")
     DirectorySource("./bundled")
 ]
 
@@ -33,6 +54,9 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
+# work around sigchld-handler conflicts with other libraries
+atomic_patch -p1 ../patches/sigchld.patch
+
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
@@ -47,6 +71,7 @@ if [[ $target == *darwin* ]]; then
   atomic_patch -p1 ../patches/polymake-cross.patch
   atomic_patch -p1 ../patches/polymake-cross-build.patch
 else
+
   ./configure CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
               PERL=${prefix}/deps/Perl_jll/bin/perl \
               LDFLAGS="$LDFLAGS -L${prefix}/deps/Perl_jll/lib -Wl,-rpath,${prefix}/deps/Perl_jll/lib" \
@@ -72,7 +97,7 @@ ninja -v -C build/Opt install
 if [[ $target == *darwin* ]]; then
   atomic_patch -R -p1 ../patches/polymake-cross-build.patch
 fi
-install -m 444 -D support/*.pl $prefix/share/polymake/support/
+install -m 644 -D support/*.pl $prefix/share/polymake/support/
 
 # replace miniperl
 sed -i -e "s/miniperl-for-build/perl/" ${libdir}/polymake/config.ninja ${bindir}/polymake*
@@ -88,6 +113,9 @@ sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/po
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
+# copy julia script to generate dependency-tree at load time
+cp ../patches/generate_deps_tree.jl $prefix/share/polymake
+
 install_license COPYING
 """
 
@@ -101,53 +129,28 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpolymake", :libpolymake; dont_dlopen=true)
-    LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt; dont_dlopen=true)
+    LibraryProduct("libpolymake", :libpolymake)
+    LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt)
     ExecutableProduct("polymake", :polymake)
     ExecutableProduct("polymake-config", Symbol("polymake_config"))
+    FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll"),
     Dependency("GMP_jll", v"6.1.2"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("PPL_jll"),
-    Dependency(PackageSpec(name="Perl_jll", uuid="83958c19-0796-5285-893e-a1267f8ec499", version=v"5.30.3")),
-    Dependency("bliss_jll"),
-    Dependency("boost_jll"),
-    Dependency("cddlib_jll"),
-    Dependency("lrslib_jll"),
-    Dependency("normaliz_jll"),
+    Dependency("FLINT_jll", compat = "~200.800"),
+    Dependency("PPL_jll", compat = "~1.2"),
+    Dependency("Perl_jll", compat = "=5.30.3"),
+    Dependency("bliss_jll", compat = "~0.73"),
+    Dependency("boost_jll", compat = "=1.71.0"),
+    Dependency("cddlib_jll", compat = "~0.94.10"),
+    Dependency("lib4ti2_jll"),
+    Dependency("lrslib_jll", compat = "~0.3.2"),
+    Dependency("normaliz_jll", compat = "~300.900"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", init_block="""
-
-   mutable_artifacts_toml = joinpath(dirname(@__DIR__), "MutableArtifacts.toml")
-   polymake_tree = "polymake_tree"
-   polymake_tree_hash = artifact_hash(polymake_tree, mutable_artifacts_toml)
-
-   # create a directory tree for polymake with links to dependencies
-   # looking similiar to the tree in the build environment
-   # for compiling wrappers at run-time
-   polymake_tree_hash = create_artifact() do art_dir
-      mkpath(joinpath(art_dir,"deps"))
-      for dep in [FLINT_jll, GMP_jll, MPFR_jll, PPL_jll, Perl_jll, bliss_jll, boost_jll, cddlib_jll, lrslib_jll, normaliz_jll]
-         symlink(dep.artifact_dir, joinpath(art_dir,"deps","\$dep"))
-      end
-      for dir in readdir(polymake_jll.artifact_dir)
-         symlink(joinpath(polymake_jll.artifact_dir,dir), joinpath(art_dir,dir))
-      end
-   end
-   bind_artifact!(mutable_artifacts_toml,
-      polymake_tree,
-      polymake_tree_hash;
-      force=true
-   )
-
-   # Point polymake to our custom tree
-   ENV["POLYMAKE_DEPS_TREE"] = artifact_path(polymake_tree_hash)
-""")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")

@@ -7,8 +7,8 @@ version = v"3.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/thom311/libnl/releases/download/libnl3_5_0/libnl-3.5.0.tar.gz" =>
-    "352133ec9545da76f77e70ccb48c9d7e5324d67f6474744647a7ed382b5e05fa",
+    ArchiveSource("https://github.com/thom311/libnl/releases/download/libnl3_5_0/libnl-3.5.0.tar.gz",
+                  "352133ec9545da76f77e70ccb48c9d7e5324d67f6474744647a7ed382b5e05fa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,11 +36,11 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libnl-3", :libnl)
+    LibraryProduct("libnl-route-3", :libnl_route)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

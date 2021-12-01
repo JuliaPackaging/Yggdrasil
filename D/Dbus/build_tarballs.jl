@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dbus-*
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-xml=expat \
     --with-dbus-user=messagebus \
     --with-system-pid-file=/var/run/dbus.pid \
@@ -41,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

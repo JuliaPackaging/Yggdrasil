@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.17.1"
+version = v"3.19.2"
 
 # Collection of sources required to build CMake
 sources = [
     ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
-                  "3aa9114485da39cbd9665a0bfe986894a282d5f0882b1dea960a739496620727"),
+                  "e3e0fd3b23b7fb13e1a856581078e0776ffa2df4e9d3164039c36d3315e0c7f0"),
 ]
 
 # Bash recipe for building across all platforms

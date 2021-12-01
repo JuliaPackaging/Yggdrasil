@@ -3,26 +3,28 @@
 using BinaryBuilder
 
 name = "Clipper"
-version = v"6.4.0"
+version = v"6.4.2"
 
 # Collection of sources required to build Clipper
 sources = [
-    GitSource("https://github.com/SimonDanisch/ClipperBuilder.git",
-              "d9e011161e5f4e161137af19d0f5da6dc5764520"),
+    ArchiveSource("https://downloads.sourceforge.net/project/polyclipping/clipper_ver6.4.2.zip", "a14320d82194807c4480ce59c98aa71cd4175a5156645c4e2b3edd330b930627"),
+    DirectorySource("./cwrapper")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ClipperBuilder/
+cd $WORKSPACE/srcdir/
+cp cclipper.cpp ./cpp/cclipper.cpp
+cd cpp
 mkdir "${libdir}"
 ${CXX} -fPIC -std=c++11 -shared -o "${libdir}/libcclipper.${dlext}" clipper.cpp cclipper.cpp
-install_license LICENSE_1_0.txt
+cd ..
+install_license License.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcclipper", :libcclipper)

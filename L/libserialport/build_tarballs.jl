@@ -6,14 +6,14 @@ version = v"0.1.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sigrokproject/libserialport.git",
-        "ffbfc5c76ba8100d21d0141478a6c0d761ecfb2f")
+        "6f9b03e597ea7200eb616a4e410add3dd1690cb1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libserialport/
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-include-path=$prefix/include
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -23,7 +23,7 @@ make install
 platforms = supported_platforms()
 
 # Disable FreeBSD for now, because hogweed needs alloca()?
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [

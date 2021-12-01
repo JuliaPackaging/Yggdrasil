@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"3.48.0"
+version = v"3.49.1" # <--- This version number is a lie to build for experimental platforms
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz",
-                  "91b48ffef544eb8ea3908543052331072c99bf09ceb139cb3c6977fc3e47aac1"),
+                  "5b65a20d5c53494ec8f638267fca4a629836b7ac8dd0ef0266834eab270ed4b3"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,19 +24,21 @@ if [[ "${target}" == *-mingw* ]]; then
     # renames `TBYTE` to `_TBYTE`.
     atomic_patch -p1 ../patches/tbyte.patch
 fi
-./configure --prefix=$prefix --host=$target --enable-reentrant
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
+# Delete the static library
+rm ${prefix}/lib/libcfitsio.a
 # On Windows platforms, we need to move our .dll files to bin
 if [[ "${target}" == *-mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/*.dll ${prefix}/bin
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/*.dll ${libdir}/.
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -49,4 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

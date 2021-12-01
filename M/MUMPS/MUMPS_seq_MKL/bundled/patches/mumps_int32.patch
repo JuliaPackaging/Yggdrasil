@@ -1,0 +1,16 @@
+diff --git a/src/Makefile b/src/Makefile
+index cf7c705..94562c8 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -28,7 +28,10 @@ mumps_lib:    $(incdir)/mumps_int_def.h \
+ 
+ # Build $(incdir)/mumps_int_def.h, needed by mumps_c_types.h
+ $(incdir)/mumps_int_def.h: build_mumps_int_def 
+-	./build_mumps_int_def > $(incdir)/mumps_int_def.h
++	echo "#if ! defined(MUMPS_INT_H)" > $(incdir)/mumps_int_def.h
++	echo "#   define MUMPS_INT_H" >> $(incdir)/mumps_int_def.h
++	echo "#   define MUMPS_INTSIZE32" >> $(incdir)/mumps_int_def.h
++	echo "#endif" >> $(incdir)/mumps_int_def.h
+ build_mumps_int_def:build_mumps_int_def.o
+ 	$(CC) $(OPTL) build_mumps_int_def.o -o build_mumps_int_def
+ 

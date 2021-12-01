@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.3.3"
+version = v"0.5.1"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "4566fd59d29f4bff4d68814334d8bc603056932d462e40bb22acaacbf353763a"),
+                  "bee3c4f0d33487f0b0ad44fcaea24bd064a83e415faa46b4d237c40631dd1523"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,11 +36,8 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 else
     BLAS=openblas
 fi
-if [[ ${target} == *apple* ]]; then
-    export FT_OPENMP="-fopenmp=libgomp "
-fi
-make assembly
-make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
+make assembly CC=gcc
+make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
 
@@ -56,7 +53,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
     Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS_jll", v"0.3.9"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

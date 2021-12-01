@@ -1,20 +1,19 @@
 using BinaryBuilder
 
 name = "MUMPS"
-version = v"5.2.1"
+version = v"5.4.0"
 
-# Collection of sources required to build PARMETIS.
-# The patch prevents building the source of METIS that ships with PARMETIS;
-# we rely on METIS_jll instead.
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.2.1.tar.gz",
-                "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
+                "c613414683e462da7c152c131cebf34f937e79b30571424060dd673368bbf627"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/MUMPS_5.2.1
+cd $WORKSPACE/srcdir/MUMPS*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int64.patch
 
 OPENBLAS=(-lopenblas)
 FFLAGS=()
@@ -26,7 +25,7 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
     OPENBLAS+=(-lgomp)
   fi
 
-  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
+  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA caxpy ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr daxpy dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 saxpy scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zaxpy zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
   for sym in ${syms[@]}
   do
     FFLAGS+=("-D${sym}=${sym}_64")
@@ -56,7 +55,7 @@ if [[ "${target}" == *-apple* ]]; then
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"
@@ -102,10 +101,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
     Dependency("MPICH_jll"),
     Dependency("METIS_jll"),
     Dependency("PARMETIS_jll"),
     Dependency("SCALAPACK_jll"),
+    Dependency("OpenBLAS_jll", v"0.3.9"),
 ]
 
 # Build the tarballs

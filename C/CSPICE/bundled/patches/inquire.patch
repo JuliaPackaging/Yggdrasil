@@ -1,0 +1,21 @@
+--- a/src/cspice/inquire.c
++++ b/src/cspice/inquire.c
+@@ -1,3 +1,10 @@
++#ifndef NON_POSIX_STDIO
++#ifdef MSDOS
++#include "io.h"
++#else
++#include "unistd.h" /* for access */
++#endif
++#endif
+ #include "f2c.h"
+ #include "fio.h"
+ #include "string.h"
+@@ -8,7 +15,6 @@
+ #undef abs
+ #undef min
+ #undef max
+-#include "io.h"
+ #endif
+ integer f_inqu(inlist *a)
+ #endif

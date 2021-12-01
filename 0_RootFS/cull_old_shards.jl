@@ -19,3 +19,5 @@ end
 
 unbind_shard.(find_old_shards("Rootfs"))
 unbind_shard.(find_old_shards("PlatformSupport"))
+unbind_shard.(find_old_shards("RustBase"))
+unbind_shard.(find_old_shards("RustToolchain"))

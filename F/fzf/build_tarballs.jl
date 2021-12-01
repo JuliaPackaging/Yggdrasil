@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "fzf"
-version = v"0.24.1"
+version = v"0.28.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/junegunn/fzf.git", "d4c9db0a273ccd17e7f43026c1297b434df6cbd7")
+    GitSource("https://github.com/junegunn/fzf.git", "e4c3ecc57e99f4037199f11b384a7f8758d1a0ff")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ go build -o ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -32,4 +32,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go], julia_compat="1.6")
