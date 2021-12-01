@@ -20,6 +20,13 @@ mv $prefix/lib/libboost_python.$dlext /workspace/destdir/lib/libboost_python38.$
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBoost_NO_BOOST_CMAKE=ON
 make -j$nproc
 make install
+# xdm libraries are build with .so extension, because python (for some reason).
+# Symlink them to .dylib, so that oour audit system can find and verify them.
+if [[ $target == *apple* ]]; then
+ln -s SpiritExprCommon.so $prefix/xdm_bundle/SpiritExprCommon.dylib
+ln -s XdmRapidXmlReader.so $prefix/xdm_bundle/XdmRapidXmlReader.dylib
+ln -s SpiritCommon.so $prefix/xdm_bundle/SpiritCommon.dylib
+fi
 """
 
 # No windows python support in Yggdrasil at the moment
