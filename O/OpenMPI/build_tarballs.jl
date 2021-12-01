@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenMPI"
-version = v"4.1.1"
+version = v"4.1.2"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "d80b9219e80ea1f8bcfe5ad921bd9014285c4948c5965f4156a3831e60776444"),
+                  "a400719b04375cd704d2ed063a50e42d268497a3dfede342986ab7a8d7e8dcf0"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
     DirectorySource("./bundled"),
@@ -91,4 +91,4 @@ ENV["OPAL_PREFIX"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5", init_block=init_block)
+               julia_compat="1.6", preferred_gcc_version=v"5", init_block=init_block, lazy_artifacts=true)
