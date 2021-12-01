@@ -43,7 +43,7 @@ dependencies = [
 #     OpenBLAS_jll-0.3.13-3 opted into using ILP64 on aarch64
 #     (see https://github.com/JuliaPackaging/Yggdrasil/pull/2590)
 #     but we still try to compile with `-lopenblas` there.
-    Dependency("OpenBLAS_jll", v"0.3.13", compat=">=0.3.13")
+    Dependency("OpenBLAS_jll"; compat="0.3.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
