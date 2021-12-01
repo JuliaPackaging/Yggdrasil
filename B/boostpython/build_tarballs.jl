@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/python
-c++ -fPIC -o $libdir/libboost_python.$dlext -O3 -shared -L$libdir -lpython3.8 -I$includedir -I$includedir/python3.8 $(find src ! -path src/numpy/\* -name \*.cpp)
+c++ -fPIC -o $libdir/libboost_python38.$dlext -O3 -shared -L$libdir -lpython3.8 -I$includedir -I$includedir/python3.8 $(find src ! -path src/numpy/\* -name \*.cpp)
 cp -r include/* $includedir
 install_license LICENSE_1_0.txt
 """
@@ -24,13 +24,13 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libboost_python", :libboost_python)
+    LibraryProduct("libboost_python38", :libboost_python)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0")
-    Dependency(PackageSpec(name="Python_jll"))
+    Dependency(PackageSpec(name="Python_jll"), v"3.8.1"; compat="~3.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
