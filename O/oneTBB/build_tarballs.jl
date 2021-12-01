@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.4.0"
+version = v"2021.4.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "4e021eafc03519cb1081ed775c9502cae72f8d8d"),
+              "cf0a6739567cec7bb7db22f83aeaa0b55137914f"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/oneTBB/
 
 # Adapt patch from
 # https://github.com/oneapi-src/oneTBB/pull/203
-atomic_patch -p1 ../patches/musl.patch
+# atomic_patch -p1 ../patches/musl.patch
 
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
