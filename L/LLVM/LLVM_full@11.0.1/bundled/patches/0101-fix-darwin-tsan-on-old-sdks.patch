@@ -1,0 +1,66 @@
+From 36d2fc022bb0437333276db8c75fb43b338da343 Mon Sep 17 00:00:00 2001
+From: Julian Lettner <julian.lettner@apple.com>
+Date: Wed, 5 Feb 2020 08:17:06 -0800
+Subject: [PATCH 2/2] [TSan] Ensure we can compile the runtime with older SDKs
+
+One of my changes [1] included in this release silently bumped the
+minimal macOS SDK required for building the TSan runtime to SDK 10.12.
+Let's ensure release 10 does not unexpectedly break builders with old
+SDKs and add proper minimal SDK checking in CMake for subsequent
+releases.
+
+This fix `#ifdef`s out interceptors for newer APIs.  Note that the
+resulting TSan runtime is less complete: when these newer APIs are used
+TSan will report false positives.
+
+Fixes llvm 10 release blocker: #44682
+https://bugs.llvm.org/show_bug.cgi?id=44682
+
+[1] 894abb46f891cba2e0ef581650f27f512a7824b4
+
+Reviewed By: dmajor
+
+Differential Revision: https://reviews.llvm.org/D74059
+---
+ compiler-rt/lib/tsan/rtl/tsan_interceptors_mac.cpp | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/compiler-rt/lib/tsan/rtl/tsan_interceptors_mac.cpp b/compiler-rt/lib/tsan/rtl/tsan_interceptors_mac.cpp
+index aa29536d861..91584914d86 100644
+--- a/compiler-rt/lib/tsan/rtl/tsan_interceptors_mac.cpp
++++ b/compiler-rt/lib/tsan/rtl/tsan_interceptors_mac.cpp
+@@ -23,9 +23,12 @@
+ #include <errno.h>
+ #include <libkern/OSAtomic.h>
+ #include <objc/objc-sync.h>
+-#include <os/lock.h>
+ #include <sys/ucontext.h>
+ 
++#if defined(__has_include) && __has_include(<os/lock.h>)
++#include <os/lock.h>
++#endif
++
+ #if defined(__has_include) && __has_include(<xpc/xpc.h>)
+ #include <xpc/xpc.h>
+ #endif  // #if defined(__has_include) && __has_include(<xpc/xpc.h>)
+@@ -247,6 +250,8 @@ TSAN_INTERCEPTOR(void, os_lock_unlock, void *lock) {
+   REAL(os_lock_unlock)(lock);
+ }
+ 
++#if defined(__has_include) && __has_include(<os/lock.h>)
++
+ TSAN_INTERCEPTOR(void, os_unfair_lock_lock, os_unfair_lock_t lock) {
+   if (!cur_thread()->is_inited || cur_thread()->is_dead) {
+     return REAL(os_unfair_lock_lock)(lock);
+@@ -286,6 +291,8 @@ TSAN_INTERCEPTOR(void, os_unfair_lock_unlock, os_unfair_lock_t lock) {
+   REAL(os_unfair_lock_unlock)(lock);
+ }
+ 
++#endif  // #if defined(__has_include) && __has_include(<os/lock.h>)
++
+ #if defined(__has_include) && __has_include(<xpc/xpc.h>)
+ 
+ TSAN_INTERCEPTOR(void, xpc_connection_set_event_handler,
+-- 
+2.28.0
+

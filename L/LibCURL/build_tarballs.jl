@@ -1,14 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LibCURL"
-version = v"7.71.1"
+version = v"7.78.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-    "59ef1f73070de67b87032c72ee6037cedae71dcb1d7ef2d7f59487704aec069d"),
+    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz",
+                  "ed936c0b02c06d42cf84b39dd12bb14b62d77c7c4e875ade022280df5dcc81d7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,20 +19,38 @@ cd $WORKSPACE/srcdir/curl-*
 FLAGS=(
     # Disable....almost everything
     --without-ssl --without-gnutls --without-gssapi
-    --without-libidn --without-libidn2 --without-libmetalink --without-librtmp
+    --without-libidn --without-libidn2 --without-librtmp
     --without-nss --without-polarssl
     --without-spnego --without-libpsl --disable-ares --disable-manual
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
-    --disable-static
+    --disable-static --disable-libgsasl
 
-    # Two things we actually enable
-    --with-libssh2=${prefix} --with-mbedtls=${prefix} --with-zlib=${prefix}
-    --with-nghttp2=${prefix}
+    # A few things we actually enable
+    --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+    --enable-versioned-symbols
 )
 
-# We need to tell it where to find libssh2 on windows
+
 if [[ ${target} == *mingw* ]]; then
+    # We need to tell it where to find libssh2 on windows
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/bin")
+
+    # We also need to tell it to link against schannel (native TLS library)
+    FLAGS+=(--with-schannel)
+elif [[ ${target} == *darwin* ]]; then
+    # On Darwin, we need to use SecureTransport (native TLS library)
+    FLAGS+=(--with-secure-transport)
+
+    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
+    # complain about: `Symbol not found: ___isOSVersionAtLeast`
+    if [[ "${target}" == aarch64* ]]; then
+        export CFLAGS=-mmacosx-version-min=11.0
+    else
+        export CFLAGS=-mmacosx-version-min=10.11
+    fi
+else
+    # On all other systems, we use MbedTLS
+    FLAGS+=(--with-mbedtls=${prefix})
 fi
 
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
@@ -43,7 +61,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -54,10 +72,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll"),
     Dependency("Zlib_jll"),
     Dependency("nghttp2_jll"),
+    # Note that while we unconditionally list MbedTLS as a dependency,
+    # we default to schannel/SecureTransport on Windows/MacOS.
+    Dependency("MbedTLS_jll", v"2.24.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

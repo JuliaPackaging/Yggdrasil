@@ -2,7 +2,7 @@ diff --git a/Configure b/Configure
 index 684a9c0768..94255941d1 100755
 --- a/Configure
 +++ b/Configure
-@@ -8704,7 +8704,7 @@ true)
+@@ -8663,7 +8663,7 @@ true)
  	true|define)
  		echo "Cannot build with both -Duserelocatableinc and -Duseshrplib" >&4
  		echo "See INSTALL for an explanation why that won't work." >&4
@@ -11,7 +11,7 @@ index 684a9c0768..94255941d1 100755
  		;;
  	esac
  	case "$libperl" in
-@@ -8802,6 +8802,7 @@ esac
+@@ -8761,6 +8761,7 @@ esac
  shrpdir=$archlibexp/CORE
  xxx=''
  tmp_shrpenv=''
@@ -19,7 +19,7 @@ index 684a9c0768..94255941d1 100755
  if "$useshrplib"; then
      case "$osname" in
  	aix)
-@@ -8811,10 +8812,10 @@ if "$useshrplib"; then
+@@ -8770,10 +8771,10 @@ if "$useshrplib"; then
  		xxx="-R $shrpdir"
  		;;
  	freebsd|minix|mirbsd|netbsd|openbsd|interix|dragonfly|bitrig)
@@ -96,7 +96,7 @@ index 247708de8c..428f82cd4a 100644
 +            }
 +        }
 +    }
-+# elif USE_KERN_PROC_PATHNAME
++# elif defined(USE_KERN_PROC_PATHNAME)
      size_t size = 0;
      int mib[4];
      mib[0] = CTL_KERN;

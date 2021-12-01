@@ -15,7 +15,6 @@ cd Ipopt-releases-*
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
 
 LIBASL=(-L${libdir} -lasl)
 if [[ "${target}" == *-linux-* ]]; then
@@ -32,6 +31,7 @@ fi
             --with-lapack="${libmkl[*]}" \
             --with-asl-cflags="-I${prefix}/include" \
             --with-asl-lflags="${LIBASL[*]}" \
+            --build=${MACHTYPE} \
             --host=${target}
 
 # parallel build fails

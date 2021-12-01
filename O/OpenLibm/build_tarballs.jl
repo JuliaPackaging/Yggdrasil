@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenLibm"
-version = v"0.7.2"
+version = v"0.8.0"
 sources = [
-    ArchiveSource("https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz",
-                  "7793eb5d931ad908534b4d69b12e8f0331d0c84cb56ed9bc165a820b643cd425"),
+    GitSource("https://github.com/JuliaMath/openlibm.git",
+              "ed7aea3e2b602532959c76c6de5ba7aeb161d34b"),
 ]
 
 script = raw"""
@@ -45,4 +45,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               lock_microarchitecture=false, julia_compat="1.6")

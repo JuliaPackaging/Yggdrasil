@@ -17,7 +17,7 @@ cd ${WORKSPACE}/srcdir/LoopTools-*
 atomic_patch -p1 ../patches/simplify-configure.patch
 export AR=ar
 export RANLIB=ranlib
-./configure --prefix=$prefix --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install EXE="${exeext}"
 # Now let's build the shared library

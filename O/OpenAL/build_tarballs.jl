@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenAL"
-version = v"1.19.0"
+version = v"1.21.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kcat/openal-soft.git", "96aacac10ca852fc30fd7f72f3e3c6ddbe02858c")
+    GitSource("https://github.com/kcat/openal-soft.git", "ae4eacf147e2c2340cc4e02a790df04c793ed0a9")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,17 +17,11 @@ cd openal-soft/
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DALSOFT_UTILS=false \
-    -DALSOFT_NO_CONFIG_UTIL=true \
-    -DALSOFT_EXAMPLES=false \
-    -DALSOFT_TESTS=false \
-    -DALSOFT_CONFIG=false \
-    -DALSOFT_HRTF_DEFS=false \
-    -DALSOFT_AMBDEC_PRESETS=false
+    -DALSOFT_EXAMPLES=false
+
 make -j${nproc}
 make install
-install_license ../COPYING 
-
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,10 +42,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
-    Dependency(PackageSpec(name="Ogg_jll", uuid="e7412a2a-1a6e-54c0-be00-318e2571c051"))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency("alsa_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("PulseAudio_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")

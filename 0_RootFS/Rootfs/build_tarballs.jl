@@ -1,3 +1,17 @@
+### Instructions for adding a new version
+#
+# * Update the bits you want to update, for example:
+#   * version of the Alpine RootFS: visit https://github.com/alpinelinux/docker-alpine,
+#     select the branch corresponding to the version of Alpine you want to use, browse to
+#     the directory `x86_64` and obtain the permanent link of the image (press `Y`)
+#   * version of Meson
+#   * version of patchelf
+#   * version of CSL in `bundled/libs/csl/download_csls.sh`
+#   * etc...
+# * to build and deploy the new image, run
+#
+#     julia build_tarballs.jl --debug --verbose --deploy
+
 using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
     error("This must be run with Julia 1.3+!")
@@ -12,12 +26,12 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.12/x86_64/alpine-minirootfs-3.12.0-x86_64.tar.gz"
-rootfs_hash = "0beb54cf9bf69d085f9fcd291ff28b3335184d08b706d535f425e8180851edc9"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/d9f83182075b7e627dfbea4f86f7f8134c48a5a5/x86_64/alpine-minirootfs-3.12.8-x86_64.tar.gz"
+rootfs_hash = "1f4e8181c76727591323cb5c3a508898b7a41d16ace67b0f20858e0fd746e223"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
-download_verify(rootfs_url, rootfs_hash, rootfs_targz_path; verbose=verbose, force=true)
+Pkg.PlatformEngines.download_verify(rootfs_url, rootfs_hash, rootfs_targz_path; verbose=verbose, force=true)
 
 # Unpack the rootfs (using `tar` on the local machine), then pack it up again (again using tools on the local machine) and squashify it:
 rootfs_extracted = joinpath(@__DIR__, "build", "rootfs_extracted")
@@ -96,10 +110,18 @@ sources = [
                   "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
-              "e1e39f3639e39360ceebb2f7ed533cede4623070"),
+              "a949ff23315bbb5863627c4655fe216ecbf341a2"),
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.52.0/meson-0.52.0.tar.gz",
-                  "d60f75f0dedcc4fd249dbc7519d6f3ce6df490033d276ef1cf27453ef4938d32"),
+    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.59.2/meson-0.59.2.tar.gz",
+                  "13dee549a7ba758b7e33ce7719f28d1d337a98d10d378a4779ccc996f5a2fc49"),
+    # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
+    # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
+                  "960ebcd32842f81d140293157d90e4e829fd16241bf5b0a23929e4938256a572",
+                  unpack_target="ldid"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.0%2B0/libplist.v2.2.0.x86_64-linux-musl.tar.gz",
+                  "1b02d6fd8b77b71eaf672f15fecd8b38ef1e167baf469399b7d52435c11d414b",
+                  unpack_target="ldid"),
     # And also our own local patches, utilities, etc...
     DirectorySource("./bundled"),
 ]
@@ -134,8 +156,11 @@ NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake ninja ccache"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
+# Install a more recent version of `apk`, which understands `--no-chown`.
+# TODO: remove this when we move to Alpine v3.13+.
+apk add --root $prefix --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # chgrp and chown should be no-ops since we run in a single-user mode
 rm -f ./bin/chown ./bin/chgrp
@@ -159,6 +184,7 @@ cp -vd ${WORKSPACE}/srcdir/utils/tar_wrapper.sh ./usr/local/bin/tar
 cp -vd ${WORKSPACE}/srcdir/utils/update_configure_scripts.sh ./usr/local/bin/update_configure_scripts
 cp -vd ${WORKSPACE}/srcdir/utils/flagon ./usr/local/bin/flagon
 cp -vd ${WORKSPACE}/srcdir/utils/fake_uname.sh ./usr/bin/uname
+cp -vd ${WORKSPACE}/srcdir/utils/apk_wrapper.sh ./usr/local/bin/apk
 mv ./sbin/sysctl ./sbin/_sysctl
 cp -vd ${WORKSPACE}/srcdir/utils/fake_sysctl.sh ./sbin/sysctl
 cp -vd ${WORKSPACE}/srcdir/utils/fake_sha512sum.sh ./usr/local/bin/sha512sum
@@ -167,6 +193,8 @@ cp -vd ${WORKSPACE}/srcdir/utils/atomic_patch.sh ./usr/local/bin/atomic_patch
 cp -vd ${WORKSPACE}/srcdir/utils/install_license.sh ./usr/local/bin/install_license
 cp -vd ${WORKSPACE}/srcdir/utils/replace_includes.sh ./usr/local/bin/replace_includes
 cp -vd ${WORKSPACE}/srcdir/utils/config.* ./usr/local/share/configure_scripts/
+cp -vd ${WORKSPACE}/srcdir/ldid/bin/* ./usr/local/bin/
+cp -vdr ${WORKSPACE}/srcdir/ldid/lib/* ./usr/local/lib/
 chmod +x ./usr/local/bin/*
 
 # Deploy configuration
@@ -182,6 +210,7 @@ cp -vd ${WORKSPACE}/srcdir/conf/vimrc ${prefix}/etc/vim/vimrc
 mkdir -p ${prefix}/etc/vim/
 git clone https://github.com/VundleVim/Vundle.vim ${prefix}/etc/vim/bundle/Vundle.vim
 chroot ${prefix} vim -E -u /etc/vim/vimrc -c PluginInstall -c qall
+find ${prefix}/etc/vim/bundle -name \*.git | xargs rm -rf
 
 # Put sandbox and docker entrypoint into the root, to be used as `init` replacements.
 gcc -g -O2 -static -static-libgcc -o ${prefix}/sandbox $WORKSPACE/srcdir/utils/sandbox.c
@@ -262,8 +291,8 @@ dependencies = [
 
 # Build the tarball
 verbose && @info("Building full RootfS shard...")
-ndARGS, deploy, deploy_target = find_deploy_arg(ARGS)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
-if deploy
+if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info)
 end

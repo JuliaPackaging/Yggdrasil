@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmmlib"
-version = v"20.3.2"
+version = v"21.2.1"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/gmmlib.git",
-              "2072b0d1e8ba2cba2f94bc2c1fda89d6e457a50b"),
+              "9253eb8b949515d2a5030f99163a35567fe81838"),
 ]
 
 # Bash recipe for building across all platforms

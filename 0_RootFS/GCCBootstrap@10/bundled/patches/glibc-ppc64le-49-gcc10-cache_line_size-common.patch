@@ -1,0 +1,53 @@
+From a094484026fef2935435df49bdf508a381bb7d31 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Fri, 25 Dec 2020 10:52:55 +0000
+Subject: [PATCH 1/1] Mark `__cache_line_size` as common
+
+The variable `__cache_file_size` is defined in two files,
+`sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c` and
+`sysdeps/unix/sysv/linux/powerpc/libc-start.c`.  This was never caught with
+older versions of GCC because they used to use `-fcommon` by default, but GCC 10
+switched to using `-fno-common` by default, making this issue apparent.
+
+This issue has been fixed upstream with
+https://sourceware.org/git/?p=glibc.git;a=commit;h=18363b4f010da9ba459b13310b113ac0647c2fcc,
+but it isn't straightforward to backport the patch, as it requires to backport
+other potentially ABI-breaking changes.
+
+As a workaround, we mark this variable as commond, in addition to hidden, in
+both places..  This isn't ideal, but it mimics the behaviour of older versions
+of GCC.
+---
+ sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c  | 2 +-
+ sysdeps/unix/sysv/linux/powerpc/libc-start.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c b/sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c
+index 0ff8faa354..b6f35843e7 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c
++++ b/sysdeps/unix/sysv/linux/powerpc/dl-sysdep.c
+@@ -20,7 +20,7 @@
+ #include <kernel-features.h>
+ #include <ldsodefs.h>
+ 
+-int __cache_line_size attribute_hidden;
++int __cache_line_size __attribute__ ((visibility ("hidden"),common));
+ 
+ /* Scan the Aux Vector for the "Data Cache Block Size" entry.  If found
+    verify that the static extern __cache_line_size is defined by checking
+diff --git a/sysdeps/unix/sysv/linux/powerpc/libc-start.c b/sysdeps/unix/sysv/linux/powerpc/libc-start.c
+index 98a793e089..e0a263b7f5 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/libc-start.c
++++ b/sysdeps/unix/sysv/linux/powerpc/libc-start.c
+@@ -24,7 +24,7 @@
+ #include <bp-sym.h>
+ 
+ 
+-int __cache_line_size attribute_hidden;
++int __cache_line_size __attribute__ ((visibility ("hidden"),common));
+ /* The main work is done in the generic function.  */
+ #define LIBC_START_MAIN generic_start_main
+ #define LIBC_START_DISABLE_INLINE
+-- 
+2.29.2
+

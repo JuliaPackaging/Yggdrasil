@@ -1,26 +1,24 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
-import Pkg: PackageSpec
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
 
-const name = "libsingular_julia"
-const version = v"0.2.0"
+name = "libsingular_julia"
+version = v"0.20.00"
+
+julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libsingular-julia
-const sources = [
-    ArchiveSource("https://github.com/oscar-system/libsingular-julia/archive/v$(version).tar.gz",
-                  "ee4e5ef96caf9d18553600d87f922e5d40cb1c7d30a1697c92b23b493498db1a"),
+sources = [
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "dc655e75960c9f5fb1b6e838197dddb8b8c7501b"),
 ]
 
 # Bash recipe for building across all platforms
-const script = raw"""
-# remove $libdir from LD_LIBRARY_PATH as this causes issues with perl
-if [[ -n "$LD_LIBRARY_PATH" ]]; then
-LD_LIBRARY_PATH=$(echo -n $LD_LIBRARY_PATH | sed -e "s|[:^]$libdir\w*|:|g")
-fi
-
-cmake libsingular-j*/ -B build \
+script = raw"""
+cd libsingular-julia
+cmake . -B build \
    -DJulia_PREFIX="$prefix" \
+   -DSingular_PREFIX="$prefix" \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
    -DCMAKE_FIND_ROOT_PATH="$prefix" \
    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -29,34 +27,31 @@ cmake libsingular-j*/ -B build \
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
-install_license $WORKSPACE/srcdir/libsingular-j*/LICENSE.md
+install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-const platforms = expand_cxxstring_abis([
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
-    #Platform("i686", "linux"; libc="glibc", cxxstring_abi="cxx11"), # Wrapper code is buggy
-    #Platform("x86_64", "freebsd"; cxxstring_abi = "cxx11"),
-])
-
-#platforms = supported_platforms()
-#platforms = filter!(!Sys.iswindows, platforms)
-#platforms = expand_cxxstring_abis(platforms)
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+filter!(!Sys.iswindows, platforms) # Singular does not support Windows
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-const products = [
+products = [
     LibraryProduct("libsingular_julia", :libsingular_julia),
 ]
 
 # Dependencies that must be installed before this package can be built
-const dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="Julia_jll", version="v1.4.1")),
+dependencies = [
+    BuildDependency("libjulia_jll"),
+    BuildDependency("GMP_jll"),
+    BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll"),
+    Dependency("Singular_jll", compat = "~402.101.200"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"8",
+    julia_compat = "1.6")

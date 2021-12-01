@@ -1,6 +1,6 @@
---- perl-5.30.3-orig/Makefile.SH
-+++ perl-5.30.3/Makefile.SH
-@@ -972,7 +972,7 @@
+--- perl-5.34.0-orig/Makefile.SH
++++ perl-5.34.0/Makefile.SH
+@@ -975,7 +975,7 @@
  
  !NO!SUBS!
  
@@ -9,8 +9,8 @@
  	amigaos*)
  		$spitshell >>$Makefile <<'!NO!SUBS!'
  lib/buildcustomize.pl: $& $(miniperl_objs) write_buildcustomize.pl
---- perl-5.30.3-orig/cpan/JSON/Makefile.PL
-+++ perl-5.30.3/cpan/JSON/Makefile.PL
+--- perl-5.34.0-orig/cpan/JSON/Makefile.PL
++++ perl-5.34.0/cpan/JSON/Makefile.PL
 @@ -2,12 +2,12 @@
  use strict;
  use ExtUtils::MakeMaker;
@@ -31,7 +31,7 @@
  
  
 -my $version     = JSON->VERSION;
-+my $version     = '4.02';#JSON->VERSION;
++my $version     = '4.03';#JSON->VERSION;
  
  print <<EOF;
  Welcome to JSON (v.$version)
@@ -44,37 +44,31 @@
              },
          } ) : ()
      ),
---- perl-5.30.3-orig/cpan/Term-ReadLine-Gnu/Makefile.PL
-+++ perl-5.30.3/cpan/Term-ReadLine-Gnu/Makefile.PL
-@@ -102,8 +102,8 @@
+--- perl-5.34.0-orig/cpan/Term-ReadLine-Gnu/Makefile.PL
++++ perl-5.34.0/cpan/Term-ReadLine-Gnu/Makefile.PL
+@@ -173,9 +173,9 @@
+ #push(@lddflags, '-static') if ($Config{osname} =~ /cygwin/i);
  
- # Check version of GNU Readline Library (for version 4.2 and before)
- {
--    my ($rlmajorver, $rlminorver) =
--	check_readline_version($RLINC, $RLLIB, $defs, $lddflags, $libs);
-+    my ($rlmajorver, $rlminorver) = (8,0);
-+    #	check_readline_version($RLINC, $RLLIB, $defs, $lddflags, $libs);
+ # Check whether xmalloc has been renamed to _rl_malloc (Gentoo Linux)
+-if (my $extra_defs = guess_malloc_names("@RLINC", "@RLLIB", "@defs", "@lddflags", "@libs")) {
+-    push(@defs, $extra_defs);
+-}
++#if (my $extra_defs = guess_malloc_names("@RLINC", "@RLLIB", "@defs", "@lddflags", "@libs")) {
++#    push(@defs, $extra_defs);
++#}
  
-     if ($rlmajorver < 4 || $rlmajorver == 4 && $rlminorver <= 2) {
- 	$defs .= " -DRL_READLINE_VERSION=" .
-@@ -172,6 +172,7 @@
- # ExtUtils::Liblist::ext() do similar job as this subroutine, but it
- # warns unnecessary messages.
- sub search_lib {
-+    return "-lncurses";
-     my ($lib) = @_;
-     unless ($lib =~ /^-l/) {
- 	warn "search_lib: illegal arguments, \`$lib\'.\n";
-@@ -271,6 +272,7 @@
- # https://rt.cpan.org/Ticket/Display.html?id=65973
+ # generate a Makefile
+ WriteMakefile
+@@ -307,6 +307,7 @@
+ }
  
- sub guess_malloc_names {
-+    return undef;
-     my ($RLINC, $RLLIB, $defs, $lddflags, $libs) = @_;
-     my $frlmalloc = 'rlmalloc.c';
- 
---- perl-5.30.3-orig/cpan/TermReadKey/Makefile.PL
-+++ perl-5.30.3/cpan/TermReadKey/Makefile.PL
+ sub check_readline_version {
++    return (8,1);
+     # execute rlver and get version
+     my $rlver;
+     chomp($rlver = `./rlver`);
+--- perl-5.34.0-orig/cpan/TermReadKey/Makefile.PL
++++ perl-5.34.0/cpan/TermReadKey/Makefile.PL
 @@ -79,7 +79,7 @@
      my $self = shift;
      $_ = $self->MM::processPL();
@@ -84,8 +78,8 @@
      return $_;
  }
  
---- perl-5.30.3-orig/cpan/TermReadKey/ReadKey.pm.PL
-+++ perl-5.30.3/cpan/TermReadKey/ReadKey.pm.PL
+--- perl-5.34.0-orig/cpan/TermReadKey/ReadKey.pm.PL
++++ perl-5.34.0/cpan/TermReadKey/ReadKey.pm.PL
 @@ -511,8 +511,10 @@
  require DynaLoader;
  our @ISA = qw(DynaLoader);
@@ -98,8 +92,8 @@
  print blockoptions()."\n";
  
  open OUT, ">>", $file or die "Can't append to $file: $!";
---- perl-5.30.3-orig/cpan/XML-SAX/Makefile.PL
-+++ perl-5.30.3/cpan/XML-SAX/Makefile.PL
+--- perl-5.34.0-orig/cpan/XML-SAX/Makefile.PL
++++ perl-5.34.0/cpan/XML-SAX/Makefile.PL
 @@ -48,7 +48,7 @@
          }
      }
@@ -110,7 +104,7 @@
          $script .= <<"INSTALL";
  
 --- /dev/null
-+++ perl-5.30.3/cpan/XML-SAX/lib/XML/SAX/ParserDetails.ini
++++ perl-5.34.0/cpan/XML-SAX/lib/XML/SAX/ParserDetails.ini
 @@ -0,0 +1,3 @@
 +[XML::SAX::PurePerl]
 +http://xml.org/sax/features/namespaces = 1

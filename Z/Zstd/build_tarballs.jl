@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Zstd"
-version = v"1.4.5"
+version = v"1.5.0"
 
 sources = [
     ArchiveSource("https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz",
-                  "98e91c7c6bf162bf90e4e70fdbc41a8188b9fa8de5ad840c401198014406ce9e"),
+                  "5194fbfa781fcf45b98c5e849651aa7b3b0a008c6b72d4a0db760f3002291e94"),
 ]
 
 script = raw"""
@@ -27,7 +27,7 @@ ninja -j${nproc}
 ninja install
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 products = [
     LibraryProduct("libzstd", :libzstd),
@@ -37,4 +37,4 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

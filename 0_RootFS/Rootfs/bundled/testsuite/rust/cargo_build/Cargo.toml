@@ -1,0 +1,7 @@
+[package]
+name = "cargo_build"
+version = "0.1.0"
+authors = ["Binary Builder <bb@julialang.org>"]
+edition = "2018"
+
+[dependencies]

@@ -3,25 +3,26 @@
 using BinaryBuilder
 
 name = "libsndfile"
-version = v"1.0.28"
+version = v"1.0.31"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("http://www.mega-nerd.com/libsndfile/files/libsndfile-$(version).tar.gz",
-                  "1ff33929f042fa333aed1e8923aa628c3ee9e1eb85512686c55092d1e5a9dfa9")
+    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.bz2",
+                  "a8cfb1c09ea6e90eff4ca87322d4168cdbe5035cb48717b40bf77e751cc02163")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-CFLAGS="-I${prefix}/include" ./configure --prefix=$prefix --host=$target --disable-static
+export CFLAGS="-I${includedir}" 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -40,11 +41,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FLAC_jll"),
-    Dependency("Ogg_jll"),
-    Dependency("libvorbis_jll"),
     Dependency("alsa_jll"),
+    Dependency("FLAC_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

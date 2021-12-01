@@ -1,17 +1,19 @@
 using BinaryBuilder
 
 name = "MUMPS_seq"
-version = v"5.2.1"
+version = v"5.4.0"
 
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.2.1.tar.gz",
-                "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
+                "c613414683e462da7c152c131cebf34f937e79b30571424060dd673368bbf627"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/MUMPS_5.2.1
+cd $WORKSPACE/srcdir/MUMPS*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
@@ -25,14 +27,15 @@ make_args+=(OPTF=-O3
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lopenblas"
+            LAPACK="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"

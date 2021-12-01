@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Eigen"
-version = v"3.3.7"
+version = v"3.3.9"
 
 sources = [
     ArchiveSource("https://gitlab.com/libeigen/eigen/-/archive/$(version)/eigen-$(version).tar.bz2",
-                  "685adf14bd8e9c015b78097c1dc22f2f01343756f196acdc76a678e1ae352e11")
+                  "0fa5cafe78f66d2b501b43016858070d52ba47bd9b1016b0165a7b8e04675677")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +27,7 @@ install_license COPYING.*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 # No products: Eigen is a pure header library

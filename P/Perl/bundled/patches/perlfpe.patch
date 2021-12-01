@@ -1,0 +1,11 @@
+--- perl-5.30.3-orig/cpan/Math-Complex/lib/Math/Complex.pm
++++ perl-5.30.3/cpan/Math-Complex/lib/Math/Complex.pm
+@@ -60,7 +60,7 @@
+     if ($^O eq 'unicosmk') {
+ 	$Inf = $DBL_MAX;
+     } else {
+-	local $SIG{FPE} = sub { };
++	#local $SIG{FPE} = sub { };
+         local $!;
+ 	# We do want an arithmetic overflow, Inf INF inf Infinity.
+ 	for my $t (

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "spglib"
-version = v"1.15.1"
+version = v"1.16.2"
 
 # Collection of sources required to build spglib
 sources = [
     ArchiveSource("https://github.com/atztogo/spglib/archive/v$(version).tar.gz",
-                  "b6dc2c8adcc7d0edee7a076e765c28b2941b2aeba590d213a0b4893c8af0c026"),
+                  "5723789bee7371ebba91d78c729d2a608f198fad5e1c95eebe18fda9f2914ec8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,6 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

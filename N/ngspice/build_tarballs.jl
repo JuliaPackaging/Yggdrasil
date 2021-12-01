@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ngspice"
-version = v"32.2.0"
+version = v"34"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/imr/ngspice.git", "a0389bb5471a43bc828b08b81bd3fc1693200130"),
+    GitSource("https://github.com/JuliaSky130/ngspice.git", "a034b9a2bafcc218aba92c911a6425953f0bda28"),
     DirectorySource("./bundled")
 ]
 
@@ -43,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"8")

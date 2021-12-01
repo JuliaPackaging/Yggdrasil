@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "tectonic"
 version = v"0.1.15"
@@ -49,7 +49,7 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"),
-    Dependency("ICU_jll"),
+    Dependency(PackageSpec(; name="ICU_jll", version=v"67.1.0")),
     Dependency("OpenSSL_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),

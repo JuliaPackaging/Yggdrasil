@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.42.18209"
+version = v"21.44.21506"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "bc855e4696f61825b11db8d01b96d6c730ce5549"),
+              "586eaeaf2ebceeb9c0095ecd2f774a272038afbc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd compute-runtime
-install_license LICENSE
+install_license LICENSE.md
 
 # work around compilation failures
 ## already defined in gmmlib
@@ -43,6 +43,9 @@ CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 # we don't care about cl_intel_va_api_media_sharing
 CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
+# enable support for the DG1
+CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+
 # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
 # FIXME: shouldn't BinaryBuilder do this?
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
@@ -69,9 +72,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.3.2")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.5186")),
-    Dependency(PackageSpec(name="oneAPI_Level_Zero_Headers_jll", version=v"1.0.4")),
+    Dependency("gmmlib_jll"; compat="=21.2.1"),
+    Dependency("libigc_jll"; compat="=1.0.8744"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.2.43"; compat="~1.2"),  # XXX: don't specify patch version
 ]
 
 # GCC 4 has constexpr incompatibilities

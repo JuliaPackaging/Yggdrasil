@@ -1,16 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1f49e55..e1bbcde 100644
+index b81a803..0238298 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -24,6 +24,7 @@ set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH}
- 
- include( ecbuild_system NO_POLICY_SCOPE )
+@@ -23,6 +23,8 @@ find_package( ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CUR
+ # Initialise project
+ project( eccodes VERSION 2.19.1 LANGUAGES C )
  
 +add_compile_definitions(ECCODES_ON_WINDOWS)
- ecbuild_requires_macro_version( 2.7.2 )
- 
++
  ###############################################################################
-@@ -315,11 +316,8 @@ if( EC_OS_NAME MATCHES "windows" )
+ # system checks needed for eccodes_config.h and some options like MEMFS
+ 
+@@ -312,11 +314,8 @@ if( EC_OS_NAME MATCHES "windows" )
      # Suppress compliler warnings - see ECC-850
      # Suppress warnings about using 'insecure' functions. Fixing this would require changes all over
      # the codebase which would damage portability.
@@ -22,14 +23,16 @@ index 1f49e55..e1bbcde 100644
  endif()
  
  ###############################################################################
-@@ -355,7 +353,6 @@ configure_file( eccodes_config.h.in eccodes_config.h )
+@@ -350,9 +349,6 @@ configure_file( eccodes_config.h.in eccodes_config.h )
+ 
  add_definitions( -DHAVE_ECCODES_CONFIG_H )
  
- if( CMAKE_COMPILER_IS_GNUCC )
+-if( CMAKE_COMPILER_IS_GNUCC )
 -    ecbuild_add_c_flags("-pedantic")
- endif()
+-endif()
  
- ###############################################################################
+ # gfortran 10 has become stricter with argument matching
+ if( HAVE_FORTRAN AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU" AND NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
 diff --git a/cmake/eccodes_test_endiness.cmake b/cmake/eccodes_test_endiness.cmake
 index 0f1870d..182ffe7 100644
 --- a/cmake/eccodes_test_endiness.cmake
@@ -114,14 +117,17 @@ index 0f1870d..182ffe7 100644
 +set( IEEE_BE ${ECCODES_BIG_ENDIAN} )
 +set( IEEE_LE ${ECCODES_LITTLE_ENDIAN} )
 diff --git a/src/grib_context.c b/src/grib_context.c
-index 415f9e9..ccc187b 100644
+index 327fdf1..69ff1cc 100644
 --- a/src/grib_context.c
 +++ b/src/grib_context.c
-@@ -422,7 +422,6 @@ grib_context* grib_context_get_default()
+@@ -421,10 +421,6 @@ grib_context* grib_context_get_default()
+         /* On UNIX, when we read from a file we get exactly what is in the file on disk.
           * But on Windows a file can be opened in binary or text mode. In binary mode the system behaves exactly as in UNIX.
           */
- #ifdef ECCODES_ON_WINDOWS
+-#ifdef ECCODES_ON_WINDOWS
 -        _set_fmode(_O_BINARY);
- #endif
- 
-         default_grib_context.inited                = 1;
+-#endif
+-
+         default_grib_context.inited = 1;
+         default_grib_context.io_buffer_size = io_buffer_size ? atoi(io_buffer_size) : 0;
+         default_grib_context.no_big_group_split = no_big_group_split ? atoi(no_big_group_split) : 0;

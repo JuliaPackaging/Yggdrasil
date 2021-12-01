@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "WaveFD"
-version = v"0.1.1"
+version = v"0.3.0"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/WaveFD.jl.git",
-        "35509bfaf81f10c9a38bb0652f81573d5f19245a"
+        "d0aa5dda65904317b4c7b30e6fd90a90b6c368c7"
     )
 ]
 
@@ -25,7 +25,7 @@ fi
 echo "target=$target, CXXFLAGS=$CXXFLAGS"
 
 cmake . -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make VERBOSE=1
+make -j${nproc} VERBOSE=1
 make install
 """
 
@@ -47,7 +47,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FFTW_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

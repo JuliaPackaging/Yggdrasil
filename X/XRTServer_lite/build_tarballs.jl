@@ -8,17 +8,16 @@ version = v"2018.11.01"
 
 # Collection of sources required
 sources = [
-    "https://github.com/JuliaComputing/tensorflow.git" =>
-    "36c34bd2d744f0027c24e3afae118b5d956ce741",
-    "https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-linux-x86_64" =>
-    "674757d40d4ac0f0175df7fe84cd7250cbf67ac7ebac565e905fdc7e24c0fac5",
-    "./bundled",
+    GitSource("https://github.com/JuliaComputing/tensorflow.git", "36c34bd2d744f0027c24e3afae118b5d956ce741"),
+    FileSource("https://github.com/bazelbuild/bazel/releases/download/0.17.2/bazel-0.17.2-linux-x86_64",
+               "674757d40d4ac0f0175df7fe84cd7250cbf67ac7ebac565e905fdc7e24c0fac5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # bazel always looks for `ar` in `/usr/bin/ar`
-ln -sf "$AR" /usr/bin/ar
+ln -sf /opt/bin/ar /usr/bin/ar
 
 # Apply -lrt patch
 cd $WORKSPACE/srcdir/tensorflow
@@ -64,13 +63,13 @@ done
 # We attempt to build for only x86_64-linux-gnu
 platforms = [Platform("x86_64", "linux")]
 
-products(prefix) = [
-    ExecutableProduct(prefix, "xrt_server", :xrt_server),
-    ExecutableProduct(prefix, "dumped_computation_to_text", :dumped_computation_to_text),
+products = [
+    ExecutableProduct("xrt_server", :xrt_server),
+    ExecutableProduct("dumped_computation_to_text", :dumped_computation_to_text),
 ]
 
 dependencies = [
-    "https://github.com/bicycle1885/ZlibBuilder/releases/download/v1.0.2/build_Zlib.v1.2.11.jl",
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

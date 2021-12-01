@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpfr-*
-./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
 make -j${nproc}
 make install
 
@@ -34,8 +34,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We explicitly ask for GMP v6.1.2 so that it is compatible with both GMP v6.1.2 and v6.2.0+
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"4.1.1"
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+

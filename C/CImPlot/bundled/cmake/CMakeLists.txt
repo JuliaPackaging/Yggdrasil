@@ -9,6 +9,7 @@ add_library(cimplot SHARED)
 
 target_sources(cimplot PRIVATE ./cimplot.cpp)
 target_sources(cimplot PRIVATE ./implot/implot.cpp)
+target_sources(cimplot PRIVATE ./implot/implot_items.cpp)
 target_sources(cimplot PRIVATE ./implot/implot_demo.cpp)
 
 target_include_directories(cimplot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

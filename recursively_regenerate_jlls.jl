@@ -194,7 +194,7 @@ end
 
 function recursively_regenerate_jlls(toplevel_dep_name)
     deps = sort!(collect(recursively_collect_dependencies(toplevel_dep_name)))
-    push!(deps, toplevel_dep_name)
+    push!(deps, string(de_jll(toplevel_dep_name), "_jll"))
     sort!(deps)
     terminal = TTYTerminal("xterm", stdin, stdout, stderr)
     selected_deps = request(terminal,
@@ -205,16 +205,26 @@ function recursively_regenerate_jlls(toplevel_dep_name)
 
     if yn_prompt(WizardState(), "Open JLL-bumping PRs?", :n) == :y
         for dep in deps
-	    open_jll_bump_pr(dep)
+            open_jll_bump_pr(dep)
         end
     elseif yn_prompt(WizardState(), "Generate new JLLs locally?", :y) == :y
         for dep in deps
             regenerate_jll(dep)
         end
+
+        if yn_prompt(WizardState(), "Create temporary environment with new JLLs?", :y) == :y
+            temp_env = mktempdir(; cleanup=false)
+            Pkg.activate(temp_env) do
+                # Start by dev'ing out JLLWrappers, since we often are working with that.
+                Pkg.develop("JLLWrappers")
+                Pkg.develop(deps)
+            end
+            @info("Environment available at $(temp_env)")
+        end
     end
 end
 
-if !isfile(build_tarballs_path(get(Sys.ARGS, 1, "")))
+if !isfile(build_tarballs_path(get(Sys.ARGS, 1, "?")))
     println(stderr, "usage: recursively_regenerate_jlls.jl <jll name>")
     exit(1)
 end

@@ -1,35 +1,62 @@
-cmake_minimum_required(VERSION 2.8.1)
+cmake_minimum_required(VERSION 3.0.0)
 
 project(cspice C)
-enable_language(C CXX)
 
-include(cmake/src.cmake)
 if(WIN32)
   include(GenerateExportHeader)
 endif()
 include(GNUInstallDirs)
 
+set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -DNON_UNIX_STDIO")
-
-add_library(cspice SHARED ${SRCS})
-set_target_properties(cspice PROPERTIES PUBLIC_HEADER "${HEADERS}")
 if(WIN32)
-  GENERATE_EXPORT_HEADER(
-    cspice
-    BASE_NAME cspice
-    EXPORT_MACRO_NAME cspice_EXPORT
-    EXPORT_FILE_NAME cspice_Export.h
-    STATIC_DEFINE cspice_BUILT_AS_STATIC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMSDOS")
 endif()
-target_link_libraries(cspice m)
+cmake_policy(SET CMP0042 NEW)
 
-if(CMAKE_VERSION VERSION_GREATER 2.8.12)
-    set_target_properties(cspice PROPERTIES MACOSX_RPATH ON)
-endif()
+include_directories(include)
+
+include(cmake/cspice.cmake)
+include(cmake/csupport.cmake)
+include(cmake/brief.cmake)
+include(cmake/chronos.cmake)
+include(cmake/ckbrief.cmake)
+include(cmake/commnt.cmake)
+include(cmake/dskbrief.cmake)
+include(cmake/dskexp.cmake)
+include(cmake/frmdiff.cmake)
+include(cmake/inspekt.cmake)
+include(cmake/mkdsk.cmake)
+include(cmake/mkspk.cmake)
+include(cmake/msopck.cmake)
+include(cmake/spacit.cmake)
+include(cmake/spkdiff.cmake)
+include(cmake/spkmerge.cmake)
+include(cmake/tobin.cmake)
+include(cmake/toxfr.cmake)
+include(cmake/version.cmake)
 
 INSTALL(
-  TARGETS cspice
+  TARGETS
+  cspice
+  csupport
+  brief
+  chronos
+  ckbrief
+  commnt
+  dskbrief
+  dskexp
+  frmdiff
+  inspekt
+  mkdsk
+  mkspk
+  msopck
+  spacit
+  spkdiff
+  spkmerge
+  tobin
+  toxfr
+  version
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"

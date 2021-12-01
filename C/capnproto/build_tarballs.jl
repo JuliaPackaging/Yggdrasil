@@ -28,7 +28,7 @@ atomic_patch -p2 ${WORKSPACE}/srcdir/patches/aligned-alloc.patch
     make -j${nproc}
 )
 export CAPNP=build_native/capnp
-./configure --prefix=$prefix --host=$target --with-external-capnp
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-external-capnp
 make -j${nproc}
 make install
 if [[ "${target}" == *-mingw* ]]; then

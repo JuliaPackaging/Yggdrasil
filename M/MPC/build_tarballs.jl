@@ -3,30 +3,37 @@
 using BinaryBuilder
 
 name = "MPC"
-version = v"1.1.0"
+version = v"1.2.1"
 
 # Collection of sources required to build MPC
 sources = [
-    "https://ftp.gnu.org/gnu/mpc/mpc-$(version).tar.gz" =>
-    "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e",
+    ArchiveSource("https://ftp.gnu.org/gnu/mpc/mpc-$(version).tar.gz",
+                  "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpc-*
-./configure --prefix=$prefix --host=$target --enable-shared --disable-static --with-gmp=${prefix} --with-mpfr=${prefix}
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-shared \
+    --disable-static \
+    --with-gmp=${prefix} \
+    --with-mpfr=${prefix}
 make -j${nproc}
 make install
+install_license COPYING*
 
 # On Windows, make sure non-versioned filename exists...
 if [[ ${target} == *mingw* ]]; then
-    cp -v ${prefix}/bin/libmpc-*.dll ${prefix}/bin/libmpc.dll
+    cp -v ${libdir}/libmpc-*.dll ${libdir}/libmpc.dll
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,9 +42,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

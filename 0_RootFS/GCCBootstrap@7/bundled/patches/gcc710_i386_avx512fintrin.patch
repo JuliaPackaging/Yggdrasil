@@ -1,0 +1,45 @@
+From 23bce99cbe7016a04e14c2163ed3fe6a5a64f4e2 Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Sat, 29 Sep 2018 18:04:09 +0200
+Subject: [PATCH] re PR target/87467 (Incorrect function parameter for
+ _mm512_abs_pd in `include/avx512fintrin.h`)
+
+	PR target/87467
+	* config/i386/avx512fintrin.h (_mm512_abs_pd, _mm512_mask_abs_pd): Use
+	__m512d type for __A argument rather than __m512.
+
+	* gcc.target/i386/avx512f-abspd-1.c (SIZE): Divide by two.
+	(CALC): Use double instead of float.
+	(TEST): Adjust to test _mm512_abs_pd and _mm512_mask_abs_pd rather than
+	_mm512_abs_ps and _mm512_mask_abs_ps.
+
+From-SVN: r264711
+---
+ gcc/config/i386/avx512fintrin.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/config/i386/avx512fintrin.h b/gcc/config/i386/avx512fintrin.h
+index 80525f9fb4d..4308c71bdd6 100644
+--- a/gcc/config/i386/avx512fintrin.h
++++ b/gcc/config/i386/avx512fintrin.h
+@@ -7798,7 +7798,7 @@ _mm512_mask_abs_ps (__m512 __W, __mmask16 __U, __m512 __A)
+ 
+ extern __inline __m512d
+ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+-_mm512_abs_pd (__m512 __A)
++_mm512_abs_pd (__m512d __A)
+ {
+   return (__m512d) _mm512_and_epi64 ((__m512i) __A,
+ 				     _mm512_set1_epi64 (0x7fffffffffffffffLL));
+@@ -7806,7 +7806,7 @@ _mm512_abs_pd (__m512 __A)
+ 
+ extern __inline __m512d
+ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+-_mm512_mask_abs_pd (__m512d __W, __mmask8 __U, __m512 __A)
++_mm512_mask_abs_pd (__m512d __W, __mmask8 __U, __m512d __A)
+ {
+   return (__m512d)
+ 	 _mm512_mask_and_epi64 ((__m512i) __W, __U, (__m512i) __A,
+-- 
+2.30.0
+
