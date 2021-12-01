@@ -14,7 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xdm
-atomic_patch -p1 ../patches/*
+atomic_patch -p1 ../patches/pyinterp.patch
+atomic_patch -p1 ../patches/musl.patch
 mv $prefix/lib/libboost_python.$dlext /workspace/destdir/lib/libboost_python38.$dlext || true
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBoost_NO_BOOST_CMAKE=ON
 make -j$nproc
