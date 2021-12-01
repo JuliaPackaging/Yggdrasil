@@ -24,7 +24,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libboost_python", :libboost_python)
+    LibraryProduct("libboost_python38", :libboost_python)
 ]
 
 # Dependencies that must be installed before this package can be built
