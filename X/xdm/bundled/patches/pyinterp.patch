@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a6199ca..576b13a 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -78,7 +78,7 @@ message(STATUS "Building Version: ${XDM_MAJOR_VERSION}.${XDM_MINOR_VERSION}.${XD
+ #------------------------------------
+ # Provides the CMake variables Python3_VERSION_MAJOR and Python3_VERSION_MINOR
+ # used below to find the boost libraries tagged with the python version.
+-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
++find_package(Python3 REQUIRED COMPONENTS Development)
+ 
+ # Set the directory to copy over all of the (python) build files to.
+ set( DIST_BUILD_DIR "${PROJECT_BINARY_DIR}/xdm_bundle" )
