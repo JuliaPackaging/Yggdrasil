@@ -25,7 +25,6 @@ LDcallableFLAGS = -shared -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir
 LDsonameFLAGS = -Wl,-soname,
 LIBS =  -lflint -ldl -lmpfr -lgmp -lpthread
 ExternalHeaders =  permlib TOSimplex Miniball
-PERL = perl
 Arch = powerpc64le
 BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
 BuildModes = Opt Debug

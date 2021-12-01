@@ -254,7 +254,7 @@ index 7106f5e5c3..398313374c 100644
 +   #if ($ConfigFlags{Arch} =~ /^darwin/ && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
 +   #   s{^\#!\S+}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
 +   #} else {
-+   #   s{^\#!\S+}{#!$Config::Config{perlpath}}s;
++       s{^\#!\S+}{#!/usr/bin/env perl}s;
 +   #}
  
     s{=Version(?=;)}{=$Version};

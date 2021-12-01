@@ -27,7 +27,6 @@ LDsonameFLAGS = -install_name /workspace/destdir/lib/
 LIBS =  -lc++ -lflint -lmpfr -lgmp -lpthread
 ExternalHeaders =  permlib TOSimplex Miniball
 Arch = darwin.aarch64
-PERL = perl
 BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
 BuildModes = Opt Debug
 InstallTop = /workspace/destdir/share/polymake

@@ -39,18 +39,23 @@ function prepare_deps_tree(targetdir::String)
 
    # dependencies
    for dep in deps
-      symlink(full_artifact_dir(dep), joinpath(targetdir,"deps","$dep"))
+      target = joinpath(targetdir,"deps","$dep")
+      rm(target, force=true)
+      symlink(full_artifact_dir(dep), target)
    end
 
    # polymake prefix directories
    for dir in filter(d -> d!="bin", readdir(polymake_jll.artifact_dir))
-      symlink(joinpath(polymake_jll.artifact_dir,dir), joinpath(targetdir,dir))
+      target = joinpath(targetdir,dir)
+      rm(target, force=true)
+      symlink(joinpath(polymake_jll.artifact_dir,dir), target)
    end
 
    # polymake perl scripts
    bindir(name) = joinpath(targetdir,"bin", name)
    mkpath(bindir(""))
    for file in ("polymake", "polymake-config")
+      rm(bindir(file), force=true)
       symlink(joinpath(polymake_jll.artifact_dir, "bin", file), bindir(file))
    end
 

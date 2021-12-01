@@ -106,6 +106,10 @@ sed -i -e "s#-target[ =]\S\+##g" ${libdir}/polymake/config.ninja
 # copy of build config that has prefix as a variable
 sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/polymake/config-reloc.ninja
 
+# adjust perl path
+sed -i -e "s|^#!.*perl|#!/usr/bin/env perl|g" ${bindir}/polymake*
+sed -i -e "s#^PERL = .*#PERL = /usr/bin/env perl#g" ${libdir}/polymake/config*
+
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
