@@ -4,8 +4,8 @@ root=/workspace/srcdir/polymake
 core.includes=-I${root}/include/core-wrappers -I${root}/include/core
 app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/include/external/permlib -I${root}/include/external/TOSimplex -I${root}/include/external/Miniball
 
-CC = clang -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
-CXX = clang++ -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
+CC = cc
+CXX = c++
 CFLAGS = -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include
 CXXFLAGS = -stdlib=libc++ -std=c++14 -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include -I/workspace/destdir/deps/boost_jll/include -I/workspace/destdir/deps/FLINT_jll/include -DPOLYMAKE_WITH_FLINT
 ARCHFLAGS = 
@@ -26,7 +26,7 @@ LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath
 LDsonameFLAGS = -install_name /workspace/destdir/lib/
 LIBS =  -lc++ -lflint -lmpfr -lgmp -lpthread
 ExternalHeaders =  permlib TOSimplex Miniball
-Arch = darwin.x86_64
+Arch = darwin.aarch64
 BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
 BuildModes = Opt Debug
 InstallTop = /workspace/destdir/share/polymake
