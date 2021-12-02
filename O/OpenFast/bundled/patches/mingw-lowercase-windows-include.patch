@@ -1,7 +1,7 @@
-diff --git a/modules/map/src/mapsys.h b/modules/map/src/mapsys2.h
+diff --git a/modules/map/src/mapsys.h b/modules/map/src/mapsys.h
 index 600f65c..0864be2 100644
 --- a/modules/map/src/mapsys.h
-+++ b/modules/map/src/mapsys2.h
++++ b/modules/map/src/mapsys.h
 @@ -33,7 +33,7 @@
  
  
