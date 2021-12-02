@@ -80,7 +80,7 @@ MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
 ASL_version = v"0.1.2"
 METIS_version = v"5.1.0"
 MUMPS_seq_version = v"5.2.1"
-OpenBLAS32_version = v"0.3.9"
+OpenBLAS32_version = v"0.3.10"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
