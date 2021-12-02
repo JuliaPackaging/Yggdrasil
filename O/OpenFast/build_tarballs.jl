@@ -14,6 +14,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openfast-*/
 
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
+fi
+
 mkdir build && cd build
 
 cmake .. \
@@ -24,7 +28,8 @@ cmake .. \
 -DBUILD_FASTFARM=OFF \
 -DORCA_DLL_LOAD=OFF \
 -DOPENMP=ON \
--DBLAS_LIBRARIES="${libdir}/libopenblas64_.${dlext}"
+-DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+-DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
 make -j2
 make install
@@ -88,7 +93,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
+    Dependency("OpenBLAS32_jll")
+    #Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
