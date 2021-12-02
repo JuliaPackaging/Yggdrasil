@@ -15,8 +15,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
-./configure --host=${target} --build=${MACHTYPE} --prefix=${prefix} --disable-static --enable-pixbuf-loader --disable-introspection --disable-gtk-doc-html --enable-shared
+./configure --host=${rust_target} \
+    --build=${MACHTYPE} \
+    --prefix=${prefix} \
+    --disable-static \
+    --enable-pixbuf-loader \
+    --disable-introspection \
+    --disable-gtk-doc-html \
+    --enable-shared
 make
+make install
 """
 
 # These are the platforms we will build for by default, unless further
