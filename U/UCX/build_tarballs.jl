@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "UCX"
-version = v"1.10.0"
-tag = v"1.10.0-rc5"
+version = v"1.11.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(tag)/ucx-$(version).tar.gz",
-                  "ce8950c38b53d753a5909c21fd2cfff874d96a84dcf5166e9f85975a1dd3a54d"),
+    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(version).tar.gz",
+                  "deebf86a5344fc2bd9e55449f88c650c4514928592807c9bc6fe4190e516c6df"),
     DirectorySource("./bundled"),
 ]
 
@@ -90,7 +89,7 @@ products = [
 # - ROCM -> TODO
 
 cuda_version = v"11.2.0"
-rocm_version = v"3.7.0"
+rocm_version = v"4.2.0"
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
