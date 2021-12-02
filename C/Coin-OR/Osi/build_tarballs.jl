@@ -53,7 +53,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CoinUtils_jll", CoinUtils_version, compat="$(CoinUtils_version)"),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
     Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll"),
 ]
