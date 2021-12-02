@@ -40,7 +40,7 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms =  platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -101,4 +101,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
