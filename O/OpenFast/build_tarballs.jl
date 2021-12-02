@@ -7,7 +7,8 @@ version = v"3.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/OpenFAST/openfast/archive/refs/tags/v$(version).tar.gz", "9af57af054e4128b6e257a76da368dc4ad0c7fbb2b22d51fc7ea63cdf999c530")
+    ArchiveSource("https://github.com/OpenFAST/openfast/archive/refs/tags/v$(version).tar.gz", "9af57af054e4128b6e257a76da368dc4ad0c7fbb2b22d51fc7ea63cdf999c530"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
