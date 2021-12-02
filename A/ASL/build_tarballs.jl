@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "ASL"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
