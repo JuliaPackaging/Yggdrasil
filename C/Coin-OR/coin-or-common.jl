@@ -45,8 +45,11 @@ Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 Osi_version = v"0.108.6"
 Osi_gitsha = "dfa6449d6756fdd96912cf96e168d0be07b1d37c"
 
-CoinUtils_version = v"2.11.4"
+CoinUtils_upstream_version = v"2.11.4"
 CoinUtils_gitsha = "f709081c9b57cc2dd32579d804b30689ca789982"
+CoinUtils_verson_offset = v"0.0.0"
+CoinUtils_version =
+    offset_version(CoinUtils_upstream_version, CoinUtils_verson_offset)
 
 Ipopt_version = v"3.13.4"
 Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
@@ -81,5 +84,5 @@ OpenBLAS32_version = v"0.3.9"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 platforms = filter!(!Sys.isfreebsd, platforms)
