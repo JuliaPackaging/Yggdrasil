@@ -38,7 +38,9 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=512, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
+# Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
+# that should opt into a higher thread count.
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
