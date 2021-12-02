@@ -8,7 +8,7 @@ version = v"0.1.3"
 # Collection of sources required to build ThinASLBuilder
 sources = [
     ArchiveSource("http://netlib.org/ampl/solvers.tgz",
-                  "65bb7dc72ce072bd4fa49578164a8430c03b458969cd4abe5ff6d8e9c09ad2dc"),
+                  "2d599272e22fc66673cb03d2065f53f587140493fb50501adde5acf6be2adc93"),
     DirectorySource("./bundled")
 ]
 
