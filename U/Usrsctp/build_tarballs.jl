@@ -13,16 +13,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/usrsctp/
-./bootstrap 
-./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
-make
-make install
+mkdir build && cd build
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-
 
 # The products that we will ensure are always built
 products = [
