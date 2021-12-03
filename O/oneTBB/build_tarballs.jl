@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/oneTBB/
 
 # Adapt patch from
 # https://github.com/oneapi-src/oneTBB/pull/203
-# atomic_patch -p1 ../patches/musl.patch
+atomic_patch -p1 ../patches/musl.patch
 
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
