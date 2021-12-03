@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "MUMPS"
-version = v"5.4.0"
+version = v"5.4.1"
 
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
-                "c613414683e462da7c152c131cebf34f937e79b30571424060dd673368bbf627"),
+                "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
   DirectorySource("./bundled"),
 ]
 

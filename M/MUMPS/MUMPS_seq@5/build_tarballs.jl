@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "MUMPS_seq"
-version = v"5.4.0"
+version = v"5.4.1"
 
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
-                "c613414683e462da7c152c131cebf34f937e79b30571424060dd673368bbf627"),
+                "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
   DirectorySource("./bundled"),
 ]
 
@@ -17,6 +17,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Fix the error:
+    #     Type mismatch in argument ‘s’ at (1); passed INTEGER(4) to LOGICAL(4)
+    FFLAGS=("-fallow-argument-mismatch")
+fi
 
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
@@ -73,7 +79,7 @@ cp include/* ${prefix}/include/mumps_seq
 cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -91,4 +97,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"5")

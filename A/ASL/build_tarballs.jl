@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ASL"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
     ArchiveSource("http://netlib.org/ampl/solvers.tgz",
-                  "65bb7dc72ce072bd4fa49578164a8430c03b458969cd4abe5ff6d8e9c09ad2dc"),
+                  "2d599272e22fc66673cb03d2065f53f587140493fb50501adde5acf6be2adc93"),
     DirectorySource("./bundled")
 ]
 
@@ -54,7 +54,7 @@ install_license LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -66,4 +66,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
