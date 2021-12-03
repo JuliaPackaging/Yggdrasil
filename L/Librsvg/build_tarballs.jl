@@ -15,6 +15,23 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
+
+# Our Musl toolchain is missing a symlink `libc.musl-${musl_arch}.so.1` -> `libc.so`, let's
+# create it manually until we fix it directly in the compiler shards.
+if [[ "${target}" == *-linux-musl* ]]; then
+    case "${target}" in
+        i686*)
+            musl_arch="i386" ;;
+        arm*)
+            musl_arch="armhf" ;;
+        *)
+            musl_arch="${target%%-*}" ;;
+    esac
+    # If this errors out because `libc.musl-${musl_arch}.so.1` already exists it'll mean we
+    # can remove this hack.
+    ln -sv libc.so /opt/${target}/${target}/sys-root/usr/lib/libc.musl-${musl_arch}.so.1
+fi
+
 ./configure --host=${rust_target} \
     --build=${MACHTYPE} \
     --prefix=${prefix} \
@@ -35,9 +52,6 @@ platforms = supported_platforms(; experimental=true)
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# We currently have problems with non-x86_64 Musl platforms, we should fix them
-# in the future though.
-filter!(p -> libc(p) != "musl" || arch(p) == "x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
