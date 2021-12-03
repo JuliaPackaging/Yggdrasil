@@ -30,16 +30,20 @@ if [[ "${target}" == *-linux-musl* ]]; then
     # If this errors out because `libc.musl-${musl_arch}.so.1` already exists it'll mean we
     # can remove this hack.
     ln -sv libc.so /opt/${target}/${target}/sys-root/usr/lib/libc.musl-${musl_arch}.so.1
+elif [[ "${target}" == *-mingw* ]]; then
+    FLAGS=(LIBS="-luserenv -lbcrypt")
 fi
 
-./configure --host=${rust_target} \
+./configure --host=${target} \
     --build=${MACHTYPE} \
     --prefix=${prefix} \
     --disable-static \
     --enable-pixbuf-loader \
     --disable-introspection \
     --disable-gtk-doc-html \
-    --enable-shared
+    --enable-shared \
+    RUST_TARGET=${rust_target} \
+    "${FLAGS[@]}"
 make
 make install
 install_license COPYING.LIB
