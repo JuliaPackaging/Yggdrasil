@@ -8,7 +8,7 @@ version = v"2021.4.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "cf0a6739567cec7bb7db22f83aeaa0b55137914f"),
+              "b7a062e2d965cbdee01542a09d90cff49ac02e08"),
     DirectorySource("./bundled"),
 ]
 
