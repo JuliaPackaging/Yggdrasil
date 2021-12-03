@@ -25,6 +25,7 @@ cd $WORKSPACE/srcdir/librsvg-*/
     --enable-shared
 make
 make install
+install_license COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
