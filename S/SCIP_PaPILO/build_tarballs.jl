@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "PaPILO"
+name = "SCIP_PaPILO"
 
 version = v"0.1.0"
 
@@ -26,11 +26,11 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc}
 make install
 
-mkdir -p ${prefix}/share/licenses/SCIP
+mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in papilo scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
-cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_gcg
+cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_gcg
 """
 
 # These are the platforms we will build for by default, unless further
