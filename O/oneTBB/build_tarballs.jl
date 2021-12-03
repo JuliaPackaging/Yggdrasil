@@ -38,6 +38,11 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
+# Windows with MinGW at the moment doesn't work, but it may change in the near
+# future, watch out <https://github.com/oneapi-src/oneTBB/pull/351>. See also
+# <https://stackoverflow.com/q/67572880/2442087>.
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtbbmalloc", :libtbbmalloc),
