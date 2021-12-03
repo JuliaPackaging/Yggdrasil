@@ -31,6 +31,13 @@ install_license COPYING.LIB
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+# We dont have all dependencies on armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# We currently have problems with non-x86_64 Musl platforms, we should fix them
+# in the future though.
+filter!(p -> libc(p) != "musl" || arch(p) == "x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
