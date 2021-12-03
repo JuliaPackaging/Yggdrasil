@@ -9,7 +9,7 @@ version = v"0.8.0"
 sources = [
     ArchiveSource(
         "https://github.com/tectonic-typesetting/tectonic/archive/tectonic@$(version).tar.gz",
-        "c7f0b1f2084fae7ab086c78b2c8077015c13f2b6"
+        "0e55188eafc1b58f3660a303fcdd6adc071051b9eb728119837fbeed2309914f"
     )
 ]
 
