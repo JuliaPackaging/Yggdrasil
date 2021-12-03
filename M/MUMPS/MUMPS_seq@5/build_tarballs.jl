@@ -18,6 +18,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
 
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Fix the error:
+    #     Type mismatch in argument ‘s’ at (1); passed INTEGER(4) to LOGICAL(4)
+    FFLAGS=("-fallow-argument-mismatch")
+fi
+
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
