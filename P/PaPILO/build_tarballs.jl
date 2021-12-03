@@ -30,7 +30,7 @@ mkdir -p ${prefix}/share/licenses/SCIP
 for dir in papilo scip soplex; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
-$WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_gcg
+cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_gcg
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,8 +51,8 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065")),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75")),
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0")),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0"),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.7"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"),
     Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7")),
