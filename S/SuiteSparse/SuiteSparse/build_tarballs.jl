@@ -2,7 +2,8 @@ include("../common.jl")
 
 name = "SuiteSparse"
 
-sources = [sources;
+sources = [
+    sources;
     DirectorySource("./bundled")
 ]
 

@@ -1,0 +1,14 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -489,9 +489,9 @@
+ #-----------------------------------------------------------------------
+ 
+ # Checking for MinGW
+-AM_CONDITIONAL([MINGW], [test "$target_alias" = "mingw32"])
++AM_CONDITIONAL([MINGW], [ test "$(uname -s)" = "MSYS_NT-6.3"])
+ # Checking for Mac OsX
+-AM_CONDITIONAL([MACOSX], [test "$target_alias" = "macosx"])
++AM_CONDITIONAL([MACOSX], [test "$(uname -s)" = "Darwin"])
+ # Checking for Android
+ AM_CONDITIONAL([ANDROID], [test "$target_alias" = "android"])
+ 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libbpf"
-version = v"0.4"
+version = v"0.5"
 
 # Collection of sources required to build libbpf
 sources = [
     ArchiveSource("https://github.com/libbpf/libbpf/archive/v$version.tar.gz",
-                  "21cbee4df093e7fd29e76ed429650d3f3abe3a893f35e346ab9bc3484f6e68c0"),
+                  "d5b27980ceab9a80b6f28d3e67b51cea526fda49bd13151ba966e33548feb4f4"),
     DirectorySource("./bundled"),
 ]
 
@@ -37,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

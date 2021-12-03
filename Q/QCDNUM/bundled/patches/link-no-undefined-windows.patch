@@ -1,0 +1,11 @@
+--- a/lib/Makefile.in
++++ b/lib/Makefile.in
+@@ -400,7 +400,7 @@
+ 	}
+ 
+ libQCDNUM.la: $(libQCDNUM_la_OBJECTS) $(libQCDNUM_la_DEPENDENCIES) $(EXTRA_libQCDNUM_la_DEPENDENCIES) 
+-	$(AM_V_GEN)$(libQCDNUM_la_LINK) -rpath $(libdir) $(libQCDNUM_la_OBJECTS) $(libQCDNUM_la_LIBADD) $(LIBS)
++	$(AM_V_GEN)$(libQCDNUM_la_LINK) -no-undefined -rpath $(libdir) $(libQCDNUM_la_OBJECTS) $(libQCDNUM_la_LIBADD) $(LIBS)
+ 
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)

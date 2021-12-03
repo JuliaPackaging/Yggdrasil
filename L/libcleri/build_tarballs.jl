@@ -21,6 +21,9 @@ make -C Release FN="libcleri.${dlext}" install INSTALL_PATH=${prefix}
 if [[ "${target}" == *-apple-* ]]; then
     install_name_tool -id @rpath/libcleri.dylib.0 ${prefix}/lib/libcleri.dylib
 fi
+if [[ "${target}" == *-mingw* ]]; then
+    chmod a+x ${prefix}/lib/libcleri.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further

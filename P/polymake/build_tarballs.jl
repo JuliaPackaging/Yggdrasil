@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.4"
-version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,1)
+upstream_version = v"4.5"
+version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,0)
 
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "6560445a3f6d359c0d1c3a01eb3ec3f3174b3554bf33865c913082030e72c176")
+                  "77e98f1d41ed7d0eee8e983814bcb3f1a1b2b6100420ccd432bd2e796f0bc48a")
     DirectorySource("./bundled")
 ]
 
@@ -54,8 +54,8 @@ atomic_patch -p1 ../patches/relocatable.patch
 # to unbreak ctrl+c in julia
 atomic_patch -p1 ../patches/sigint.patch
 
-# fix bug in minkowski_sum_fukuda (until 4.5)
-atomic_patch -p1 ../patches/minkowski_sum.patch
+# work around sigchld-handler conflicts with other libraries
+atomic_patch -p1 ../patches/sigchld.patch
 
 if [[ $target == *darwin* ]]; then
   # we cannot run configure and instead provide config files
@@ -71,6 +71,7 @@ if [[ $target == *darwin* ]]; then
   atomic_patch -p1 ../patches/polymake-cross.patch
   atomic_patch -p1 ../patches/polymake-cross-build.patch
 else
+
   ./configure CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
               PERL=${prefix}/deps/Perl_jll/bin/perl \
               LDFLAGS="$LDFLAGS -L${prefix}/deps/Perl_jll/lib -Wl,-rpath,${prefix}/deps/Perl_jll/lib" \
@@ -146,6 +147,7 @@ dependencies = [
     Dependency("bliss_jll", compat = "~0.73"),
     Dependency("boost_jll", compat = "=1.71.0"),
     Dependency("cddlib_jll", compat = "~0.94.10"),
+    Dependency("lib4ti2_jll"),
     Dependency("lrslib_jll", compat = "~0.3.2"),
     Dependency("normaliz_jll", compat = "~300.900"),
 ]

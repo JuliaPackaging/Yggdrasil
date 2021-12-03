@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Ccluster"
-version = v"1.1.6"
+version = v"1.1.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/rimbach/Ccluster/archive/refs/tags/v1.1.6.tar.gz", "85b866a5485403d8af944965c531645709c21ee0810adfe720258e5c509332e1")
+    ArchiveSource("https://github.com/rimbach/Ccluster/archive/refs/tags/v1.1.7.tar.gz", "725ab22cf7e74afe5a5133ac75ee4a101d7b4ff5f0f25a6b74f5d9bfda8a18d5")
 ]
 
 # Bash recipe for building across all platforms

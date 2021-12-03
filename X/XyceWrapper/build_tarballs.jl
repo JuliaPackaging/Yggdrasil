@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_version = v"1.6.0"
 
 name = "XyceWrapper"
-version = v"0.1.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -29,7 +29,6 @@ install_license /usr/share/licenses/MIT
 
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
-platforms = filter!(Sys.islinux, platforms) # Xyce only supports Linux
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -39,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xyce_jll"),
+    Dependency("Xyce_jll"; compat="^7.4.0"),
     Dependency("libcxxwrap_julia_jll"),
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
 ]

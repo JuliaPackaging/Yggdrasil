@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "basiclu"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ERGO-Code/basiclu.git", "fe63cd34ab0259329e5a979df7f19ff0de59cfae")
+    GitSource("https://github.com/ERGO-Code/basiclu.git", "a2828782151288efa5e2cb2e0c1ac21925ed9db9")
 ]
 
 # Bash recipe for building across all platforms

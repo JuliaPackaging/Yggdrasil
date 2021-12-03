@@ -106,7 +106,7 @@ function configure(version_offset, min_julia_version, proj_jll_version)
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency("GEOS_jll"),
+        Dependency("GEOS_jll"; compat="~3.9"),
         Dependency(PackageSpec(name="PROJ_jll", version=proj_jll_version)),
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),

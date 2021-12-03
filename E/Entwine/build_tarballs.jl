@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Entwine"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/connormanning/entwine/archive/refs/tags/$version.tar.gz", "c12989e417182aa43a574d58eac284d4ea422abd5ac041504f55f635905e9b32"),
+    ArchiveSource("https://github.com/connormanning/entwine/archive/refs/tags/$version.tar.gz", "c019a88be22c72690b7b608fef6ac2dc2dc2c113611a7a82c85828827801b653"),
     DirectorySource("./bundled")
 ]
 
@@ -16,13 +16,8 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/entwine-*
 
-#this is needed for v2.1.0, but has been fixed on master, so can probably get rid of next version release
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add-pdal-lasheader.patch
-
 if [[ ${target} == *mingw* ]]; then
-    #this is needed for v2.1.0, but has been fixed on master, so can probably get rid of next version release
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-shlwapi.patch
-
+    
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-replace-msvc-find-shlwapi.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-msvc-warning-options.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-remove-dupenv-branch.patch

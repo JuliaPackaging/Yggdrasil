@@ -3,23 +3,25 @@
 using BinaryBuilder
 
 name = "EarCut"
-version = v"2.1.5"
-# Collection of sources required to build Clipper
+# use https://github.com/mapbox/earcut.hpp/releases/tag/v2.2.3
+version = v"2.2.3"
 sources = [
-    GitSource("https://github.com/SimonDanisch/EarCutBuilder.git",
-              "cfa4233e26ac785a89954a72b4e2e84312b389c2"),
+    GitSource("https://github.com/mapbox/earcut.hpp.git",
+              "b28acde132cdb8e0ef536a96ca7ada8a651f9169"),
+    DirectorySource("./bundled")
+
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/EarCutBuilder/
+cp $WORKSPACE/srcdir/earcut.hpp/include/mapbox/earcut.hpp ./earcut.h
 mkdir "${libdir}"
 ${CXX} -std=c++11 -fPIC -shared -o "${libdir}/libearcut.${dlext}" cwrapper.cpp
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -31,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
