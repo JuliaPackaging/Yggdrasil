@@ -80,9 +80,6 @@ cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
 platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
-filter!(platforms) do p
-    return p != Platform("powerpc64le", "linux"; libgfortran_version="3.0.0")
-end
 
 # The products that we will ensure are always built
 products = [
@@ -100,4 +97,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"5")
