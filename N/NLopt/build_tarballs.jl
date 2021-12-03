@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "NLopt"
-version = v"2.7.0"
+version = v"2.7.1"
 
 # Collection of sources required to build NLopt
 sources = [
     GitSource("https://github.com/stevengj/nlopt.git",
-              "10869df05bbc801e43c90a52fd6975b7bda2ecb8"), # v2.7.0
+              "09b3c2a6da71cabcb98d2c8facc6b83d2321ed71"), # v2.7.1
 ]
 
 # Bash recipe for building across all platforms
