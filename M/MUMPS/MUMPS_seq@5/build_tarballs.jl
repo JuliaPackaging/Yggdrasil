@@ -80,6 +80,9 @@ cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
 platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
+filter!(platforms) do p
+    return p != Platform("powerpc64le", "linux"; libgfortran_version="3.0.0")
+end
 
 # The products that we will ensure are always built
 products = [
