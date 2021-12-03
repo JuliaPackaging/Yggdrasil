@@ -19,6 +19,8 @@ cd $WORKSPACE/srcdir/librsvg-*/
 atomic_patch -p1 ../patches/0001-Makefile.am-use-the-correct-EXEEXT-extension-for-the.patch
 autoreconf -fiv
 
+# On most platforms we have to use `${rust_target}` as `host`
+FLAGS=(--host=${rust_target})
 # Our Musl toolchain is missing a symlink `libc.musl-${musl_arch}.so.1` -> `libc.so`, let's
 # create it manually until we fix it directly in the compiler shards.
 if [[ "${target}" == *-linux-musl* ]]; then
@@ -34,10 +36,17 @@ if [[ "${target}" == *-linux-musl* ]]; then
     # can remove this hack.
     ln -sv libc.so /opt/${target}/${target}/sys-root/usr/lib/libc.musl-${musl_arch}.so.1
 elif [[ "${target}" == *-mingw* ]]; then
-    FLAGS=(LIBS="-luserenv -lbcrypt")
+    # On Windows using `${rust_target}` wouldn't work:
+    #
+    #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
+    #
+    # Then we have to use `RUST_TARGET` to set the Rust target.  I haven't found
+    # a combination host and RUST_TARGET that would work on all platforms.  If
+    # you do, let me know!
+    FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
 fi
 
-./configure --host=${target} \
+./configure \
     --build=${MACHTYPE} \
     --prefix=${prefix} \
     --disable-static \
@@ -45,7 +54,6 @@ fi
     --disable-introspection \
     --disable-gtk-doc-html \
     --enable-shared \
-    RUST_TARGET=${rust_target} \
     "${FLAGS[@]}"
 make
 make install
