@@ -16,6 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
+atomic_patch -p1 ../patches/0001-Makefile.am-use-the-correct-EXEEXT-extension-for-the.patch
+autoreconf -fiv
+
 # Our Musl toolchain is missing a symlink `libc.musl-${musl_arch}.so.1` -> `libc.so`, let's
 # create it manually until we fix it directly in the compiler shards.
 if [[ "${target}" == *-linux-musl* ]]; then
