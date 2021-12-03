@@ -48,8 +48,16 @@ install_license COPYING.LIB
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-# We dont have all dependencies on armv6l
+# We dont have all dependencies for armv6l
 filter!(p -> arch(p) != "armv6l", platforms)
+# This platform fails with
+#
+#     libtool: link: (cd .libs/librsvg-2.lax/librsvg_c_api.a && ar x "/workspace/srcdir/librsvg-2.52.4/./.libs/librsvg_c_api.a")
+#     libtool:   error: object name conflicts in archive: .libs/librsvg-2.lax/librsvg_c_api.a//workspace/srcdir/librsvg-2.52.4/./.libs/librsvg_c_api.a
+#
+# which seems to be the same as https://github.com/lovell/sharp-libvips/issues/109.  It may
+# have been solved by https://github.com/rust-lang/compiler-builtins/pull/444.
+filter!(p -> !Sys.isapple(p) || arch(p) != "aarch64", platforms)
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
