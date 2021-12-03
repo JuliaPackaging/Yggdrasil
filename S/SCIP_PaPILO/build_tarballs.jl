@@ -26,8 +26,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc}
 make install
 
-mkdir -p ../PaPILO/build
-cd ../PaPILO/build
+mkdir -p ../papilo/build
+cd ../papilo/build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
