@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, BinaryBuilderBase
 
 name = "ripgrep"
 version = v"13.0.0"
@@ -23,6 +23,14 @@ install_license COPYING LICENSE-MIT UNLICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# All Musl-based ARM platforms fail with this error:
+#
+#     = note: /workspace/srcdir/ripgrep-13.0.0/target/aarch64-unknown-linux-musl/release/deps/libpcre2_sys-1c7f8ac14084107f.rlib(pcre2_jit_compile.o): In function `sljit_generate_code':
+#             /opt/x86_64-linux-musl/registry/src/github.com-1ecc6299db9ec823/pcre2-sys-0.2.5/pcre2/src/sljit/sljitExecAllocator.c:178: undefined reference to `__clear_cache'
+#             collect2: error: ld returned 1 exit status
+filter!(p -> libc(p) != "musl" || proc_family(p) != "arm", platforms)
 
 # The products that we will ensure are always built
 products = [
