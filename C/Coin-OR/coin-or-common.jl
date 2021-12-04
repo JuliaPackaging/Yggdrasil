@@ -39,7 +39,7 @@ Cgl_version = offset_version(Cgl_upstream_version, Cgl_version_offset)
 
 Clp_upstream_version = v"1.17.6"
 Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
-Clp_version_offset = v"0.0.0"
+Clp_version_offset = v"0.0.1"
 Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 
 Osi_upstream_version = v"0.108.6"
@@ -79,9 +79,9 @@ MibS_version = v"1.1.3"
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
 
 # Third-party packages needed by COIN-OR libraries.
-ASL_version = v"0.1.2"
-METIS_version = v"5.1.0"
-MUMPS_seq_version = v"5.2.1"
+ASL_version = v"0.1.3"
+METIS_version = v"5.1.1"
+MUMPS_seq_version = v"5.4.1"
 OpenBLAS32_version = v"0.3.10"
 
 # These are the platforms we will build for by default, unless further
