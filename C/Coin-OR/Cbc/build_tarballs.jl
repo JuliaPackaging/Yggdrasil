@@ -1,8 +1,5 @@
 include("../coin-or-common.jl")
 
-name = "Cbc"
-version = Cbc_version
-
 # Collection of sources required to build CbcBuilder
 sources = [
     GitSource("https://github.com/coin-or/Cbc.git", Cbc_gitsha),
@@ -60,14 +57,24 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("ASL_jll", ASL_version),
-    Dependency("Cgl_jll", Cgl_version),
-    Dependency("Clp_jll", Clp_version),
-    Dependency("Osi_jll", Osi_version),
-    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("Cgl_jll", compat="$(Cgl_version)"),
+    Dependency("Clp_jll", compat="$(Clp_version)"),
+    Dependency("Osi_jll", compat="$(Osi_version)"),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
     Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, expand_gfortran_versions(platforms), products, dependencies;
-               preferred_gcc_version=gcc_version)
+build_tarballs(
+    ARGS,
+    "Cbc",
+    Cbc_version,
+    sources,
+    script,
+    expand_gfortran_versions(platforms),
+    products,
+    dependencies;
+    preferred_gcc_version = gcc_version,
+    julia_compat = "1.6",
+)
