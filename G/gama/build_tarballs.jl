@@ -7,7 +7,7 @@ version = v"2.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://gnu.askapache.com/gama/gama-$(version).tar.gz", "96d628272a386f862cef49db668e60c648c1c3f46212ce51add6fa85ef5bb012")
+    ArchiveSource("http://gnu.askapache.com/gama/gama-$(version.major).$(version.minor).tar.gz", "96d628272a386f862cef49db668e60c648c1c3f46212ce51add6fa85ef5bb012")
 ]
 
 # Bash recipe for building across all platforms
