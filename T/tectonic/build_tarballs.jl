@@ -16,6 +16,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
+
+# Per https://github.com/tectonic-typesetting/tectonic/blob/master/docs/src/howto/build-tectonic/cargo-vcpkg-dep-install.md
+if [[ $target == x86_64*mingw* ]]; then
+    export RUSTFLAGS='-Ctarget-feature=+crt-static'  # Windows only
+fi
+
 cargo build --release -j${nproc} --locked --features external-harfbuzz --target ${rust_target}
 cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
