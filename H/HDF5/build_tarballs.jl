@@ -21,6 +21,9 @@ sources = [
 
     # Can't use conda-forge on other platforms since it links too many libraries, but apparently on aarch64 is fine
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.0/download/linux-aarch64/hdf5-1.12.0-nompi_h1022a3e_102.tar.bz2", "605aff906fd0fca9a52da6ad9b48607fab5cb26e2615d3827a1f318d6e103c4a", unpack_target = "aarch64-linux-gnu"),
+    
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-arm64/hdf5-1.12.1-nompi_h829dc4f_102.tar.bz2", "dcfc8d9b3426a86d0205831084843ce9a522e8cde2d18eac130ed23c002b736a", unpack_target = "arm64-apple-darwin"),
+
 ]
 
 # Bash recipe for building across all platforms
@@ -37,6 +40,14 @@ if [[ ${target} == *mingw* ]]; then
 
     install_license share/doc/hdf5/COPYING
 elif [[ ${target} == aarch64-* ]]; then
+    cd ${target}
+
+    rm -f lib/{*_cpp*,*_fortran*} # we do not need these
+    mv lib/* ${libdir}
+    mv include/* ${includedir}
+
+    install_license info/licenses/COPYING
+elif [[ ${target} == arm64-* ]]; then
     cd ${target}
 
     rm -f lib/{*_cpp*,*_fortran*} # we do not need these
@@ -94,6 +105,7 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("arm64", "macos"),    
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
 ]
