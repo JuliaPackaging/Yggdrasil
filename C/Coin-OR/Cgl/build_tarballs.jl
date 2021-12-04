@@ -53,12 +53,22 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Clp_jll", Clp_version),
-    Dependency("Osi_jll", Osi_version),
-    Dependency("CoinUtils_jll", CoinUtils_version),
+    Dependency("Clp_jll", compat="$(Clp_version)"),
+    Dependency("Osi_jll", compat="$(Osi_version)"),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=gcc_version)
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = gcc_version,
+    julia_compat = "1.6",
+)
