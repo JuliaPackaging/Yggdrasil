@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/whitebox-tools-*/
 
 cargo build --release
-mkdir /workspace/destdir/bin/
+mkdir -p "${bindir}"
 find target/${rust_target}/release/ -maxdepth 1 -type f -executable | xargs -I '{}' mv {} "${bindir}"
 install_license LICENSE.txt
 """
