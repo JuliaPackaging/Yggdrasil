@@ -50,6 +50,7 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    Dependency("HarfBuzz_ICU_jll"),
     Dependency("ICU_jll"; compat="69.1"),
     Dependency("OpenSSL_jll"),
     Dependency("Zlib_jll"),
