@@ -45,10 +45,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CoinUtils_jll", CoinUtils_version),
-    Dependency("Osi_jll", Osi_version),
-    Dependency("Clp_jll", Clp_version),
-    Dependency("Cgl_jll", Cgl_version),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
+    Dependency("Osi_jll", compat="$(Osi_version)"),
+    Dependency("Clp_jll", compat="$(Clp_version)"),
+    Dependency("Cgl_jll", compat="$(Cgl_version)"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
@@ -62,7 +62,8 @@ build_tarballs(
     expand_gfortran_versions(platforms),
     products,
     dependencies;
-    preferred_gcc_version=gcc_version,
+    preferred_gcc_version = gcc_version,
+    julia_compat = "1.6",
 )
 
 

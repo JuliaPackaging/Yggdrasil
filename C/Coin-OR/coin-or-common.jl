@@ -74,8 +74,11 @@ CHiPPS_BLIS_version_offset = v"0.0.1"
 CHiPPS_BLIS_version =
     offset_version(CHiPPS_BLIS_upstream_version, CHiPPS_BLIS_version_offset)
 
-SYMPHONY_version = v"5.6.17"
+SYMPHONY_upstream_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
+SYMPHONY_version_offset = v"0.0.0"
+SYMPHONY_version =
+    offset_version(SYMPHONY_upstream_version, SYMPHONY_version_offset)
 
 MibS_version = v"1.1.3"
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
