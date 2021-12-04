@@ -53,8 +53,10 @@ CoinUtils_verson_offset = v"0.0.0"
 CoinUtils_version =
     offset_version(CoinUtils_upstream_version, CoinUtils_verson_offset)
 
-Ipopt_version = v"3.13.4"
-Ipopt_gitsha = "3fbc0d29427d4290d15fb8842f78ddfbb929278f"
+Ipopt_upstream_version = v"3.14.4"
+Ipopt_gitsha = "d872b3a3d17863c6a2a27475cc9af9e933cb7e92"
+Ipopt_verson_offset = v"0.0.0"
+Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
 ALPS_upstream_version = v"1.5.7"
 # This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
@@ -79,9 +81,9 @@ MibS_version = v"1.1.3"
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
 
 # Third-party packages needed by COIN-OR libraries.
-ASL_version = v"0.1.2"
-METIS_version = v"5.1.0"
-MUMPS_seq_version = v"5.2.1"
+ASL_version = v"0.1.3"
+METIS_version = v"5.1.1"
+MUMPS_seq_version = v"5.4.1"
 OpenBLAS32_version = v"0.3.10"
 
 # These are the platforms we will build for by default, unless further
