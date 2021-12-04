@@ -17,32 +17,20 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
 
-# Per https://github.com/tectonic-typesetting/tectonic/blob/master/docs/src/howto/build-tectonic/cargo-vcpkg-dep-install.md
-if [[ $target == x86_64*mingw* ]]; then
-    export RUSTFLAGS='-Ctarget-feature=+crt-static'  # Windows only
+if [[ "${target}" == *-mingw* ]]; then
+    export RUSTFLAGS="-Clink-args=-L${libdir}"
 fi
 
-cargo build --release -j${nproc} --locked --features external-harfbuzz --target ${rust_target}
+cargo build --release --locked --features external-harfbuzz
 cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
-platforms = [
-    Platform("x86_64", "freebsd"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    # Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    # Platform("armv7l", "linux"; libc="musl"),
-    Platform("i686", "linux"; libc="glibc"),
-    # Platform("i686", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    # Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),    
-    # Platform("i686", "windows"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms(; experimental=true)
+# We dont have all dependencies for armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
