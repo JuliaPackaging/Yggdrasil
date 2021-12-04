@@ -47,7 +47,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP_PaP
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()))
 
 filter!(platforms) do p
-    arch(p) ∉ ("armv6l", "armv7l") && !Sys.iswindows(p) && libgfortran_version(p) >= v"4"
+    arch(p) ∉ ("armv6l", "armv7l") && !Sys.iswindows(p) && libgfortran_version(p) >= v"4" && (libc(p) != "musl" || arch(p) == x86_64)
 end
 
 # The products that we will ensure are always built
