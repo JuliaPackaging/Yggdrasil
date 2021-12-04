@@ -24,7 +24,6 @@ install_license LICENSE.txt
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-filter!(p -> libc(p) != "musl" || proc_family(p) != "arm", platforms)
 
 # The products that we will ensure are always built
 products = [
