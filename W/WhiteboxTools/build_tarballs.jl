@@ -16,9 +16,8 @@ cd $WORKSPACE/srcdir/whitebox-tools-*/
 
 cargo build --release
 mkdir /workspace/destdir/bin/
-find target/${rust_target}/release/ -maxdepth 1 -type f -executable | xargs -I '{}' mv {} /workspace/destdir/bin/
+find target/${rust_target}/release/ -maxdepth 1 -type f -executable | xargs -I '{}' mv {} "${bindir}"
 install_license LICENSE.txt
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -29,15 +28,15 @@ filter!(p -> libc(p) != "musl" || proc_family(p) != "arm", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("quinn_flow_accumulation", :quinn_flow_accumulation),
-    LibraryProduct("qin_flow_accumulation", :qin_flow_accumulation),
-    LibraryProduct("raster_calculator", :raster_calculator),
-    LibraryProduct("rho8_flow_accumulation", :rho8_flow_accumulation),
-    LibraryProduct("edge_contamination", :edge_contamination),
-    LibraryProduct("whitebox_tools", :whitebox_tools),
-    LibraryProduct("split_vector_lines", :split_vector_lines),
-    LibraryProduct("exposure_towards_wind_flux", :exposure_towards_wind_flux),
-    LibraryProduct("conditional_evaluation", :conditional_evaluation)
+    ExecutableProduct("quinn_flow_accumulation", :quinn_flow_accumulation),
+    ExecutableProduct("qin_flow_accumulation", :qin_flow_accumulation),
+    ExecutableProduct("raster_calculator", :raster_calculator),
+    ExecutableProduct("rho8_flow_accumulation", :rho8_flow_accumulation),
+    ExecutableProduct("edge_contamination", :edge_contamination),
+    ExecutableProduct("whitebox_tools", :whitebox_tools),
+    ExecutableProduct("split_vector_lines", :split_vector_lines),
+    ExecutableProduct("exposure_towards_wind_flux", :exposure_towards_wind_flux),
+    ExecutableProduct("conditional_evaluation", :conditional_evaluation),
 ]
 
 # Dependencies that must be installed before this package can be built
