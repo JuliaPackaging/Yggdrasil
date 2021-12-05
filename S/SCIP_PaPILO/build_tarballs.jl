@@ -26,6 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc}
 make papilo-executable
 make install
+cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in papilo scip soplex; do
