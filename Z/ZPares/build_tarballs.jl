@@ -30,8 +30,8 @@ fi
 
 if [[ $target == *"apple-darwin"* ]]; then
     cp Makefile.inc/make.inc.gfortran.seq ./make.inc
-    make BLAS="-framework accelerate" USE_MPI="0" FFLAG="-O3 $Rankmismatch -dynamiclib -fPIC -framework accelerate" LAPACK="-L./"
-    gfortran -O3 -dynamiclib -fPIC zpares_wrapper.f90 -I./include -L./lib -lzpares -framework accelerate  -o libzpares.dylib
+    make BLAS="-L$libdir -lopenblas" USE_MPI="0" FFLAG="-O3 $Rankmismatch -dynamiclib -L$libdir -lopenblas" LAPACK="-L./"
+    gfortran -O3 -dynamiclib -fPIC zpares_wrapper.f90 -I./include -L./lib -lzpares -L$libdir -lopenblas -o libzpares.dylib
     cp libzpares.dylib lib/
     cp lib/libzpares.dylib $prefix/lib/
     cp include/zpares.mod $prefix/include/
@@ -53,6 +53,7 @@ else
     make BLAS="-L$libdir -lopenblas" LAPACK="-L$libdir -lopenblas" FFLAG="-O3 $Rankmismatch -shared -fPIC"
     gfortran -O3 -shared -fPIC zpares_wrapper.f90 -I./include -L./lib -lzpares  -o zpares_wrapper.a
     ld -shared -o zpares.so --whole-archive zpares_wrapper.a 
+    cp zpares_wrapper.a $prefix/lib/
     cp zpares.so lib/
     cp lib/zpares.so $prefix/lib/libzpares.so
     cp include/zpares.mod $prefix/include/
