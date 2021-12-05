@@ -64,7 +64,7 @@ ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
 ALPS_version_offset = v"0.0.2"
 ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
 
-BiCePS_version = v"0.9.4"
+BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
 BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
 
 CHiPPS_BLIS_upstream_version = v"0.94.8"
