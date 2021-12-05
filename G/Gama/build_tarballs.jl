@@ -2,12 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "gama"
-version = v"2.14.0"
+name = "Gama"
+version = v"2.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://gnu.askapache.com/gama/gama-$(version.major).$(version.minor).tar.gz", "96d628272a386f862cef49db668e60c648c1c3f46212ce51add6fa85ef5bb012")
+    ArchiveSource("https://ftp.gnu.org/gnu/gama/gama-$(version.major).$(version.minor).tar.gz","7ced801d99ea46f085d7e025283783df2822bd6df35c2b85d743b69ca2f6096b")
 ]
 
 # Bash recipe for building across all platforms
