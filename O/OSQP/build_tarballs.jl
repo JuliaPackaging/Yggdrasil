@@ -18,6 +18,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osqp
+git submodule update --init --recursive
 mkdir build
 cd build/
 cmake \
