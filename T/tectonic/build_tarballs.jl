@@ -17,21 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tectonic-*/
 
-if [[ "${target}" == *-linux-musl* ]]; then
-    # Our Musl toolchain is missing a symlink `libc.musl-${musl_arch}.so.1` -> `libc.so`,
-    # let's create it manually until we fix it directly in the compiler shards.
-    case "${target}" in
-        i686*)
-            musl_arch="i386" ;;
-        arm*)
-            musl_arch="armhf" ;;
-        *)
-            musl_arch="${target%%-*}" ;;
-    esac
-    # If this errors out because `libc.musl-${musl_arch}.so.1` already exists it'll mean we
-    # can remove this hack.
-    ln -sv libc.so /opt/${target}/${target}/sys-root/usr/lib/libc.musl-${musl_arch}.so.1
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-Clink-args=-L${libdir}"
 fi
 
