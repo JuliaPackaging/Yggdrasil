@@ -33,7 +33,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 make
-cp bin/papilo ${prefix}/bin/
+cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in papilo scip soplex; do
