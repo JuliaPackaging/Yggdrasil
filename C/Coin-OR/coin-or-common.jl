@@ -24,7 +24,7 @@ gcc_version = v"6"
 
 Bonmin_upstream_version = v"1.8.8"
 Bonmin_gitsha = "65c56cea1e7c40acd9897a2667c11f91d845bb7b"
-Bonmin_version_offset = v"0.0.0"
+Bonmin_version_offset = v"0.0.1"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
 Cbc_upstream_version = v"2.10.5"
