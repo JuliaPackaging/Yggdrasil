@@ -17,8 +17,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd osqp-*
+cd $WORKSPACE/srcdir/osqp
 mkdir build
 cd build/
 cmake \
