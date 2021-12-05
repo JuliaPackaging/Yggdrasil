@@ -83,6 +83,9 @@ SYMPHONY_version =
 MibS_version = v"1.1.3"
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
 
+SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
+SHOT_version = offset_version(v"1.1.0", "0.0.0")
+
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.1"

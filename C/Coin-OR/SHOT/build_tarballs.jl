@@ -1,14 +1,9 @@
 include("../coin-or-common.jl")
 
-name = "SHOT"
-version = v"1.0.1"
-
-# Not actually v1.0.1. This is the latest commit as of the 13-07-2021
-# https://github.com/coin-or/SHOT/commit/edbff51d392d2f347331a28364cbffa89b44218f
 sources = [
     GitSource(
         "https://github.com/coin-or/SHOT.git",
-        "edbff51d392d2f347331a28364cbffa89b44218f",
+        SHOT_gitsha,
     ),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
@@ -67,15 +62,15 @@ products = [
 
 dependencies = [
     Dependency("ASL_jll", ASL_version),
-    Dependency("Cbc_jll", Cbc_version),
-    Dependency("Ipopt_jll", Ipopt_version),
+    Dependency("Cbc_jll", compat="$(Cbc_version)"),
+    Dependency("Ipopt_jll", compat="$(Ipopt_version)"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 build_tarballs(
     ARGS,
-    name,
-    version,
+    "SHOT",
+    SHOT_version,
     sources,
     script,
     platforms,
