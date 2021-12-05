@@ -61,7 +61,7 @@ Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 ALPS_upstream_version = v"1.5.7"
 # This is not the exact 1.5.7 tag, but a few commits later on stable/1.5
 ALPS_gitsha = "5b1a0b524979764d6ca929446762762712c035bb"
-ALPS_version_offset = v"0.0.1"
+ALPS_version_offset = v"0.0.2"
 ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
 
 BiCePS_version = v"0.9.4"
