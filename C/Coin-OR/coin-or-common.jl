@@ -80,7 +80,7 @@ SYMPHONY_version_offset = v"0.0.0"
 SYMPHONY_version =
     offset_version(SYMPHONY_upstream_version, SYMPHONY_version_offset)
 
-MibS_version = v"1.1.3"
+MibS_version = offset_version(v"1.1.3", v"0.0.1")
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
 
 # Third-party packages needed by COIN-OR libraries.
