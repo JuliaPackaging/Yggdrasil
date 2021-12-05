@@ -22,9 +22,9 @@ cp ../../wrapper/zpares_wrapper.f90 ./
 if [[ $target == *"aarch64-apple-darwin"* ]]; then 
     Rankmismatch="-fallow-argument-mismatch"
 elif [[ $target == *"aarch64-linux"* ]]; then 
-    Rankmismatch="-fallow-argument-mismatch"
+    Rankmismatch="" 
 else
-    Rankmismatch="-fallow-argument-mismatch"
+    Rankmismatch=""
 fi
 
 
@@ -83,7 +83,7 @@ platforms = [
     Platform("x86_64", "freebsd"; )
 ]
 
-#platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 
 # The products that we will ensure are always built
@@ -99,5 +99,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
+#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
