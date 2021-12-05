@@ -1,8 +1,8 @@
 diff --git a/cmd/dex/config.go b/cmd/dex/config.go
-index 88dc98e7..ed7ac061 100644
+index 309fc52c..8d8a7a7f 100644
 --- a/cmd/dex/config.go
 +++ b/cmd/dex/config.go
-@@ -48,6 +48,8 @@ type Config struct {
+@@ -49,6 +49,8 @@ type Config struct {
  	// querying the storage. Cannot be specified without enabling a passwords
  	// database.
  	StaticPasswords []password `json:"staticPasswords"`
@@ -11,21 +11,11 @@ index 88dc98e7..ed7ac061 100644
  }
  
  // Validate the configuration
-@@ -304,6 +306,9 @@ type Expiry struct {
- 
- 	// DeviceRequests defines the duration of time for which the DeviceRequests will be valid.
- 	DeviceRequests string `json:"deviceRequests"`
-+
-+	// RefreshTokens defines the duration of time for which an unused RefreshToken will be valid
-+	RefreshTokens string `json:"refreshTokens"`
- }
- 
- // Logger holds configuration required to customize logging for dex.
 diff --git a/cmd/dex/serve.go b/cmd/dex/serve.go
-index bd7869c4..7c1da4d2 100644
+index 47030393..b66b3b2f 100644
 --- a/cmd/dex/serve.go
 +++ b/cmd/dex/serve.go
-@@ -259,18 +259,19 @@ func runServe(options serveOptions) error {
+@@ -260,18 +260,19 @@ func runServe(options serveOptions) error {
  	healthChecker := gosundheit.New()
  
  	serverConfig := server.Config{
@@ -57,59 +47,50 @@ index bd7869c4..7c1da4d2 100644
  	}
  	if c.Expiry.SigningKeys != "" {
  		signingKeys, err := time.ParseDuration(c.Expiry.SigningKeys)
-@@ -304,6 +305,14 @@ func runServe(options serveOptions) error {
- 		logger.Infof("config device requests valid for: %v", deviceRequests)
- 		serverConfig.DeviceRequestsValidFor = deviceRequests
- 	}
-+	if c.Expiry.RefreshTokens != "" {
-+		refreshTokens, err := time.ParseDuration(c.Expiry.RefreshTokens)
-+		if err != nil {
-+			return fmt.Errorf("invalid config value %q for refresh tokens expiry: %v", c.Expiry.RefreshTokens, err)
-+		}
-+		logger.Infof("config device requests valid for: %v", refreshTokens)
-+		serverConfig.UnusedRefreshTokensValidFor = refreshTokens
-+	}
- 	serv, err := server.NewServer(context.Background(), serverConfig)
- 	if err != nil {
- 		return fmt.Errorf("failed to initialize server: %v", err)
-@@ -437,7 +446,7 @@ func runServe(options serveOptions) error {
+@@ -450,7 +451,7 @@ func runServe(options serveOptions) error {
  		}
  
  		grpcSrv := grpc.NewServer(grpcOptions...)
--		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger))
-+		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, c.EnableMultiRefreshTokens))
+-		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, version))
++		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, c.EnableMultiRefreshTokens, version))
  
  		grpcMetrics.InitializeMetrics(grpcSrv)
  		if c.GRPC.Reflection {
 diff --git a/server/api.go b/server/api.go
-index 5560c3bc..3728af26 100644
+index a68742b3..7a297bf7 100644
 --- a/server/api.go
 +++ b/server/api.go
-@@ -30,16 +30,18 @@ const (
+@@ -29,20 +29,22 @@ const (
  )
  
  // NewAPI returns a server which implements the gRPC API interface.
--func NewAPI(s storage.Storage, logger log.Logger) api.DexServer {
-+func NewAPI(s storage.Storage, logger log.Logger, enableMultiRefreshTokens bool) api.DexServer {
+-func NewAPI(s storage.Storage, logger log.Logger, version string) api.DexServer {
++func NewAPI(s storage.Storage, logger log.Logger, enableMultiRefreshTokens bool, version string) api.DexServer {
  	return dexAPI{
--		s:      s,
--		logger: logger,
+-		s:       s,
+-		logger:  logger,
+-		version: version,
 +		s:                        s,
 +		logger:                   logger,
 +		enableMultiRefreshTokens: enableMultiRefreshTokens,
++		version:                  version,
  	}
  }
  
  type dexAPI struct {
--	s      storage.Storage
--	logger log.Logger
+ 	api.UnimplementedDexServer
+ 
+-	s       storage.Storage
+-	logger  log.Logger
+-	version string
 +	s                        storage.Storage
 +	logger                   log.Logger
 +	enableMultiRefreshTokens bool
++	version                  string
  }
  
  func (d dexAPI) CreateClient(ctx context.Context, req *api.CreateClientReq) (*api.CreateClientResp, error) {
-@@ -280,6 +282,13 @@ func (d dexAPI) VerifyPassword(ctx context.Context, req *api.VerifyPasswordReq)
+@@ -283,6 +285,13 @@ func (d dexAPI) VerifyPassword(ctx context.Context, req *api.VerifyPasswordReq)
  }
  
  func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.ListRefreshResp, error) {
@@ -123,7 +104,7 @@ index 5560c3bc..3728af26 100644
  	id := new(internal.IDTokenSubject)
  	if err := internal.Unmarshal(req.UserId, id); err != nil {
  		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
-@@ -313,7 +322,45 @@ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.
+@@ -316,7 +325,45 @@ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.
  	}, nil
  }
  
@@ -169,7 +150,7 @@ index 5560c3bc..3728af26 100644
  	id := new(internal.IDTokenSubject)
  	if err := internal.Unmarshal(req.UserId, id); err != nil {
  		d.logger.Errorf("api: failed to unmarshal ID Token subject: %v", err)
-@@ -363,3 +410,42 @@ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*
+@@ -366,3 +413,42 @@ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*
  
  	return &api.RevokeRefreshResp{}, nil
  }
@@ -213,23 +194,23 @@ index 5560c3bc..3728af26 100644
 +	return &api.RevokeRefreshResp{}, nil
 +}
 diff --git a/server/api_test.go b/server/api_test.go
-index e7725063..19045539 100644
+index 02061340..7f627656 100644
 --- a/server/api_test.go
 +++ b/server/api_test.go
 @@ -36,7 +36,7 @@ func newAPI(s storage.Storage, logger log.Logger, t *testing.T) *apiClient {
  	}
  
  	serv := grpc.NewServer()
--	api.RegisterDexServer(serv, NewAPI(s, logger))
-+	api.RegisterDexServer(serv, NewAPI(s, logger, false))
+-	api.RegisterDexServer(serv, NewAPI(s, logger, "test"))
++	api.RegisterDexServer(serv, NewAPI(s, logger, false, "test"))
  	go serv.Serve(l)
  
  	// Dial will retry automatically if the serv.Serve() goroutine
 diff --git a/server/handlers.go b/server/handlers.go
-index eb65f490..4bee472e 100644
+index 2a4f8c71..c8168368 100644
 --- a/server/handlers.go
 +++ b/server/handlers.go
-@@ -894,13 +894,15 @@ func (s *Server) exchangeAuthCode(w http.ResponseWriter, authCode storage.AuthCo
+@@ -961,13 +961,15 @@ func (s *Server) exchangeAuthCode(w http.ResponseWriter, authCode storage.AuthCo
  				return nil, err
  			}
  		} else {
@@ -252,20 +233,7 @@ index eb65f490..4bee472e 100644
  				}
  			}
  
-@@ -1097,7 +1099,11 @@ func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request, clie
- 	// in offline session for the user.
- 	if err := s.storage.UpdateOfflineSessions(refresh.Claims.UserID, refresh.ConnectorID, func(old storage.OfflineSessions) (storage.OfflineSessions, error) {
- 		if old.Refresh[refresh.ClientID].ID != refresh.ID {
--			return old, errors.New("refresh token invalid")
-+			if s.enableMultiRefreshTokens {
-+				return old, nil
-+			} else {
-+				return old, errors.New("refresh token invalid")
-+			}
- 		}
- 		old.Refresh[refresh.ClientID].LastUsed = lastUsed
- 		old.ConnectorData = ident.ConnectorData
-@@ -1337,16 +1343,18 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
+@@ -1205,16 +1207,18 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
  				return
  			}
  		} else {
@@ -294,27 +262,28 @@ index eb65f490..4bee472e 100644
  					}
  				}
  			}
+diff --git a/server/refreshhandlers.go b/server/refreshhandlers.go
+index 8ea7ea9e..e8e9b67f 100644
+--- a/server/refreshhandlers.go
++++ b/server/refreshhandlers.go
+@@ -197,7 +197,11 @@ func (s *Server) refreshWithConnector(ctx context.Context, token *internal.Refre
+ func (s *Server) updateOfflineSession(refresh *storage.RefreshToken, ident connector.Identity, lastUsed time.Time) *refreshError {
+ 	offlineSessionUpdater := func(old storage.OfflineSessions) (storage.OfflineSessions, error) {
+ 		if old.Refresh[refresh.ClientID].ID != refresh.ID {
+-			return old, errors.New("refresh token invalid")
++			if s.enableMultiRefreshTokens {
++				return old, nil
++			} else {
++				return old, errors.New("refresh token invalid")
++			}
+ 		}
+ 		old.Refresh[refresh.ClientID].LastUsed = lastUsed
+ 		old.ConnectorData = ident.ConnectorData
 diff --git a/server/server.go b/server/server.go
-index a79b7cfd..7be1b4b6 100644
+index 957b62dc..bc22bf81 100644
 --- a/server/server.go
 +++ b/server/server.go
-@@ -77,10 +77,11 @@ type Config struct {
- 	// If enabled, the connectors selection page will always be shown even if there's only one
- 	AlwaysShowLoginScreen bool
- 
--	RotateKeysAfter        time.Duration // Defaults to 6 hours.
--	IDTokensValidFor       time.Duration // Defaults to 24 hours
--	AuthRequestsValidFor   time.Duration // Defaults to 24 hours
--	DeviceRequestsValidFor time.Duration // Defaults to 5 minutes
-+	RotateKeysAfter             time.Duration // Defaults to 6 hours.
-+	IDTokensValidFor            time.Duration // Defaults to 24 hours
-+	AuthRequestsValidFor        time.Duration // Defaults to 24 hours
-+	DeviceRequestsValidFor      time.Duration // Defaults to 5 minutes
-+	UnusedRefreshTokensValidFor time.Duration // Defaults to 30 days
- 	// If set, the server will use this connector to handle password grants
- 	PasswordConnector string
- 
-@@ -96,6 +97,8 @@ type Config struct {
+@@ -103,6 +103,8 @@ type Config struct {
  	PrometheusRegistry *prometheus.Registry
  
  	HealthChecker gosundheit.Health
@@ -323,8 +292,8 @@ index a79b7cfd..7be1b4b6 100644
  }
  
  // WebConfig holds the server's frontend templates and asset configuration.
-@@ -163,6 +166,8 @@ type Server struct {
- 	deviceRequestsValidFor time.Duration
+@@ -178,6 +180,8 @@ type Server struct {
+ 	refreshTokenPolicy *RefreshTokenPolicy
  
  	logger log.Logger
 +
@@ -332,7 +301,7 @@ index a79b7cfd..7be1b4b6 100644
  }
  
  // NewServer constructs a server from the provided config.
-@@ -223,19 +228,20 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+@@ -246,20 +250,21 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
  	}
  
  	s := &Server{
@@ -343,6 +312,7 @@ index a79b7cfd..7be1b4b6 100644
 -		idTokensValidFor:       value(c.IDTokensValidFor, 24*time.Hour),
 -		authRequestsValidFor:   value(c.AuthRequestsValidFor, 24*time.Hour),
 -		deviceRequestsValidFor: value(c.DeviceRequestsValidFor, 5*time.Minute),
+-		refreshTokenPolicy:     c.RefreshTokenPolicy,
 -		skipApproval:           c.SkipApprovalScreen,
 -		alwaysShowLogin:        c.AlwaysShowLoginScreen,
 -		now:                    now,
@@ -356,6 +326,7 @@ index a79b7cfd..7be1b4b6 100644
 +		idTokensValidFor:         value(c.IDTokensValidFor, 24*time.Hour),
 +		authRequestsValidFor:     value(c.AuthRequestsValidFor, 24*time.Hour),
 +		deviceRequestsValidFor:   value(c.DeviceRequestsValidFor, 5*time.Minute),
++		refreshTokenPolicy:       c.RefreshTokenPolicy,
 +		skipApproval:             c.SkipApprovalScreen,
 +		alwaysShowLogin:          c.AlwaysShowLoginScreen,
 +		now:                      now,
@@ -366,16 +337,16 @@ index a79b7cfd..7be1b4b6 100644
  	}
  
  	// Retrieves connector objects in backend storage. This list includes the static connectors
-@@ -348,7 +354,7 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+@@ -375,7 +380,7 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
  	s.mux = r
  
  	s.startKeyRotation(ctx, rotationStrategy, now)
 -	s.startGarbageCollection(ctx, value(c.GCFrequency, 5*time.Minute), now)
-+	s.startGarbageCollection(ctx, value(c.GCFrequency, 5*time.Minute), value(c.UnusedRefreshTokensValidFor, 720*time.Hour), now)
++	s.startGarbageCollection(ctx, value(c.GCFrequency, 5*time.Minute), value(c.RefreshTokenPolicy.absoluteLifetime, 720*time.Hour), now)
  
  	return s, nil
  }
-@@ -466,18 +472,18 @@ func (k *keyCacher) GetKeys() (storage.Keys, error) {
+@@ -493,18 +498,18 @@ func (k *keyCacher) GetKeys() (storage.Keys, error) {
  	return storageKeys, nil
  }
  
@@ -399,10 +370,10 @@ index a79b7cfd..7be1b4b6 100644
  			}
  		}
 diff --git a/storage/conformance/conformance.go b/storage/conformance/conformance.go
-index 3f5e2aa1..85a6356c 100644
+index dde369c4..a3202c57 100644
 --- a/storage/conformance/conformance.go
 +++ b/storage/conformance/conformance.go
-@@ -771,8 +771,10 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -773,8 +773,10 @@ func testGC(t *testing.T, s storage.Storage) {
  		t.Fatalf("failed creating auth code: %v", err)
  	}
  
@@ -414,7 +385,7 @@ index 3f5e2aa1..85a6356c 100644
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
-@@ -783,7 +785,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -785,7 +787,7 @@ func testGC(t *testing.T, s storage.Storage) {
  		}
  	}
  
@@ -423,7 +394,7 @@ index 3f5e2aa1..85a6356c 100644
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.AuthCodes != 1 {
  		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthCodes)
-@@ -822,7 +824,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -824,7 +826,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
@@ -432,7 +403,7 @@ index 3f5e2aa1..85a6356c 100644
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
-@@ -833,7 +835,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -835,7 +837,7 @@ func testGC(t *testing.T, s storage.Storage) {
  		}
  	}
  
@@ -441,7 +412,7 @@ index 3f5e2aa1..85a6356c 100644
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.AuthRequests != 1 {
  		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthRequests)
-@@ -859,7 +861,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -861,7 +863,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
@@ -450,7 +421,7 @@ index 3f5e2aa1..85a6356c 100644
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.DeviceRequests != 0 {
-@@ -869,7 +871,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -871,7 +873,7 @@ func testGC(t *testing.T, s storage.Storage) {
  			t.Errorf("expected to be able to get auth request after GC: %v", err)
  		}
  	}
@@ -459,7 +430,7 @@ index 3f5e2aa1..85a6356c 100644
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.DeviceRequests != 1 {
  		t.Errorf("expected to garbage collect 1 device request, got %d", r.DeviceRequests)
-@@ -895,7 +897,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -897,7 +899,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
@@ -468,7 +439,7 @@ index 3f5e2aa1..85a6356c 100644
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.DeviceTokens != 0 {
-@@ -905,7 +907,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -907,7 +909,7 @@ func testGC(t *testing.T, s storage.Storage) {
  			t.Errorf("expected to be able to get device token after GC: %v", err)
  		}
  	}
@@ -477,8 +448,21 @@ index 3f5e2aa1..85a6356c 100644
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.DeviceTokens != 1 {
  		t.Errorf("expected to garbage collect 1 device token, got %d", r.DeviceTokens)
+diff --git a/storage/ent/client/main.go b/storage/ent/client/main.go
+index bc4c1600..6830123e 100644
+--- a/storage/ent/client/main.go
++++ b/storage/ent/client/main.go
+@@ -70,7 +70,7 @@ func (d *Database) BeginTx(ctx context.Context) (*db.Tx, error) {
+ }
+ 
+ // GarbageCollect removes expired entities from the database.
+-func (d *Database) GarbageCollect(now time.Time) (storage.GCResult, error) {
++func (d *Database) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
+ 	result := storage.GCResult{}
+ 	utcNow := now.UTC()
+ 
 diff --git a/storage/etcd/etcd.go b/storage/etcd/etcd.go
-index 97aced45..9adc8076 100644
+index 63fa7bc2..56e40225 100644
 --- a/storage/etcd/etcd.go
 +++ b/storage/etcd/etcd.go
 @@ -38,7 +38,7 @@ func (c *conn) Close() error {
@@ -491,10 +475,10 @@ index 97aced45..9adc8076 100644
  	defer cancel()
  	authRequests, err := c.listAuthRequests(ctx)
 diff --git a/storage/kubernetes/storage.go b/storage/kubernetes/storage.go
-index b670244a..5c9b88af 100644
+index 13549ef5..2fdc2bb0 100644
 --- a/storage/kubernetes/storage.go
 +++ b/storage/kubernetes/storage.go
-@@ -590,7 +590,7 @@ func (cli *client) UpdateConnector(id string, updater func(a storage.Connector)
+@@ -597,7 +597,7 @@ func (cli *client) UpdateConnector(id string, updater func(a storage.Connector)
  	})
  }
  
@@ -504,10 +488,10 @@ index b670244a..5c9b88af 100644
  	if err := cli.list(resourceAuthRequest, &authRequests); err != nil {
  		return result, fmt.Errorf("failed to list auth requests: %v", err)
 diff --git a/storage/memory/memory.go b/storage/memory/memory.go
-index 82264205..7f09e546 100644
+index a9406657..865ef444 100644
 --- a/storage/memory/memory.go
 +++ b/storage/memory/memory.go
-@@ -69,7 +69,7 @@ func (s *memStorage) tx(f func()) {
+@@ -68,7 +68,7 @@ func (s *memStorage) tx(f func()) {
  
  func (s *memStorage) Close() error { return nil }
  
@@ -516,7 +500,7 @@ index 82264205..7f09e546 100644
  	s.tx(func() {
  		for id, a := range s.authCodes {
  			if now.After(a.Expiry) {
-@@ -95,6 +95,24 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
+@@ -94,6 +94,24 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
  				result.DeviceTokens++
  			}
  		}
@@ -542,7 +526,7 @@ index 82264205..7f09e546 100644
  	return result, nil
  }
 diff --git a/storage/sql/crud.go b/storage/sql/crud.go
-index 4451e5c5..a8c1aa16 100644
+index 5a234f9d..f685c8fd 100644
 --- a/storage/sql/crud.go
 +++ b/storage/sql/crud.go
 @@ -84,7 +84,7 @@ type scanner interface {
@@ -581,7 +565,7 @@ index 4451e5c5..a8c1aa16 100644
  	return result, err
  }
  
-@@ -365,6 +385,35 @@ func getRefresh(q querier, id string) (storage.RefreshToken, error) {
+@@ -366,6 +386,35 @@ func getRefresh(q querier, id string) (storage.RefreshToken, error) {
  	`, id))
  }
  
@@ -592,7 +576,7 @@ index 4451e5c5..a8c1aa16 100644
 +			claims_user_id, claims_username, claims_preferred_username,
 +			claims_email, claims_email_verified, claims_groups,
 +			connector_id, connector_data,
-+			token, created_at, last_used
++			token, obsolete_token, created_at, last_used
 +		from refresh_token where last_used < $1;
 +	`, lastUsedTime)
 +	if err != nil {
@@ -618,7 +602,7 @@ index 4451e5c5..a8c1aa16 100644
  	rows, err := c.Query(`
  		select
 diff --git a/storage/storage.go b/storage/storage.go
-index c308ac46..96989b83 100644
+index cdd83ca6..2ea79b8c 100644
 --- a/storage/storage.go
 +++ b/storage/storage.go
 @@ -53,6 +53,7 @@ type GCResult struct {
