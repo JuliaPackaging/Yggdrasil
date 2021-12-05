@@ -15,7 +15,7 @@ cd $WORKSPACE/srcdir/SHOT
 git submodule update --init --recursive
 # Disable run_source_test in CppAD
 atomic_patch -p1 ../patches/CppAD.patch
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
     #                     optional.value()->coefficient *= -1.0;
@@ -54,6 +54,8 @@ make install
 
 install_license ../LICENSE
 """
+
+filter!(p -> p != Platform("aarch64", "macOS"), platforms)
 
 products = [
     ExecutableProduct("SHOT", :amplexe),
