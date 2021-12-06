@@ -23,7 +23,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DSYM=bliss\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
-make -j${nproc}
+make -j${nproc} scip
+make -j${nproc} gcg
 make papilo-executable
 make install
 cp bin/papilo "${bindir}/papilo${exeext}"
