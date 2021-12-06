@@ -13,16 +13,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/rtl-sdr/
-autoreconf -i
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+if [[ "${target}" == *-mingw* ]]; then
+    mkdir build && cd build
+    cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../
+else
+    autoreconf -i
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+fi
+make -j ${nprocs}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
