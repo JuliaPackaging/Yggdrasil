@@ -3,30 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "bliss"
-version = v"0.73.1" # <-- This is a lie, we're bumping from 0.73 to 0.73.1 to create a Julia v1.6+ release with experimental platforms
+version = v"0.77.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.tcs.hut.fi/Software/bliss/bliss-0.73.zip", "f57bf32804140cad58b1240b804e0dbd68f7e6bf67eba8e0c0fa3a62fd7f0f84"),
+    ArchiveSource("https://users.aalto.fi/~tjunttil/bliss/downloads/bliss-0.77.zip", "acc8b98034f30fad24c897f365abd866c13d9f1bb207e398d0caf136875972a4"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd bliss-0.73
-if [[ "${target}" == *mingw* ]]; then
-  atomic_patch -p1 ../patches/notimer.patch
-fi
-# build with GMP and store this information
-sed -i -e 's/^namespace bliss/#define BLISS_USE_GMP\n\nnamespace bliss/' defs.hh
-make -j${nproc} lib_gmp CFLAGS="-I$prefix/include -O3 -fPIC -I." LDFLAGS="$LDFLAGS -L$libdir" CC="$CXX"
-# there is no target for a shared library
-$CXX -shared -o libbliss.$dlext *.og $LDFLAGS -L$libdir -lgmp
-mkdir -p $prefix/include/bliss
-mkdir -p $libdir
-install -p -m 0644 -t $prefix/include/bliss *.hh
-install -p libbliss.$dlext $libdir
+cd bliss-*
+mkdir build
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX=$prefix\
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
+  -DCMAKE_BUILD_TYPE=Release \
+  -DUSE_GMP=ON ..
+make -j${nproc}
+make install
+
+mkdir -p ${prefix}/share/licenses/bliss
+cp $WORKSPACE/srcdir/bliss-*/COPYING.LESSER ${prefix}/share/licenses/bliss/LICENSE_bliss
 """
 
 # These are the platforms we will build for by default, unless further
