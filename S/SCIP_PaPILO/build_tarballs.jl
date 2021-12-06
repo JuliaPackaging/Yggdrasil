@@ -7,7 +7,7 @@ name = "SCIP_PaPILO"
 version = v"0.1.0"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-v800-rc16.tgz", "0fc025f260e9e77e26e5d218707c04d03492e792c793d34221ada09fbb275b99"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "9b85283db0ac939b2d8eb3475067c8e1164b239e0c78e68f55dcc55859b78b2d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,8 +26,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc} scip
 make -j${nproc} gcg
 make papilo-executable
-mv lib/* ${libdir}
-cp bin/scip "${bindir}/scip${exeext}"
+
+make install
 cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
