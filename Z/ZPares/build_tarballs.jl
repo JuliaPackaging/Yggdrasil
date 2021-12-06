@@ -21,10 +21,6 @@ cp ../../wrapper/zpares_wrapper.f90 ./
 
 if [[ $target == *"aarch64-apple-darwin"* ]]; then 
     Rankmismatch="-fallow-argument-mismatch"
-elif [[ $target == *"aarch64-linux"* ]]; then 
-    Rankmismatch="" 
-else
-    Rankmismatch=""
 fi
 
 
