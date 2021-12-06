@@ -26,7 +26,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
 make -j${nproc} scip
 make -j${nproc} gcg
 make papilo-executable
-make install
+mv lib/* ${libdir}
+cp bin/scip/ "${bindir}/scip${exeext}"
 cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
