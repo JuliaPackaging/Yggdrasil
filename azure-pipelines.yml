@@ -12,7 +12,7 @@ pool: Native
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
     # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
-    BINARYBUILDER_NPROC: 64
+    BINARYBUILDER_NPROC: 16
 
 jobs:
 - job: generator
