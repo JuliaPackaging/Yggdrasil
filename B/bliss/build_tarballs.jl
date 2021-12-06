@@ -21,7 +21,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_BUILD_TYPE=Release \
   -DUSE_GMP=ON ..
 make -j${nproc}
-make install
+cp bliss$exeext $bindir
+cp libbliss.${dlext} $libdir
 
 mkdir -p ${prefix}/share/licenses/bliss
 cp $WORKSPACE/srcdir/bliss-*/COPYING.LESSER ${prefix}/share/licenses/bliss/LICENSE_bliss
