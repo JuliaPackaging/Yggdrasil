@@ -7,13 +7,14 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cometscome/zpares_mirror.git", "ab453f5c3aa295bb43f6396e796db8d03964b5b3")
+    GitSource("https://github.com/cometscome/zpares_mirror.git", "1e84be7cd0f8368da09ac0c262f815583ce04b7d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd zpares_mirror/
+install_license ./LICENSE
 cd originalfile/
 tar -xvf zpares_0.9.6a.tar.gz 
 cd zpares_0.9.6a
