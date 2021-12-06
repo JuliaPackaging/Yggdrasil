@@ -12,14 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd rtl-sdr/
+cd $WORKSPACE/srcdir/rtl-sdr/
 autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
-ls /usr/bin/
-ls /usr/include/
 """
 
 # These are the platforms we will build for by default, unless further
