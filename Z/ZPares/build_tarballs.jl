@@ -60,7 +60,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_versions(; experimental=true)
+platforms = supported_platforms(;experimental=true)
 platforms = expand_gfortran_versions(platforms)
 
 
