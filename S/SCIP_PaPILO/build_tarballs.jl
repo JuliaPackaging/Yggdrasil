@@ -27,7 +27,7 @@ make -j${nproc} scip
 make -j${nproc} gcg
 make papilo-executable
 mv lib/* ${libdir}
-cp bin/scip/ "${bindir}/scip${exeext}"
+cp bin/scip "${bindir}/scip${exeext}"
 cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
