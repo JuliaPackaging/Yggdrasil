@@ -25,7 +25,7 @@ cp bliss$exeext $bindir
 cp libbliss.${dlext} $libdir
 
 mkdir -p $prefix/include/bliss
-install -p -m 0644 -t $prefix/include/bliss $WORKSPACE/srcdir/bliss-*/src/*.hh
+install -p -m 0644 -t "${includedir}/bliss" ../src/*.hh
 
 mkdir -p ${prefix}/share/licenses/bliss
 cp $WORKSPACE/srcdir/bliss-*/COPYING.LESSER ${prefix}/share/licenses/bliss/LICENSE_bliss
