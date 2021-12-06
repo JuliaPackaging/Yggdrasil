@@ -27,8 +27,7 @@ cp libbliss.${dlext} $libdir
 mkdir -p $prefix/include/bliss
 install -p -m 0644 -t "${includedir}/bliss" ../src/*.hh
 
-mkdir -p ${prefix}/share/licenses/bliss
-cp $WORKSPACE/srcdir/bliss-*/COPYING.LESSER ${prefix}/share/licenses/bliss/LICENSE_bliss
+install_license ../COPYING.LESSER
 """
 
 # These are the platforms we will build for by default, unless further
