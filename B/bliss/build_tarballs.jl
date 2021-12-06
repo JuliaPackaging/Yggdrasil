@@ -24,6 +24,9 @@ make -j${nproc}
 cp bliss$exeext $bindir
 cp libbliss.${dlext} $libdir
 
+mkdir -p $prefix/include/bliss
+install -p -m 0644 -t $prefix/include/bliss $WORKSPACE/srcdir/bliss-*/src/*.hh
+
 mkdir -p ${prefix}/share/licenses/bliss
 cp $WORKSPACE/srcdir/bliss-*/COPYING.LESSER ${prefix}/share/licenses/bliss/LICENSE_bliss
 """
@@ -39,8 +42,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
