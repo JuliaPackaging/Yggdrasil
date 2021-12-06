@@ -27,6 +27,9 @@ Bonmin_gitsha = "65c56cea1e7c40acd9897a2667c11f91d845bb7b"
 Bonmin_version_offset = v"0.0.1"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
+Couenne_version = offset_version(v"0.5.8", v"0.0.1")
+Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
+
 Cbc_upstream_version = v"2.10.5"
 Cbc_gitsha = "7b5ccc016f035f56614c8018b20d700978144e9f"
 Cbc_version_offset = v"0.0.1"
@@ -67,12 +70,9 @@ ALPS_version = offset_version(ALPS_upstream_version, ALPS_version_offset)
 BiCePS_version = offset_version(v"0.94.4", v"0.0.0")
 BiCePS_gitsha = "8e41545a3b1a36ca1d306b3af96f3804dc57e61f"
 
-CHiPPS_BLIS_upstream_version = v"0.94.8"
+CHiPPS_BLIS_version = offset_version(v"0.94.8", v"0.0.2")
 # This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
 CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
-CHiPPS_BLIS_version_offset = v"0.0.1"
-CHiPPS_BLIS_version =
-    offset_version(CHiPPS_BLIS_upstream_version, CHiPPS_BLIS_version_offset)
 
 SYMPHONY_upstream_version = v"5.6.17"
 SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
@@ -80,8 +80,11 @@ SYMPHONY_version_offset = v"0.0.0"
 SYMPHONY_version =
     offset_version(SYMPHONY_upstream_version, SYMPHONY_version_offset)
 
-MibS_version = v"1.1.3"
+MibS_version = offset_version(v"1.1.3", v"0.0.1")
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
+
+SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
+SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.3"

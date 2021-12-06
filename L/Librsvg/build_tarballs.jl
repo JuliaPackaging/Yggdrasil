@@ -21,21 +21,7 @@ autoreconf -fiv
 
 # On most platforms we have to use `${rust_target}` as `host`
 FLAGS=(--host=${rust_target})
-# Our Musl toolchain is missing a symlink `libc.musl-${musl_arch}.so.1` -> `libc.so`, let's
-# create it manually until we fix it directly in the compiler shards.
-if [[ "${target}" == *-linux-musl* ]]; then
-    case "${target}" in
-        i686*)
-            musl_arch="i386" ;;
-        arm*)
-            musl_arch="armhf" ;;
-        *)
-            musl_arch="${target%%-*}" ;;
-    esac
-    # If this errors out because `libc.musl-${musl_arch}.so.1` already exists it'll mean we
-    # can remove this hack.
-    ln -sv libc.so /opt/${target}/${target}/sys-root/usr/lib/libc.musl-${musl_arch}.so.1
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     # On Windows using `${rust_target}` wouldn't work:
     #
     #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
