@@ -8,17 +8,17 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/cometscome/zpares_mirror.git", "1e84be7cd0f8368da09ac0c262f815583ce04b7d")
+    FileSource("https://zpares.cs.tsukuba.ac.jp/?download=242","3c34257d249451b0b984abc985e296ebb73ae5331025f1b8ea08d50301c7cf9a",filename="zpares_0.9.6a.tar.gz")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+tar -xvf zpares_0.9.6a.tar.gz 
 cd zpares_mirror/
 install_license ./LICENSE
-cd originalfile/
-tar -xvf zpares_0.9.6a.tar.gz 
-cd zpares_0.9.6a
-cp ../../wrapper/zpares_wrapper.f90 ./
+cd ../zpares_0.9.6a
+cp ../zpares_mirror/wrapper/zpares_wrapper.f90 ./
 
 if [[ $target == *"aarch64-apple-darwin"* ]]; then 
     Rankmismatch="-fallow-argument-mismatch"
