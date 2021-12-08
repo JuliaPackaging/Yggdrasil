@@ -25,7 +25,7 @@ if [[ $target == *"aarch64-apple-darwin"* ]]; then
 fi
 
 cp Makefile.inc/make.inc.gfortran.seq ./make.inc
-make BLAS="-L${libdir} -lopenblas" USE_MPI="0" FFLAG="-O3 ${Rankmismatch} -shared -L${libdir} -lopenblas" LAPACK="-L./"
+make BLAS="-L${libdir} -lopenblas" USE_MPI="0" FFLAG="-O3 ${Rankmismatch} -shared -fPIC -L${libdir} -lopenblas" LAPACK="-L./"
 gfortran -O3 -shared -fPIC zpares_wrapper.f90 -I./include -L./lib -lzpares -L${libdir} -lopenblas -o "${libdir}/libzpares.${dlext}"
 cp include/zpares.mod "${includedir}"
 cp zpares_wrapper.mod "${includedir}"
