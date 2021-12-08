@@ -28,7 +28,7 @@ import Pkg.Types: VersionSpec
 #
 name = "Singular"
 upstream_version = v"4.2.1-2" # 4.2.1p2 exactly
-version_offset = v"0.1.0"
+version_offset = v"0.1.1"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
@@ -92,7 +92,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800.401"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
