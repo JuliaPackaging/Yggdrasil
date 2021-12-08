@@ -13,13 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/rtl-sdr/
-if [[ "${target}" == *-mingw* ]]; then
-    mkdir build && cd build
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../
-else
-    autoreconf -i
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-fi
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../
 make -j ${nprocs}
 make install
 """
@@ -28,7 +23,7 @@ make install
 # platforms are passed in on the command line
 
 # freebsd not supported by libusb
-platforms = [p for p in supported_platforms() if !Sys.isfreebsd(p)]
+platforms = filter!(!Sys.isfreebsd, supported_platforms())
 
 
 # The products that we will ensure are always built
