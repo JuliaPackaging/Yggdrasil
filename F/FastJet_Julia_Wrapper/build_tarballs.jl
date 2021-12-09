@@ -38,9 +38,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.9.0")),
+#     Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.9.0")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
     Dependency("FastJet_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency(PackageSpec(name="libjulia_jll"))
+#     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
