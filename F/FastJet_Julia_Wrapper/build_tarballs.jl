@@ -3,7 +3,7 @@
 using BinaryBuilder
 using Pkg
 
-julia_version = v"1.5.3"
+julia_version = v"1.7.0"
 
 name = "FastJet_Julia_Wrapper"
 version = v"0.8.6"
@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8.5")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.9.0")),
     Dependency("FastJet_jll"),
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
 ]
