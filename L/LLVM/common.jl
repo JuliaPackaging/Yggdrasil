@@ -428,7 +428,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
             LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true),
         ]
-        if v"12" <= version < v"13"
+        if v"12" == version
             push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
         end
     elseif name == "LLVM"
