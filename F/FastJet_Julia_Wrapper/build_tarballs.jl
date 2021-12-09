@@ -5,6 +5,7 @@ using Pkg
 
 name = "FastJet_Julia_Wrapper"
 version = v"0.8.6"
+julia_version = v"1.6"
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
