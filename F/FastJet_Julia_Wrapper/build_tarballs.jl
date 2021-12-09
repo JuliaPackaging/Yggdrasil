@@ -3,8 +3,6 @@
 using BinaryBuilder
 using Pkg
 
-julia_version = v"1.7.0"
-
 name = "FastJet_Julia_Wrapper"
 version = v"0.8.6"
 
@@ -46,4 +44,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"8", julia_compat = "^$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version=v"8"; julia_compat="1.6")
