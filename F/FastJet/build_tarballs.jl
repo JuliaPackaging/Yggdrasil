@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "FastJet"
-version = v"3.3.4"
+version = v"3.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://fastjet.fr/repo/fastjet-3.3.4.tar.gz", "432b51401e1335697c9248519ce3737809808fc1f6d1644bfae948716dddfc03"),
-    ArchiveSource("http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.044.tar.gz", "de3f45c2c1bed6d7567483e4a774575a504de8ddc214678bac7f64e9d2e7e7a7")
+    ArchiveSource("http://fastjet.fr/repo/fastjet-3.4.0.tar.gz", "ee07c8747c8ead86d88de4a9e4e8d1e9e7d7614973f5631ba8297f7a02478b91"),
+    ArchiveSource("http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.048.tar.gz", "f9989d3b6aeb22848bcf91095c30607f027d3ef277a4f0f704a8f0fc2e766981")
 ]
 
 # Bash recipe for building across all platforms
