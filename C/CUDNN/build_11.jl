@@ -1,14 +1,14 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/11.4_07062021/cudnn-11.4-linux-x64-v8.2.2.26.tgz",
-                      "fbc631ce19688e87d7d2420403b20db97885b17f718f0f51d7e9fc0905d86e07")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-x86_64-8.3.1.22_cuda11.5-archive.tar.xz",
+                      "f5ff3c69b6a8a9454289b42eca1dd41c3527f70fcf49428eb80502bcf6b02f6e")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/11.4_07062021/cudnn-11.4-linux-ppc64le-v8.2.2.26.tgz",
-                      "b11b9e515a86978dc21ab50a7d2320bfb505cbce9dffa25480225c597c682b43")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-ppc64le-8.3.1.22_cuda11.5-archive.tar.xz",
+                      "1d2419a20ee193dc6a3a0ba87e79f408286d3d317c9831cbc1f0b7a268c100b0")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/11.4_07062021/cudnn-11.4-linux-aarch64sbsa-v8.2.2.26.tgz",
-                      "e240d45d79eecb2257fcb8a219324f19d8e2d6e145fbd035a38d267580d65e9a")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-sbsa-8.3.1.22_cuda11.5-archive.tar.xz",
+                      "ff23a881366c0ee79b973a8921c6dd400628a321557550ad4e0a26a21caad263")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.2/11.4_07062021/cudnn-11.4-windows-x64-v8.2.2.26.zip",
-                      "fce18f1f515a480e33fa3df8bfd8616463ee44b101e6e149d46f29a66c1c306e")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-windows-x86_64-8.3.1.22_cuda11.5-archive.zip",
+                      "f0d5cb8d899e5405c00c3ea3925d9143a832ea6239bc70309bb2ded2bfb8d824")],
 )

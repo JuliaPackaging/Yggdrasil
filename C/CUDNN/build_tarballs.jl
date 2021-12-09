@@ -4,33 +4,33 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "CUDNN"
-version = v"8.2.2"#.26
+version = v"8.3.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
 cd ${WORKSPACE}/srcdir
 if [[ ${target} == powerpc64le-linux-gnu ]]; then
-    cd cuda/targets/ppc64le-linux
+    cd cudnn*
     find .
 
-    install_license NVIDIA_SLA_cuDNN_Support.txt
+    install_license LICENSE
 
     mv lib/libcudnn*.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == *-linux-gnu ]]; then
-    cd cuda
+    cd cudnn*
     find .
 
-    install_license NVIDIA_SLA_cuDNN_Support.txt
+    install_license LICENSE
 
-    mv lib64/libcudnn*.so* ${libdir}
+    mv lib/libcudnn*.so* ${libdir}
     mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cd cuda
+    cd cudnn*
     find .
 
-    install_license NVIDIA_SLA_cuDNN_Support.txt
+    install_license LICENSE
 
     mv bin/cudnn*64_*.dll ${libdir}
     mv include/* ${prefix}/include
@@ -49,7 +49,7 @@ products = [
 
 dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4"]
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
