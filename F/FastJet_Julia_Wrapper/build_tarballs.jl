@@ -4,8 +4,8 @@ using BinaryBuilder
 using Pkg
 
 name = "FastJet_Julia_Wrapper"
-version = v"0.9.0"
-julia_versions = [v"1.6", v"1.7"]
+version = v"0.8.7"
+julia_versions = [v"1.6", v"1.7", v"1.8"]
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
