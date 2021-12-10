@@ -25,7 +25,7 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = expand_cxxstring_abis(libjulia_platforms(julia_versions...))
+platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 
 # the plugins aren't found on win. Disable for now, but this is not a fundamental limitation.
 filter!(!Sys.iswindows, platforms)
