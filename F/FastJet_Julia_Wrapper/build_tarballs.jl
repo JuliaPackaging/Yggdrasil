@@ -3,10 +3,9 @@
 using BinaryBuilder
 using Pkg
 
-julia_version = v"1.5.3"
-
 name = "FastJet_Julia_Wrapper"
-version = v"0.8.6"
+version = v"0.8.7"
+julia_versions = [v"1.6", v"1.7", v"1.8"]
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [
@@ -26,7 +25,7 @@ install_license $WORKSPACE/srcdir/FastJet_Julia_Wrapper/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = expand_cxxstring_abis(libjulia_platforms(julia_version))
+platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 
 # the plugins aren't found on win. Disable for now, but this is not a fundamental limitation.
 filter!(!Sys.iswindows, platforms)
@@ -38,10 +37,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8.5")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
     Dependency("FastJet_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"8", julia_compat = "^$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version=v"8", julia_compat="1.6")
