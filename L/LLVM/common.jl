@@ -377,7 +377,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
-    if version == v"12"
+    if v"12" <= version < v"13"
         push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
     end
     if version >= v"12"
@@ -427,7 +427,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
         ]
-        if v"12" == version
+        if v"12" <= version < v"13"
             push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
         end
     elseif name == "LLVM"
