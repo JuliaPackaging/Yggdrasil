@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Blosc"
-version = v"1.21.0"
+version = v"1.21.1"
 
 # Collection of sources required to build Blosc
 sources = [
-    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "b0ef4fda82a1d9cbd11e0f4b9685abf14372db51703c595ecd4d76001a8b342d"),
+    ArchiveSource("https://github.com/Blosc/c-blosc/archive/v$(version).tar.gz", "f387149eab24efa01c308e4cba0f59f64ccae57292ec9c794002232f7903b55b"),
     DirectorySource("./bundled"),
 ]
 
@@ -36,7 +36,7 @@ install_license ../LICENSES/*.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
 
 # The products that we will ensure are always built
 products = [
@@ -52,4 +52,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
