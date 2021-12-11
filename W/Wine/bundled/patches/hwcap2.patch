@@ -1,0 +1,21 @@
+commit 2f9d3161980590723d14706550f306fed6fa1d58 (HEAD -> master)
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sat Dec 11 02:39:59 2021 -0500
+
+    signal_x86_64: Handle build with old glibc
+
+diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
+index 68e0c7ce66e..843c15bb2e6 100644
+--- a/dlls/ntdll/unix/signal_x86_64.c
++++ b/dlls/ntdll/unix/signal_x86_64.c
+@@ -64,6 +64,10 @@
+ #ifdef __APPLE__
+ # include <mach/mach.h>
+ #endif
++#ifdef __linux__
++#ifndef AT_HWCAP2
++#define AT_HWCAP2 26
++#endif
+ 
+ #define NONAMELESSUNION
+ #define NONAMELESSSTRUCT

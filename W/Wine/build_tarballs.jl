@@ -16,6 +16,7 @@ requested_platforms = map(p->parse(Platform, p; validate_strict=true), platform_
 version = v"7.0-rc1"
 sources = Any[
     GitSource("https://github.com/wine-mirror/wine.git", "533616d23f9832596e41f839356830c7679df930"),
+    DirectorySource("./bundled")
 ]
 
 # The products that we will ensure are always built
@@ -64,6 +65,9 @@ if !is_meta
     platform32 = platform_map[platform64]
 
     wine64_build_script = raw"""
+    cd $WORKSPACE/srcdir/wine
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+
     # First, build wine64, making the actual build directory itself the thing we will install.
     mkdir $WORKSPACE/destdir/wine64
     cd $WORKSPACE/destdir/wine64
@@ -85,6 +89,9 @@ if !is_meta
 
     # Next, build wine32, without wine64, then use those tools to build wine32 WITH wine64
     wine32_script = raw"""
+    cd $WORKSPACE/srcdir/wine
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+
     # Next, build wine32, linking against the previously included wine64 stuff:
     mkdir $WORKSPACE/srcdir/wine32_only
     cd $WORKSPACE/srcdir/wine32_only
@@ -109,6 +116,9 @@ end
 
 # Finally, install both:
 script = raw"""
+cd $WORKSPACE/srcdir/wine
+atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+
 cp -r $WORKSPACE/srcdir/wine32/* ${prefix}/
 cd $WORKSPACE/srcdir/wine64
 make -j${nproc} install
