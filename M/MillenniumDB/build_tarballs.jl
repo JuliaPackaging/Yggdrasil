@@ -16,6 +16,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+fi
+
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build $prefix
 """
