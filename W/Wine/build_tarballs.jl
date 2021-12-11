@@ -11,7 +11,7 @@ using BinaryBuilder
 SAFE_ARGS = [a for a in ARGS if startswith(a, "-") && !startswith(a, "--deploy")]
 platform_spec = [a for a in ARGS if !startswith(a, "-")]
 is_meta = any(a->startswith(a, "--meta-json"), ARGS)
-requested_platforms = map(x->parse(Platform, p; validate_strict=true), platform_spec)
+requested_platforms = map(p->parse(Platform, p; validate_strict=true), platform_spec)
 
 version = v"7.0-rc1"
 sources = Any[
