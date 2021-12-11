@@ -119,6 +119,8 @@ if !is_meta
         wine32_path, wine32_hash = product_hashes[platform32]
         push!(sources, ArchiveSource(joinpath("products", wine32_path), wine32_hash))
     end
+
+    platforms = [platform64]
 end
 
 # Finally, install both:
