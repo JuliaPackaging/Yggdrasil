@@ -67,7 +67,12 @@ if !is_meta
     # First, build wine64, making the actual build directory itself the thing we will install.
     mkdir $WORKSPACE/destdir/wine64
     cd $WORKSPACE/destdir/wine64
-    $WORKSPACE/srcdir/wine/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --without-x --without-freetype --enable-win64
+    # N.B.: The --build=${target} is technically wrong here, but
+    # because we support both glibc and musl exectuables in the
+    # build environment, everything goes through ok and doesn't
+    # trigger wine's cross compile detection (which would require
+    # a more complicated bootstrap process).
+    $WORKSPACE/srcdir/wine/configure --prefix=${prefix} --build=${target} --host=${target} --without-x --without-freetype --enable-win64
     make -j${nproc}
     """
 
