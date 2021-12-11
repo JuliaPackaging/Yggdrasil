@@ -163,7 +163,6 @@ fi
 make -j${nproc} install
 install_license $WORKSPACE/srcdir/wine/LICENSE
 install_license $WORKSPACE/srcdir/wine/COPYING.LIB
-exit 1
 """
 
 final_products = Product[
