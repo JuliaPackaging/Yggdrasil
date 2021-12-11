@@ -9,6 +9,7 @@ using BinaryBuilder
 
 # We also don't support passing explicit targets in
 SAFE_ARGS = [a for a in ARGS if startswith(a, "-")]
+is_meta = any(a->startswith(a, "--meta-json"), ARGS)
 
 version = v"7.0-rc1"
 sources = Any[
@@ -31,6 +32,7 @@ dependencies = [
 platform32 = Platform("i686", "linux"; libc="musl")
 platform64 = Platform("x86_64", "linux"; libc="musl")
 
+if !is_meta
 wine64_build_script = raw"""
 # First, build wine64, making the actual build directory itself the thing we will install.
 mkdir $WORKSPACE/destdir/wine64
@@ -41,8 +43,6 @@ make -j${nproc}
 
 # package up the wine64 build directory itself:
 product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
-
-@show product_hashes
 
 # Include that tarball as one of the sources we need to include:
 wine64_build_path, wine64_build_hash = product_hashes[platform64]
@@ -70,6 +70,7 @@ wine32_products = Product[
 product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [platform32], wine32_products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
 wine32_path, wine32_hash = product_hashes[platform32]
 push!(sources, ArchiveSource(joinpath("products", wine32_path), wine32_hash))
+end
 
 # Finally, install both:
 script = raw"""
