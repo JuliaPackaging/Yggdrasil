@@ -16,36 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
-# # See if a patch from Yggdrasil/C/Coin-OR/SHOT/build_tarballs.jl helps here:
-
-if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
-    export CFLAGS="-O3 -mavx"
-    export MAVX=-mavx
-    FLAGS+=( --enable-avx2 )
-fi
-
-# if [[ "${target}" == x86_64-apple-darwin* ]]; then
-#     # Work around the issue
-#     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
-#     #                     optional.value()->coefficient *= -1.0;
-#     #                              ^
-#     #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
-#     #         constexpr value_type& value() &
-#     #                               ^
-#     export CXXFLAGS="-mmacosx-version-min=10.15"
-#     # ...and install a newer SDK which supports `std::filesystem`
-#     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-#     rm -rf /opt/${target}/${target}/sys-root/System
-#     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-#     cp -ra System "/opt/${target}/${target}/sys-root/."
-#     popd
-# elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-#     # TODO: we need to fix this in the compiler wrappers
-#     export CXXFLAGS="-mmacosx-version-min=11.0"
-# elif [[ ${target} == *mingw* ]]; then
-#     export LDFLAGS="-L${libdir}"
-# fi
-
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build $prefix
 """
@@ -54,10 +24,8 @@ cmake --build $prefix
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 filter!(p -> !((arch(p) == "aarch64") |  (arch(p) == "armv6l")  |  (arch(p) == "armv7l") |  (arch(p) == "i686")), platforms)
-#platforms = expand_cxxstring_abis(platforms)
 platforms = expand_cxxstring_abis(platforms)
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
-
 
 # The products that we will ensure are always built
 products = [
