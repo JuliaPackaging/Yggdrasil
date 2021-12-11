@@ -30,6 +30,7 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     ExecutableProduct("server", :server),
     ExecutableProduct("query", :query),
+    ExecutableProduct("create_db", :create_db),    
 ]
 
 # Dependencies that must be installed before this package can be built
