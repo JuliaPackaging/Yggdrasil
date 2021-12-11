@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index feff581..27e391b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,11 +13,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin)
+ project(MillenniumDB VERSION 0.1)
+ 
+ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -O0 -g3 -pthread \
+--fPIC -msse4.2 -mpclmul -march=native -funroll-loops -Wstrict-overflow -Wstrict-aliasing -pedantic \
++-fPIC -funroll-loops -Wstrict-overflow -Wstrict-aliasing -pedantic \
+ -fsanitize=undefined -fno-omit-frame-pointer -fsanitize=address")
+ 
+ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread \
+--fPIC -msse4.2 -mpclmul -march=native -funroll-loops -Wstrict-overflow -Wstrict-aliasing -pedantic")
++-fPIC -funroll-loops -Wstrict-overflow -Wstrict-aliasing -pedantic")
+ 
+ find_package(Boost 1.71.0 REQUIRED)
+ 
