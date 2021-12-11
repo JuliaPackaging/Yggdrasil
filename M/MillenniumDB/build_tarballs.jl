@@ -16,10 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export CXXFLAGS="-mmacosx-version-min=10.15"
-fi
-
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build $prefix
 """
@@ -27,7 +23,7 @@ cmake --build $prefix
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-filter!(p -> !((arch(p) == "aarch64") |  (arch(p) == "armv6l")  |  (arch(p) == "armv7l") |  (arch(p) == "i686")), platforms)
+filter!(p -> !(Sys.islinux(p) & (arch(p) == "x86_64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
