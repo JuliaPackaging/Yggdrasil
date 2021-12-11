@@ -23,7 +23,7 @@ cmake --build $prefix
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-filter!(p -> !(Sys.islinux(p) & (arch(p) == "x86_64"), platforms)
+filter!(p -> Sys.islinux(p) & (arch(p) == "x86_64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
