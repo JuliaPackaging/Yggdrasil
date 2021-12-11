@@ -46,7 +46,7 @@ cmake --build $prefix
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-filter!(p -> !(arch(p) == "aarch64"), platforms)
+filter!(p -> !((arch(p) == "aarch64") |  (arch(p) == "armv6l")), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 
