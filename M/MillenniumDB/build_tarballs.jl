@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MillenniumDB/MillenniumDB.git", "cd387153d9bb73bce8dd2f2f18e504ac0b308a3d"),
+    GitSource("https://github.com/MillenniumDB/MillenniumDB.git", "b1df3251fa1e51ad160cae1e0a57553da93724be"),  # TODO: use main branch, this is a temporary fix
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+fi
 
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build $prefix
@@ -38,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("boost_jll"; compat="=1.71.0"),
+    Dependency("boost_jll"; compat="=1.76"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
