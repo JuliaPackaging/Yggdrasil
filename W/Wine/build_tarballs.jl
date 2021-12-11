@@ -10,14 +10,14 @@ using BinaryBuilder
 # We also don't support passing explicit targets in
 SAFE_ARGS = [a for a in ARGS if startswith(a, "-")]
 
-version = v"3.21"
-sources = [
-    GitSource("https://github.com/wine-mirror/wine.git", "ea9253d6d3c9bb60d98b0d917292fc0b4babb3dd"),
+version = v"7.0-rc1"
+sources = Any[
+    GitSource("https://github.com/wine-mirror/wine.git", "533616d23f9832596e41f839356830c7679df930"),
 ]
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct("wine64", :wine64),
+    ExecutableProduct("wine64", :wine64, "wine64/loader"),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -40,11 +40,13 @@ make -j${nproc}
 """
 
 # package up the wine64 build directory itself:
-product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true)
+product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
+
+@show product_hashes
 
 # Include that tarball as one of the sources we need to include:
-wine64_build_path, wine64_build_hash = product_hashes[triplet(platform64)]
-push!(sources, joinpath("products", wine64_build_path) => wine64_build_hash)
+wine64_build_path, wine64_build_hash = product_hashes[platform64]
+push!(sources, ArchiveSource(joinpath("products", wine64_build_path), wine64_build_hash))
 
 # Next, build wine32, without wine64, then use those tools to build wine32 WITH wine64
 wine32_script = raw"""
@@ -58,18 +60,29 @@ mkdir $prefix/wine32
 cd $prefix/wine32
 $WORKSPACE/srcdir/wine/configure --prefix=${prefix}/wine32 --host=${target} --without-x --without-freetype --with-wine64=$WORKSPACE/srcdir/wine64 --with-wine-tools=$WORKSPACE/srcdir/wine32_only
 make -j${nproc}
-make install
+make -j${nproc} install
 """
 
-product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [platform32], products, dependencies; skip_audit=true)
-wine32_path, wine32_hash = product_hashes[triplet(platform32)]
-push!(sources, joinpath("products", wine32_path) => wine32_hash)
+wine32_products = Product[
+   ExecutableProduct("wine", :wine, "wine32/loader"),
+]
+
+product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [platform32], wine32_products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
+wine32_path, wine32_hash = product_hashes[platform32]
+push!(sources, ArchiveSource(joinpath("products", wine32_path), wine32_hash))
 
 # Finally, install both:
 script = raw"""
 cp -r $WORKSPACE/srcdir/wine32/* ${prefix}/
 cd $WORKSPACE/srcdir/wine64
-make install
+make -j${nproc} install
+install_license $WORKSPACE/srcdir/wine/LICENSE
+install_license $WORKSPACE/srcdir/wine/COPYING.LIB
 """
 
-build_tarballs(copy(SAFE_ARGS), "Wine", version, sources, script, [platform64], products, dependencies)
+final_products = Product[
+    ExecutableProduct("wine64", :wine64),
+    ExecutableProduct("wine", :wine),
+]
+
+build_tarballs(copy(SAFE_ARGS), "Wine", version, sources, script, [platform64], final_products, dependencies, preferred_gcc_version=v"11.1")
