@@ -173,4 +173,4 @@ final_products = Product[
 #    ExecutableProduct("wine", :wine),
 ]
 
-build_tarballs(copy(SAFE_ARGS), "Wine", version, sources, script, platforms, final_products, dependencies, preferred_gcc_version=v"11.1")
+build_tarballs(ARGS, "Wine", version, sources, script, platforms, final_products, dependencies, preferred_gcc_version=v"11.1")
