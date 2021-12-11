@@ -48,6 +48,8 @@ cmake --build $prefix
 platforms = supported_platforms(; experimental=true)
 filter!(p -> !((arch(p) == "aarch64") |  (arch(p) == "armv6l")  |  (arch(p) == "armv7l") |  (arch(p) == "i686")), platforms)
 #platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
+filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 
 # The products that we will ensure are always built
@@ -61,7 +63,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
