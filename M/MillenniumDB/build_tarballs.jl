@@ -17,6 +17,11 @@ cd $WORKSPACE/srcdir/MillenniumDB
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
 # # See if a patch from Yggdrasil/C/Coin-OR/SHOT/build_tarballs.jl helps here:
+
+if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
+    export CFLAGS="-O3 -mavx"
+fi
+
 # if [[ "${target}" == x86_64-apple-darwin* ]]; then
 #     # Work around the issue
 #     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
