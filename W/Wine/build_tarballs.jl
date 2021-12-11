@@ -72,7 +72,7 @@ if !is_meta
     """
 
     # package up the wine64 build directory itself:
-    product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
+    product_hashes = build_tarballs(copy(SAFE_ARGS), "BuildTmpWine64Build", version, sources, wine64_build_script, [platform64], products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
 
     # Include that tarball as one of the sources we need to include:
     wine64_build_path, wine64_build_hash = product_hashes[platform64]
@@ -97,7 +97,7 @@ if !is_meta
         ExecutableProduct("wine", :wine, "wine32/loader"),
     ]
 
-    product_hashes = build_tarballs(copy(SAFE_ARGS), "Wine32", version, sources, wine32_script, [platform32], wine32_products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
+    product_hashes = build_tarballs(copy(SAFE_ARGS), "BuildTmpWine32", version, sources, wine32_script, [platform32], wine32_products, dependencies; skip_audit=true, preferred_gcc_version=v"11.1")
     wine32_path, wine32_hash = product_hashes[platform32]
     push!(sources, ArchiveSource(joinpath("products", wine32_path), wine32_hash))
 end
