@@ -20,6 +20,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
 if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
     export CFLAGS="-O3 -mavx"
+    export MAVX=-mavx
+    FLAGS+=( --enable-avx2 )
 fi
 
 # if [[ "${target}" == x86_64-apple-darwin* ]]; then
