@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d9b9f0f79..240bf1ee9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -126,7 +126,7 @@ else()
+ add_compile_options(-Wall -Wextra -W -Wshadow -Wvla)
+ # -ffast-math dies on NaNs we draw from libav (by -ffinite-math-only)
+ add_compile_options(-fno-signed-zeros -fno-trapping-math -fassociative-math)
+-add_compile_options(-fno-math-errno -freciprocal-math -funsafe-math-optimizations)
++add_compile_options(-fno-math-errno -freciprocal-math)
+ add_compile_options(-fexceptions -fstrict-aliasing)
+ if(${USE_ASAN})
+ add_compile_options(-fsanitize=address)
