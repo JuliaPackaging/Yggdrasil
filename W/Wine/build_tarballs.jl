@@ -155,7 +155,7 @@ if [[ "${target}" == *darwin* ]]; then
 
     # Ok, now we can actually do the proper build of wine.
     cd $WORKSPACE/srcdir/wine
-    ./configure --build=${MACHTYPE} --prefix=${prefix} --host=${target} --without-x --without-freetype --with-wine-tools=$WORKSPACE/wine_tools
+    ./configure --build=${MACHTYPE} --prefix=${prefix} --host=${target} --without-x --without-freetype --with-wine-tools=$WORKSPACE/wine_tools --enable-win64
     make -j${nproc}
 else
     cp -r $WORKSPACE/srcdir/wine32/* ${prefix}/
