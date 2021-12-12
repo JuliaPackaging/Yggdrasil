@@ -14,11 +14,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export CXXFLAGS="-mmacosx-version-min=10.15"
+if [[ "${target}" == x86_64-* ]]; then
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        export CXXFLAGS="-mmacosx-version-min=10.15"
+    fi
+elif [[ "${target}" == aarch64-* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags-aarch.patch
 fi
+fi
+
 
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build $prefix
