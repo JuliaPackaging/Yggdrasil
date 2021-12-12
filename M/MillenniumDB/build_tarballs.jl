@@ -23,7 +23,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 elif [[ "${target}" == aarch64-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags-aarch.patch
 fi
-fi
 
 
 cmake -H. -B$prefix -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
