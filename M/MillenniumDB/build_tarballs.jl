@@ -15,17 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 
-if [[ "${target}" == x86_64-* ]]; then
-
+if [[ "${target}" == x86_64-* ]] || [[ "${target}" == i686-* ]] || [[ "${target}" == armv7l-* ]] || [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == armv6l-* ]]; then
+    powerpc64le
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
         export CXXFLAGS="-mmacosx-version-min=10.15"
     fi
-
-elif [[ "${target}" == i686-* ]]; then
-
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
 elif [[ "${target}" == aarch64-* ]]; then
 
