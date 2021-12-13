@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/MillenniumDB
 
 if [[ "${target}" == aarch64-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags-aarch.patch
-else; then
+else
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
