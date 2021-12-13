@@ -10,31 +10,18 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libtree-*/
+cd $WORKSPACE/srcdir/libtree-*/
 make CFLAGS="-Os -Wall -ffunction-sections -fdata-sections" LDFLAGS="-Wl,-s -Wl,--gc-sections -static" "PREFIX=$prefix" install
 """
 
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; )
-]
-
+# Build only on platforms where ELF objects are usually used.
+platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms(; experimental=true))
 
 products = [
-    ExecutableProduct("libtree", :libtree, "bin")
+    ExecutableProduct("libtree", :libtree)
 ]
 
 dependencies = Dependency[]
 
 # Note: binutils 2.24 has issues with -s and --gc-sections, so use GCC 5 which comes wth a later binutils.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5")
-
