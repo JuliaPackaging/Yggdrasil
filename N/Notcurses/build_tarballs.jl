@@ -13,6 +13,7 @@ cd ${WORKSPACE}/srcdir/notcurses*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-add-an-option-to-not-build-binaries.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-check-__MINGW32__-instead-of-__MINGW64__.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
 
 mkdir build && cd build
 
@@ -30,10 +31,6 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_POC=off
        -DUSE_MULTIMEDIA=none
        )
-
-if [[ ${target} == *mingw* ]]; then
-    FLAGS+=(-DUSE_DEFLATE=off)
-fi
 
 cmake .. "${FLAGS[@]}"
 make -j${nproc}
