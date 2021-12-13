@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/MillenniumDB
 
-if [[ "${target}" == x86_64-* ]] || [[ "${target}" == i686-* ]] || [[ "${target}" == armv7l-* ]] || [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == armv6l-* ]]; then
+if [[ "${target}" == x86_64-* ]] || [[ "${target}" == i686-* ]] || [[ "${target}" == arm-* ]] || [[ "${target}" == powerpc64le-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove-flags.patch
 
     if [[ "${target}" == x86_64-apple-darwin* ]]; then
