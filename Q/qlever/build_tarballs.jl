@@ -19,26 +19,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-# mv $WORKSPACE/srcdir/googletest-release-1.11.0/googletest $WORKSPACE/srcdir/qlever/third_party/googletest
-
-# rm -r $WORKSPACE/srcdir/qlever/third_party/antlr4
-# mv $WORKSPACE/srcdir/antlr4 $WORKSPACE/srcdir/qlever/third_party/
-
-# rm -r $WORKSPACE/srcdir/qlever/third_party/stxxl
-# mv $WORKSPACE/srcdir/stxxl $WORKSPACE/srcdir/qlever/third_party/
-
-# rm -r $WORKSPACE/srcdir/qlever/third_party/abseil-cpp
-# mv $WORKSPACE/srcdir/abseil-cpp $WORKSPACE/srcdir/qlever/third_party/
-
-
-
 cd $WORKSPACE/srcdir/qlever/
 
 git submodule update --init --recursive
 
-cmake -B $WORKSPACE/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON
-cmake --build $WORKSPACE/build --config Release -- -j ${nproc}
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON ..
+make -j $(nproc)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,6 +34,7 @@ platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = Product[
+    LibraryProduct(["libjemalloc", "jemalloc"], :libjemalloc)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -61,3 +49,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+
