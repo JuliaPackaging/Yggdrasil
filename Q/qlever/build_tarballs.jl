@@ -25,7 +25,6 @@ git submodule update --init --recursive
 mkdir build && cd build
 # -DSTXXL_TRY_COMPILE_HEADERS=ON ..
 cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DUSE_PARALLEL=true -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON -GNinja .. && ninja
-RUN make test
 
 make -j ${nproc}
 """
