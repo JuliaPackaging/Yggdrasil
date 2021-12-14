@@ -37,8 +37,8 @@ cd $WORKSPACE/srcdir/qlever/
 
 git submodule update --init --recursive
 
-cmake -B $WORKSPACE/build -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON
-cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j $(nproc)
+cmake -B $WORKSPACE/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON
+cmake --build $WORKSPACE/build --config Release -- -j ${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
