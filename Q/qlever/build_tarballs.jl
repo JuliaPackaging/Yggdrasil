@@ -21,6 +21,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
+git config --global advice.detachedHead false
 git submodule update --init --recursive --recommend-shallow
 
 mkdir build && cd build
@@ -41,7 +42,6 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"))
-    Dependency(PackageSpec(name="Git_jll", uuid="f8c6e375-362e-5223-8a59-34ff63f689eb"))
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4"))
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
     Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"))
