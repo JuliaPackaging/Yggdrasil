@@ -18,8 +18,6 @@ autoconf
 
 if [[ "${target}" == "x86_64-linux-gnu" ]]; then
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
-elif [[ "${target}" == "x86_64-unknown-freebsd" ]];
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-jemalloc-prefix=jll_
 else
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 fi
@@ -40,6 +38,7 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;experimental=true)
+filter!(!Sys.isfreebsd, platforms) # Should already be available on freebsd
 
 # The products that we will ensure are always built
 products = [
