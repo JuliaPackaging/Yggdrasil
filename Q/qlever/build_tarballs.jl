@@ -8,12 +8,17 @@ version = v"0.0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ad-freiburg/qlever.git", "1d5503c65c604ce8fb5869da7f4f249a28be9dba"),
+    DirectorySource("./bundled"),
 ]
 
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
+
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/win_grp_h.patch
+fi
 
 git submodule update --init --recursive
 
