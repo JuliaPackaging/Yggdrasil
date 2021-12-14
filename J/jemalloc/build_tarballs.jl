@@ -18,6 +18,14 @@ autoconf
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
+
+# Rename .dll for Windows targets.
+if [[ "${target}" == *"w64"* ]]; then
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/jemalloc.dll ${libdir}/libjemalloc.dll
+fi
+
+
 """
 
 # These are the platforms we will build for by default, unless further
