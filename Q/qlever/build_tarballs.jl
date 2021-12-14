@@ -32,7 +32,7 @@ platforms = supported_platforms(; experimental=true)
 filter!(p -> nbits(p) != 32, platforms)
 
 # Building against musl on Linux blocked by tlx dependency, issue #36 (https://github.com/tlx/tlx/issues/36)
- filter!(p -> Sys.islinux(p) && libc(p) != "musl", platforms)
+ filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
