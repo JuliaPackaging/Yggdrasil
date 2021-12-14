@@ -18,7 +18,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv $WORKSPACE/srcdir/stxxl/stxxl $WORKSPACE/srcdir/googletest/googletest $WORKSPACE/srcdir/re2/re2 $WORKSPACE/srcdir/abseil-cpp/abseil-cpp $WORKSPACE/srcdir/antlr4/antlr4/ $WORKSPACE/srcdir/qlever/third_party/
+mv $WORKSPACE/srcdir/stxxl $WORKSPACE/srcdir/googletest-release-1.11.0/googletest/googletest $WORKSPACE/srcdir/re2/re2 $WORKSPACE/srcdir/abseil-cpp $WORKSPACE/srcdir/antlr4 $WORKSPACE/srcdir/qlever/third_party/
 
 cd $WORKSPACE/srcdir/qlever/
 cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -GNinja . && ninja
