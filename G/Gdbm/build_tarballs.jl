@@ -16,6 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd gdbm-1.18.1/
 
+# Necessary because of grp.h include statement
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gdbm-1.15-win32.patch
 fi
