@@ -15,7 +15,13 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd jemalloc/
 autoconf
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
+if [[ "${target}" == "x86_64-linux-gnu" ]]; then
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
+else
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+fi
+
 make
 make install
 
