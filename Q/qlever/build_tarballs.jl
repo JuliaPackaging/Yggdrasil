@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
-git config --global advice.detachedHead false
 git submodule update --init --recursive
 
 mkdir build && cd build
