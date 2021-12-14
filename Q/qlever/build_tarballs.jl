@@ -10,7 +10,7 @@ sources = [
     GitSource("https://github.com/ad-freiburg/qlever.git", "1d5503c65c604ce8fb5869da7f4f249a28be9dba"),
     GitSource("https://github.com/joka921/stxxl.git", "b9e44f0ecba7d7111fbb33f3330c3e53f2b75236"),
     ArchiveSource("https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz",
-                  "5d44d52cf7ae7ab6ad1208d6ed563f3dc73df10e31a71024a1f9b7ba7dd71427"),
+                  "b4870bf121ff7795ba20d20bcdd8627b8e088f2d1dab299a031c1034eddc93d5"),
     GitSource("https://github.com/google/re2.git", "0dade9ff39bb6276f18dd6d4bc12d3c20479ee24"),
     GitSource("https://github.com/abseil/abseil-cpp.git", "215105818dfde3174fe799600bb0f3cae233d0bf"),
     GitSource("https://github.com/antlr/antlr4.git", "e4c1a74c66bd5290364ea2b36c97cd724b247357")
