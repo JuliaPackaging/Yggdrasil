@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "qlever"
+name = "QLever"
 version = v"0.0.1"
 
 # Collection of sources required to complete build
