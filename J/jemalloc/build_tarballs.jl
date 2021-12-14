@@ -16,12 +16,10 @@ cd $WORKSPACE/srcdir
 cd jemalloc/
 autoconf
 
-if [[ "${target}" == "x86_64-linux-gnu" ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
-elif [[ "${target}" == *-freebsd* ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-jemalloc-prefix
+if [[ "${target}" == *-freebsd* ]]; then
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-jemalloc-prefix
 else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
 fi
 
 make
