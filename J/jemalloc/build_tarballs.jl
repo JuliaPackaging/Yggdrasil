@@ -18,6 +18,8 @@ autoconf
 
 if [[ "${target}" == "x86_64-linux-gnu" ]]; then
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
+elif [[ "${target}" == "x86_64-"*"-freebsd" ]]; then
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-jemalloc-prefix
 else
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 fi
