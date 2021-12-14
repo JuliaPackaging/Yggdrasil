@@ -21,7 +21,7 @@ else
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
 fi
 
-make
+make -j${nproc}
 make install
 
 """
