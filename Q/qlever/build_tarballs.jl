@@ -21,10 +21,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
-git submodule update --init --recursive
+git submodule update --init --recursive --recommend-shallow
 
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON -DSTXXL_TRY_COMPILE_HEADERS=ON ..
+
 make -j $(nproc)
 """
 
