@@ -27,12 +27,6 @@ fi
 make
 make install
 
-# Rename .dll for Windows targets.
-if [[ "${target}" == *"w64"* ]]; then
-    mkdir -p ${libdir}
-    mv ${prefix}/lib/jemalloc.dll ${libdir}/libjemalloc.dll
-fi
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,7 +35,7 @@ platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libjemalloc", :libjemalloc)
+    LibraryProduct(["libjemalloc", "jemalloc"], :libjemalloc)
 ]
 
 # Dependencies that must be installed before this package can be built
