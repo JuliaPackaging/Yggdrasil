@@ -33,10 +33,7 @@ mv $WORKSPACE/srcdir/abseil-cpp $WORKSPACE/srcdir/qlever/third_party/
 
 cd $WORKSPACE/srcdir/qlever/
 
-export GOOGLETEST_VERSION=1.11.0
-export ABSL_PROPAGATE_CXX_STD=ON
-
-cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON -GNinja . && ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON -DGOOGLETEST_VERSION=1.11.0 -GNinja . && ninja
 """
 
 # These are the platforms we will build for by default, unless further
