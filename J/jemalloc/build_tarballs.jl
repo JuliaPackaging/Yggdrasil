@@ -29,8 +29,6 @@ make install
 if [[ "${target}" == *"w64"* ]]; then
     mkdir -p ${libdir}
     mv ${prefix}/lib/jemalloc.dll ${libdir}/libjemalloc.dll
-elif [[ "${target}" == "x86_64-linux-gnu" ]]; then
-    mv ${libdir}/libjemalloc.so.2 ${libdir}/libjemalloc.so
 fi
 
 """
