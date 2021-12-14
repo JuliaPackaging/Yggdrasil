@@ -21,7 +21,7 @@ git submodule update --init --recursive
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DUSE_PARALLEL=true -DABSL_PROPAGATE_CXX_STD=ON -DSTXXL_TRY_COMPILE_HEADERS=ON ..
 
-make -j $(nproc)
+make -j ${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
