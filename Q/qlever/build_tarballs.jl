@@ -41,8 +41,15 @@ filter!(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct("ServerMain", :ServerMain),
+    LibraryProduct("CreatePatternsMain", :CreatePatternsMain),    
     LibraryProduct("IndexBuilderMain", :IndexBuilderMain),
+    LibraryProduct("PermutationExporterMain", :PermutationExporterMain),
+    LibraryProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
+    LibraryProduct("ServerMain", :ServerMain),
+    LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
+    LibraryProduct("TurtleParserMain", :TurtleParserMain),
+    LibraryProduct("VocabularyMergerMain", :PrefixHeuristicEvaluatorMain),
+    LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
 ]
 
 # Dependencies that must be installed before this package can be built
