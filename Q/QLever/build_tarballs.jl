@@ -32,9 +32,7 @@ cmake -B $WORKSPACE/srcdir/qlever/build \
 
 cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
 
-# Move binaries from build to library directory
-mv ServerMain ${libdir}
-
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
