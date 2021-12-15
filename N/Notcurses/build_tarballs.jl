@@ -16,12 +16,9 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-check-__MINGW32__-instead-of-_
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-Secur32-library-to-be-lowercase.patch
 
-if [[ $target == x86_64*mingw* ]]; then
+if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
-    cp ${WORKSPACE}/srcdir/headers/pthread_time.h /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/pthread_time.h
-elif [[ $target == i686*mingw* ]]; then
-    export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
-    cp ${WORKSPACE}/srcdir/headers/pthread_time.h /opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/include/pthread_time.h
+    cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 fi
 
 install_license COPYRIGHT
