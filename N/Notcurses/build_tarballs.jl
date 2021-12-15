@@ -38,7 +38,6 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_BINARIES=off
        -DUSE_POC=off
        -DUSE_MULTIMEDIA=none
-       -D_WIN32_WINNT=0x0602
        )
 
 cmake .. "${FLAGS[@]}"
