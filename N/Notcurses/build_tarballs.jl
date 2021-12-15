@@ -15,9 +15,14 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-add-an-option-to-not-build-bin
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-check-__MINGW32__-instead-of-__MINGW64__.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
 
+if [[ $target == *-w64-* ]]; then
+    export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
+    cp ${WORKSPACE}/srcdir/headers/pthread_time.h /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/pthread_time.h
+fi
+
 mkdir build && cd build
 
-export CFLAGS="-I${includedir}"
+export CFLAGS="${CFLAGS} -I${includedir}"
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -30,6 +35,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_BINARIES=off
        -DUSE_POC=off
        -DUSE_MULTIMEDIA=none
+       -D_WIN32_WINNT=0x0602
        )
 
 cmake .. "${FLAGS[@]}"
