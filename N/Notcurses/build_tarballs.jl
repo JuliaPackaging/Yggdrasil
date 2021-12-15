@@ -24,6 +24,8 @@ elif [[ $target == i686*mingw* ]]; then
     cp ${WORKSPACE}/srcdir/headers/pthread_time.h /opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/include/pthread_time.h
 fi
 
+install_license COPYRIGHT
+
 mkdir build && cd build
 
 export CFLAGS="${CFLAGS} -I${includedir}"
