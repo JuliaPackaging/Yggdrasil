@@ -22,7 +22,7 @@ fi
 
 git submodule update --init --recursive
 
-cmake -B $WORKSPACE/srcdir/qlever/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON
+cmake -B $WORKSPACE/srcdir/qlever/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON -DENABLE_TESTING=OFF
 cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
 """
 
