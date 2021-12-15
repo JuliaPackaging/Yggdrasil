@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/qlever/
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
-elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+elif [[ "${target}" == *-apple-* ]]; then
     export CXXFLAGS="-mmacosx-version-min=10.15"
 fi    
 
