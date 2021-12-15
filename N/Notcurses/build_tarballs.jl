@@ -14,6 +14,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-add-an-option-to-not-build-binaries.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-check-__MINGW32__-instead-of-__MINGW64__.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-Secur32-library-to-be-lowercase.patch
 
 if [[ $target == *-w64-* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
