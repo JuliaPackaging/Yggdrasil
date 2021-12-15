@@ -32,6 +32,22 @@ cmake -B $WORKSPACE/srcdir/qlever/build \
 
 cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
 
+cd build
+cp CreatePatternsMain \
+     IndexBuilderMain \
+     TurtleParserMain \
+     VocabularyMergerMain \
+     PermutationExporterMain \
+     PrefixHeuristicEvaluatorMain \
+     ${libdir}
+
+cp ServerMain \
+     SparqlEngineMain \
+     WriteIndexListsMain \
+     ${libdir}
+
+cd ../
+
 install_license LICENSE
 """
 
