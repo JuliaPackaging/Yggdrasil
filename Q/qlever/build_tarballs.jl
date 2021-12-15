@@ -31,6 +31,10 @@ cmake -B $WORKSPACE/srcdir/qlever/build \
     -DABSL_PROPAGATE_CXX_STD=ON
 
 cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
+
+# Move binaries from build to library directory
+mv ServerMain ${libdir}
+
 """
 
 # These are the platforms we will build for by default, unless further
