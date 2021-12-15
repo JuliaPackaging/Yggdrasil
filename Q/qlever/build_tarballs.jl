@@ -18,11 +18,18 @@ cd $WORKSPACE/srcdir/qlever/
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
-fi
+elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+fi    
 
 git submodule update --init --recursive
 
-cmake -B $WORKSPACE/srcdir/qlever/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON -DENABLE_TESTING=OFF
+cmake -B $WORKSPACE/srcdir/qlever/build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DABSL_PROPAGATE_CXX_STD=ON
+
 cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
 """
 
