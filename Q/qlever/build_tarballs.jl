@@ -23,9 +23,9 @@ fi
 git submodule update --init --recursive
 
 mkdir build && cd build
-# -DSTXXL_TRY_COMPILE_HEADERS=ON ..
-cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DUSE_PARALLEL=true -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON -GNinja .. && ninja
 
+cmake -B $WORKSPACE/srcdir/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DABSL_PROPAGATE_CXX_STD=ON
+cmake --build $WORKSPACE/srcdir/build --config Release -- -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
