@@ -88,8 +88,6 @@ fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
-(( nproc=1+nproc/3 ))
-
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
