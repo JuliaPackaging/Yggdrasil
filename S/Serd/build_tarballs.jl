@@ -13,9 +13,9 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = "version=$(version)\n" * raw"""
-cd $WORKSPACE/srcdir
-cd serd-${version}/
+script = raw"""
+cd $WORKSPACE/srcdir/serd*/
+
 install_license COPYING
 ./waf configure --prefix=$prefix
 ./waf
