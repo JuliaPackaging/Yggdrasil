@@ -16,10 +16,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
+atomic_patch -p1 ../patches/disable_testing.patch
+
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
 elif [[ "${target}" == *-apple-* ]]; then
-    export CXXFLAGS="-mmacosx-version-min=10.15"
+    export CFLAGS=-mmacosx-version-min=11.0
 fi    
 
 git submodule update --init --recursive
@@ -86,5 +88,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.0.0-iains")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
 
