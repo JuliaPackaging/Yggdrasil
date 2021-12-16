@@ -29,7 +29,7 @@ platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libserd-0", :libserd)
+    LibraryProduct(["libserd-0", "serd-0"], :libserd)
 ]
 
 # Dependencies that must be installed before this package can be built
