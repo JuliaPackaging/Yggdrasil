@@ -9,6 +9,8 @@ version = v"0.0.1"
 sources = [
     GitSource("https://github.com/ad-freiburg/qlever.git", "557ce87fb56e2d4860dc613e645a89a97af04323"),
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
@@ -20,8 +22,18 @@ atomic_patch -p1 ../patches/disable_testing.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
-elif [[ "${target}" == *-apple-* ]]; then
-    export CFLAGS=-mmacosx-version-min=11.0
+elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+    # ...and install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # TODO: we need to fix this in the compiler wrappers
+    export CXXFLAGS="-mmacosx-version-min=11.0"
 fi    
 
 git submodule update --init --recursive
