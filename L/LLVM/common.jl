@@ -360,7 +360,7 @@ rm -vrf ${prefix}/lib/mlir
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
                          git_path="https://github.com/JuliaLang/llvm-project.git",
                          git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false)
+                         custom_version=version, static=false, platform_filter=nothing)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -372,6 +372,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    if platform_filter !== nothing
+        platforms = filter(platform_filter, platforms)
+    end
     products = [
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
