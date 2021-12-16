@@ -700,6 +700,9 @@ function gcc_script(compiler_target::Platform)
 
         # Fix broken symlink
         ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
+        # `libc.so` has soname `libc.musl-$(musl_arch).so.1`, we need to have
+        # that file as well.
+        ln -fsv libc.so ${sysroot}/usr/lib/libc.musl-$(musl_arch).so.1
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
         cd $WORKSPACE/srcdir/mingw_crt_build
