@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/joka921/qlever.git", "8a66c5c3a9a5e2095c3cd14b26453a53264357e1"),
+    GitSource("https://github.com/ad-freiburg/qlever.git", "557ce87fb56e2d4860dc613e645a89a97af04323"),
     DirectorySource("./bundled"),
 ]
 
