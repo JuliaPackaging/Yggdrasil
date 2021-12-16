@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.4.2"
+version = v"3.4.3"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
+                  "8154d89f3051903181018166678018155f4c2b6f04a9bb6fe9515656452c4fd7"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
 ]
@@ -54,6 +54,7 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes --enable-static=no \
     --with-device=ch3 --disable-dependency-tracking \
+    --enable-fast=all,O3 \
     --docdir=/tmp \
     "${EXTRA_FLAGS[@]}"
 
