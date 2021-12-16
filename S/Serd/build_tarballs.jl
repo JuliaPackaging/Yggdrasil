@@ -13,7 +13,7 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
+script = "version=$(version)\n" * raw"""
 cd $WORKSPACE/srcdir
 cd serd-${version}/
 install_license COPYING
