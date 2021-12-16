@@ -54,6 +54,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis(platforms)
 
 # QLever depends on FOXXLL which only builds on 64-bit systems
 # https://github.com/stxxl/foxxll/blob/a4a8aeee64743f845c5851e8b089965ea1c219d7/foxxll/common/types.hpp#L25
