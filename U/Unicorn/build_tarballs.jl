@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 ln -s /usr/bin/make /usr/bin/gmake
 cd ${WORKSPACE}/srcdir/unicorn
-make -j $(nproc)
+make -j ${nproc}
 make PREFIX=${prefix} install
 install_license COPYING*
 """
