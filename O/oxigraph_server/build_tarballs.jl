@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "oxigraph"
+name = "oxigraph_server"
 version = v"0.2.5"
 
 # Collection of sources required to complete build
@@ -17,8 +17,6 @@ cd $WORKSPACE/srcdir/oxigraph/server
 cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
-
-cd apppppp
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,6 +33,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("OpenSSL_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
