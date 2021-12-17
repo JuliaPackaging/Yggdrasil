@@ -16,8 +16,6 @@ cd $WORKSPACE/srcdir
 cd mold/
 make -j${nproc}
 make install PREFIX="${prefix}" BINDIR="${bindir}" LIBDIR="${libdir}"
-mv mold ${WORKSPACE}/destdir/
-exit
 """
 
 # These are the platforms we will build for by default, unless further
