@@ -1,17 +1,15 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "libtree"
-version = v"3.0.0"
+version = v"3.0.1"
 
 sources = [
-    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v3.0.0-rc5.tar.gz", "37be3c17a3d646c4e7814c2d642e71060c4193c1426d7725641939614c984a1d")
+    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v$(version).tar.gz", "20d3cd66f5c74058de9dd594af8ffd639c795d27ab435c588a3cd43911c1604f")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/libtree-*/
-make CFLAGS="-Os -Wall -ffunction-sections -fdata-sections" LDFLAGS="-Wl,-s -Wl,--gc-sections -static" "PREFIX=$prefix" install
+make CFLAGS="-Os -fwhole-program" LDFLAGS="-Wl,-s" "PREFIX=$prefix" install
 """
 
 # Build only on platforms where ELF objects are usually used.
