@@ -13,21 +13,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph
-
-# Fix linker for BSD platforms
-c# sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
-
-
-atomic_patch -p1 $WORKSPACE/srcdir/patches/memchr_patch.patch
-
-cd lib
-
-# Fix cross-compiling error
-mkdir $WORKSPACE/srcdir/oxigraph/lib/.cargo/
-cp ${WORKSPACE}/srcdir/config.toml $WORKSPACE/srcdir/oxigraph/lib/.cargo/
+cd $WORKSPACE/srcdir/oxigraph/lib
 
 cargo build --release -j${nproc}
+
+install_license LICENSE-MIT
 """
 
 # These are the platforms we will build for by default, unless further
