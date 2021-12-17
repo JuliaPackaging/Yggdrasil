@@ -4,7 +4,7 @@ name = "libtree"
 version = v"3.0.1"
 
 sources = [
-    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v3.0.1.tar.gz", "20d3cd66f5c74058de9dd594af8ffd639c795d27ab435c588a3cd43911c1604f")
+    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v$(version).tar.gz", "20d3cd66f5c74058de9dd594af8ffd639c795d27ab435c588a3cd43911c1604f")
 ]
 
 script = raw"""
