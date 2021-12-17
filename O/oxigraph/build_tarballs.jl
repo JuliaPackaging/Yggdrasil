@@ -24,6 +24,9 @@ install_license LICENSE-MIT
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
 # The products that we will ensure are always built
 products = Product[
 ]
