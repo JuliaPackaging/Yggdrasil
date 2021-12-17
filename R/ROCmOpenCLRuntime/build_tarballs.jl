@@ -79,6 +79,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("hsa_rocr_jll"),
+    Dependency("hsakmt_roct_jll"),
     Dependency("ROCmDeviceLibs_jll"),
     Dependency("ROCmCompilerSupport_jll", v"4.2.0"),
     BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version="4.2.0")),
