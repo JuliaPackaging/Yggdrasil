@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/lib
 
-cargo build --release -j${nproc}
+cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 """
