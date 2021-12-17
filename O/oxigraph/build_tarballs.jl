@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/oxigraph/lib
 
 cargo build --release -j${nproc}
 
-install_license LICENSE-MIT
+install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 """
 
 # These are the platforms we will build for by default, unless further
