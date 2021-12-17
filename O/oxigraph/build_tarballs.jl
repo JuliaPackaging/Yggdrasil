@@ -12,11 +12,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph/lib
+cd $WORKSPACE/srcdir/oxigraph/server
 
 cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
+
+cd apppppp
 """
 
 # These are the platforms we will build for by default, unless further
@@ -28,6 +30,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = Product[
+    ExecutableProduct("oxigraph_server", :oxigraph_server),
 ]
 
 # Dependencies that must be installed before this package can be built
