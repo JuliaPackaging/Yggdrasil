@@ -20,7 +20,9 @@ cargo build --release --no-default-features --features=sled
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
-cd aaaaaa/
+cd ../
+
+cp target/${rust_target}/release/oxigraph_server${exeext} ${bindir}/
 """
 
 # These are the platforms we will build for by default, unless further
