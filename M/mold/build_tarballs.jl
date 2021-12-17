@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd mold/
 make -j${nproc}
-make install
+make install PREFIX="${prefix}" BINDIR="${bindir}" LIBDIR="${libdir}"
 mv mold ${WORKSPACE}/destdir/
 exit
 """
