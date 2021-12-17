@@ -8,7 +8,6 @@ version = v"0.2.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oxigraph/oxigraph.git", "a21dcbb4f7355d7a00a86fbc5ad2c350a53629c4"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
