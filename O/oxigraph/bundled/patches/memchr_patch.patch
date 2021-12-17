@@ -1,0 +1,12 @@
+diff --git a/lib/Cargo.toml b/lib/Cargo.toml
+index e174425..972c88f 100644
+--- a/lib/Cargo.toml
++++ b/lib/Cargo.toml
+@@ -24,6 +24,7 @@ http_client = ["httparse", "native-tls"]
+ [dependencies]
+ rocksdb = { version = "0.16", optional = true }
+ sled = { version = "0.34", optional = true }
++memchr = { version = "2", default-features = false }
+ quick-xml = "0.22"
+ rand = "0.8"
+ md-5 = "0.9"

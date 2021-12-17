@@ -7,12 +7,26 @@ version = v"0.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxigraph/oxigraph.git", "a21dcbb4f7355d7a00a86fbc5ad2c350a53629c4")
+    GitSource("https://github.com/oxigraph/oxigraph.git", "a21dcbb4f7355d7a00a86fbc5ad2c350a53629c4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph/lib
+cd $WORKSPACE/srcdir/oxigraph
+
+# Fix linker for BSD platforms
+c# sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
+
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/memchr_patch.patch
+
+cd lib
+
+# Fix cross-compiling error
+mkdir $WORKSPACE/srcdir/oxigraph/lib/.cargo/
+cp ${WORKSPACE}/srcdir/config.toml $WORKSPACE/srcdir/oxigraph/lib/.cargo/
+
 cargo build --release -j${nproc}
 """
 
@@ -29,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:rust], preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
