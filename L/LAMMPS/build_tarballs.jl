@@ -60,9 +60,9 @@ products = [
 ]
 
 mpi_abis = (
-    (:mpich, PackageSpec(name="MPICH_jll"), "") ,
-    (:msmpi, PackageSpec(name="MicrosoftMPI_jll"), ""),
-    (:mpitrampoline, PackageSpec(name="MPItrampoline_jll"), "2")
+    (:mpich, PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
+    (:msmpi, PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
+    (:mpitrampoline, PackageSpec(name="MPItrampoline_jll"), "2", !Sys.iswindows)
 )
 
 # Dependencies that must be installed before this package can be built
@@ -72,8 +72,8 @@ dependencies = [
 ]
 
 all_platforms = AbstractPlatform[]
-for (abi, pkg, compat) in mpi_abis
-    pkg_platforms = deepcopy(platforms)
+for (abi, pkg, compat, f) in mpi_abis
+    pkg_platforms = deepcopy(filter(f, platforms))
     foreach(pkg_platforms) do p
         BinaryPlatforms.add_tag!(p.tags, "mpi", string(abi))
     end
