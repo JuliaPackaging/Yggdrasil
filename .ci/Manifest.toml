@@ -36,8 +36,8 @@ version = "0.4.4"
 
 [[BinaryBuilderBase]]
 deps = ["CodecZlib", "Downloads", "InteractiveUtils", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "UUIDs", "p7zip_jll", "pigz_jll"]
-git-tree-sha1 = "66c3eb2778203fb29254cfa1ba5a780c528f389f"
-repo-rev = "master"
+git-tree-sha1 = "b96b146f55315b7432eb1034b8276afe21b6a4ac"
+repo-rev = "vc/fixup"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
 version = "1.2.0"
