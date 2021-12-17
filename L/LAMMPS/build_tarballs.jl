@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
 
 name = "LAMMPS"
 version = v"1.0.1" # Equivalent to 2020-10-29
@@ -58,12 +59,38 @@ products = [
     ExecutableProduct("lmp", :lmp),
 ]
 
+mpi_abis = (
+    (:mpich, PackageSpec(name="MPICH_jll"), "") ,
+    (:msmpi, PackageSpec(name="MicrosoftMPI_jll"), ""),
+    (:mpitrampoline, PackageSpec(name="MPItrampoline_jll"), "2")
+)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"))
+    # Dependency(PackageSpec(name="MPIPlatformTag")),
 ]
 
+all_platforms = AbstractPlatform[]
+for (abi, pkg, compat) in mpi_abis
+    pkg_platforms = deepcopy(platforms)
+    foreach(pkg_platforms) do p
+        BinaryPlatforms.add_tag!(p.tags, "mpi", string(abi))
+    end
+    append!(all_platforms, pkg_platforms)
+    push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
+end
+
+augmented_platform_block = """
+    using Base.BinaryPlatforms
+    # using MPIPlatformTag
+
+    function augmented_platform(platform)
+        abi = :mpich
+        # abi = MPIPlatformTag.get_abi()
+        BinaryPlatforms.add_tag!(platform.tags, "mpi", string(abi))
+        return platform
+    end
+"""
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
