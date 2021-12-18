@@ -16,6 +16,9 @@ cd $WORKSPACE/srcdir/picosat-965
 if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
 fi
+if [[ ${target} == *mingw* ]]; then
+    sed -i 's!case X"$CC" in!case X"$target" in!g' configure.sh
+fi
 if [[ "${nbits}" == 32 ]]; then
     ./configure.sh --shared --32
 else
