@@ -31,7 +31,7 @@ filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
 filter!(p -> !occursin("armv7l", arch(p)) , platforms)
 filter!(p -> !occursin("armv6", arch(p)) , platforms)
-filter!(p -> !occursin("aarch64-apple-darwin", arch(p)) , platforms)
+filter!(p -> !occursin("aarch64-apple-darwin", p) , platforms)
 	
 # The products that we will ensure are always built
 products = [
