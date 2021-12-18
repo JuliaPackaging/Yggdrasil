@@ -13,7 +13,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/picosat-965
-./configure.sh --shared
+if [["$CC" == *musl*]]; then
+    sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
+fi
+if [[ "${nbits}" == 32 ]]; then
+    ./configure.sh --shared --32
+else
+    ./configure.sh --shared
+fi
+
 make
 mkdir -p ${bindir} && cp ${WORKSPACE}/srcdir/picosat-965/{picosat${exeext},picomus${exeext},picomcs${exeext},picogcnf${exeext}} ${bindir}/
 mkdir -p ${libdir} && cp ${WORKSPACE}/srcdir/picosat-965/libpicosat.${dlext} ${libdir}/
