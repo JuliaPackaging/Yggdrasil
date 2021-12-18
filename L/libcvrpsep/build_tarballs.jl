@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libcvrpsep"
-version = v"0.0.1"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
