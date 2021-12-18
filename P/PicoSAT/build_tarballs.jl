@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/picosat-965
-if [["$CC" == *musl*]]; then
+if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
 fi
 if [[ "${nbits}" == 32 ]]; then
