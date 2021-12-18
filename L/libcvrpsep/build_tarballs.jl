@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/CVRPSEP/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
