@@ -58,7 +58,7 @@ rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schema
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("libgailutil-3", :libgailutil3),
     LibraryProduct("libgdk-3", :libgdk3),
     LibraryProduct("libgtk-3", :libgtk3),
