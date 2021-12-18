@@ -12,11 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/picosat-965
+cd $WORKSPACE/srcdir/picosat*
 if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
-fi
-if [[ ${target} == *mingw* ]]; then
+elif [[ ${target} == *mingw* ]]; then
     sed -i 's!case X"$CC" in!case X"$target" in!g' configure.sh
 fi
 if [[ "${nbits}" == 32 ]]; then
@@ -26,13 +25,13 @@ else
 fi
 
 make
-mkdir -p ${bindir} && cp ${WORKSPACE}/srcdir/picosat-965/{picosat${exeext},picomus${exeext},picomcs${exeext},picogcnf${exeext}} ${bindir}/
-mkdir -p ${libdir} && cp ${WORKSPACE}/srcdir/picosat-965/libpicosat.${dlext} ${libdir}/
+mkdir -p ${bindir} && cp {picosat,picomus,picomcs,picogcnf}${exeext} ${bindir}/.
+mkdir -p ${libdir} && cp libpicosat.${dlext} ${libdir}/
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -48,4 +47,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat="1.6")
