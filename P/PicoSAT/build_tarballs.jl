@@ -7,32 +7,26 @@ version = v"965.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://fmv.jku.at/picosat/picosat-965.tar.gz", "15169b4f28ba8f628f353f6f75a100845cdef4a2244f101a02b6e5a26e46a754")
-]
+    ArchiveSource("http://fmv.jku.at/picosat/picosat-965.tar.gz", "15169b4f28ba8f628f353f6f75a100845cdef4a2244f101a02b6e5a26e46a754"),
+    DirectorySource("./bundled")
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cp ${WORKSPACE}/srcdir/{Makefile,config.h} ${WORKSPACE}/srcdir/picosat-965/
 cd $WORKSPACE/srcdir/picosat*
 if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
-elif [[ ${target} == *mingw* ]]; then
-    sed -i 's!case X"$CC" in!case X"$target" in!g' configure.sh
 fi
-if [[ "${nbits}" == 32 ]]; then
-    ./configure.sh --shared --32
-else
-    ./configure.sh --shared
-fi
-
 make
-mkdir -p ${bindir} && cp {picosat,picomus,picomcs,picogcnf}${exeext} ${bindir}/.
-mkdir -p ${libdir} && cp libpicosat.${dlext} ${libdir}/
+make install
+install_license ./LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-
+filter!(p -> !Sys.iswindows(p) || !Sys.islinux(p), platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("picosat", :picosat),
