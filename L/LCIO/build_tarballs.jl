@@ -26,7 +26,7 @@ cmake --build . --target install
 platforms = supported_platforms(; experimental=true)
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
-filter!(p -> arch(p) != "armv7l", platforms)
+filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
