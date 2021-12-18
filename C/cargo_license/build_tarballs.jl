@@ -21,7 +21,7 @@ cargo build --release --all
 mkdir ${bindir}
 cp target/${rust_target}/release/cargo-license${exeext} ${bindir}/
 
-cargo-license --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
+cargo-license${exeext} --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
 install_license CARGO_LICENSES.json $WORKSPACE/srcdir/cargo-license/LICENSE
 """
 
