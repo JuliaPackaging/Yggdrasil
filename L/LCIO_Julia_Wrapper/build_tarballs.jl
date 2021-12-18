@@ -29,9 +29,7 @@ include("../../L/libjulia/common.jl")
 platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
-filter!(p -> !occursin("armv7l", arch(p)) , platforms)
-filter!(p -> !occursin("armv6", arch(p)) , platforms)
-filter!(p -> !occursin("aarch64", arch(p)) , platforms)
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l") , platforms)
 	
 # The products that we will ensure are always built
 products = [
