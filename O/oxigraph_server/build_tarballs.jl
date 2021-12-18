@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
-export OPENSSL_STATIC=yes
+# export OPENSSL_STATIC=yes
 
 cargo build --release --no-default-features --features=sled
 
