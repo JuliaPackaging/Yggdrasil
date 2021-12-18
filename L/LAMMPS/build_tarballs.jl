@@ -60,15 +60,16 @@ products = [
 ]
 
 mpi_abis = (
-    (:mpich, PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
-    (:msmpi, PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    (:mpitrampoline, PackageSpec(name="MPItrampoline_jll"), "2", !Sys.iswindows)
+    (:MPICH, PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
+    # (:OpenMPI, PackageSpec(name="OpenMPI"), "", !Sys.iswindows),
+    (:MicrosoftMPI, PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
+    (:MPITrampoline, PackageSpec(name="MPItrampoline_jll"), "2", !Sys.iswindows)
 )
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-    # Dependency(PackageSpec(name="MPIPlatformTag")),
+    Dependency(PackageSpec(name="MPIABI")),
 ]
 
 all_platforms = AbstractPlatform[]
@@ -81,16 +82,15 @@ for (abi, pkg, compat, f) in mpi_abis
     push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
 end
 
-augmented_platform_block = """
-    using Base.BinaryPlatforms
-    # using MPIPlatformTag
+augment_platform_block = """
+using Base.BinaryPlatforms
+import MPIABI
 
-    function augmented_platform(platform)
-        abi = :mpich
-        # abi = MPIPlatformTag.get_abi()
-        BinaryPlatforms.add_tag!(platform.tags, "mpi", string(abi))
-        return platform
-    end
+function augment_platform!(platform)
+    abi = MPIABI.abi
+    BinaryPlatforms.add_tag!(platform.tags, "mpi", string(abi))
+    return platform
+end
 """
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8", augment_platform_block)
