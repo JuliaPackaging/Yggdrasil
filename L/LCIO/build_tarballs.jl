@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.16.1"
+version = v"02.17"
 
 # Collection of sources required to build LCIO
 sources = [
-    GitSource("https://github.com/iLCSoft/LCIO.git", "8f9e86b93b7d5d83221fabb872ed7e82f1638476"),
+    GitSource("https://github.com/iLCSoft/LCIO.git", "3511c1506e15517eb2532d5385cae4a51e4f13e3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,4 +41,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7", julia_compat="1.6")
