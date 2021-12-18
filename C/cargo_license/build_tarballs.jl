@@ -21,8 +21,7 @@ cargo build --release --all
 mkdir ${bindir}
 cp target/${rust_target}/release/cargo-license${exeext} ${bindir}/
 
-cargo-license${exeext} --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
-install_license CARGO_LICENSES.json $WORKSPACE/srcdir/cargo-license/LICENSE
+install_license $WORKSPACE/srcdir/cargo-license/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
