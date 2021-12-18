@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
+# Temp fix #188
+# `libc.so` has soname `libc.musl-$(musl_arch).so.1`, we need to have
+# that file as well.
+ln -fsv libc.so ${sysroot}/usr/lib/libc.musl-$(musl_arch).so.1
+
 export OPENSSL_STATIC=yes
 
 cargo build --release --no-default-features --features=sled
