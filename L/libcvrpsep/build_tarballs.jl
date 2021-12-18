@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/CVRPSEP/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 exit
 """
