@@ -34,7 +34,7 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("OpenSSL_jll"),
     HostBuildDependency("cargo_license_jll"),
 ]
