@@ -15,13 +15,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
 cargo build --release --no-default-features --features=sled
-
-cargo install cargo-license
-cargo-license --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
-
-install_license CARGO_LICENSES.json $WORKSPACE/srcdir/oxigraph/LICENSE-MIT $WORKSPACE/srcdir/oxigraph/LICENSE-APACHE
-
 cp ../target/${rust_target}/release/oxigraph_server${exeext} ${bindir}/
+
+cargo-license --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
+install_license CARGO_LICENSES.json $WORKSPACE/srcdir/oxigraph/LICENSE-MIT $WORKSPACE/srcdir/oxigraph/LICENSE-APACHE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,6 +36,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("OpenSSL_jll"),
+    HostBuildDependency("cargo_license_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
