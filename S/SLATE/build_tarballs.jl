@@ -36,7 +36,9 @@ platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl" ||Sys.isapple(p)
 platforms = filter(!Sys.isfreebsd, platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
-products = Product[
+products = [
+    LibraryProduct("libslate.so", :libslate),
+    LibraryProduct("libslate_lapack_api.so", :libslate_lapack_api)
 ]
 
 dependencies = [
