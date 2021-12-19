@@ -64,7 +64,7 @@ products = [
     ExecutableProduct("projsync", :projsync),
     ExecutableProduct("cs2cs", :cs2cs),
     ExecutableProduct("geod", :geod),
-    ExecutableProduct("cct", :cct)
+    ExecutableProduct("cct", :cct),
 
     # complete contents of share/proj, must be kept up to date
     FileProduct(joinpath("share", "proj", "CH"), :ch),
