@@ -38,7 +38,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("OpenSSL_jll"),
-    Dependency("Clang_jll"),
+    BuildDependency(PackageSpec(name="Clang_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
