@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
-cargo build --release --no-default-features --features=sled
+CC=clang CXX=clang++ cargo build --release --no-default-features --features=sled,rocksdb
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
@@ -36,6 +36,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("OpenSSL_jll"),
+    Dependency("Clang_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
