@@ -14,7 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
-CC=clang CXX=clang++ cargo build --release --no-default-features --features=sled,rocksdb
+# Env vars which do NOT work...
+# LIBCLANG_PATH=/opt/x86_64-linux-musl/lib/libclang.so.12 CC=clang CXX=clang++ 
+cargo build --release --no-default-features --features=sled,rocksdb
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
