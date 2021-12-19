@@ -32,7 +32,7 @@ platforms = supported_platforms(; experimental=true)
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("cargo-license", :cargo_license),
 ]
 
