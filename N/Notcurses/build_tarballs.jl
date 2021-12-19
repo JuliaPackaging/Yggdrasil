@@ -3,18 +3,15 @@ using BinaryBuilder
 name = "Notcurses"
 version = v"3.0.0"
 sources = [
-    GitSource("https://github.com/dankamongmen/notcurses",
-              "d49a0375b762c9ec60ffb9e35b973643acfd69ab"),
+    GitSource("https://github.com/KristofferC/notcurses",
+              "6ed34b986ed8ce80972e7459f5487cd99cdf5ff3"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-add-an-option-to-not-build-binaries.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-check-__MINGW32__-instead-of-__MINGW64__.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-fix-Secur32-library-to-be-lowercase.patch
 
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
@@ -35,7 +32,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_PANDOC=off
        -DUSE_STATIC=off
        -DUSE_QRCODEGEN=off
-       -DBUILD_BINARIES=off
+       -DBUILD_EXECUTABLES=off
        -DUSE_POC=off
        -DUSE_MULTIMEDIA=none
        )
@@ -53,6 +50,7 @@ platforms = supported_platforms(; experimental=true)
 products = [
     LibraryProduct("libnotcurses", :libnotcurses)
     LibraryProduct("libnotcurses-core", :libnotcurses_core)
+    LibraryProduct("libnotcurses-ffi", :libnotcurses_ffi)
 ]
 
 # Dependencies that must be installed before this package can be built.
