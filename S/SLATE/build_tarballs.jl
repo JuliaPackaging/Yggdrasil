@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "SLATE"
-version = v"1.0.0"
+version = v"2021.05.02"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
