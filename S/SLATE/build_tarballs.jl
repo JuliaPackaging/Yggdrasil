@@ -32,7 +32,10 @@ make install
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(;experimental=true, exclude=Sys.iswindows)))
-
+platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
+platforms = filter(!Sys.isfreebsd, platforms)
+platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 products = Product[
 ]
 
@@ -40,9 +43,9 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("MPItrampoline_jll", compat="2"),
-    Dependency("MicrosoftMPI_jll"),
+    #Dependency("MicrosoftMPI_jll"),
     Dependency("SCALAPACK_jll")
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
