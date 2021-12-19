@@ -51,7 +51,7 @@ libpicosat.a: picosat.o version.o
 	ar rc $@ picosat.o version.o
 	ranlib $@
 
-libpicosat.${dlext}: picosat.o version.o
+libpicosat.$(dlext): picosat.o version.o
 	$(CC) $(CFLAGS) -shared -o $@ picosat.o version.o
 
 install: libpicosat.${dlext}

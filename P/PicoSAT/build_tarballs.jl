@@ -13,14 +13,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cp ${WORKSPACE}/srcdir/{Makefile,config.h} ${WORKSPACE}/srcdir/picosat-965/
 cd $WORKSPACE/srcdir/picosat*
+cp ../{Makefile,config.h} .
 if [[ ${target} == *musl* ]]; then
     sed -i 's!sys/unistd.h!unistd.h!g' picosat.c
 fi
-make
+make -j${nproc}
 make install
-install_license ./LICENSE
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
