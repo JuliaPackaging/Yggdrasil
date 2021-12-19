@@ -12,15 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-
 cd $WORKSPACE/srcdir/cargo-license
-
 cargo build --release --all
-
 mkdir ${bindir}
 cp target/${rust_target}/release/cargo-license${exeext} ${bindir}/
-
 install_license $WORKSPACE/srcdir/cargo-license/LICENSE
 """
 
@@ -42,4 +37,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
+                compilers=[:c, :rust], julia_compat="1.6")
