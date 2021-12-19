@@ -32,7 +32,7 @@ make install
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(;experimental=true, exclude=Sys.iswindows)))
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
+platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl" ||Sys.isapple(p)), platforms)
 platforms = filter(!Sys.isfreebsd, platforms)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
