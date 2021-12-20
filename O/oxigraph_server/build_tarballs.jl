@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/oxigraph/server
 cargo build --release --no-default-features --features=sled
 cp ../target/${rust_target}/release/oxigraph_server${exeext} ${bindir}/
 
-cargo-license --avoid-build-deps --avoid-dev-deps --json > CARGO_LICENSES.json
+cargo-license --avoid-build-deps --avoid-dev-deps --filter-platform ${rust_target} --json > CARGO_LICENSES.json
 install_license CARGO_LICENSES.json $WORKSPACE/srcdir/oxigraph/LICENSE-MIT $WORKSPACE/srcdir/oxigraph/LICENSE-APACHE
 """
 
