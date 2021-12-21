@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/oxigraph/server
 
 # Env vars which do NOT work...
 # LIBCLANG_PATH=/opt/x86_64-linux-musl/lib/libclang.so.12 CC=clang CXX=clang++ 
-cargo build --release --no-default-features --features=sled,rocksdb
+CC=clang CXX=clang++ USE_CLANG=1 PORTABLE=1 cargo build --release --no-default-features --features=sled,rocksdb
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
