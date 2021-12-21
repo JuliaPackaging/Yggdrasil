@@ -1,7 +1,7 @@
 From a4bf2882124658271c8fa0627917e765465063e6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
 Date: Tue, 21 Dec 2021 16:49:07 +0100
-Subject: [PATCH 1/1] Fix signature of prototypes of `FbcSpeciesPlugin`
+Subject: [PATCH 1/3] Fix signature of prototypes of `FbcSpeciesPlugin`
 
 There is a mismatch between the signature of these functions in the header
 files (here they use `SBasePlugin_t * fbc`) and their implementations (here they
