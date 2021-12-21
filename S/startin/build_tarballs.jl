@@ -13,10 +13,6 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/startin/
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    # Fix from https://github.com/rust-lang/rust/issues/32859#issuecomment-573423629, see https://github.com/rust-lang/rust/issues/47048
-    cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
-fi
 cargo build --features c_api --release -j${nproc}
 mkdir ${libdir}
 if [[ "${target}" == *-w64-mingw32* ]]; then
