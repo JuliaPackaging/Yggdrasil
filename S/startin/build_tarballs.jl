@@ -12,7 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/startine/
+cd $WORKSPACE/srcdir/startin/
 if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Fix linker for BSD platforms
     sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
