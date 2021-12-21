@@ -13,7 +13,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
 
-atomic_patch -p1 ../patches/0001-Fix-signature-of-prototypes-of-FbcSpeciesPlugin.patch
+for p in ../patches/*.patch; do
+    atomic_patch -p1 "${p}"
+done
 
 mkdir build
 cd build
