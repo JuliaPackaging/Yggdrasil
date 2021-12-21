@@ -31,6 +31,8 @@ fi
 platforms = supported_platforms(; experimental=true)
 # `cdylib` apparently doesn't support musl
 filter!(p -> libc(p) != "musl", platforms)
+# Our Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 products = [
     LibraryProduct("libstartin", :libstartin),
