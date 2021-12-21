@@ -12,7 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/startin-c-interface/
+cd $WORKSPACE/srcdir/startine/
 if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Fix linker for BSD platforms
     sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
@@ -32,21 +32,7 @@ fi
 """
 
 # musl platforms are failing, as is win32
-platforms = [
-    Platform("x86_64", "freebsd"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    # Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    # Platform("armv7l", "linux"; libc="musl"),
-    Platform("i686", "linux"; libc="glibc"),
-    # Platform("i686", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    # Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    # Platform("i686", "windows"),  # linking error
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms(; experimental=true)
 
 products = [
     LibraryProduct("libstartin", :libstartin),
@@ -54,4 +40,4 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")
