@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "startin"
-version = v"0.4.9"
+version = v"0.5.2"
 
 sources = [
-    ArchiveSource(
-        "https://github.com/evetion/startin/archive/c-interface.zip",  # PR branch
-        "d3a987e9ab20ee3504c8c79f0940ce22527e23ed8b029e8d12136831fe996c63"
+    GitSource(
+        "https://github.com/hugoledoux/startin.git",
+        "88ad5557cbd954ec8996f99d9afb74fd1ec174ec"
     )
 ]
 
