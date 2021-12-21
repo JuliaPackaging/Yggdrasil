@@ -7,10 +7,14 @@ sources = [
     ArchiveSource(
         "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
         "ac75218f6477945bd58ee0bf3c115ddec083d2d26c8df7b3fdf8caaf69a6b608"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
+
+atomic_patch -p1 ../patches/0001-Fix-signature-of-prototypes-of-FbcSpeciesPlugin.patch
+
 mkdir build
 cd build
 cmake \
