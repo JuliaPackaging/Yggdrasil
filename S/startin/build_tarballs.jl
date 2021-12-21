@@ -13,10 +13,6 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/startin/
-if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
-    # Fix linker for BSD platforms
-    sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
-fi
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # Fix from https://github.com/rust-lang/rust/issues/32859#issuecomment-573423629, see https://github.com/rust-lang/rust/issues/47048
     cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
@@ -33,6 +29,8 @@ fi
 
 # musl platforms are failing, as is win32
 platforms = supported_platforms(; experimental=true)
+# `cdylib` apparently doesn't support musl
+filter!(p -> libc(p) != "musl", platforms)
 
 products = [
     LibraryProduct("libstartin", :libstartin),
