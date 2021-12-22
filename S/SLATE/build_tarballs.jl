@@ -10,6 +10,8 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+
+# Needs to add -Dcapi eventually once it's added to the cmake build system. Note yet available under CMAKAE toolchain.
 script = raw"""
 cd slate
 git submodule update --init
@@ -19,7 +21,6 @@ cmake \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DCMAKE_BUILD_TYPE="Release" \
   -Dblas=openblas \
-  -Dc_api=yes \
   -Dbuild_tests=no \
   -DMPI_RUN_RESULT_CXX_libver_mpi_normal="0" \
   -DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT="" \
@@ -32,22 +33,21 @@ make install
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(;experimental=true, exclude=Sys.iswindows)))
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl" ||Sys.isapple(p)), platforms)
+platforms = filter(p -> !(Sys.iswindows(p) ||Sys.isapple(p)), platforms)
 platforms = filter(!Sys.isfreebsd, platforms)
 platforms = expand_gfortran_versions(platforms)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 products = [
     LibraryProduct("libslate", :libslate),
     LibraryProduct("libslate_lapack_api", :libslate_lapack_api)
+    # LibraryProduct("libslate_scalapack_api, :libslate_scalapack_api) ** Not yet available under CMAKE toolchain.
 ]
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("MPItrampoline_jll", compat="2"),
-    #Dependency("MicrosoftMPI_jll"),
+    Dependency("MPICH_jll"),
     Dependency("SCALAPACK_jll")
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
