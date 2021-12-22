@@ -36,6 +36,7 @@ platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(;
 platforms = filter(p -> !(Sys.iswindows(p) ||Sys.isapple(p)), platforms)
 platforms = filter(!Sys.isfreebsd, platforms)
 platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 products = [
     LibraryProduct("libslate", :libslate),
     LibraryProduct("libslate_lapack_api", :libslate_lapack_api)
