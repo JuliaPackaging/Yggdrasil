@@ -1,6 +1,6 @@
 CFLAGS += -DNDEBUG -O3 -fPIC
 
-all: picosat picomcs picomus picogcnf libpicosat.a libpicosat.${dlext}
+all: picosat picomcs picomus picogcnf libpicosat.$(dlext)
 
 clean:
 	rm -f picosat picomcs picomus picogcnf
@@ -11,16 +11,16 @@ clean:
 analyze:
 	clang --analyze $(CFLAGS) *.c *.h
 
-picosat: libpicosat.a app.o main.o
+picosat: libpicosat.$(dlext) app.o main.o
 	$(CC) $(CFLAGS) -o $@ main.o app.o -L. -lpicosat
 
-picomcs: libpicosat.a picomcs.o
+picomcs: libpicosat.$(dlext) picomcs.o
 	$(CC) $(CFLAGS) -o $@ picomcs.o -L. -lpicosat
 
-picomus: libpicosat.a picomus.o
+picomus: libpicosat.$(dlext) picomus.o
 	$(CC) $(CFLAGS) -o $@ picomus.o -L. -lpicosat
 
-picogcnf: libpicosat.a picogcnf.o
+picogcnf: libpicosat.$(dlext) picogcnf.o
 	$(CC) $(CFLAGS) -o $@ picogcnf.o -L. -lpicosat
 
 app.o: app.c picosat.h Makefile
@@ -47,17 +47,13 @@ version.o: version.c config.h Makefile
 config.h: Makefile VERSION mkconfig.sh # and actually picosat.c
 	rm -f $@; sed -i -e 's$PICOSAT_CC$PICOSAT_CC "${CC}"$g' -e 's$PICOSAT_CFLAGS "${CFLAGS}"$g'
 
-libpicosat.a: picosat.o version.o
-	ar rc $@ picosat.o version.o
-	ranlib $@
-
 libpicosat.$(dlext): picosat.o version.o
 	$(CC) $(CFLAGS) -shared -o $@ picosat.o version.o
 
-install: libpicosat.${dlext}
+install: libpicosat.$(dlext)
 	install -d $(libdir) $(bindir) $(includedir)
 	install picosat picomcs picomus picogcnf $(bindir)
-	install libpicosat.${dlext} $(libdir)
+	install libpicosat.$(dlext) $(libdir)
 	install picosat.h $(includedir)
 
 .PHONY: all clean install
