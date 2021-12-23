@@ -18,6 +18,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/proj-*
 
+export SUPER_VERBOSE=1
+export LDFLAGS="-Wl,-t"
+
 EXE_SQLITE3=${host_bindir}/sqlite3
 
 if [[ ${target} == *mingw* ]]; then
