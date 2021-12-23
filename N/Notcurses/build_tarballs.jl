@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Notcurses"
-version = v"3.0.0"
+version = v"3.0.2"
 sources = [
-    GitSource("https://github.com/KristofferC/notcurses",
-              "6ed34b986ed8ce80972e7459f5487cd99cdf5ff3"),
+    GitSource("https://github.com/dankamongmen/notcurses",
+              "c19a2477ff41586bbe899f354d7d65b54445be2a"),
     DirectorySource("./bundled"),
 ]
 
