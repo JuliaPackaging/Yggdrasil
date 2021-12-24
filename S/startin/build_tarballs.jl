@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "startin"
-version = v"0.5.2"
+version = v"0.5.3"
 
 sources = [
     GitSource(
         "https://github.com/hugoledoux/startin.git",
-        "88ad5557cbd954ec8996f99d9afb74fd1ec174ec"
+        "6ae106bd107f0b33a36cf1270351527fa29deb40"
     )
 ]
 
