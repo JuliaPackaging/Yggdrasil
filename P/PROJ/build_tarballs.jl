@@ -30,6 +30,10 @@ else
     TIFF_LIBRARY_RELEASE=${libdir}/libtiff.${dlext}
 fi
 
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="-lcurl"
+fi
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
