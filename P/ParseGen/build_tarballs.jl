@@ -7,7 +7,9 @@ version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/sandialabs/parsegen-cpp/archive/refs/tags/v$(version).tar.gz", "c6c7c4958d1c6ab77bf0970b5aacae4b63603f702666492638ee8c0bdf3125c8")
+    ArchiveSource("https://github.com/sandialabs/parsegen-cpp/archive/refs/tags/v$(version).tar.gz", "c6c7c4958d1c6ab77bf0970b5aacae4b63603f702666492638ee8c0bdf3125c8"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +17,19 @@ script = raw"""
 cd $WORKSPACE/srcdir/parsegen-cpp*/
 
 mkdir build && cd build
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+    #install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # TODO: we need to fix this in the compiler wrappers
+    export CXXFLAGS="-mmacosx-version-min=11.0"
+fi
 
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
