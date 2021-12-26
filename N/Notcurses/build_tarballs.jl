@@ -16,6 +16,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
     cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+
+    # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+    # Give some hints to the linker
+    export LDFLAGS="-L${libdir}"
+    export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
 
 install_license COPYRIGHT
