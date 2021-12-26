@@ -7,7 +7,7 @@ version = v"0.1.0" # not yet tagged
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sjkelly/libfive.git", "919ae1a3265915724c6e04309dc95a2582ba9930")
+    GitSource("https://github.com/sjkelly/libfive.git", "68d1c4c6c4e8bde5a1281ffb6695ffb377680c8c")
 ]
 
 dependencies = [
