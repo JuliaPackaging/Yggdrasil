@@ -38,7 +38,7 @@ install_license /usr/share/licenses/MPL2 #libfive is MPL2, studio is GPL3 (not d
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = expansupported_platforms(;experimental=true)
 platforms = expand_cxxstring_abis(platforms) #auditor requested
 
 # The products that we will ensure are always built
@@ -47,4 +47,4 @@ products = Product[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7",lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8",lock_microarchitecture=false)
