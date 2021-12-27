@@ -38,7 +38,7 @@ install_license /usr/share/licenses/MPL2 #libfive is MPL2, studio is GPL3 (not d
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expansupported_platforms(;experimental=true)
+platforms = supported_platforms(;experimental=true)
 platforms = expand_cxxstring_abis(platforms) #auditor requested
 
 # The products that we will ensure are always built
