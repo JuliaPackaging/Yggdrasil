@@ -16,6 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/parsegen-cpp*/
 
+install_license LICENSE
+
 mkdir build && cd build
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
