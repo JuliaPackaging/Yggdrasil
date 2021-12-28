@@ -8,13 +8,11 @@ version = v"3.19.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "7c40b2df1fdf6f414c1c18c789715a9c948a0725"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd_endian.patch
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
