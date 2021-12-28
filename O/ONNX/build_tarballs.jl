@@ -7,7 +7,7 @@ version = v"1.10.2"
 
 sources = [
     ArchiveSource(
-        "https://github.com/onnx/onnx/archive/refs/tags/v1.10.2.tar.gz",
+        "https://github.com/onnx/onnx/archive/refs/tags/v$(version).tar.gz",
         "520b3aa34272cc215e2eb41385f58adf01750d88858d4722563edca8410c5dc9",
     ),
 ]
