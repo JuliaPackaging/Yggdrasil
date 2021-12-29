@@ -33,8 +33,8 @@ make_args+=(OPTF=-O3
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas"
-            LAPACK="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lblastrampoline"
+            LAPACK="-L${libdir} -lblastrampoline")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
@@ -58,7 +58,7 @@ gfortran -fPIC -shared -Wl,${all_load} libmpiseq.a ${libs[@]} -Wl,${noall_load} 
 cp libmpiseq.${dlext} ${libdir}
 
 cd ../lib
-libs=(-L${libdir} -lmetis -lopenblas -lmpiseq)
+libs=(-L${libdir} -lmetis -lblastrampoline -lmpiseq)
 gfortran -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
@@ -94,7 +94,17 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
+    Dependency("libblastrampoline_jll")
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               preferred_gcc_version=v"6",
+               init_block = """
+               @static if VERSION < v"1.7.0-DEV.641"
+                       ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32),
+                             OpenBLAS32_jll.libopenblas_path , 1, 0)
+                   end
+               """
+)
