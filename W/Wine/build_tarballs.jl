@@ -149,7 +149,7 @@ if [[ "${target}" == *darwin* ]]; then
 	ln -s $(which x86_64-linux-musl-as) aliases/as
     export OLD_PATH=$PATH
     export PATH=$PWD/aliases:$PATH
-    ${WORKSPACE}/srcdir/wine/configure --build=x86_64-linux-musl --host=x86_64-linux-musl CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as --enable-win64 --without-x --without-freetype
+    ${WORKSPACE}/srcdir/wine-staging/configure --build=x86_64-linux-musl --host=x86_64-linux-musl CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as --enable-win64 --without-x --without-freetype
     make -j${nproc} CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as
     export PATH=$OLD_PATH
 
