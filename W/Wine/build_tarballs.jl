@@ -125,7 +125,7 @@ end
 
 # Finally, install both:
 script = raw"""
-cd $WORKSPACE/srcdir/wine
+cd $WORKSPACE/srcdir/wine*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/darwin.patch
 
