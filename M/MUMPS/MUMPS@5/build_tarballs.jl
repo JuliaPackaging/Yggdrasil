@@ -6,6 +6,8 @@ version = v"5.4.1"
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
                 "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
+  ArchiveSource("https://codeload.github.com/dpo/mumps_simple/tar.gz/v0.4",
+                "87d1fc87eb04cfa1cba0ca0a18f051b348a93b0b2c2e97279b23994664ee437e"),
   DirectorySource("./bundled"),
 ]
 
@@ -85,6 +87,12 @@ cp *.${dlext} ${libdir}
 cd ..
 
 cp include/* ${prefix}/include
+
+cd $WORKSPACE/srcdir/mumps_simple*
+make_args=(prefix=${prefix}
+           mumps_prefix=${prefix}
+           scalapack_libdir=${libdir})
+make all "${make_args[@]}"
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
@@ -97,6 +105,7 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
+    LibraryProduct("libmumps_simple", :libmumps_simple),
 ]
 
 # Dependencies that must be installed before this package can be built
