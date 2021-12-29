@@ -33,9 +33,9 @@ fi
     --with-pic \
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
-    --with-lapack-lflags=-lopenblas \
+    --with-lapack-lflags=-lblastrampoline \
     --with-mumps-cflags="-I${includedir}/mumps_seq" \
-    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
+    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lblastrampoline -lgfortran -lpthread" \
     --with-asl-lflags="${LIBASL}"
 
 # parallel build fails
@@ -59,6 +59,7 @@ dependencies = [
     Dependency("ASL_jll", ASL_version),
     Dependency("MUMPS_seq_jll", compat="=$(MUMPS_seq_version)"),
     Dependency("OpenBLAS32_jll", OpenBLAS32_version),
+    Dependency("libblastrampoline_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
@@ -73,5 +74,11 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
-    julia_compat = "1.6"
+    julia_compat = "1.6",
+    init_block = """
+    @static if VERSION < v"1.7.0-DEV.641"
+            ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32),
+                  OpenBLAS32_jll.libopenblas_path , 1, 0)
+        end
+    """
 )
