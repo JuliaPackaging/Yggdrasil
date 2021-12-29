@@ -2,19 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.6.0"        # Must probably be the same as in libcxxwrap_julia
-
 name = "openPMD_api"
 version = v"0.14.2"
+
+julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to complete build
 sources = [
     # ArchiveSource("https://github.com/openPMD/openPMD-api/archive/refs/tags/0.13.4.tar.gz",
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We temporarily use a feature branch instead of a released
-    # version because the Julia bindings are not release yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/0df99cc11cfe7555e6d099d62b4016412b650f34.tar.gz",
-                  "421538de3a8cba2171a1f2deb5774a340896aa4579e77178a9df27b634fb980d"),
+    # version because the Julia bindings are not released yet
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/3d23f12061650dccf4cb0e5e42f902f56945c71e.tar.gz",
+                  "9cb8c6f336f72a67964c0aff5de77ae9fee2e02491d89a91335a099fd1c619b2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,6 +46,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DJulia_PREFIX=$prefix \
+    -DopenPMD_USE_Julia=ON \
     -DopenPMD_USE_MPI=ON \
     -DMPI_HOME=$prefix \
     ${mpiopts} \
@@ -62,19 +63,20 @@ install_license ../COPYING*
 # platforms = supported_platforms()
 # Use only platforms where libcxxwrap_julia is supported.
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libopenPMD", :libopenPMD),
-    LibraryProduct("libopenPMD_jl", :libopenPMD_jl),
+    LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    Dependency(PackageSpec(name="ADIOS2_jll")),
+    # `ADIOS2_jll` is available only for 64-bit platforms
+    Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
+    BuildDependency("libjulia_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We would need a parallel version of HDF5
     # Dependency(PackageSpec(name="HDF5_jll")),
@@ -91,4 +93,4 @@ dependencies = [
 # GCC 5 has a bug regarding `std::to_string` on freebsd, fixed on GCC 6
 # macos encounters an ICE in GCC 6; switching to GCC 7 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"7")
+               julia_compat = "1.6", preferred_gcc_version = v"7")
