@@ -5,13 +5,13 @@ using BinaryBuilder, Pkg
 name = "Conduit"
 version = v"0.8.0"
 sources = [
-    ArchiveSource("https://github.com/LLNL/conduit/releases/download/v0.8.0/conduit-v0.8.0-src-with-blt.tar.gz",
+    ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
 		  "0607dcf9ced44f95e0b9549f5bbf7a332afd84597c52e293d7ca8d83117b5119")
 ]
 
 # Note: we need to build the (optional) webserver by default until v0.8.1 is released
 script = raw"""
-cd ${WORKSPACE}/srcdir/conduit-v0.8.0
+cd ${WORKSPACE}/srcdir/conduit*
 rm -rf build && mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -39,7 +39,7 @@ products = [
     LibraryProduct("libconduit_relay", :libconduit_relay),
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
