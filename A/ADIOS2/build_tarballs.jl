@@ -115,12 +115,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Blosc_jll")),
-    Dependency(PackageSpec(name="Bzip2_jll")),
+    Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="MPICH_jll")),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
