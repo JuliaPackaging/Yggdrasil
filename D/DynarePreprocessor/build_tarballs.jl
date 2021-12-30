@@ -17,7 +17,7 @@ cd ${WORKSPACE}/srcdir/preprocessor
 # remove -lstdc++fs in Makefile.am
 sed s/-lstdc++fs// -i src/Makefile.am
 # don't use gnu extensions
-sed s/STDCXX_17/STDCXX(17, noext)/ -i configure.ac
+sed 's/STDCXX_17/STDCXX(17, noext)/' -i configure.ac
 
 autoreconf -si
 
