@@ -16,6 +16,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
     cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+
+    # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
+    # Give some hints to the linker
+    export LDFLAGS="-L${libdir}"
+    export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
 
 install_license COPYRIGHT
@@ -34,7 +40,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_QRCODEGEN=off
        -DBUILD_EXECUTABLES=off
        -DUSE_POC=off
-       -DUSE_MULTIMEDIA=none
+       -DUSE_MULTIMEDIA=ffmpeg
        )
 
 cmake .. "${FLAGS[@]}"
@@ -58,6 +64,7 @@ dependencies = [
     Dependency("Ncurses_jll"),
     Dependency("libunistring_jll"),
     Dependency("libdeflate_jll"),
+    Dependency("FFMPEG_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
