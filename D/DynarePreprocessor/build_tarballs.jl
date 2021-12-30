@@ -1,8 +1,5 @@
 using BinaryBuilder
 
-env = copy(ENV)
-env["BINARYBUILDER_AUTOMATIC_APPLE"] = "true"
-env["BINARYBUILDER_USE_CCACHE"] = "true"
 
 name = "DynarePreprocessor"
 version = v"4.8.0-5"
