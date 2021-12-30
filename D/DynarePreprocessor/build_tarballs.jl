@@ -3,7 +3,6 @@ using BinaryBuilder
 
 name = "DynarePreprocessor"
 version = v"4.8.0-5"
-sha="a8fce06dc46ca09329e6899e1fde47f2cd81809b"
 sources = [
     GitSource("https://git.dynare.org/Dynare/preprocessor.git", "a8fce06dc46ca09329e6899e1fde47f2cd81809b"),
 ]
