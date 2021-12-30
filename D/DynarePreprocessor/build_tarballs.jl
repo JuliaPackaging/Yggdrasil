@@ -35,14 +35,9 @@ else
     ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc LDFLAGS="-static -static-libgcc -static-libstdc++"
     make -j${nproc}
     make install
-    mkdir -p ../../destdir/bin
-    if [[ ${target} == *-w64-* ]]; then
-        strip src/dynare-preprocessor.exe
-        cp src/dynare-preprocessor.exe ../../destdir/bin
-    else
-        strip src/dynare-preprocessor
-        cp src/dynare-preprocessor ../../destdir/bin
-    fi
+    mkdir -p "${bindir}"
+    strip "src/dynare-preprocessor${exeext}"
+    cp "src/dynare-preprocessor${exeext}" "${bindir}"
 fi
 """
 
