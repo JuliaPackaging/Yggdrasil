@@ -8,44 +8,27 @@ sources = [
 ]
 
 script = raw"""
-if [[ ${target} == *-apple-* ]]
-then
-    sha="a8fce06dc46ca09329e6899e1fde47f2cd81809b"
-    gitlabjob="37258"
-    wget -O artifacts.zip https://git.dynare.org/Dynare/preprocessor/-/jobs/${gitlabjob}/artifacts/download
-    mkdir work
-    unzip artifacts.zip -d work
-    tar zxf work/${sha}/macos-x86_64/dynare-preprocessor.tar.gz
-    mkdir -p "${bindir}"
-    cp dynare-preprocessor "${bindir}"
-    install_license ${WORKSPACE}/srcdir/preprocessor/COPYING
-else 
-    apk add boost-dev
-    apk add bison=3.7.6-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main 
-    apk add flex-dev
+apk add boost-dev
+apk add bison=3.7.6-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main 
+apk add flex-dev
 
-    cd ${WORKSPACE}/srcdir/preprocessor
+cd ${WORKSPACE}/srcdir/preprocessor
 
-    # remove -lstdc++fs in Makefile.am
-    sed s/-lstdc++fs// -i src/Makefile.am
+# remove -lstdc++fs in Makefile.am
+sed s/-lstdc++fs// -i src/Makefile.am
 
-    autoreconf -si
+autoreconf -si
 
-    update_configure_scripts
-    ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc LDFLAGS="-static -static-libgcc -static-libstdc++"
-    make -j${nproc}
-    make install
-    mkdir -p "${bindir}"
-    strip "src/dynare-preprocessor${exeext}"
-    cp "src/dynare-preprocessor${exeext}" "${bindir}"
-fi
+update_configure_scripts
+./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc
+make -j${nproc}
+make install
+mkdir -p "${bindir}"
+strip "src/dynare-preprocessor${exeext}"
+cp "src/dynare-preprocessor${exeext}" "${bindir}"
 """
 
-platforms = [
-    Platform("x86_64", "macOS"),
-    Platform("x86_64", "Windows"),
-    Platform("x86_64", "Linux")
-]
+platforms = supported_platforms()
 
 products = [
     ExecutableProduct("dynare-preprocessor", Symbol("dynare_preprocessor")),
