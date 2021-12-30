@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "atomsk"
+name = "Atomsk"
 version = v"0.11.2"
 
 # Collection of sources required to complete build
@@ -12,12 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd atomsk/src/
-export INSTPATH=${prefix}
-mkdir ${prefix}/bin
+cd $WORKSPACE/srcdir/atomsk/src/
+mkdir -p ${bindir}
 make -j${nproc} atomsk
-make install
+make install INSTPATH=${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,7 +32,7 @@ platforms = [
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("x86_64", "freebsd"; )
 ]
-
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -43,7 +41,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
