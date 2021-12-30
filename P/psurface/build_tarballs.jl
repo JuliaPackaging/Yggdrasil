@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/psurface-*
 
-if [[ ${target} == *linux-musl* ]]; then
+if [[ ${target} == *linux-musl* ]] || [[ ${target} == *mingw* ]]; then
     #this is fixed on master, if a new tag is released this can probably be removed
     sed -i 's/isnan/std::isnan/g' NormalProjector.cpp
     sed -i 's/isinf/std::isinf/g' NormalProjector.cpp
@@ -49,5 +49,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#gcc6 for std::isinf and std::isnan
+#gcc6 for std::isinf and std::isnan support
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
