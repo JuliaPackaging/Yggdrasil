@@ -14,7 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/atomsk/src/
 mkdir -p ${bindir}
-make -j${nproc} atomsk
+# The makefile doesn't handle parallel builds
+make atomsk
 make install INSTPATH=${prefix}
 """
 
