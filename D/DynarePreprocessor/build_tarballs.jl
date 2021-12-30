@@ -16,9 +16,8 @@ then
     mkdir work
     unzip artifacts.zip -d work
     tar zxf work/${sha}/macos-x86_64/dynare-preprocessor.tar.gz
-    mkdir -p ../destdir/
-    mkdir -p ../destdir/bin
-    cp -r dynare-preprocessor ../destdir/bin
+    mkdir -p "${bindir}"
+    cp dynare-preprocessor "${bindir}"
     install_license ${WORKSPACE}/srcdir/preprocessor/COPYING
 else 
     apk add boost-dev
