@@ -21,7 +21,6 @@ then
     cp -r dynare-preprocessor ../destdir/bin
     install_license ${WORKSPACE}/srcdir/preprocessor/COPYING
 else 
-    apk add samurai
     apk add boost-dev
     apk add bison=3.7.6-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main 
     apk add flex-dev
