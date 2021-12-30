@@ -7,7 +7,7 @@ version = v"16.13.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://nodejs.org/dist/v16.13.1/node-v16.13.1.tar.gz", "34b23965457fb08a8c62f81e8faf74ea60587cda6fa898e5d030211f5f374cb6"),
+    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "34b23965457fb08a8c62f81e8faf74ea60587cda6fa898e5d030211f5f374cb6"),
 ]
 
 host_platform = HostPlatform()
