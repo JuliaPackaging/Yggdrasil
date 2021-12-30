@@ -7,7 +7,8 @@ version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/psurface/psurface/archive/refs/tags/psurface-$(version).tar.gz", "b9259d616ff381c3c10402779dc61acfe3286d55b8f2c2a86fc262fc91cf1aa5")
+    ArchiveSource("https://github.com/psurface/psurface/archive/refs/tags/psurface-$(version).tar.gz", "b9259d616ff381c3c10402779dc61acfe3286d55b8f2c2a86fc262fc91cf1aa5"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,12 @@ if [[ ${target} == *linux-musl* ]] || [[ ${target} == *mingw* ]]; then
     #this is fixed on master, if a new tag is released this can probably be removed
     sed -i 's/isnan/std::isnan/g' NormalProjector.cpp
     sed -i 's/isinf/std::isinf/g' NormalProjector.cpp
+fi
+
+if [[ ${target} == x86_64-unknown-freebsd ]]; then
+    #these patches are derived directly from commits already merged on master, if a new tag is released these can probaly be removed
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-array-not-tr1-array.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-shared-ptr.patch
 fi
 
 autoreconf -vi
