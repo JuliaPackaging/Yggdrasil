@@ -33,7 +33,6 @@ else
     autoreconf -si
 
     update_configure_scripts
-    echo ${MACHTYPE}
     ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc LDFLAGS="-static -static-libgcc -static-libstdc++"
     make -j${nproc}
     make install
