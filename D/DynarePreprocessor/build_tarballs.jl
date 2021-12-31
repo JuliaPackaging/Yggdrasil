@@ -35,8 +35,8 @@ products = [
 ]
 
 dependencies = Dependency[
-HostBuildDependency("boost_jll")
-HostBuildDependency("Bison_jll")
+HostBuildDependency("boost_jll"),
+HostBuildDependency("Bison_jll"),
 HostBuildDependency("flex_jll")
 ]
 
