@@ -2,15 +2,15 @@ using BinaryBuilder
 
 
 name = "DynarePreprocessor"
-version = v"4.8.0-5"
+version = v"4.8.0"
 sources = [
     GitSource("https://git.dynare.org/Dynare/preprocessor.git", "a8fce06dc46ca09329e6899e1fde47f2cd81809b"),
 ]
 
 script = raw"""
-apk add boost-dev
-apk add bison=3.7.6-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main 
-apk add flex-dev
+HostBuildDependency("boost_jll")
+HostBuildDependency("Bison_jll")
+HostBuildDependency("flex_jll")
 
 cd ${WORKSPACE}/srcdir/preprocessor
 
@@ -18,6 +18,12 @@ cd ${WORKSPACE}/srcdir/preprocessor
 sed s/-lstdc++fs// -i src/Makefile.am
 
 autoreconf -si
+
+# use non default gcc for apple and freebsdn
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
 
 update_configure_scripts
 ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc
