@@ -18,7 +18,7 @@ if [[ "${target}" == *-mingw* ]]; then
     #    sed/sed-compile.o: In function `sprintf':
     #    /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/stdio.h:366: undefined reference to `__chk_fail'
     # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564
-    export LDFLAGS="-lssp"
+    export LIBS="-lssp"
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
