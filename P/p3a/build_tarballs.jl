@@ -65,7 +65,7 @@ dependencies = [
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
     Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)) 
     Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isfreebsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
