@@ -1,0 +1,39 @@
+From 67dcd2997fcbe2fab000b730e4a5b4a9c73ef69a Mon Sep 17 00:00:00 2001
+From: Ansgar Burchardt <burchardt@igpm.rwth-aachen.de>
+Date: Thu, 5 Jun 2014 18:26:38 +0200
+Subject: [PATCH] Make --without-hdf5 work.
+
+---
+ m4/hdf5.m4 | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/m4/hdf5.m4 b/m4/hdf5.m4
+index 3b823ac..698c01d 100644
+--- a/m4/hdf5.m4
++++ b/m4/hdf5.m4
+@@ -55,7 +55,7 @@ AC_DEFUN([CHECK_FOR_HDF5],[
+  # start building variables
+ 
+  # use special HDF5-lib-path if it's set
+- if test x$with_hdf5 != x ; then
++ if test "x$with_hdf5" != x && test "x$with_hdf5" != xno ; then
+    #  extract absolute path
+    if test -d $with_hdf5; then
+      eval with_hdf5=`cd $with_hdf5 ; pwd`
+@@ -95,9 +95,13 @@ AC_DEFUN([CHECK_FOR_HDF5],[
+         HDF5_PARALLEL=1],[],[#include"H5pubconf.h"])
+ 
+  # test for an arbitrary header
+- AC_CHECK_HEADER([hdf5.h],
+-   [HAVE_HDF5=1],
+-   [HAVE_HDF5=0])
++ if test "x$with_hdf5" != xno ; then
++   AC_CHECK_HEADER([hdf5.h],
++     [HAVE_HDF5=1],
++     [HAVE_HDF5=0])
++ else
++   HAVE_HDF5=0
++ fi
+ 
+  # Just for the configure check.  In the end, -L has to go into LIBS.
+  LDFLAGS="$LDFLAGS $_dune_hdf5_libpath"
