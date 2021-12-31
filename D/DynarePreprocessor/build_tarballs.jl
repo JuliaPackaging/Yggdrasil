@@ -9,13 +9,19 @@ sources = [
 ]
 
 script = raw"""
-
-apk add boost-dev
-
 cd ${WORKSPACE}/srcdir/preprocessor
 
 # remove -lstdc++fs in Makefile.am
 sed s/-lstdc++fs// -i src/Makefile.am
+
+# Remove flex from RootFS to let use our flex from `flex_jll`
+rm -f /usr/bin/flex
+
+# Help FreeBSD find header files.  See
+# https://github.com/JuliaPackaging/Yggdrasil/issues/3949
+if [[ "${target}" == *-freebsd* ]]; then
+    export CPPFLAGS="-I${includedir}"
+fi
 
 atomic_patch -p1 "../patches/equationstags.patch"
 
@@ -30,16 +36,16 @@ strip "src/dynare-preprocessor${exeext}"
 cp "src/dynare-preprocessor${exeext}" "${bindir}"
 """
 
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
 ]
 
 dependencies = [
-HostBuildDependency("Bison_jll"),
-HostBuildDependency("flex_jll")
+    BuildDependency("boost_jll"),
+    HostBuildDependency("Bison_jll"),
+    HostBuildDependency("flex_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"10")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
