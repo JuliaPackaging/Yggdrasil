@@ -15,13 +15,29 @@ script = raw"""
 cd $WORKSPACE/srcdir/p3a/
 mkdir build && cd build
 
+CMAKE_FLAGS=()
+
+#help find mpi on mingw, subset of https://github.com/JuliaPackaging/Yggdrasil/blob/b4fdb545c3954cff218051d7520c7418991d3416/T/TauDEM/build_tarballs.jl#L28-L53
+if [[ "$target" == x86_64-w64-mingw32 ]]; then
+    CMAKE_FLAGS+=(
+        -DMPI_HOME=${prefix}
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+    )
+    if [[ "${target}" == x86_64-* ]]; then
+        for lang in C CXX; do
+            CMAKE_FLAGS+=(-DMPI_${lang}_LIBRARIES=msmpi64)
+        done
+    fi
+fi
+
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=$prefix \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DCMAKE_BUILD_TYPE=Release \
 -DBUILD_TESTING=OFF \
 -DBUILD_SHARED_LIBS=ON \
--DKokkos_COMPILE_LANGUAGE=CXX
+-DKokkos_COMPILE_LANGUAGE=CXX \
+"${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
 make install
