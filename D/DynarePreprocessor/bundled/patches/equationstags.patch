@@ -1,0 +1,19 @@
+diff --git a/src/EquationTags.hh b/src/EquationTags.hh
+index 34277bae..c390592e 100644
+--- a/src/EquationTags.hh
++++ b/src/EquationTags.hh
+@@ -20,12 +20,12 @@
+ #ifndef _EQUATION_TAGS_HH
+ #define _EQUATION_TAGS_HH
+ 
+-using namespace std;
+-
+ #include <map>
+ #include <set>
+ #include <string>
+ 
++using namespace std;
++
+ class EquationTags
+ {
+ private:
