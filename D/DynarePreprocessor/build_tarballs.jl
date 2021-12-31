@@ -10,6 +10,8 @@ sources = [
 
 script = raw"""
 
+apk add boost-dev
+
 cd ${WORKSPACE}/srcdir/preprocessor
 
 # remove -lstdc++fs in Makefile.am
@@ -35,7 +37,6 @@ products = [
 ]
 
 dependencies = [
-HostBuildDependency("boost_jll"),
 HostBuildDependency("Bison_jll"),
 HostBuildDependency("flex_jll")
 ]
