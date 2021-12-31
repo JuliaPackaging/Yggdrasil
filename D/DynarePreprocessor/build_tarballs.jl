@@ -24,6 +24,7 @@ if [[ "${target}" == *-freebsd* ]]; then
 fi
 
 atomic_patch -p1 "../patches/equationstags.patch"
+atomic_patch -p1 "../patches/SubModel.patch"
 
 autoreconf -si
 
