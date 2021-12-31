@@ -8,9 +8,6 @@ sources = [
 ]
 
 script = raw"""
-HostBuildDependency("boost_jll")
-HostBuildDependency("Bison_jll")
-HostBuildDependency("flex_jll")
 
 cd ${WORKSPACE}/srcdir/preprocessor
 
@@ -37,10 +34,14 @@ cp "src/dynare-preprocessor${exeext}" "${bindir}"
 platforms = supported_platforms()
 
 products = [
-    ExecutableProduct("dynare-preprocessor", Symbol("dynare_preprocessor")),
+    ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
 ]
 
-dependencies = Dependency[]
+dependencies = Dependency[
+HostBuildDependency("boost_jll")
+HostBuildDependency("Bison_jll")
+HostBuildDependency("flex_jll")
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"10")
 
