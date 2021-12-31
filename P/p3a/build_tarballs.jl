@@ -28,6 +28,13 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
             CMAKE_FLAGS+=(-DMPI_${lang}_LIBRARIES=msmpi64)
         done
     fi
+elif [[ ${target} == *-apple-* ]]; then
+    CMAKE_FLAGS+=(
+        -DMPI_C_ADDITIONAL_INCLUDE_DIRS='' 
+        -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' 
+        -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' 
+        -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'
+    )
 fi
 
 cmake .. \
