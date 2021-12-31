@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/atomsk/src/
 mkdir -p ${bindir}
 # The makefile doesn't handle parallel builds
-make atomsk
-make install INSTPATH=${prefix}
+make atomsk BIN="atomsk${exeext}"
+make install INSTPATH=${prefix} BIN="atomsk${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
