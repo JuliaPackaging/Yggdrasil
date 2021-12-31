@@ -15,16 +15,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/psurface-*
 
-if [[ ${target} == *linux-musl* ]] || [[ ${target} == *mingw* ]]; then
-    #this is fixed on master, if a new tag is released this can probably be removed
-    sed -i 's/isnan/std::isnan/g' NormalProjector.cpp
-    sed -i 's/isinf/std::isinf/g' NormalProjector.cpp
-fi
+#this is fixed on master, if a new tag is released this can probably be removed
+sed -i 's/isnan/std::isnan/g' NormalProjector.cpp
+sed -i 's/isinf/std::isinf/g' NormalProjector.cpp
 
-if [[ ${target} == *x86_64-unknown-freebsd* ]]; then
-    #these patches are derived directly from commits already merged on master, if a new tag is released these can probaly be removed
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-array-not-tr1-array.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-shared-ptr.patch
+#these patches are derived directly from commits already merged on master, if a new tag is released these can probaly be removed
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-array-not-tr1-array.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-shared-ptr.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-without-hdf5-work.patch
+
+if [[ ${target} == *mingw* ]]; then
+    sed -i 's/LT_INIT/LT_INIT([win32-dll])/' configure.ac;
+    sed -i '/^libpsurface_la_LDFLAGS/ s/$/ -no-undefined/' Makefile.am;
 fi
 
 autoreconf -vi
@@ -32,7 +34,11 @@ autoreconf -vi
 ./configure \
 --prefix=${prefix} \
 --build=${MACHTYPE} \
---host=${target}
+--host=${target} \
+--enable-static=no \
+--enable-shared=yes \
+--without-amiramesh \
+--without-hdf5
 
 make -j${nproc}
 make install
