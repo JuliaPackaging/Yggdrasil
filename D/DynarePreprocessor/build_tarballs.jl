@@ -34,7 +34,7 @@ products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
 ]
 
-dependencies = Dependency[
+dependencies = [
 HostBuildDependency("boost_jll"),
 HostBuildDependency("Bison_jll"),
 HostBuildDependency("flex_jll")
