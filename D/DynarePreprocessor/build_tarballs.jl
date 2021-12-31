@@ -15,7 +15,7 @@ cd ${WORKSPACE}/srcdir/preprocessor
 # remove -lstdc++fs in Makefile.am
 sed s/-lstdc++fs// -i src/Makefile.am
 
-atomic_patch -p1 "./bundled/patches/equationstags.patch"
+atomic_patch -p1 "../patches/equationstags.patch"
 
 autoreconf -si
 
