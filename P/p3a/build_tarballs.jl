@@ -22,12 +22,9 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     CMAKE_FLAGS+=(
         -DMPI_HOME=${prefix}
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
+        -DMPI_C_LIBRARIES=msmpi64
+        -DMPI_CXX_LIBRARIES=msmpi64
     )
-    if [[ "${target}" == x86_64-* ]]; then
-        for lang in C CXX; do
-            CMAKE_FLAGS+=(-DMPI_${lang}_LIBRARIES=msmpi64)
-        done
-    fi
 elif [[ ${target} == *-apple-* ]]; then
     CMAKE_FLAGS+=(
         -DMPI_C_ADDITIONAL_INCLUDE_DIRS='' 
@@ -66,8 +63,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
-    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"))
+    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)) 
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
