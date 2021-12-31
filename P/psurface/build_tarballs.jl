@@ -21,7 +21,7 @@ if [[ ${target} == *linux-musl* ]] || [[ ${target} == *mingw* ]]; then
     sed -i 's/isinf/std::isinf/g' NormalProjector.cpp
 fi
 
-if [[ ${target} == x86_64-unknown-freebsd ]]; then
+if [[ ${target} == *x86_64-unknown-freebsd* ]]; then
     #these patches are derived directly from commits already merged on master, if a new tag is released these can probaly be removed
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-array-not-tr1-array.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/use-std-shared-ptr.patch
