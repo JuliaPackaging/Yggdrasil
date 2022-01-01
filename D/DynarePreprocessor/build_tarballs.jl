@@ -23,8 +23,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
 fi
 
-atomic_patch -p1 "../patches/equationstags.patch"
-atomic_patch -p1 "../patches/SubModel.patch"
+atomic_patch -p1 "../patches/patches.patch"
 
 autoreconf -si
 
