@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int64.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
 OPENBLAS=(-lopenblas)
 FFLAGS=()

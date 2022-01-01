@@ -27,7 +27,8 @@ include("./common.jl")
 
 using BinaryBuilder
 using BinaryBuilder: BinaryBuilderBase
-Core.eval(BinaryBuilderBase, :(bootstrap_list = [:rootfs, :platform_support]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
     # Since we can build a variety of GCC versions, track them and their hashes here.

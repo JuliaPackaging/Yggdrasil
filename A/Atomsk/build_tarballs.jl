@@ -2,34 +2,37 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "grep"
-version = v"3.7.0"
+name = "Atomsk"
+version = v"0.11.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.7.tar.xz", "5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c")
+    GitSource("https://github.com/pierrehirel/atomsk.git", "3333858281e0ebd6279825b83ab871cf4d050a8d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/grep-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
-make install
+cd $WORKSPACE/srcdir/atomsk/src/
+mkdir -p ${bindir}
+# The makefile doesn't handle parallel builds
+make atomsk BIN="atomsk${exeext}"
+make install INSTPATH=${prefix} BIN="atomsk${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("grep", :grep)
+    ExecutableProduct("atomsk", :atomsk)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    Dependency("Libiconv_jll"),
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

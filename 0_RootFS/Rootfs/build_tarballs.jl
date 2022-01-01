@@ -96,7 +96,8 @@ verbose && @info("Binding barebones bootstrap RootFS shards...")
 
 insert_compiler_shard(name, version, rootfs_unpacked_hash, :unpacked)
 insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
-Core.eval(BinaryBuilder.BinaryBuilderBase, :(bootstrap_list = Symbol[:rootfs]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs)
 
 # PHWEW.  Okay.  Now, we do some of the same steps over again, but within BinaryBuilder, where
 # we can actulaly run tools inside of the rootfs (e.g. if we're building on OSX through docker)
