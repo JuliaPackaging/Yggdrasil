@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "openPMD_api"
-version = v"0.14.2"
+version = v"0.14.3"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
@@ -13,8 +13,8 @@ sources = [
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We temporarily use a feature branch instead of a released
     # version because the Julia bindings are not released yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/3d23f12061650dccf4cb0e5e42f902f56945c71e.tar.gz",
-                  "9cb8c6f336f72a67964c0aff5de77ae9fee2e02491d89a91335a099fd1c619b2"),
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/d3c042b658dd9cda5a493844dcbfd667052cc45a.tar.gz",
+                  "cb3192bdc48afb9212603d856519034d65be98599b63539486229d1ab632081a"),
 ]
 
 # Bash recipe for building across all platforms
