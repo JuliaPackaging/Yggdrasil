@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libtirpc-*/
 
+install_license COPYING
+
 #musl does not have this header, so we manually carry it around, queue.h file contents taken from https://github.com/dbmail/dbmail/blob/master/compatibility/queue.h
 if [[ ${target} == *-musl* ]]; then
     mkdir sys
