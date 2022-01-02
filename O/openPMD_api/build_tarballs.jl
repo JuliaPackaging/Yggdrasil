@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "openPMD_api"
-version = v"0.14.2"
+version = v"0.14.3"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
@@ -13,8 +13,8 @@ sources = [
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We temporarily use a feature branch instead of a released
     # version because the Julia bindings are not released yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/3d23f12061650dccf4cb0e5e42f902f56945c71e.tar.gz",
-                  "9cb8c6f336f72a67964c0aff5de77ae9fee2e02491d89a91335a099fd1c619b2"),
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/32f4fe62bd92cad93c920a93a589211a95bd1543.tar.gz",
+                  "1c7f2b445ea58ca9cee40f4a31eb794889877b639c451f7c2bf8cb04db1538de"),
 ]
 
 # Bash recipe for building across all platforms
@@ -80,8 +80,8 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We would need a parallel version of HDF5
     # Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="MPICH_jll")),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
