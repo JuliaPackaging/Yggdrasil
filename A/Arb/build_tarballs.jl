@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Arb"
-upstream_version = v"2.20.0"
+upstream_version = v"2.21.1"
 build_for_julia16_or_newer = true
 version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
@@ -32,7 +32,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/fredrik-johansson/arb/archive/refs/tags/$(upstream_version).tar.gz",
-                  "d2f186b10590c622c11d1ca190c01c3da08bac9bc04e84cb591534b917faffe7"),
+                  "aecc9f55eb35a00a2490e9a7536a0babf8ac86bb13d32a4a95e1216f9f5cbfa8"),
 ]
 
 # Bash recipe for building across all platforms

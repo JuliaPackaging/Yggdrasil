@@ -5,15 +5,19 @@ using BinaryBuilder, Pkg
 name = "MPItrampoline"
 version = v"2.8.0"
 
+mpich_version = v"3.4.3"
+mpiconstants_version = v"1.4.0"
+mpiwrapper_version = v"2.2.1"
+
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
                   "bc2a075ced19e5f7ea547060e284887bdbb0761d34d1adb6f16d2e9e096a7d38"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
-    ArchiveSource("https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz",
-                  "5c19bea8b84e8d74cca5f047e82b147ff3fba096144270e3911ad623d6c587bf"),
-    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v2.2.1.tar.gz",
+    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
+                  "8154d89f3051903181018166678018155f4c2b6f04a9bb6fe9515656452c4fd7"),
+    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
                   "4ce058d47e515ff3dc62a6e175a9b1f402d25cc3037be0d9c26add2d78ba8da9"),
 ]
 

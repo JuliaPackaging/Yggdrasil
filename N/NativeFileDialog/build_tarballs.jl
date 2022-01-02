@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/nativefiledialog/src/
+mkdir -p "${libdir}"
 if [[ "${target}" == *-mingw* ]]; then
     c++ nfd_common.c nfd_win.cpp -DNDEBUG -DUNICODE -D_UNICODE -lole32 -luuid -Iinclude -O2 -Wall -Wextra -fno-exceptions -shared -o "${libdir}/libnfd.${dlext}"
 elif [[ "${target}" == *-apple* ]]; then
@@ -31,7 +32,6 @@ fi
 # platforms are passed in on the command line
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libnfd", :libnfd)
@@ -39,8 +39,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6"))
-    BuildDependency("Xorg_xorgproto_jll")
+    Dependency("GTK3_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms))
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

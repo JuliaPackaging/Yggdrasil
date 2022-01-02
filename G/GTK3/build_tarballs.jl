@@ -58,17 +58,21 @@ rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schema
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("libgailutil-3", :libgailutil3),
     LibraryProduct("libgdk-3", :libgdk3),
     LibraryProduct("libgtk-3", :libgtk3),
 ]
 
+# Some dependencies are needed only on Linux or Linux and FreeBSD
+linux = filter(Sys.islinux, platforms)
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host Wayland for wayland-scanner
-    HostBuildDependency("Wayland_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    HostBuildDependency("Wayland_jll"; platforms=linux),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.47.0"),
@@ -79,21 +83,21 @@ dependencies = [
     # Gtk 3.24.29 requires ATK 2.35.1
     Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
-    Dependency("xkbcommon_jll"),
+    Dependency("xkbcommon_jll"; platforms=linux),
     Dependency("iso_codes_jll"),
-    Dependency("Wayland_jll"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_libXrender_jll"),
-    Dependency("Xorg_libXi_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libXcursor_jll"),
-    Dependency("Xorg_libXdamage_jll"),
-    Dependency("Xorg_libXfixes_jll"),
-    Dependency("Xorg_libXcomposite_jll"),
-    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Wayland_jll"; platforms=linux),
+    Dependency("Xorg_libXrandr_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXi_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXcursor_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXdamage_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXfixes_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXcomposite_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXinerama_jll"; platforms=linux_freebsd),
     Dependency("Fontconfig_jll"),
-    Dependency("at_spi2_atk_jll"),
+    Dependency("at_spi2_atk_jll"; platforms=linux_freebsd),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

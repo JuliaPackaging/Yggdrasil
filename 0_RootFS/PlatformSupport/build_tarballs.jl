@@ -29,7 +29,8 @@ using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
-Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs)
 
 compiler_target = try
     parse(Platform, ARGS[end])
