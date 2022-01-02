@@ -29,6 +29,7 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 atomic_patch -p1 ../patches/meson_build.patch
 # Fix bugs in v3.24.31
 atomic_patch -p1 ../patches/macos-3.24.31.patch
+atomic_patch -p1 ../patches/0001-Use-lowercase-name-for-windows.h.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
