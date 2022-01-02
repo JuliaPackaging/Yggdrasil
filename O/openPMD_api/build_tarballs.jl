@@ -80,8 +80,8 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We would need a parallel version of HDF5
     # Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="MPICH_jll")),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
