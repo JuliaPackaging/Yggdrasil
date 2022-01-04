@@ -39,7 +39,7 @@ mkdir build
 cd build
 if [[ $target == i686*mingw* ]]; then
     cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/i686-w64-mingw32.cmake \
+        -DCMAKE_TOOLCHAIN_FILE="${WORKSPACE}/srcdir/portaudio/i686-w64-mingw32.cmake" \
         -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
         -DCMAKE_FIND_ROOT_PATH=$prefix \
         ../portaudio/
