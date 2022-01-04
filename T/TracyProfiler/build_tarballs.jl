@@ -62,6 +62,8 @@ cp -v ./csvexport/build/unix/csvexport-release* $bindir
 # Build / install import-chrome utility
 make -j${nproc} -C import-chrome/build/unix release
 cp -v ./import-chrome/build/unix/import-chrome-release* $bindir
+
+install_license LICENSE
 """
 
 # Only supports x86_64 builds for Linux / Unix
