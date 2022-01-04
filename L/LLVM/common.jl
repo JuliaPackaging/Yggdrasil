@@ -14,7 +14,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.0" => "9e892ea33cc65b79370df975b73e98eb5de68683", # julia-13.0.0-1
+    v"13.0.0" => "6275013da5e8cd5e552bd5bb7d85c7b0524ca69d", # julia-13.0.0-2
 )
 
 const buildscript = raw"""
@@ -377,7 +377,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "bin"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
@@ -438,7 +438,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         products = [
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
             LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
-            ExecutableProduct("clang", :clang, "tools"),
+            ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
         script = mlirscript
