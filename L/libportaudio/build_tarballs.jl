@@ -37,11 +37,19 @@ patch -dportaudio -p1 < win_ds_fix_warning.diff
 # First, build libportaudio
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
-    -DCMAKE_FIND_ROOT_PATH=$prefix \
-    ../portaudio/
+if [[ $target == i686*mingw* ]]; then
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/i686-w64-mingw32.cmake \
+        -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
+        -DCMAKE_FIND_ROOT_PATH=$prefix \
+        ../portaudio/
+else
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+        -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
+        -DCMAKE_FIND_ROOT_PATH=$prefix \
+        ../portaudio/
+fi
 make
 make install
 install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
