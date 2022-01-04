@@ -7,6 +7,8 @@ version = v"0.7.8"
 sources = [
     ArchiveSource("https://github.com/wolfpld/tracy/archive/refs/tags/v$(version).tar.gz",
 		  "4021940a2620570ac767eee84e58d572a3faf1570edfaf5309c609752146e950"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
 ]
 
@@ -20,13 +22,22 @@ cd ${WORKSPACE}/srcdir/tracy*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_library_release.patch 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_common_make.patch
 
-if [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
+# Need full c++17 support so upgrade min osx version and install newer SDK
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    echo "Installing newer MacOS 10.15 SDK"
+ 
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk 
+    rm -rf /opt/${target}/${target}/sys-root/System 
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." 
+    cp -ra System "/opt/${target}/${target}/sys-root/." 
+    popd
+
+    # append flag to mkfile for macos target min version
+    echo "CFLAGS += -mmacosx-version-min=10.15" >> common/unix-release.mk
 fi
 
 # Build / install the library
-make -j -C library/unix release
+make -j${nproc} -C library/unix release
 cp -v ./library/unix/libtracy-release* $libdir
 
 # Build / install the profiler GUI
@@ -51,9 +62,9 @@ cp -v ./import-chrome/build/unix/import-chrome-release* $bindir
 """
 
 # Only supports x86_64 builds for Linux / Unix
-# TODO: There are issues with cross compiling the libbacktrace libtracy on MacOS
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
 ] 
 
 products = Product[
@@ -70,16 +81,7 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("Capstone_jll"),
     Dependency("GTK3_jll"),
-    BuildDependency("Xorg_compositeproto_jll"),
-    BuildDependency("Xorg_damageproto_jll"),
-    BuildDependency("Xorg_fixesproto_jll"),
-    BuildDependency("Xorg_inputproto_jll"),
-    BuildDependency("Xorg_kbproto_jll"),
-    BuildDependency("Xorg_randrproto_jll"),
-    BuildDependency("Xorg_renderproto_jll"),
-    BuildDependency("Xorg_xextproto_jll"),
-    BuildDependency("Xorg_xineramaproto_jll"),
-    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # requires std-c++17, full support in gcc 7+, clang 8+
