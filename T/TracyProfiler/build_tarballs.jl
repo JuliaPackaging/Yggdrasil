@@ -19,21 +19,23 @@ mkdir -vp $libdir
 cd ${WORKSPACE}/srcdir/tracy*
 
 # Apply patches to disable forcing -march
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_library_release.patch 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_library_release.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_common_make.patch
 
 # Need full c++17 support so upgrade min osx version and install newer SDK
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     echo "Installing newer MacOS 10.15 SDK"
- 
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk 
-    rm -rf /opt/${target}/${target}/sys-root/System 
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." 
-    cp -ra System "/opt/${target}/${target}/sys-root/." 
+
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 
     # append flag to mkfile for macos target min version
     echo "CFLAGS += -mmacosx-version-min=10.15" >> common/unix-release.mk
+    # Disable link-time optimization, we have some mess in our macOS toolchain.
+    sed -i 's/ -flto//' {profiler,update,capture,csvexport,import-chrome}/build/unix/release.mk
 fi
 
 # Build / install the library
@@ -65,7 +67,7 @@ cp -v ./import-chrome/build/unix/import-chrome-release* $bindir
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
-] 
+]
 
 products = Product[
     LibraryProduct("libtracy-release", :libtracy),
