@@ -19,8 +19,9 @@ mkdir -vp $libdir
 cd ${WORKSPACE}/srcdir/tracy*
 
 # Apply patches to disable forcing -march
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_library_release.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unix_common_make.patch
+atomic_patch -p1 ../patches/unix_library_release.patch
+atomic_patch -p1 ../patches/unix_common_make.patch
+atomic_patch -p1 ../patches/library_extension.patch
 
 # Need full c++17 support so upgrade min osx version and install newer SDK
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -40,7 +41,7 @@ fi
 
 # Build / install the library
 make -j${nproc} -C library/unix release
-cp -v ./library/unix/libtracy-release* $libdir
+cp -v "./library/unix/libtracy-release.${dlext}" ${libdir}
 
 # Build / install the profiler GUI
 make -j${nproc} -C profiler/build/unix release

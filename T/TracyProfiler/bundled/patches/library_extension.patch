@@ -1,0 +1,11 @@
+--- library/unix/build.mk.orig	2022-01-04 23:27:34.172524112 +0100
++++ library/unix/build.mk	2022-01-04 23:27:41.192405438 +0100
+@@ -4,7 +4,7 @@
+ INCLUDES :=
+ LIBS := -lpthread -ldl
+ PROJECT := libtracy
+-IMAGE := $(PROJECT)-$(BUILD).so
++IMAGE := $(PROJECT)-$(BUILD).$(dlext)
+ SHARED_LIBRARY := yes
+ 
+ SRC := ../../TracyClient.cpp
