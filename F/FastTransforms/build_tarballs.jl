@@ -52,8 +52,8 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("OpenBLAS_jll", v"0.3.9"),
+    Dependency("MPFR_jll", v"4.1.0"),
+    Dependency("OpenBLAS_jll", v"0.3.17"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
