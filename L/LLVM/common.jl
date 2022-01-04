@@ -377,7 +377,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "bin"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "bin"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
@@ -438,7 +438,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         products = [
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
             LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
-            ExecutableProduct("clang", :clang, "tools"),
+            ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
         script = mlirscript
