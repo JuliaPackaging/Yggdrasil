@@ -71,6 +71,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 products = Product[
     LibraryProduct("libtracy-release", :libtracy),
