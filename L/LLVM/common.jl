@@ -377,14 +377,10 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
-    if VERSION >= v"12"
-        push!(products, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"))
-    else
-        push!(products, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "bin"))
-    end
     if !static
         push!(products, LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true))
     end
