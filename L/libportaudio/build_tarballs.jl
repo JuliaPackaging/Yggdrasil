@@ -11,6 +11,9 @@ sources = [
     ArchiveSource("http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz", 
 		  "47efbf42c77c19a05d22e627d42873e991ec0c1357219c0d74ce6a2948cb2def"),
 
+    # This includes a patch
+    DirectorySource("./bundled"),
+
     # uncomment the following lines to include ASIO support. To distribute the
     # resulting binaries you'll need to sign the licence agreement included with
     # the SDK at: https://www.steinberg.net/en/company/developers.html
@@ -27,6 +30,9 @@ cd $WORKSPACE/srcdir
 if [ -d "asiosdk2.3.1" ]; then
     mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
 fi
+
+# apply the patch
+patch -dportaudio -p1 < win_ds_fix_warning.diff
 
 # First, build libportaudio
 mkdir build
