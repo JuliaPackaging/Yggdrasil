@@ -7,7 +7,7 @@ version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "6784e5ba88662e8a57dea334c1541f0281d7c9e6")
+    GitSource("https://github.com/ig-or/qwtw.git", "94b89aae95441b7c0622328036a7e0546f96888e")
 ]
 
 # Bash recipe for building across all platforms
