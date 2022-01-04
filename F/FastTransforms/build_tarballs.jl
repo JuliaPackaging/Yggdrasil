@@ -52,9 +52,13 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll", v"4.1.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS_jll", v"0.3.17"),
 ]
+
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"0.5.2"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
