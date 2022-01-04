@@ -3,16 +3,13 @@
 using BinaryBuilder
 
 name = "libportaudio"
-version = v"19.6.0"
+version = v"19.7.0"
 
 # Collection of sources required to build libportaudio. Not all of these
 # are used for all platforms.
 sources = [
-    ArchiveSource("http://portaudio.com/archives/pa_stable_v190600_20161030.tgz",
-               "f5a21d7dcd6ee84397446fa1fa1a0675bb2e8a4a6dceb4305a8404698d8d1513"),
-
-    # This includes a patch
-    DirectorySource("./bundled"),
+    ArchiveSource("http://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz", 
+		  "47efbf42c77c19a05d22e627d42873e991ec0c1357219c0d74ce6a2948cb2def"),
 
     # uncomment the following lines to include ASIO support. To distribute the
     # resulting binaries you'll need to sign the licence agreement included with
@@ -31,9 +28,6 @@ if [ -d "asiosdk2.3.1" ]; then
     mv "asiosdk2.3.1 svnrev312937/ASIOSDK2.3.1" asiosdk2.3.1
 fi
 
-# apply the patch
-patch -dportaudio -p1 < portaudio_alsa_epipe_v3.diff
-
 # First, build libportaudio
 mkdir build
 cd build
@@ -49,7 +43,7 @@ install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -63,4 +57,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
