@@ -24,7 +24,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/portaudio
 
 # move the ASIO SDK to where CMake can find it
 if [ -d "asiosdk2.3.1" ]; then
@@ -32,27 +32,20 @@ if [ -d "asiosdk2.3.1" ]; then
 fi
 
 # apply the patch
-patch -dportaudio -p1 < win_ds_fix_warning.diff
+atomic_patch -p1 ../patches/win_ds_fix_warning.patch
+atomic_patch -p1 ../patches/wasapi-32-bit-windows.patch
 
 # First, build libportaudio
-mkdir build
-cd build
-if [[ $target == i686*mingw* ]]; then
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE="${WORKSPACE}/srcdir/portaudio/i686-w64-mingw32.cmake" \
-        -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
-        -DCMAKE_FIND_ROOT_PATH=$prefix \
-        ../portaudio/
-else
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-        -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
-        -DCMAKE_FIND_ROOT_PATH=$prefix \
-        ../portaudio/
-fi
+mkdir build-bb
+cd build-bb
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    ..
 make
 make install
-install_license "${WORKSPACE}/srcdir/portaudio/LICENSE.txt"
+install_license "../LICENSE.txt"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -72,4 +65,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
