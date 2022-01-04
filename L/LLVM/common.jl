@@ -381,9 +381,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         ExecutableProduct("llc", :llc, "tools"),
     ]
     if VERSION >= v"12"
-        push!(product, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"))
+        push!(products, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"))
     else
-        push!(product, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "bin"))
+        push!(products, ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "bin"))
     end
     if !static
         push!(products, LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true))
