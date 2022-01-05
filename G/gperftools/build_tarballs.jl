@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gperftools"
-version = v"2.7.0"
+version = v"2.9.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-2.7/gperftools-2.7.tar.gz", "1ee8c8699a0eff6b6a203e59b43330536b22bbcbe6448f54c7091e5efb0763c9")
+    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-2.9.1/gperftools-2.9.1.tar.gz","ea566e528605befb830671e359118c2da718f721c27225cbbc93858c7520fee3")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,16 +36,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd")
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
 
 # The products that we will ensure are always built
 products = [
@@ -63,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
