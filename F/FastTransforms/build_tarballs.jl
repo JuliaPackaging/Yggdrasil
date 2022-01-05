@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.5.1"
+version = v"0.5.2"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
                   "bee3c4f0d33487f0b0ad44fcaea24bd064a83e415faa46b4d237c40631dd1523"),
@@ -55,10 +55,6 @@ dependencies = [
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS_jll", v"0.3.17"),
 ]
-
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"0.5.2"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
