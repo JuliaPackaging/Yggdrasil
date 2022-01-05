@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-v800-rc16.tgz", "0fc025f260e9e77e26e5d218707c04d03492e792c793d34221ada09fbb275b99"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-v800-rc16.tgz", "b6ada57f14a728198cc9bc5d22bc6e61dc18cb750a17846df9d853ff6380fbd1"),
 ]
 
 # Bash recipe for building across all platforms
