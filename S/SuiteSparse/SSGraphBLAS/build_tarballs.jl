@@ -1,19 +1,19 @@
 using BinaryBuilder, Pkg
 
 name = "SSGraphBLAS"
-version = v"6.1.0"
+version = v"6.1.3"
 
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "f9d52b4f805e68f50f500f77a2a3464250ac0a20")
+        "8144c2dc53acca8236dc1fa04d1df8218b3e2b1d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/GraphBLAS
-sed -i '8d' cpu_features/Makefile
+sed -i 's!BUILD_TYPE=Release!BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}!' cpu_features/Makefile
 make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 make install
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
