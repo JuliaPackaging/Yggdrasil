@@ -86,7 +86,8 @@ dependencies = [
     Dependency("GLFW_jll"),
     Dependency("FreeType2_jll"),
     Dependency("Capstone_jll"),
-    Dependency("GTK3_jll"),
+    # GTK3 is only needed for the system file dialog on Linux
+    Dependency("GTK3_jll", platforms=filter(Sys.islinux, platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
