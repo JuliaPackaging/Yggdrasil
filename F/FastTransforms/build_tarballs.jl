@@ -25,7 +25,7 @@ if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
 else
     export CFLAGS="-O3 "
 fi
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
     SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
@@ -61,4 +61,4 @@ dependencies = [
 version = v"0.5.2"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
