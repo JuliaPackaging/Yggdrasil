@@ -1,5 +1,5 @@
 diff --git a/cpu_features/CMakeLists.txt b/cpu_features/CMakeLists.txt
-index ecd9729af..72a52f6fa 100644
+index ecd9729af..6d6d5544e 100644
 --- a/cpu_features/CMakeLists.txt
 +++ b/cpu_features/CMakeLists.txt
 @@ -149,9 +149,9 @@ add_library(CpuFeature::cpu_features ALIAS cpu_features)
@@ -15,6 +15,15 @@ index ecd9729af..72a52f6fa 100644
  
  #
  # ndk_compat
+@@ -219,7 +219,7 @@ endif()
+ #
+ 
+ include(GNUInstallDirs)
+-install(TARGETS cpu_features list_cpu_features
++install(TARGETS cpu_features
+   EXPORT CpuFeaturesTargets
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpu_features
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 diff --git a/cpu_features/Makefile b/cpu_features/Makefile
 index ec2de5a1f..c9b34478f 100644
 --- a/cpu_features/Makefile
