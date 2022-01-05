@@ -6,14 +6,16 @@ version = v"6.1.3"
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/GraphBLAS.git",
-        "8144c2dc53acca8236dc1fa04d1df8218b3e2b1d")
+        "8144c2dc53acca8236dc1fa04d1df8218b3e2b1d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
 cd $WORKSPACE/srcdir/GraphBLAS
-sed -i 's!BUILD_TYPE=Release!BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}!' cpu_features/Makefile
+atomic_patch -p1 "${WORKSPACE}/srcdir/cpu_features.patch"
+
 make -j${nproc} CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 make install
 if [[ ! -f "${libdir}/libgraphblas.${dlext}" ]]; then
