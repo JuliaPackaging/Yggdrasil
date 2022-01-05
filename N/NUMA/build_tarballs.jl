@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NUMA"
-version = v"2.0.13"
+version = v"2.0.14"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/numactl/numactl/releases/download/v2.0.13/numactl-2.0.13.tar.gz",
-                  "991e254b867eb5951a44d2ae0bf1996a8ef0209e026911ef6c3ef4caf6f58c9a"),
+    ArchiveSource("https://github.com/numactl/numactl/releases/download/v$(version)/numactl-$(version).tar.gz",
+                  "826bd148c1b6231e1284e42a4db510207747484b112aee25ed6b1078756bcff6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,18 +23,7 @@ install_license LICENSE.*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="musl")
-]
-
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
@@ -48,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
