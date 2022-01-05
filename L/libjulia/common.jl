@@ -6,7 +6,7 @@ include("../../fancy_toys.jl") # for get_addable_spec
 
 # return the platforms supported by libjulia
 function libjulia_platforms(julia_version)
-    platforms = supported_platforms(; experimental=julia_version ≥ v"1.7")
+    platforms = supported_platforms()
 
     # skip 32bit musl builds; they fail with this error:
     #    libunwind.so.8: undefined reference to `setcontext'
@@ -15,6 +15,12 @@ function libjulia_platforms(julia_version)
     # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
     if julia_version < v"1.4"
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
+    end
+
+    if julia_version < v"1.7"
+        # In Julia <= 1.6, skip macOS on ARM and Linux on armv6l
+        filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+        filter!(p -> arch(p) != "armv6l", platforms)
     end
 
     if julia_version >= v"1.6"
@@ -270,7 +276,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     else
         cp -r usr/lib/libjulia* ${libdir}/
     fi
-    
+
     cp -R -L usr/include/julia/* ${includedir}/julia
     install_license LICENSE.md
     """
