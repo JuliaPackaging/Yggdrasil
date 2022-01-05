@@ -8,12 +8,16 @@ version = v"4.2.0"
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCR-Runtime/archive/rocm-$(version).tar.gz",
-                  "fa0e7bcd64e97cbff7c39c9e87c84a49d2184dc977b341794770805ec3f896cc")
+                  "fa0e7bcd64e97cbff7c39c9e87c84a49d2184dc977b341794770805ec3f896cc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
+
+# Do not install legacy symlinks which only creates confusion with RUNPATHs
+atomic_patch -p1 ../patches/no-symlinks.patch
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
