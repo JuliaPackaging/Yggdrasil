@@ -7,18 +7,13 @@ version = v"7.7.0"
 sources = [
     ArchiveSource("https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-$(version.major).$(version.minor).tar.bz2",
                   "a708e6b4e90e2cd6427434715b591bb9c3d4005c99725ec494b8e0bed2de5355"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wcslib-*/
 if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure-mingw.patch"
-    autoconf
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
-elif [[ "${target}" == *-darwin* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/soname-macos.patch"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
