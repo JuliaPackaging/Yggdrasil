@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libcint"
-version = v"4.4.6"
+version = v"5.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunqm/libcint.git", "c7093455f71e3d295edc39ba056d2c61aadc12b2")
+    GitSource("https://github.com/sunqm/libcint.git", "d9415a8e3528b7b8f5717e3c68105f40d83b1fd4")
 ]
 
 # Bash recipe for building across all platforms
