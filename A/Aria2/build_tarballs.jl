@@ -49,7 +49,7 @@ dependencies = [
     # are getting a newer version in the build than the one
     # `LibSSH2_jll` was compiled with.  So we explicitly select the
     # right version here.
-    BuildDependency(PackageSpec(name="MbedTLS_jll", version="2.24")),
+    BuildDependency(PackageSpec(name="MbedTLS_jll")),
     Dependency(PackageSpec(name="OpenSSL_jll")),
     Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="Zlib_jll")),

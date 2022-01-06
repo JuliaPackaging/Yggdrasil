@@ -76,7 +76,7 @@ dependencies = [
     Dependency("nghttp2_jll"),
     # Note that while we unconditionally list MbedTLS as a dependency,
     # we default to schannel/SecureTransport on Windows/MacOS.
-    Dependency("MbedTLS_jll", v"2.24.0"),
+    Dependency("MbedTLS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

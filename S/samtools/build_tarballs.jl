@@ -42,7 +42,7 @@ dependencies = [
     # `MbedTLS_jll`).  For some reasons that aren't clear to me at the moment, we are
     # getting a version of `MbedTLS_jll` which doesn't match the one `LibCURL_jll` was
     # compiled with.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24"))
+    BuildDependency(PackageSpec(; name="MbedTLS_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
