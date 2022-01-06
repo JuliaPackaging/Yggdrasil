@@ -49,12 +49,9 @@ julia --project=@. --eval '
     Pkg.build("STL")
 '
 
-# Build C++ wrapper code
-$CXX -Drestrict=__restrict__ -std=c++17 -shared -o libSTL.$dlext \
+# Build and install C++ wrapper code
+$CXX -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o $libdir/libSTL.$dlext \
     deps/StdMap.cxx deps/StdSharedPtr.cxx deps/StdString.cxx deps/StdVector.cxx
-
-# Install C++ wrapper code
-cp libSTL.$dlext $libdir
 install_license LICENSE.md
 """
 
