@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir
 cd bliss-*
 
 atomic_patch -p1 ../patches/gmp_def.patch
+atomic_patch -p1 ../patches/cmake_gmp.patch
 
 cd build
 
