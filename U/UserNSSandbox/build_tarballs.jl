@@ -26,4 +26,4 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-build_tarballs(ARGS, name, version, sources, script, platforms, products, Dependency[])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, Dependency[]; julia_compat="1.6")
