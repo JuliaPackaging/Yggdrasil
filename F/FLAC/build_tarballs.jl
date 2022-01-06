@@ -19,6 +19,12 @@ version = v"1.3.4"
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
 
+if [[ ${target} == *linux* ]]; then
+    # Include patch for finding definition of `AT_HWCAP2` within the Linux
+    # kernel headers, rather than the glibc headers, sicne our glibc is too old
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
+fi
+
 ./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
 make -j${nproc}
 make install
@@ -27,7 +33,7 @@ install_license COPYING.Xiph
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
