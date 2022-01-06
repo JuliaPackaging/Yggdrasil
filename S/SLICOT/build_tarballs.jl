@@ -9,6 +9,8 @@ version = v"5.7.0"
 sources = [
     GitSource("https://github.com//SLICOT/SLICOT-Reference.git",
               "7b96b6470ee0eaf75519a612d15d5e3e2857407d"),
+    ArchiveSource("https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.8.0.tar.gz",
+              "deb22cc4a6120bff72621155a9917f485f96ef8319ac074a7afbc68aab88bcf6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +22,8 @@ echo "enable_language( Fortran )" >>CMakeLists.txt
 echo "add_subdirectory( src )" >>CMakeLists.txt
 
 cd $WORKSPACE/srcdir/SLICOT-Reference/src
+cp ../../lapack-3.8.0/SRC/DEPRECATED/[dz]latzm.f .
+cp ../../lapack-3.8.0/SRC/DEPRECATED/dgegs.f .
 
 echo "set( SLICOT_SOURCE_FILES" >source_files.cmake
 ls *.f >>source_files.cmake
@@ -77,6 +81,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 
+echo "" >>../LICENCE
+echo "DGEGS, DLATZM, and ZLATZM are extracted from LAPACK, with the following LICENSE:" >>../LICENCE
+echo "" >>../LICENSE
+cat ../../lapack-3.8.0/LICENSE >>../LICENSE
+
 install_license ../LICENSE
 """
 
@@ -97,5 +106,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# For the time being need LLVM 11 because of <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158>.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
