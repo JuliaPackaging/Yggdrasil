@@ -62,7 +62,7 @@ jobs:
               else
                   Second(0)
               end
-              @info(msg)
+              @info(msg * " (" * string(Dates.canonicalize(delay)) * " ago)")
               tolerance = Hour(1)
               delay > tolerance && @warn "The PkgServer registry is older than $(tolerance)"
           end'
