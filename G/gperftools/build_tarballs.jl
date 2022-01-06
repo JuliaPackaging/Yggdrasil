@@ -27,9 +27,17 @@ elif [[ "${target}" == *-freebsd* ]]; then
     # Fix the error
     #   undefined reference to `backtrace_symbols'
     export LDFLAGS="-lexecinfo"
+    export CPPFLAGS=-"-I${includedir}"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure \
+--prefix=${prefix} \
+--build=${MACHTYPE} \
+--host=${target} \
+--enable-libunwind=yes \
+--enable-static=no \
+--enable-shared=yes
+
 make -j${nproc}
 make install
 """
