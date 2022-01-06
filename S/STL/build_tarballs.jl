@@ -55,8 +55,7 @@ $CXX -Drestrict=__restrict__ -std=c++17 -shared -o libSTL.$dlext \
 
 # Install C++ wrapper code
 cp libSTL.$dlext $libdir
-mkdir -p $prefix/share/licenses/STL
-cp LICENSE.md $prefix/share/licenses/STL
+install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
