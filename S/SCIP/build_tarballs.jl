@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-v800-rc16.tgz", "0fc025f260e9e77e26e5d218707c04d03492e792c793d34221ada09fbb275b99"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "b6ada57f14a728198cc9bc5d22bc6e61dc18cb750a17846df9d853ff6380fbd1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -52,7 +52,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"),
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.0"),
     Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7")),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
