@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/STL.jl", "1142e6f62ba8716b84319103502e8789be214cc4"),
+    GitSource("https://github.com/eschnett/STL.jl", "76f5f5eeaa0b789010b302ca5cf9d8551e3c83fb"),
     GitSource("https://github.com/eschnett/TestAbstractTypes.jl", "a23107bf47796db9d414c77801c6b3331f4950f0"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.6/julia-1.6.5-musl-x86_64.tar.gz",
                   "e38eece6f9f20c7472caf3f8f74a99ad0880921c28e1301461fa7af919880383"),
