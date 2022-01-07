@@ -6,7 +6,7 @@ version = v"3.0.1"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "3aaa93c7aa04c7001df5e51b81f21b126dfa99b3")
+    GitSource("https://github.com/cvxgrp/scs.git", "6e8410ee075256ff7a70bb9b77f56b6848db551c")
 ]
 
 # Bash recipe for building across all platforms
