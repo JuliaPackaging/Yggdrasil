@@ -66,7 +66,7 @@ products = [
 dependencies = [
     Dependency("FLINT_jll"; compat = "~$(v"200.800.101")"),
     Dependency("Arb_jll", compat = "~$(v"200.2100.101")"),
-    Dependency("Antic_jll", compat = "~$(v"0.200.501")",
+    Dependency("Antic_jll", compat = "~$(v"0.200.501")"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
