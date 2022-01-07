@@ -33,11 +33,13 @@ else
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
                   -DCMAKE_SHARED_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
                   -DMPI_Fortran_LINK_FLAGS="-Wl,-rpath -Wl,/workspace/destdir/lib -Wl,--enable-new-dtags -L/workspace/destdir/lib -Wl,-L/opt/${target}/${target}/sys-root/usr/lib64 -Wl,-lpthread -Wl,-lrt")
-  elif [[ "${target}" == *darwin* ]]; then
-    CMAKE_FLAGS+=(-DMPI_BASE_DIR="opt/${target}/${target}/sys-root/usr/local/lib")
   else
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
   fi
+fi
+
+if [[ "${target}" == *darwin* ]]; then
+    CMAKE_FLAGS+=(-DMPI_BASE_DIR="/opt/${target}/${target}/sys-root/usr/local/lib")
 fi
 
 OPENBLAS=(-lopenblas)
