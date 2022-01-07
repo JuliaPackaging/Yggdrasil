@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibCURL"
-version = v"7.78.0"
+version = v"7.81.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz",
-                  "ed936c0b02c06d42cf84b39dd12bb14b62d77c7c4e875ade022280df5dcc81d7"),
+    ArchiveSource("https://curl.se/download/curl-$(version).tar.gz",
+                  "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98"),
 ]
 
 # Bash recipe for building across all platforms
@@ -76,7 +76,7 @@ dependencies = [
     Dependency("nghttp2_jll"),
     # Note that while we unconditionally list MbedTLS as a dependency,
     # we default to schannel/SecureTransport on Windows/MacOS.
-    Dependency("MbedTLS_jll", v"2.24.0"),
+    Dependency("MbedTLS_jll", v"2.28.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
