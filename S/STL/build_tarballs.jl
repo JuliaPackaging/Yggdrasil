@@ -51,9 +51,7 @@ julia --project=@. --eval '
 '
 
 # Build and install C++ wrapper code
-# ${CXX} -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
-#     deps/StdMap.cxx deps/StdSharedPtr.cxx deps/StdString.cxx deps/StdVector.cxx
-${CXX} -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
+${CXX} -Drestrict=__restrict__ -std=c++17 -g -O2 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
     StdMap.cxx StdSharedPtr.cxx StdString.cxx StdVector.cxx
 install_license LICENSE.md
 """
