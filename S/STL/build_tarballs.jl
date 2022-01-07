@@ -11,12 +11,17 @@ sources = [
     # DirectorySource("/Users/eschnett/.julia/dev/STL"; target="STL.jl"),
     GitSource("https://github.com/eschnett/TestAbstractTypes.jl", "a23107bf47796db9d414c77801c6b3331f4950f0"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.6/julia-1.6.5-musl-x86_64.tar.gz",
-                  "e38eece6f9f20c7472caf3f8f74a99ad0880921c28e1301461fa7af919880383"),
+                  "e38eece6f9f20c7472caf3f8f74a99ad0880921c28e1301461fa7af919880383";
+                  unpack_target="julia64"),
+    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x86/1.6/julia-1.6.5-linux-i686.tar.gz",
+                  "909c275912a9ae4198710e993b388dd1089b8d6279bab74cfab59af2f4d8f38a";
+                  unpack_target="julia32"),
+              
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-export PATH="${PATH}:${WORKSPACE}/srcdir/julia-1.6.5/bin"
+export PATH="${PATH}:${WORKSPACE}/srcdir/julia${nbits}/julia-1.6.5/bin"
 
 # Switch into source directory
 cd STL.jl
@@ -50,7 +55,7 @@ julia --project=@. --eval '
 '
 
 # Build and install C++ wrapper code
-$CXX -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o $libdir/libSTL.$dlext \
+${CXX} -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
     deps/StdMap.cxx deps/StdSharedPtr.cxx deps/StdString.cxx deps/StdVector.cxx
 install_license LICENSE.md
 """
