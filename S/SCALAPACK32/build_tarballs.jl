@@ -20,9 +20,11 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-             -DCMAKE_BUILD_TYPE=Release
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
+             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+             -DCMAKE_BUILD_TYPE=Release \
+             -DBLAS_LIBRARIES="-lopenblas" \
+             -DLAPACK_LIBRARIES="-lopenblas" \
              -DBUILD_SHARED_LIBS=ON)
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
@@ -34,14 +36,6 @@ fi
 if [[ "${target}" == *darwin* ]]; then
   CMAKE_FLAGS+=(-DMPI_BASE_DIR="/opt/${target}/${target}/sys-root/usr/local")
 fi
-
-OPENBLAS=(-lopenblas)
-FFLAGS=(-cpp -ffixed-line-length-none)
-
-CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
-              -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\" \
-              -DBLAS_LIBRARIES=\"${OPENBLAS[*]}\" \
-              -DLAPACK_LIBRARIES=\"${OPENBLAS[*]}\")
 
 export CDEFS="Add_"
 
