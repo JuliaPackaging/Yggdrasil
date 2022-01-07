@@ -23,9 +23,10 @@ import Pkg.Types: VersionSpec
 
 name = "Calcium"
 upstream_version = v"0.4.1"
-version = VersionNumber(upstream_version.major * 100,
-                        upstream_version.minor * 100,
-                        upstream_version.patch * 100 + 1) # remove the 1 once the upstream_version is changed
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
