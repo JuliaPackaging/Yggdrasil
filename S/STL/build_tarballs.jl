@@ -7,25 +7,18 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/STL.jl", "81f53d9467c75111d5b937823f3ad713b1f4f78a"),
-    # DirectorySource("/Users/eschnett/.julia/dev/STL"; target="STL.jl"),
+    GitSource("https://github.com/eschnett/STL.jl", "1142e6f62ba8716b84319103502e8789be214cc4"),
     GitSource("https://github.com/eschnett/TestAbstractTypes.jl", "a23107bf47796db9d414c77801c6b3331f4950f0"),
     ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.6/julia-1.6.5-musl-x86_64.tar.gz",
-                  "e38eece6f9f20c7472caf3f8f74a99ad0880921c28e1301461fa7af919880383";
-                  unpack_target="julia64"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x86/1.6/julia-1.6.5-linux-i686.tar.gz",
-                  "909c275912a9ae4198710e993b388dd1089b8d6279bab74cfab59af2f4d8f38a";
-                  unpack_target="julia32"),
-              
+                  "e38eece6f9f20c7472caf3f8f74a99ad0880921c28e1301461fa7af919880383"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-export PATH="${PATH}:${WORKSPACE}/srcdir/julia${nbits}/julia-1.6.5/bin"
+export PATH="${PATH}:${WORKSPACE}/srcdir/julia-1.6.5/bin"
 
 # Switch into source directory
 cd STL.jl
-rm -f Manifest.toml
 
 # Create C++ wrapper code
 julia --project=@. --eval '
@@ -37,6 +30,7 @@ julia --project=@. --eval '
     write("STL_jll/src/STL_jll.jl",
         \"\"\"
         module STL_jll
+        # Just a placeholder library name
         const libSTL = "libSTL"
         export libSTL
         end
@@ -51,12 +45,16 @@ julia --project=@. --eval '
     Pkg.develop(path="../STL_jll")
     Pkg.develop(path="../TestAbstractTypes.jl")
 
-    Pkg.build("STL")
+    # Pkg.build("STL")
+    using STL
+    STL.cxx_write_code!()
 '
 
 # Build and install C++ wrapper code
+# ${CXX} -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
+#     deps/StdMap.cxx deps/StdSharedPtr.cxx deps/StdString.cxx deps/StdVector.cxx
 ${CXX} -Drestrict=__restrict__ -std=c++17 -fPIC -shared -o ${libdir}/libSTL.${dlext} \
-    deps/StdMap.cxx deps/StdSharedPtr.cxx deps/StdString.cxx deps/StdVector.cxx
+    StdMap.cxx StdSharedPtr.cxx StdString.cxx StdVector.cxx
 install_license LICENSE.md
 """
 
