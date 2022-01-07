@@ -13,8 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd bliss-*
+cd $WORKSPACE/srcdir/bliss-*
 
 atomic_patch -p1 ../patches/gmp_def.patch
 atomic_patch -p1 ../patches/cmake_gmp.patch
@@ -26,8 +25,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_BUILD_TYPE=Release \
   -DUSE_GMP=ON ..
 make -j${nproc}
-cp bliss$exeext $bindir
-cp libbliss.${dlext} $libdir
+install -Dm 755 "bliss${exeext}" "${bindir}/bliss${exeext}"
+install -Dm 755 "libbliss.${dlext}" "$libdir/libbliss.${dlext}"
 
 mkdir -p $prefix/include/bliss
 install -p -m 0644 -t "${includedir}/bliss" ../src/*.hh
@@ -41,7 +40,8 @@ platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libbliss", :libbliss)
+    LibraryProduct("libbliss", :libbliss),
+    ExecutableProduct("bliss", :bliss),
 ]
 
 # Dependencies that must be installed before this package can be built
