@@ -4,7 +4,7 @@ name = "SCALAPACK32"
 version = v"2.1.0"
 
 sources = [
-  ArchiveSource("http://www.netlib.org/scalapack/scalapack-2.1.0.tgz",
+  ArchiveSource("http://www.netlib.org/scalapack/scalapack-$(version).tgz",
                 "61d9216cf81d246944720cfce96255878a3f85dec13b9351f1fa0fd6768220a6"),
   DirectorySource("./bundled")
 ]
@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/scalapack-2.1.0
+cd $WORKSPACE/srcdir/scalapack-*
 
 # the patch prevents running foreign executables, which fails on most platforms
 # we instead set CDEFS manually below
