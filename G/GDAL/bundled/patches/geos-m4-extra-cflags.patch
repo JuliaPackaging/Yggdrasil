@@ -1,6 +1,6 @@
 --- a/m4/geos.m4
 +++ b/m4/geos.m4
-@@ -122,7 +122,7 @@
+@@ -125,7 +125,7 @@
        HAVE_GEOS="no"
  
        GEOS_LIBS="`${GEOS_CONFIG} --ldflags` -lgeos_c"
@@ -9,7 +9,7 @@
        GEOS_VERSION="`${GEOS_CONFIG} --version`"
  
        ax_save_LIBS="${LIBS}"
-@@ -134,7 +134,7 @@
+@@ -137,7 +137,7 @@
          [GEOSversion],
          [HAVE_GEOS="yes"],
          [HAVE_GEOS="no"],
