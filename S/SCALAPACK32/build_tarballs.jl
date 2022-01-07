@@ -24,8 +24,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
              -DCMAKE_BUILD_TYPE=Release
              -DBUILD_SHARED_LIBS=ON
-             -DMPI_INCLUDE_PATH="${prefix}/include"
-             -DMPI_LIBRARIES="mpi")
+             -DMPI_BASE_DIR=${prefix})
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
