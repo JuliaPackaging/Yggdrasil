@@ -23,13 +23,16 @@ done
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
              -DCMAKE_BUILD_TYPE=Release
-             -DBUILD_SHARED_LIBS=ON
-             -DMPI_BASE_DIR=${prefix})
+             -DBUILD_SHARED_LIBS=ON)
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
 else
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
+fi
+
+if [[ "${target}" == *darwin* ]]; then
+  CMAKE_FLAGS+=(-DMPI_BASE_DIR="/opt/${target}/${target}/sys-root/usr/local")
 fi
 
 OPENBLAS=(-lopenblas)
