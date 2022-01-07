@@ -46,6 +46,11 @@ elif [[ "${target}" == *-linux-* ]]; then
     autoreconf -vi
 fi
 
+# same fix as used for PROJ
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="$LDFLAGS -lcurl"
+fi
+
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
