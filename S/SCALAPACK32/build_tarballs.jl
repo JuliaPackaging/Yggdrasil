@@ -21,33 +21,18 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
              -DCMAKE_BUILD_TYPE=Release
              -DBUILD_SHARED_LIBS=ON)
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
 else
-  # special cases for CMake to discover MPI_Fortran
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DCMAKE_SHARED_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DMPI_Fortran_LINK_FLAGS="-Wl,-rpath -Wl,/workspace/destdir/lib -Wl,--enable-new-dtags -L/workspace/destdir/lib -Wl,-L/opt/${target}/${target}/sys-root/usr/lib64 -Wl,-lpthread -Wl,-lrt")
-  else
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
-  fi
-fi
-
-if [[ "${target}" == *darwin* ]]; then
-    CMAKE_FLAGS+=(-DMPI_BASE_DIR="/opt/${target}/${target}/sys-root/usr/local/lib")
+  CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
 fi
 
 OPENBLAS=(-lopenblas)
 FFLAGS=(-cpp -ffixed-line-length-none)
-
-if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-  OPENBLAS+=(-lgomp)
-fi
 
 CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
               -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\" \
@@ -65,7 +50,7 @@ make install
 
 # OpenMPI and MPICH are not precompiled for Windows
 # Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p), supported_platforms(; experimental=true)))
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
