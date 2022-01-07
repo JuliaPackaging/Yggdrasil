@@ -23,6 +23,14 @@ cd $WORKSPACE/srcdir/flac-*/
 # kernel headers, rather than the glibc headers, sicne our glibc is too old
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
 
+if [[ "${target}" == *-mingw* ]]; then 
+    # Fix error 
+    #    sed/sed-compile.o: In function `sprintf': 
+    #    /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/stdio.h:366: undefined reference to `__chk_fail' 
+    # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564 
+    export LIBS="-lssp" 
+fi
+
 ./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
 make -j${nproc}
 make install
