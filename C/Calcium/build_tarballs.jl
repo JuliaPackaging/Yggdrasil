@@ -23,11 +23,9 @@ import Pkg.Types: VersionSpec
 
 name = "Calcium"
 upstream_version = v"0.4.1"
-build_for_julia16_or_newer = true
-version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
-version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-                        upstream_version.minor * 100 + version_offset.minor,
-                        upstream_version.patch * 100 + version_offset.patch)
+version = VersionNumber(upstream_version.major * 100,
+                        upstream_version.minor * 100,
+                        upstream_version.patch * 100 + 1) # remove the 1 once the upstream_version is changed
 
 # Collection of sources required to complete build
 sources = [
@@ -56,7 +54,7 @@ make install LIBDIR=$(basename ${libdir})
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=build_for_julia16_or_newer)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -64,15 +62,15 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-f(v::VersionNumber) = build_for_julia16_or_newer ?  VersionNumber(v.major, v.minor, v.patch + 1) : v
+
 dependencies = [
-    Dependency("FLINT_jll"; compat = "~$(f(v"200.800.100"))"),
-    Dependency("Arb_jll", compat = "~$(f(v"200.2000"))"),
-    Dependency("Antic_jll", compat = "~$(f(v"0.200.500"))"),
-    Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
-    Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
+    Dependency("FLINT_jll"; compat = "~$(v"200.800.101")"),
+    Dependency("Arb_jll", compat = "~$(v"200.2100.101")"),
+    Dependency("Antic_jll", compat = "~$(v"0.200.501")",
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = build_for_julia16_or_newer ? "1.6" : "1.0-1.5")
+               julia_compat = "1.6")
