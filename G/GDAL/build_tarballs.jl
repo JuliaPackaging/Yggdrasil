@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.4.0"
+upstream_version = v"3.4.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -11,8 +12,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "eafabd36563036699a4fea7c6b251893b105e2f515412d57e0e21733926bdad0"),
-    DirectorySource("../bundled"),
+        "e360387bc25ec24940f46afbeada48002d72c74aaf9eccf2a40e8d74e711a2e4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +49,9 @@ fi
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
+# Read the options in the log file
 ./configure --help
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
@@ -77,7 +80,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -106,7 +109,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"; compat="~3.10"),
-    Dependency("PROJ_jll", compat="~800.200"),
+    Dependency("PROJ_jll"; compat="~800.200"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("OpenJpeg_jll"),
