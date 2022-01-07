@@ -7,7 +7,7 @@ version = v"6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.3/scotch-v6.1.3.tar.gz","4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
+    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz","4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
     DirectorySource("./bundled")
 ]
 
