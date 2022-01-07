@@ -45,7 +45,9 @@ if [[ "${target}" == powerpc64le-linux-gnu ]]; then
   OPENBLAS+=(-lgomp)
 fi
 
-CMAKE_FLAGS+=(-DBLAS_LIBRARIES=\"${OPENBLAS[*]}\" \
+CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
+              -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\" \
+              -DBLAS_LIBRARIES=\"${OPENBLAS[*]}\" \
               -DLAPACK_LIBRARIES=\"${OPENBLAS[*]}\")
 
 export CDEFS="Add_"
