@@ -15,8 +15,8 @@
 
 using BinaryBuilder
 
-HELICS_VERSION = v"2.8.0"
-HELICS_SHA = "f2b218494407573c75561b7d4d656bc60f7592e970dd87d98c969066d76d89c1"
+HELICS_VERSION = v"3.1.1"
+HELICS_SHA = "65791ddede5f06aff58daa7cf0b9d244baa6c4e08e119ca010ddcc6137a479d9"
 
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
@@ -39,11 +39,18 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-products = [
-    LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
-]
+products = if HELICS_VERSION < v"3.0.0"
+    [
+        LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
+    ]
+else
+    [
+        LibraryProduct("libhelics", :libhelics),
+    ]
+end
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
+
+platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.isfreebsd))
 
 dependencies = [
     Dependency("ZeroMQ_jll"),
