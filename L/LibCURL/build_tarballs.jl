@@ -23,7 +23,7 @@ FLAGS=(
     --without-nss --without-polarssl
     --without-spnego --without-libpsl --disable-ares --disable-manual
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
-    --disable-static --disable-libgsasl
+    --disable-static --without-libgsasl
 
     # A few things we actually enable
     --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
