@@ -33,22 +33,10 @@ else
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
 fi
 
-if [[ "${target}" == *darwin* ]]; then
-  # MPICH's pkgconfig file "mpich.pc" lists these options:
-  #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-  #     Cflags:   -I${includedir}
-  # cmake doesn't know how to handle the "-framework OpenCL" option
-  # and wants to use "-framework" as a stand-alone option. This fails
-  # gloriously, and cmake concludes that MPI is not available.
-  CMAKE_FLAGS+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' \
-                -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' \
-                -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' \
-                -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi')
-fi
-
 export CDEFS="Add_"
 
-mkdir build && cd build
+mkdir build
+cd build
 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
@@ -57,7 +45,7 @@ make install
 
 # OpenMPI and MPICH are not precompiled for Windows
 # Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> Sys.iswindows(p) || arch(p) == "powerpc64le"))
 
 # The products that we will ensure are always built
 products = [
@@ -67,7 +55,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4", v"3.3.2")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
