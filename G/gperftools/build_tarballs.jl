@@ -7,7 +7,7 @@ version = v"2.9.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-2.9.1/gperftools-2.9.1.tar.gz","ea566e528605befb830671e359118c2da718f721c27225cbbc93858c7520fee3")
+    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-$(version)/gperftools-$(version).tar.gz","ea566e528605befb830671e359118c2da718f721c27225cbbc93858c7520fee3")
 ]
 
 # Bash recipe for building across all platforms
@@ -43,8 +43,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
-filter!(!Sys.iswindows, platforms)
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
 
 # The products that we will ensure are always built
 products = [
