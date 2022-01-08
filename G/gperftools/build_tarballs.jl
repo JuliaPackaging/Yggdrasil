@@ -24,10 +24,9 @@ elif [[ "${target}" == *-apple-* ]]; then
     # https://github.com/Homebrew/homebrew-core/blob/5e8ab5f092bd4dfe9658bab6d86150e26a326de3/Formula/gperftools.rb#L28
     export CXXFLAGS=-D_XOPEN_SOURCE
 elif [[ "${target}" == *-freebsd* ]]; then
-    # Fix the error
-    #   undefined reference to `backtrace_symbols'
+    # Fix the error: undefined reference to `backtrace_symbols'
     export LDFLAGS="-lexecinfo"
-    export CPPFLAGS=-"-I${includedir}"
+    export CPPFLAGS="-I${includedir}"
 fi
 
 ./configure \
@@ -45,6 +44,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
