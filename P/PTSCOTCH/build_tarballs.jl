@@ -39,7 +39,7 @@ products = [
     LibraryProduct("libptscotcherr", :libptscotcherr),
     LibraryProduct("libptscotcherrexit", :libptscotcherrexit),
     LibraryProduct("libptscotchparmetis", :libptscotchparmetis),
-    LibraryProduct("libptscotch", :libptscotch),
+    LibraryProduct("libptscotch", :libptscotch, dont_dlopen=true),
     LibraryProduct("libptesmumps", :libptesmumps)
 ]
 
