@@ -39,8 +39,8 @@ products = [
     LibraryProduct("libptscotcherr", :libptscotcherr),
     LibraryProduct("libptscotcherrexit", :libptscotcherrexit),
     LibraryProduct("libptscotchparmetis", :libptscotchparmetis),
-    LibraryProduct("libptscotch", :libptscotch, dont_dlopen=true),
-    LibraryProduct("libptesmumps", :libptesmumps, dont_dlopen=true)
+    LibraryProduct("libptscotch", :libptscotch),
+    LibraryProduct("libptesmumps", :libptesmumps)
 ]
 
 # Dependencies that must be installed before this package can be built
