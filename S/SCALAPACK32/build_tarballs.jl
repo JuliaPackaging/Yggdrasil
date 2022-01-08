@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SCALAPACK32"
 version = v"2.1.0"
@@ -34,7 +34,16 @@ else
 fi
 
 if [[ "${target}" == *darwin* ]]; then
-  CMAKE_FLAGS+=(-DMPI_BASE_DIR="/opt/${target}/${target}/sys-root/usr/local")
+  # MPICH's pkgconfig file "mpich.pc" lists these options:
+  #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
+  #     Cflags:   -I${includedir}
+  # cmake doesn't know how to handle the "-framework OpenCL" option
+  # and wants to use "-framework" as a stand-alone option. This fails
+  # gloriously, and cmake concludes that MPI is not available.
+  CMAKE_FLAGS+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' \
+                -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' \
+                -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' \
+                -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi')
 fi
 
 export CDEFS="Add_"
