@@ -5,8 +5,9 @@ version = v"1.10.0"
 
 # Collection of sources required to build LibSSH2
 sources = [
-    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
-                  "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
+#     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
+#                   "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
+      GitSource("https://github.com/libssh2/libssh2.git", "13ad7b2f5cd67e0dc843098ce19ce8b208368c29")
 ]
 
 version = v"1.10.1" # <-- This version number is a lie to update compat bounds
