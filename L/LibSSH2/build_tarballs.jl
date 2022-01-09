@@ -9,6 +9,8 @@ sources = [
                   "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
 ]
 
+version = v"1.10.1" # <-- This version number is a lie to update compat bounds
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
