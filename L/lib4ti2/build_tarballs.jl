@@ -59,7 +59,7 @@ fi
 """
 
 # Build for all platforms
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # 4ti2 contains std::string values; to avoid incompatibilities across
 # the GCC 4/5 version boundary, we need the following:

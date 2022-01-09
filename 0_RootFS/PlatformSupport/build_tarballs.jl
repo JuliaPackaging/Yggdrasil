@@ -5,7 +5,7 @@
 # ```
 # using BinaryBuilder
 # using BinaryBuilder: aatriplet
-# for platform in supported_platforms(; experimental=true)
+# for platform in supported_platforms()
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"

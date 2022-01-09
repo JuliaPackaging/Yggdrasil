@@ -130,7 +130,7 @@ sed -i -e "s#--sysroot[ =][^ ']\+##g" \
 # platforms are passed in on the command line
 platforms = filter!(p -> !Sys.iswindows(p) &&
                          arch(p) != "armv6l",
-                    supported_platforms(;experimental=true))
+                    supported_platforms())
 
 # The products that we will ensure are always built
 products = [

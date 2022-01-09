@@ -38,7 +38,7 @@ $CC -Itriangle  -Wno-int-to-pointer-cast  -Wno-pointer-to-int-cast -DREAL=double
 install_license triangle/README
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 products = [LibraryProduct("libtriangle", :libtriangle)]
 dependencies = Dependency[]
 

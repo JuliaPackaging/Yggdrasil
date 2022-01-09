@@ -43,7 +43,7 @@ make install INSTALL_TOP="${prefix}" INSTALL_LIB="${libdir}" TO_BIN="${TO_BIN}" 
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
-platforms = supported_platforms(experimental=true)
+platforms = supported_platforms()
 
 products = [
     ExecutableProduct("lua", :lua),

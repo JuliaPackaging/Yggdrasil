@@ -18,7 +18,7 @@ for d in /opt/${target}/${target}/lib*; do
 done
 """
 
-extraction_platforms = supported_platforms(;experimental=true)
+extraction_platforms = supported_platforms()
 extraction_products = [
     LibraryProduct("libstdc++", :libstdcxx),
     LibraryProduct("libgomp", :libgomp),
@@ -107,7 +107,7 @@ install_license /usr/share/licenses/GPL3
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 common_products = [

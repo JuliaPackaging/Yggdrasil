@@ -51,7 +51,7 @@ install_license COPYING*
 """
 
     # We enable experimental platforms as this is a core Julia dependency
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+    platforms = expand_cxxstring_abis(supported_platforms())
 
     # The products that we will ensure are always built
     products = [

@@ -45,7 +45,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l" && (Sys.isapple(p) || Sys.islinux(p)), supported_platforms(;experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l" && (Sys.isapple(p) || Sys.islinux(p)), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 # For some reasons, building for CXX03 string ABI doesn't actually work, skip it
 filter!(x -> cxxstring_abi(x) != "cxx03", platforms)

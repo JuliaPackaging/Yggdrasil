@@ -69,7 +69,7 @@ install_license $WORKSPACE/srcdir/openmpi*/LICENSE $WORKSPACE/srcdir/MPIconstant
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 #platforms = supported_platforms()
-platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms(; experimental=true))
+platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
     
 products = [

@@ -15,7 +15,7 @@ mkdir -p "${libdir}"
 mv src/libRmath-julia.* "${libdir}"
 """
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libRmath-julia", :libRmath),

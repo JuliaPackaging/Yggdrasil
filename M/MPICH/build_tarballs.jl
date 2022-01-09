@@ -113,7 +113,7 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
 
 products = [
     # MPICH

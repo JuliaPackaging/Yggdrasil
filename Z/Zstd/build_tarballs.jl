@@ -27,7 +27,7 @@ ninja -j${nproc}
 ninja install
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libzstd", :libzstd),

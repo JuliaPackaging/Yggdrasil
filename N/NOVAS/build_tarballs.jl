@@ -25,7 +25,7 @@ install_license ${WORKSPACE}/srcdir/extras/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

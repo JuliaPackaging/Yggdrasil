@@ -43,7 +43,7 @@ make
 make install
 """
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 

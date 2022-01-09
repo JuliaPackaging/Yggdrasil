@@ -27,7 +27,7 @@ install_license ../{COPYRIGHT,LGPL}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # FreeBSD build failed with libgfortran_version=3.0.0
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built

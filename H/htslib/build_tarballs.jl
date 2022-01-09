@@ -36,7 +36,7 @@ fi
 # platforms are passed in on the command line
 # NOTE: Configuring i686-w64-mingw32 fails due to 'unable to find the recv()
 # function' error. So we skip it for now.
-platforms = supported_platforms(; experimental=true, exclude=Sys.iswindows)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [

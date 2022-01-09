@@ -73,7 +73,7 @@ install_license ${WORKSPACE}/srcdir/libxtrx/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable everything except glibc Linux for now, and only intel/arm processors
 filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && proc_family(p) ∈ ("intel", "arm"), platforms)

@@ -15,7 +15,7 @@ cc -o ${libdir}/libunishox.${dlext} unishox2.c -shared -std=gnu11 -fPIC -Werror 
 """
 
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libunishox", :libunishox),

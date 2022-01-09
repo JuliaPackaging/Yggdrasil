@@ -38,7 +38,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 #this is really only supported for linux platforms
 filter!(Sys.islinux, platforms)
 

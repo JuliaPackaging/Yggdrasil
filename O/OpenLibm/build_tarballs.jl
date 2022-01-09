@@ -35,7 +35,7 @@ install_license ./LICENSE.md
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libopenlibm", :libopenlibm),

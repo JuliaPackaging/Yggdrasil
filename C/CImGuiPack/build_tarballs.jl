@@ -24,7 +24,7 @@ install_license ../cimgui/LICENSE ../cimgui/imgui/LICENSE.txt ../cimplot/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

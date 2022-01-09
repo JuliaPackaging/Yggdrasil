@@ -25,7 +25,7 @@ cp "libbwa.${dlext}" "${libdir}/libbwa.${dlext}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # The package uses Intel intrinsics, so we can build only for Intel platforms.
 filter!(p -> BinaryBuilder.proc_family(p) == "intel", platforms)
 # ...and uses some Unix header files not available on Windows.

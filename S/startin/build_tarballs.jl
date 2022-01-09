@@ -24,7 +24,7 @@ fi
 """
 
 # musl platforms are failing, as is win32
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # `cdylib` apparently doesn't support musl
 filter!(p -> libc(p) != "musl", platforms)
 # Our Rust toolchain for i686 Windows is unusable

@@ -24,7 +24,7 @@ make install
 """
 
 # Build for all platforms
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

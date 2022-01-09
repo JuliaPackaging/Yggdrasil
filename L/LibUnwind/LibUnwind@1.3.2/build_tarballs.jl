@@ -43,7 +43,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
-platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms(;experimental=true))
+platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [

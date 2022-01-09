@@ -45,7 +45,7 @@ make install
 rm ${prefix}/lib/libsbml-static.a
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libsbml", :libsbml),

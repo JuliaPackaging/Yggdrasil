@@ -37,7 +37,7 @@ install_license ${WORKSPACE}/srcdir/OpenLSTO/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true); skip=p->false)
+platforms = expand_cxxstring_abis(supported_platforms(); skip=p->false)
 
 # The products that we will ensure are always built
 products = [

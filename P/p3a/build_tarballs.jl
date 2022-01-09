@@ -50,7 +50,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
+platforms = expand_cxxstring_abis(supported_platforms())
 #Kokkos is only available on 64 bit
 filter!(p -> nbits(p) != 32, platforms)
 

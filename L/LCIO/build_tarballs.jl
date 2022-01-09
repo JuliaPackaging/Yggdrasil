@@ -23,7 +23,7 @@ cmake --build . --target install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms)
 filter!(!Sys.iswindows, platforms)
 filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)

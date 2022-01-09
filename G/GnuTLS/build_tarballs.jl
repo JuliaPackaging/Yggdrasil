@@ -44,7 +44,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable windows because O_NONBLOCK isn't defined
 filter!(!Sys.iswindows, platforms)

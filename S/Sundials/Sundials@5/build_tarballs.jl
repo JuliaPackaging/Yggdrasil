@@ -64,7 +64,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
 products = [

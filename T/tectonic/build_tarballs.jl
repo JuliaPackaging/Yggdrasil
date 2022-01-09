@@ -26,7 +26,7 @@ cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # We dont have all dependencies for armv6l
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable

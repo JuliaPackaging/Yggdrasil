@@ -14,7 +14,7 @@ mkdir -p ${libdir}
 ${CC} shoco.c -o "${libdir}/libshoco.${dlext}" -fPIC -std=c99 -shared
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libshoco", :libshoco),

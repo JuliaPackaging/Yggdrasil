@@ -19,7 +19,7 @@ cc -I -Wall -std=c99 -shared -fPIC -O3 -o "${libdir}/bipartite_assignement.${dle
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

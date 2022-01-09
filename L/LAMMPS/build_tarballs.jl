@@ -40,7 +40,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = supported_platforms(; experimental=true)
+# platforms = supported_platforms()
 platforms = supported_platforms()
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 

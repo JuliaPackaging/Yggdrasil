@@ -13,7 +13,7 @@ make CFLAGS="-Os -fwhole-program" LDFLAGS="-Wl,-s" "PREFIX=$prefix" install
 """
 
 # Build only on platforms where ELF objects are usually used.
-platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms(; experimental=true))
+platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 products = [
     ExecutableProduct("libtree", :libtree)

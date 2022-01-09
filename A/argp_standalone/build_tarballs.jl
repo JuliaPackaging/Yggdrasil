@@ -23,7 +23,7 @@ install -D -m755 libargp.a ${libdir}/libargp.a
 """
 
 # Select Unix platforms
-platforms = filter(p->Sys.islinux(p) && libc(p) == "musl", supported_platforms(;experimental=true))
+platforms = filter(p->Sys.islinux(p) && libc(p) == "musl", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
