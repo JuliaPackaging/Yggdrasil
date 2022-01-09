@@ -7,7 +7,7 @@ version = v"1.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ukoethe/vigra/archive/refs/tags/Version-$(version).tar.gz", "b2718250d28baf1932fcbe8e30f7e4d146e751ad0e726e375a72a0cdb4e3250e"),
+    ArchiveSource("https://github.com/ukoethe/vigra/archive/refs/tags/Version-$(version.major)-$(version.minor)-$(version.patch).tar.gz", "b2718250d28baf1932fcbe8e30f7e4d146e751ad0e726e375a72a0cdb4e3250e"),
     DirectorySource("./bundled")
 ]
 
