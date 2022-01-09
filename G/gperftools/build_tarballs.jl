@@ -45,7 +45,7 @@ make install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
 # We can't build libprofiler on aarch64-Linux-musl
-filter!(p -> !(Sys.islinux(p) && arch(p) == 64 && libc(p) == "musl"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
