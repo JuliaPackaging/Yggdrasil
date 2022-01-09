@@ -42,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll", v"2.28.0"),
+    Dependency("MbedTLS_jll"; compat="~2.28.0"),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
