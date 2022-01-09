@@ -35,6 +35,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # While waiting for https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193 to be merged
+    export CXXFLAGS="-mmacosx-version-min=11.0"
 fi
 
 cd $WORKSPACE/srcdir
