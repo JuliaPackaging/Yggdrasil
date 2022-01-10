@@ -52,6 +52,18 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
+if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
+    # hack suffixes for 64-bit OpenBLAS in the same way julia has
+    SYMB_DEFS=()
+    for sym in cblas_sgemm cblas_dgemm cblas_cgemm cblas_zgemm; do
+        SYMB_DEFS+=("-D${sym}=${sym}64_")
+    done
+    export CFLAGS="$CFLAGS ${SYMB_DEFS[@]}"
+    for f in ${WORKSPACE}/srcdir/patches64/*.patch; do
+        atomic_patch -p1 ${f}
+    done
+fi
+
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
@@ -70,6 +82,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
     Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
+    Dependency("OpenBLAS_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
