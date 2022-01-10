@@ -18,9 +18,10 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.11-9-any.pkg.tar.zst", "9da9ebafaef832dba2f442ad44d9ae8759784b86478dcbe326500195f8ea6339"; unpack_target="x86_64-w64-mingw32"),
 
     # x86_64 and aarch64 for Linux and macOS from https://anaconda.org/conda-forge/hdf5/files
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-64/hdf5-1.12.1-nompi_h7f166f4_103.tar.bz2", "a17c23e1c0992e7af96245da4d122dea09a16cb880af0bc6bdd768e561c1ae75"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-aarch64/hdf5-1.12.1-nompi_he09bf5b_103.tar.bz2", "b5a923cf26b76b341e09c194a638e4840ffa5e99a67a99d1a8836554e094cec6"; unpack_target="aarch64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-64/hdf5-1.12.1-nompi_h2f0ef1a_103.tar.bz2", "d628295cc8d8358dbfbe1037b31f2e181efc06f008ae6711da409413a3cb5695"; unpack_target="x86_64-apple-darwin14"),
+    # NOTE: make sure to select those compatible with OpenSSL 1.1.1
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-64/hdf5-1.12.1-nompi_h2750804_103.tar.bz2", "bd7bb0657d63acf52c9d30d1b89276356c6da4ff8a90dd5fcbd0cfde6578f317"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-aarch64/hdf5-1.12.1-nompi_h774d4d8_103.tar.bz2", "8688cfc983962bf7a59a97becb0d67ee64eb4a7dd5793b915cf50dccd90bfa2d"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-64/hdf5-1.12.1-nompi_h2f0ef1a_102.tar.bz2", "4a4640e44adea33833e7efb6ac3070dd4c80a8a156c2fd3aa7cfcac8865f5a26"; unpack_target="x86_64-apple-darwin14"),
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-arm64/hdf5-1.12.1-nompi_had0e5e0_103.tar.bz2", "ef48b684b22c6b0077bc9836e0cc6d15abb88868d7a6c842226666ebb8bbd449"; unpack_target="aarch64-apple-darwin20"),
 ]
 
@@ -68,7 +69,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("LibCURL_jll"),
 ]
 
