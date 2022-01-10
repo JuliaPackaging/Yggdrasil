@@ -6,7 +6,7 @@ include("../../fancy_toys.jl") # for get_addable_spec
 
 # return the platforms supported by libjulia
 function libjulia_platforms(julia_version)
-    platforms = supported_platforms(; experimental=julia_version ≥ v"1.7")
+    platforms = supported_platforms()
 
     # skip 32bit musl builds; they fail with this error:
     #    libunwind.so.8: undefined reference to `setcontext'
@@ -15,6 +15,12 @@ function libjulia_platforms(julia_version)
     # in Julia <= 1.3 skip PowerPC builds (see https://github.com/JuliaPackaging/Yggdrasil/pull/1795)
     if julia_version < v"1.4"
         filter!(p -> !(Sys.islinux(p) && arch(p) == "powerpc64le"), platforms)
+    end
+
+    if julia_version < v"1.7"
+        # In Julia <= 1.6, skip macOS on ARM and Linux on armv6l
+        filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+        filter!(p -> arch(p) != "armv6l", platforms)
     end
 
     if julia_version >= v"1.6"
@@ -46,12 +52,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.5.3" => "be19630383047783d6f314ebe0bf5e3f95f82b0c203606ec636dced405aab1fe",
         v"1.5.4" => "852122bf1bdefd39307b1dd2aa546e3885d76ede7c07cb04d90814b9510ea9f9",
         v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
-        v"1.7.0-rc1" => "0da8a3597ab3841457877ad1e4740e9ee49c08f55a00c10a2a21c8165e68f1aa",
+        v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
     )
 
     if version == v"1.8.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia", "5b7bb084d478050b5265f66a571969c7df280f6b"),
+            GitSource("https://github.com/JuliaLang/julia", "00646634c6a73998eaae3785eb78fea881c39502"),
             DirectorySource("./bundled"),
         ]
     else
@@ -177,7 +183,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     override BUILD_OS=Linux
 
     #llvm-config-host is not available
-    override LLVMLINK=${LLVMLINK}
+    override LLVMLINK=${LLVMLINK}    # For Julia <= 1.7
+    override RT_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
+    override CG_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
     override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
 
@@ -268,7 +276,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     else
         cp -r usr/lib/libjulia* ${libdir}/
     fi
-    
+
     cp -R -L usr/include/julia/* ${includedir}/julia
     install_license LICENSE.md
     """
@@ -348,12 +356,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         # So we use get_addable_spec below to "fake it" for now.
         # This means the resulting package has fewer dependencies declared, but at least it
         # will work and allow people to build JLL binaries ready for Julia 1.7
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
 
         # starting with Julia 1.7, we need LLVMLibUnwind_jll
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
     elseif version.major == 1 && version.minor == 8
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+4")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
     else
         error("Unsupported Julia version")

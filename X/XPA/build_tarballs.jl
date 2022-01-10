@@ -17,7 +17,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     export CFLAGS=-fPIC
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes
-make -j$(nproc)
+make -j${nproc}
 if [[ ${target} == *mingw* ]]; then
     make mingw-dll
     mkdir -p ${libdir}
