@@ -21,11 +21,20 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
+             -DCMAKE_FIND_ROOT_PATH=${prefix} \
              -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
              -DCMAKE_BUILD_TYPE=Release \
              -DBLAS_LIBRARIES="-lopenblas" \
              -DLAPACK_LIBRARIES="-lopenblas" \
-             -DBUILD_SHARED_LIBS=ON)
+             -DBUILD_SHARED_LIBS=ON \
+             -DMPI_HOME=${prefix} \
+             -DMPI_BASE_DIR=${prefix} \
+             -DCMAKE_C_COMPILER=$CC \
+             -DCMAKE_CXX_COMPILER=$CXX \
+             -DCMAKE_Fortran_COMPILER=$FC \
+             -DMPI_C_COMPILER="${bindir}/mpicc" \
+             -DMPI_CXX_COMPILER="${bindir}/mpicxx" \
+             -DMPIEXEC_EXECUTABLE="${binbir}/mpiexec")
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
@@ -55,7 +64,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"), v"3.3.2"),
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
