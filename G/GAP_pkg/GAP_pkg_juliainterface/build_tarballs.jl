@@ -6,7 +6,7 @@ include("../common.jl")
 gap_version = v"400.1191.001"
 gap_lib_version = v"400.1191.000"
 name = "JuliaInterface"
-upstream_version = v"0.7.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = v"0.7.3" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -14,7 +14,7 @@ julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "ce9df14f7af1d0c9d9ce0ce1e588f9b5ed1845ed"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "baa0589573a9b56a01d850c1c0b5a381fbec07bb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -59,3 +59,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

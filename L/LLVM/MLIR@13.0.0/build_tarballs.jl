@@ -1,6 +1,6 @@
 name = "MLIR"
-llvm_full_version = v"13.0.0+1"
-libllvm_version = v"13.0.0+1"
+llvm_full_version = v"13.0.0+3"
+libllvm_version = v"13.0.0+3"
 
 
 # Include common LLVM stuff

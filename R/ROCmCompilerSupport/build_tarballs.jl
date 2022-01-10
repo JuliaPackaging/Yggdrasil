@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ROCmCompilerSupport"
-version = v"4.0.0"
+version = v"4.2.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCm-CompilerSupport/archive/rocm-$(version).tar.gz",
-                  "f389601fb70b2d9a60d0e2798919af9ddf7b8376a2e460141507fe50073dfb31"), # 4.0.0
+                  "40a1ea50d2aea0cf75c4d17cdd6a7fe44ae999bf0147d24a756ca4675ce24e36"),
     DirectorySource("./bundled"),
 ]
 
@@ -26,8 +26,6 @@ make
 cd ../..
 
 # then build everything else
-atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-1031.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-tests.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/disable-bc2h.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-objdump-clopt.patch
 mkdir build && cd build
@@ -36,10 +34,10 @@ cp ../cmake/bc2h/bc2h .
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
       -DLLVM_DIR="${prefix}/lib/cmake/llvm" \
       -DClang_DIR="${prefix}/lib/cmake/clang" \
       -DLLD_DIR="${prefix}/lib/cmake/ldd" \
+      -DBUILD_TESTING:BOOL=OFF \
       ..
 PATH=../cmake/bc2h:$PATH make -j${nproc}
 make install
@@ -64,9 +62,10 @@ products = [
 dependencies = [
     Dependency("hsa_rocr_jll"),
     Dependency("ROCmDeviceLibs_jll"),
-    BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=v"4.2.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
+               julia_compat="1.7",
                preferred_gcc_version=v"8", preferred_llvm_version=v"11")

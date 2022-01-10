@@ -41,7 +41,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("HarfBuzz_jll", v"2.8.1"; compat="2.8.1"),
     Dependency("Cairo_jll", v"1.16.1"; compat="1.16.1"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

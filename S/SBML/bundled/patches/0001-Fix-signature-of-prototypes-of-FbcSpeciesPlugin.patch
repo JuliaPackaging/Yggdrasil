@@ -1,0 +1,110 @@
+From a4bf2882124658271c8fa0627917e765465063e6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Tue, 21 Dec 2021 16:49:07 +0100
+Subject: [PATCH 1/3] Fix signature of prototypes of `FbcSpeciesPlugin`
+
+There is a mismatch between the signature of these functions in the header
+files (here they use `SBasePlugin_t * fbc`) and their implementations (here they
+use `FbcSBasePlugin_t * fbc`), as a result the C API does not correctly export
+these functions because they get C++ name mangling.
+---
+ .../packages/fbc/extension/FbcSpeciesPlugin.h | 20 +++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/src/sbml/packages/fbc/extension/FbcSpeciesPlugin.h b/src/sbml/packages/fbc/extension/FbcSpeciesPlugin.h
+index e5b747f50..9e1f1feee 100644
+--- a/src/sbml/packages/fbc/extension/FbcSpeciesPlugin.h
++++ b/src/sbml/packages/fbc/extension/FbcSpeciesPlugin.h
+@@ -644,7 +644,7 @@ BEGIN_C_DECLS
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_getCharge(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_getCharge(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -658,7 +658,7 @@ FbcSpeciesPlugin_getCharge(SBasePlugin_t * fbc);
+ */
+ LIBSBML_EXTERN
+ double
+-FbcSpeciesPlugin_getChargeAsDouble(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_getChargeAsDouble(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -674,7 +674,7 @@ FbcSpeciesPlugin_getChargeAsDouble(SBasePlugin_t * fbc);
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_isSetCharge(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_isSetCharge(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -693,7 +693,7 @@ FbcSpeciesPlugin_isSetCharge(SBasePlugin_t * fbc);
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_setCharge(SBasePlugin_t * fbc, int charge);
++FbcSpeciesPlugin_setCharge(FbcSBasePlugin_t * fbc, int charge);
+ 
+ 
+ /**
+@@ -712,7 +712,7 @@ FbcSpeciesPlugin_setCharge(SBasePlugin_t * fbc, int charge);
+ */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_setChargeAsDouble(SBasePlugin_t * fbc, double charge);
++FbcSpeciesPlugin_setChargeAsDouble(FbcSBasePlugin_t * fbc, double charge);
+ 
+ 
+ /**
+@@ -728,7 +728,7 @@ FbcSpeciesPlugin_setChargeAsDouble(SBasePlugin_t * fbc, double charge);
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_unsetCharge(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_unsetCharge(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -742,7 +742,7 @@ FbcSpeciesPlugin_unsetCharge(SBasePlugin_t * fbc);
+  */
+ LIBSBML_EXTERN
+ char *
+-FbcSpeciesPlugin_getChemicalFormula(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_getChemicalFormula(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -758,7 +758,7 @@ FbcSpeciesPlugin_getChemicalFormula(SBasePlugin_t * fbc);
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_isSetChemicalFormula(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_isSetChemicalFormula(FbcSBasePlugin_t * fbc);
+ 
+ 
+ /**
+@@ -778,7 +778,7 @@ FbcSpeciesPlugin_isSetChemicalFormula(SBasePlugin_t * fbc);
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_setChemicalFormula(SBasePlugin_t * fbc, const char * chemicalFormula);
++FbcSpeciesPlugin_setChemicalFormula(FbcSBasePlugin_t * fbc, const char * chemicalFormula);
+ 
+ 
+ /**
+@@ -794,7 +794,7 @@ FbcSpeciesPlugin_setChemicalFormula(SBasePlugin_t * fbc, const char * chemicalFo
+  */
+ LIBSBML_EXTERN
+ int
+-FbcSpeciesPlugin_unsetChemicalFormula(SBasePlugin_t * fbc);
++FbcSpeciesPlugin_unsetChemicalFormula(FbcSBasePlugin_t * fbc);
+ 
+ END_C_DECLS
+ LIBSBML_CPP_NAMESPACE_END
+-- 
+2.33.1
+
