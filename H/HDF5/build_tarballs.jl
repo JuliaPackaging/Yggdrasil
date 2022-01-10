@@ -9,8 +9,8 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.12.1-2-any.pkg.tar.zst", "ab7e4568c99e2a7a9b96ad06867ef9e829d286539e0735a93b9295ad8778a818"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-1-any.pkg.tar.zst", "43ef1aee2be7cc192d14c6641627ed0a1eca50c21234eba3405fce77302517a8"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.11-9-any.pkg.tar.zst", "8d594fc14497d41a66415bfdd200d7d1d56a6ecd3fe81b9190bec0c4841a5eff"; unpack_target="i686-w64-mingw32"),
-    # # We need some special compiler support libraries from mingw for i686.  Is this really needed??
-    # ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-11.2.0-6-any.pkg.tar.zst", "bdc359047f61c8e96401ba25b17c80f5f8039c25a063c622e3680123bb0de9d1"; unpack_target="i686-w64-mingw32"),
+    # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-11.2.0-6-any.pkg.tar.zst", "bdc359047f61c8e96401ba25b17c80f5f8039c25a063c622e3680123bb0de9d1"; unpack_target="i686-w64-mingw32"),
 
     # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.12.1-2-any.pkg.tar.zst", "540d8b9fd71d0d848e28723f531948dea497c7cb8f95c53e1a3b06f750f12c40"; unpack_target="x86_64-w64-mingw32"),
