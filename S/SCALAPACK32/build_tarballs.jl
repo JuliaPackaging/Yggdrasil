@@ -27,14 +27,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
              -DBLAS_LIBRARIES="-lopenblas" \
              -DLAPACK_LIBRARIES="-lopenblas" \
              -DBUILD_SHARED_LIBS=ON \
-             -DMPI_HOME=${prefix} \
-             -DMPI_BASE_DIR=${prefix} \
-             -DCMAKE_C_COMPILER=$CC \
-             -DCMAKE_CXX_COMPILER=$CXX \
-             -DCMAKE_Fortran_COMPILER=$FC \
-             -DMPI_C_COMPILER="${bindir}/mpicc" \
-             -DMPI_CXX_COMPILER="${bindir}/mpicxx" \
-             -DMPIEXEC_EXECUTABLE="${binbir}/mpiexec")
+             -DMPIEXEC="${bindir}/mpirun")
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
@@ -46,7 +39,7 @@ export CDEFS="Add_"
 
 mkdir build
 cd build
-cmake .. "${CMAKE_FLAGS[@]}"
+CC=mpicc FC=mpif90 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
 make install
