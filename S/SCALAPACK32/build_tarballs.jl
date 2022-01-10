@@ -39,7 +39,7 @@ export CDEFS="Add_"
 
 mkdir build
 cd build
-CC=mpicc FC=mpif90 cmake .. "${CMAKE_FLAGS[@]}"
+cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
 make install
