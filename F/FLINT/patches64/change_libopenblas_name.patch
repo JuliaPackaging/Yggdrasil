@@ -1,0 +1,12 @@
+diff --git a/configure b/configure
+index 4de1fe078..bd58c4581 100755
+--- a/configure
++++ b/configure
+@@ -323,7 +323,7 @@ if [ "$WANT_BLAS" = "1" ]; then
+    fi
+    EXTRA_INC_DIRS="${EXTRA_INC_DIRS} ${BLAS_INC_DIR}"
+    EXTRA_LIB_DIRS="${EXTRA_LIB_DIRS} ${BLAS_LIB_DIR}"
+-   EXTRA_LIBS="${EXTRA_LIBS} openblas"
++   EXTRA_LIBS="${EXTRA_LIBS} openblas64_"
+ fi
+ CONFIG_BLAS="#define FLINT_USES_BLAS ${WANT_BLAS}"
