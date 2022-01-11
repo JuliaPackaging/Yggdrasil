@@ -30,8 +30,8 @@ make_args+=(OPTF="-O -DGEMMT_AVAILABLE" \
             CC="mpicc -fPIC" \
             FC="mpif90 -fPIC" \
             FL="mpif90 -fPIC" \
-            SCALAP="${libdir}/scalapack32.so" \
-            INCPAR=${prefix} \
+            SCALAP="${libdir}/scalapack32.${dlext} ${libdir}/libopenblas.${dlext}" \
+            INCPAR= \
             LIBPAR=-lmpich \
             LIBBLAS=-lopenblas)
 
@@ -90,7 +90,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("MPICH_jll"),
     Dependency("METIS_jll"),
-    Dependency("SCOTCH_jll", v"6.1.3"),
+    Dependency("SCOTCH_jll"),
     Dependency("PARMETIS_jll"),
     Dependency("SCALAPACK32_jll"),
     Dependency("OpenBLAS32_jll"),
