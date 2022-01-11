@@ -24,7 +24,7 @@ make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw32 ]]; then
-    cp src/libduckdb.${dlext} ${libdir}
+    cp src/libduckdb.${dlext} ${libdir}/.
 fi
 """
 
