@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd udunits-*
 export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
+autoreconf -vi  # https://docs.binarybuilder.org/stable/troubleshooting/#Shared-library-not-built
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make all
 make all install
