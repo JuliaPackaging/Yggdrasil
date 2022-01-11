@@ -7,7 +7,7 @@ version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/duckdb/duckdb/archive/refs/tags/v$(version).tar.gz", "2101df684e917e8dcb1f817259c812492bf8171e1a8b8ae1d41c21d91e724d59")
+    ArchiveSource("https://github.com/duckdb/duckdb/archive/refs/tags/v$(version).tar.gz", "ae2367d0a393be59e137ffa975f48f60b113b2a72aacc24fbc59afa0cbc3a511")
 ]
 
 # Bash recipe for building across all platforms
