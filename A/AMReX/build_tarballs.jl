@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"21.7.0"
+version = v"22.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/21.07/amrex-21.07.tar.gz",
-                  "9630b8c0c7ffbf3f5ea4d973a3fdb40b9b10fec0f8df33b9e24d76d2c1d15771"),
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.01/amrex-22.01.tar.gz",
+                  "857df5b2fa8e3010b8856b81879a5be32ba7cc2e575474256eae7ef815b8354d"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd amrex
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/jn.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi-constants.patch
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
@@ -80,4 +80,5 @@ dependencies = [
 # - On Windows, AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header.
 #   How can we require this for Windows only?
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version = v"9")
