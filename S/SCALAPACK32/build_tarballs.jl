@@ -47,6 +47,21 @@ cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc} all
 make install
+
+mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
+
+PATCHELF_FLAGS=()
+
+# ppc64le and aarch64 have 64KB page sizes, don't muck up the ELF section load alignment
+if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+  PATCHELF_FLAGS+=(--page-size 65536)
+fi
+
+if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+  patchelf ${PATCHELF_FLAGS[@]} --set-soname libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
+elif [[ ${target} == *apple* ]]; then
+  install_name_tool -id libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
+fi
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
@@ -55,7 +70,7 @@ platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> Sys.iswi
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libscalapack", :libscalapack),
+    LibraryProduct("libscalapack32", :libscalapack32),
 ]
 
 # Dependencies that must be installed before this package can be built
