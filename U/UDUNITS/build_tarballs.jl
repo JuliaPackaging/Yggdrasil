@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd udunits-*
+export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make all
 make all install
