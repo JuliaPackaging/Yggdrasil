@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MUMPS"
 version = v"5.4.2" # <-- This is a lie, we're bumping to 5.4.2 to create a Julia v1.6+ release with experimental platforms
@@ -62,7 +62,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 cd lib
-libs=(-lesmumps -lscotch -lscotcherr -lparmetis -lmetis -lscalapack32 -lopenblas)
+libs=(-lparmetis -lmetis -lscalapack32 -lopenblas)
 mpif90 -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
