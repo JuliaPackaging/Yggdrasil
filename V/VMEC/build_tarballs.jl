@@ -72,13 +72,8 @@ platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter(p ->libgfortran_version(p) >= v"4", platforms)
 
 # Filter incompatible architectures and operating systems
-for arch in incompatible_arch
-  global platforms = filter(p -> p.tags["arch"] != arch, platforms)
-end
-
-for os in incompatible_os
-  global platforms = filter(p -> p.tags["os"] != os, platforms)
-end
+filter!(p -> arch(p) == "x86_64", platforms)
+filter!(!Sys.isfreebsd, platforms)
 
 # Right now VMEC only works with libc=glibc, filter out any musl dependencies
 platforms = filter(p -> (haskey(p.tags, "libc") && p.tags["libc"] != "musl") || !haskey(p.tags, "libc"), platforms)
