@@ -4,8 +4,8 @@ name = "VMEC"
 version = v"1.0.1"
 
 sources = [
-           ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(version).tar",
-                         "5178816df28db77cb0aed82d8d3743836431da5b96e38013031e34fdd1d2675b"),
+    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(version).tar",
+                  "5178816df28db77cb0aed82d8d3743836431da5b96e38013031e34fdd1d2675b"),
 ]
 
 script = raw"""
