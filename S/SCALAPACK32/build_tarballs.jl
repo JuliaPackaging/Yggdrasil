@@ -51,7 +51,7 @@ platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> Sys.iswi
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libscalapack", :libscalapack),
+    LibraryProduct("libscalapack", :libscalapack)
 ]
 
 # Dependencies that must be installed before this package can be built
