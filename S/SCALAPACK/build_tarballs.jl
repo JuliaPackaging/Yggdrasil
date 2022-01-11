@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SCALAPACK"
 version = v"2.1.1" # <-- This is a lie, we're bumping to 2.1.1 to create a Julia v1.6+ release with experimental platforms
