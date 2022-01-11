@@ -71,8 +71,8 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # AMReX's cmake stage fails with OpenMPI on almost all architectures
     # Dependency(PackageSpec(name="OpenMPI_jll", uuid="fe0851c0-eecd-5654-98d4-656369965a5c")),
-    Dependency(PackageSpec(name="MPICH_jll")),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
