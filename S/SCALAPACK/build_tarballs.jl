@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "SCALAPACK"
-version = v"2.1.0"
+version = v"2.1.1" # <-- This is a lie, we're bumping to 2.1.1 to create a Julia v1.6+ release with experimental platforms
 
 sources = [
   ArchiveSource("http://www.netlib.org/scalapack/scalapack-2.1.0.tgz",
@@ -20,26 +20,24 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-             -DCMAKE_BUILD_TYPE=Release
-             -DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
+             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+             -DCMAKE_BUILD_TYPE=Release \
+             -DBUILD_SHARED_LIBS=ON \
+             -DMPIEXEC="${bindir}/mpirun")
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
 else
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    # special case for CMake to discover MPI_Fortran
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DCMAKE_SHARED_LINKER_FLAGS="-lgfortran -L/opt/${target}/${target}/sys-root/usr/lib64 -lpthread -lrt" \
-                  -DMPI_Fortran_LINK_FLAGS="-Wl,-rpath -Wl,/workspace/destdir/lib -Wl,--enable-new-dtags -L/workspace/destdir/lib -Wl,-L/opt/${target}/${target}/sys-root/usr/lib64 -Wl,-lpthread -Wl,-lrt")
-  else
-    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
-  fi
+  CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
 fi
 
 OPENBLAS=(-lopenblas)
 FFLAGS=(-cpp -ffixed-line-length-none)
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS="-fallow-argument-mismatch")
+fi
 
 if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
   OPENBLAS=(-lopenblas64_)
@@ -72,7 +70,7 @@ make install
 
 # OpenMPI and MPICH are not precompiled for Windows
 # Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p), supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
@@ -81,10 +79,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MPICH_jll"),
-    Dependency("OpenBLAS_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
