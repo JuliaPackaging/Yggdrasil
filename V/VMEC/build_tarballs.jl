@@ -69,7 +69,7 @@ incompatible_os = ["freebsd"]
 platforms = expand_gfortran_versions(supported_platforms())
 
 # Filter out libgfortran_version = 3.0.0 which is incompatible with VMEC
-platforms = filter(p -> p["libgfortran_version"] != "3.0.0", platforms)
+platforms = filter(p ->libgfortran_version(p) >= v"4", platforms)
 
 # Filter incompatible architectures and operating systems
 for arch in incompatible_arch
