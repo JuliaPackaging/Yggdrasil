@@ -14,10 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb*/
 
-if [[ "${target}" == *-mingw32 ]]; then
-    sed -i -E "/add_executable\(duckdb_rest_server server.cpp\)$/aif\(\$\{WIN32\}\)\n  set\(LINK_EXTRA -lwsock32 -lws2_32\)\nendif\(\)\n" tools/rest/CMakeLists.txt
-fi
-
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -27,10 +23,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 make -j${nproc}
 make install
 
-if [[ "${target}" == *-mingw32 ]]; then
-    mkdir -p ${libdir}
-    cp src/libduckdb.${dlext} ${libdir}
-fi
 """
 
 # These are the platforms we will build for by default, unless further
