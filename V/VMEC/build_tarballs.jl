@@ -76,7 +76,7 @@ filter!(p -> arch(p) == "x86_64", platforms)
 filter!(!Sys.isfreebsd, platforms)
 
 # Right now VMEC only works with libc=glibc, filter out any musl dependencies
-platforms = filter(p -> (haskey(p.tags, "libc") && p.tags["libc"] != "musl") || !haskey(p.tags, "libc"), platforms)
+filter!(p -> !Sys.islinux(p) || libc(p) == "glibc", platforms)
 
 # The products that we will ensure are always built
 # Don't automatically dl_open so that the appropriate 
