@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "MUMPS"
-version = v"5.4.1"
+version = v"5.4.2" # <-- This is a lie, we're bumping to 5.4.2 to create a Julia v1.6+ release with experimental platforms
 
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.4.1.tar.gz",
                 "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
   DirectorySource("./bundled"),
 ]
@@ -15,40 +15,25 @@ mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
-OPENBLAS=(-lopenblas)
-FFLAGS=()
-CFLAGS=()
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-  FFLAGS+=(-ffixed-line-length-none)  # replacing symbols below sometimes makes lines > 72 chars
-  OPENBLAS=(-lopenblas64_)
-  if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    OPENBLAS+=(-lgomp)
-  fi
-
-  syms=(DGEMM IDAMAX ISAMAX SNRM2 XERBLA caxpy ccopy cgemm cgemv cgeru cher clarfg cscal cswap ctrsm ctrsv cungqr cunmqr daxpy dcopy dgemm dgemv dger dlamch dlarfg dorgqr dormqr dnrm2 dscal dswap dtrsm dtrsv dznrm2 idamax isamax ilaenv scnrm2 saxpy scopy sgemm sgemv sger slamch slarfg sorgqr sormqr snrm2 sscal sswap strsm strsv xerbla zaxpy zcopy zgemm zgemv zgeru zlarfg zscal zswap ztrsm ztrsv zungqr zunmqr)
-  for sym in ${syms[@]}
-  do
-    FFLAGS+=("-D${sym}=${sym}_64")
-    CFLAGS+=("-D${sym}=${sym}_64")
-  done
-fi
-
 makefile="Makefile.G95.PAR"
 cp Make.inc/${makefile} Makefile.inc
 
-make_args+=(OPTF=-O
-            CDEFS=-DAdd_
-            LMETISDIR=${libdir}
-            IMETIS=-I${prefix}/include
-            LMETIS='-L$(LMETISDIR) -lparmetis -lmetis'
-            ORDERINGSF="-Dpord -Dparmetis"
-            CC="mpicc -fPIC"
-            FC="mpif90 -fPIC ${FFLAGS[@]}"
-            FL="mpif90 -fPIC ${CFLAGS[@]}"
-            SCALAP=-lscalapack
-            INCPAR=  # Let MPI compilers fill in the blanks
-            LIBPAR=-lscalapack
-            LIBBLAS=${OPENBLAS})
+make_args+=(OPTF="-O -DGEMMT_AVAILABLE" \
+            CDEFS=-DAdd_ \
+            LMETISDIR=${prefix} \
+            IMETIS="-I${includedir}" \
+            LMETIS="-L${libdir} -lparmetis -lmetis" \
+            LSCOTCHDIR=${prefix} \
+            ISCOTCH="-I${includedir}" \
+            LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr" \
+            ORDERINGSF="-Dpord -Dparmetis -Dscotch" \
+            CC="mpicc -fPIC" \
+            FC="mpif90 -fPIC" \
+            FL="mpif90 -fPIC" \
+            SCALAP="${libdir}/scalapack32.so" \
+            INCPAR=${prefix} \
+            LIBPAR=-lmpich \
+            LIBBLAS=-lopenblas)
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
@@ -68,7 +53,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 cd lib
-libs=(-lparmetis -lmetis -lscalapack ${OPENBLAS})
+libs=(-lesmumps -lscotch -lscotcherr -lparmetis -lmetis -lscalapack32 -lopenblas)
 mpif90 -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
@@ -97,6 +82,7 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
+    LibraryProduct("libmumps_common", :libmumps_common)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -104,10 +90,11 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("MPICH_jll"),
     Dependency("METIS_jll"),
+    Dependency("SCOTCH_jll", v"6.1.3"),
     Dependency("PARMETIS_jll"),
-    Dependency("SCALAPACK_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.9"),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
