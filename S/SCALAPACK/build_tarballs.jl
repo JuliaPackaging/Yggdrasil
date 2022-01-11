@@ -35,10 +35,6 @@ fi
 OPENBLAS=(-lopenblas)
 FFLAGS=(-cpp -ffixed-line-length-none)
 
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS="-fallow-argument-mismatch")
-fi
-
 if [[ ${nbits} == 64 ]]; then
   OPENBLAS=(-lopenblas64_)
   if [[ "${target}" == powerpc64le-linux-gnu ]]; then
@@ -52,8 +48,13 @@ if [[ ${nbits} == 64 ]]; then
     FFLAGS+=("-D${sym^^}=${sym}_64")
   done
 
-  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
-                -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\")
+  if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" -fallow-argument-mismatch \
+                  -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\")
+  else
+    CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
+                  -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\")
+  fi
 fi
 
 CMAKE_FLAGS+=(-DBLAS_LIBRARIES=\"${OPENBLAS[*]}\" \
