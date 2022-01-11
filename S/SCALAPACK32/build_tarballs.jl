@@ -35,6 +35,11 @@ else
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran")
 fi
 
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS="-fallow-argument-mismatch" \
+                -DCMAKE_C_FLAGS="-fallow-argument-mismatch")
+fi
+
 export CDEFS="Add_"
 
 mkdir build
