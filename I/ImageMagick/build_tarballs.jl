@@ -46,6 +46,8 @@ products = [
     LibraryProduct(["libMagickWand", "libMagickWand-6.Q16"], :libwand),
     ExecutableProduct("convert", :imagemagick_convert),
     ExecutableProduct("identify", :identify),
+    ExecutableProduct("montage", :montage),
+    ExecutableProduct("mogrify", :mogrify),
 ]
 
 # Dependencies that must be installed before this package can be built
