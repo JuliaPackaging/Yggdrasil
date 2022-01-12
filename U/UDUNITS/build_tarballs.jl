@@ -7,7 +7,8 @@ version = v"2.2.28"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://artifacts.unidata.ucar.edu/repository/downloads-udunits/udunits-$(version).tar.gz", "590baec83161a3fd62c00efa66f6113cec8a7c461e3f61a5182167e0cc5d579e"),
+    ArchiveSource("https://artifacts.unidata.ucar.edu/repository/downloads-udunits/udunits-$(version).zip",
+                  "e09d31db68f9a840a0663c7e9909101957733ff0310761b9906f4722e0d92c44"),
     DirectorySource("bundled"),
 ]
 
