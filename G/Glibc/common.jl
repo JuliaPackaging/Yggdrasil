@@ -28,8 +28,6 @@ function glibc_script()
     return raw"""
     cd $WORKSPACE/srcdir/glibc-*/
 
-<<<<<<< HEAD
-=======
     # Some things need /lib64, others just need /lib
     case ${target} in
         x86_64*)
