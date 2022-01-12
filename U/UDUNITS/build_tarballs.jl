@@ -17,8 +17,7 @@ sources = [
 script = raw"""
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main # requires CMake 3.19
 
-cd $WORKSPACE/srcdir
-cd udunits-*
+cd $WORKSPACE/srcdir/udunits-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
@@ -32,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -42,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"))
+    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"); compat="2.2.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
