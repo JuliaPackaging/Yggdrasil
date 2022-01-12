@@ -7,6 +7,7 @@ version = v"2.2.28"
 
 # Collection of sources required to complete build
 sources = [
+    # .tar.gz archive is missing cmake files: https://github.com/Unidata/UDUNITS-2/issues/108
     ArchiveSource("https://artifacts.unidata.ucar.edu/repository/downloads-udunits/udunits-$(version).zip",
                   "e09d31db68f9a840a0663c7e9909101957733ff0310761b9906f4722e0d92c44"),
     DirectorySource("bundled"),
@@ -21,7 +22,6 @@ cd udunits-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
-export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
 mkdir build
 cd build
 
@@ -32,7 +32,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
