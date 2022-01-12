@@ -38,9 +38,6 @@ else
 fi
 """
 
-incompatible_arch = ["i686", "armv6l", "armv7l", "aarch64", "powerpc64le"]
-incompatible_os = ["freebsd"]
-
 platforms = expand_gfortran_versions(supported_platforms())
 
 # Filter out libgfortran_version = 3.0.0 which is incompatible with VMEC
