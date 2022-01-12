@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "VMEC"
-version = v"1.0.2"
+version = v"1.0.3"
 
 sources = [
     ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(version).tar",
-                  "8ca327110dfe93d41bac9073e48397ecea77743e81d6c38ab4e0385efc653d4c"),
+                  "cee46dfeb452d2dd79811f8b66fdb6e1a38975d276e71b5531474b03024a5a8f"),
 ]
 
 script = raw"""
