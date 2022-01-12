@@ -7,7 +7,7 @@ version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/duckdb/duckdb/archive/refs/tags/v$(version).tar.gz", "ae2367d0a393be59e137ffa975f48f60b113b2a72aacc24fbc59afa0cbc3a511"),
+    GitSource("https://github.com/duckdb/duckdb.git", "88aa81c6b1b851c538145e6431ea766a6e0ef435"),
     DirectorySource("./bundled"),
 ]
 
