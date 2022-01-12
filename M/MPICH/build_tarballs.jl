@@ -56,6 +56,7 @@ fi
     --with-device=ch3 --disable-dependency-tracking \
     --enable-fast=all,O3 \
     --docdir=/tmp \
+    --disable-opencl \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
