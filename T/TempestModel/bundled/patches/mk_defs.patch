@@ -1,0 +1,13 @@
+diff --git a/mk/defs.make b/mk/defs.make
+index 8eaad7c..dedcbfc 100644
+--- a/mk/defs.make
++++ b/mk/defs.make
+@@ -23,7 +23,7 @@ TEMPESTLIBS= $(TEMPESTBASEDIR)/lib/libtempestbase.a \
+              $(TEMPESTBASEDIR)/lib/libhardcoreatm.a
+ 
+ # Libraries needed for compilation
+-LIBRARIES+= -lhardcoreatm -ltempestbase
++LIBRARIES+= -lm -lhardcoreatm -ltempestbase
+ LDFLAGS+= -L$(TEMPESTBASEDIR)/lib
+  
+ ###############################################################################

@@ -1,0 +1,12 @@
+diff --git a/src/base/netcdf.cpp b/src/base/netcdf.cpp
+index 3467d27..a4b7518 100644
+--- a/src/base/netcdf.cpp
++++ b/src/base/netcdf.cpp
+@@ -7,7 +7,6 @@
+  *   $Header: /upc/share/CVS/netcdf-3/cxx/netcdf.cpp,v 1.18 2009/03/10 15:20:54 russ Exp $
+  *********************************************************************/
+
+-#include "config.h"
+ #include <string.h>
+ #include <stdlib.h>
+ #include <iostream>
