@@ -73,7 +73,7 @@ products = [
     ExecutableProduct("VerticalInterpolate", :VerticalInterpolate_exe),
 ]
 
-dependencies = Dependency[
+dependencies = [
     Dependency("libblastrampoline_jll"),
     Dependency("NetCDF_jll"),
     Dependency("HDF5_jll"),
