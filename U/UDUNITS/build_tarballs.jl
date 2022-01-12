@@ -14,6 +14,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main # requires CMake 3.19
+
 cd $WORKSPACE/srcdir
 cd udunits-*
 
