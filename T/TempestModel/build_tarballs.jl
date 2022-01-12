@@ -98,12 +98,13 @@ dependencies = Dependency[
     Dependency("NetCDF_jll"),
     Dependency("HDF5_jll"),
     # The following is adapted from NetCDF_jll
-    Dependency("LibCURL_jll"),
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24.0")),
+    #Dependency("LibCURL_jll"),
     # The following libraries are dependencies of LibCURL_jll which is now a
     # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll", v"2.24.0"),
-    Dependency("nghttp2_jll"),
+    #Dependency("LibSSH2_jll"),
+    #Dependency("MbedTLS_jll", v"2.24.0"),
+    #Dependency("nghttp2_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
