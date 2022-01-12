@@ -21,8 +21,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
 autoreconf -vi  # https://docs.binarybuilder.org/stable/troubleshooting/#Shared-library-not-built
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make all
-make all install
+make -j${nprocs}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
