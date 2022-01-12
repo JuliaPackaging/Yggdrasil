@@ -19,8 +19,10 @@ cd udunits-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
 export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
-autoreconf -vi  # https://docs.binarybuilder.org/stable/troubleshooting/#Shared-library-not-built
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+mkdir build
+cd build
+
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nprocs}
 make install
 """
