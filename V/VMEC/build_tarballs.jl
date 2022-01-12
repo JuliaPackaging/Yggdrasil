@@ -61,7 +61,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
-    BuildDependency(PackageSpec("MbedTLS_jll", v"2.24.0")),
+    BuildDependency(PackageSpec(name = "MbedTLS_jll", version = v"2.24.0")),
     Dependency("MPICH_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("SCALAPACK_jll"),
