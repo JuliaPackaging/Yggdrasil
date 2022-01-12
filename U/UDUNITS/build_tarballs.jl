@@ -7,13 +7,17 @@ version = v"2.2.28"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://artifacts.unidata.ucar.edu/repository/downloads-udunits/udunits-$(version).tar.gz", "590baec83161a3fd62c00efa66f6113cec8a7c461e3f61a5182167e0cc5d579e")
+    ArchiveSource("https://artifacts.unidata.ucar.edu/repository/downloads-udunits/udunits-$(version).tar.gz", "590baec83161a3fd62c00efa66f6113cec8a7c461e3f61a5182167e0cc5d579e"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd udunits-*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
+
 export CPPFLAGS="-I${includedir}" # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
 autoreconf -vi  # https://docs.binarybuilder.org/stable/troubleshooting/#Shared-library-not-built
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}

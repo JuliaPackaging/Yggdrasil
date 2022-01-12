@@ -1,0 +1,13 @@
+diff --git a/lib/xml.c b/lib/xml.c
+index 3ee1a2d..374a7ad 100644
+--- a/lib/xml.c
++++ b/lib/xml.c
+@@ -2137,7 +2137,7 @@ default_udunits2_xml_path()
+     if (absXmlPathname[0] == 0) {
+         const char* prefix = NULL; // Installation directory
+ 
+-#       if defined(__APPLE__) || defined(__linux__)
++#       if defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__)
+             Dl_info     info;
+             const char  sep = '/'; // Pathname component separator
+             char        buf[PATH_MAX];
