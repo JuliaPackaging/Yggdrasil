@@ -28,6 +28,9 @@ function glibc_script()
     return raw"""
     cd $WORKSPACE/srcdir/glibc-*/
 
+    # Install licenses first thing
+    install_license COPYING* LICENSES
+
     # Update configure scripts to work well with `musl`
     update_configure_scripts
 
