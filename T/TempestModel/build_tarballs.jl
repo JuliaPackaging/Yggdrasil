@@ -92,7 +92,7 @@ products = [
     ExecutableProduct("RossbyHaurwitzWaveTest", :RossbyHaurwitzWaveTest_exe),
 ]
 
-dependencies = Dependency[
+dependencies = [
     Dependency("MKL_jll"),
     Dependency("MPICH_jll"),
     Dependency("NetCDF_jll"),
