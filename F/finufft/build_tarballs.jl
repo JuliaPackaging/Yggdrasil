@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase
 
 name = "finufft"
 version = v"2.0.3"
@@ -23,6 +24,11 @@ mv lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Expand for microarchitectures (library doesn't have CPU dispatching)
+platforms = expand_microarchitectures(platforms)
+
+# Tests on Linux/x86_64 yielded a slower binary with avx512 for some reason, so disable
+platforms = filter(p -> p.tags["march"] != "avx512", platforms)
 
 # The products that we will ensure are always built
 products = [
