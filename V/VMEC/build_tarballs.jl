@@ -64,7 +64,7 @@ dependencies = [
     BuildDependency(PackageSpec(name = "MbedTLS_jll", version = v"2.24.0")),
     Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("OpenBLAS_jll"),
-    Dependency("SCALAPACK_jll"),
+    Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MKL_jll", v"2020.1.216"),
     Dependency("NetCDF_jll"),
     Dependency("NetCDFF_jll"),
