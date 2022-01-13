@@ -21,16 +21,16 @@ make lib CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude"
 mv lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
+# Build for all supported platforms
+platforms_x86_64 = filter(p -> p.tags["arch"]=="x86_64", supported_platforms())
+platforms_other  = filter(p -> p.tags["arch"]!="x86_64", supported_platforms())
 
-# Expand for microarchitectures (library doesn't have CPU dispatching)
-platforms = expand_microarchitectures(platforms)
+# Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
+# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
+platforms_x86_64 = expand_microarchitectures(platforms_x86_64)
+platforms_x86_64 = filter(p -> p.tags["march"] != "avx512", platforms_x86_64)
 
-# Tests on Linux/x86_64 yielded a slower binary with avx512 for some reason, so disable
-platforms = filter(p -> p.tags["march"] != "avx512", platforms)
-
+platforms = vcat(platforms_x86_64, platforms_other)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfinufft", :libfinufft)
