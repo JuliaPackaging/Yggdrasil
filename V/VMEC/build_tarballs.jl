@@ -62,7 +62,7 @@ products = [
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
     BuildDependency(PackageSpec(name = "MbedTLS_jll", version = v"2.24.0")),
-    Dependency("MPICH_jll"),
+    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("OpenBLAS_jll"),
     Dependency("SCALAPACK_jll"),
     Dependency("MKL_jll", v"2020.1.216"),
