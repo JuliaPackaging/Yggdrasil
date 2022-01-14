@@ -35,7 +35,7 @@ products = Product[]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="armadillo_jll", uuid="0631256a-41da-5d69-bb72-795e0d5510ec"))
+    BuildDependency(PackageSpec(name="armadillo_jll", uuid="0631256a-41da-5d69-bb72-795e0d5510ec"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
