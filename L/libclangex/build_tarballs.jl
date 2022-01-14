@@ -6,11 +6,11 @@ using Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 name = "libclangex"
-version = v"0.1.3"
+version = v"0.1.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "c27bb2040d9e2cff4eee9e4abaaa1f5dbb30dd24")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "040ceddff5f6af2a6dcf7417c0c51dab262fbd1a")
 ]
 
 # Bash recipe for building across all platforms
@@ -58,8 +58,8 @@ end
 # TODO: Don't require build-id on LLVM version
 supported = (
     # (v"1.6", v"11.0.1+3"),
-    (v"1.7", v"12.0.1+0"),
-    (v"1.8", v"12.0.1+0"),
+    (v"1.7", v"12.0.1+3"),
+    (v"1.8", v"12.0.1+3"),
 )
 
 for (julia_version, llvm_version) in supported
