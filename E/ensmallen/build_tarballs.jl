@@ -34,7 +34,9 @@ platforms = [AnyPlatform()]
 products = Product[]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = [
+    Dependency(PackageSpec(name="armadillo_jll", uuid="0631256a-41da-5d69-bb72-795e0d5510ec"))
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
