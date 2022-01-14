@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase
 
 name = "finufft"
-version = v"2.0.3"
+version = v"2.0.4"
 julia_compat = "1.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "bf5b762a1899b57982b4db851fe472784700da389eabd5de6c7bc17240340f1f")
+    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "2434f694b4fbdbeb65c77f65d784a1712852130b9c61e15999555a2e2cf1a9fa")
 ]
 
 # Bash recipe for building across all platforms
