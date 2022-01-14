@@ -80,7 +80,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"]),
+    LibraryProduct(["librocblas", "librocblas.so.0"], :librocblas, ["rocblas/lib"]),
 ]
 
 # Dependencies that must be installed before this package can be built
