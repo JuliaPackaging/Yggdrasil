@@ -90,7 +90,7 @@ index cfe2a39240..fd70dbdf17 100644
     foreach my $app (@apps) {
        my $app_name = basename($app);
 -      my $app_shared_module = "\${buildtop}/lib/$app_name.$Config::Config{dlext}";
-+      my $app_shared_module = "\${buildtop}/lib/$app_name.$ConfigFlags{DlExt}";
++      my $app_shared_module = "\${buildtop}/lib/$app_name.\${DlExt}";
        push @all_app_targets, $app_shared_module;
  
        if (defined(my $objects = $objects_per_app{$app_name})) {
@@ -99,7 +99,7 @@ index cfe2a39240..fd70dbdf17 100644
        } else {
           # application without any C++ components
 -         if (my @obsolete = grep { (stat $_)[7] != 0 } glob("$builddir/*/lib/$app_name.$Config::Config{dlext}")) {
-+         if (my @obsolete = grep { (stat $_)[7] != 0 } glob("$builddir/*/lib/$app_name.$ConfigFlags{DlExt}")) {
++         if (my @obsolete = grep { (stat $_)[7] != 0 } glob("$builddir/*/lib/$app_name.{so,dylib,bundle}")) {
              print STDERR "removing obsolete shared module(s) @obsolete\n";
              unlink @obsolete;
           }
@@ -109,8 +109,8 @@ index cfe2a39240..fd70dbdf17 100644
        # wipe disappeared applications from the extension
 -      foreach my $app_mod (glob("$builddir/*/lib/*.$Config::Config{dlext}")) {
 -         my ($app_name) = $app_mod =~ m{/([^/]+)\.$Config::Config{dlext}$};
-+      foreach my $app_mod (glob("$builddir/*/lib/*.$ConfigFlags{DlExt}")) {
-+         my ($app_name) = $app_mod =~ m{/([^/]+)\.$ConfigFlags{DlExt}$};
++      foreach my $app_mod (glob("$builddir/*/lib/*.{so,dylib,bundle}")) {
++         my ($app_name) = $app_mod =~ m{/([^/]+)\.(?:so|dylib|bundle)$};
           if (!exists $objects_per_app{$app_name}) {
              print STDERR "removing obsolete shared module $app_mod\n";
              unlink $app_mod;
