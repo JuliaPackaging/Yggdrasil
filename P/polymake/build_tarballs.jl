@@ -58,6 +58,9 @@ atomic_patch -p1 ../patches/sigint.patch
 # work around sigchld-handler conflicts with other libraries
 atomic_patch -p1 ../patches/sigchld.patch
 
+# patch for bliss compatibility
+atomic_patch -p1 ../patches/bliss.patch
+
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
   perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
   perl_version=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 2)
