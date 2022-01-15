@@ -60,7 +60,7 @@ dependencies = [
     Dependency("ROCmCompilerSupport_jll"),
     Dependency("ROCmOpenCLRuntime_jll"),
     Dependency("HIP_jll"; compat="4.2.0"),
-    Dependency("rocm_cmake_jll"),
+    BuildDependency("rocm_cmake_jll"),
     Dependency("rocminfo_jll"),
 ]
 
