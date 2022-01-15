@@ -6,11 +6,11 @@ using Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 name = "libclangex"
-version = v"0.1.4"
+version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "040ceddff5f6af2a6dcf7417c0c51dab262fbd1a")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "527f22f606f43682c89ef76746d5d9652b2db1dc")
 ]
 
 # Bash recipe for building across all platforms
