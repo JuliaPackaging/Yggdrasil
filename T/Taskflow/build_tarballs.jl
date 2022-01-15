@@ -7,7 +7,7 @@ version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/taskflow/taskflow/archive/refs/tags/v$(version).tar.gz", "66b891f706ba99a5ca5ed239d520ad6943ebe94728d1c89e07a939615a6488ef")
+    ArchiveSource("https://github.com/taskflow/taskflow/archive/refs/tags/v$(version).tar.gz", "66b891f706ba99a5ca5ed239d520ad6943ebe94728d1c89e07a939615a6488ef"),
 ]
 
 # Bash recipe for building across all platforms
