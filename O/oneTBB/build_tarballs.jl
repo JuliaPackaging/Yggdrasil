@@ -16,9 +16,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oneTBB/
 
+if [[ ${target} == *-linux-musl* ]]; then
 # Adapt patch from
 # https://github.com/oneapi-src/oneTBB/pull/203
 atomic_patch -p1 ../patches/musl.patch
+fi
 
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
