@@ -22,7 +22,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -31,8 +31,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"))
+    Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"); platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
