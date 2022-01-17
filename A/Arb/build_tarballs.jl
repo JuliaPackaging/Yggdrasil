@@ -30,8 +30,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/fredrik-johansson/arb/archive/refs/tags/$(upstream_version).tar.gz",
-                  "c9903d49a3e89bbd0ae114eeed97eaea3877e0e1a31a5cdb24ba0c84e4e81f4a"),
+    GitSource("https://github.com/fredrik-johansson/arb.git", "c2b7e36915a451455c1f115ce343dd85bdc30c59")
 ]
 
 # Bash recipe for building across all platforms
