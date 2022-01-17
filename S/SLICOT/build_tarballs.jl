@@ -62,7 +62,7 @@ echo "install( TARGETS slicot_shared LIBRARY DESTINATION lib )" >> CMakeLists.tx
 FFLAGS="${FFLAGS} -O2 -fPIC -ffixed-line-length-none -cpp"
 
 SYMBOL_DEFS=()
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+if [[ ${nbits} == 64 ]]; then
   for sym in ${LAB_SYMBOLS[@]}; do
     SYMBOL_DEFS+=("-D${sym}=${sym}_64")
   done
