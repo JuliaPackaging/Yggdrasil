@@ -20,6 +20,9 @@ mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
+
+# Remove large static library
+rm "${prefix}/lib/libantlr4-runtime.a"
 """
 
 # These are the platforms we will build for by default, unless further
