@@ -9,23 +9,23 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_compat"
-version = v"11.5.50"
+version = v"11.6"
 
 cuda_version = "$(version.major)-$(version.minor)"
-driver_version = "495.29.05"
+driver_version = "510.39.01"
 build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version)-$(driver_version)-$(build).x86_64.rpm",
-               "d8eabf75a651266a706c9b00edb75ce7f4097dd1a9185c20ecfaf5375e06ebf9", "compat.rpm")
+               "348bb6cd66042bd90bc58f7dd909962c3bc9c3eb7a4ef75aa3178aad9fc00d5a", "compat.rpm")
 ]
 sources_linux_ppc64le = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/ppc64le/cuda-compat-$(cuda_version)-$(driver_version)-$(build).ppc64le.rpm",
-               "6a830001cd0ae318b2b0f5b1970ecb799f42b311d6483fff58b332073e19e647", "compat.rpm")
+               "7407dec3754ac416f6e10b5448756c463e9ab068f588bd30afbfc8fd600c3b45", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version)-$(driver_version)-$(build).aarch64.rpm",
-               "6aebc19cdab34f36b914875a45bda2ce398485a95e156b37ee7b2699e4bd4276", "compat.rpm")
+               "7d8eacda7955677839694ffb02f6d1444e2c66a0ff68327e5a82d2f0d8d994ac", "compat.rpm")
 ]
 
 dependencies = []
