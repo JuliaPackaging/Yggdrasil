@@ -60,7 +60,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-v = v"200.800.101"
 dependencies = [
     Dependency("FLINT_jll", compat = "~200.800.401"),
     Dependency("GMP_jll", v"6.2.0"),
