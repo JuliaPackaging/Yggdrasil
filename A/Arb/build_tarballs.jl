@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "Arb"
 upstream_version = v"2.22.0"
-version_offset = v"0.0.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
