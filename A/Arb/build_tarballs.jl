@@ -29,10 +29,9 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
-# Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/fredrik-johansson/arb/archive/refs/tags/$(upstream_version).tar.gz",
-                  "c9903d49a3e89bbd0ae114eeed97eaea3877e0e1a31a5cdb24ba0c84e4e81f4a")
+                  "c9903d49a3e89bbd0ae114eeed97eaea3877e0e1a31a5cdb24ba0c84e4e81f4a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -71,5 +70,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = 1.6")
-
+               julia_compat = "1.6")
