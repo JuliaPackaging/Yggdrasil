@@ -49,7 +49,7 @@ ZCOPY ZDRSCL ZDSCAL ZGECON ZGEES ZGEMM ZGEMV ZGEQP3 ZGEQRF ZGESV
 ZGESVD ZGETRF ZGETRI ZGETRS ZHGEQZ ZLACGV ZLACON ZLACP2 ZLACPY ZLADIV
 ZLAHQR ZLAIC1 ZLANGE ZLANHS ZLANTR ZLAPMT ZLARF ZLARFG ZLARNV ZLARTG
 ZLASCL ZLASET ZLASSQ ZLATRS ZLATZM ZROT ZSCAL ZSWAP ZTRSM ZTZRZF
-ZUNGQR ZUNMQR ZUNMRQ ZUNMRZ
+ZUNGQR ZUNMQR ZUNMRQ ZUNMRZ ZGERC ZGERU DGGHRD
 )
 
 
@@ -106,4 +106,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
