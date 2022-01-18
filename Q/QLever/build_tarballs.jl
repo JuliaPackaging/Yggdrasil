@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ad-freiburg/qlever.git", "0e7bc983960fe2168dda4209faf2fe70fd19ec3e"),
+    GitSource("https://github.com/ad-freiburg/qlever.git", "f338a371ca81938fbbd059df5654cd39b145fefb"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
