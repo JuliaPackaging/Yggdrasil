@@ -7,14 +7,15 @@ version = v"1.11.0"
 
  # Collection of sources required to complete build
  sources = [
-     GitSource("https://github.com/google/googletest.git", "e2239ee6043f73722e7aa812a459f54a28552929")
+     GitSource("https://github.com/google/googletest.git", "e2239ee6043f73722e7aa812a459f54a28552929"),
+     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 if [[ "${target}" == *apple* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=12)
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-known-features.patch"
 fi
   
 cd $WORKSPACE/srcdir/googletest
