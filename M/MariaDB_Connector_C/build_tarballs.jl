@@ -8,9 +8,9 @@ julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
-    "https://github.com/mariadb-corporation/mariadb-connector-c.git" =>
-    "b2bb1b213c79169b7c994a99f21f47f11be465d4",
-    "./bundled"
+    GitSource("https://github.com/mariadb-corporation/mariadb-connector-c.git",
+              "b2bb1b213c79169b7c994a99f21f47f11be465d4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,10 +73,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "LibCURL_jll",
-    "Libiconv_jll",
-    "OpenSSL_jll",
-    "Zlib_jll",
+    Dependency("LibCURL_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("OpenSSL_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
