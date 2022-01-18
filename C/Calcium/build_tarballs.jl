@@ -65,9 +65,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 
 dependencies = [
-    Dependency("FLINT_jll"; compat = "~$(v"200.800.401")"),
-    Dependency("Arb_jll", compat = "~$(v"200.2200.000")"),
-    Dependency("Antic_jll", compat = "~$(v"0.200.501")"),
+    Dependency("FLINT_jll"; compat = "~200.800.401"),
+    Dependency("Arb_jll", compat = "~200.2200.000"),
+    Dependency("Antic_jll", compat = "~0.200.501"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
