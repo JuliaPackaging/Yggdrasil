@@ -28,6 +28,9 @@ make install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# Only CXX 11 is supported
+filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgtest_main", :libgtest_main),
