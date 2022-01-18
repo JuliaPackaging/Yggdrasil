@@ -1,8 +1,8 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/10.2/cudnn-linux-x86_64-8.3.1.22_cuda10.2-archive.tar.xz",
-                      "5982bb96c2a720268fa44b908feb5258d060ad47f1f6e6030e760d13195ea964")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-linux-x86_64-8.3.2.44_cuda10.2-archive.tar.xz",
+                      "d6f56ef9ca8cf8f91eb73210ba6c3dca49ba4446c1661bfafe55c1ec40b669ac")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/10.2/cudnn-windows-x86_64-8.3.1.22_cuda10.2-archive.zip",
-                      "83797cac5c1e6c59bcf6bcd13ae23a3d00f909b19295819fb50063ea3356fadc")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.2/local_installers/10.2/cudnn-windows-x86_64-8.3.2.44_cuda10.2-archive.zip",
+                      "3810b7a4313614aedd28260785f0ebaa69204bb38fa61e439f75c75a4ba07b3d")],
 )
