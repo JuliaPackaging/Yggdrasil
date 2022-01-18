@@ -26,6 +26,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_GMOCK=OFF \
     -DCMAKE_CXX_STANDARD=11 \
+    -Wno-dev \
     ..
 make -j${nproc}
 make install
