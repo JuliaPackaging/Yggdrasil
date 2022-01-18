@@ -19,6 +19,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_GMOCK=OFF \
+    -DCMAKE_CXX_STANDARD=11 \
     ..
 make -j${nproc}
 make install
