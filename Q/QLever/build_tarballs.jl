@@ -44,8 +44,10 @@ cmake -DCMAKE_BUILD_TYPE=Release \
     -DUSE_PARALLEL=true \
     -DLOGLEVEL=DEBUG \
     -DABSL_PROPAGATE_CXX_STD=ON \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \    
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DPREFER_EXTERNAL_ZSTD=ON \
     -GNinja .. && ninja
 
 cp CreatePatternsMain \
