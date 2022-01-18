@@ -41,7 +41,6 @@ git submodule update --init --recursive
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_COMPILER="g++" \
     -DUSE_PARALLEL=true \
     -DLOGLEVEL=DEBUG \
     -DABSL_PROPAGATE_CXX_STD=ON \
