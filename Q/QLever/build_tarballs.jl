@@ -58,6 +58,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DPREFER_EXTERNAL_ZSTD=ON \
+    -DGTEST_HAS_PTHREAD=1 \
     -GNinja .. && ninja
 >>>>>>> 8c66d3cc (Fix spaces)
 
