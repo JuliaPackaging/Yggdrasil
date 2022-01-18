@@ -7,8 +7,8 @@ version = v"1.11.0"
 
 # Collection of sources required to complete build
 sources = [
-     GitSource("https://github.com/google/googletest.git", "e2239ee6043f73722e7aa812a459f54a28552929"),
-     DirectorySource("./bundled"),
+    GitSource("https://github.com/google/googletest.git", "e2239ee6043f73722e7aa812a459f54a28552929"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
