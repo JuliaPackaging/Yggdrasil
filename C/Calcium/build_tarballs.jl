@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "Calcium"
 upstream_version = v"0.4.1"
-version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.2" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -65,9 +65,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 
 dependencies = [
-    Dependency("FLINT_jll"; compat = "~$(v"200.800.101")"),
-    Dependency("Arb_jll", compat = "~$(v"200.2100.101")"),
-    Dependency("Antic_jll", compat = "~$(v"0.200.501")"),
+    Dependency("FLINT_jll"; compat = "~200.800.401"),
+    Dependency("Arb_jll", compat = "~200.2200.000"),
+    Dependency("Antic_jll", compat = "~0.200.501"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
