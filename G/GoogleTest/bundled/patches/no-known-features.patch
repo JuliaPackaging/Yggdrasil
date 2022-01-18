@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7d2eb810..fc9cbb0c 100644
+index ea81ab12..abe21c28 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,6 +1,6 @@
@@ -7,6 +7,6 @@ index 7d2eb810..fc9cbb0c 100644
  # internally.
 -
 +cmake_policy(SET CMP0025 NEW)
- cmake_minimum_required(VERSION 3.5)
+ cmake_minimum_required(VERSION 2.8.12)
  
  if (POLICY CMP0048)
