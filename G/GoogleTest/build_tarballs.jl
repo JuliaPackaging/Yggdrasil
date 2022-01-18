@@ -14,7 +14,7 @@ version = v"1.11.0"
 script = raw"""
 
 if [[ "${target}" == *apple* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=11.0)
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=12)
 fi
   
 cd $WORKSPACE/srcdir/googletest
