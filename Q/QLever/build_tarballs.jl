@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
-# atomic_patch -p1 ../patches/cmake_fixes.patch
+atomic_patch -p1 ../patches/cmake_fixes.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
