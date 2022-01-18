@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ad-freiburg/qlever.git", "f338a371ca81938fbbd059df5654cd39b145fefb"),
+    GitSource("https://github.com/ad-freiburg/qlever.git", "1b55a2da8073c00fb9a0798440b5263c88f1f8b6"),
     DirectorySource("./bundled"),
     # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
     #               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
-atomic_patch -p1 ../patches/cmake_fixes.patch
+# atomic_patch -p1 ../patches/cmake_fixes.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
@@ -40,6 +40,9 @@ git submodule update --init --recursive
 
 mkdir build
 cd build
+
+export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=yes
+export PKG_CONFIG_ALLOW_SYSTEM_LIBS=yes
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
