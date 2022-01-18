@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/qlever/
 
-atomic_patch -p1 ../patches/disable_testing.patch
+atomic_patch -p1 ../patches/cmake_fixes.patch
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_grp_h.patch
@@ -38,15 +38,17 @@ fi
 
 git submodule update --init --recursive
 
-cmake -B $WORKSPACE/srcdir/qlever/build \
-    -DCMAKE_BUILD_TYPE=Release \
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_COMPILER="g++" \
+    -DUSE_PARALLEL=true \
+    -DLOGLEVEL=DEBUG \
+    -DABSL_PROPAGATE_CXX_STD=ON \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DABSL_PROPAGATE_CXX_STD=ON
+    -GNinja .. && ninja
 
-cmake --build $WORKSPACE/srcdir/qlever/build --config Release -- -j${nproc}
-
-cd build
 cp CreatePatternsMain \
      IndexBuilderMain \
      TurtleParserMain \
