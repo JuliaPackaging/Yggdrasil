@@ -41,26 +41,13 @@ git submodule update --init --recursive
 mkdir build
 cd build
 
-<<<<<<< HEAD
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
 CMAKE_FLAGS+=(-GNinja)
-
+CMAKE_FLAGS+=(-DGTEST_HAS_PTHREAD=1)
 cmake ${CMAKE_FLAGS[@]} .. && ninja
-=======
-cmake -DCMAKE_BUILD_TYPE=Release \
-    -DUSE_PARALLEL=true \
-    -DLOGLEVEL=DEBUG \
-    -DABSL_PROPAGATE_CXX_STD=ON \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DPREFER_EXTERNAL_ZSTD=ON \
-    -DGTEST_HAS_PTHREAD=1 \
-    -GNinja .. && ninja
->>>>>>> 8c66d3cc (Fix spaces)
 
 cp CreatePatternsMain \
      IndexBuilderMain \
