@@ -1,6 +1,3 @@
-diff --git before/alive2/.git/index after/alive2/.git/index
-index 97e7955..b3824bd 100644
-Binary files before/alive2/.git/index and after/alive2/.git/index differ
 diff --git before/alive2/CMakeLists.txt after/alive2/CMakeLists.txt
 index a9500a5..8224022 100644
 --- before/alive2/CMakeLists.txt
