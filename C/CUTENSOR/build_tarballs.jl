@@ -4,25 +4,26 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "CUTENSOR"
-version = v"1.3.3"#.2
+version = v"1.4.0"#.6
 
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-1.3.3.2-archive.tar.xz",
-                      "2e9517f31305872a7e496b6aa8ea329acda6b947b0c1eb1250790eaa2d4e2ecc")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-1.4.0.6-archive.tar.xz",
+                      "467ba189195fcc4b868334fc16a0ae1e51574139605975cc8004cedebf595964")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-ppc64le/libcutensor-linux-ppc64le-1.3.3.2-archive.tar.xz",
-                      "79f294c4a7933e5acee5f150145c526d6cd4df16eefb63f2d65df1dbc683cd68")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-ppc64le/libcutensor-linux-ppc64le-1.4.0.6-archive.tar.xz",
+                      "5da44ff2562ab7b9286122653e54f28d2222c8aab4bb02e9bdd4cf7e4b7809be")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-sbsa/libcutensor-linux-sbsa-1.3.3.2-archive.tar.xz",
-                      "0b62d5305abfdfca4776290f16a1796c78c1fa83b203680c012f37d44706fcdb")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-sbsa/libcutensor-linux-sbsa-1.4.0.6-archive.tar.xz",
+                      "6b06d63a5bc49c1660be8c307795f8a901c93dcde7b064455a6c81333c7327f4")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/windows-x86_64/libcutensor-windows-x86_64-1.3.3.2-archive.zip",
-                      "3abeacbe7085af7026ca1399a77c681c219c10a1448a062964e97aaac2b05851")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/windows-x86_64/libcutensor-windows-x86_64-1.4.0.6-archive.zip",
+                      "4f01a8aac2c25177e928c63381a80e3342f214ec86ad66965dcbfe81fc5c901d")],
 )
 
 products = [
     LibraryProduct(["libcutensor", "cutensor"], :libcutensor, dont_dlopen = true),
+    LibraryProduct(["libcutensorMg", "cutensorMg"], :libcutensorMg, dont_dlopen = true),
 ]
 
 # XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
@@ -34,7 +35,7 @@ dependencies = [
                            uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5"]
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
