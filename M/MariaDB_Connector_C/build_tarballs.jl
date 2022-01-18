@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_C"
-version = v"3.1.6"
+version = v"3.1.15"
+julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
     "https://github.com/mariadb-corporation/mariadb-connector-c.git" =>
-    "63df45ce3df3fbc04d8fab9bceb77f9d1cccd4aa",
+    "b2bb1b213c79169b7c994a99f21f47f11be465d4",
     "./bundled"
 ]
 
@@ -79,4 +80,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat)
