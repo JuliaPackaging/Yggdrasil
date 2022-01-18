@@ -13,12 +13,12 @@ version = v"1.11.0"
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/googletest
 
 if [[ "${target}" == *apple* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-known-features.patch"
 fi
-  
-cd $WORKSPACE/srcdir/googletest
+
 mkdir build && cd build
 cmake -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
