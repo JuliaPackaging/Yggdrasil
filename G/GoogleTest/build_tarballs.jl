@@ -12,6 +12,11 @@ version = v"1.11.0"
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+if [[ "${target}" == *apple* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=11.0)
+fi
+  
 cd $WORKSPACE/srcdir/googletest
 mkdir build && cd build
 cmake -DBUILD_SHARED_LIBS=ON \
