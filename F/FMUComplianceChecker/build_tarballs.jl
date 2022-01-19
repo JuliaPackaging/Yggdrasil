@@ -17,13 +17,7 @@ apk add subversion
 cd $WORKSPACE/srcdir
 mkdir ${bindir}/
 
-if [[ "${target}" == *linux* ]]; then
-    cd FMUChecker-*-linux64/        
-fi
-
-if [[ "${target}" == *mingw* ]]; then
-    cd FMUChecker-*-win64/
-fi
+cd FMUComplianceChecker-*/        
 
 mkdir build; cd build
 cmake ..
