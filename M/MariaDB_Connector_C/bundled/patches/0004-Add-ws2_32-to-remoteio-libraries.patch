@@ -1,0 +1,15 @@
+diff --git a/plugins/io/CMakeLists.txt b/plugins/io/CMakeLists.txt
+index 8c304c9..5b6b0f7 100644
+--- a/plugins/io/CMakeLists.txt
++++ b/plugins/io/CMakeLists.txt
+@@ -10,6 +10,6 @@ IF (WITH_CURL)
+                   DEFAULT DYNAMIC
+                   SOURCES ${CC_SOURCE_DIR}/plugins/io/remote_io.c
+                   INCLUDES ${CURL_INCLUDE_DIR}
+-                  LIBRARIES ${CURL_LIBRARIES})
++                  LIBRARIES ws2_32 ${CURL_LIBRARIES})
+   ENDIF()
+ ENDIF()
+-- 
+2.20.2
+
