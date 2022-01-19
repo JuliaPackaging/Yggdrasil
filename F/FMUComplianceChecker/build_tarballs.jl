@@ -31,6 +31,8 @@ if [[ "${target}" == *mingw* ]]; then
     mv ../bin/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
 
+yes 'p' | svn ls
+
 chmod +x ${bindir}/*
 
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
