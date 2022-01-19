@@ -19,14 +19,14 @@ mkdir ${bindir}/
 if [[ "${target}" == *linux* ]]; then
     cd FMUChecker-2.0.4-linux64/
     mv ./fmuCheck.linux64 ${bindir}/fmuCheck
+    chmod +x ${bindir}/*
 fi
 
 if [[ "${target}" == *mingw* ]]; then
     cd FMUChecker-2.0.4-win64/
-    mv ./fmuCheck.win64 ${bindir}/fmuCheck
+    mv ./fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
 
-chmod +x ${bindir}/*
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
 mv "./LICENCE.md" "${LIC_DIR}/LICENSE.md"
