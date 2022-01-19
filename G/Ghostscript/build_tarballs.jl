@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Ghostscript"
-version = v"9.53.3"
+version = v"9.55.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
         "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(version.major)$(version.minor)$(version.patch)/ghostscript-$(version).tar.gz", # URL
-        "6eaf422f26a81854a230b80fd18aaef7e8d94d661485bd2e97e695b9dce7bf7f" # SHA256 hash
+        "31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b" # SHA256 hash
     ),
     DirectorySource("./bundled"),
 ]
@@ -83,4 +83,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
