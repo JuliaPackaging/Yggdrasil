@@ -24,22 +24,21 @@ if [[ "${target}" == *-mingw* ]]; then
     # (we don't need to patch configure.ac)
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
-    atomic_patch -p1 ../patches/004-FT_CALLBACK_DEF-deprecated.patch
-    # Patch adapted from
-    # https://github.com/mxe/mxe/commit/3fee463ee24536144b053cc519cf963afb08dfb4
-    atomic_patch -p1 ../patches/005-fix-conflicting-types-gp_local_arg_encoding_get_codepoint.patch
 fi
 
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
-# configure the Makefiles
+# configure the Makefiles.  Note we disable Tesseract because we don't need it
+# at the moment, it requires a C++17 compiler, and configure for Windows fails
+# because it doesn't find "threading".
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --without-x \
     --disable-contrib \
-    --disable-cups
+    --disable-cups \
+    --without-tesseract
 
 # create the binaries
 make -j${nproc}
