@@ -7,23 +7,34 @@ version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-linux64.zip", "02f6d1a175fe4c51d5840ef40fcd05ca7fb3ceec170d7825d9c946d75eae12eb"),
-    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/releases/download/2.0.4/FMUChecker-2.0.4-win64.zip", "4932a46624a7ff84235bb49df7827c7b03684f6d67318ad272bd25548cb1dc8f")
+    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/refs/tags/$(version).tar.gz", "361a1995fe498f5399092cff119c78a4500abbb7b9ca8c77d48a7de72c294f59")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add subversion
+
 cd $WORKSPACE/srcdir
 mkdir ${bindir}/
 
 if [[ "${target}" == *linux* ]]; then
-    cd FMUChecker-2.0.4-linux64/
-    mv ./fmuCheck.linux64 ${bindir}/fmuCheck
+    cd FMUChecker-*-linux64/        
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    cd FMUChecker-2.0.4-win64/
-    mv ./fmuCheck.win64.exe ${bindir}/fmuCheck.exe
+    cd FMUChecker-*-win64/
+fi
+
+mkdir build; cd build
+cmake ..
+make install test
+
+if [[ "${target}" == *linux* ]]; then
+    mv ../bin/fmuCheck.linux64 ${bindir}/fmuCheck
+fi
+
+if [[ "${target}" == *mingw* ]]; then
+    mv ../bin/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
 
 chmod +x ${bindir}/*
@@ -38,7 +49,6 @@ mv "./LICENCE.md" "${LIC_DIR}/LICENSE.md"
 platforms = [
     Platform("x86_64", "windows"; ),
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl")
 ]
 
 
