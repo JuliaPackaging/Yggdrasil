@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 apk add subversion
+yes 'p' | svn info "https://svn.jmodelica.org/FMILibrary"
 
 cd $WORKSPACE/srcdir
 mkdir ${bindir}/
@@ -30,8 +31,6 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     mv ../bin/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
-
-yes 'p' | svn info "https://svn.jmodelica.org/FMILibrary"
 
 chmod +x ${bindir}/*
 
