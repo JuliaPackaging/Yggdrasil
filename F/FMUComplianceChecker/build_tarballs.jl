@@ -31,7 +31,7 @@ if [[ "${target}" == *mingw* ]]; then
     mv ../bin/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
 
-yes 'p' | svn ls
+yes 'p' | svn info "https://svn.jmodelica.org/FMILibrary"
 
 chmod +x ${bindir}/*
 
