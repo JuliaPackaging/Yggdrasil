@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "libsingular_julia"
-version = v"0.20.00"
+version = v"0.21.00"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "dc655e75960c9f5fb1b6e838197dddb8b8c7501b"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "93cae044e9ca6cce2bf444147ccc07913baea82f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +48,7 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~402.101.200"),
+    Dependency("Singular_jll", compat = "~403.0.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
