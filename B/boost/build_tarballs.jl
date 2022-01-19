@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "boost"
-version = v"1.76.0"
+version = v"1.74.0"
 
 # Collection of sources required to build boost
 sources = [
-    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"),
+    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+                  "83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1"),
     DirectorySource("./bundled"),
 ]
 
@@ -64,7 +64,7 @@ install_license LICENSE_1_0.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
