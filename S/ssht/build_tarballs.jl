@@ -37,7 +37,7 @@ no_whole_archive=$(flagon --no-whole-archive)
 if [ -n "${no_whole_archive}" ]; then
     no_whole_archive="-Wl,${no_whole_archive}"
 fi
-${CC} -g -fPIC -shared -o ${prefix}/lib/libssht.${dlext} \
+${CC} -g -fPIC -shared -o ${libdir}/libssht.${dlext} \
     ${whole_archive} ${prefix}/lib/libssht.a ${no_whole_archive} \
     -L${prefix}/lib -lfftw3
 """
