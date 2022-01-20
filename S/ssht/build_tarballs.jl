@@ -22,6 +22,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_C_FLAGS_INIT='-fPIC' \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
