@@ -7,15 +7,12 @@ version = v"4.0.0"
 
 # Collection of sources required to build libblastrampoline
 sources = [
-    GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline",
+    GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
               "af89551c9a50d762f747dd822c0290164f9c7077")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-ls -la ${WORKSPACE}
-echo
-ls -la ${WORKSPACE}/srcdir
 cd $WORKSPACE/srcdir/libblastrampoline/src
 
 make -j${nproc} prefix=${prefix} install
