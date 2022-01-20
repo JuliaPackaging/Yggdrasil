@@ -49,13 +49,13 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_MYSQLCOMPAT=OFF \
     -DWITH_EXTERNAL_ZLIB=ON \
     -DZLIB_FOUND=ON \
-    -DZLIB_INCLUDE_DIR=${prefix}/include \
+    -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DOPENSSL_FOUND=ON \
     -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
     -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
     -DICONV_LIBRARIES=${libdir}/libiconv.${dlext} \
-    -DICONV_INCLUDE_DIR=${prefix}/include
+    -DICONV_INCLUDE_DIR=${includedir}
 make -j${nproc}
 make install
 install_license ../COPYING.LIB
