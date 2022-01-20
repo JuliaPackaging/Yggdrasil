@@ -13,6 +13,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+ls -la ${WORKSPACE}
+echo
+ls -la ${WORKSPACE}/srcdir
 cd $WORKSPACE/srcdir/libblastrampoline/src
 
 make -j${nproc} prefix=${prefix} install
