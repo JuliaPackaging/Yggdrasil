@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"3.1.0"
+version = v"4.0.0"
 
 # Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/staticfloat/libblastrampoline",
-              "c6c7bc5d4ae088bd7c519d58e3fb8b686d00db0c")
+              "af89551c9a50d762f747dd822c0290164f9c7077")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,8 +37,8 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.6",
                init_block = """
                @static if VERSION < v"1.7.0-DEV.641"
-                       ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32),
-                             Libdl.dlpath(Base.libblas_name) , 1, 0)
+                       ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32, Ptr{Cvoid}),
+                             Libdl.dlpath(Base.libblas_name), 1, 0, C_NULL)
                    end
                """
 )
