@@ -13,30 +13,29 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 apk add subversion
-yes 'p' | svn info "https://svn.jmodelica.org/FMILibrary"
 
 cd $WORKSPACE/srcdir
 mkdir ${bindir}/
 
-cd FMUComplianceChecker-*/        
+cd FMUComplianceChecker-*/
 
 mkdir build; cd build
 cmake ..
 make install test
 
 if [[ "${target}" == *linux* ]]; then
-    mv ../bin/fmuCheck.linux64 ${bindir}/fmuCheck
+    mv ../install/fmuCheck.linux64 ${bindir}/fmuCheck
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    mv ../bin/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
+    mv ../install/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
 fi
 
 chmod +x ${bindir}/*
 
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
-mv "./LICENCE.md" "${LIC_DIR}/LICENSE.md"
+mv "../LICENCE" "${LIC_DIR}/LICENSE"
 """
 
 # These are the platforms we will build for by default, unless further
