@@ -18,6 +18,11 @@ cd $WORKSPACE/srcdir/FMUComplianceChecker*/
 atomic_patch -p1 ../patches/forward-cmake-toolchain.patch
 atomic_patch -p1 ../patches/windows-lowercase-header-file.patch
 export CFLAGS="-I${includedir}"
+if [[ "${target}" == *-apple-* ]]; then
+    # Replace `/usr/bin/libtool` with `libtool` from our toolchain to fix error
+    #     libtool:   error: unrecognised option: '-static'
+    ln -sf $(which libtool) /usr/bin/libtool
+fi
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
