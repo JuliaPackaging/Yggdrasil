@@ -39,7 +39,7 @@ if [ -n "${no_whole_archive}" ]; then
 fi
 ${CC} -g -fPIC -shared -o ${libdir}/libssht.${dlext} \
     ${whole_archive} ${prefix}/lib/libssht.a ${no_whole_archive} \
-    -L${prefix}/lib -lfftw3
+    -L${libdir} -lfftw3
 """
 
 # These are the platforms we will build for by default, unless further
