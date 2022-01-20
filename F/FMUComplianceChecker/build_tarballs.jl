@@ -7,7 +7,7 @@ version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/f0fd0b2ca78c415a725b028deec46c1962799f1d.zip", "2f8f0754164c7c13f8de76f8ec3271899d4650a3ffe895c2e813cd0b46ae7cb7")
+    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/f0fd0b2ca78c415a725b028deec46c1962799f1d.zip", "db4607e7b6230d9b7f2e394e6ec132e90cee19ae6625997c09d946ab61dda156")
 ]
 
 # Bash recipe for building across all platforms
