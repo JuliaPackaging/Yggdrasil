@@ -7,7 +7,7 @@ version = v"4.0.0"
 
 # Collection of sources required to build libblastrampoline
 sources = [
-    GitSource("https://github.com/staticfloat/libblastrampoline",
+    GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline",
               "af89551c9a50d762f747dd822c0290164f9c7077")
 ]
 
