@@ -24,10 +24,7 @@ if [[ "${target}" == *mingw* ]]; then     mv ../install/fmuCheck.win64.exe ${bin
 chmod +x ${bindir}/*
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
-mv "./LICENCE.md" "${LIC_DIR}/LICENSE.md"
-mv "../LICENCE.md" "${LIC_DIR}/LICENSE.md"
-ls  ..
-mv "../LICENCE" "${LIC_DIR}/LICENSE.md"
+mv "../LICENCE" "${LIC_DIR}/LICENSE"
 """
 
 # These are the platforms we will build for by default, unless further
