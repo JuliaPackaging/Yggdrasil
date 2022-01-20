@@ -1,0 +1,45 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -108,7 +108,7 @@
+ 	-DFMILIB_BUILD_SHARED_LIB:BOOLEAN=OFF
+ 	-DFMILIB_INSTALL_SUBLIBS:BOOLEAN=OFF
+ 	-DFMILIB_GENERATE_DOXYGEN_DOC:BOOLEAN=OFF
+-	-DFMILIB_BUILD_TESTS:BOOLEAN=ON
++	-DFMILIB_BUILD_TESTS:BOOLEAN=OFF
+ 	-DFMILIB_GENERATE_BUILD_STAMP:BOOLEAN=OFF
+ 	-DFMILIB_ENABLE_LOG_LEVEL_DEBUG:BOOLEAN=${FMUCHK_ENABLE_LOG_LEVEL_DEBUG}
+ 	-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+@@ -126,6 +126,7 @@
+ 	-DCMAKE_LINK_LIBRARY_FLAG:STRING=${CMAKE_LINK_LIBRARY_FLAG}
+ 	-DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+ 	-DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
++	-DCMAKE_TOOLCHAIN_FILE:PATH=${CMAKE_TOOLCHAIN_FILE}
+ )
+ 
+ if(MSVC)
+@@ -146,6 +147,16 @@
+ )
+ 
+ ExternalProject_Add_Step(
++	fmil fmil_patch
++	DEPENDEES patch
++	DEPENDERS configure
++	COMMAND atomic_patch -p1 /workspace/srcdir/patches/fmi-library-cmake-expatex-cmake.patch
++	COMMAND atomic_patch -p1 /workspace/srcdir/patches/windows-linking-lowercase.patch
++	DEPENDS ${FMUCHK_BUILD}/CMakeCache.txt ${FMUCHK_HOME}/CMakeLists.txt
++	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/FMIL"
++)
++
++ExternalProject_Add_Step(
+ 	fmil fmil_reconfigure
+ 	DEPENDEES configure
+ 	DEPENDERS build
+@@ -213,7 +224,7 @@
+ add_executable(${fmuCheck} ${SOURCE} ${HEADERS})
+ target_link_libraries(${fmuCheck} fmilib)
+ if(WIN32)
+-	target_link_libraries(${fmuCheck} Shlwapi)
++	target_link_libraries(${fmuCheck} shlwapi)
+ endif(WIN32)
+ if(UNIX)
+ 	target_link_libraries(${fmuCheck} dl)

@@ -7,40 +7,31 @@ version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/f0fd0b2ca78c415a725b028deec46c1962799f1d.zip", "db4607e7b6230d9b7f2e394e6ec132e90cee19ae6625997c09d946ab61dda156")
+    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/f0fd0b2ca78c415a725b028deec46c1962799f1d.zip",
+                  "db4607e7b6230d9b7f2e394e6ec132e90cee19ae6625997c09d946ab61dda156"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-
-apk add subversion
-mkdir ${bindir}/
-
-cd FMUComplianceChecker-*/   
-
-mkdir build; cd build
+cd $WORKSPACE/srcdir/FMUComplianceChecker*/
+atomic_patch -p1 ../patches/forward-cmake-toolchain.patch
+atomic_patch -p1 ../patches/windows-lowercase-header-file.patch
+export CFLAGS="-I${includedir}"
+mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make install test
-
-if [[ "${target}" == *linux* ]]; then     mv ../install/fmuCheck.linux64 ${bindir}/fmuCheck; fi
-if [[ "${target}" == *mingw* ]]; then     mv ../install/fmuCheck.win64.exe ${bindir}/fmuCheck.exe; fi
-chmod +x ${bindir}/*
-
+make -j${nproc}
+install -Dm755 fmuCheck.* "${bindir}/fmuCheck${exeext}"
 install_license "../LICENSE"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "windows"; ),
-    Platform("x86_64", "linux"; libc = "glibc"),
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("fmuCheck", :libFMUCheck)
+    ExecutableProduct("fmuCheck", :libFMUCheck),
 ]
 
 # Dependencies that must be installed before this package can be built
