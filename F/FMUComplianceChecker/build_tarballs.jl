@@ -7,35 +7,27 @@ version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/refs/tags/$(version).tar.gz", "361a1995fe498f5399092cff119c78a4500abbb7b9ca8c77d48a7de72c294f59")
+    ArchiveSource("https://github.com/modelica-tools/FMUComplianceChecker/archive/refs/heads/master.zip", "2f8f0754164c7c13f8de76f8ec3271899d4650a3ffe895c2e813cd0b46ae7cb7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add subversion
-
 cd $WORKSPACE/srcdir
+apk add subversion
 mkdir ${bindir}/
-
-cd FMUComplianceChecker-*/
-
+cd FMUComplianceChecker-*/   
 mkdir build; cd build
 cmake ..
 make install test
-
-if [[ "${target}" == *linux* ]]; then
-    mv ../install/fmuCheck.linux64 ${bindir}/fmuCheck
-fi
-
-if [[ "${target}" == *mingw* ]]; then
-    mv ../install/fmuCheck.win64.exe ${bindir}/fmuCheck.exe
-fi
-
+if [[ "${target}" == *linux* ]]; then     mv ../install/fmuCheck.linux64 ${bindir}/fmuCheck; fi
+if [[ "${target}" == *mingw* ]]; then     mv ../install/fmuCheck.win64.exe ${bindir}/fmuCheck.exe; fi
 chmod +x ${bindir}/*
-
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
-mv "../LICENCE" "${LIC_DIR}/LICENSE"
+mv "./LICENCE.md" "${LIC_DIR}/LICENSE.md"
+mv "../LICENCE.md" "${LIC_DIR}/LICENSE.md"
+ls  ..
+mv "../LICENCE" "${LIC_DIR}/LICENSE.md"
 """
 
 # These are the platforms we will build for by default, unless further
