@@ -23,6 +23,10 @@ mkdir build; cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make install test
 
+if [[ "${target}" == *linux* ]]; then     mv ../install/fmuCheck.linux64 ${bindir}/fmuCheck; fi
+if [[ "${target}" == *mingw* ]]; then     mv ../install/fmuCheck.win64.exe ${bindir}/fmuCheck.exe; fi
+chmod +x ${bindir}/*
+
 install_license "../LICENSE"
 """
 
