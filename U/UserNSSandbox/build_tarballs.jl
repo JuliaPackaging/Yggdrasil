@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/Sandbox.jl-cac5c095dfe27fa774bdad65957d45f476b220680c9a2038c0dd2c25cdd0b3e6/deps
+cd ${WORKSPACE}/srcdir/Sandbox.jl-*/deps
 mkdir -p ${bindir}
 $CC -std=c99 -O2 -static -static-libgcc -g -o ${bindir}/sandbox ./userns_sandbox.c
 install_license /usr/share/licenses/MIT
