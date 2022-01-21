@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.1"
+version = v"2.1.2"
 sources = [
     ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "f5ea21f82b358ba127550fc1f49e701cba0379d22ce030c274135109f678b980"),
+                  "18421e1b81ecb5b2aa3bb8f3e9df084586d90c13b27960b78202d264f587934e"),
 ]
 
 script = raw"""
