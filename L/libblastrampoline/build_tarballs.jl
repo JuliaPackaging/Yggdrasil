@@ -34,11 +34,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               init_block = """
-               @static if VERSION < v"1.7.0-DEV.641"
-                       ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32, Ptr{Cvoid}),
-                             Libdl.dlpath(Base.libblas_name), 1, 0, C_NULL)
-                   end
-               """
+               julia_compat="1.8",
 )
