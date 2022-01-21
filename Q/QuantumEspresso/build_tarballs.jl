@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "QuantumEspresso"
-version = v"6.7.0"
+version = v"7.0.0"
 
 sources = [
-    ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
-                  "8f06ea31ae52ad54e900a2f51afd5c70f78096d9dcf39c86c2b17dccb1ec9c87"),
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.0/q-e-qe-7.0.tar.gz",
+                  "85beceb1aaa1678a49e774c085866d4612d9d64108e0ac49b23152c8622880ee"),
     DirectorySource("bundled"),
 ]
 
