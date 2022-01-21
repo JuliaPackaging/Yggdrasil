@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2022.01.06"
+version = v"2022.01.20"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/staticfloat/Sandbox.jl",
-              "9bd66da515893f1997feb51d228bcb3dc1d68771"),
+              "ed87f079edb1cef60c32ad5fbfbcd38c70a1314a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/Sandbox.jl/deps
+cd ${WORKSPACE}/srcdir/Sandbox.jl-*/deps
 mkdir -p ${bindir}
 $CC -std=c99 -O2 -static -static-libgcc -g -o ${bindir}/sandbox ./userns_sandbox.c
 install_license /usr/share/licenses/MIT
