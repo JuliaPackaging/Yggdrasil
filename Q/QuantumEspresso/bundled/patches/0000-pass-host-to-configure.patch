@@ -4,11 +4,11 @@ index 103f8644e..9e5013b05 100644
 +++ b/install/extlibs_makefile
 @@ -59,7 +59,8 @@ libfox:
          mkdir ../FoX; \
-        (gzip -dc ../archive/fox.tgz | (cd ../FoX; tar -xvf -)); \
-        cd ../FoX/fox/; export FC=$(F90); export FCFLAGS="$(FOX_FLAGS)"; \
--       ./configure --prefix=$(TOPDIR)/FoX ;\
-+       update_configure_scripts; \
-+       ./configure --build=$(MACHTYPE) --host=$(target) --prefix=$(TOPDIR)/FoX ;\
+ 	(gzip -dc ../archive/fox.tgz | (cd ../FoX; tar -xvf -)); \
+ 	cd ../FoX/fox/; export FC=$(F90); export FCFLAGS="$(FOX_FLAGS)"; \
+-	./configure --prefix=$(TOPDIR)/FoX ;\
++	update_configure_scripts; \
++	./configure --build=$(MACHTYPE) --host=$(target) --prefix=$(TOPDIR)/FoX ;\
      touch cp_test; \
      if cp -p cp_test cp_test_1; then \
          echo "cp -p works"; \
@@ -25,4 +25,4 @@ index 103f8644e..9e5013b05 100644
 +                --build=$(MACHTYPE) --host=$(target) \
                  --enable-cuda-env-check=no; \
      make all
-        touch ../install/libcuda_devxlib # do not download and configure again
+ 	touch ../install/libcuda_devxlib # do not download and configure again
