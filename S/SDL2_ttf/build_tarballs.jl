@@ -15,7 +15,7 @@ version = v"2.0.16" # <-- this version number is a lie to build for Julia v1.6
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL2_ttf-*/
+cd $WORKSPACE/srcdir/SDL*/
 
 atomic_patch -p1 ../patches/configure_in-v2.0.15.patch
 atomic_patch -p1 ../patches/Makefile_in_dont_build_programs.patch

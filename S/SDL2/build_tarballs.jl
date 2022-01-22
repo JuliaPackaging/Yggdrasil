@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL2-*/
+cd $WORKSPACE/srcdir/SDL*/
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
