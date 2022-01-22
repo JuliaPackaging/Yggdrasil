@@ -9,12 +9,17 @@ version = v"0.7.12"
 sources = [
     ArchiveSource("https://github.com/pantoniou/libfyaml/releases/download/v$(version)/libfyaml-$(version).tar.gz",
                   "485342c6920e9fdc2addfe75e5c3e0381793f18b339ab7393c1b6edf78bf8ca8"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libfyaml-*
+
+# Replace `alloca.h` with `stdlib.h`
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/alloca.patch
+
 ./bootstrap.sh
 ./configure \
     --build=${MACHTYPE} \
