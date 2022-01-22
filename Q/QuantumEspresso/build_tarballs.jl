@@ -30,8 +30,10 @@ if [ "${nbits}" == 64 ]; then
     flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
 fi
 
-if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    # No scalapack binary available on PowerPC
+if [[    "${target}" == powerpc64le-linux-gnu \
+      -o "${target}" == armv6l-linux-musleabihf \
+      -o "${target}" == armv6l-linux-gnueabihf ]]; then
+    # No scalapack binary available on these platforms
     flags+=(--with-scalapack=no)
 else
     export SCALAPACK_LIBS="-L${libdir} -lscalapack"
