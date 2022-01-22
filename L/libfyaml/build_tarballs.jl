@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libyfaml"
+name = "libfyaml"
 version = v"0.7.12"
 
 # Collection of sources required to complete build
