@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_mixer-*/
-export CPPFLAGS="-I${prefix}/include" 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic 
+export CPPFLAGS="-I${prefix}/include"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
 make -j${nproc}
 make install
 if [[ "${target}" == *-freebsd* ]]; then
@@ -44,4 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
