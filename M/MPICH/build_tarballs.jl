@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "MPICH"
 version_str = "4.0"
-version = VersionNumber(version)
+version = VersionNumber(version_str)
 
 
 sources = [
