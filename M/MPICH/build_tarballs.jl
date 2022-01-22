@@ -27,6 +27,8 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
     # * https://stackoverflow.com/q/56759636/2442087
     # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
     export CROSS_F77_SIZEOF_INTEGER=4
+    export CROSS_F77_SIZEOF_REAL=4
+    export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
     export CROSS_F77_TRUE_VALUE=1
     export CROSS_F77_FALSE_VALUE=0
 
