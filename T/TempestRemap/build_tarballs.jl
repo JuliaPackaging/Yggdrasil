@@ -50,8 +50,6 @@ products = [
     ExecutableProduct("ApplyOfflineMap", :ApplyOfflineMap_exe),
     ExecutableProduct("CalculateDiffNorms",  :CalculateDiffNorms_exe),
     ExecutableProduct("CoarsenRectilinearData", :CoarsenRectilinearData_exe),
-    ExecutableProduct("ConvertExodusToSCRIP", :ConvertExodusToSCRIP_exe),
-    ExecutableProduct("ConvertSCRIPToExodus", :ConvertSCRIPToExodus_exe),
     ExecutableProduct("GenerateCSMesh", :GenerateCSMesh_exe),
     ExecutableProduct("GenerateGLLMetaData", :GenerateGLLMetaData_exe),
     ExecutableProduct("GenerateICOMesh", :GenerateICOMesh_exe),
