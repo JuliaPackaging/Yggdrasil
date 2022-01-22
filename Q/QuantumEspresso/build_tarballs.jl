@@ -30,9 +30,9 @@ if [ "${nbits}" == 64 ]; then
     flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
 fi
 
-if [[    "${target}" == powerpc64le-linux-gnu 
-      || "${target}" == armv6l-linux-musleabihf \
-      || "${target}" == armv6l-linux-gnueabihf ]]; then
+if [[    "${target}" == powerpc64le-linux-* \
+      || "${target}" == armv6l-linux-* \
+      || "${target}" == aarch64-apple-darwin ]]; then
     # No scalapack binary available on these platforms
     flags+=(--with-scalapack=no)
 else
