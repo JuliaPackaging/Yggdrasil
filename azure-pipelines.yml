@@ -13,6 +13,7 @@ variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
     # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
     BINARYBUILDER_NPROC: 16
+    JULIA_PKG_SERVER: us-east.pkg.julialang.org
 
 jobs:
 - job: generator
