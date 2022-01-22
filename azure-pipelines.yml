@@ -48,7 +48,13 @@ jobs:
       $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
           versioninfo()
           if !isnothing(Pkg.pkg_server())
-              resp = Downloads.request("$(Pkg.pkg_server())/registries")
+              try
+                  resp = Downloads.request("$(Pkg.pkg_server())/registries")
+              catch e
+                  # Let us know the download of the registry went wrong, but do not hard fail
+                  @error "Could not download the registry" exception=(e, catch_backtrace())
+                  exit(0)
+              end
               last_mod_idx = findfirst(h -> first(h) == "last-modified", resp.headers)
               msg = "PkgServer: " * resp.url
               delay = if !isnothing(last_mod_idx)
