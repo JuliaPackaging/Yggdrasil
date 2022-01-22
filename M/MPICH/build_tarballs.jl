@@ -1,10 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"4.0.0"
+version_str = "4.0"
+version = VersionNumber(version)
+
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
                   "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
