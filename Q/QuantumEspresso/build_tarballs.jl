@@ -31,8 +31,8 @@ if [ "${nbits}" == 64 ]; then
 fi
 
 if [[    "${target}" == powerpc64le-linux-* \
-      || "${target}" == armv6l-linux-* \
-      || "${target}" == aarch64-apple-darwin ]]; then
+      || "${bb_full_target}" == armv6l-linux-* \
+      || "${target}" == aarch64-apple-darwin* ]]; then
     # No scalapack binary available on these platforms
     flags+=(--with-scalapack=no)
 else
