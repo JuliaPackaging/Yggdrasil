@@ -7,8 +7,7 @@ version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    "http://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.tar.gz" =>
-    "b4cf5a382c061cd75081cf246c2aa2f9df8db04bdda8dcdc6b6cca55bede2419",
+    GitSource("https://github.com/libsdl-org/SDL_mixer.git", "da75a58c19de9fedea62724a5f7770cbbe39adf9"),
 ]
 
 # Bash recipe for building across all platforms

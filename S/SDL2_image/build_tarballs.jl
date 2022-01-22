@@ -7,8 +7,7 @@ version = v"2.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    "http://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.zip" =>
-    "eee0927d1e7819d57c623fe3e2b3c6761c77c474fe9bc425e8674d30ac049b1c",
+    GitSource("https://github.com/libsdl-org/SDL_image.git", "ab2a9c602623193d61827ccd395302d92d90fc38"),
 ]
 
 # Bash recipe for building across all platforms

@@ -3,12 +3,11 @@
 using BinaryBuilder
 
 name = "SDL2_ttf"
-version = v"2.0.15"
+version = v"2.0.18"
 
 # Collection of sources required to build SDL2_ttf
 sources = [
-    ArchiveSource("https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-$(version).tar.gz",
-                  "a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33"),
+    GitSource("https://github.com/libsdl-org/SDL_ttf.git", "3e702ed9bf400b0a72534f144b8bec46ee0416cb"),
     DirectorySource("./bundled"),
 ]
 
