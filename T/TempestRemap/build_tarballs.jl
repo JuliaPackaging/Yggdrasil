@@ -76,7 +76,7 @@ dependencies = [
     Dependency("NetCDF_jll"),
     Dependency("HDF5_jll"),
     # The following is adapted from NetCDF_jll
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=VersionNumber("2.24.0"))),
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
