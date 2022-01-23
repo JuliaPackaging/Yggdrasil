@@ -50,7 +50,10 @@ if [[ "${target}" == i686-linux-musl ]]; then
 fi
 
 if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(FFLAGS=-fallow-argument-mismatch)
+    EXTRA_FLAGS+=(
+        FFLAGS=-fallow-argument-mismatch
+        FCFLAGS=-fallow-argument-mismatch
+    )
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
