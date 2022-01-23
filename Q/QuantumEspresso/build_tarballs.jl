@@ -50,7 +50,10 @@ chmod +x "${bindir}"/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-platforms = filter!(!Sys.iswindows, platforms)
+filter!(!Sys.iswindows, platforms)
+# On aarch64-apple-darwin we get
+#    f951: internal compiler error: in doloop_contained_procedure_code, at fortran/frontend-passes.c:2464
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
