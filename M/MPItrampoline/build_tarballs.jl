@@ -7,7 +7,7 @@ version = v"2.8.0"
 
 mpich_version_str = "4.0"
 mpiconstants_version = v"1.4.0"
-mpiwrapper_version = v"2.2.1"
+mpiwrapper_version = v"2.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -18,7 +18,7 @@ sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "4ce058d47e515ff3dc62a6e175a9b1f402d25cc3037be0d9c26add2d78ba8da9"),
+                  "efa16c11315c913ce71a4db14574c633730bc0b1e446f1168ee01a457408163d"),
 ]
 
 # Bash recipe for building across all platforms
