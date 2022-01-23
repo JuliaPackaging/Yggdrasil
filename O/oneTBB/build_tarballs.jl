@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oneTBB/
+cd $WORKSPACE/srcdir/oneTBB*
 
 if [[ ${target} == *-linux-musl* ]]; then
     # Adapt patch from https://github.com/oneapi-src/oneTBB/pull/203
