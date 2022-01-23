@@ -10,6 +10,7 @@ sources = [
                   "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -19,6 +20,8 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
+
+atomic_patch -p1 ../patches/musl-mpl-thread-posix.patch
 
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
