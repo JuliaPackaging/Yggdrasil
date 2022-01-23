@@ -7,8 +7,7 @@ version = v"2021.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "ec39c5463d5fbfe01150bcd8cbfe60b5e064d693"),
+    ArchiveSource("https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.5.0.tar.gz", "e5b57537c741400cf6134b428fc1689a649d7d38d9bb9c1b6d64f092ea28178a"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,9 +16,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneTBB/
 
 if [[ ${target} == *-linux-musl* ]]; then
-# Adapt patch from
-# https://github.com/oneapi-src/oneTBB/pull/203
-atomic_patch -p1 ../patches/musl.patch
+    # Adapt patch from https://github.com/oneapi-src/oneTBB/pull/203
+    atomic_patch -p1 ../patches/musl.patch
+
+elif [[ ${target} == *-mingw* ]]; then
+    #derived from https://github.com/oneapi-src/oneTBB/commit/ce476173772f289c66ba98089618c1ff767ecea4, can hopefully be removed next release
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lowercase-windows-include.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/NOMINMAX-defines.patch
 fi
 
 mkdir build && cd build/
