@@ -50,7 +50,7 @@ filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 products = [
     LibraryProduct("libtbbmalloc", :libtbbmalloc),
     LibraryProduct("libtbbmalloc_proxy", :libtbbmalloc_proxy),
-    LibraryProduct("libtbb", :libtbb),
+    LibraryProduct(["libtbb", "libtbb12"], :libtbb),
 ]
 
 # Dependencies that must be installed before this package can be built
