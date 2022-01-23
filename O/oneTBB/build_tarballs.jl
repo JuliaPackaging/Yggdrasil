@@ -23,6 +23,9 @@ elif [[ ${target} == *-mingw* ]]; then
     #derived from https://github.com/oneapi-src/oneTBB/commit/ce476173772f289c66ba98089618c1ff767ecea4, can hopefully be removed next release
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lowercase-windows-include.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/NOMINMAX-defines.patch
+    # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
+    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
 mkdir build && cd build/
@@ -38,11 +41,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
-
 
 # The products that we will ensure are always built
 products = [
