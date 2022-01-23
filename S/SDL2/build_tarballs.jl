@@ -18,7 +18,7 @@ FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
 fi
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
