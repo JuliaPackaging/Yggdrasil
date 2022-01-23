@@ -15,6 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oneTBB*
 
+# We can't do Link-Time-Optimization with Clang, disable it.
+atomic_patch -p1 ../patches/clang-no-lto.patch
+
 if [[ ${target} == *-linux-musl* ]]; then
     # Adapt patch from https://github.com/oneapi-src/oneTBB/pull/203
     atomic_patch -p1 ../patches/musl.patch
