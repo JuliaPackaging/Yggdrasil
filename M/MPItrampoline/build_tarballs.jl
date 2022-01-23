@@ -130,6 +130,13 @@ if [[ "${target}" == *-apple-* ]]; then
     EXTRA_FLAGS+=(--enable-two-level-namespace)
 fi
 
+if [[ "${target}" == aarch64-apple-* ]]; then
+    EXTRA_FLAGS+=(
+        FFLAGS=-fallow-argument-mismatch
+        FCFLAGS=-fallow-argument-mismatch
+    )
+fi
+
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
