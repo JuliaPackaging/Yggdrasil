@@ -14,15 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2*/
-
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
 fi
-
-export CPPFLAGS="-I${prefix}/include"
+export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \

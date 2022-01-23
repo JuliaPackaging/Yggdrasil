@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "mpg123"
-version = v"1.25.12"
+version = v"1.29.3"
 
 # Collection of sources required to build mpg123
 sources = [
-    "https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-$(version).tar.bz2" =>
-    "1ffec7c9683dfb86ea9040d6a53d6ea819ecdda215df347f79def08f1fe731d1",
+    ArchiveSource("https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-$(version).tar.bz2",
+                  "963885d8cc77262f28b77187c7d189e32195e64244de2530b798ddf32183e847"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mpg123-*/
+sed -i "s/ -ffast-math//" configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-int-quality
 make -j${nproc}
 make install
@@ -38,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
