@@ -9,8 +9,8 @@ version = v"0.0.1"
 sources = [
     GitSource("https://github.com/ad-freiburg/qlever.git", "1b55a2da8073c00fb9a0798440b5263c88f1f8b6"),
     DirectorySource("./bundled"),
-    # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    #               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
@@ -35,8 +35,7 @@ fi
 
 git submodule update --init --recursive
 
-mkdir build
-cd build
+mkdir build && cd build
 
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=yes
 export PKG_CONFIG_ALLOW_SYSTEM_LIBS=yes
@@ -76,8 +75,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # QLever depends on FOXXLL which only builds on 64-bit systems
 # https://github.com/stxxl/foxxll/blob/a4a8aeee64743f845c5851e8b089965ea1c219d7/foxxll/common/types.hpp#L25
