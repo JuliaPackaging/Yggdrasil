@@ -5,9 +5,9 @@ using BinaryBuilder, Pkg
 name = "MPItrampoline"
 version = v"2.8.0"
 
-mpich_version = v"3.4.3"
+mpich_version_str = "4.0"
 mpiconstants_version = v"1.4.0"
-mpiwrapper_version = v"2.2.1"
+mpiwrapper_version = v"2.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -15,10 +15,10 @@ sources = [
                   "bc2a075ced19e5f7ea547060e284887bdbb0761d34d1adb6f16d2e9e096a7d38"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
-    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
-                  "8154d89f3051903181018166678018155f4c2b6f04a9bb6fe9515656452c4fd7"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
+                  "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "4ce058d47e515ff3dc62a6e175a9b1f402d25cc3037be0d9c26add2d78ba8da9"),
+                  "efa16c11315c913ce71a4db14574c633730bc0b1e446f1168ee01a457408163d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -128,6 +128,13 @@ if [[ "${target}" == *-apple-* ]]; then
     # conflicts with MPItrampoline, which requires the option
     # `-twolevel_namespace`.
     EXTRA_FLAGS+=(--enable-two-level-namespace)
+fi
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    EXTRA_FLAGS+=(
+        FFLAGS=-fallow-argument-mismatch
+        FCFLAGS=-fallow-argument-mismatch
+    )
 fi
 
 ./configure \
