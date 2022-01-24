@@ -7,7 +7,7 @@ version = v"2.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Andersen98/sparsehash-c11.git", "24e94b66249466f71f67a54a96247d99b8dcceb8")
+    GitSource("https://github.com/sparsehash/sparsehash-c11.git", "edd6f1180156e76facc1c0449da245208ab39503")
 ]
 
 
