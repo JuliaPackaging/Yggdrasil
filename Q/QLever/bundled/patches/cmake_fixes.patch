@@ -12,7 +12,7 @@ index 49506e4..6933dca 100644
 +# add_subdirectory(third_party/antlr4/runtime/Cpp EXCLUDE_FROM_ALL)
 +# target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
 +# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
-+include_directories(${prefix}/include/antlr4-runtime)
++include_directories(${ANTLR_INCLUDE_DIR})
 +
  
  ################################
@@ -25,7 +25,7 @@ index 49506e4..6933dca 100644
 -include_directories(third_party/googletest/googletest/include)
 +# add_subdirectory(third_party/googletest/googletest EXCLUDE_FROM_ALL)
 +# include_directories(third_party/googletest/googletest/include)
-+include_directories(${prefix}/include/gtest)
++include_directories(${GTEST_INCLUDE_DIR})
  
  ################################
  # NLOHNMANN-JSON
