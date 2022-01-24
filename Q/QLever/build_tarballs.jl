@@ -46,17 +46,14 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS=yes
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
-CMAKE_FLAGS+=(-GNinja)
-# CMAKE_FLAGS+=(-DBUILD_GMOCK=OFF)
-# CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
-CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS=-Werror)
-# CMAKE_FLAGS+=(-DGTEST_HAS_PTHREAD=1)
-# CMAKE_FLAGS+=(-DGTEST_CREATE_SHARED_LIBRARY=1)
-# CMAKE_FLAGS+=(-DGTEST_LINKED_AS_SHARED_LIBRARY=1)
-CMAKE_FLAGS+=(-DABSL_USE_EXTERNAL_GOOGLETEST=ON)
+# CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 
+# CMAKE_FLAGS+=(-GNinja)
+# CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS=-Werror)
+# # CMAKE_FLAGS+=(-DABSL_USE_EXTERNAL_GOOGLETEST=ON)
+# CMAKE_FLAGS+=(-DABSL_BUILD_TESTING=ON)
+# # -DABSL_USE_EXTERNAL_GOOGLETEST=ON -DABSL_FIND_GOOGLETEST=ON
 
 cmake ${CMAKE_FLAGS[@]} .. && ninja
 
@@ -111,7 +108,8 @@ dependencies = [
     Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"); compat = "~69.1"),
     Dependency(PackageSpec(name="jemalloc_jll", uuid="454a8cc1-5e0e-5123-92d5-09b094f0e876")),
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3")),
-    Dependency("GoogleTest_jll"),
+    BuildDependency("GoogleTest_jll"),
+    BuildDependency("Antlr4CppRuntime_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
