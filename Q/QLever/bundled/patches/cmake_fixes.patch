@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..1c4c228 100644
+index 49506e4..9b0d7af 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -19,7 +19,7 @@ index 49506e4..1c4c228 100644
 +# target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
 +# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
 +include_directories(${ANTLR_INCLUDE_DIR})
-+add_library(antlr4_static SHARED "${ANTLR_INCLUDE_DIR}")
++find_package(antlr4-runtime REQUIRED)
  
  ################################
  # Threading
