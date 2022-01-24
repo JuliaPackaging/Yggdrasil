@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..e3208f0 100644
+index 49506e4..1c4c228 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -19,7 +19,7 @@ index 49506e4..e3208f0 100644
 +# target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
 +# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
 +include_directories(${ANTLR_INCLUDE_DIR})
-+
++add_library(antlr4_static SHARED "${ANTLR_INCLUDE_DIR}")
  
  ################################
  # Threading
@@ -46,12 +46,3 @@ index 49506e4..e3208f0 100644
  
  
  
-@@ -234,7 +237,7 @@ add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp
- target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
- 
- add_executable(TurtleParserMain src/TurtleParserMain.cpp)
--target_link_libraries(TurtleParserMain parser ${CMAKE_THREAD_LIBS_INIT} absl::flat_hash_map)
-+target_link_libraries(TurtleParserMain parser ${CMAKE_THREAD_LIBS_INIT} absl::flat_hash_map antlr4_cpp_runtime)
- 
- add_executable(VocabularyMergerMain src/VocabularyMergerMain.cpp)
- target_link_libraries(VocabularyMergerMain index ${CMAKE_THREAD_LIBS_INIT})
