@@ -51,7 +51,6 @@ CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DANTLR_INCLUDE_DIR="../../destdir/include/antlr4-runtime")
 CMAKE_FLAGS+=(-DGTEST_INCLUDE_DIR="../../destdir/include/gtest")
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
-CMAKE_FLAGS+=(-DABSL_BUILD_TESTING=OFF)
 CMAKE_FLAGS+=(-DABSL_LOCAL_GOOGLETEST_DIR="../../destdir/include/gtest")
 CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS=-Werror)
 # CMAKE_FLAGS+=(-DABSL_USE_EXTERNAL_GOOGLETEST=ON)
@@ -110,7 +109,7 @@ dependencies = [
     Dependency(PackageSpec(name="jemalloc_jll", uuid="454a8cc1-5e0e-5123-92d5-09b094f0e876")),
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3")),
     BuildDependency("GoogleTest_jll"),
-    BuildDependency("Antlr4CppRuntime_jll"),
+    Dependency("Antlr4CppRuntime_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
