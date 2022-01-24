@@ -16,7 +16,7 @@ cd sparsehash-*
 install_license LICENSE
 
 mkdir ${prefix}/include
-mv src/sparsehash ${prefix}/include/
+mv sparsehash ${prefix}/include/
 """
 
 # These are the platforms we will build for by default, unless further
