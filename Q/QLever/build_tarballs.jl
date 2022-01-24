@@ -83,8 +83,8 @@ platforms = expand_cxxstring_abis(platforms)
 # https://github.com/stxxl/foxxll/blob/a4a8aeee64743f845c5851e8b089965ea1c219d7/foxxll/common/types.hpp#L25
 filter!(p -> nbits(p) != 32, platforms)
 
-# Building against musl on Linux blocked by tlx dependency, issue #36 (https://github.com/tlx/tlx/issues/36)
- filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
+# Building against musl on Linux blocked by tlx dependency (https://github.com/tlx/tlx/issues/36)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
