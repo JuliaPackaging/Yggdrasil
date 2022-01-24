@@ -46,7 +46,7 @@ index 49506e4..b61ed9f 100644
  
  
 diff --git a/src/parser/sparqlParser/CMakeLists.txt b/src/parser/sparqlParser/CMakeLists.txt
-index 43fc825..2d93f6a 100644
+index 43fc825..dfaadef 100644
 --- a/src/parser/sparqlParser/CMakeLists.txt
 +++ b/src/parser/sparqlParser/CMakeLists.txt
 @@ -4,4 +4,4 @@ add_library(sparqlParser SparqlQleverVisitor.h SparqlQleverVisitor.cpp
@@ -54,9 +54,9 @@ index 43fc825..2d93f6a 100644
          generated/SparqlAutomaticParser.h generated/SparqlAutomaticParser.cpp
          generated/SparqlAutomaticVisitor.h generated/SparqlAutomaticVisitor.cpp)
 -target_link_libraries(sparqlParser antlr4_static sparqlExpressions rdfEscaping absl::flat_hash_map)
-+target_link_libraries(sparqlParser antlr4_runtime sparqlExpressions rdfEscaping absl::flat_hash_map)
++target_link_libraries(sparqlParser antlr4-runtime sparqlExpressions rdfEscaping absl::flat_hash_map)
 diff --git a/src/parser/sparqlParser/generated/CMakeLists.txt b/src/parser/sparqlParser/generated/CMakeLists.txt
-index 1c26fe6..69e2981 100644
+index 1c26fe6..677991f 100644
 --- a/src/parser/sparqlParser/generated/CMakeLists.txt
 +++ b/src/parser/sparqlParser/generated/CMakeLists.txt
 @@ -5,4 +5,4 @@ add_library(antlrSparqlParser
@@ -65,9 +65,9 @@ index 1c26fe6..69e2981 100644
  
 -target_link_libraries(antlrSparqlParser antlr4_static)
 \ No newline at end of file
-+target_link_libraries(antlrSparqlParser antlr4_runtime)
++target_link_libraries(antlrSparqlParser antlr4-runtime)
 diff --git a/src/util/HttpServer/HttpParser/CMakeLists.txt b/src/util/HttpServer/HttpParser/CMakeLists.txt
-index b8b728f..064e965 100644
+index b8b728f..d037652 100644
 --- a/src/util/HttpServer/HttpParser/CMakeLists.txt
 +++ b/src/util/HttpServer/HttpParser/CMakeLists.txt
 @@ -4,4 +4,4 @@ add_library(httpParser AcceptHeaderQleverVisitor.h AcceptHeaderQleverVisitor.cpp
@@ -75,4 +75,4 @@ index b8b728f..064e965 100644
          generated/AcceptHeaderParser.h generated/AcceptHeaderParser.cpp
          generated/AcceptHeaderVisitor.h generated/AcceptHeaderVisitor.cpp)
 -target_link_libraries(httpParser antlr4_static)
-+target_link_libraries(httpParser antlr4_runtime)
++target_link_libraries(httpParser antlr4-runtime)
