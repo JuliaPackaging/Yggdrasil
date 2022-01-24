@@ -23,7 +23,7 @@ mv src/sparsehash ${prefix}/include/
 # platforms are passed in on the command line
 platforms = [AnyPlatform()]
 
-products = Product[
+products = [
     FileProduct("include/sparsehash/dense_hash_map", :dense_hash_map),
     FileProduct("include/sparsehash/dense_hash_set", :dense_hash_set),
     FileProduct("include/sparsehash/sparse_hash_map", :sparse_hash_map),
