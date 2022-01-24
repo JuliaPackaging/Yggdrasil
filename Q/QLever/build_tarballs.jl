@@ -53,7 +53,7 @@ CMAKE_FLAGS+=(-DANTLR_INCLUDE_DIR="../../destdir/include/antlr4-runtime")
 CMAKE_FLAGS+=(-DGTEST_INCLUDE_DIR="../../destdir/include/gtest")
 
 # CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS=-Werror)
-# # CMAKE_FLAGS+=(-DABSL_USE_EXTERNAL_GOOGLETEST=ON)
+CMAKE_FLAGS+=(-DABSL_USE_EXTERNAL_GOOGLETEST=ON)
 # CMAKE_FLAGS+=(-DABSL_BUILD_TESTING=ON)
 # # -DABSL_USE_EXTERNAL_GOOGLETEST=ON -DABSL_FIND_GOOGLETEST=ON
 
@@ -112,6 +112,7 @@ dependencies = [
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3")),
     BuildDependency("GoogleTest_jll"),
     BuildDependency("Antlr4CppRuntime_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

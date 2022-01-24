@@ -1,7 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..6933dca 100644
+index 49506e4..c6208ac 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.8.4)
++cmake_minimum_required(VERSION 3.14)
+ project(QLever C CXX)
+ 
+ # C/C++ Versions
 @@ -44,9 +44,11 @@ endif ()
  ###############################
  # ANTLR CPP RUNTIME FOR THE SPARQL PARSER
@@ -12,7 +18,7 @@ index 49506e4..6933dca 100644
 +# add_subdirectory(third_party/antlr4/runtime/Cpp EXCLUDE_FROM_ALL)
 +# target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
 +# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
-+include_directories(${ANTLR_INCLUDE_DIR})
++include_directories(${prefix}/include/antlr4-runtime)
 +
  
  ################################
@@ -25,7 +31,7 @@ index 49506e4..6933dca 100644
 -include_directories(third_party/googletest/googletest/include)
 +# add_subdirectory(third_party/googletest/googletest EXCLUDE_FROM_ALL)
 +# include_directories(third_party/googletest/googletest/include)
-+include_directories(${GTEST_INCLUDE_DIR})
++include_directories(${prefix}/include/gtest)
  
  ################################
  # NLOHNMANN-JSON
@@ -37,3 +43,6 @@ index 49506e4..6933dca 100644
 -add_subdirectory(test)
 +# enable_testing()
 +# add_subdirectory(test)
+ 
+ 
+ 
