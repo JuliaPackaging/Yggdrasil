@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GoogleSparseHash"
-version = v"0.0.1"
+version = v"2.11.1"
 
 # Collection of sources required to complete build
 sources = [
