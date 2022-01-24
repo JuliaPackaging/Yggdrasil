@@ -49,6 +49,9 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
+#i686 mingw fails with errors about _control87
+filter!(p -> !Sys.iswindows(p) && arch(p) != "i686", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtbbmalloc", :libtbbmalloc),
