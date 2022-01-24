@@ -23,8 +23,8 @@ mkdir -p build && cd build
 ../configure \
   --prefix=${prefix} \
   --host=${target} \
-  --with-blas=blastrampoline \
-  --with-lapack=blastrampoline \
+  --with-blas=openblas \
+  --with-lapack=openblas \
   --with-netcdf=${prefix} \
   --with-hdf5=${prefix} \
   --enable-shared \
@@ -72,7 +72,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("libblastrampoline_jll"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("NetCDF_jll"),
     Dependency("HDF5_jll"),
     # The following is adapted from NetCDF_jll
