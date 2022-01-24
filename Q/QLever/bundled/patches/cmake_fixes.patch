@@ -1,7 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..9537784 100644
+index 49506e4..34c2cc3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.8.4)
++cmake_minimum_required(VERSION 3.16)
+ project(QLever C CXX)
+ 
+ # C/C++ Versions
 @@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
  ################################
  # Threading
