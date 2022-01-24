@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..90cad57 100644
+index 49506e4..bdde2e0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -21,7 +21,7 @@ index 49506e4..90cad57 100644
  # Enable the specification of additional warnings manually from the commandline
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILER_FLAGS}")
 -
-+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthread")
++SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
  
  if (${PERFTOOLS_PROFILER})
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lprofiler")
