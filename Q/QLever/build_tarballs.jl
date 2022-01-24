@@ -31,9 +31,6 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # TODO: we need to fix this in the compiler wrappers
-    export CXXFLAGS="-mmacosx-version-min=11.0"
 fi    
 
 git submodule update --init --recursive
