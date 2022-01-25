@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..9ae5dd0 100644
+index 9f7220a..4fe8f8a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -24,19 +24,20 @@ index 49506e4..9ae5dd0 100644
  find_package(Threads REQUIRED)
  
  #################################
-@@ -111,8 +114,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+@@ -111,9 +114,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
  ################################
- # GTEST
+ # GTEST AND GMOCK
  ################################
--add_subdirectory(third_party/googletest/googletest EXCLUDE_FROM_ALL)
+-add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
 -include_directories(third_party/googletest/googletest/include)
-+# add_subdirectory(third_party/googletest/googletest EXCLUDE_FROM_ALL)
+-include_directories(third_party/googletest/googlemock/include)
++# add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
 +# include_directories(third_party/googletest/googletest/include)
 +include_directories(${GTEST_INCLUDE_DIR})
  
  ################################
  # NLOHNMANN-JSON
-@@ -211,8 +215,8 @@ add_subdirectory(src/parser)
+@@ -212,8 +215,8 @@ add_subdirectory(src/parser)
  add_subdirectory(src/engine)
  add_subdirectory(src/index)
  add_subdirectory(src/util)
@@ -47,7 +48,7 @@ index 49506e4..9ae5dd0 100644
  
  
  
-@@ -222,25 +226,25 @@ configure_file(src/web/script.js script.js)
+@@ -223,28 +226,28 @@ configure_file(src/web/script.js script.js)
  
  
  add_executable(IndexBuilderMain src/index/IndexBuilderMain.cpp)
@@ -78,29 +79,9 @@ index 49506e4..9ae5dd0 100644
 -target_link_libraries(PermutationExporterMain index ${CMAKE_THREAD_LIBS_INIT})
 +target_link_libraries(PermutationExporterMain index Threads::Threads)
  
+ add_executable(VocabularyConverterMain src/VocabularyConverterMain.cpp)
+-target_link_libraries(VocabularyConverterMain index ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(VocabularyConverterMain index Threads::Threads)
+ 
  #add_executable(TextFilterComparison src/experiments/TextFilterComparison.cpp)
  #target_link_libraries (TextFilterComparison experiments)
-diff --git a/src/parser/CMakeLists.txt b/src/parser/CMakeLists.txt
-index 1f36195..4457af8 100644
---- a/src/parser/CMakeLists.txt
-+++ b/src/parser/CMakeLists.txt
-@@ -3,6 +3,8 @@ target_link_libraries(rdfEscaping absl::flat_hash_map ${ICU_LIBRARIES})
- 
- add_subdirectory(sparqlParser)
- 
-+add_library(sparqlParserHelpers SparqlParserHelpers.h SparqlParserHelpers.cpp)
-+
- add_library(parser
-         SparqlParser.h SparqlParser.cpp
-         ParsedQuery.h ParsedQuery.cpp
-@@ -15,8 +17,6 @@ add_library(parser
-         PropertyPathParser.h PropertyPathParser.cpp
-         SparqlLexer.h SparqlLexer.cpp
-         TokenizerCtre.h TurtleTokenId.h
--        ParallelBuffer.cpp
--        SparqlParserHelpers.h SparqlParserHelpers.cpp)
--target_link_libraries(parser sparqlParser sparqlExpressions rdfEscaping re2 absl::flat_hash_map)
--
-+        ParallelBuffer.cpp)
-+target_link_libraries(parser sparqlParserHelpers sparqlParser sparqlExpressions rdfEscaping re2 absl::flat_hash_map)
- 
