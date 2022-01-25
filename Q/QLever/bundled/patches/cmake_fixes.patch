@@ -73,3 +73,13 @@ index 49506e4..34c2cc3 100644
  
  #add_executable(TextFilterComparison src/experiments/TextFilterComparison.cpp)
  #target_link_libraries (TextFilterComparison experiments)
+diff --git a/src/index/CMakeLists.txt b/src/index/CMakeLists.txt
+index bba049c..8e6caed 100644
+--- a/src/index/CMakeLists.txt
++++ b/src/index/CMakeLists.txt
+@@ -14,4 +14,4 @@ add_library(index
+         PrefixHeuristic.cpp PrefixHeuristic.h
+         CompressedRelation.h CompressedRelation.cpp)
+ 
+-target_link_libraries(index parser ${STXXL_LIBRARIES} ${ICU_LIBRARIES} absl::flat_hash_map absl::flat_hash_set zstd)
++target_link_libraries(index parser ${STXXL_LIBRARIES} ${ICU_LIBRARIES} absl::flat_hash_map absl::flat_hash_set zstd Threads::Threads)
