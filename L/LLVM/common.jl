@@ -1,7 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-
-include("../../fancy_toys.jl")
+using BinaryBuilderBase: get_addable_spec
 
 # Everybody is just going to use the same set of platforms
 
