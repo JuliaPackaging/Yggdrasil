@@ -9,7 +9,7 @@ version = v"1.1.1"
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "31608db682ed3e0fddcdbc5bc899e03fec38c324",
+        "5051bb22650898788ca5cf8c83a26017383fd6e1",
     ),
     DirectorySource("./bundled"),
 ]
@@ -48,8 +48,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
-platforms = filter!(!Sys.isfreebsd, platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [
