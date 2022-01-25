@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..499eab8 100644
+index 49506e4..9ae5dd0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -8,7 +8,14 @@ index 49506e4..499eab8 100644
  project(QLever C CXX)
  
  # C/C++ Versions
-@@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
+@@ -46,11 +46,14 @@ endif ()
+ ###############################
+ add_subdirectory(third_party/antlr4/runtime/Cpp EXCLUDE_FROM_ALL)
+ target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
+-include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
++# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
++include_directories(${ANTLR_INCLUDE_DIR})
+ 
  ################################
  # Threading
  ################################
@@ -17,7 +24,7 @@ index 49506e4..499eab8 100644
  find_package(Threads REQUIRED)
  
  #################################
-@@ -111,8 +113,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+@@ -111,8 +114,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
  ################################
  # GTEST
  ################################
@@ -29,7 +36,7 @@ index 49506e4..499eab8 100644
  
  ################################
  # NLOHNMANN-JSON
-@@ -211,8 +214,8 @@ add_subdirectory(src/parser)
+@@ -211,8 +215,8 @@ add_subdirectory(src/parser)
  add_subdirectory(src/engine)
  add_subdirectory(src/index)
  add_subdirectory(src/util)
@@ -40,7 +47,7 @@ index 49506e4..499eab8 100644
  
  
  
-@@ -222,25 +225,25 @@ configure_file(src/web/script.js script.js)
+@@ -222,25 +226,25 @@ configure_file(src/web/script.js script.js)
  
  
  add_executable(IndexBuilderMain src/index/IndexBuilderMain.cpp)
@@ -49,11 +56,11 @@ index 49506e4..499eab8 100644
  
  add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
 -target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(CreatePatternsMain index Threads::Threads sparqlParserHelpers)
++target_link_libraries(CreatePatternsMain index Threads::Threads)
  
  add_executable(ServerMain src/ServerMain.cpp)
 -target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries (ServerMain engine Threads::Threads sparqlParserHelpers)
++target_link_libraries (ServerMain engine Threads::Threads)
  
  add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
 -target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
