@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..faba41e 100644
+index 49506e4..499eab8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -49,7 +49,7 @@ index 49506e4..faba41e 100644
  
  add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
 -target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(CreatePatternsMain index Threads::Threads)
++target_link_libraries(CreatePatternsMain index Threads::Threads sparqlParserHelpers)
  
  add_executable(ServerMain src/ServerMain.cpp)
 -target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
