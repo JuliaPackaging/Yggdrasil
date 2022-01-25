@@ -10,7 +10,7 @@ sources = [
     ArchiveSource("https://github.com/ROCmSoftwarePlatform/rocBLAS/archive/rocm-$(version).tar.gz",
                   "547f6d5d38a41786839f01c5bfa46ffe9937b389193a8891f251e276a1a47fb0"),
     GitSource("https://github.com/ROCmSoftwarePlatform/Tensile.git",
-              "ab44bf46b609b5a40053f310bef2ab7511f726ae"), # 4.0.0
+              "3438af228dc812768b20a068b0285122f327fa5b"), # 4.2.0
     DirectorySource("./bundled"),
 ]
 
@@ -24,7 +24,7 @@ TENSILE_ARCHITECTURES="all,gfx803,gfx900,gfx906,gfx908"
 
 # TODO: $HIPCXXFLAGS .= " -D__HIP__ -D__HIP_PLATFORM_HCC__";
 
-apk add py3-yaml msgpack-c-dev py3-msgpack boost-dev
+apk add py3-yaml msgpack-c-dev py3-msgpack boost-dev python3-dev yaml-dev py3-wheel
 
 # Add explicit device norm calls
 atomic_patch -p1 $WORKSPACE/srcdir/patches/add-norm.patch
@@ -44,9 +44,9 @@ export HIP_CLANG_HCC_COMPAT_MODE=1
 export HIP_RUNTIME=rocclr
 export HIP_COMPILER=clang
 export HIP_PLATFORM=amd
-export HIPCC_VERBOSE=7
+#export HIPCC_VERBOSE=7 # this breaks Tensile's parsing of `hipcc --version`
 export PATH=${prefix}/tools:${prefix}/hip/bin:$PATH
-# TODO: use Tensile
+#-DTensile_LIBRARY_FORMAT=msgpack \
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
@@ -55,12 +55,11 @@ cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DBUILD_CLIENTS_BENCHMARKS=OFF \
       -DBUILD_CLIENTS_SAMPLES=OFF \
       -DRUN_HEADER_TESTING=OFF \
-      -DBUILD_WITH_TENSILE=OFF \
+      -DBUILD_WITH_TENSILE=ON \
       -DTensile_ARCHITECTURE=gfx900 \
       -DTensile_TEST_LOCAL_PATH=$TENSILE_DIR \
       -DTensile_COMPILER=hipcc \
       -DTensile_LOGIC=asm_full \
-      -DTensile_LIBRARY_FORMAT=msgpack \
       -DTensile_CODE_OBJECT_VERSION=V3 \
       -DBUILD_WITH_TENSILE_HOST=OFF \
       ..
