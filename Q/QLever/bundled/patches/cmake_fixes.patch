@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 49506e4..34c2cc3 100644
+index 49506e4..5c4ef69 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -40,46 +40,46 @@ index 49506e4..34c2cc3 100644
  
  
  
-@@ -222,25 +225,25 @@ configure_file(src/web/script.js script.js)
+@@ -222,25 +225,26 @@ configure_file(src/web/script.js script.js)
  
  
  add_executable(IndexBuilderMain src/index/IndexBuilderMain.cpp)
 -target_link_libraries(IndexBuilderMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(IndexBuilderMain index Threads::Threads)
++target_link_libraries(IndexBuilderMain index INTERFACE Threads::Threads)
  
  add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
 -target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(CreatePatternsMain index Threads::Threads)
++target_link_libraries(CreatePatternsMain index INTERFACE Threads::Threads)
  
  add_executable(ServerMain src/ServerMain.cpp)
 -target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries (ServerMain engine Threads::Threads)
++target_link_libraries (ServerMain engine INTERFACE Threads::Threads)
  
  add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
 -target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries (PrefixHeuristicEvaluatorMain index Threads::Threads)
++target_link_libraries (PrefixHeuristicEvaluatorMain index INTERFACE Threads::Threads)
  
  add_executable(TurtleParserMain src/TurtleParserMain.cpp)
 -target_link_libraries(TurtleParserMain parser ${CMAKE_THREAD_LIBS_INIT} absl::flat_hash_map)
-+target_link_libraries(TurtleParserMain parser Threads::Threads absl::flat_hash_map)
++target_link_libraries(TurtleParserMain parser absl::flat_hash_map)
++target_link_libraries(TurtleParserMain parser INTERFACE Threads::Threads)
  
  add_executable(VocabularyMergerMain src/VocabularyMergerMain.cpp)
 -target_link_libraries(VocabularyMergerMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(VocabularyMergerMain index Threads::Threads)
++target_link_libraries(VocabularyMergerMain index INTERFACE Threads::Threads)
  
  add_executable(PermutationExporterMain src/index/PermutationExporterMain.cpp)
 -target_link_libraries(PermutationExporterMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(PermutationExporterMain index Threads::Threads)
++target_link_libraries(PermutationExporterMain index INTERFACE Threads::Threads)
  
  #add_executable(TextFilterComparison src/experiments/TextFilterComparison.cpp)
  #target_link_libraries (TextFilterComparison experiments)
 diff --git a/src/index/CMakeLists.txt b/src/index/CMakeLists.txt
-index bba049c..8e6caed 100644
+index bba049c..68ef265 100644
 --- a/src/index/CMakeLists.txt
 +++ b/src/index/CMakeLists.txt
-@@ -14,4 +14,4 @@ add_library(index
-         PrefixHeuristic.cpp PrefixHeuristic.h
+@@ -15,3 +15,4 @@ add_library(index
          CompressedRelation.h CompressedRelation.cpp)
  
--target_link_libraries(index parser ${STXXL_LIBRARIES} ${ICU_LIBRARIES} absl::flat_hash_map absl::flat_hash_set zstd)
-+target_link_libraries(index parser ${STXXL_LIBRARIES} ${ICU_LIBRARIES} absl::flat_hash_map absl::flat_hash_set zstd Threads::Threads)
+ target_link_libraries(index parser ${STXXL_LIBRARIES} ${ICU_LIBRARIES} absl::flat_hash_map absl::flat_hash_set zstd)
++target_link_libraries(index parser INTERFACE Threads::Threads)
