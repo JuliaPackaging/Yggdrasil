@@ -354,7 +354,7 @@ rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 
 # Move lld to tools/
-mv -v ${prefix}/bin/lld ${prefix}/tools/lld
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
