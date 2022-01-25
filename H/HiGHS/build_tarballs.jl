@@ -49,7 +49,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = filter!(!Sys.isapple, platforms)
+# platforms = filhttps://github.com/JuliaPackaging/Yggdrasil/pull/4318er!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [
