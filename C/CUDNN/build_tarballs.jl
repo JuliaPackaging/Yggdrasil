@@ -4,7 +4,7 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "CUDNN"
-version = v"8.3.1"
+version = v"8.3.2"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -35,6 +35,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv bin/cudnn*64_*.dll ${libdir}
     mv include/* ${prefix}/include
 
+    mv ../dll_x64/zlibwapi.dll ${libdir}
+
     # fixup
     chmod +x ${libdir}/*.dll
 fi
@@ -49,7 +51,7 @@ products = [
 
 dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5"]
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
@@ -57,6 +59,11 @@ for cuda_version in cuda_versions
     for (platform, sources) in platforms_and_sources
         augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
         should_build_platform(triplet(augmented_platform)) || continue
+        if platform == Platform("x86_64", "windows")
+            push!(sources,
+                ArchiveSource("http://www.winimage.com/zLibDll/zlib123dllx64.zip",
+                              "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
+        end
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                        products, dependencies; lazy_artifacts=true)
     end

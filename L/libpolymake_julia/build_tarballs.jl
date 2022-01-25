@@ -5,14 +5,14 @@ using Base.BinaryPlatforms
 
 
 name = "libpolymake_julia"
-version = v"0.6.0"
+version = v"0.7.0"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "de2180654322b2e68e47dd59bb842ccb7956e81bafa618dafef0320c35189968"),
+                  "ac13f05beb59e688d485a96759666d9d2a0bd026f6dfacdfd7d4e3e88abc4202"),
 ]
 
 # Bash recipe for building across all platforms
@@ -63,10 +63,10 @@ dependencies = [
     Dependency("TOPCOM_jll"),
     Dependency("lib4ti2_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("polymake_jll"; compat = "~400.501.0"),
+    Dependency("polymake_jll"; compat = "~400.600.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.501.0")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.600.0")),
     HostBuildDependency("lib4ti2_jll"),
     HostBuildDependency("TOPCOM_jll"),
 ]

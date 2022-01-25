@@ -7,7 +7,7 @@ version = v"4.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/EttusResearch/uhd.git", "f633b497ff931c3c180d00148fc66e4feb8b8b6a")
+    GitSource("https://github.com/EttusResearch/uhd.git", "6bd0be9cda5db97081e4f3ee3127c45eed21239c")
 ]
 
 dependencies = [

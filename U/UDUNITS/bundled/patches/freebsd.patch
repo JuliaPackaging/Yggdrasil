@@ -1,0 +1,28 @@
+commit 2ee5dfe433e9df1980a81f17c422df4b618df1f7
+Author: Po-Chuan Hsieh <sunpoet@sunpoet.net>
+Date:   Sun Jan 3 00:39:41 2021 +0000
+
+    Fix build on FreeBSD
+
+diff --git a/lib/xml.c b/lib/xml.c
+index 3ee1a2d..ce82232 100644
+--- a/lib/xml.c
++++ b/lib/xml.c
+@@ -38,7 +38,7 @@
+ #endif
+ #include <sys/stat.h>
+ #include <sys/types.h>
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__FreeBSD__)
+ #include <dlfcn.h>
+ #elif defined(__APPLE__)
+ #define _DARWIN_C_SOURCE
+@@ -2137,7 +2137,7 @@ default_udunits2_xml_path()
+     if (absXmlPathname[0] == 0) {
+         const char* prefix = NULL; // Installation directory
+ 
+-#       if defined(__APPLE__) || defined(__linux__)
++#       if defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__)
+             Dl_info     info;
+             const char  sep = '/'; // Pathname component separator
+             char        buf[PATH_MAX];

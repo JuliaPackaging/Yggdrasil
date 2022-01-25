@@ -62,7 +62,7 @@ dependencies = [
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE_jll"),
     Dependency("Zlib_jll"),
-    Dependency("Libmount_jll"),
+    Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

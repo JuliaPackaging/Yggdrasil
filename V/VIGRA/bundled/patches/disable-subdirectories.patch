@@ -1,0 +1,36 @@
+diff --git before/CMakeLists.txt after/CMakeLists.txt
+index 77597ba..a0cbe94 100644
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
+@@ -119,9 +119,9 @@ IF(WITH_LEMON)
+ ENDIF()
+ 
+ SET(DOXYGEN_SKIP_DOT TRUE)
+-FIND_PACKAGE(Doxygen)
++#FIND_PACKAGE(Doxygen)
+ 
+-FIND_PACKAGE(PythonInterp ${PYTHON_VERSION})
++#FIND_PACKAGE(PythonInterp ${PYTHON_VERSION})
+ 
+ ##################################################
+ #
+@@ -168,7 +168,7 @@ include(VigraConfigureThreading)
+ 
+ # Should come after VigraDetectThreading, since that updates the -std flag.
+ include(VigraDetectCppVersion)
+-VIGRA_DETECT_CPP_VERSION()
++#VIGRA_DETECT_CPP_VERSION()
+ 
+ IF(WITH_VIGRANUMPY)
+     FIND_PACKAGE(VIGRANUMPY_DEPENDENCIES)
+@@ -269,8 +269,8 @@ ADD_CUSTOM_TARGET(experiments)
+ ##################################################
+ 
+ ADD_SUBDIRECTORY(src)
+-ADD_SUBDIRECTORY(test)
+-ADD_SUBDIRECTORY(docsrc)
++#ADD_SUBDIRECTORY(test)
++#ADD_SUBDIRECTORY(docsrc)
+ 
+ IF(WITH_VIGRANUMPY)
+     ADD_SUBDIRECTORY(vigranumpy)

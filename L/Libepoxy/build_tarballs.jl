@@ -29,11 +29,13 @@ products = [
     LibraryProduct("libepoxy", :libepoxy),
 ]
 
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Libglvnd_jll"),
-    Dependency("Xorg_libX11_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
