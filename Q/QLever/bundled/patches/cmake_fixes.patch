@@ -1,21 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..4fe8f8a 100644
+index 9f7220a..ae08183 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,4 +1,4 @@
--cmake_minimum_required(VERSION 3.8.4)
-+cmake_minimum_required(VERSION 3.16)
- project(QLever C CXX)
- 
- # C/C++ Versions
-@@ -46,11 +46,14 @@ endif ()
- ###############################
- add_subdirectory(third_party/antlr4/runtime/Cpp EXCLUDE_FROM_ALL)
- target_compile_options(antlr4_static PUBLIC -Wno-attributes -Wno-implicit-fallthrough -Wno-ambiguous-reversed-operator)
--include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
-+# include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
-+include_directories(${ANTLR_INCLUDE_DIR})
- 
+@@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
  ################################
  # Threading
  ################################
@@ -24,7 +11,7 @@ index 9f7220a..4fe8f8a 100644
  find_package(Threads REQUIRED)
  
  #################################
-@@ -111,9 +114,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+@@ -111,9 +113,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
  ################################
  # GTEST AND GMOCK
  ################################
@@ -37,7 +24,7 @@ index 9f7220a..4fe8f8a 100644
  
  ################################
  # NLOHNMANN-JSON
-@@ -212,8 +215,8 @@ add_subdirectory(src/parser)
+@@ -212,8 +214,8 @@ add_subdirectory(src/parser)
  add_subdirectory(src/engine)
  add_subdirectory(src/index)
  add_subdirectory(src/util)
@@ -48,40 +35,3 @@ index 9f7220a..4fe8f8a 100644
  
  
  
-@@ -223,28 +226,28 @@ configure_file(src/web/script.js script.js)
- 
- 
- add_executable(IndexBuilderMain src/index/IndexBuilderMain.cpp)
--target_link_libraries(IndexBuilderMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(IndexBuilderMain index Threads::Threads)
- 
- add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
--target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(CreatePatternsMain index Threads::Threads)
- 
- add_executable(ServerMain src/ServerMain.cpp)
--target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries (ServerMain engine Threads::Threads)
- 
- add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
--target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries (PrefixHeuristicEvaluatorMain index Threads::Threads)
- 
- add_executable(TurtleParserMain src/TurtleParserMain.cpp)
--target_link_libraries(TurtleParserMain parser ${CMAKE_THREAD_LIBS_INIT} absl::flat_hash_map)
-+target_link_libraries(TurtleParserMain parser Threads::Threads absl::flat_hash_map)
- 
- add_executable(VocabularyMergerMain src/VocabularyMergerMain.cpp)
--target_link_libraries(VocabularyMergerMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(VocabularyMergerMain index Threads::Threads)
- 
- add_executable(PermutationExporterMain src/index/PermutationExporterMain.cpp)
--target_link_libraries(PermutationExporterMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(PermutationExporterMain index Threads::Threads)
- 
- add_executable(VocabularyConverterMain src/VocabularyConverterMain.cpp)
--target_link_libraries(VocabularyConverterMain index ${CMAKE_THREAD_LIBS_INIT})
-+target_link_libraries(VocabularyConverterMain index Threads::Threads)
- 
- #add_executable(TextFilterComparison src/experiments/TextFilterComparison.cpp)
- #target_link_libraries (TextFilterComparison experiments)
