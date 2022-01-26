@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "qdldl"
+name = "QDLDL"
 version = v"0.1.5"
 
 # Collection of sources required to complete build
