@@ -14,16 +14,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd qdldl-0.1.5/
-mkdir build_double
-cd build_double/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix/double -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DDFLOAT=0 ..
-cmake --build . -j8
-make install
-cd ..
-mkdir build_single
-cd build_single/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix/single -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DDFLOAT=1 ..
-cmake --build . -j8
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
 make install
 """
 
@@ -33,8 +27,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libqdldl", :libqdldl64, "double/lib"),
-    LibraryProduct("libqdldl", :libqdldl32, "single/lib")
+    LibraryProduct("libqdldl", :libqdldl)
 ]
 
 # Dependencies that must be installed before this package can be built
