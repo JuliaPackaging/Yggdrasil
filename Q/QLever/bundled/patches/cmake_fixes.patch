@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..346f889 100644
+index 9f7220a..67749c9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
@@ -11,6 +11,17 @@ index 9f7220a..346f889 100644
  find_package(Threads REQUIRED)
  
  #################################
+@@ -212,8 +214,8 @@ add_subdirectory(src/parser)
+ add_subdirectory(src/engine)
+ add_subdirectory(src/index)
+ add_subdirectory(src/util)
+-enable_testing()
+-add_subdirectory(test)
++# enable_testing()
++# add_subdirectory(test)
+ 
+ 
+ 
 @@ -228,8 +230,8 @@ target_link_libraries(IndexBuilderMain index ${CMAKE_THREAD_LIBS_INIT})
  add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
  target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
