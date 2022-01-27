@@ -55,10 +55,10 @@ cp CreatePatternsMain \
      PrefixHeuristicEvaluatorMain \
      ${libdir}
 
-cp ServerMain \
-     SparqlEngineMain \
-     WriteIndexListsMain \
-     ${libdir}
+# cp ServerMain \
+#      SparqlEngineMain \
+#      WriteIndexListsMain \
+#      ${libdir}
 
 cd ../
 
@@ -83,11 +83,11 @@ products = [
     LibraryProduct("IndexBuilderMain", :IndexBuilderMain),
     LibraryProduct("PermutationExporterMain", :PermutationExporterMain),
     LibraryProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
-    LibraryProduct("ServerMain", :ServerMain),
-    LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
+    # LibraryProduct("ServerMain", :ServerMain),
+    # LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
     LibraryProduct("TurtleParserMain", :TurtleParserMain),
     LibraryProduct("VocabularyMergerMain", :PrefixHeuristicEvaluatorMain),
-    LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
+    # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
 ]
 
 # Dependencies that must be installed before this package can be built
