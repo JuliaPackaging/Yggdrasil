@@ -53,12 +53,12 @@ cp CreatePatternsMain \
      VocabularyMergerMain \
      PermutationExporterMain \
      PrefixHeuristicEvaluatorMain \
-     ${libdir}
+     ${bindir}
 
 # cp ServerMain \
 #      SparqlEngineMain \
 #      WriteIndexListsMain \
-#      ${libdir}
+#      ${bindir}
 
 cd ../
 
@@ -79,14 +79,14 @@ filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("CreatePatternsMain", :CreatePatternsMain),    
-    LibraryProduct("IndexBuilderMain", :IndexBuilderMain),
-    LibraryProduct("PermutationExporterMain", :PermutationExporterMain),
-    LibraryProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
+    ExecutableProduct("CreatePatternsMain", :CreatePatternsMain),    
+    ExecutableProduct("IndexBuilderMain", :IndexBuilderMain),
+    ExecutableProduct("PermutationExporterMain", :PermutationExporterMain),
+    ExecutableProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
     # LibraryProduct("ServerMain", :ServerMain),
     # LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
-    LibraryProduct("TurtleParserMain", :TurtleParserMain),
-    LibraryProduct("VocabularyMergerMain", :VocabularyMergerMain),
+    ExecutableProduct("TurtleParserMain", :TurtleParserMain),
+    ExecutableProduct("VocabularyMergerMain", :VocabularyMergerMain),
     # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
 ]
 
