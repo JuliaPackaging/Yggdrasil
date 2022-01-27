@@ -12,6 +12,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-core/
 cargo build --release
+cp "target/${rust_target}/release/vegafusion-core${exeext}" "${bindir}/."
 install_license ../LICENSE
 """
 
