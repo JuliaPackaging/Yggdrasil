@@ -1,7 +1,7 @@
 using BinaryBuilder
 
-name = "Tokei"
-version = v"12.1.2"
+name = "vegafusion"
+version = v"0.0.1"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
