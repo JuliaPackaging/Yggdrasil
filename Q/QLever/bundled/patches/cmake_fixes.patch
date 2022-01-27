@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..ae08183 100644
+index 9f7220a..d63fd37 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
@@ -11,27 +11,3 @@ index 9f7220a..ae08183 100644
  find_package(Threads REQUIRED)
  
  #################################
-@@ -111,9 +113,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
- ################################
- # GTEST AND GMOCK
- ################################
--add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
--include_directories(third_party/googletest/googletest/include)
--include_directories(third_party/googletest/googlemock/include)
-+# add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
-+# include_directories(third_party/googletest/googletest/include)
-+include_directories(${GTEST_INCLUDE_DIR})
- 
- ################################
- # NLOHNMANN-JSON
-@@ -212,8 +214,8 @@ add_subdirectory(src/parser)
- add_subdirectory(src/engine)
- add_subdirectory(src/index)
- add_subdirectory(src/util)
--enable_testing()
--add_subdirectory(test)
-+# enable_testing()
-+# add_subdirectory(test)
- 
- 
- 
