@@ -9,8 +9,8 @@ version = v"0.0.1"
 sources = [
     GitSource("https://github.com/ad-freiburg/qlever.git", "facaf302ff922456c6b5c3eb6abb4f0dc68dd19f"),
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+#    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+#                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
@@ -101,7 +101,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700")),
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4")),
-    Dependency(PackageSpec(name = "boost_jll",  uuid = "28df3c45-c428-5900-9ff8-a3135698ca75", url = "https://github.com/jeremiahpslewis/boost_jll.jl.git")),
+    Dependency(PackageSpec(; name = "boost_jll",  uuid = "28df3c45-c428-5900-9ff8-a3135698ca75", path = "https://github.com/jeremiahpslewis/boost_jll.jl.git")),
     Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"); compat = "~69.1"),
     Dependency(PackageSpec(name="jemalloc_jll", uuid="454a8cc1-5e0e-5123-92d5-09b094f0e876")),
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3")),
