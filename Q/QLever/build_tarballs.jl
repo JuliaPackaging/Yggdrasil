@@ -39,13 +39,14 @@ mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
-CMAKE_FLAGS+=(-GNinja)
+CMAKE_FLAGS+=(-DLOGLEVEL=Debug)
+# CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
 CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
-CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS=-Werror)
+CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS="-Wall -Wextra -Werror")
 
-cmake ${CMAKE_FLAGS[@]} .. && ninja
+cmake ${CMAKE_FLAGS[@]} ..
+cmake --build /home/runner/work/qlever/qlever/build --config Debug -- -j $(nproc)
 
 cp CreatePatternsMain \
      IndexBuilderMain \
