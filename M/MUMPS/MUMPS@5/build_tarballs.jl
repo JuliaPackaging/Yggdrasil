@@ -28,8 +28,8 @@ make_args+=(OPTF=-O \
             CDEFS=-DAdd_ \
             LMETISDIR=${prefix} \
             IMETIS="-I${includedir}" \
-            LMETIS="-L${libdir} -lparmetis -lmetis" \
-            ORDERINGSF="-Dpord -Dparmetis" \
+            LMETIS="-L${libdir} -lmetis" \
+            ORDERINGSF="-Dpord -Dmetis" \
             CC="mpicc -fPIC" \
             FC="mpif90 -fPIC ${FFLAGS[@]}" \
             FL="mpif90 -fPIC" \
@@ -62,7 +62,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 cd lib
-libs=(-lparmetis -lmetis -lscalapack32 -lopenblas)
+libs=(-lmetis -lscalapack32 -lopenblas)
 mpif90 -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
@@ -99,7 +99,7 @@ dependencies = [
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
+    # Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     # Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
