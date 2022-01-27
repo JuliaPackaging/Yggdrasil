@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..d5c4f6c 100644
+index 9f7220a..346f889 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
@@ -11,11 +11,13 @@ index 9f7220a..d5c4f6c 100644
  find_package(Threads REQUIRED)
  
  #################################
-@@ -229,7 +231,7 @@ add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/Cons
+@@ -228,8 +230,8 @@ target_link_libraries(IndexBuilderMain index ${CMAKE_THREAD_LIBS_INIT})
+ add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
  target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
  
- add_executable(ServerMain src/ServerMain.cpp)
+-add_executable(ServerMain src/ServerMain.cpp)
 -target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
++# add_executable(ServerMain src/ServerMain.cpp)
 +# target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
  
  add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
