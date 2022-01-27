@@ -86,7 +86,7 @@ products = [
     # LibraryProduct("ServerMain", :ServerMain),
     # LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
     LibraryProduct("TurtleParserMain", :TurtleParserMain),
-    LibraryProduct("VocabularyMergerMain", :PrefixHeuristicEvaluatorMain),
+    LibraryProduct("VocabularyMergerMain", :VocabularyMergerMain),
     # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
 ]
 
