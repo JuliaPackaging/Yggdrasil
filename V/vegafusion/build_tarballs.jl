@@ -10,10 +10,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-core/
+cd ${WORKSPACE}/srcdir/vegafusion/
 cargo build --release
-cp "target/${rust_target}/release/vegafusion-core${exeext}" "${bindir}/."
-install_license ../LICENSE
+mkdir -p "${libdir}"
+cp "target/${rust_target}/release/libvegafusion.${dlext}" "${libdir}/."
+install_license LICENSE
 """
 
 platforms = supported_platforms()
@@ -22,7 +23,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("vegafusion-core", :vegafusioncore),
+    LibraryProduct("libvegafusion", :libvegafusion),
 ]
 
 # Dependencies that must be installed before this package can be built
