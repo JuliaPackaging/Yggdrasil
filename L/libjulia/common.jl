@@ -318,13 +318,13 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     end
 
     if version < v"1.6"
-        push!(dependencies, BuildDependency(PackageSpec(name="SuiteSparse_jll", version="5.4.0")))
+        push!(dependencies, BuildDependency(PackageSpec(name="SuiteSparse_jll", version=v"5.4.0")))
     else
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
     end
 
     if version < v"1.7"
-        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version="10")))
+        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version=v"10")))
     #else
     #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
     end
@@ -339,13 +339,13 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency("libLLVM_jll", compat="8.0.1"))
         push!(dependencies, BuildDependency("LibGit2_jll", compat="0.28.2"))
     elseif version.major == 1 && version.minor == 5
-        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.9")))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
-        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="0.28.2")))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version="0.3.10")))
+        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
         push!(dependencies, Dependency("libLLVM_jll", compat="11.0.1"))
-        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version="1.2")))
+        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version=v"1.2")))
     elseif version.major == 1 && version.minor == 7
         #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
         #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
