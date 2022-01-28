@@ -10,6 +10,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+export PYO3_CROSS_INCLUDE_DIR=${includedir}
+export PYO3_CROSS_LIB_DIR=${libdir}
+
 cd ${WORKSPACE}/srcdir/vegafusion/
 cargo build --release
 mkdir -p "${libdir}"
@@ -28,6 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="Python_jll"), v"3.8.1"; compat="~3.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
