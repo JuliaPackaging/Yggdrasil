@@ -32,7 +32,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("acl_jll"),
     Dependency("Attr_jll"),
 ]
 
