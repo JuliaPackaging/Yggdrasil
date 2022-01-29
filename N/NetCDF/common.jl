@@ -82,7 +82,7 @@ nc-config --all
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.0"),
+        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.1"),
         Dependency("Zlib_jll"),
     ]
 
