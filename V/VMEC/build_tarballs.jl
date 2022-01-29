@@ -70,8 +70,8 @@ dependencies = [
     Dependency("OpenBLAS_jll"),
     Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MKL_jll", v"2020.1.216"),
-    Dependency("NetCDF_jll", v"400.702.400"),
-    Dependency("NetCDFF_jll", v"4.5.3"),
+    Dependency("NetCDF_jll", compat = v"400.702.400"),
+    Dependency("NetCDFF_jll", compat = v"4.5.3"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
