@@ -52,7 +52,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix ${extraflags}
+./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
 """
@@ -70,6 +70,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
     Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
+    Dependency("OpenBLAS32_jll", v"0.3.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.1"
+version = v"2.1.2"
 sources = [
     ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "f5ea21f82b358ba127550fc1f49e701cba0379d22ce030c274135109f678b980"),
+                  "18421e1b81ecb5b2aa3bb8f3e9df084586d90c13b27960b78202d264f587934e"),
 ]
 
 script = raw"""
@@ -23,8 +23,8 @@ mkdir -p build && cd build
 ../configure \
   --prefix=${prefix} \
   --host=${target} \
-  --with-blas=blastrampoline \
-  --with-lapack=blastrampoline \
+  --with-blas=openblas \
+  --with-lapack=openblas \
   --with-netcdf=${prefix} \
   --with-hdf5=${prefix} \
   --enable-shared \
@@ -50,8 +50,6 @@ products = [
     ExecutableProduct("ApplyOfflineMap", :ApplyOfflineMap_exe),
     ExecutableProduct("CalculateDiffNorms",  :CalculateDiffNorms_exe),
     ExecutableProduct("CoarsenRectilinearData", :CoarsenRectilinearData_exe),
-    ExecutableProduct("ConvertExodusToSCRIP", :ConvertExodusToSCRIP_exe),
-    ExecutableProduct("ConvertSCRIPToExodus", :ConvertSCRIPToExodus_exe),
     ExecutableProduct("GenerateCSMesh", :GenerateCSMesh_exe),
     ExecutableProduct("GenerateGLLMetaData", :GenerateGLLMetaData_exe),
     ExecutableProduct("GenerateICOMesh", :GenerateICOMesh_exe),
@@ -73,17 +71,12 @@ products = [
     ExecutableProduct("VerticalInterpolate", :VerticalInterpolate_exe),
 ]
 
-dependencies = Dependency[
-    Dependency("libblastrampoline_jll"),
+dependencies = [
+    Dependency("OpenBLAS32_jll"),
     Dependency("NetCDF_jll"),
     Dependency("HDF5_jll"),
     # The following is adapted from NetCDF_jll
-    Dependency("LibCURL_jll"),
-    # The following libraries are dependencies of LibCURL_jll which is now a
-    # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll"),
-    Dependency("MbedTLS_jll", v"2.24.0"),
-    Dependency("nghttp2_jll"),
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

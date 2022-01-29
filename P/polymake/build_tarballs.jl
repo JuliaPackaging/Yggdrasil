@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.5"
-version_offset = v"0.1.0"
+upstream_version = v"4.6"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "77e98f1d41ed7d0eee8e983814bcb3f1a1b2b6100420ccd432bd2e796f0bc48a")
+                  "f88341465f412e1fed459313a7dc5fa3ddbc56807ecc7246e836ae25e54585a8")
     DirectorySource("./bundled")
 ]
 
@@ -57,6 +57,9 @@ atomic_patch -p1 ../patches/sigint.patch
 
 # work around sigchld-handler conflicts with other libraries
 atomic_patch -p1 ../patches/sigchld.patch
+
+# patch for bliss compatibility
+atomic_patch -p1 ../patches/bliss.patch
 
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
   perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
@@ -146,7 +149,7 @@ dependencies = [
     Dependency("FLINT_jll", compat = "~200.800.401"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.0"),
-    Dependency("bliss_jll", compat = "~0.73.1"),
+    Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
     Dependency("cddlib_jll", compat = "~0.94.13"),
     Dependency("lrslib_jll", compat = "~0.3.3"),

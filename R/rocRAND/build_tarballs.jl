@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "rocRAND"
-version = v"4.0.0"
+version = v"4.2.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/ROCmSoftwarePlatform/rocRAND/archive/rocm-$(version).tar.gz",
-                  "1cafdbfa15cde635bd424d2a858dc5cc94d668f9a211ff39606ee01ed1715f41"), # 4.0.0
+                  "15725c89e9cc9cc76bd30415fd2c0c5b354078831394ab8b23fe6633497b92c8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,13 +18,16 @@ cd ${WORKSPACE}/srcdir/rocRAND*/
 amdgpu_targets="gfx900,gfx906,gfx908,gfx1010,gfx1011,gfx1012"
 
 mkdir build && cd build
+ln -s ${prefix}/bin/clang ${prefix}/tools/clang
 export ROCM_PATH=${prefix}
 export HIP_CLANG_PATH=${prefix}/tools
 export HIP_CLANG_HCC_COMPAT_MODE=1
-export HIP_RUNTIME=ROCclr
+export HIP_RUNTIME=rocclr
 export HIP_COMPILER=clang
-export HIP_PLATFORM=rocclr
+export HIP_PLATFORM=amd
+export HIP_ROCCLR_HOME=${prefix}/lib
 export HIPCC_VERBOSE=1
+export HIP_LIB_PATH=${prefix}/hip/lib
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
@@ -33,6 +36,7 @@ cmake -DCMAKE_PREFIX_PATH=${prefix} \
       ..
 make -j${nproc}
 make install
+rm ${prefix}/tools/clang
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,12 +55,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=v"4.2.0")),
     Dependency("hsa_rocr_jll"),
     Dependency("ROCmCompilerSupport_jll"),
     Dependency("ROCmOpenCLRuntime_jll"),
-    Dependency("HIP_jll"),
-    Dependency("rocm_cmake_jll"),
+    Dependency("HIP_jll"; compat="4.2.0"),
+    BuildDependency("rocm_cmake_jll"),
     Dependency("rocminfo_jll"),
 ]
 
