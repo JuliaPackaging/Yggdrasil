@@ -1,0 +1,106 @@
+--- tar-1.33-orig/lib/rmt.h
++++ tar-1.33/lib/rmt.h
+@@ -62,7 +62,7 @@ extern bool force_local_option;
+ #define rmtcreat(dev_name, mode, command) \
+    (_remdev (dev_name) \
+     ? rmt_open__ (dev_name, O_CREAT | O_WRONLY, __REM_BIAS, command) \
+-    : creat (dev_name, mode))
++    : open (dev_name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode))
+ 
+ #define rmtlstat(dev_name, muffer) \
+   (_remdev (dev_name) ? (errno = EOPNOTSUPP), -1 : lstat (dev_name, buffer))
+--- tar-1.33-orig/rmt/rmt.c
++++ tar-1.33/rmt/rmt.c
+@@ -338,7 +338,7 @@ open_device (char *str)
+       if (device_fd >= 0)
+ 	close (device_fd);
+ 
+-      device_fd = open (device, flag, MODE_RW);
++      device_fd = open (device, flag | O_BINARY, MODE_RW);
+       if (device_fd < 0)
+ 	rmt_error (errno);
+       else
+--- tar-1.33-orig/src/buffer.c
++++ tar-1.33/src/buffer.c
+@@ -766,6 +766,7 @@ _open_archive (enum access_mode wanted_a
+             enum compress_type type;
+ 
+             archive = STDIN_FILENO;
++            freopen (NULL, "rb", stdin);
+             type = check_compressed_archive (&shortfile);
+             if (type != ct_tar && type != ct_none)
+               FATAL_ERROR ((0, 0,
+@@ -778,12 +779,19 @@ _open_archive (enum access_mode wanted_a
+ 
+         case ACCESS_WRITE:
+           archive = STDOUT_FILENO;
++          freopen (NULL,
++                   fcntl (STDOUT_FILENO, F_GETFL) & O_APPEND ? "ab" : "wb",
++                   stdout);
+           if (!index_file_name)
+             stdlis = stderr;
+           break;
+ 
+         case ACCESS_UPDATE:
+           archive = STDIN_FILENO;
++          freopen (NULL, "rb", stdin);
++          freopen (NULL,
++                   fcntl (STDOUT_FILENO, F_GETFL) & O_APPEND ? "ab" : "wb",
++                   stdout);
+           write_archive_to_stdout = true;
+           record_end = record_start; /* set up for 1st record = # 0 */
+           if (!index_file_name)
+@@ -1182,7 +1190,7 @@ init_volume_number (void)
+ void
+ closeout_volume_number (void)
+ {
+-  FILE *file = fopen (volno_file_option, "w");
++  FILE *file = fopen (volno_file_option, "wb");
+ 
+   if (file)
+     {
+--- tar-1.33-orig/src/incremen.c
++++ tar-1.33/src/incremen.c
+@@ -1333,7 +1333,7 @@ read_directory_file (void)
+   int fd;
+   char *buf = NULL;
+   size_t bufsize = 0;
+-  int flags = O_RDWR | O_CREAT;
++  int flags = O_RDWR | O_CREAT | O_BINARY;
+ 
+   if (incremental_level == 0)
+     flags |= O_TRUNC;
+@@ -1347,7 +1347,7 @@ read_directory_file (void)
+       return;
+     }
+ 
+-  listed_incremental_stream = fdopen (fd, "r+");
++  listed_incremental_stream = fdopen (fd, "rb+");
+   if (! listed_incremental_stream)
+     {
+       open_error (listed_incremental_option);
+--- tar-1.33-orig/src/system.c
++++ tar-1.33/src/system.c
+@@ -366,7 +366,8 @@ sys_child_open_for_compress (void)
+ 	 compressor.  */
+       if (strcmp (archive_name_array[0], "-"))
+ 	{
+-	  archive = creat (archive_name_array[0], MODE_RW);
++	  archive = open (archive_name_array[0],
++			  O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, MODE_RW);
+ 	  if (archive < 0)
+ 	    {
+ 	      int saved_errno = errno;
+@@ -407,7 +408,11 @@ sys_child_open_for_compress (void)
+   xclose (child_pipe[PWRITE]);
+ 
+   if (strcmp (archive_name_array[0], "-") == 0)
+-    archive = STDOUT_FILENO;
++    {
++      archive = STDOUT_FILENO;
++      freopen (NULL, fcntl (STDOUT_FILENO, F_GETFL) & O_APPEND ? "ab" : "wb",
++	       stdout);
++    }
+   else
+     {
+       archive = rmtcreat (archive_name_array[0], MODE_RW, rsh_command_option);
