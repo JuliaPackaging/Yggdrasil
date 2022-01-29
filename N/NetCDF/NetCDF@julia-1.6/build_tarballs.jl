@@ -1,5 +1,7 @@
 include("../common.jl")
 
+push!(platforms,Platform("aarch64","macos"))
+ 
 # Offset to add to the version number.  Remember to always bumpt this.
 version_offset = v"0.2.0"
 
