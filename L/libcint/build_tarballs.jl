@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libcint"
-version = v"5.1.0"
+version = v"5.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunqm/libcint.git", "d9415a8e3528b7b8f5717e3c68105f40d83b1fd4")
+    GitSource("https://github.com/sunqm/libcint.git", "9fdd8eff6f0e1177aa1d70a85686f1b34a482cda")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,8 +18,7 @@ mkdir build && cd build
 
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBLAS_LIBRARIES="-lopenblas"
+    -DCMAKE_BUILD_TYPE=Release
 
 make
 make install
@@ -35,11 +34,6 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcint", :libcint)
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
