@@ -29,7 +29,7 @@ make install
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 products = [
     LibraryProduct("liblapackpp", :liblapackpp)
 ]
@@ -37,7 +37,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("blaspp_jll")
+    Dependency("blaspp_jll"; compat="2021.04.02")
 ]
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
