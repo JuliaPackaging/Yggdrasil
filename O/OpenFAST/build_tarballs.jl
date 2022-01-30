@@ -42,6 +42,13 @@ exit
 
 platforms = expand_gfortran_versions(supported_platforms())
 
+#remove aarch64-linux-musl from platforms, this platform does not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure set up
+#see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
+
+#filter arm platforms
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("hydrodyn_driver", :hydrodyn_driver),
