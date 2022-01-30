@@ -41,13 +41,3 @@ dependencies = [
 ]
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
-
-cmake \
-  -DCMAKE_INSTALL_PREFIX=${prefix} \
-  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-  -DCMAKE_BUILD_TYPE="Release" \
-  -Drun_result="0" \
-  -Drun_result__TRYRUN_OUTPUT="ok" \
-  -Dgpu_backend=none \
-  -Dbuild_tests=no \
-  ..
