@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "blaspp"
-version = v"2021.04.01"
+version = v"2021.04.00"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
