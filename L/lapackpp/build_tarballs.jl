@@ -19,10 +19,10 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=${prefix} \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DCMAKE_BUILD_TYPE="Release" \
-  -DLAPACK_LIBRARIES="-lblastrampoline" \
-  -DBLAS_LIBRARIES="-lblastrampoline" \
-  -DCMAKE_CXX_FLAGS="-I${includedir}/libblastrampoline/LP64/${target}" \
+  -Drun_result="0" \
+  -Drun_result__TRYRUN_OUTPUT="ok" \
   -Dbuild_tests=no \
+  -Duse_cmake_find_lapack=yes \
   ..
 make -j${nproc}
 make install
@@ -36,8 +36,17 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("blaspp_jll"),
+    Dependency("OpenBLAS32_jll")
 ]
-
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=${prefix} \
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DCMAKE_BUILD_TYPE="Release" \
+  -Drun_result="0" \
+  -Drun_result__TRYRUN_OUTPUT="ok" \
+  -Dgpu_backend=none \
+  -Dbuild_tests=no \
+  ..
