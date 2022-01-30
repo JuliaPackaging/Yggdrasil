@@ -31,7 +31,7 @@ make install
 # We attempt to build for all defined platforms
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 products = [
-    LibraryProduct("libblaspp", :libblaspp)
+    LibraryProduct("liblapackpp", :liblapackpp)
 ]
 
 dependencies = [
