@@ -33,10 +33,6 @@ make install
 
 # We attempt to build for all defined platforms
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
-# platforms = filter(p -> !(Sys.iswindows(p) ||Sys.isapple(p)), platforms)
-# platforms = filter(!Sys.isfreebsd, platforms)
-# platforms = expand_gfortran_versions(platforms)
-# platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 products = [
     LibraryProduct("libblaspp", :libblaspp)
 ]
