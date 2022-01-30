@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd blaspp
 mkdir build && cd build
-export CXXFLAGS=
 cmake \
   -DCMAKE_INSTALL_PREFIX=${prefix} \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -25,7 +24,7 @@ cmake \
   -Drun_result__TRYRUN_OUTPUT="ok" \
   -Dgpu_backend=none \
   -Duse_cmake_find_blas=true \
-  -DCMAKE_CXX_FLAGS="-I${prefix}/include/LP64/${target}" \
+  -DCMAKE_CXX_FLAGS="-I${includedir}/LP64/${target}" \
   -Dbuild_tests=no \
   ..
 make -j${nproc}
