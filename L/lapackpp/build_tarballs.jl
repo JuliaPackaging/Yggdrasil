@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "blaspp"
+name = "lapackpp"
 version = v"2021.04.00"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
