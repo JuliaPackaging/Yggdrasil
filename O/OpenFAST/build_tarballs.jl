@@ -46,6 +46,9 @@ platforms = expand_gfortran_versions(supported_platforms())
 #see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
 filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
 
+#remove aarch-apple-darwin platforms, same issue as aarch64-linux-musl
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+
 #filter arm platforms
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
