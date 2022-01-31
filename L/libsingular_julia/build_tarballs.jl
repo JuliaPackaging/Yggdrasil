@@ -3,14 +3,18 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
 name = "libsingular_julia"
 version = v"0.21.0"
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
-
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "93cae044e9ca6cce2bf444147ccc07913baea82f"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "c96232eaa85e582ec94e257a69548b486ab0eadc"),
 ]
 
 # Bash recipe for building across all platforms
