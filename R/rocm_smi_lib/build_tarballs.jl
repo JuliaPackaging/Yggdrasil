@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/rocm_smi_lib-rocm-*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_PREFIX_PATH=${prefix} ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
 make -j${nproc}
 make install
 """
