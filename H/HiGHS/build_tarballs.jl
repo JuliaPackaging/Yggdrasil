@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.1.1"
+version = v"1.2.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "31608db682ed3e0fddcdbc5bc899e03fec38c324",
+        "e0b27f8d89d2277f419841448273fec27563b038",
     ),
     DirectorySource("./bundled"),
 ]
@@ -72,6 +72,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"4.9",
+    preferred_gcc_version = v"6",
     julia_compat = "1.6",
 )
