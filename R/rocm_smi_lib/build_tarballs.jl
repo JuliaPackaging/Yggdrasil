@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "rocm_smi_lib"
-version = v"4.0.0"
+version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/RadeonOpenCompute/rocm_smi_lib/archive/refs/tags/rocm-$(version).tar.gz", "93d19229b5a511021bf836ddc2a9922e744bf8ee52ee0e2829645064301320f4")
+    ArchiveSource("https://github.com/RadeonOpenCompute/rocm_smi_lib/archive/refs/tags/rocm-$(version).tar.gz", "c31bf91c492f00d0c5ab21e45afbd7baa990e4a8d7ce9b01e3b988e5fdd53f50")
 ]
 
 # Bash recipe for building across all platforms
