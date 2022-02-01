@@ -17,6 +17,9 @@ cd $WORKSPACE/srcdir/openfast-*/
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
+    
+    #explicitly list MinGW makefiles, otherwise will end up with Unix Makefiles
+    export CMAKE_GENERATOR="MinGW Makefiles"
 fi
 
 mkdir build && cd build
@@ -32,9 +35,9 @@ cmake .. \
 -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
 -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
+#WARNING: compiling this locally can go crazy and lock up your machine, using only 2 jobs and Debug version to make it behave
 make -j2
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
