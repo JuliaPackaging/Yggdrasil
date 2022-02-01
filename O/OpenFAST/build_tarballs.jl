@@ -17,9 +17,6 @@ cd $WORKSPACE/srcdir/openfast-*/
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
-    
-    #explicitly list MinGW makefiles, otherwise will end up with Unix Makefiles
-    export CMAKE_GENERATOR="MinGW Makefiles"
 fi
 
 mkdir build && cd build
@@ -54,6 +51,9 @@ filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 #filter arm platforms
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
+#filter windows platforms - MinGW is not well supported relative to MSVC
+filter!(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
