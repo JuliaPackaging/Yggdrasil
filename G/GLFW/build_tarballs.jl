@@ -25,21 +25,23 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libglfw", "glfw3"], :libglfw)
 ]
 
+x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Libglvnd_jll"),
-    Dependency("Xorg_libXcursor_jll"),
-    Dependency("Xorg_libXi_jll"),
-    Dependency("Xorg_libXinerama_jll"),
-    Dependency("Xorg_libXrandr_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    Dependency("Libglvnd_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
