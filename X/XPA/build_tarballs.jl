@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "XPA"
-version = v"2.1.20"
+version = v"2.1.21" # <--- This version number is a lie to build for more platforms
 
 # Collection of sources required to complete build
 sources = [
@@ -46,4 +46,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
