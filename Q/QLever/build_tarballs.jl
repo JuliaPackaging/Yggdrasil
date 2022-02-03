@@ -35,6 +35,11 @@ elif [[ "${target}" == x86_64-unknown-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd_warning_fix.patch
 fi
 
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
+
 git submodule update --init --recursive
 
 mkdir build && cd build
