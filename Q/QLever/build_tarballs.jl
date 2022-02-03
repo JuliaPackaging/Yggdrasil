@@ -9,8 +9,8 @@ version = v"0.0.1"
 sources = [
     GitSource("https://github.com/joka921/QLever.git", "09002dcf736948e46083a60ed58bdf4f19ce5f2e"),
     DirectorySource("./bundled"),
-    #ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    #              "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
@@ -35,17 +35,17 @@ elif [[ "${target}" == x86_64-unknown-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd_warning_fix.patch
 fi
 
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
 
 git submodule update --init --recursive
 
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+
+if [[ "${target}" != *-apple-* ]]; then
+    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+fi
+
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
@@ -76,6 +76,9 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # QLever depends on FOXXLL which only builds on 64-bit systems
 # https://github.com/stxxl/foxxll/blob/a4a8aeee64743f845c5851e8b089965ea1c219d7/foxxll/common/types.hpp#L25
 filter!(p -> nbits(p) != 32, platforms)
+
+# TODO: add back after debug
+filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 # Building against musl on Linux blocked by tlx dependency (https://github.com/tlx/tlx/issues/36)
 filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
