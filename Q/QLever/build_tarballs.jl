@@ -20,9 +20,7 @@ cd $WORKSPACE/srcdir/QLever/ # TODO: revert to qlever
 
 atomic_patch -p1 ../patches/cmake_fixes.patch
 
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/win_grp_h.patch
-elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
     export CXXFLAGS="-mmacosx-version-min=10.15"
     # ...and install a newer SDK which supports `std::filesystem`

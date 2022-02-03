@@ -1,17 +1,19 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0ded5cf7..9a3cf6bb 100644
+index 0c1dcdf0..d04cedb3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -44,6 +44,8 @@ endif()
+@@ -51,7 +51,9 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
  ################################
  # Threading
  ################################
+-find_package(Threads REQUIRED)
 +set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 +set(THREADS_PREFER_PTHREAD_FLAG TRUE)
- find_package (Threads REQUIRED)
++find_package (Threads REQUIRED)
  
  #################################
-@@ -137,7 +139,7 @@ include_directories(SYSTEM ${STXXL_INCLUDE_DIRS})
+ # ICU (for proper collation
+@@ -177,7 +179,7 @@ include_directories(SYSTEM ${STXXL_INCLUDE_DIRS})
  # RE2 has a lot of unused-parameter warnings, we will deactivate
  # these for the subproject
  set(LOCAL_CXX_BACKUP_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -19,11 +21,12 @@ index 0ded5cf7..9a3cf6bb 100644
 +set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
  
  set(RE2_BUILD_TESTING OFF CACHE BOOL "enable testing for RE2" FORCE)
- add_subdirectory(third_party/re2)
-@@ -176,8 +178,8 @@ add_definitions(-DLOGLEVEL=${LOG_LEVEL_${LOGLEVEL}})
+ add_subdirectory(third_party/re2 EXCLUDE_FROM_ALL)
+@@ -218,9 +220,8 @@ add_definitions(-DLOGLEVEL=${LOG_LEVEL_${LOGLEVEL}})
  add_subdirectory(src/parser)
  add_subdirectory(src/engine)
  add_subdirectory(src/index)
+-add_subdirectory(src/util)
 -enable_testing()
 -add_subdirectory(test)
 +# enable_testing()
