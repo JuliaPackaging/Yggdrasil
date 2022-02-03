@@ -2,7 +2,8 @@ using BinaryBuilder
 
 # Collection of sources required to build Arpack
 name = "Arpack"
-version = v"3.8.0"
+version = v"3.5.1" # <-- This is actually v3.5.0, but we need to build for new platforms
+
 sources = [
     GitSource("https://github.com/opencollab/arpack-ng.git",
               "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
@@ -58,7 +59,7 @@ SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 LIBOPENBLAS=openblas
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+if [[ ${nbits} == 64 ]]; then
     LIBOPENBLAS=openblas64_
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
@@ -103,5 +104,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
