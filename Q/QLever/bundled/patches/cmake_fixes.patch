@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..67749c9 100644
+index 9f7220a..7bbe7df 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -51,6 +51,8 @@ include_directories(third_party/antlr4/runtime/Cpp/runtime/src)
@@ -11,6 +11,15 @@ index 9f7220a..67749c9 100644
  find_package(Threads REQUIRED)
  
  #################################
+@@ -170,7 +172,7 @@ include_directories(SYSTEM ${STXXL_INCLUDE_DIRS})
+ # RE2 has a lot of unused-parameter warnings, we will deactivate
+ # these for the subproject
+ set(LOCAL_CXX_BACKUP_FLAGS "${CMAKE_CXX_FLAGS}")
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ 
+ set(RE2_BUILD_TESTING OFF CACHE BOOL "enable testing for RE2" FORCE)
+ add_subdirectory(third_party/re2 EXCLUDE_FROM_ALL)
 @@ -212,8 +214,8 @@ add_subdirectory(src/parser)
  add_subdirectory(src/engine)
  add_subdirectory(src/index)
@@ -22,14 +31,27 @@ index 9f7220a..67749c9 100644
  
  
  
-@@ -228,8 +230,8 @@ target_link_libraries(IndexBuilderMain index ${CMAKE_THREAD_LIBS_INIT})
- add_executable(CreatePatternsMain src/index/CreatePatternsMain.cpp src/util/ConstexprSmallString.h)
- target_link_libraries(CreatePatternsMain index ${CMAKE_THREAD_LIBS_INIT})
+diff --git a/src/engine/sparqlExpressions/SparqlExpressionGenerators.h b/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
+index b1c1e47..6d4064e 100644
+--- a/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
++++ b/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
+@@ -72,7 +72,8 @@ resultGenerator(T vector, size_t numItems) {
+   }
+ }
  
--add_executable(ServerMain src/ServerMain.cpp)
--target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
-+# add_executable(ServerMain src/ServerMain.cpp)
-+# target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT})
+-inline cppcoro::generator<StrongIdWithResultType> resultGenerator(
++template <bool CONST = false>
++cppcoro::generator<StrongIdWithResultType> resultGenerator(
+     StrongIdsWithResultType ids, size_t targetSize) {
+   AD_CHECK(targetSize == ids.size());
+   for (const auto& strongId : ids._ids) {
+@@ -80,7 +81,8 @@ inline cppcoro::generator<StrongIdWithResultType> resultGenerator(
+   }
+ }
  
- add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
- target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
+-inline cppcoro::generator<Bool> resultGenerator(ad_utility::SetOfIntervals set,
++template <bool CONST = false>
++cppcoro::generator<Bool> resultGenerator(ad_utility::SetOfIntervals set,
+                                                 size_t targetSize) {
+   size_t i = 0;
+   for (const auto& [begin, end] : set._intervals) {
