@@ -31,7 +31,9 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-fi    
+elif [[ "${target}" == x86_64-unknown-freebsd* ]]; then
+    atomic_patch -p1 ../patches/freebsd_warning_fix.patch
+fi
 
 git submodule update --init --recursive
 
@@ -79,7 +81,7 @@ filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("CreatePatternsMain", :CreatePatternsMain),    
+    ExecutableProduct("CreatePatternsMain", :CreatePatternsMain),
     ExecutableProduct("IndexBuilderMain", :IndexBuilderMain),
     ExecutableProduct("PermutationExporterMain", :PermutationExporterMain),
     ExecutableProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
@@ -87,7 +89,7 @@ products = [
     # LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
     ExecutableProduct("TurtleParserMain", :TurtleParserMain),
     ExecutableProduct("VocabularyMergerMain", :VocabularyMergerMain),
-    # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),    
+    # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),
 ]
 
 # Dependencies that must be installed before this package can be built
