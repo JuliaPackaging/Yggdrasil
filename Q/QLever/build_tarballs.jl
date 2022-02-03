@@ -90,11 +90,11 @@ products = [
     ExecutableProduct("IndexBuilderMain", :IndexBuilderMain),
     ExecutableProduct("PermutationExporterMain", :PermutationExporterMain),
     ExecutableProduct("PrefixHeuristicEvaluatorMain", :PrefixHeuristicEvaluatorMain),
-    # LibraryProduct("ServerMain", :ServerMain),
-    # LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
+    LibraryProduct("ServerMain", :ServerMain),
+    LibraryProduct("SparqlEngineMain", :SparqlEngineMain),
     ExecutableProduct("TurtleParserMain", :TurtleParserMain),
     ExecutableProduct("VocabularyMergerMain", :VocabularyMergerMain),
-    # LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),
+    LibraryProduct("WriteIndexListsMain", :WriteIndexListsMain),
 ]
 
 # Dependencies that must be installed before this package can be built
