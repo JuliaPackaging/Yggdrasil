@@ -64,6 +64,16 @@ if [[ ${nbits} == 64 ]]; then
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
+# Work around error
+#
+#     Error: Rank mismatch between actual argument at (1) and actual argument at (2) (scalar and rank-1)
+#
+# Properly fixed upstream in v3.8.0 with https://github.com/opencollab/arpack-ng/pull/245.
+# TODO: Remove this line when we upgrade to that version.
+if [[ "${target}" == aarch64-apple-* ]]; then
+    FFLAGS="${FFLAGS} -fallow-argument-mismatch"
+fi
+
 mkdir build
 cd build
 export LDFLAGS="${EXE_LINK_FLAGS[@]} -L$prefix/lib -lpthread"
