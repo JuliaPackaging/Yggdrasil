@@ -31,8 +31,6 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-elif [[ "${target}" == x86_64-unknown-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd_warning_fix.patch
 fi
 
 
