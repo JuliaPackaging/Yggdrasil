@@ -60,11 +60,7 @@ cp CreatePatternsMain \
      VocabularyMergerMain \
      PermutationExporterMain \
      PrefixHeuristicEvaluatorMain \
-     ${bindir}
-
-cp ServerMain \
-     SparqlEngineMain \
-     WriteIndexListsMain \
+     ServerMain \
      ${bindir}
 
 cd ../
