@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/joka921/QLever.git", "c2aa4633889c2ddc9c9730a161aab5dbcf0cecc1"),
+    GitSource("https://github.com/joka921/QLever.git", "4e360906c47cac7fc98c285e178688472a0b92d3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -44,6 +44,10 @@ CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
 CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS="-Wall -Wextra -Werror") #-Wno-dev
+
+# Try to fix -rdynamic linker flag
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="")
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS="")
 
 cmake ${CMAKE_FLAGS[@]} .. && ninja
 
