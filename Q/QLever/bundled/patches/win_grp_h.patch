@@ -1,5 +1,5 @@
 diff --git a/src/util/StringUtils.h b/src/util/StringUtils.h
-index 7d2adf3..50d2a7a 100644
+index 52f4b262..1eaa63b2 100644
 --- a/src/util/StringUtils.h
 +++ b/src/util/StringUtils.h
 @@ -6,7 +6,6 @@
@@ -9,4 +9,4 @@ index 7d2adf3..50d2a7a 100644
 -#include <grp.h>
  #include <stdint.h>
  #include <stdlib.h>
- #include <unicode/bytestream.h>
+ #include <array>
