@@ -7,8 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/joka921/QLever.git", "09002dcf736948e46083a60ed58bdf4f19ce5f2e"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/joka921/QLever.git", "c2aa4633889c2ddc9c9730a161aab5dbcf0cecc1"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -17,8 +16,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/QLever/ # TODO: revert to qlever
-
-atomic_patch -p1 ../patches/cmake_fixes.patch
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
