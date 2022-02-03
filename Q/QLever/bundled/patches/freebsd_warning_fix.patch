@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9f7220a..28168a9 100644
+index 9f7220a..aa8ceae 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -170,7 +170,7 @@ include_directories(SYSTEM ${STXXL_INCLUDE_DIRS})
@@ -7,7 +7,7 @@ index 9f7220a..28168a9 100644
  # these for the subproject
  set(LOCAL_CXX_BACKUP_FLAGS "${CMAKE_CXX_FLAGS}")
 -set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS})
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
  
  set(RE2_BUILD_TESTING OFF CACHE BOOL "enable testing for RE2" FORCE)
  add_subdirectory(third_party/re2 EXCLUDE_FROM_ALL)
