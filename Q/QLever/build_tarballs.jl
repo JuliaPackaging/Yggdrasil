@@ -62,10 +62,10 @@ cp CreatePatternsMain \
      PrefixHeuristicEvaluatorMain \
      ${bindir}
 
-# cp ServerMain \
-#      SparqlEngineMain \
-#      WriteIndexListsMain \
-#      ${bindir}
+cp ServerMain \
+     SparqlEngineMain \
+     WriteIndexListsMain \
+     ${bindir}
 
 cd ../
 
