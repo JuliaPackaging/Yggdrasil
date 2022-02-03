@@ -16,7 +16,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Qlever/ # TODO: revert to qlever
+cd $WORKSPACE/srcdir/QLever/ # TODO: revert to qlever
 
 atomic_patch -p1 ../patches/cmake_fixes.patch
 
