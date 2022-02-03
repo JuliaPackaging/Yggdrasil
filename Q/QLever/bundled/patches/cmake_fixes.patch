@@ -31,27 +31,3 @@ index 9f7220a..7bbe7df 100644
  
  
  
-diff --git a/src/engine/sparqlExpressions/SparqlExpressionGenerators.h b/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
-index b1c1e47..6d4064e 100644
---- a/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
-+++ b/src/engine/sparqlExpressions/SparqlExpressionGenerators.h
-@@ -72,7 +72,8 @@ resultGenerator(T vector, size_t numItems) {
-   }
- }
- 
--inline cppcoro::generator<StrongIdWithResultType> resultGenerator(
-+template <bool CONST = false>
-+cppcoro::generator<StrongIdWithResultType> resultGenerator(
-     StrongIdsWithResultType ids, size_t targetSize) {
-   AD_CHECK(targetSize == ids.size());
-   for (const auto& strongId : ids._ids) {
-@@ -80,7 +81,8 @@ inline cppcoro::generator<StrongIdWithResultType> resultGenerator(
-   }
- }
- 
--inline cppcoro::generator<Bool> resultGenerator(ad_utility::SetOfIntervals set,
-+template <bool CONST = false>
-+cppcoro::generator<Bool> resultGenerator(ad_utility::SetOfIntervals set,
-                                                 size_t targetSize) {
-   size_t i = 0;
-   for (const auto& [begin, end] : set._intervals) {
