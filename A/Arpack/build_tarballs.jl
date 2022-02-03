@@ -6,7 +6,7 @@ version = v"3.5.1" # <-- This is actually v3.5.0, but we need to build for new p
 
 sources = [
     GitSource("https://github.com/opencollab/arpack-ng.git",
-              "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
+              "9233f7f86f063ca6ca3793cb54dec590eb146e10"),
 ]
 
 # Bash recipe for building across all platforms
