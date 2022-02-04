@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "libsass"
-version = v"3.5.5"
+version = v"3.6.4"
 
 # Collection of sources required to build SassBuilder
 sources = [
-    GitSource("https://github.com/sass/libsass.git", "39e30874b9a5dd6a802c20e8b0470ba44eeba929"),
+    GitSource("https://github.com/sass/libsass.git", "8d312a1c91bb7dd22883ebdfc829003f75a82396"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
