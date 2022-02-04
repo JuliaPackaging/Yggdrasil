@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.4.1"
+version = v"4.6.0"
 
 # Collection of sources required to build GTK
 sources = [
     GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
-              "3090fbac82d86543cd198ddf38d4044e05c87d91"),
+              "70cb61fb7104c76a15bc6494a10e6ff1d470f6d8"),
     DirectorySource("./bundled"),
 ]
 
