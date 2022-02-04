@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gtk*/
 
 # We need to run some commands with a native Glib
-apk add glib-dev gtk4.0
+apk add glib-dev gtk4.0 sassc
 
 # This is awful, I know
 ln -sf /usr/bin/glib-compile-resources ${prefix}/bin/glib-compile-resources
