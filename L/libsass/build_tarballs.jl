@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libsass
 autoreconf --force --install
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --disable-static
 make -j${nproc}
 make install
 """
