@@ -68,11 +68,13 @@ products = Product[
     # LibraryProduct("libgtk-3", :libgtk3),
 ]
 
+x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host Wayland for wayland-scanner
-    HostBuildDependency("Wayland_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("Graphene_jll"; compat="1.10.6"),
     Dependency("Cairo_jll"),
@@ -81,23 +83,24 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
+    Dependency("libsass_jll"; compat="3.6.4"),
     # Gtk 3.24.29 requires ATK 2.35.1
     # Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
-    Dependency("xkbcommon_jll"),
+    Dependency("xkbcommon_jll"; platforms=x11_platforms),
     Dependency("iso_codes_jll"),
-    Dependency("Wayland_jll"),
-    Dependency("Wayland_protocols_jll"; compat="1.23"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_libXrender_jll"),
-    Dependency("Xorg_libXi_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libXcursor_jll"),
-    Dependency("Xorg_libXdamage_jll"),
-    Dependency("Xorg_libXfixes_jll"),
-    Dependency("Xorg_libXcomposite_jll"),
-    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Wayland_jll"; platforms=x11_platforms),
+    Dependency("Wayland_protocols_jll"; compat="1.23", platforms=x11_platforms),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXdamage_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXcomposite_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
     Dependency("Fontconfig_jll"),
     # Dependency("at_spi2_atk_jll"),
 ]
