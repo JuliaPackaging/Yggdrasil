@@ -86,9 +86,6 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
-    # XXX: As far as I understand, libsass is only needed to build `sassc` which
-    # is a host build dependency.  We'll probably be able to remove libsass.
-    BuildDependency("libsass_jll"; compat="3.6.4"),
     # Gtk 3.24.29 requires ATK 2.35.1
     # Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
