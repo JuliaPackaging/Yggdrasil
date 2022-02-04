@@ -33,7 +33,7 @@ git submodule update --init --recursive
 
 mkdir build && cd build
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake -DCMAKE_BUILD_TYPE=Release)
 
 if [[ "${target}" != *-apple-* ]]; then
     CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
