@@ -58,9 +58,7 @@ sources = [
 ]
 
 macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
-    # MacOSX11.1 is not yet available on phracker/MacOSX-SDKs
-    # https://github.com/phracker/MacOSX-SDKs/pull/32#issuecomment-749230532
-    ArchiveSource("https://github.com/larskanis/MacOSX-SDKs/releases/download/11.1/MacOSX11.1.sdk.tar.xz",
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "97f44b22949cea4522408ccca9a8d87f2d09779b2878423d2d7a2cb805c3d42d")
 else
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
