@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/joka921/QLever.git", "6759a1aeff3ec823ac22eedc95fea8ebcaf30e15"),
+    GitSource("https://github.com/joka921/QLever.git", "73fdce940d589dcb40de6846b7f9bc82ba48ec28"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
