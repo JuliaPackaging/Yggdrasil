@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/joka921/QLever.git", "2e33f57524520a7405f994d7e3fb41a4ff9291ca"),
+    GitSource("https://github.com/joka921/QLever.git", "0cac56e3cc4868a26879a8b8afeb3c6370f623c0"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -35,9 +35,10 @@ mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake -DCMAKE_BUILD_TYPE=Release)
 
-if [[ "${target}" != *-apple-* ]]; then
-    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-fi
+# Clang doesn't correctly pick up openmp, and cmake seems to do wrong stuff then.
+#if [[ "${target}" != *-apple-* ]]; then
+#    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+#fi
 
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-GNinja)
