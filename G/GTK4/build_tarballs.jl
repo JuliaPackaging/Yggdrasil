@@ -19,6 +19,9 @@ cd $WORKSPACE/srcdir/gtk*/
 # We need to run some commands with a native Glib
 apk add glib-dev gtk4.0 sassc
 
+# Apparently this is the quickest way to get gi-docgen
+pip3 install gi-docgen
+
 # This is awful, I know
 ln -sf /usr/bin/glib-compile-resources ${prefix}/bin/glib-compile-resources
 ln -sf /usr/bin/glib-compile-schemas ${prefix}/bin/glib-compile-schemas
@@ -83,7 +86,9 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
-    Dependency("libsass_jll"; compat="3.6.4"),
+    # XXX: As far as I understand, libsass is only needed to build `sassc` which
+    # is a host build dependency.  We'll probably be able to remove libsass.
+    BuildDependency("libsass_jll"; compat="3.6.4"),
     # Gtk 3.24.29 requires ATK 2.35.1
     # Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
