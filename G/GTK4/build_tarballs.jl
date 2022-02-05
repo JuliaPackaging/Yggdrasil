@@ -7,8 +7,9 @@ version = v"4.6.0"
 
 # Collection of sources required to build GTK
 sources = [
-    GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
-              "70cb61fb7104c76a15bc6494a10e6ff1d470f6d8"),
+    # https://download.gnome.org/sources/gtk/
+    ArchiveSource("https://download.gnome.org/sources/gtk/4.6/gtk-4.6.0.tar.xz",
+                  "782d5951fbfd585fc9ec76c09d07e28e6014c72db001fb567fff217fb96e4d8c"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,10 +30,8 @@ ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
 # Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
 rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
-# # Meson fails to find wayland-scanner with pkg-config and cmake, while trying to prepare
-# # tests... that we didn't ask in the first place:
-# # https://gitlab.gnome.org/GNOME/gtk/-/issues/4472
-# atomic_patch -p1 $WORKSPACE/srcdir/patches/wayland-protocols-no-tests.patch
+# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4443
+atomic_patch -p1 ../patches/0001-Include-gdk-private.h-to-fix-error-about-g_source_se.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
@@ -65,10 +64,8 @@ rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schema
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
-products = Product[
-    # LibraryProduct("libgailutil-3", :libgailutil3),
-    # LibraryProduct("libgdk-3", :libgdk3),
-    # LibraryProduct("libgtk-3", :libgtk3),
+products = [
+    LibraryProduct("libgtk-4", :libgtk4),
 ]
 
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
