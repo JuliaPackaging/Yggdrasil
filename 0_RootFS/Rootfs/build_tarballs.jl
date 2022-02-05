@@ -3,11 +3,16 @@
 # * Update the bits you want to update, for example:
 #   * version of the Alpine RootFS: visit https://github.com/alpinelinux/docker-alpine,
 #     select the branch corresponding to the version of Alpine you want to use, browse to
-#     the directory `x86_64` and obtain the permanent link of the image (press `Y`)
+#     the directory `x86_64` and obtain the permanent link of the image (press `Y`).  NOTE:
+#     if you upgrade version of Alpine Linux, makes sure to use the same version of Musl
+#     libc as upstream (see below), otherwise system application may not work
 #   * version of Meson (https://github.com/mesonbuild/meson/releases)
 #   * version of patchelf (https://github.com/NixOS/patchelf/releases/)
 #   * version of CSL in `bundled/libs/csl/download_csls.sh`
 #     (https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl/releases)
+#   * version of C libraries in `bundled/libs/libc/download_libcs.sh`
+#     (https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases and
+#     https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases)
 #   * etc...
 # * to build and deploy the new image, run
 #
