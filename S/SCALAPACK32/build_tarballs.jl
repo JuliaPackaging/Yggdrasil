@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCALAPACK32"
-version = v"2.1.0"
+version = v"2.2.0"
 
 sources = [
-  ArchiveSource("http://www.netlib.org/scalapack/scalapack-$(version).tgz",
-                "61d9216cf81d246944720cfce96255878a3f85dec13b9351f1fa0fd6768220a6"),
+  ArchiveSource("https://github.com/Reference-ScaLAPACK/scalapack/archive/refs/tags/v$(version).tar.gz",
+                "8862fc9673acf5f87a474aaa71cd74ae27e9bbeee475dbd7292cec5b8bcbdcf3"),
   DirectorySource("./bundled")
 ]
 
@@ -64,9 +64,7 @@ elif [[ ${target} == *apple* ]]; then
 fi
 """
 
-# OpenMPI and MPICH are not precompiled for Windows
-# Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> Sys.iswindows(p) || arch(p) == "powerpc64le"))
+platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
 
 # The products that we will ensure are always built
 products = [
@@ -76,7 +74,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4")),
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"), build_version="3.4.3"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
