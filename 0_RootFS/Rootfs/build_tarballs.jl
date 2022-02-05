@@ -4,9 +4,10 @@
 #   * version of the Alpine RootFS: visit https://github.com/alpinelinux/docker-alpine,
 #     select the branch corresponding to the version of Alpine you want to use, browse to
 #     the directory `x86_64` and obtain the permanent link of the image (press `Y`)
-#   * version of Meson
-#   * version of patchelf
+#   * version of Meson (https://github.com/mesonbuild/meson/releases)
+#   * version of patchelf (https://github.com/NixOS/patchelf/releases/)
 #   * version of CSL in `bundled/libs/csl/download_csls.sh`
+#     (https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl/releases)
 #   * etc...
 # * to build and deploy the new image, run
 #
@@ -155,7 +156,7 @@ mkdir ./dev/shm
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
-FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
+FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
