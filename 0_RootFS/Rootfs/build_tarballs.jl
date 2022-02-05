@@ -111,7 +111,7 @@ sources = [
                   "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
-              "a949ff23315bbb5863627c4655fe216ecbf341a2"),
+              "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.61.1/meson-0.61.1.tar.gz",
                   "feb2cefb325b437dbf36146df7c6b87688ddff0b0205caa31dc64055c6da410c"),
