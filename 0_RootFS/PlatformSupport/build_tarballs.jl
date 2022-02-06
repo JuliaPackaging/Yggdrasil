@@ -1,5 +1,5 @@
 ### Instructions for adding a new version
-# 
+#
 # Check out a branch of BinaryBuilderBase from the current master of that repo.
 # Run this script for each target platform. The following will do the job:
 # ```
