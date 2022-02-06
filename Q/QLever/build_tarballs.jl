@@ -42,9 +42,9 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
 fi
 
 # Clang doesn't correctly pick up openmp, and cmake seems to do wrong stuff then.
-if [[ "${target}" != *-apple-* ]]; then
-    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-fi
+#if [[ "${target}" != *-apple-* ]]; then
+#    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+#fi
 
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-GNinja)
