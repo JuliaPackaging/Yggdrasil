@@ -45,6 +45,7 @@ fi
 
 mkdir build-gtk && cd build-gtk
 meson .. \
+    --buildtype=release \
     -Dmedia-gstreamer=disabled \
     -Dintrospection=disabled \
     -Ddemos=false \
