@@ -5,45 +5,66 @@ using BinaryBuilder, Pkg
 name = "ONNXRuntime"
 version = v"1.10.0"
 
+# Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
+# Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
+cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3"] # No CUDA 10.2, since pre-built CUDA binaries are built for CUDA 11
+cudnn_version = v"8.2.4"
+tensorrt_version = v"8.0.1"
+
+cudnn_compat = string(cudnn_version.major)
+tensorrt_compat = string(tensorrt_version.major)
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/onnxruntime.git", "0d9030e79888d1d5828730b254fedc53c7b640c1"),
     ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "a0c6db3cff65bd282f6ba4a57789e619c27e55203321aa08c023019fe9da50d7"; unpack_target="onnxruntime-x86_64-w64-mingw32"),
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x86-$version.zip", "fd1680fa7248ec334efc2564086e9c5e0d6db78337b55ec32e7b666164bdb88c"; unpack_target="onnxruntime-i686-w64-mingw32")
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x86-$version.zip", "fd1680fa7248ec334efc2564086e9c5e0d6db78337b55ec32e7b666164bdb88c"; unpack_target="onnxruntime-i686-w64-mingw32"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-linux-x64-gpu-$version.tgz", "bc880ba8a572acf79d50dcd35ba6dd8e5fb708d03883959ef60efbc15f5cdcb6"; unpack_target="onnxruntime-x86_64-linux-gnu-cuda"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0da11b8d953fad4ec75f87bb894f72dea511a3940cff2f4dad37451586d1ebbc"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-if [[ $target == *-w64-mingw32* ]]; then
-    chmod 755 onnxruntime-$target/onnxruntime-*/lib/*
-    mkdir -p $includedir $libdir
-    cp -av onnxruntime-$target/onnxruntime-*/include/* $includedir
-    cp -av onnxruntime-$target/onnxruntime-*/lib/* $libdir
-    install_license onnxruntime-$target/onnxruntime-*/LICENSE
-else
-    # Cross-compiling for aarch64-apple-darwin on x86_64 requires setting arch.: https://github.com/microsoft/onnxruntime/blob/v1.10.0/cmake/CMakeLists.txt#L186
-    if [[ $target == aarch64-apple-darwin* ]]; then
-        cmake_extra_args="-DCMAKE_OSX_ARCHITECTURES='arm64'"
-    fi
+if [[ $bb_full_target != *cuda* ]]; then
+    if [[ $target == *-w64-mingw32* ]]; then
+        chmod 755 onnxruntime-$target/onnxruntime-*/lib/*
+        mkdir -p $includedir $libdir
+        cp -av onnxruntime-$target/onnxruntime-*/include/* $includedir
+        cp -av onnxruntime-$target/onnxruntime-*/lib/* $libdir
+        install_license onnxruntime-$target/onnxruntime-*/LICENSE
+    else
+        # Cross-compiling for aarch64-apple-darwin on x86_64 requires setting arch.: https://github.com/microsoft/onnxruntime/blob/v1.10.0/cmake/CMakeLists.txt#L186
+        if [[ $target == aarch64-apple-darwin* ]]; then
+            cmake_extra_args="-DCMAKE_OSX_ARCHITECTURES='arm64'"
+        fi
 
-    cd onnxruntime
-    git submodule update --init --recursive
-    mkdir -p build
-    cd build
-    cmake $WORKSPACE/srcdir/onnxruntime/cmake \
-        -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
-        -Donnxruntime_BUILD_SHARED_LIB=ON \
-        -Donnxruntime_BUILD_UNIT_TESTS=OFF \
-        -Donnxruntime_DISABLE_RTTI=OFF \
-        $cmake_extra_args
-    make -j $nproc
-    make install
-    install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
+        cd onnxruntime
+        git submodule update --init --recursive
+        mkdir -p build
+        cd build
+        cmake $WORKSPACE/srcdir/onnxruntime/cmake \
+            -DCMAKE_INSTALL_PREFIX=$prefix \
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
+            -Donnxruntime_BUILD_SHARED_LIB=ON \
+            -Donnxruntime_BUILD_UNIT_TESTS=OFF \
+            -Donnxruntime_DISABLE_RTTI=OFF \
+            $cmake_extra_args
+        make -j $nproc
+        make install
+        install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
+    fi
+else
+    if [[ $target == *-w64-mingw32* ]]; then
+        chmod 755 onnxruntime-$target-cuda/onnxruntime-*/lib/*
+    fi
+    mkdir -p $includedir $libdir
+    cp -av onnxruntime-$target-cuda/onnxruntime-*/include/* $includedir
+    find onnxruntime-$target-cuda/onnxruntime-*/lib -not -type d | xargs -Isrc cp -av src $libdir
+    install_license onnxruntime-$target-cuda/onnxruntime-*/LICENSE
 fi
 """
 
@@ -57,6 +78,18 @@ end
 platforms = supported_platforms(; exclude=platform_exclude_filter)
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
+cuda_platforms = Platform[]
+for cuda_version in cuda_versions
+    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
+    for p in [
+        Platform("x86_64", "Linux"; cuda = cuda_tag),
+        Platform("x86_64", "Windows"; cuda = cuda_tag)
+    ]
+        push!(platforms, p)
+        push!(cuda_platforms, p)
+    end
+end
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libonnxruntime", "onnxruntime"], :libonnxruntime)
@@ -64,6 +97,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CUDNN_jll", cudnn_version;
+        compat = cudnn_compat,
+        platforms = cuda_platforms),
+    Dependency("TensorRT_jll", tensorrt_version;
+        compat = tensorrt_compat,
+        platforms = cuda_platforms),
+    Dependency("Zlib_jll"; platforms = cuda_platforms),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.16.1"))
 ]
 
