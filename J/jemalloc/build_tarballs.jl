@@ -32,7 +32,7 @@ autoconf
 if [[ "${target}" == *-freebsd* ]]; then
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-jemalloc-prefix
 elif [[ "${target}" == x86_64-apple-darwin* ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --enable-cpuset
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --enable-cpuset --with-jemalloc-prefix
 elif [[ "${target}" == aarch64-apple-darwin* ]]; then
      ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-lg-page=14
 else
