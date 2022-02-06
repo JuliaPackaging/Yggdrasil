@@ -32,6 +32,8 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
 # https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4443
 atomic_patch -p1 ../patches/0001-Include-gdk-private.h-to-fix-error-about-g_source_se.patch
+# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4445
+atomic_patch -p1 ../patches/0001-gdkjpeg-include-stdlib.h-necessary-for-free.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
