@@ -8,8 +8,8 @@ version = v"0.0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/joka921/QLever.git", "e235c48c4a3ab2fa4d75ee8282c1de58c4f0c0d0"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
@@ -19,12 +19,11 @@ cd $WORKSPACE/srcdir/QLever/ # TODO: revert to qlever
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
-    export CXXFLAGS="-mmacosx-version-min=11.1"
+    export CXXFLAGS="-mmacosx-version-min=10.15"
     # ...and install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr
-    cp -ra usr "/opt/${target}/${target}/sys-root/."
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
@@ -81,6 +80,9 @@ filter!(p -> !Sys.isfreebsd(p), platforms)
 
 # Mingw fails mysteriously
 filter!(p -> !Sys.iswindows(p), platforms)
+
+# TODO: add back after debug
+ filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
