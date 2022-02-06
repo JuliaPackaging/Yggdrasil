@@ -15,13 +15,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/jemalloc/
 autoconf
 
+FLAGS=(--disable-initial-exec-tls)
 if [[ "${target}" == *-freebsd* ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-jemalloc-prefix
+     FLAGS+=(--with-jemalloc-prefix)
 elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-lg-page=14
-else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
+     FLAGS+=(--with-lg-page=14)
 fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 
 make -j${nproc}
 make install
