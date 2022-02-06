@@ -165,7 +165,6 @@ FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `un
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
-# Install a more recent version of `apk`, which understands `--no-chown`.
 
 # chgrp and chown should be no-ops since we run in a single-user mode
 rm -f ./bin/chown ./bin/chgrp
