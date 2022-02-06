@@ -18,15 +18,15 @@ script = raw"""
 cd $WORKSPACE/srcdir/gtk*/
 
 # We need to run some commands with a native Glib
-apk add glib-dev gtk4.0 sassc
+apk add glib-dev
 
 # Apparently this is the quickest way to get gi-docgen
 pip3 install gi-docgen
 
 # This is awful, I know
-ln -sf /usr/bin/glib-compile-resources ${prefix}/bin/glib-compile-resources
-ln -sf /usr/bin/glib-compile-schemas ${prefix}/bin/glib-compile-schemas
-ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
+ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
+ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
+ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
 # Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
 rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
@@ -59,7 +59,7 @@ ninja -j${nproc}
 ninja install
 
 # Remove temporary links
-rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schemas}
+rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -75,6 +75,8 @@ x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Need a native `sassc`
+    HostBuildDependency("SassC_jll"),
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
