@@ -78,7 +78,7 @@ dependencies = [
     Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("Graphene_jll"; compat="1.10.6"),
     Dependency("Cairo_jll"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Pango_jll"; compat="1.50.3"),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
