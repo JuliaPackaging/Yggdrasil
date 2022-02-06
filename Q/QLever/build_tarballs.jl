@@ -23,7 +23,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # ...and install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    rm -rf /opt/${target}/${target}/sys-root/usr
+    cp -ra usr "/opt/${target}/${target}/sys-root/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
