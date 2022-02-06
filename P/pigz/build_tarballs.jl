@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "pigz"
-version = v"2.5"
+version = v"2.7"
 
 # Collection of sources required to build pigz
 sources = [
-    ArchiveSource("https://zlib.net/pigz/pigz-2.7.tar.gz",
+    ArchiveSource("https://zlib.net/pigz/pigz-$version.tar.gz",
                   "b4c9e60344a08d5db37ca7ad00a5b2c76ccb9556354b722d56d55ca7e8b1c707"),
 ]
 
