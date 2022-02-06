@@ -17,6 +17,8 @@ autoconf
 
 if [[ "${target}" == *-freebsd* ]]; then
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-jemalloc-prefix
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-lg-page=14
 else
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
 fi
