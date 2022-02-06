@@ -41,13 +41,6 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
      CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 fi
 
-CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-CMAKE_FLAGS+=(-DOpenMP_CXX_FLAGS=-fopenmp=libgomp)
-CMAKE_FLAGS+=(-DOpenMP_CXX_LIB_NAMES=gomp)
-CMAKE_FLAGS+=(-DOpenMP_gomp_LIBRARY=$OMP_LIB)
-
-# End: Openmp flags for clang
-
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
