@@ -41,14 +41,7 @@ if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
      CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 fi
 
-# Begin: Openmp flags for clang
-OMP_LIB=`find $libdir -iname 'libgomp*'`
-OMP_HEADER=`find / -name omp.h 2>/dev/null  | head -n1`
-mkdir include
-cp $OMP_HEADER include/
-export CPATH=$PWD/include
-
-CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+CMAKE_FLAGS+=(-DUSE_PARALLEL=false)
 CMAKE_FLAGS+=(-DOpenMP_CXX_FLAGS=-fopenmp=libgomp)
 CMAKE_FLAGS+=(-DOpenMP_CXX_LIB_NAMES=gomp)
 CMAKE_FLAGS+=(-DOpenMP_gomp_LIBRARY=$OMP_LIB)
@@ -113,7 +106,6 @@ dependencies = [
     Dependency(PackageSpec(name = "boost_jll", uuid = "28df3c45-c428-5900-9ff8-a3135698ca75"); compat = "~1.76.0"),
     Dependency(PackageSpec(name="ICU_jll", uuid="a51ab1cf-af8e-5615-a023-bc2c838bba6b"); compat = "~69.1"),
     Dependency(PackageSpec(name="jemalloc_jll", uuid="454a8cc1-5e0e-5123-92d5-09b094f0e876")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
