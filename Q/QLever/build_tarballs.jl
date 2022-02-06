@@ -35,12 +35,16 @@ mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release)
 
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+ else
+     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+fi
 
 # Clang doesn't correctly pick up openmp, and cmake seems to do wrong stuff then.
-#if [[ "${target}" != *-apple-* ]]; then
-#    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
-#fi
+if [[ "${target}" != *-apple-* ]]; then
+    CMAKE_FLAGS+=(-DUSE_PARALLEL=true)
+fi
 
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
 CMAKE_FLAGS+=(-GNinja)
@@ -73,11 +77,14 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # https://github.com/stxxl/foxxll/blob/a4a8aeee64743f845c5851e8b089965ea1c219d7/foxxll/common/types.hpp#L25
 filter!(p -> nbits(p) != 32, platforms)
 
-# TODO: add back after debug
-filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
-
 # Building against musl on Linux blocked by tlx dependency (https://github.com/tlx/tlx/issues/36)
 filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
+
+# Abseil causes freebsd to fail
+filter!(p -> !Sys.isfreebsd(p), platforms)
+
+# Mingw fails mysteriously
+filter!(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
