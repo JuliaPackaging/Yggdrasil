@@ -86,8 +86,6 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
-    # Gtk 3.24.29 requires ATK 2.35.1
-    # Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
     Dependency("xkbcommon_jll"; platforms=x11_platforms),
     Dependency("iso_codes_jll"),
@@ -101,10 +99,8 @@ dependencies = [
     Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXdamage_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),
-    Dependency("Xorg_libXcomposite_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
     Dependency("Fontconfig_jll"),
-    # Dependency("at_spi2_atk_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
