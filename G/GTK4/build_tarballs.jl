@@ -20,9 +20,6 @@ cd $WORKSPACE/srcdir/gtk*/
 # We need to run some commands with a native Glib
 apk add glib-dev
 
-# Apparently this is the quickest way to get gi-docgen
-pip3 install gi-docgen
-
 # This is awful, I know
 ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
 ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
@@ -53,6 +50,7 @@ meson .. \
     -Ddemos=false \
     -Dbuild-examples=false \
     -Dbuild-tests=false \
+    -Dgtk_doc=false \
     "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
