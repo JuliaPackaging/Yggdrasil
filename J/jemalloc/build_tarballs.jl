@@ -3,16 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "jemalloc"
-version = v"5.2.1"
+version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jemalloc/jemalloc.git", "886e40bb339ec1358a5ff2a52fdb782ca66461cb")
+    GitSource("https://github.com/jemalloc/jemalloc.git", "a4e81221cceeb887708d53015d3d1f1f9642980a"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),    
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/jemalloc/
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+    # ...and install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+fi
+
 autoconf
 
 if [[ "${target}" == *-freebsd* ]]; then
