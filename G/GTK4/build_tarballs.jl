@@ -27,6 +27,22 @@ ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
 # Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
 rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
+# llvm-ar seems to generate corrupted static archives:
+#
+#     [974/980] Linking target gtk/libgtk-4.1.dylib
+#     ninja: job failed: [...]
+#     ld: warning: ignoring file gtk/css/libgtk_css.a, building for macOS-x86_64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+#     ld: warning: ignoring file gtk/libgtk.a, building for macOS-x86_64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+#     ld: warning: ignoring file gsk/libgsk.a, building for macOS-x86_64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+#     ld: warning: ignoring file gsk/libgsk_f16c.a, building for macOS-x86_64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+#     Undefined symbols for architecture x86_64:
+#       "_gtk_make_symbolic_pixbuf_from_data", referenced from:
+#           _main in encodesymbolic.c.o
+#     ld: symbol(s) not found for architecture x86_64
+if [[ "${target}" == *apple* ]]; then
+    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
+fi
+
 # https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4443
 atomic_patch -p1 ../patches/0001-Include-gdk-private.h-to-fix-error-about-g_source_se.patch
 # https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4445
