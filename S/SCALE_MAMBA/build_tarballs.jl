@@ -1,21 +1,16 @@
 using BinaryBuilder
 
 name = "SCALE_MAMBA"
-version = v"1.5"
+version = v"1.14"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    "https://github.com/KULeuven-COSIC/SCALE-MAMBA.git" =>
-    "d7c960afd0a9776f04e15a5653caf300dd42f20a",
-    "./bundled",
+    GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git", "6449e807c99c68203f6584166a7130055da52adb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/SCALE-MAMBA/
-
-# Apply patch to fix multiple definitions error
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_multiple_definitions.patch
 
 cat > CONFIG.mine <<EOF
 ROOT = $(pwd)
@@ -41,10 +36,7 @@ cp Setup.x${exe} ${prefix}/bin/
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
-platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != "musl"]
-
-# Build with GCC 6 at least, to dodge C++ problems
-platforms = BinaryBuilder.replace_gcc_version.(platforms, :gcc6)
+platforms = supported_platforms(; exclude=arch(p) != "x86_64" || Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl")
 
 # The products that we will ensure are always built
 products = [
@@ -60,4 +52,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat = "1.6")
