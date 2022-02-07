@@ -8,7 +8,7 @@ version = v"3.1.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/htop-dev/htop/releases/download/$(version)/htop-$(version).tar.xz",
-                            "884bce5b58cb113127860b9e368609019e92416a81550fdf0752052f3a64b388"),
+                  "884bce5b58cb113127860b9e368609019e92416a81550fdf0752052f3a64b388"),
 ]
 
 # Bash recipe for building across all platforms
