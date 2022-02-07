@@ -10,7 +10,7 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-version = v"1.10.1" # <-- This version number is a lie to update compat bounds
+version = v"1.10.2" # <-- This version number is a lie to update compat bounds
 
 # Bash recipe for building across all platforms
 script = raw"""
