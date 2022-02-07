@@ -3,13 +3,11 @@ using BinaryBuilder
 name = "LibSSH2"
 version = v"1.10.0"
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"1.10.1"
-
 # Collection of sources required to build LibSSH2
 sources = [
-      GitSource("https://github.com/libssh2/libssh2.git", "967792c89625440fe86e0e55ce84082eea9e71a6")
+    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
+                   "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
+    DirectorySource("./bundled"),
 ]
 
 version = v"1.10.1" # <-- This version number is a lie to update compat bounds
@@ -17,6 +15,9 @@ version = v"1.10.1" # <-- This version number is a lie to update compat bounds
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
+
+# Apply patch to fix v1.10.0 CVE (https://github.com/libssh2/libssh2/issues/649), drop with v1.11
+atomic_patch -p0 $WORKSPACE/srcdir/patches/0001-userauth-check-for-too-large-userauth_kybd_auth_name.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
