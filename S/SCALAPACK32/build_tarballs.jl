@@ -27,7 +27,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
              -DBLAS_LIBRARIES="-lopenblas" \
              -DLAPACK_LIBRARIES="-lopenblas" \
              -DBUILD_SHARED_LIBS=ON \
-             -DSCALAPACK_BUILD_TESTS=OFF)
+             -DSCALAPACK_BUILD_TESTS=OFF \
+             -DMPI_BASE_DIR="${bindir}")
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
