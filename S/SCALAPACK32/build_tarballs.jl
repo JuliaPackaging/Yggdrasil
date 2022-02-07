@@ -54,7 +54,7 @@ mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
 # If there were links that are now broken, fix 'em up
 for l in $(find ${prefix}/lib -xtype l); do
   if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
-    ln -vsf ${name} ${l}
+    ln -vsf libscalapack32.${dlext} ${l}
   fi
 done
 
