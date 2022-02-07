@@ -26,7 +26,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isbsd(p)))
+platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
 
 # The products that we will ensure are always built
 products = [
