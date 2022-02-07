@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Deldir"
-version = v"0.1.15"
+version = v"1.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cran.r-project.org/src/contrib/Archive/deldir/deldir_0.1-15.tar.gz", "571011c208829f47ecd9f92a19fd94a8eb59de5a2645ab8c62e73926ade30710")
+    ArchiveSource("https://cran.r-project.org/src/contrib/Archive/deldir/deldir_$(version.major).$(version.minor)-$(version.patch).tar.gz", "a0f92dad53814744cdb8386ad2e68831d9e0287c5bc65adf0f84a77e21bc1458")
 ]
 
 # Bash recipe for building across all platforms
