@@ -17,9 +17,6 @@ version = v"3.0.1" # Fake version bump for compat
 script = raw"""
 cd $WORKSPACE/srcdir/mpir-*
 
-# We need `yasm`
-apk add yasm
-
 ./configure --enable-cxx --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j
 make install
@@ -37,6 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("YASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
