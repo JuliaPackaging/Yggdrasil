@@ -6,7 +6,7 @@ version = v"1.10.0"
 # Collection of sources required to build LibSSH2
 sources = [
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
-                   "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
+                  "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
     DirectorySource("./bundled"),
 ]
 
