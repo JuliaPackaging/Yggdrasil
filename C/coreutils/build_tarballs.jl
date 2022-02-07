@@ -13,6 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/coreutils-9.*
+
+# Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
+if [[ ${target} == x86_64-linux-gnu ]]; then
+    export FORCE_UNSAFE_CONFIGURE=1
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
