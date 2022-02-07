@@ -24,34 +24,29 @@ if [[ $target == *-w64-mingw32* ]]; then
     fi
     chmod 755 $dist_name*/lib/*
     mkdir -p $includedir $libdir
-    cp -a $dist_name*/include/* $includedir
-    cp -a $dist_name*/lib/* $libdir
+    cp -av $dist_name*/include/* $includedir
+    cp -av $dist_name*/lib/* $libdir
     install_license $dist_name*/LICENSE
 else
     # aarch64-apple-darwin fix, cf. https://github.com/microsoft/onnxruntime/issues/6573#issuecomment-900877035
     if [[ $target == aarch64-apple-darwin* ]]; then
-        cmake_extra_defines=CMAKE_OSX_ARCHITECTURES='arm64'
-    # Workaround for https://github.com/microsoft/onnxruntime/issues/2152
-    elif [[ $target == arm-linux-gnueabihf* ]]; then
-        cmake_extra_defines="onnxruntime_DEV_MODE=OFF"
+        cmake_extra_defines="-DCMAKE_OSX_ARCHITECTURES='arm64'"
     fi
 
     cd onnxruntime
-    python3 tools/ci_build/build.py \
-        --build \
-        --build_dir $WORKSPACE/srcdir/onnxruntime/build \
-        --build_shared_lib \
-        --cmake_extra_defines \
-            CMAKE_INSTALL_PREFIX=$prefix \
-            CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            onnxruntime_BUILD_UNIT_TESTS=OFF \
-            $cmake_extra_defines \
-        --config Release \
-        --parallel $nproc \
-        --path_to_protoc_exe $host_bindir/protoc \
-        --skip_tests \
-        --update
-    cd build/Release
+    git submodule update --init --recursive
+    mkdir -p build
+    cd build
+    cmake $WORKSPACE/srcdir/onnxruntime/cmake \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
+        -Donnxruntime_BUILD_SHARED_LIB=ON \
+        -Donnxruntime_BUILD_UNIT_TESTS=OFF \
+        -Donnxruntime_CROSS_COMPILING=ON \
+        $cmake_extra_defines
+    make -j $nproc
     make install
     install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
 fi
