@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "duf"
-version = v"0.5.0"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/muesli/duf.git", "4c15e83a7cac83f402c860fd513c6ff85fea5e19")
+    GitSource("https://github.com/muesli/duf.git", "0d660c36500629a0bbc1cc56695ad1821d23993c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd duf/
+cd $WORKSPACE/srcdir/duf/
 mkdir -p ${bindir}
 go build -o ${bindir}
 """
@@ -32,4 +31,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c], julia_compat = "1.6")
