@@ -8,7 +8,7 @@ version = v"7.1.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/dylanaraps/neofetch/archive/refs/tags/$(version).tar.gz",
-    "58a95e6b714e41efc804eca389a223309169b2def35e57fa934482a6b47c27e7"),
+                            "58a95e6b714e41efc804eca389a223309169b2def35e57fa934482a6b47c27e7"),
 ]
 
 # Bash recipe for building across all platforms
