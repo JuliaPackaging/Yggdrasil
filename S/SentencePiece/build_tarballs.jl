@@ -3,19 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "SentencePiece"
-version = v"0.1.92"
+version = v"0.1.96"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/sentencepiece/archive/v0.1.92.tar.gz", "6e9863851e6277862083518cc9f96211f334215d596fc8c65e074d564baeef0c")
+    ArchiveSource("https://github.com/google/sentencepiece/archive/refs/tags/v$(version).tar.gz",
+                  "5198f31c3bb25e685e9e68355a3bf67a1db23c9e8bdccc33dc015f496a44df7a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd sentencepiece*
-mkdir cmbuild
-cd cmbuild/
+cd $WORKSPACE/srcdir/sentencepiece*
+mkdir cmbuild && cd cmbuild/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
@@ -43,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
