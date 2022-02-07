@@ -11,16 +11,11 @@ sources = [
         "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version.major).$(version.minor).tar.xz",
         "a6bdd7d1b31266d11c4f4de6c1b748d4607ab0231af5188fc2533d0ae2438fec",
     ),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/diffutils-*/
-
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/win_signal_handling.patch
-fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 
