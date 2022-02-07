@@ -28,9 +28,9 @@ if [[ $target == *-w64-mingw32* ]]; then
     cp -av $dist_name*/lib/* $libdir
     install_license $dist_name*/LICENSE
 else
-    # aarch64-apple-darwin fix, cf. https://github.com/microsoft/onnxruntime/issues/6573#issuecomment-900877035
+    # Cross-compiling for aarch64-apple-darwin on x86_64 requires setting arch.: https://github.com/microsoft/onnxruntime/blob/v1.10.0/cmake/CMakeLists.txt#L186
     if [[ $target == aarch64-apple-darwin* ]]; then
-        cmake_extra_defines="-DCMAKE_OSX_ARCHITECTURES='arm64'"
+        cmake_extra_args="-DCMAKE_OSX_ARCHITECTURES='arm64'"
     fi
 
     cd onnxruntime
@@ -44,8 +44,7 @@ else
         -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -Donnxruntime_BUILD_SHARED_LIB=ON \
         -Donnxruntime_BUILD_UNIT_TESTS=OFF \
-        -Donnxruntime_CROSS_COMPILING=ON \
-        $cmake_extra_defines
+        $cmake_extra_args
     make -j $nproc
     make install
     install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
