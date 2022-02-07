@@ -3,6 +3,10 @@ using BinaryBuilder
 name = "LibSSH2"
 version = v"1.10.0"
 
+# Note: we explicitly lie about this because we don't have the new
+# versioning APIs worked out in BB yet.
+version = v"1.10.1"
+
 # Collection of sources required to build LibSSH2
 sources = [
       GitSource("https://github.com/libssh2/libssh2.git", "967792c89625440fe86e0e55ce84082eea9e71a6")
@@ -46,7 +50,4 @@ dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"1.10.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
