@@ -44,6 +44,7 @@ else
         -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -Donnxruntime_BUILD_SHARED_LIB=ON \
         -Donnxruntime_BUILD_UNIT_TESTS=OFF \
+        -Donnxruntime_DISABLE_RTTI=OFF \
         $cmake_extra_args
     make -j $nproc
     make install
