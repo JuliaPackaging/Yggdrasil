@@ -20,10 +20,7 @@ install_license COPYING
 ./waf configure --prefix=$prefix
 ./waf
 ./waf install
-
-if [[ ${target} == *mingw* ]]; then
-    mv ${prefix}/lib/serd-0.dll ${bindir}
-fi
+exit
 """
 
 # These are the platforms we will build for by default, unless further
