@@ -46,7 +46,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gperftools_jll", uuid="c8ae51e6-ca1b-5cf7-8aa4-ff5973bfb1e4"))
+    Dependency(PackageSpec(name="gperftools_jll", uuid="c8ae51e6-ca1b-5cf7-8aa4-ff5973bfb1e4");
+               # Copy from platforms where we have `gperftools`
+               platforms=filter(p -> !Sys.iswindows(p) && !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
