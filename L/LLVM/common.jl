@@ -13,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.0" => "2a9cbe99c85e30440c1d61f545eeb4f4e4c7c4cb", # julia-13.0.0-3
+    v"13.0.1" => "0db66fe5cacac592830809d67466558b9d7338dc", # julia-13.0.1-0
 )
 
 const buildscript = raw"""
@@ -152,6 +152,8 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
     # set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
     CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
+    # Aggressively symbol version (added in LLVM 13.0.1)
+    CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
 if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
