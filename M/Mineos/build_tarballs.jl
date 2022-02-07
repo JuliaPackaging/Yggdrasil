@@ -7,8 +7,7 @@ version = v"1.0"
 
 # Collection of sources required to build Mineos
 sources = [
-    "https://github.com/anowacki/mineos.git" =>
-    "e2558b486d7656ef112608a8776643da66dc87cf",
+    GitSource("https://github.com/anowacki/mineos.git", "f8e1c1dc4bf5aa62d5da98648424ad2611ff7cd3")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,5 +39,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
 
