@@ -7,9 +7,11 @@ version = v"3.0.0"
 
 # Collection of sources required to build MPFRBuilder
 sources = [
-    ArchiveSource("http://mpir.org/mpir-$(version).tar.bz2",
+    ArchiveSource("https://mpir.org/mpir-$(version).tar.bz2",
                   "52f63459cf3f9478859de29e00357f004050ead70b45913f2c2269d9708675bb"),
 ]
+
+version = v"3.0.1" # Fake version bump for compat
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -25,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p -> arch(p) != "x86_64" || Sys.isfreebsd(p))
 
 # The products that we will ensure are always built
 products = [
@@ -37,4 +39,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
