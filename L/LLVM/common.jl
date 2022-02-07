@@ -210,10 +210,6 @@ if [[ "${target}" == *apple* ]]; then
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
     CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
 
-    # LLVM actually won't build against 10.8, so we bump ourselves up slightly to 10.9
-    export MACOSX_DEPLOYMENT_TARGET=10.9
-    export LDFLAGS=-mmacosx-version-min=10.9
-
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
 
