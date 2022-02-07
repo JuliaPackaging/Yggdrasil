@@ -8,7 +8,7 @@ version = v"0.1.96"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/google/sentencepiece/archive/refs/tags/v$(version).tar.gz",
-                  "5198f31c3bb25e685e9e68355a3bf67a1db23c9e8bdccc33dc015f496a44df7a")
+                  "5198f31c3bb25e685e9e68355a3bf67a1db23c9e8bdccc33dc015f496a44df7a"),
     DirectorySource("./bundled"),
 ]
 
