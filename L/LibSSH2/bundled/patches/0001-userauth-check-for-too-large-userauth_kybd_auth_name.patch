@@ -13,7 +13,7 @@ Fixes #649
  1 file changed, 5 insertions(+)
 
 diff --git a/src/userauth.c b/src/userauth.c
-index f627d2c..8b6da32 100644
+index 40ef915..caa5635 100644
 --- a/src/userauth.c
 +++ b/src/userauth.c
 @@ -1769,6 +1769,11 @@ userauth_keyboard_interactive(LIBSSH2_SESSION * session,
@@ -28,6 +28,3 @@ index f627d2c..8b6da32 100644
                  s += 4;
              }
              else {
--- 
-2.35.1
-
