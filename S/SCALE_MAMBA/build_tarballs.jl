@@ -46,9 +46,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenSSL_jll",
-    "MPIR_jll",
-    "cryptopp_jll",
+    Dependency("OpenSSL_jll"),
+    Dependency("MPIR_jll"),
+    Dependency("cryptopp_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
