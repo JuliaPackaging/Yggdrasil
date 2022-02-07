@@ -27,8 +27,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
              -DBLAS_LIBRARIES="-lopenblas" \
              -DLAPACK_LIBRARIES="-lopenblas" \
              -DBUILD_SHARED_LIBS=ON \
-             -DSCALAPACK_BUILD_TESTS=OFF \
-             -DMPIEXEC="${bindir}/mpirun")
+             -DSCALAPACK_BUILD_TESTS=OFF)
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
@@ -50,6 +49,13 @@ make -j${nproc} all
 make install
 
 mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
+
+# If there were links that are now broken, fix 'em up
+for l in $(find ${prefix}/lib -xtype l); do
+  if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
+    ln -vsf ${name} ${l}
+  fi
+done
 
 PATCHELF_FLAGS=()
 
