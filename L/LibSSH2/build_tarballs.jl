@@ -51,4 +51,4 @@ dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
