@@ -13,8 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
+autoupdate
 autoreconf --install
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
 """
