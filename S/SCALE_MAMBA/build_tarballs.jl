@@ -13,6 +13,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/SCALE-MAMBA/
 
+
 cat > CONFIG.mine <<EOF
 ROOT = $(pwd)
 OSSL = ${prefix}
