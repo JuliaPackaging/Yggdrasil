@@ -16,7 +16,7 @@ cd ${WORKSPACE}/srcdir/mineos
 autoupdate
 autoreconf --install
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -o doc/mineos.pdf
 make install
 """
 
