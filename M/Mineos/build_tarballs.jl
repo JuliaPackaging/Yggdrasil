@@ -16,7 +16,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
 
 # Drop docs build target
-atomic_patch -p1 ./patches/drop_docs.patch
+atomic_patch -p1 ../patches/drop_docs.diff
 
 autoupdate
 autoreconf --install
