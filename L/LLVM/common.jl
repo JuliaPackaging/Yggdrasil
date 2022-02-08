@@ -213,15 +213,10 @@ if [[ "${target}" == *apple* ]]; then
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
 
+    # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
+    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
-        # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and
-        # instead prefers `arm64-apple-darwin`.  If this issue persists, we may have to
-        # change our triplet printing.
         CMAKE_TARGET=arm64-${target#*-}
-        # On this platform we use SDK 11.0, but some tools assume the macOS version is 10.x,
-        # this compatibility layers presents 11.0 as a fake 10.16 version.  Very official
-        # reference: https://twitter.com/jeremyhu/status/1285230460402987008
-        export SYSTEM_VERSION_COMPAT=1
     fi
 
     if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
