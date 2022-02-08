@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.1.1"
+version = v"1.2.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "31608db682ed3e0fddcdbc5bc899e03fec38c324",
+        "500cdf47a6330252db4156148f90d99cc8d22cf7",
     ),
     DirectorySource("./bundled"),
 ]
@@ -49,7 +49,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
-platforms = filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -72,6 +71,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"4.9",
+    preferred_gcc_version = v"6",
     julia_compat = "1.6",
 )
