@@ -3,14 +3,11 @@
 using BinaryBuilder
 
 name = "Mineos"
-# Note, this project has not been updated since Nov 2014,
-# we take the last commit and call it 1.0.2
-# Last officially released version is 1.0.1
 version = v"1.0.2" 
 
 # Collection of sources required to build Mineos
 sources = [
-    GitSource("https://github.com/geodynamics/mineos.git", "3f33ba4400dd8c03dc5db1aec32dcc5eb85d5f80")
+    GitSource("https://github.com/geodynamics/mineos.git", "3dd7c7433766d630b929d8254d03e705808ff8a3")
 ]
 
 # Bash recipe for building across all platforms
