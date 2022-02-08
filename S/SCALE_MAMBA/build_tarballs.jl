@@ -5,7 +5,8 @@ version = v"1.14"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git", "6449e807c99c68203f6584166a7130055da52adb"),
+    GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git",
+              "6449e807c99c68203f6584166a7130055da52adb"),
 ]
 
 # Bash recipe for building across all platforms
