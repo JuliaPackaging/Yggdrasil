@@ -3,18 +3,20 @@
 using BinaryBuilder
 
 name = "Mineos"
-version = v"1.0"
+version = v"1.0.2"
 
 # Collection of sources required to build Mineos
 sources = [
-    GitSource("https://github.com/anowacki/mineos.git", "f8e1c1dc4bf5aa62d5da98648424ad2611ff7cd3")
+    GitSource("https://github.com/geodynamics/mineos.git", "3f33ba4400dd8c03dc5db1aec32dcc5eb85d5f80")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
-./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
+
+autoupdate
+autoreconf --install
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
 """
