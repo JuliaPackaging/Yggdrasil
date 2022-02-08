@@ -3,7 +3,10 @@
 using BinaryBuilder
 
 name = "Mineos"
-version = v"1.0.2"
+# Note, this project has not been updated since Nov 2014,
+# we take the last commit and call it 1.0.2
+# Last officially released version is 1.0.1
+version = v"1.0.2" 
 
 # Collection of sources required to build Mineos
 sources = [
