@@ -24,6 +24,13 @@ autoreconf --install
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     export CFLAGS="-Wno-return-type"
 fi
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # Fix issue due to GCC 10+.
+    #     Error: Rank mismatch between actual argument at (1) and actual argument at (2) (scalar and rank-1)
+    export FFLAGS="-fallow-argument-mismatch"
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 
