@@ -15,8 +15,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
 autoupdate
 autoreconf --install
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -o doc/mineos.pdf
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
+make
 make install
 """
 
