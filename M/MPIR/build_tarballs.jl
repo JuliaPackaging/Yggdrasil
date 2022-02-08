@@ -33,8 +33,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    Dependency("YASM_jll"),
+dependencies = [
+    HostBuildDependency("YASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
