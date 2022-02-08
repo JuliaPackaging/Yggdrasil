@@ -22,10 +22,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DENABLE_SANITIZER=FALSE -DBUILD_UNITTESTS=FALSE ..
 make -j${nproc}
 make install
-
-# if [[ "${target}" == *-mingw32 ]]; then
-#     cp src/libduckdb.${dlext} ${libdir}/.
-# fi
 """
 
 # These are the platforms we will build for by default, unless further
