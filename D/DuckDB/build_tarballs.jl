@@ -8,17 +8,13 @@ version = v"0.3.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/duckdb/duckdb.git", "88aa81c6b1b851c538145e6431ea766a6e0ef435"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb*/
 
-atomic_patch -p1 ../patches/0001-right-case-for-winsock2.h.patch
-
-mkdir build
-cd build
+mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_PARQUET_EXTENSION=TRUE \
@@ -27,9 +23,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 make -j${nproc}
 make install
 
-if [[ "${target}" == *-mingw32 ]]; then
-    cp src/libduckdb.${dlext} ${libdir}/.
-fi
+# if [[ "${target}" == *-mingw32 ]]; then
+#     cp src/libduckdb.${dlext} ${libdir}/.
+# fi
 """
 
 # These are the platforms we will build for by default, unless further
