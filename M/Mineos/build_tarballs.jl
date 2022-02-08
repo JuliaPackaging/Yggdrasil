@@ -7,12 +7,16 @@ version = v"1.0.2"
 
 # Collection of sources required to build Mineos
 sources = [
-    GitSource("https://github.com/geodynamics/mineos.git", "3dd7c7433766d630b929d8254d03e705808ff8a3")
+    GitSource("https://github.com/geodynamics/mineos.git", "3dd7c7433766d630b929d8254d03e705808ff8a3"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
+
+# Drop docs build target
+atomic_patch -p1 ./patches/drop_docs.patch
 
 autoupdate
 autoreconf --install

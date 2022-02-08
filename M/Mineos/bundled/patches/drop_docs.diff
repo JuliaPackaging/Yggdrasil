@@ -1,0 +1,18 @@
+diff --git a/Makefile.am b/Makefile.am
+index 3bab87e..e5ade1e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -24,13 +24,6 @@ bin_PROGRAMS = minos_bran syndat green eigcon \
+ 
+ dist_bin_SCRIPTS = scripts/creat_origin
+ 
+-# demo
+-
+-dist_pkgdata_DATA = \
+-	doc/mineos.pdf \
+-	DEMO/DEMO.tar.gz \
+-	DEMO/README
+-
+ # main programs
+ 
+ minos_bran_SOURCES = minos_bran.f
