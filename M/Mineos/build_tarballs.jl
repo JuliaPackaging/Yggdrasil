@@ -21,7 +21,14 @@ atomic_patch -p1 ../patches/drop_docs.diff
 autoupdate
 autoreconf --install
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+
+# Fix clang error 'error: non-void function * should return a value [-Wreturn-type]'
+if [[ "${target}" != *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    make CFLAGS="-Wno-return-type $cflags"
+else
+    make
+fi
+
 make install
 """
 
