@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/duckdb*/
 
 mkdir build && cd build
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_PARQUET_EXTENSION=TRUE \
