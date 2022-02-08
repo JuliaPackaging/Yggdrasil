@@ -85,7 +85,9 @@ cd ..
 cp include/* ${prefix}/include
 """
 
-platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
+# OpenMPI and MPICH are not precompiled for Windows
+# MUMPS doesn't build on PowerPC
+platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
