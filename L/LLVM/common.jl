@@ -1,7 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-
-include("../../fancy_toys.jl")
+using BinaryBuilderBase: get_addable_spec
 
 # Everybody is just going to use the same set of platforms
 
@@ -353,6 +352,9 @@ rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
+
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -395,7 +397,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
-        push!(products, ExecutableProduct("lld", :lld, "bin"))
+        push!(products, ExecutableProduct("lld", :lld, "tools"))
+        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+        push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
+        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
     end
 
     name = "LLVM_full"
@@ -459,7 +466,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
         if version >= v"12"
-            push!(products, ExecutableProduct("lld", :lld, "bin"))
+            push!(products, ExecutableProduct("lld", :lld, "tools"))
+            push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
+            push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+            push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
