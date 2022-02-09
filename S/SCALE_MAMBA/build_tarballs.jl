@@ -30,6 +30,8 @@ EOF
 
 if [[ ${target} == *linux* ]]; then
     echo "LDFLAGS = -lrt" >> CONFIG.mine
+elif [[ ${target} == *apple* ]]; then
+    export CFLAGS="-D_POSIX_C_SOURCE=200112L"
 fi
 
 # Build executables
