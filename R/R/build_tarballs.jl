@@ -15,7 +15,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/R-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-x=no r_cv_header_zlib_h=yes
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-x=no \
+    r_cv_header_zlib_h=yes \
+    r_cv_have_bzlib=yes \
+    r_cv_have_lzma=yes \
+    r_cv_have_pcre2utf=yes \
+    r_cv_have_curl728=yes \
+    r_cv_have_curl_https=yes
 
 make -j${nproc}
 make install
@@ -32,8 +41,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency("Readline_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("XZ_jll"),
+    Dependency("PCRE2_jll"),
+    Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
