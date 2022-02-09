@@ -22,7 +22,7 @@ fi
 # Fix issue due to GCC 10+. Only necessary on aarch64-apple as others use earlier GCC
 #     Error: Rank mismatch between actual argument at (1) and actual argument at (2) (scalar and rank-1)
 if [[ "${target}" == aarch64-apple-* ]]; then
-    export FFLAGS="-fallow-argument-mismatch"
+    export FFLAGS="-std=legacy"
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
