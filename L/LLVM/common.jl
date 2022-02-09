@@ -13,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.0" => "2a9cbe99c85e30440c1d61f545eeb4f4e4c7c4cb", # julia-13.0.0-3
+    v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
 )
 
 const buildscript = raw"""
@@ -152,6 +152,8 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
     # set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
     CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
+    # Aggressively symbol version (added in LLVM 13.0.1)
+    CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
 if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
@@ -207,10 +209,6 @@ if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
     CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
-
-    # LLVM actually won't build against 10.8, so we bump ourselves up slightly to 10.9
-    export MACOSX_DEPLOYMENT_TARGET=10.9
-    export LDFLAGS=-mmacosx-version-min=10.9
 
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
