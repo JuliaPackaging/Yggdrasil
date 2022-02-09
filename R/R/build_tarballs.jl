@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/R-*
-
+export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
