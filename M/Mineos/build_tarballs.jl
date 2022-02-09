@@ -3,23 +3,17 @@
 using BinaryBuilder
 
 name = "Mineos"
-version = v"1.0.2" 
+version = v"1.0.1" # Artificial version number for bumping Julia compat (and expanding platforms)
 
 # Collection of sources required to build Mineos
 sources = [
-    GitSource("https://github.com/geodynamics/mineos.git", "3dd7c7433766d630b929d8254d03e705808ff8a3"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/anowacki/mineos.git", "e2558b486d7656ef112608a8776643da66dc87cf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
 
-# Drop docs build target
-atomic_patch -p1 ../patches/drop_docs.diff
-
-autoupdate
-autoreconf --install
 # Fix clang error 'error: non-void function * should return a value [-Wreturn-type]'
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     export CFLAGS="-Wno-return-type"
@@ -31,7 +25,7 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     export FFLAGS="-fallow-argument-mismatch"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
 make
 
 make install
