@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/R-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-x=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-x=no r_cv_header_zlib_h=yes
 
 make -j${nproc}
 make install
