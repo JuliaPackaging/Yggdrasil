@@ -7,11 +7,15 @@ version = v"1.14"
 sources = [
     GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git",
               "6449e807c99c68203f6584166a7130055da52adb"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/SCALE-MAMBA/
+
+# Resolve error: 'BinaryBuilder: Cannot force an architecture via -march'
+atomic_patch -p1 ../patches/drop-march.patch
 
 cat > CONFIG.mine <<EOF
 ROOT = $(pwd)

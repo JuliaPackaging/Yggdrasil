@@ -1,0 +1,64 @@
+diff --git a/Circuits/Makefile b/Circuits/Makefile
+index a69f9c3..488a5e6 100644
+--- a/Circuits/Makefile
++++ b/Circuits/Makefile
+@@ -2,7 +2,7 @@ include ../CONFIG.mine
+ 
+ CC = g++
+ 
+-CFLAGS = -Wall -std=c++11 -pedantic -Wextra -pthread -I$(ROOT)/src -maes -mpclmul -msse4.1 -march=core2 $(FLAGS) $(OPT)
++CFLAGS = -Wall -std=c++11 -pedantic -Wextra -pthread -I$(ROOT)/src -maes -mpclmul -msse4.1 $(FLAGS) $(OPT)
+ CPPFLAGS = $(CFLAGS) 
+ LDLIBS = -L/$(OSSL)/lib -lm -lssl -lcrypto -lmpirxx -lmpir -lcryptopp $(LDFLAGS)
+ 
+diff --git a/KeyGen/Makefile b/KeyGen/Makefile
+index 14cd598..6a100e3 100644
+--- a/KeyGen/Makefile
++++ b/KeyGen/Makefile
+@@ -2,7 +2,7 @@ include ../CONFIG.mine
+ 
+ CC = g++
+ 
+-CFLAGS = -Wall -std=c++14 -pedantic -Wextra -g -pthread -I$(ROOT)/src -maes -mpclmul -msse4.1 -mavx -march=core2 $(FLAGS) $(OPT) -I$(OSSL)/include 
++CFLAGS = -Wall -std=c++14 -pedantic -Wextra -g -pthread -I$(ROOT)/src -maes -mpclmul -msse4.1 -mavx $(FLAGS) $(OPT) -I$(OSSL)/include 
+ CPPFLAGS = $(CFLAGS) 
+ LDLIBS = -L/$(OSSL)/lib -lm -lssl -lcrypto -lmpirxx -lmpir -lcryptopp $(LDFLAGS)
+ 
+diff --git a/Test/Makefile b/Test/Makefile
+index c2f2594..dcbcb8c 100644
+--- a/Test/Makefile
++++ b/Test/Makefile
+@@ -3,7 +3,7 @@ include ../CONFIG.mine
+ 
+ CC = g++
+ 
+-ARCH = -mtune=native -maes -mpclmul -msse4.1 -mavx -mbmi2 -madx -march=core2
++ARCH = -mtune=native -maes -mpclmul -msse4.1 -mavx -mbmi2 -madx
+ CFLAGS = -Wall -std=c++14 -pedantic -Wextra  -pthread -I$(ROOT)/src $(ARCH) $(FLAGS) $(OPT)
+ CPPFLAGS = $(CFLAGS) 
+ LDLIBS = -L/$(OSSL)/lib -lm -lssl -lcrypto -lmpirxx -lmpir -lcryptopp $(LDFLAGS)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 2ba2340..06a747b 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -20,7 +20,6 @@ add_compile_options(
+         -mpclmul
+         -msse4.1
+         -mavx
+-        -march=core2
+ )
+ 
+ find_package(MPIR REQUIRED)
+diff --git a/src/Makefile b/src/Makefile
+index b380381..33d2bce 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -2,7 +2,7 @@ include ../CONFIG.mine
+ 
+ CC = g++
+ 
+-ARCH = -mtune=native -maes -mpclmul -msse4.1 -mavx -mbmi2 -madx -march=core2
++ARCH = -mtune=native -maes -mpclmul -msse4.1 -mavx -mbmi2 -madx
+ CFLAGS = -Wall -std=c++14 -pedantic -Wextra -pthread -I$(ROOT)/src $(ARCH) $(FLAGS) $(OPT) -I$(OSSL)/include
+ CPPFLAGS = $(CFLAGS)
+ LDLIBS = -L/$(OSSL)/lib -lm -lssl -lcrypto -lmpirxx -lmpir -lcryptopp $(LDFLAGS)
