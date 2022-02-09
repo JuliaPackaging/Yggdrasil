@@ -32,8 +32,8 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
-if [[ "${target}" == *apple* ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=12)
+if [[ "${target}" == x86_64-apple* ]]; then
+  CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
 fi
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
