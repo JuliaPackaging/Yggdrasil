@@ -6,11 +6,11 @@ include("../../fancy_toys.jl")
 name = "Enzyme"
 repo = "https://github.com/wsmoses/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.26"
+auto_version = "refs/tags/v0.0.27"
 version = VersionNumber(split(auto_version, "/")[end])
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "dd3587e54a7f77acf01fbff2aa9e18368e135980")]
+sources = [GitSource(repo, "44f8ca43431acc57797e82806bc6483c27cbaf95")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -19,6 +19,7 @@ cd Enzyme
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
+CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
