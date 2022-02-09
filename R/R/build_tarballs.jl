@@ -24,7 +24,8 @@ cd $WORKSPACE/srcdir/R-*
     r_cv_have_lzma=yes \
     r_cv_have_pcre2utf=yes \
     r_cv_have_curl728=yes \
-    r_cv_have_curl_https=yes
+    r_cv_have_curl_https=yes \
+    r_cv_size_max=yes
 
 make -j${nproc}
 make install
