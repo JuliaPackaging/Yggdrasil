@@ -31,6 +31,7 @@ EOF
 if [[ ${target} == *linux* ]]; then
     echo "LDFLAGS = -lrt" >> CONFIG.mine
 elif [[ ${target} == *apple* ]]; then
+    # Resolve: error: redefinition of 'time_s' with a different type: 'struct timeval' vs 'struct timespec'
     export CFLAGS="-D_POSIX_C_SOURCE=200112L"
 fi
 
