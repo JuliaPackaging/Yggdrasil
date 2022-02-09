@@ -32,7 +32,7 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 if [[ "${target}" == *apple* ]]; then
-  CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-mmacosx-version-min=10.12)
+  CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
 fi 
 
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
