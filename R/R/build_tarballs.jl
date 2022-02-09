@@ -19,6 +19,7 @@ export CPPFLAGS="-I${includedir}"
     --build=${MACHTYPE} \
     --host=${target} \
     --with-x=no \
+    --enable-R-shlib=yes \
     r_cv_header_zlib_h=yes \
     r_cv_have_bzlib=yes \
     r_cv_have_lzma=yes \
@@ -37,7 +38,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libR", :libR),
+    LibraryProduct("libR", :libR, "lib/R/lib"),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -48,6 +49,7 @@ dependencies = [
     Dependency("XZ_jll"),
     Dependency("PCRE2_jll"),
     Dependency("LibCURL_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
