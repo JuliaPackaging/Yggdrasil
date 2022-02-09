@@ -52,7 +52,6 @@ function configure(julia_version, llvm_version)
         LibraryProduct(["libEnzyme-$(llvm_version.major)", "libEnzyme"], :libEnzyme),
     ]
 
-
     dependencies = [
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
     #    Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")) is given through julia_version tag
