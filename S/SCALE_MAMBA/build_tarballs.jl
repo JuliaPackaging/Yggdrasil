@@ -24,7 +24,7 @@ OSSL = ${prefix}
 # Take default values from typical CONFIG
 MAX_MOD = 7
 MAX_GFP = 3
-FLAGS = -DMAX_MOD_SZ=\$(MAX_MOD) -DMAX_GFP_SZ=$(MAX_GFP)
+FLAGS = -DMAX_MOD_SZ=\$(MAX_MOD) -DMAX_GFP_SZ=\$(MAX_GFP)
 OPT = -O3
 EOF
 
