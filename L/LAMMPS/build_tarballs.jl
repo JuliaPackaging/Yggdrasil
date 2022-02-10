@@ -51,7 +51,7 @@ platforms = expand_gfortran_versions(platforms)
 # could in principle build without Fortran support there.)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 # Compiler failure
-platforms = filter(p -> p != Platform("aarch64", "linux"; libc="gnu", ibgfortran_version=v"4") , platforms)
+platforms = filter(p -> p != Platform("aarch64", "linux"; libc="gnu", libgfortran_version=v"4") , platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
