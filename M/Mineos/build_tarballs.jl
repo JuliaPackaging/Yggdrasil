@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Mineos"
-version = v"1.0.1" # Artificial version number for bumping Julia compat (and expanding platforms)
+version = v"1.0.1" # Artificial version number for bumping Julia compat (and expanding platforms) 
 
 # Collection of sources required to build Mineos
 sources = [
