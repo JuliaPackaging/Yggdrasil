@@ -22,6 +22,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
 	-DPKG_SNAP=ON \
+	-DPKG_ML-PACE=ON \
     -DPKG_DPD-BASIC=OFF \
 	-DPKG_DPD-MESO=OFF \
 	-DPKG_DPD-REACT=OFF \
