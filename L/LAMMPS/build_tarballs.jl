@@ -65,7 +65,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
     Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"))
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
