@@ -21,14 +21,15 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
-	-DPKG_SNAP=ON \
+    -DPKG_SNAP=ON \
+    -DPKG_ML-PACE=ON \
     -DPKG_DPD-BASIC=OFF \
-	-DPKG_DPD-MESO=OFF \
-	-DPKG_DPD-REACT=OFF \
-        -DPKG_USER-MESODPD=OFF \
-        -DPKG_USER-DPD=OFF \
-        -DPKG_USER-SDPD=OFF \
-	-DPKG_DPD-SMOOTH=OFF 
+    -DPKG_DPD-MESO=OFF \
+    -DPKG_DPD-REACT=OFF \
+    -DPKG_USER-MESODPD=OFF \
+    -DPKG_USER-DPD=OFF \
+    -DPKG_USER-SDPD=OFF \
+    -DPKG_DPD-SMOOTH=OFF
 	
 make -j${nproc}
 make install
@@ -49,6 +50,8 @@ platforms = expand_gfortran_versions(platforms)
 # libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
 # could in principle build without Fortran support there.)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+# Compiler failure
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) =="glibc" && libgfortran_version(p) == v"4") , platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -61,8 +64,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"))
+    Dependency(PackageSpec(name="MPItrampoline_jll"); compat="2", platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
