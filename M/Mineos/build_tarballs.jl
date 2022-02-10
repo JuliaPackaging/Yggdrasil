@@ -3,19 +3,31 @@
 using BinaryBuilder
 
 name = "Mineos"
-version = v"1.0"
+version = v"1.0.1" # Artificial version number for bumping Julia compat (and expanding platforms)
 
 # Collection of sources required to build Mineos
 sources = [
-    "https://github.com/anowacki/mineos.git" =>
-    "e2558b486d7656ef112608a8776643da66dc87cf",
+    GitSource("https://github.com/anowacki/mineos.git", "e2558b486d7656ef112608a8776643da66dc87cf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mineos
+
+# Fix clang error 'error: non-void function * should return a value [-Wreturn-type]'
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    export CFLAGS="-Wno-return-type"
+fi
+
+# Fix issue due to GCC 10+. Only necessary on aarch64-apple as others use earlier GCC
+#     Error: Rank mismatch between actual argument at (1) and actual argument at (2) (scalar and rank-1)
+if [[ "${target}" == aarch64-apple-* ]]; then
+    export FFLAGS="-std=legacy"
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-doc
 make
+
 make install
 """
 
@@ -40,5 +52,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
 
