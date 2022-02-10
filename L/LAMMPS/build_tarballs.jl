@@ -64,7 +64,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-    Dependency(PackageSpec(name="MPItrampoline_jll"), compat="2"),
+    Dependency(PackageSpec(name="MPItrampoline_jll"); compat="2", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
