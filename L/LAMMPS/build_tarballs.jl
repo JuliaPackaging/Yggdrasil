@@ -21,15 +21,15 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
-	-DPKG_SNAP=ON \
-	-DPKG_ML-PACE=ON \
+    -DPKG_SNAP=ON \
+    -DPKG_ML-PACE=ON \
     -DPKG_DPD-BASIC=OFF \
-	-DPKG_DPD-MESO=OFF \
-	-DPKG_DPD-REACT=OFF \
-        -DPKG_USER-MESODPD=OFF \
-        -DPKG_USER-DPD=OFF \
-        -DPKG_USER-SDPD=OFF \
-	-DPKG_DPD-SMOOTH=OFF 
+    -DPKG_DPD-MESO=OFF \
+    -DPKG_DPD-REACT=OFF \
+    -DPKG_USER-MESODPD=OFF \
+    -DPKG_USER-DPD=OFF \
+    -DPKG_USER-SDPD=OFF \
+    -DPKG_DPD-SMOOTH=OFF
 	
 make -j${nproc}
 make install
@@ -50,6 +50,8 @@ platforms = expand_gfortran_versions(platforms)
 # libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
 # could in principle build without Fortran support there.)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+# Compiler failure
+platforms = filter(p -> p != Platform("aarch64", "linux"; libc="gnu", ibgfortran_version=v"4") , platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
