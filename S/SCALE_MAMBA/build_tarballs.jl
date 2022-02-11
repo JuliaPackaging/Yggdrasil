@@ -45,7 +45,7 @@ cp Setup.x${exe} ${prefix}/bin/
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
-platforms = supported_platforms(; exclude=p -> arch(p) != "x86_64" || Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl")
+platforms = [Platform("x86_64", "linux"), Platform("x86_64", "macos")]
 
 # The products that we will ensure are always built
 products = [
