@@ -47,7 +47,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("polymake_run_script", :polymake_run_script),
     LibraryProduct("libpolymake_julia", :libpolymake_julia),
     FileProduct("share/libpolymake_julia/type_translator.jl",:type_translator),
     FileProduct("share/libpolymake_julia/appsjson",:appsjson),
