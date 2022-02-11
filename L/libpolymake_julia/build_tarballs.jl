@@ -3,16 +3,21 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# copied from libsingular_julia:
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libpolymake_julia"
-version = v"0.7.1"
+version = v"0.8.0"
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "1946fdb4fdeca89a82359e41cd7374dbf4bca44ae29b9951794e9978bb799b21"),
+                  "da459c1fc819a446cfa683cc8e6e890a54194b7a943ac8d62c4c71061512dbee"),
 ]
 
 # Bash recipe for building across all platforms
