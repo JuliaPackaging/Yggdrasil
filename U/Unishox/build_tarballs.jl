@@ -8,7 +8,7 @@ sources = [
 
 
 script = raw"""
-cd $WORKSPACE/srcdir/Unishox-1.0.2
+cd $WORKSPACE/srcdir/Unishox*
 mkdir -p "${libdir}"
 cc -o ${libdir}/libunishox.${dlext} unishox2.c -shared -std=gnu11 -fPIC -Werror -Wall -Wcast-align -Wpointer-arith -Wformat-security -Wmissing-format-attribute -W -Wno-error=format-nonliteral 
 
