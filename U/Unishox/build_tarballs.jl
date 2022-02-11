@@ -11,17 +11,16 @@ script = raw"""
 cd $WORKSPACE/srcdir/Unishox*
 mkdir -p "${libdir}"
 cc -o ${libdir}/libunishox.${dlext} unishox2.c -shared -std=gnu11 -fPIC -Werror -Wall -Wcast-align -Wpointer-arith -Wformat-security -Wmissing-format-attribute -W -Wno-error=format-nonliteral 
-
 """
 
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libunishox", :libunishox),
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
