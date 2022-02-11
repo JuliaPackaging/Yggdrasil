@@ -5,14 +5,14 @@ using Base.BinaryPlatforms
 
 
 name = "libpolymake_julia"
-version = v"0.7.0"
+version = v"0.7.1"
 
 julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "ac13f05beb59e688d485a96759666d9d2a0bd026f6dfacdfd7d4e3e88abc4202"),
+                  "1946fdb4fdeca89a82359e41cd7374dbf4bca44ae29b9951794e9978bb799b21"),
 ]
 
 # Bash recipe for building across all platforms
