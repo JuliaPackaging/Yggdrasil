@@ -3,11 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "LAMMPS"
-version = v"1.0.1" # Equivalent to 2020-10-29
+version = v"2.2.0" # Equivalent to 29Sep2021_update2
+
+# Version table
+# 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
+# 2.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021
+# 2.2.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021_update2
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "88fd96ec52f86dba4b222623f3a06632a32e42f1")
+    GitSource("https://github.com/lammps/lammps.git", "7586adbb6a61254125992709ef2fda9134cfca6c")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +26,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
-    -DPKG_SNAP=ON \
+    -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
     -DPKG_DPD-BASIC=OFF \
     -DPKG_DPD-MESO=OFF \
