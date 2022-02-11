@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "Unishox"
 version = v"1.0.2"
 sources = [
-    ArchiveSource("https://github.com/siara-cc/Unishox2/archive/refs/tags/1.0.2.tar.gz", "24391d16d4f84f239bb97eb704d80231221a9a58743a87ae1ca7eed27cf7e9bb"),
+    ArchiveSource("https://github.com/siara-cc/Unishox2/archive/refs/tags/$(version).tar.gz", "24391d16d4f84f239bb97eb704d80231221a9a58743a87ae1ca7eed27cf7e9bb"),
 ]
 
 
