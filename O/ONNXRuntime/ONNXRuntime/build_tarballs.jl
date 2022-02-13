@@ -8,8 +8,8 @@ version = v"1.10.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/onnxruntime.git", "0d9030e79888d1d5828730b254fedc53c7b640c1"),
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "a0c6db3cff65bd282f6ba4a57789e619c27e55203321aa08c023019fe9da50d7"),
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x86-$version.zip", "fd1680fa7248ec334efc2564086e9c5e0d6db78337b55ec32e7b666164bdb88c")
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "a0c6db3cff65bd282f6ba4a57789e619c27e55203321aa08c023019fe9da50d7"; unpack_target="onnxruntime-x86_64-w64-mingw32"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x86-$version.zip", "fd1680fa7248ec334efc2564086e9c5e0d6db78337b55ec32e7b666164bdb88c"; unpack_target="onnxruntime-i686-w64-mingw32")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,16 +17,11 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 if [[ $target == *-w64-mingw32* ]]; then
-    if [[ $target == x86_64-w64-mingw32* ]]; then
-        dist_name=onnxruntime-win-x64
-    elif [[ $target == i686-w64-mingw32* ]]; then
-        dist_name=onnxruntime-win-x86
-    fi
-    chmod 755 $dist_name*/lib/*
+    chmod 755 onnxruntime-$target/onnxruntime-*/lib/*
     mkdir -p $includedir $libdir
-    cp -av $dist_name*/include/* $includedir
-    cp -av $dist_name*/lib/* $libdir
-    install_license $dist_name*/LICENSE
+    cp -av onnxruntime-$target/onnxruntime-*/include/* $includedir
+    cp -av onnxruntime-$target/onnxruntime-*/lib/* $libdir
+    install_license onnxruntime-$target/onnxruntime-*/LICENSE
 else
     # Cross-compiling for aarch64-apple-darwin on x86_64 requires setting arch.: https://github.com/microsoft/onnxruntime/blob/v1.10.0/cmake/CMakeLists.txt#L186
     if [[ $target == aarch64-apple-darwin* ]]; then
