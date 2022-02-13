@@ -7,7 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kul-optec/QPALM.git","f768d45e3911402513faa424bca72124dd4002d1"),
+    GitSource("https://github.com/kul-optec/QPALM.git","9bd94ef60ca5d82cd8d5f05ac7efd5a449e501c0"),
     GitSource("https://github.com/kul-optec/LADEL.git", "70ad69a621756e72b164dee302a826f9cc111c55"),
 ]
 
@@ -46,4 +46,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
