@@ -18,7 +18,6 @@ sources_windows = [
                "b538271c4d9ffce1a8520bf992d9bd23854f0f29cee67f48c6139e4cf301e253", "installer.exe")
 ]
 
-version_linux_aarch64 = v"10.2.460"
 sources_linux_aarch64 = [
     # Expected install order for cuda-toolkit-10-2 (provided build-essential was installed prior) - i.e. output from apt-get -s install --no-install-recommends cuda-toolkit-10-2
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-cudart/cuda-cudart-10-2_10.2.300-1_arm64.deb", "e3cd683965f7b2e4a13b27c58754443185dcc545d0f989e52c224840cfde48d1"),
@@ -170,7 +169,7 @@ if should_build_platform("x86_64-w64-mingw32")
 end
 
 if should_build_platform("aarch64-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version_linux_aarch64, sources_linux_aarch64, script,
+    build_tarballs(non_reg_ARGS, name, version, sources_linux_aarch64, script,
                    [Platform("aarch64", "linux")], products, dependencies;
                    skip_audit=true)
 end
