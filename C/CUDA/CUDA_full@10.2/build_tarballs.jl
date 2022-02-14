@@ -53,7 +53,7 @@ sources_linux_aarch64 = [
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-npp-dev-10-2_10.2.89-1_arm64.deb", "4d572a2472564f5008c3cfe9b24dbef765a1531a73c43436c66a146b4d16cace"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-nvgraph-10-2_10.2.89-1_arm64.deb", "f800974ac6cb3fb6595a08e613fc0f376d7b91f43eed1b5306b0496f9588e441"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-nvgraph-dev-10-2_10.2.89-1_arm64.deb", "cc2d9897c54f27a20f90bea5df391875b3f8163ec69745fb7546c1ce57e1d718"),
-    FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-samples/cuda-samples-10-2_10.2.89-1_arm64.deb", "121e273d8586bde904ceeab72a603a86d781f3bac6d3a21732703ca2ca9ec528"),
+    # FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda-samples/cuda-samples-10-2_10.2.89-1_arm64.deb", "121e273d8586bde904ceeab72a603a86d781f3bac6d3a21732703ca2ca9ec528"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-documentation-10-2_10.2.89-1_arm64.deb", "746f675b08f29cdf7d9fe39edb325a960ae29106da805369b8dc509e72ec2329"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-libraries-10-2_10.2.89-1_arm64.deb", "71309637bbc86b3d7f014c5ba5da709b88f69dfc0710aa8caa661b3aa40a51b4"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-libraries-dev-10-2_10.2.89-1_arm64.deb", "9d3e1e4cf097f6e04c7f881b4af1a54c52552fb2828f73f7ae8fa5b9efe32d29"),
