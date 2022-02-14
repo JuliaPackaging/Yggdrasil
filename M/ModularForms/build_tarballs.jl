@@ -13,14 +13,18 @@ cd $WORKSPACE/srcdir/ModularForms_jll_src
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE
 fi
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix CC=gcc ${extraflags}
-make -j${nproc} verbose
+./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix ${extraflags}
+make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [p for p in supported_platforms()
+             if contains(triplet(p), "linux")
+             || contains(triplet(p), "apple")
+             || contains(triplet(p), "freebsd")
+            ]
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +39,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="^1.6", preferred_gcc_version=v"11")
+               julia_compat="^1.6", preferred_gcc_version=v"9")
