@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.8.0"
+version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6"),
+    GitSource("https://github.com/flame/blis.git", "8535b3e11d2297854991c4272932ce4974dda629"),
     DirectorySource("./bundled")
 ]
 
