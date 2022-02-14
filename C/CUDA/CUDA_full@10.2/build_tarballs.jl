@@ -133,10 +133,11 @@ elif [[ ${target} == aarch64-linux-gnu ]]; then
     find $temp
     mv $temp/usr/local/cuda-10.2/* ${prefix}/cuda
 
-    mv -nv $temp/usr/include/* ${prefix}/cuda/targets/aarch64-linux/include
-    mv -nv $temp/usr/lib/$target/* ${prefix}/cuda/targets/aarch64-linux/lib
+    rsync -aOv --remove-source-files $temp/usr/include/ ${prefix}/cuda/targets/aarch64-linux/include/
+    rsync -aOv --remove-source-files $temp/usr/lib/$target/ ${prefix}/cuda/targets/aarch64-linux/lib/
 
     mv ${prefix}/cuda/doc/EULA.txt ${prefix}/cuda
+    rmdir ${prefix}/cuda/doc
 fi
 
 cd ${prefix}/cuda
