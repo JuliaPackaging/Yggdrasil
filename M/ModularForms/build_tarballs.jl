@@ -13,7 +13,7 @@ cd $WORKSPACE/srcdir/ModularForms_jll_src
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE
 fi
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix ${extraflags}
+./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix --with-arb=$prefix
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
 """
