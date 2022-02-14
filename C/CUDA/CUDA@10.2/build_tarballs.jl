@@ -23,7 +23,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -124,6 +124,12 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+platforms = [
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "windows")
+]
+
 products = [
     LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
@@ -157,4 +163,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Platform("x86_64", "linux"), Platform("x86_64", "windows")], products, dependencies)
+               platforms, products, dependencies)

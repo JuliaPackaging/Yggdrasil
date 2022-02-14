@@ -18,7 +18,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -120,5 +120,8 @@ products = [
     ExecutableProduct("nvlink", :nvlink),
 ]
 
-platforms = [Platform("x86_64", "linux"; cuda="10.2"),
-             Platform("x86_64", "windows"; cuda="10.2")]
+platforms = [
+    Platform("aarch64", "linux"; cuda="10.2"),
+    Platform("x86_64", "linux"; cuda="10.2"),
+    Platform("x86_64", "windows"; cuda="10.2")
+]
