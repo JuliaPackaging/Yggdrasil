@@ -35,7 +35,9 @@ if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     mv lib64/libcusolver.so* ${libdir}
 
     # CUDA Linear Solver Multi GPU Library
-    mv lib64/libcusolverMg.so* ${libdir}
+    if [[ $target != aarch64-linux-gnu ]]; then
+        mv lib64/libcusolverMg.so* ${libdir}
+    fi
 
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
@@ -109,7 +111,6 @@ products = [
     LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
     LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
     LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
