@@ -7,7 +7,7 @@ version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jemalloc/jemalloc.git", "20f9802e4f25922884448d9581c66d76cc905c0c"),
+    GitSource("https://github.com/interwq/jemalloc.git", "41553e5e2720f741e0699425925abba1e2b93534"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),    
 ]
