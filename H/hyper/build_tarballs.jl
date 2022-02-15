@@ -15,12 +15,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/hyper*/
 cargo build --release
-install -Dm 755 "target/${rust_target}/release/libhyper.${dlext}" "${libdir}/libhyper.${dlext}"
+install -Dm 755 target/${rust_target}/release/*hyper.${dlext} "${libdir}/libhyper.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Rust toolchain is unusable on i686-w64-mingw32
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+# Also, can't build cdylib for Musl systems
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
