@@ -2,11 +2,11 @@ using BinaryBuilder
 
 name = "yq"
 
-version = v"4.11.2"
+version = v"4.19.1"
 
 # Collection of sources required to build yq
 sources = [
-    GitSource("https://github.com/mikefarah/yq", "f89a1335589031ef845f8c7829ee709b15ab65d5"),
+    GitSource("https://github.com/mikefarah/yq", "926a68181ba83ca29fb6bac566fd443e212228ed"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ go build -o ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
