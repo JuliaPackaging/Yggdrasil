@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.63.1"
+version = v"0.64.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "986e9204bc201e21bdd1f6e45edcc135b4d4342f"),
+    GitSource("https://github.com/sciapp/gr.git", "08c185a6ee3fc0ceaebb9b92017def13131bff22"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "4cacc3099e9ceaf95dbfb76bdd733d41026030cc5430dbc8b12977790ace6d85", "gr.js")
+               "5d5f80104639a51e40b8fc35b741f5a12291f90c33cfd4d90075ecbd393352e2", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
