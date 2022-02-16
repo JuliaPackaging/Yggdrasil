@@ -1,0 +1,56 @@
+From: Szabolcs Nagy <szabolcs.nagy@arm.com>
+Date: Tue, 3 Dec 2019 11:13:38 +0000 (+0000)
+Subject: musl: Fix invalid tls model in libgomp and libitm PR91938
+X-Git-Tag: misc/cutover-git~776
+X-Git-Url: https://gcc.gnu.org/git/?p=gcc.git;a=commitdiff_plain;h=004843655a9f2c9ef4de56d43184adf0ae5095c9;hp=89ee3a872fdf460402d1fc137e5cdce20f62bc8e
+
+musl: Fix invalid tls model in libgomp and libitm PR91938
+
+Musl does not support initial-exec tls in dynamically loaded shared
+libraries.
+
+libgomp/ChangeLog:
+
+2019-12-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgomp/91938
+	* configure.tgt: Avoid IE tls on *-*-musl*.
+
+libitm/ChangeLog:
+
+2019-12-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR libgomp/91938
+	* configure.tgt: Avoid IE tls on *-*-musl*.
+
+From-SVN: r278932
+---
+
+diff --git a/libgomp/configure.tgt b/libgomp/configure.tgt
+index 06ee115ece9..4790a31e394 100644
+--- a/libgomp/configure.tgt
++++ b/libgomp/configure.tgt
+@@ -17,6 +17,9 @@ if test $gcc_cv_have_tls = yes ; then
+     *-*-k*bsd*-gnu*)
+ 	;;
+ 
++    *-*-musl*)
++	;;
++
+     *-*-linux* | *-*-gnu*)
+ 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec -DUSING_INITIAL_EXEC_TLS"
+ 	;;
+diff --git a/libitm/configure.tgt b/libitm/configure.tgt
+index eea865d6aa3..0bdca1123cc 100644
+--- a/libitm/configure.tgt
++++ b/libitm/configure.tgt
+@@ -31,6 +31,9 @@
+ if test "$gcc_cv_have_tls" = yes ; then
+   case "${target}" in
+ 
++    *-*-musl*)
++	;;
++
+     # For x86, we use slots in the TCB head for most of our TLS.
+     # The setup of those slots in beginTransaction can afford to
+     # use the global-dynamic model.
