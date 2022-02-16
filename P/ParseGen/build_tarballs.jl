@@ -27,7 +27,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    cp $WORKSPACE/srcdir/sw_vers "${bindir}/."
     popd
 elif [[ "${target}" == aarch64-apple-darwin* ]]; then
     # TODO: we need to fix this in the compiler wrappers
