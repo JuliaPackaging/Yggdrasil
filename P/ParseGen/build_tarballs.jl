@@ -28,9 +28,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # TODO: we need to fix this in the compiler wrappers
-    export CXXFLAGS="-mmacosx-version-min=11.0"
 fi
 
 cmake .. \
@@ -45,7 +42,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built
