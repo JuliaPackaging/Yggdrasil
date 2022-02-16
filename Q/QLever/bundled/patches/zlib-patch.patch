@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9b40ee29..c7cda4f4 100644
+index 9b40ee29..8c3c9a8a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -87,7 +87,8 @@ endif()
@@ -17,7 +17,7 @@ index 9b40ee29..c7cda4f4 100644
  
  add_executable(ServerMain src/ServerMain.cpp)
 -target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT} boost_program_options)
-+target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT} boost_program_options ZLIB::ZLIB)
++target_link_libraries (ServerMain engine ${CMAKE_THREAD_LIBS_INIT} boost_program_options Boost::iostreams ZLIB::ZLIB)
  
  add_executable(PrefixHeuristicEvaluatorMain src/PrefixHeuristicEvaluatorMain.cpp)
  target_link_libraries (PrefixHeuristicEvaluatorMain index ${CMAKE_THREAD_LIBS_INIT})
