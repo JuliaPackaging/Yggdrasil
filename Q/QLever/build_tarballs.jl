@@ -79,7 +79,7 @@ filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
 filter!(p -> !Sys.isfreebsd(p), platforms)
 
 # Mingw fails mysteriously
-filter!(p -> !Sys.iswindows(p), platforms)
+# filter!(p -> !Sys.iswindows(p), platforms)
 
 # TODO: add back after debug
  filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
