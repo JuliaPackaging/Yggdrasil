@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/parsegen-cpp*/
 
 install_license LICENSE
-
 mkdir build && cd build
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -28,7 +27,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    cp sw_vers "${bindir}/."
+    cp $WORKSPACE/srcdir/sw_vers "${bindir}/."
     popd
 elif [[ "${target}" == aarch64-apple-darwin* ]]; then
     # TODO: we need to fix this in the compiler wrappers
