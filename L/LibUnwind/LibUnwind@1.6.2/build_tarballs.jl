@@ -25,12 +25,11 @@ atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.pat
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-dwarf-table.patch
 
-CFLAGS="${CFLAGS} -DPI -fPIC -I${prefix}/include"
+export CFLAGS="-DPI -fPIC -I${includedir}"
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    CFLAGS="${CFLAGS}" \
     --libdir=${libdir} \
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
@@ -49,7 +48,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
-platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms(;experimental=true))
+platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
