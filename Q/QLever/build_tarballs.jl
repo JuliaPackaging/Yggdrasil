@@ -20,6 +20,7 @@ cd $WORKSPACE/srcdir/QLever/ # TODO: revert to qlever
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the error: 'value' is unavailable: introduced in macOS 10.14 issue
     export CXXFLAGS="-mmacosx-version-min=10.15"
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
