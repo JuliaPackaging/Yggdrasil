@@ -1,9 +1,0 @@
-#!/bin/sh
-if [[ -z "\${@}" ]]; then
-    echo "ProductName:    macOS"
-    echo "ProductVersion: 10.15"
-elif [[ "\${@}" == "-productName" ]]; then
-    echo "macOS"
-elif [[ "\${@}" == "-productVersion" ]]; then
-    echo "10.15"
-fi
