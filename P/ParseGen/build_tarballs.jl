@@ -20,7 +20,6 @@ install_license LICENSE
 mkdir build && cd build
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export CXXFLAGS="-mmacosx-version-min=10.15"
     export MACOSX_DEPLOYMENT_TARGET=10.15
     #install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
