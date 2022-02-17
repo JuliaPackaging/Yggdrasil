@@ -11,7 +11,6 @@ sources = [
         "https://github.com/ERGO-Code/HiGHS.git",
         "7a3f716bb2ad2df67525db8414ae48f5226dedd6",
     ),
-    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -21,13 +20,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 function build_script(; shared_libs::String)
     return "BUILD_SHARED=$(shared_libs)\n" * raw"""
 cd $WORKSPACE/srcdir
-if [[ "${target}" == *86*-linux-musl* ]]; then
-    pushd /opt/${target}/lib/gcc/${target}/*/include
-    # Fix bug in Musl C library, see
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
-    atomic_patch -p0 $WORKSPACE/srcdir/patches/mm_malloc.patch
-    popd
-fi
+
 mkdir -p HiGHS/build
 cd HiGHS/build
 
