@@ -36,6 +36,7 @@ mkdir build && cd build
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=$prefix
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake
 )
 
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
