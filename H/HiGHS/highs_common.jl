@@ -19,7 +19,7 @@ sources = [
 platforms = expand_cxxstring_abis(supported_platforms())
 
 function build_script(; shared_libs::String)
-    return raw"""
+    return "BUILD_SHARED=$(shared_libs)\n" * raw"""
 cd $WORKSPACE/srcdir
 if [[ "${target}" == *86*-linux-musl* ]]; then
     pushd /opt/${target}/lib/gcc/${target}/*/include
@@ -34,7 +34,7 @@ cd HiGHS/build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=""" * shared_libs * raw""" \
+    -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
     -DFAST_BUILD=ON \
     -DJULIA=ON \
     -DIPX=ON ..
