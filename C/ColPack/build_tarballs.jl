@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/michel2323/ColPack.git", "c8674588c8204e9f05a2c6adea21a28f7b56f490")
+    GitSource("https://github.com/michel2323/ColPack.git", "e2290dff4dc27985b9c1e5f45ae08e67f488798f")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,14 +17,14 @@ cd ColPack/build/automake/
 autoreconf -vif
 mkdir build
 cd build/
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+../configure --disable-examples --disable-openmp --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> Sys.isapple(p) || Sys.iswindows(p))
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
