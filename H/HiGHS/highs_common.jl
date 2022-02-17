@@ -49,7 +49,7 @@ else
     fi
 fi
 make install
-if [[ "${BUILD_SHARED}" == "OFF" ]]
+if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space
     rm -r ${prefix}/lib
 fi
