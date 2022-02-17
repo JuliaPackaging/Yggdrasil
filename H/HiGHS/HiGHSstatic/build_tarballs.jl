@@ -8,7 +8,10 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("CompilerSupportLibraries_jll"),
+    # We do fully static build only on Windows, so in that case `CompilerSupportLibraries_jll`
+    # is a build-only dependency, in the other cases it's also a runtime one.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 build_tarballs(

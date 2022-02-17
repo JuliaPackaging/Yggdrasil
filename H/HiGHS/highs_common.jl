@@ -24,7 +24,8 @@ cd $WORKSPACE/srcdir
 mkdir -p HiGHS/build
 cd HiGHS/build
 
-if [[ "${BUILD_SHARED}" == "OFF" ]]; then
+# Do fully static build only on Windows
+if [[ "${BUILD_SHARED}" == "OFF" ]] && [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-static"
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -51,8 +52,8 @@ install_license ../LICENSE
 if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space
     rm -r ${prefix}/lib
-    if [[ "${target}" == *-gnu ]] || [[ "${target}" == *-mingw* ]]; then
-        # In these cases we're shipping also GCC runtime, add its license as well
+    if [[ "${target}" == *-mingw* ]]; then
+        # The Windows build ships also GCC runtime, add its license as well
         install_license install_license /usr/share/licenses/GPL3
     fi
 fi
