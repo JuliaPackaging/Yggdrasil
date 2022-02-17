@@ -118,7 +118,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("OpenJpeg_jll"),
-    Dependency("Expat_jll"; compat="~2.2.10"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
     Dependency("Libtiff_jll"; compat="4.3"),
     Dependency("libgeotiff_jll"; compat="1.7"),

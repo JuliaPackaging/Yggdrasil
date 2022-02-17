@@ -95,16 +95,11 @@ products = [
 dependencies = [
     Dependency("MKL_jll"),
     Dependency("MPICH_jll"),
-    Dependency("NetCDF_jll"),
+    Dependency("NetCDF_jll"; compat="400.701.400 - 400.799"),
     Dependency("HDF5_jll"),
-    # The following is adapted from NetCDF_jll
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24.0")),
-    #Dependency("LibCURL_jll"),
-    # The following libraries are dependencies of LibCURL_jll which is now a
-    # stdlib, but the stdlib doesn't explicitly list its dependencies
-    #Dependency("LibSSH2_jll"),
-    #Dependency("MbedTLS_jll", v"2.24.0"),
-    #Dependency("nghttp2_jll"),
+    # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
+    # a compatible build version for this to work.
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

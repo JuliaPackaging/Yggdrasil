@@ -72,7 +72,9 @@ nc-config --all
         Platform("x86_64", "windows"),
         Platform("i686", "windows"),
     ]
-
+    if min_julia_version == v"1.6"
+        push!(platforms, Platform("aarch64","macos"))
+    end
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libnetcdf", :libnetcdf),
@@ -80,7 +82,7 @@ nc-config --all
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.0"),
+        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.1"),
         Dependency("Zlib_jll"),
     ]
 

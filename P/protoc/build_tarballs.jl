@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "protoc"
-version = v"3.19.1"
+version = v"3.19.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "7c40b2df1fdf6f414c1c18c789715a9c948a0725"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "22d0e265de7d2b3d2e9a00d071313502e7d4cccf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

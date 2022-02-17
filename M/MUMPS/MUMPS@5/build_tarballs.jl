@@ -24,13 +24,17 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
     FFLAGS=("-fallow-argument-mismatch")
 fi
 
+if [[ "${target}" == *-apple* ]]; then
+  CFLAGS=("-fno-stack-check")
+fi
+
 make_args+=(OPTF=-O \
             CDEFS=-DAdd_ \
             LMETISDIR=${prefix} \
             IMETIS="-I${includedir}" \
             LMETIS="-L${libdir} -lparmetis -lmetis" \
             ORDERINGSF="-Dpord -Dparmetis" \
-            CC="mpicc -fPIC" \
+            CC="mpicc -fPIC ${CFLAGS[@]}" \
             FC="mpif90 -fPIC ${FFLAGS[@]}" \
             FL="mpif90 -fPIC" \
             SCALAP="${libdir}/scalapack32.${dlext} ${libdir}/libopenblas.${dlext}" \
@@ -82,7 +86,7 @@ cp include/* ${prefix}/include
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-# SCALAPACK doesn't build on PowerPC
+# MUMPS doesn't build on PowerPC
 platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
 
 # The products that we will ensure are always built
