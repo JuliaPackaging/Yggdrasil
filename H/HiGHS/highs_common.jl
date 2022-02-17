@@ -31,6 +31,9 @@ fi
 mkdir -p HiGHS/build
 cd HiGHS/build
 
+if [[ "${BUILD_SHARED}" == "OFF" ]]; then
+    export CXXFLAGS="-static"
+fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -49,9 +52,16 @@ else
     fi
 fi
 make install
+
+install_license ../LICENSE
+
 if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space
     rm -r ${prefix}/lib
+    if [[ "${target}" == *-gnu ]] || [[ "${target}" == *-mingw* ]]; then
+        # In these cases we're shipping also GCC runtime, add its license as well
+        install_license install_license /usr/share/licenses/GPL3
+    fi
 fi
 """
 end
