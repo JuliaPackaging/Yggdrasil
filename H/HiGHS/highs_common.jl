@@ -49,5 +49,9 @@ else
     fi
 fi
 make install
+if [[ "${BUILD_SHARED}" == "OFF"]]
+    # Delete the static library to save space
+    rm ${destdir}/lib/libhighs*
+fi
 """
 end
