@@ -15,7 +15,7 @@ sources = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
 
 function build_script(; shared_libs::String)
     return "BUILD_SHARED=$(shared_libs)\n" * raw"""
