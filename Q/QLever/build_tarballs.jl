@@ -36,7 +36,6 @@ mkdir build && cd build
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=$prefix
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake
 )
 
 CMAKE_FLAGS+=(-DLOGLEVEL=DEBUG)
@@ -44,7 +43,7 @@ CMAKE_FLAGS+=(-GNinja)
 CMAKE_FLAGS+=(-DABSL_PROPAGATE_CXX_STD=ON)
 CMAKE_FLAGS+=(-DADDITIONAL_COMPILER_FLAGS="-Wall -Wextra -Werror") #-Wno-dev
 
-cmake ${CMAKE_FLAGS[@]} .. && ninja
+cmake ${CMAKE_FLAGS[@]} .. && ninja -v
 
 cp CreatePatternsMain \
      IndexBuilderMain \
