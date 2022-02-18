@@ -35,6 +35,8 @@ install_license /usr/share/licenses/MIT
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
