@@ -91,7 +91,7 @@ rm ${prefix}/lib/libblis.a
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
     mkdir -p ${libdir}
-    mv ${prefix}/lib/libblis.3.dll ${libdir}/libblis.dll
+    mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
 fi
 """
 
