@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.6.0"
+julia_versions = [v"1.6", v"1.7"]
 
 name = "XyceWrapper"
 version = v"0.2.0"
@@ -28,7 +28,7 @@ install_license /usr/share/licenses/MIT
 """
 
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -40,7 +40,7 @@ products = [
 dependencies = [
     Dependency("Xyce_jll"; compat="^7.4.0"),
     Dependency("libcxxwrap_julia_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+    BuildDependency("libjulia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
