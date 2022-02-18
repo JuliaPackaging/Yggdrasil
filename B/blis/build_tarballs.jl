@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.8.0"
+version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6"),
+    GitSource("https://github.com/flame/blis.git", "c9700f369aa84fc00f36c4b817ffb7dab72b865d"),
     DirectorySource("./bundled")
 ]
 
@@ -50,14 +50,20 @@ case ${target} in
         export CC=gcc
         export CXX=g++
         ;;
+    *"aarch64"*"apple"*)
+        # Metaconfig arm64 is not needed here.
+        # All Mac processors should have equal or higher specs then firestorm
+        export BLI_CONFIG=firestorm
+        export BLI_THREAD=openmp
+        export CC=gcc
+        export CXX=g++
+        ;;
     *"aarch64"*"linux"*) 
-        # Aarch64 has no metaconfiguration support yet.
-        # Use Cortex-A57 for the moment.
-        export BLI_CONFIG=cortexa57
+        export BLI_CONFIG=arm64
         export BLI_THREAD=openmp
         ;;
     *"arm"*"linux"*) 
-        export BLI_CONFIG=cortexa9
+        export BLI_CONFIG=arm32
         export BLI_THREAD=none
         ;;
     *)
@@ -85,7 +91,7 @@ rm ${prefix}/lib/libblis.a
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
     mkdir -p ${libdir}
-    mv ${prefix}/lib/libblis.3.dll ${libdir}/libblis.dll
+    mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
 fi
 """
 
@@ -98,6 +104,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "freebsd")
 ]
 
@@ -113,4 +120,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"8.1.0", julia_compat="1.6")
