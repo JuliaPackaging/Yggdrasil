@@ -83,7 +83,9 @@ fi
 
 # Include SVE support in this metaconfig.
 if [ ${BLI_CONFIG} = arm64 ]; then
+    # Add SVE configs to the registry.
     patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+armsve.patch
+
     # Unscreen Arm SVE code for metaconfig.
     patch kernels/armsve/bli_kernels_armsve.h \
         < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
@@ -91,8 +93,15 @@ if [ ${BLI_CONFIG} = arm64 ]; then
         < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
     patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
         < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+
     # Config armsve depends on some family header defines.
     cp config/armsve/bli_family_armsve.h config/arm64/bli_family_arm64.h
+
+    # Screen out SVE instructions in config-stage.
+    patch config/a64fx/bli_cntx_init_a64fx.c \
+        < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+    patch config/armsve/bli_cntx_init_armsve.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_config_screen_non_sve.patch
 fi
 
 export BLI_F77BITS=${nbits}
