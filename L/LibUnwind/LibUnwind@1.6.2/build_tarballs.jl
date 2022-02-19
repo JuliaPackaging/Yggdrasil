@@ -14,12 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libunwind*/
 
-# We need to massage configure script to convince it to build the shared library
-# for PowerPC.
-if [[ "${target}" == powerpc64le-* ]]; then
-    autoreconf -vi
-fi
-
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-prefer-extbl.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
