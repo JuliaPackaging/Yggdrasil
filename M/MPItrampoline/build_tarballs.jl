@@ -3,22 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "MPItrampoline"
-version = v"3.3.0"
+version = v"3.3.1"
 
 mpich_version_str = "4.0"
 mpiconstants_version = v"1.4.1"
-mpiwrapper_version = v"2.3.1"
+mpiwrapper_version = v"2.3.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "0a4b465fdf0a7329bf998c1adb47dfaed0b1a85d41ff305fa3205f2d2a6f39ba"),
+                  "53ce6db1f6197330883243543401d85ebab25d204687ea699f4767f6bd9890aa"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
                   "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "afb833a2d7c498aba09767dacbd3dacc6cc7a59168f481032d32c06a6e7dfa9e"),
+                  "eb1d63f691eebe87f81c6c5caad379e6baa5e851dd7565d9c62c23779ef48f06"),
 ]
 
 # Bash recipe for building across all platforms
