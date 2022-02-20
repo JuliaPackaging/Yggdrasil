@@ -40,8 +40,6 @@ function libjulia_platforms(julia_version)
     return platforms
 end
 
-libjulia_platforms() = vcat(libjulia_platforms(v"1.6.0"), libjulia_platforms(v"1.7.0"))
-
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
@@ -65,6 +63,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
             DirectorySource("./bundled"),
         ]
+
+        if version == v"1.6.3"
+            # WORKAROUND
+            push!(sources, ArchiveSource("https://github.com/JuliaBinaryWrappers/LibOSXUnwind_jll.jl/releases/download/LibOSXUnwind-v0.0.7%2B0/LibOSXUnwind.v0.0.7.x86_64-apple-darwin.tar.gz",
+                                         "e2ea6ecae13c0f2666d1b3020098feeab92affae1614f6b2a992dde0af88ec2f",
+                                         unpack_target="LibOSXUnwind_jll"))
+        end
+
     end
 
     # Bash recipe for building across all platforms
@@ -81,6 +87,16 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         echo "Applying path ${f}"
         atomic_patch -p1 ${f}
     done
+    fi
+
+    # HACK to allow building Julia 1.6 in Julia >= 1.7, as we can't install an old
+    # LibOSXUnwind_jll for it (due to it becoming a stdlib in Julia 1.7).
+    # See also <https://github.com/JuliaPackaging/Yggdrasil/pull/4320>
+    if [[ "${target}" == *apple* ]] && [[ "${version}" == 1.6.* ]]; then
+        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/include/*.h ${includedir}
+        mkdir -p ${includedir}/mach-o
+        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/include/mach-o/*.h ${includedir}/mach-o
+        cp $WORKSPACE/srcdir/LibOSXUnwind_jll/lib/libosxunwind.* ${libdir}
     fi
 
     case ${target} in
@@ -268,6 +284,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # environment results in a segfault.
     make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS="${LDFLAGS}" CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" -j${nproc} VERBOSE=1 ${MAKE_TARGET} DSYMUTIL=true
 
+    # HACK to avoid runtime dependency on LibOSXUnwind_jll with Julia 1.6: it
+    # disables the `#include <libunwind.h>` statements in two header files,
+    # and all code directly depending on them; luckily all of that is internal
+    # and should not affect external code using the Julia kernel "API"
+    if [[ "${version}" == 1.6.* ]]; then
+        atomic_patch -p1 $WORKSPACE/srcdir/libunwind-julia-1.6.patch
+    fi
+
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
@@ -313,8 +337,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     ]
     if version < v"1.5.1"
         push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.5"))
-    elseif version < v"1.7"
-        push!(dependencies, Dependency("LibOSXUnwind_jll", compat="0.0.6"))
+    elseif version < v"1.6"
+        push!(dependencies, BuildDependency(PackageSpec(; name="LibOSXUnwind_jll", version=v"0.0.6")))
     end
 
     if version < v"1.6"
@@ -323,11 +347,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
     end
 
-    if version < v"1.7"
-        push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version=v"10")))
+    #if version < v"1.7"
+    #    push!(dependencies, BuildDependency(PackageSpec(name="PCRE2_jll", version=v"10")))
     #else
     #    push!(dependencies, BuildDependency("PCRE2_jll", compat="10.36"))
-    end
+    #end
 
     if version.major == 1 && version.minor == 3
         push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.5"))
@@ -343,9 +367,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency("libLLVM_jll", compat="9.0.1"))
         push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 6
-        push!(dependencies, BuildDependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
-        push!(dependencies, Dependency("libLLVM_jll", compat="11.0.1"))
-        push!(dependencies, BuildDependency(PackageSpec(name="LibGit2_jll", version=v"1.2")))
+        push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
+        push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
     elseif version.major == 1 && version.minor == 7
         #push!(dependencies, BuildDependency("OpenBLAS_jll", compat="0.3.13"))
         #push!(dependencies, Dependency("libLLVM_jll", compat="12.0.0"))
