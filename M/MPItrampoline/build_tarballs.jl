@@ -3,22 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "MPItrampoline"
-version = v"2.8.0"
+version = v"3.3.0"
 
 mpich_version_str = "4.0"
-mpiconstants_version = v"1.4.0"
-mpiwrapper_version = v"2.2.2"
+mpiconstants_version = v"1.4.1"
+mpiwrapper_version = v"2.3.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "bc2a075ced19e5f7ea547060e284887bdbb0761d34d1adb6f16d2e9e096a7d38"),
+                  "0a4b465fdf0a7329bf998c1adb47dfaed0b1a85d41ff305fa3205f2d2a6f39ba"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
-                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+                  "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "efa16c11315c913ce71a4db14574c633730bc0b1e446f1168ee01a457408163d"),
+                  "afb833a2d7c498aba09767dacbd3dacc6cc7a59168f481032d32c06a6e7dfa9e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,6 +36,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
+    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
@@ -215,8 +216,8 @@ install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/m
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
-# MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`,
-# and thus does not support musl or BSD.
+# MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
+# not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
 platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
 platforms = filter(!Sys.isfreebsd, platforms)
@@ -236,7 +237,6 @@ products = [
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
     LibraryProduct("libmpi", :libmpi),
-    LibraryProduct("libmpifort", :libmpifort),
 
     # MPIconstants
     LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
