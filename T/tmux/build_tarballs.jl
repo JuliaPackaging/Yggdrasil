@@ -3,12 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "tmux"
-version = v"3.0.0-a"
+# Upstream uses version numbers like 3.1, 3.1a, 3.1b, 3.1c, we convert the
+# letter into the patch number
+version = v"3.2.1"
+tmux_tag = "$(version.major).$(version.minor)" * (version.patch > 0 ? Char('a' - 1 + version.patch) : "")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/tmux/tmux/releases/download/3.0a/tmux-3.0a.tar.gz",
-                  "4ad1df28b4afa969e59c08061b45082fdc49ff512f30fc8e43217d7b0e5f8db9"),
+    ArchiveSource("https://github.com/tmux/tmux/releases/download/$(tmux_tag)/tmux-$(tmux_tag).tar.gz",
+                  "551553a4f82beaa8dadc9256800bcc284d7c000081e47aa6ecbb6ff36eacd05f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,19 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd")
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
@@ -47,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
