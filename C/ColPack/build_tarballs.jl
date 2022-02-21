@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/michel2323/ColPack.git", "e2290dff4dc27985b9c1e5f45ae08e67f488798f")
+    GitSource("https://github.com/michel2323/ColPack.git", "b22020d3915abc06753fafe7005e539f11d46924")
 ]
 
 # Bash recipe for building across all platforms
