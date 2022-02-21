@@ -5,13 +5,13 @@ version = v"4.0.1"
 
 # Collection of sources required to complete build
 sources = [
-  GitSource("https://github.com/dmckwski/MSTM.git", "b15798c1ef216cd5e6b6022463dd972b058d372d")
+    GitSource("https://github.com/dmckwski/MSTM.git", "b15798c1ef216cd5e6b6022463dd972b058d372d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    cp -r ${includedir} ${WORKSPACE}/srcdir/include
+    cp -r ${includedir} ${WORKSPACE}/srcdir
     cd ${WORKSPACE}/srcdir/include
     cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN64 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
@@ -20,7 +20,7 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     gcc -c cfg_stub.c
     gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${WORKSPACE}/srcdir/include -lmsmpifec64 -lmsmpi64 -o "${bindir}/mstm${exeext}"
 elif [[ "$target" == i686-w64-mingw32 ]]; then
-    cp -r ${includedir} ${WORKSPACE}/srcdir/include
+    cp -r ${includedir} ${WORKSPACE}/srcdir
     cd ${WORKSPACE}/srcdir/include
     cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
@@ -41,14 +41,14 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-  ExecutableProduct("mstm", :mstm)
+    ExecutableProduct("mstm", :mstm)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-  Dependency(PackageSpec(name = "MPICH_jll", uuid = "7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms = filter(!Sys.iswindows, platforms)),
-  Dependency(PackageSpec(name = "MicrosoftMPI_jll", uuid = "9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms = filter(Sys.iswindows, platforms)),
-  Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name = "MPICH_jll", uuid = "7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms = filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name = "MicrosoftMPI_jll", uuid = "9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms = filter(Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
