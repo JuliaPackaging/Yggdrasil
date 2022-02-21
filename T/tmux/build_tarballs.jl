@@ -18,7 +18,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tmux-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-TERM=screen
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-TERM=screen --enable-utf8proc
 make -j${nproc}
 make install
 """
@@ -36,6 +36,7 @@ products = [
 dependencies = [
     Dependency("libevent_jll"),
     Dependency("Ncurses_jll"),
+    Dependency("utf8proc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
