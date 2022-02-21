@@ -18,7 +18,7 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     echo "void __guard_check_icall_fptr(unsigned long ptr) { }" > cfg_stub.c
     gcc -c cfg_stub.c
     gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L"${libdir}" -I"${includedir}" -lmsmpifec64 -lmsmpi64 -o "${bindir}/mstm${exeext}"
-elif [[ "$target" == i686-w64-mingw32 ]]; then
+elif [[ "$target" == *-mingw*` ]]; then
     cd $WORKSPACE/destdir/include
     cp $WORKSPACE/destdir/src/mpi.f90 .
     gfortran -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90 || true
