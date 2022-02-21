@@ -5,7 +5,7 @@ version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dmckwski/MSTM.git", "12cdb0a45a60e47387cceaa217e2376767826d0e")
+    GitSource("https://github.com/dmckwski/MSTM.git", "b15798c1ef216cd5e6b6022463dd972b058d372d")
 ]
 
 # Bash recipe for building across all platforms
@@ -13,6 +13,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/MSTM.git/code
 mpifort -O2 mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o mstm
 cp mstm ${WORKSPACE}/destdir/bin/
+install_license ${WORKSPACE}/srcdir/MSTM.git/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
