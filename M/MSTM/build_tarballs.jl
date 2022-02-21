@@ -10,10 +10,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/MSTM.git/code
+cd $WORKSPACE/srcdir/MSTM/code
 mpifort -O2 mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o mstm
 cp mstm ${WORKSPACE}/destdir/bin/
-install_license ${WORKSPACE}/srcdir/MSTM.git/LICENSE
+install_license ${WORKSPACE}/srcdir/MSTM/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
