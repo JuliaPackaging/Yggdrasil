@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "pigpiod_if2"
-version = v"0.0.1"
+version = v"79"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/smith-isaac/pigpio.git", "8592e32edaa7d7567b89e648cbf2d53ac6c5ef41")
+    GitSource("https://github.com/joan2937/pigpio.git", "c33738a320a3e28824af7807edafda440952c05d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pigpio/
+atomic_patch -p1 ../patches/makefile.patch
 make
-make install
+make install prefix="${prefix}"
 """
 
 # These are the platforms we will build for by default, unless further
