@@ -13,21 +13,21 @@ script = raw"""
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
     cp -r ${includedir} ${WORKSPACE}/srcdir/include
     cd ${WORKSPACE}/srcdir/include
-    cp ${WORKSPACE}/destdir/src/mpi.f90 .
+    cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN64 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
     cd ${WORKSPACE}/srcdir/MSTM/code
     echo "void __guard_check_icall_fptr(unsigned long ptr) { }" > cfg_stub.c
     gcc -c cfg_stub.c
-    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${WORKSPACE}/destdir/lib -I${WORKSPACE}/srcdir/include -lmsmpifec64 -lmsmpi64 -o "${bindir}/mstm${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${WORKSPACE}/srcdir/include -lmsmpifec64 -lmsmpi64 -o "${bindir}/mstm${exeext}"
 elif [[ "$target" == i686-w64-mingw32 ]]; then
     cp -r ${includedir} ${WORKSPACE}/srcdir/include
     cd ${WORKSPACE}/srcdir/include
-    cp ${WORKSPACE}/destdir/src/mpi.f90 .
+    cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
     cd $WORKSPACE/srcdir/MSTM/code
     echo "void __guard_check_icall_fptr(unsigned long ptr) { } void __security_check_cookie(void) { }" > cfg_stub.c
     gcc -c cfg_stub.c
-    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${WORKSPACE}/destdir/lib -I${WORKSPACE}/srcdir/include -lmsmpifec -lmsmpi -o "${bindir}/mstm${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${WORKSPACE}/srcdir/include -lmsmpifec -lmsmpi -o "${bindir}/mstm${exeext}"
 else
     cd ${WORKSPACE}/srcdir/MSTM/code
     mpifort -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o "${bindir}/mstm${exeext}"
