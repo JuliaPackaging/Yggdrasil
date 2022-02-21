@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/pigpio/
 atomic_patch -p1 ../patches/makefile.patch
 make
 make install prefix="${prefix}"
+install_license UNLICENCE
 """
 
 # These are the platforms we will build for by default, unless further
