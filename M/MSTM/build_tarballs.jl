@@ -13,7 +13,7 @@ script = raw"""
 if [[ "$target" == x86_64-w64-mingw32 ]]; then
     cd $WORKSPACE/destdir/include
     cp $WORKSPACE/destdir/src/mpi.f90 .
-    gfortran -DWIN64 -DINT_PTR_KIND=8 -fno-range-check mpi.f90 || true
+    gfortran -c -DWIN64 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
     cd $WORKSPACE/srcdir/MSTM/code
     echo "void __guard_check_icall_fptr(unsigned long ptr) { }" > cfg_stub.c
     gcc -c cfg_stub.c
@@ -21,7 +21,7 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
 elif [[ "$target" == *-mingw* ]]; then
     cd $WORKSPACE/destdir/include
     cp $WORKSPACE/destdir/src/mpi.f90 .
-    gfortran -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90 || true
+    gfortran -c -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
     cd $WORKSPACE/srcdir/MSTM/code
     echo "void __guard_check_icall_fptr(unsigned long ptr) { } void __security_check_cookie(void) { }" > cfg_stub.c
     gcc -c cfg_stub.c
