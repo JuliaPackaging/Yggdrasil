@@ -16,6 +16,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+mkdir -p $includedir $libdir $prefix/share
+
 cd $WORKSPACE/srcdir
 
 if [[ $target == *linux* ]]; then
@@ -25,7 +27,7 @@ else
     cd $target
 fi
 mv libtorch/share/* $prefix/share/
-mv libtorch/lib/* $prefix/lib/
+mv libtorch/lib/* $libdir
 rm -r libtorch/lib
 rm -r libtorch/share
 mv libtorch/* $prefix
@@ -36,7 +38,6 @@ mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch ..
 cmake --build .
 
-mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
