@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "xrootdgo"
-version = v"0.30.1b"
+version = v"0.30.1"
 
 sources = [
     GitSource("https://github.com/go-hep/hep/",
