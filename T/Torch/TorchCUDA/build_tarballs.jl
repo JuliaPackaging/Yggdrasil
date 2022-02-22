@@ -24,6 +24,8 @@ cuda_11_sources = [
 ]
 
 script = raw"""
+mkdir -p $includedir $libdir $prefix/share
+
 cd $WORKSPACE/srcdir
 
 mv cudnn $prefix
@@ -33,7 +35,7 @@ else
     cd $target
 fi
 mv libtorch/share/* $prefix/share/
-mv libtorch/lib/* $prefix/lib/
+mv libtorch/lib/* $libdir
 rm -r libtorch/lib
 rm -r libtorch/share
 mv libtorch/* $prefix
@@ -49,7 +51,6 @@ mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda ..
 cmake --build .
 
-mkdir -p "${libdir}"
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
 rm -rf $prefix/cuda
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
