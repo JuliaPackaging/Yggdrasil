@@ -42,6 +42,7 @@ func Close(_id *C.char){
         log.Fatal(err)
     }
 }
+
 //export Size
 func Size(_id *C.char) C.long {
     ctx := context.Background()
@@ -54,6 +55,7 @@ func Size(_id *C.char) C.long {
     return C.long(info.EntrySize)
 }
 
+//export ReadAt
 func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.long, offset C.long) {
     file := _FILES[_id]
     // data := unsafe.Slice((*byte)(res), int64(NBytes));
