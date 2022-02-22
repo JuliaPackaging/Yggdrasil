@@ -62,6 +62,7 @@ supported = (
     (v"1.6", v"11.0.1+3"),
     (v"1.7", v"12.0.0+0"),
     (v"1.8", v"13.0.1+0"),
+    (v"1.9", v"13.0.1+0"),
 )
 
 for (julia_version, llvm_version) in supported
