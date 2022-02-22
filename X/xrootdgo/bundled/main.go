@@ -59,7 +59,7 @@ func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.long, offset C.long) {
 // func ReadAt(res *C.char, _id *C.char, NBytes C.int, offset C.int) **C.char {
     file := _FILES[_id]
     // res := C.malloc(C.ulong(NBytes))
-    data := *(*[]byte)(res)
+    data := (*(*[]byte)(res))[:NBytes]
     _, err := file.ReadAt(data, int64(offset))
     if err != nil {
         log.Fatal(err)
