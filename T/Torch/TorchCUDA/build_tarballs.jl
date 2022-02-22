@@ -32,11 +32,9 @@ if [[ $target == *linux* ]]; then
 else
     cd $target
 fi
+mv libtorch/include/* $includedir
 mv libtorch/share/* $prefix/share/
 mv libtorch/lib/* $libdir
-rm -r libtorch/lib libtorch/share libtorch/bin libtorch/include
-mv libtorch/* $prefix
-rm -r libtorch
 
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
