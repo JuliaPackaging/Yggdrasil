@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "MSTM"
-version = v"4.0.1"
+version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
