@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+include("../../../fancy_toys.jl")
 
 
 name = "TorchCUDA"
