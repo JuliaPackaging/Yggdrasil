@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCALAPACK32"
-version = v"2.1.0"
+version = v"2.2.0"
 
 sources = [
-  ArchiveSource("http://www.netlib.org/scalapack/scalapack-$(version).tgz",
-                "61d9216cf81d246944720cfce96255878a3f85dec13b9351f1fa0fd6768220a6"),
+  ArchiveSource("https://github.com/Reference-ScaLAPACK/scalapack/archive/refs/tags/v$(version).tar.gz",
+                "8862fc9673acf5f87a474aaa71cd74ae27e9bbeee475dbd7292cec5b8bcbdcf3"),
   DirectorySource("./bundled")
 ]
 
@@ -27,7 +27,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix} \
              -DBLAS_LIBRARIES="-lopenblas" \
              -DLAPACK_LIBRARIES="-lopenblas" \
              -DBUILD_SHARED_LIBS=ON \
-             -DMPIEXEC="${bindir}/mpirun")
+             -DSCALAPACK_BUILD_TESTS=OFF \
+             -DMPI_BASE_DIR="${prefix}")
 
 if [[ "${target}" == i686-*  ]] || [[ "${target}" == x86_64-*  ]]; then
   CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath")
@@ -50,6 +51,13 @@ make install
 
 mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
 
+# If there were links that are now broken, fix 'em up
+for l in $(find ${prefix}/lib -xtype l); do
+  if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
+    ln -vsf libscalapack32.${dlext} ${l}
+  fi
+done
+
 PATCHELF_FLAGS=()
 
 # ppc64le and aarch64 have 64KB page sizes, don't muck up the ELF section load alignment
@@ -64,9 +72,7 @@ elif [[ ${target} == *apple* ]]; then
 fi
 """
 
-# OpenMPI and MPICH are not precompiled for Windows
-# Can't get the code to build for PowerPC with libgfortran3
-platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> Sys.iswindows(p) || arch(p) == "powerpc64le"))
+platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
 
 # The products that we will ensure are always built
 products = [

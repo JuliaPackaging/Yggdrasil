@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.3.1"
+version = v"0.3.2"
 
 # Collection of sources required to complete build
 sources = [

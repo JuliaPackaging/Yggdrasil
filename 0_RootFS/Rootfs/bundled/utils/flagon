@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2020 Mosè Giordano
+# Copyright (C) 2020-2022 Mosè Giordano
 # License is MIT "Expat"
 #
 ### Commentary:
@@ -21,10 +21,10 @@
 #
 ### Code:
 
-ARGS=$(getopt -o "" -l "platform:,whole-archive,no-whole-archive,relative-rpath-link:" -- "$@")
+ARGS=$(getopt -o "W:" -l "platform:,whole-archive,no-whole-archive,relative-rpath-link:" -- "$@")
 
 usage () {
-    echo "Usage: ${0} [--platform PLATFORM] [--whole-archive] [--no-whole-archive] [--relative-rpath-link PATH]"
+    echo "Usage: ${0} [--platform PLATFORM] [[-Wl,]--whole-archive] [[-Wl,]--no-whole-archive] [--relative-rpath-link PATH]"
 }
 
 eval set -- "$ARGS"
@@ -48,6 +48,9 @@ while true; do
         --relative-rpath-link)
             FLAGS+=("${1}:${2}")
             shift 2;;
+        -W)
+            FLAGS+=("${1}${2}")
+            shift 2;;
         --)
             shift
             break;;
@@ -70,6 +73,10 @@ for flag in "${FLAGS[@]}"; do
                     ;;
             esac
             ;;
+        -Wl,--whole-archive)
+            # Automatically prepend `-Wl,`
+            echo "-Wl,$(flagon --whole-archive)"
+            ;;
         --no-whole-archive)
             case "${PLATFORM}" in
                 *-apple-*)
@@ -80,6 +87,18 @@ for flag in "${FLAGS[@]}"; do
                     ;;
                 *)
                     echo -n "--no-whole-archive "
+                    ;;
+            esac
+            ;;
+        -Wl,--no-whole-archive)
+            # Automatically prepend `-Wl,` if necessary
+            case "${PLATFORM}" in
+                *-apple-*)
+                # This is empty, don't print anything
+                    echo -n ""
+                    ;;
+                *)
+                    echo -n "-Wl,$(flagon --no-whole-archive)"
                     ;;
             esac
             ;;

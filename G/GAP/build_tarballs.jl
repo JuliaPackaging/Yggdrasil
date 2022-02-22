@@ -20,16 +20,21 @@ using BinaryBuilder, Pkg
 # changes its major version. It simply seemed sensible to apply the same transformation
 # to all components.
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
 name = "GAP"
 upstream_version = v"4.12.0-dev"
-version = v"400.1191.001"
+version = v"400.1192.000"
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
 # Collection of sources required to complete build
 sources = [
     # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "401c797476b787e748a3890be4ce95ae4e5d52ae"),
+    GitSource("https://github.com/gap-system/gap.git", "c67fb7d89cafeb9231facd80f85426199e0d62db"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     DirectorySource("./bundled"),
@@ -47,7 +52,16 @@ done
 # it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
-# compile a native version of GAP to generate c_oper1.c and c_type1.c
+# configure GAP
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-gmp=${prefix} \
+    --with-readline=${prefix} \
+    --with-zlib=${prefix} \
+    --with-gc=julia \
+    --with-julia
+mkdir -p build
+
+# configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
 mkdir native-build
 cd native-build
 rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/lib'
@@ -58,18 +72,14 @@ rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
 cp build/c_*.c ../src/
+cp ffgen ..
+cp build/ffdata.* ../build/
 cd ..
 
 # remove the native build, it has done its job
 rm -rf native-build
 
 # compile GAP
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-gmp=${prefix} \
-    --with-readline=${prefix} \
-    --with-zlib=${prefix} \
-    --with-gc=julia \
-    --with-julia
 make -j${nproc}
 
 # install GAP binaries

@@ -1,7 +1,14 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 843d334..e292821 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -56,7 +56,7 @@ if (MPI_FOUND)
+    else()
+       message(STATUS "--> MPI Fortran Compiler : ${MPI_Fortran_COMPILER}")
+       SET(Fortran_COMPILER "${CMAKE_Fortran_COMPILER}")
+-      #SET(CMAKE_Fortran_COMPILER "${MPI_Fortran_COMPILER}")
++      SET(CMAKE_Fortran_COMPILER "${MPI_Fortran_COMPILER}")
+       message(STATUS "--> Fortran Compiler : ${CMAKE_Fortran_COMPILER}")
+    endif()
+ 
 @@ -118,17 +118,17 @@ set(PKG_CONFIG_DIR ${libdir}/pkgconfig)
  #
  #   Fortran Mangling, MPI Tests and BLACS settings
