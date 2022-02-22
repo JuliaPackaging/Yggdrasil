@@ -28,19 +28,15 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryBuilder]]
 deps = ["ArgParse", "BinaryBuilderBase", "Dates", "Downloads", "GitHub", "HTTP", "JLD2", "JSON", "LibGit2", "Libdl", "Logging", "LoggingExtras", "ObjectFile", "OutputCollectors", "Pkg", "PkgLicenses", "ProgressMeter", "REPL", "Random", "Registrator", "RegistryTools", "SHA", "Scratch", "Sockets", "UUIDs", "ghr_jll"]
-git-tree-sha1 = "3412f6ef0e3dc3f4d4eda931f94f17a8cd9d1d3e"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaPackaging/BinaryBuilder.jl.git"
+path = "/home/sabae/.julia/dev/BinaryBuilder"
 uuid = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
-version = "0.4.4"
+version = "0.5.2"
 
 [[BinaryBuilderBase]]
-deps = ["CodecZlib", "Downloads", "InteractiveUtils", "JSON", "LibGit2", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "UUIDs", "p7zip_jll", "pigz_jll"]
-git-tree-sha1 = "6ea13175e9a30512805c9bf1599a628b397eac60"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
+deps = ["CodecZlib", "Downloads", "InteractiveUtils", "JSON", "LibGit2", "LibGit2_jll", "Libdl", "Logging", "OutputCollectors", "Pkg", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "UUIDs", "p7zip_jll", "pigz_jll"]
+path = "/home/sabae/.julia/dev/BinaryBuilderBase"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
-version = "1.1.2"
+version = "1.6.0"
 
 [[CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -53,6 +49,10 @@ deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", 
 git-tree-sha1 = "dce3e3fea680869eaa0b774b2e8343e9ff442313"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "3.40.0"
+
+[[CompilerSupportLibraries_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
 [[DataAPI]]
 git-tree-sha1 = "cc70b17275652eb47bc9e5f81635981f13cea5c8"
@@ -175,6 +175,10 @@ uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
+[[LibGit2_jll]]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
+
 [[LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
@@ -183,7 +187,7 @@ uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[LinearAlgebra]]
-deps = ["Libdl"]
+deps = ["Libdl", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[Logging]]
@@ -248,6 +252,10 @@ git-tree-sha1 = "55ce61d43409b1fb0279d1781bf3b0f22c83ab3b"
 uuid = "d8793406-e978-5875-9003-1fc021f44a92"
 version = "0.3.7"
 
+[[OpenBLAS_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
+uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
+
 [[OrderedCollections]]
 git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
@@ -301,7 +309,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[Random]]
-deps = ["Serialization"]
+deps = ["SHA", "Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[Reexport]]
@@ -451,6 +459,10 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f5c8cb306d4fe2d1fff90443a088fc5ba536c134"
 uuid = "07c12ed4-43bc-5495-8a2a-d5838ef8d533"
 version = "0.13.0+1"
+
+[[libblastrampoline_jll]]
+deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
+uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
 [[libsodium_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]

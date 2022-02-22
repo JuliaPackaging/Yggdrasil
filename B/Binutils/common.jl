@@ -75,7 +75,10 @@ end
 function binutils_platforms()
     # only macOS doesn't use binutils, so collect platforms for everyone else
     platforms = filter(p -> !Sys.isapple(p), supported_platforms(;experimental=true))
-    return map(encode_target_platform, platforms)
+    return vcat(
+        encode_target_platform.(platforms; host_platform=Platform("x86_64", "linux"; libc="glibc")),
+        encode_target_platform.(platforms; host_platform=Platform("x86_64", "linux"; libc="musl")),
+    )
 end
 
 function binutils_products()

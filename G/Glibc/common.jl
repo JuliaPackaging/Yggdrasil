@@ -62,10 +62,14 @@ function glibc_script()
         GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
     fi
 
+    # glibc only puts things in `/lib64` if `prefix` is `/usr`, so force it
+    # to be consistent, for our own sanity:
+    GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_slibdir=/${lib64} libdir="/${lib64}" )
+
     mkdir -p $WORKSPACE/srcdir/glibc_build
     cd $WORKSPACE/srcdir/glibc_build
     $WORKSPACE/srcdir/glibc-*/configure \
-        --prefix=/usr \
+        --prefix=/ \
         --build=${MACHTYPE} \
         --host=${target} \
         --disable-multilib \
@@ -73,19 +77,21 @@ function glibc_script()
         ${GLIBC_CONFIGURE_OVERRIDES[@]}
 
     make -j${nproc}
-    make install install_root="${prefix}/${target}"
+    make install install_root="${prefix}"
 
     # Copy our `crt*.o` files over (useful for bootstrapping GCC)
-    csu_libdir="${prefix}/${target}/usr/${lib64}"
+    csu_libdir="${prefix}/${lib64}"
     cp csu/crt1.o csu/crti.o csu/crtn.o ${csu_libdir}/
 
     # fix bad linker scripts
-    sed -i -e "s& /lib& ../lib&g" -e "s& /usr/${lib64}/& ./&g" "${csu_libdir}/libc.so"
-    sed -i -e "s& /lib& ../lib&g" -e "s& /usr/${lib64}/& ./&g" "${csu_libdir}/libpthread.so"
+    sed -i -e "s& /${lib64}/& ./&g" "${csu_libdir}/libc.so"
+    sed -i -e "s& /${lib64}/& ./&g" "${csu_libdir}/libpthread.so"
 
     # Many Glibc versions place binaries in strange locations, this seems to be a build system bug
-    if [[ -d ${prefix}/${target}/${prefix} ]]; then
-        mv -v ${prefix}/${target}/${prefix}/* ${prefix}/
+    if [[ -d ${prefix}/${prefix} ]]; then
+        mv -v ${prefix}/${prefix}/* ${prefix}/
+        # Remove the empty directories
+        rm -rf ${prefix}/${prefix%%/*}
     fi
     """
 end
@@ -128,20 +134,36 @@ function glibc_dependencies()
 end
 
 # Somehow, we either need to allow GCC pulling in a Glibc of a different platform,
-# or we need to do this automatically inside of `Glibc_jll`:
-#
-# using Pkg, Pkg.Artifacts
-# artifacts_toml = "/home/sabae/.julia/dev/Glibc_jll/Artifacts.toml"
-# arts = Artifacts.load_artifacts_toml(artifacts_toml)
-# for (name, dicts) in arts
-#     for d in dicts
-#         if haskey(d, "target_arch")
-#             continue
-#         end
-#         target_platform = Artifacts.unpack_platform(d, "", "")
-#         encoded_platform = encode_target_platform(target_platform)
-#         @info(name, target_platform, encoded_platform)
-#         download_info = [(dl["url"], dl["sha256"]) for dl in d["download"]]
-#         Artifacts.bind_artifact!(artifacts_toml, name, Base.SHA1(d["git-tree-sha1"]); platform=encoded_platform, download_info)
-#     end
-# end
+# or we need to do this automatically inside of `Glibc_jll`, because when we built
+# Glibc_jll, we built them with the cross-compilers so they encode _only_ the target
+# platform.  We need GCC_jll to be able to pull out "target-matching" platforms, so
+# we create duplicate Artifacts.toml mappings for those encoded platforms here.
+
+#=
+using Pkg, Pkg.Artifacts, Base.BinaryPlatforms
+include(expanduser("~/src/Yggdrasil/fancy_toys.jl"))
+artifacts_toml = expanduser("~/.julia/dev/Glibc_jll/Artifacts.toml")
+arts = Artifacts.load_artifacts_toml(artifacts_toml)
+
+# This list of cross_host_platforms should match those in GCC
+cross_host_platforms = [
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="glibc"),
+]
+
+for (name, dicts) in arts
+    for d in dicts
+        if haskey(d, "target_arch")
+            continue
+        end
+        target_platform = Artifacts.unpack_platform(d, "", "")
+
+        for host_platform in cross_host_platforms
+            encoded_platform = encode_target_platform(target_platform; host_platform)
+            @info(name, target_platform, encoded_platform)
+            download_info = [(dl["url"], dl["sha256"]) for dl in d["download"]]
+            Artifacts.bind_artifact!(artifacts_toml, name, Base.SHA1(d["git-tree-sha1"]); platform=encoded_platform, download_info)
+        end
+    end
+end
+=#

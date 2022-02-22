@@ -121,7 +121,7 @@ GCC to provide multiple "target" artifacts, while all still properly identifying
 as having a single "host" architecture.
 """
 function encode_target_platform(target_platform::Platform;
-                               host_platform::Platform = Platform("x86_64", "linux"; libc="musl"))
+                                host_platform::Platform = Platform("x86_64", "linux"; libc="musl"))
     p = deepcopy(host_platform)
     for (tag, value) in tags(target_platform)
         p["target_"*tag] = value
@@ -135,11 +135,10 @@ end
 Decode a target from tags within `encoded_platform`.
 """
 function decode_target_platform(encoded_platform::Platform)
-    target_tags = Dict(k => v for (k, v) in tags(p) if startswith(k, "target_"))
-
+    target_tags = Dict(k[8:end] => v for (k, v) in tags(encoded_platform) if startswith(k, "target_"))
     arch = pop!(target_tags, "arch")
     os = pop!(target_tags, "os")
-    return Platform(arch, os; target_tags...)
+    return Platform(arch, os; Dict(Symbol(k) => v for (k, v) in target_tags)...)
 end
 
 """
