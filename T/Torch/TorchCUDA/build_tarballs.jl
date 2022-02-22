@@ -29,14 +29,15 @@ mkdir -p $includedir $libdir $prefix/share
 cd $WORKSPACE/srcdir
 
 if [[ $target == *linux* ]]; then
+    ls -la
     cd $bb_full_target
 else
     cd $target
 fi
+find .
 mv libtorch/share/* $prefix/share/
 mv libtorch/lib/* $libdir
-rm -r libtorch/lib
-rm -r libtorch/share
+rm -r libtorch/lib libtorch/share libtorch/bin libtorch/include
 mv libtorch/* $prefix
 rm -r libtorch
 
