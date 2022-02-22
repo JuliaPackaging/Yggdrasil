@@ -12,15 +12,15 @@ common_sources = [
 ]
 
 cuda_10_sources = [
-    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.10.2%2Bcu102.zip", "fa3fad287c677526277f64d12836266527d403f21f41cc2e7fb9d904969d4c4a"; unpack_target = "x86_64-linux-gnu-cxx03"),
-    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu102.zip", "83e43d63d0e7dc9d57ccbdac8a8d7edac6c9e18129bf3043be475486b769a9c2"; unpack_target = "x86_64-linux-gnu-cxx11"),
-    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-win-shared-with-deps-1.10.2%2Bcu102.zip", "0ce2ccd959704cd85c44ad1f3f335c56734c7ff09418bd563e07d5bb7142510c"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.10.2%2Bcu102.zip", "206ab3f44d482a1d9837713cafbde9dd9d7907efac2dc94f1dc86e9a1101296f"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx03"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu102.zip", "c1f994b4a019f2f75e3a58b8ddb132aaf8bb99673abc35f0f6d21c3b8f622cc4"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx11"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-win-shared-with-deps-1.10.2%2Bcu102.zip", "558971c390853aac7f1be002fcb1a4d0d94e480edcc23435e1d9c720312d812b"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 cuda_11_sources = [
-    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1.10.2%2Bcu113.zip", "fa3fad287c677526277f64d12836266527d403f21f41cc2e7fb9d904969d4c4a"; unpack_target = "x86_64-linux-gnu-cxx03"),
-    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu113.zip", "83e43d63d0e7dc9d57ccbdac8a8d7edac6c9e18129bf3043be475486b769a9c2"; unpack_target = "x86_64-linux-gnu-cxx11"),
-    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-win-shared-with-deps-1.10.2%2Bcu113.zip", "0ce2ccd959704cd85c44ad1f3f335c56734c7ff09418bd563e07d5bb7142510c"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1.10.2%2Bcu113.zip", "39f799e272924be118e99582eec10342dc7643c248ee404944defc6753bd88b7"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx03"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu113.zip", "2557943af80ec93f8249f6c5c829db6c6688842afa25a7d848f5c471473eb898"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx11"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-win-shared-with-deps-1.10.2%2Bcu113.zip", "abe442bb99e166a68c05e9132e2d4a076e9d31af9fd09610e93be9bde62d3bdc"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 script = raw"""
