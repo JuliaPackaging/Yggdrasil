@@ -10,23 +10,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "$target" == x86_64-w64-mingw32 ]]; then
+if [[ "$target" == *-mingw* ]]; then
     cd ${includedir}
     cp ${prefix}/src/mpi.f90 .
-    gfortran -c -DWIN64 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
+    gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -fno-range-check mpi.f90
     cd ${WORKSPACE}/srcdir/MSTM/code
-    echo "void __guard_check_icall_fptr(unsigned long ptr) { }" > cfg_stub.c
-    gcc -c cfg_stub.c
-    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -lmsmpifec64 -lmsmpi64 -o "${bindir}/mstm${exeext}"
-    rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
-elif [[ "$target" == i686-w64-mingw32 ]]; then
-    cd ${includedir}
-    cp ${prefix}/src/mpi.f90 .
-    gfortran -c -DWIN32 -DINT_PTR_KIND=8 -fno-range-check mpi.f90
-    cd ${WORKSPACE}/srcdir/MSTM/code
-    echo "void __guard_check_icall_fptr(unsigned long ptr) { } void __security_check_cookie(void) { }" > cfg_stub.c
-    gcc -c cfg_stub.c
-    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -lmsmpifec -lmsmpi -o "${bindir}/mstm${exeext}"
+    if [[ ${target} == x86_64-* ]]; then
+        cfg_stub="void __guard_check_icall_fptr(unsigned long ptr) { }"
+        msmpifec=msmpifec64
+        msmpi=msmpi64
+    else
+        cfg_stub="void __guard_check_icall_fptr(unsigned long ptr) { } void __security_check_cookie(void) { }"
+        msmpifec=msmpifec
+        msmpi=msmpi
+    fi
+    echo "${cfg_stub}" | gcc -x c -c -o cfg_stub.o -
+    gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm${exeext}"
     rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
     cd ${WORKSPACE}/srcdir/MSTM/code
