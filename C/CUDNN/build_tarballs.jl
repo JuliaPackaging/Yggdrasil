@@ -23,7 +23,7 @@ elif [[ ${target} == aarch64-linux-gnu && ${bb_full_target} == aarch64-linux-gnu
     dpkg-deb -x libcudnn8_*.deb .
     dpkg-deb -x libcudnn8-dev_*.deb .
     mv -nv ./usr/include/aarch64-linux-gnu/* ${includedir}
-    mv -nv ./usr/lib/aarch64-linux-gnu/* ${libdir}
+    mv -nv ./usr/lib/aarch64-linux-gnu/libcudnn*.so* ${libdir}
 elif [[ ${target} == *-linux-gnu ]]; then
     cd cudnn*
     find .
