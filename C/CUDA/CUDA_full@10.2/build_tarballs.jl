@@ -133,10 +133,25 @@ elif [[ ${target} == aarch64-linux-gnu ]]; then
     find $temp
     mv $temp/usr/local/cuda-10.2/* ${prefix}/cuda
 
-    mv -nv $temp/usr/include/* ${prefix}/cuda/targets/aarch64-linux/include
-    mv -nv $temp/usr/lib/$target/* ${prefix}/cuda/targets/aarch64-linux/lib
+    rsync -aOv --remove-source-files $temp/usr/include/ ${prefix}/cuda/targets/aarch64-linux/include/
+    rsync -aOv --remove-source-files $temp/usr/lib/$target/ ${prefix}/cuda/targets/aarch64-linux/lib/
+
+    # Move CUPTI into same paths as CUPTI on x86_64-linux-gnu
+    mkdir $prefix/cuda/extras/CUPTI/{include,lib64}
+    CUDA_TARGETS_REGEX='./usr/local/cuda-10.2/(targets/[^ ]+).*$'
+    CUPTI_PKGS="cuda-cupti-10-2 cuda-cupti-dev-10-2"
+    CUPTI_PATHS=""
+    for CUPTI_PKG in $CUPTI_PKGS; do
+        CUPTI_PATHS+=" "`dpkg-deb -c $CUPTI_PKG* | grep -E "$CUDA_TARGETS_REGEX" | sed -E -e "s#.*$CUDA_TARGETS_REGEX#\1#"`
+    done
+    for CUPTI_PATH in $CUPTI_PATHS; do
+        CUPTI_PATH=$prefix/cuda/$CUPTI_PATH
+        [ -f $CUPTI_PATH ] || [ -L $CUPTI_PATH ] && [[ $CUPTI_PATH == */include* ]] && mv -nv $CUPTI_PATH $prefix/cuda/extras/CUPTI/include
+        [ -f $CUPTI_PATH ] || [ -L $CUPTI_PATH ] && [[ $CUPTI_PATH == */lib* ]] && mv -nv $CUPTI_PATH $prefix/cuda/extras/CUPTI/lib64
+    done
 
     mv ${prefix}/cuda/doc/EULA.txt ${prefix}/cuda
+    rmdir ${prefix}/cuda/doc
 fi
 
 cd ${prefix}/cuda
