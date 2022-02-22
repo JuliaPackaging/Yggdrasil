@@ -7,7 +7,7 @@ version = v"1.10.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "85bd08d39e7fba29ec4a643f60dd006ed8be8ede"),
+    GitSource("https://github.com/FluxML/Torch.jl.git", "4167e3c21421555ad90868ca5483cd5c2ad0c449"), # v0.1.2
     ArchiveSource("https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-1.10.2%2Bcpu.zip", "fa3fad287c677526277f64d12836266527d403f21f41cc2e7fb9d904969d4c4a"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx03"),
     ArchiveSource("https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcpu.zip", "83e43d63d0e7dc9d57ccbdac8a8d7edac6c9e18129bf3043be475486b769a9c2"; unpack_target = "x86_64-linux-gnu-libgfortran4-cxx11"),
     ArchiveSource("https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.10.2.zip", "d1711e844dc69c2338adfc8ce634806a9ae36e54328afbe501bafd2d70f550e2"; unpack_target = "x86_64-apple-darwin14"),

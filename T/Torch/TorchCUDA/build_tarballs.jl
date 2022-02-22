@@ -8,7 +8,7 @@ name = "TorchCUDA"
 version = v"1.10.2"
 
 common_sources = [
-    GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "85bd08d39e7fba29ec4a643f60dd006ed8be8ede"),
+    GitSource("https://github.com/FluxML/Torch.jl.git", "4167e3c21421555ad90868ca5483cd5c2ad0c449"), # v0.1.2
 ]
 
 cuda_10_sources = [
