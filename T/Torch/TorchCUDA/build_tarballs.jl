@@ -58,7 +58,9 @@ products = [
     LibraryProduct("libtorch", :libtorch, dont_dlopen = true),
 ]
 
-dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
+dependencies = [
+    Dependency("CUDA_loader_jll")
+]
 
 cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
 for cuda_version in cuda_versions
@@ -72,8 +74,9 @@ for cuda_version in cuda_versions
     for platform in platforms
         augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
         should_build_platform(triplet(augmented_platform)) || continue
+        platform_dependencies = vcat(dependencies, [BuildDependency(PackageSpec("CUDA_jll", Base.UUID("e9e359dc-d701-5aa8-82ae-09bbf812ea83"), cuda_version))])
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true,
+                       products, platform_dependencies; lazy_artifacts=true,
                        preferred_gcc_version = v"7.1.0")
     end
 end
