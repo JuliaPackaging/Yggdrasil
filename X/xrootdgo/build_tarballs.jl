@@ -6,17 +6,20 @@ version = v"0.30.1"
 sources = [
     GitSource("https://github.com/go-hep/hep/",
               "76e7c8652ee045064931dec627aedd33b4457fee"),
+    # GitSource("https://github.com/google/uuid",
+    #           "44b5fee7c49cf3bcdf723f106b36d56ef13ccc88"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-install_license ${WORKSPACE}/srcdir/hep/LICENSE
-cd $WORKSPACE/srcdir/hep/
+install_license ${WORKSPACE}/srcdir/LICENSE
+cd $WORKSPACE/srcdir/
 
 mkdir clib
 cp $WORKSPACE/srcdir/main.go clib/main.go
 mkdir -p ${libdir}
+go get github.com/google/uuid
 CGO_ENABLED=1 go build -buildmode=c-shared -o ${libdir}/xrootdgo.${dlext} clib/main.go 
 """
 
