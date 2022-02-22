@@ -3,7 +3,6 @@ using Base.BinaryPlatforms: arch, os
 
 include("../../../fancy_toys.jl")
 
-
 name = "TorchCUDA"
 version = v"1.10.2"
 
@@ -33,7 +32,6 @@ if [[ $target == *linux* ]]; then
 else
     cd $target
 fi
-find .
 mv libtorch/share/* $prefix/share/
 mv libtorch/lib/* $libdir
 rm -r libtorch/lib libtorch/share libtorch/bin libtorch/include
