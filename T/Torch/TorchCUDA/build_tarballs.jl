@@ -1,22 +1,37 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os
+
+include("../../fancy_toys.jl")
+
 
 name = "TorchCUDA"
-version = v"1.4.0"
+version = v"1.10.2"
 
-# Collection of sources required to complete build
-sources = [
+common_sources = [
     GitSource("https://github.com/dhairyagandhi96/Torch.jl.git", "85bd08d39e7fba29ec4a643f60dd006ed8be8ede"),
-    ArchiveSource("https://download.pytorch.org/libtorch/cu101/libtorch-cxx11-abi-shared-with-deps-1.4.0.zip", "f214bfde532877aa5d4e0803e51a28fa8edd97b6a44b6615f75a70352b6b542e"),
-    ArchiveSource("https://github.com/JuliaGPU/CUDABuilder/releases/download/v0.3.0/CUDNN+CUDA10.1.v7.6.5.x86_64-linux-gnu.tar.gz", "79de5b5085a33bc144b87028e998a1d295a15c3424d6d45b25defe500f616974", unpack_target = "cudnn"),
 ]
 
-# Bash recipe for building across all platforms
+cuda_10_sources = [
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.10.2%2Bcu102.zip", "fa3fad287c677526277f64d12836266527d403f21f41cc2e7fb9d904969d4c4a"; unpack_target = "x86_64-linux-gnu-cxx03"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu102.zip", "83e43d63d0e7dc9d57ccbdac8a8d7edac6c9e18129bf3043be475486b769a9c2"; unpack_target = "x86_64-linux-gnu-cxx11"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu102/libtorch-win-shared-with-deps-1.10.2%2Bcu102.zip", "0ce2ccd959704cd85c44ad1f3f335c56734c7ff09418bd563e07d5bb7142510c"; unpack_target = "x86_64-w64-mingw32"),
+]
+
+cuda_11_sources = [
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1.10.2%2Bcu113.zip", "fa3fad287c677526277f64d12836266527d403f21f41cc2e7fb9d904969d4c4a"; unpack_target = "x86_64-linux-gnu-cxx03"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-cxx11-abi-shared-with-deps-1.10.2%2Bcu113.zip", "83e43d63d0e7dc9d57ccbdac8a8d7edac6c9e18129bf3043be475486b769a9c2"; unpack_target = "x86_64-linux-gnu-cxx11"),
+    ArchiveSource("https://download.pytorch.org/libtorch/cu113/libtorch-win-shared-with-deps-1.10.2%2Bcu113.zip", "0ce2ccd959704cd85c44ad1f3f335c56734c7ff09418bd563e07d5bb7142510c"; unpack_target = "x86_64-w64-mingw32"),
+]
+
 script = raw"""
 cd $WORKSPACE/srcdir
 
 mv cudnn $prefix
+if [[ $target == *linux* ]]; then
+    cd $bb_full_target
+else
+    cd $target
+fi
 mv libtorch/share/* $prefix/share/
 mv libtorch/lib/* $prefix/lib/
 rm -r libtorch/lib
@@ -40,23 +55,33 @@ rm -rf $prefix/cuda
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "windows"),
 ]
+platforms = expand_cxxstring_abis(platforms; skip = !Sys.islinux)
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libdoeye_caml", :libdoeye_caml, dont_dlopen = true),
     LibraryProduct("libtorch", :libtorch, dont_dlopen = true),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.1.243")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-]
+dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
+for cuda_version in cuda_versions
+    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
+    if cuda_version.major == 10
+        sources = vcat(common_sources, cuda_10_sources)
+    elseif cuda_version.major == 11
+        sources = vcat(common_sources, cuda_11_sources)
+    end
+
+    for platform in platforms
+        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        should_build_platform(triplet(augmented_platform)) || continue
+        build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+                       products, dependencies; lazy_artifacts=true,
+                       preferred_gcc_version = v"7.1.0")
+    end
+end
