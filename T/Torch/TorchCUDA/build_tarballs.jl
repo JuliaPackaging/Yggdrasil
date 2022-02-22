@@ -28,7 +28,6 @@ mkdir -p $includedir $libdir $prefix/share
 
 cd $WORKSPACE/srcdir
 
-mv cudnn $prefix
 if [[ $target == *linux* ]]; then
     cd $bb_full_target
 else
@@ -41,18 +40,12 @@ rm -r libtorch/share
 mv libtorch/* $prefix
 rm -r libtorch
 
-mkdir -p /usr/local/cuda/lib64
-cd /usr/local/cuda/lib64
-ln -s ${prefix}/cuda/lib64/libcudart.so libcudart.so
-ln -s ${prefix}/cuda/lib64/libnvToolsExt.so libnvToolsExt.so
-
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda ..
 cmake --build .
 
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
-rm -rf $prefix/cuda
 install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 """
 
