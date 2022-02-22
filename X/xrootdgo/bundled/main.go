@@ -42,9 +42,20 @@ func Close(_id *C.char){
         log.Fatal(err)
     }
 }
+//export Size
+func Size(_id *C.char) C.long {
+    ctx := context.Background()
+    file, _ := _FILES[_id]
+    info, err := file.Stat(ctx)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+    return C.long(info.EntrySize)
+}
 
 //export ReadAt
-func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.int, offset C.int) {
+func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.long, offset C.long) {
 // func ReadAt(res *C.char, _id *C.char, NBytes C.int, offset C.int) **C.char {
     file := _FILES[_id]
     // res := C.malloc(C.ulong(NBytes))
