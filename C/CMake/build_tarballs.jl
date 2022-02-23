@@ -25,11 +25,7 @@ make install
 """
 
 # Build for all supported platforms.
-#
-# CMake is in C++ and it exports the C++ string ABIs, but when compiling it with
-# the C++03 string ABI it seems to ignore our request, so let's just build for
-# the C++11 string ABI.
-platforms = filter!(p -> cxxstring_abi(p) != "cxx03", expand_cxxstring_abis(supported_platforms()))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
