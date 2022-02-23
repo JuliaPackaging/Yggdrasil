@@ -18,7 +18,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -35,7 +35,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     mv lib64/libcusolver.so* ${libdir}
 
     # CUDA Linear Solver Multi GPU Library
-    mv lib64/libcusolverMg.so* ${libdir}
+    if [[ $target != aarch64-linux-gnu ]]; then
+        mv lib64/libcusolverMg.so* ${libdir}
+    fi
 
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
@@ -109,7 +111,6 @@ products = [
     LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
     LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
     LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
@@ -120,5 +121,8 @@ products = [
     ExecutableProduct("nvlink", :nvlink),
 ]
 
-platforms = [Platform("x86_64", "linux"; cuda="10.2"),
-             Platform("x86_64", "windows"; cuda="10.2")]
+platforms = [
+    Platform("aarch64", "linux"; cuda="10.2"),
+    Platform("x86_64", "linux"; cuda="10.2"),
+    Platform("x86_64", "windows"; cuda="10.2")
+]
