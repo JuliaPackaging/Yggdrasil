@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libdrm"
-version = v"2.4.106"
+version = v"2.4.110"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-2.4.106.tar.xz", "92d8ac54429b171e087e61c2894dc5399fe6a549b1fbba09fa6a3cb9d4e57bd4"),
+    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-$version.tar.xz", "eecee4c4b47ed6d6ce1a9be3d6d92102548ea35e442282216d47d05293cf9737"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libdrm-*
+atomic_patch -p1 ../no_stress.patch
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=false build
 ninja -C build install
 # taken from https://salsa.debian.org/xorg-team/lib/libdrm/-/blob/libdrm-2.4.105-3/debian/copyright
