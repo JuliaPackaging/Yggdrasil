@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libnode"
-version = v"16.13.1"
+version = v"16.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "34b23965457fb08a8c62f81e8faf74ea60587cda6fa898e5d030211f5f374cb6"),
+    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "29dfce13650f063ff009d18349636333fa4305468b6a8965d442c2e88b1dd60f"),
 ]
 
 host_platform = HostPlatform()
@@ -76,6 +76,6 @@ build_tarballs(
     ARGS, name, version, sources, script,
     platforms, products, dependencies;
     julia_compat="1.6",
-    preferred_gcc_version = v"7",
+    preferred_gcc_version = v"9",
     init_block = init_block
 )
