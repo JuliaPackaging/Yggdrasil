@@ -1,0 +1,26 @@
+--- a/tests/amdgpu/meson.build
++++ b/tests/amdgpu/meson.build
+@@ -34,13 +34,13 @@
+   )
+ endif
+ 
+-amdgpu_stress = executable(
+-  'amdgpu_stress',
+-  files(
+-    'amdgpu_stress.c'
+-  ),
+-  dependencies : [dep_threads, dep_atomic_ops],
+-  include_directories : [inc_root, inc_drm, include_directories('../../amdgpu')],
+-  link_with : [libdrm, libdrm_amdgpu],
+-  install : with_install_tests,
+-)
++#amdgpu_stress = executable(
++#  'amdgpu_stress',
++#  files(
++#    'amdgpu_stress.c'
++#  ),
++#  dependencies : [dep_threads, dep_atomic_ops],
++#  include_directories : [inc_root, inc_drm, include_directories('../../amdgpu')],
++#  link_with : [libdrm, libdrm_amdgpu],
++#  install : with_install_tests,
++#)
