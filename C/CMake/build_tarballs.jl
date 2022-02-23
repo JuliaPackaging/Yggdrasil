@@ -29,9 +29,7 @@ make install
 # CMake is in C++ and it exports the C++ string ABIs, but when compiling it with
 # the C++03 string ABI it seems to ignore our request, so let's just build for
 # the C++11 string ABI.
-platforms = filter(expand_cxxstring_abis(supported_platforms(; experimental=true))) do platform
-    !haskey(platform, "cxxstring_abi") || platform["cxxstring_abi"] == "cxx11"
-end
+platforms = filter!(p -> cxxstring_abi(p) != "cxx03", expand_cxxstring_abis(supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
