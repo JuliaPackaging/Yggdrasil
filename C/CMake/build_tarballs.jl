@@ -24,19 +24,14 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
+# Build for all supported platforms.
+#
 # CMake is in C++ and it exports the C++ string ABIs, but when compiling it with
 # the C++03 string ABI it seems to ignore our request, so let's just build for
 # the C++11 string ABI.
-platforms = [
-    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
-]
-
-# platforms = expand_cxxstring_abis(platforms)
+platforms = filter(expand_cxxstring_abis(supported_platforms(; experimental=true))) do platform
+    !haskey(platform, "cxxstring_abi") || platform["cxxstring_abi"] == "cxx11"
+end
 
 # The products that we will ensure are always built
 products = [
@@ -49,5 +44,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
