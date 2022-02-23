@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Mesa_EGL"
-version = v"1.4.0"
+version = v"22.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.freedesktop.org/mesa/mesa.git", "1b74a12ea0ae900d49d1921ed8931eb6131e1f18"),
+    GitSource("https://gitlab.freedesktop.org/mesa/mesa.git", "716fc5280adcb1912c817298353c0edc731e76a8"),
     DirectorySource("./bundled"),
 ]
 
