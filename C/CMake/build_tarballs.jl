@@ -15,7 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cmake-*/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE:STRING=Release \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
 
 make -j${nproc}
 make install
@@ -30,6 +33,7 @@ platforms = [
     Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
     Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
+    Platform("x86_64", "macos"; cxxstring_abi = "cxx11"),
 ]
 
 # platforms = expand_cxxstring_abis(platforms)
