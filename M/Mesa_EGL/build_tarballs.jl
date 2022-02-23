@@ -54,7 +54,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("Zlib_jll"),
-    Dependency("libdrm_jll"),
+    Dependency("libdrm_jll"; compat="2.4.110"),
     Dependency("LLVM_jll"),
     Dependency("Elfutils_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
