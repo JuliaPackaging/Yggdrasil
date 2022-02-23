@@ -27,7 +27,7 @@ index d9b380ff..5d7b3c66 100644
  	return 0;
  }
 +#else
-+#include ../generic/gemm_small_matrix_kernel_nn.c
++#include "../generic/gemm_small_matrix_kernel_nn.c"
 +#endif
 +
 diff --git a/kernel/x86_64/dgemm_small_kernel_tn_skylakex.c b/kernel/x86_64/dgemm_small_kernel_tn_skylakex.c
@@ -47,7 +47,7 @@ index 18c79728..e6387398 100644
  	return 0;
  }
 +#else
-+#include ../generic/gemm_small_matrix_kernel_tn.c
++#include "../generic/gemm_small_matrix_kernel_tn.c"
 +#endif
 +
 diff --git a/kernel/x86_64/sgemm_small_kernel_nn_skylakex.c b/kernel/x86_64/sgemm_small_kernel_nn_skylakex.c
@@ -67,7 +67,7 @@ index 9bc7a7c5..215add01 100644
  	return 0;
  }
 +#else
-+#include ../generic/gemm_small_matrix_kernel_nn.c
++#include "../generic/gemm_small_matrix_kernel_nn.c"
 +#endif
 +
 diff --git a/kernel/x86_64/sgemm_small_kernel_tn_skylakex.c b/kernel/x86_64/sgemm_small_kernel_tn_skylakex.c
@@ -87,7 +87,7 @@ index 5a9a4ea3..f394b5b3 100644
  	return 0;
  }
 +#else
-+#include ../generic/gemm_small_matrix_kernel_tn.c
++#include "../generic/gemm_small_matrix_kernel_tn.c"
 +#endif
 +
 -- 
