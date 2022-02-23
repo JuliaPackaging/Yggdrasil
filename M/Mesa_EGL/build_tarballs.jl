@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "EGL"
+name = "Mesa_EGL"
 version = v"1.4.0"
 
 # Collection of sources required to complete build
