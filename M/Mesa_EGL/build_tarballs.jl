@@ -14,19 +14,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mesa/
-mkdir build
-cd build
-apk add py3-mako meson wayland-dev
-
-# pkgconfig returns the wrong path here. It's an ugly hack, but it works
-mkdir -p /workspace/destdir/usr/bin/
-ln -s $(which wayland-scanner) /workspace/destdir/usr/bin/
+#mkdir build
+#cd build
+apk add py3-mako #meson wayland-dev
+#
+## pkgconfig returns the wrong path here. It's an ugly hack, but it works
+#mkdir -p /workspace/destdir/usr/bin/
+#ln -s $(which wayland-scanner) /workspace/destdir/usr/bin/
 
 meson -D egl=enabled -D gles1=enabled -D gles2=enabled -D platforms=wayland -D glx=disabled -D c_args="-Wno-implicit-function-declaration" ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 
-rm /workspace/destdir/usr/bin/wayland-scanner
+#rm /workspace/destdir/usr/bin/wayland-scanner
 # taken from https://metadata.ftp-master.debian.org/changelogs//main/m/mesa/mesa_20.3.5-1_copyright
 install_license ../../copyright
 """
@@ -52,7 +52,8 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("Wayland_jll"),
     Dependency("Zlib_jll"),
     Dependency("libdrm_jll"; compat="2.4.110"),
     Dependency("LLVM_jll"),
