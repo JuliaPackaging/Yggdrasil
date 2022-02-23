@@ -2,25 +2,17 @@
 using BinaryBuilder, Pkg
 
 name = "startin"
-version = v"0.4.9"
+version = v"0.5.3"
 
 sources = [
-    ArchiveSource(
-        "https://github.com/evetion/startin/archive/c-interface.zip",  # PR branch
-        "d3a987e9ab20ee3504c8c79f0940ce22527e23ed8b029e8d12136831fe996c63"
+    GitSource(
+        "https://github.com/hugoledoux/startin.git",
+        "6ae106bd107f0b33a36cf1270351527fa29deb40"
     )
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/startin-c-interface/
-if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
-    # Fix linker for BSD platforms
-    sed -i "s/${rust_target}-gcc/${target}-gcc/" "${CARGO_HOME}/config"
-fi
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    # Fix from https://github.com/rust-lang/rust/issues/32859#issuecomment-573423629, see https://github.com/rust-lang/rust/issues/47048
-    cp -f /opt/${target}/${target}/sys-root/lib/{,dll}crt2.o `rustc --print sysroot`/lib/rustlib/${rust_target}/lib
-fi
+cd $WORKSPACE/srcdir/startin/
 cargo build --features c_api --release -j${nproc}
 mkdir ${libdir}
 if [[ "${target}" == *-w64-mingw32* ]]; then
@@ -32,21 +24,11 @@ fi
 """
 
 # musl platforms are failing, as is win32
-platforms = [
-    Platform("x86_64", "freebsd"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    # Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    # Platform("armv7l", "linux"; libc="musl"),
-    Platform("i686", "linux"; libc="glibc"),
-    # Platform("i686", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    # Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    # Platform("i686", "windows"),  # linking error
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms(; experimental=true)
+# `cdylib` apparently doesn't support musl
+filter!(p -> libc(p) != "musl", platforms)
+# Our Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 products = [
     LibraryProduct("libstartin", :libstartin),
@@ -54,4 +36,4 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")

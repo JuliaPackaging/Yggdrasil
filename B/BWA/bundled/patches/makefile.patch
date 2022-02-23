@@ -1,0 +1,40 @@
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+-CC=			gcc
++CC=			cc
+ #CC=			clang --analyze
+-CFLAGS=		-g -Wall -Wno-unused-function -O2
++CFLAGS=		-g -Wall -Wno-unused-function -O2 -fPIC -I$(includedir)
+ WRAP_MALLOC=-DUSE_MALLOC_WRAPPERS
+ AR=			ar
+ DFLAGS=		-DHAVE_PTHREAD $(WRAP_MALLOC)
+@@ -10,7 +10,7 @@
+ 			bwape.o kopen.o pemerge.o maxk.o \
+ 			bwtsw2_core.o bwtsw2_main.o bwtsw2_aux.o bwt_lite.o \
+ 			bwtsw2_chain.o fastmap.o bwtsw2_pair.o
+-PROG=		bwa
++PROG=		bwa$(exeext)
+ INCLUDES=	
+ LIBS=		-lm -lz -lpthread
+ SUBDIRS=	.
+@@ -26,14 +26,15 @@
+ 
+ all:$(PROG)
+ 
+-bwa:libbwa.a $(AOBJS) main.o
++bwa$(exeext):libbwa.$(dlext) $(AOBJS) main.o
+ 		$(CC) $(CFLAGS) $(DFLAGS) $(AOBJS) main.o -o $@ -L. -lbwa $(LIBS)
+ 
+-bwamem-lite:libbwa.a example.o
++bwamem-lite:libbwa.$(dlext) example.o
+ 		$(CC) $(CFLAGS) $(DFLAGS) example.o -o $@ -L. -lbwa $(LIBS)
+ 
+-libbwa.a:$(LOBJS)
+-		$(AR) -csru $@ $(LOBJS)
++libbwa.$(dlext): $(LOBJS)
++		$(CC) -shared -o $@ $(LOBJS) -lz
++
+ 
+ clean:
+ 		rm -f gmon.out *.o a.out $(PROG) *~ *.a

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"3.0.4"
+version = v"5.0.1"
 
-# Collection of sources required to build Libtiff
+# Collection of sources required to build libblastrampoline
 sources = [
-    GitSource("https://github.com/staticfloat/libblastrampoline",
-              "23de7a09bf354fe6f655c457bab5bf47fdd2486d")
+    GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
+              "d32042273719672c6669f6442a0be5605d434b70")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,4 +33,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.8",
+)

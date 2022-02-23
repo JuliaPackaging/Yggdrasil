@@ -1,0 +1,218 @@
+diff --git a/elf/dl-sysdep.c b/elf/dl-sysdep.c
+index d8cdb7e24b..5e6e70a5bf 100644
+--- a/elf/dl-sysdep.c
++++ b/elf/dl-sysdep.c
+@@ -108,7 +108,7 @@ _dl_sysdep_start (void **start_argptr,
+ #endif
+ 
+   __libc_stack_end = DL_STACK_END (start_argptr);
+-  DL_FIND_ARG_COMPONENTS (start_argptr, _dl_argc, INTUSE(_dl_argv), _environ,
++  DL_FIND_ARG_COMPONENTS (start_argptr, _dl_argc, _dl_argv, _environ,
+ 			  GLRO(dl_auxv));
+ 
+   user_entry = (ElfW(Addr)) ENTRY_POINT;
+diff --git a/elf/rtld.c b/elf/rtld.c
+index 6dcbabc284..03209d695a 100644
+--- a/elf/rtld.c
++++ b/elf/rtld.c
+@@ -83,7 +83,7 @@ int _dl_argc attribute_relro attribute_hidden;
+ char **_dl_argv attribute_relro = NULL;
+ unsigned int _dl_skip_args attribute_relro attribute_hidden;
+ #endif
+-INTDEF(_dl_argv)
++rtld_hidden_data_def (_dl_argv)
+ 
+ #ifndef THREAD_SET_STACK_GUARD
+ /* Only exported for architectures that don't store the stack guard canary
+@@ -634,7 +634,7 @@ dlmopen_doit (void *a)
+   args->map = _dl_open (args->fname,
+ 			(RTLD_LAZY | __RTLD_DLOPEN | __RTLD_AUDIT
+ 			 | __RTLD_SECURE),
+-			dl_main, LM_ID_NEWLM, _dl_argc, INTUSE(_dl_argv),
++			dl_main, LM_ID_NEWLM, _dl_argc, _dl_argv,
+ 			__environ);
+ }
+ 
+@@ -952,55 +952,55 @@ dl_main (const ElfW(Phdr) *phdr,
+       GL(dl_rtld_map).l_name = rtld_progname;
+ 
+       while (_dl_argc > 1)
+-	if (! strcmp (INTUSE(_dl_argv)[1], "--list"))
++	if (! strcmp (_dl_argv[1], "--list"))
+ 	  {
+ 	    mode = list;
+ 	    GLRO(dl_lazy) = -1;	/* This means do no dependency analysis.  */
+ 
+ 	    ++_dl_skip_args;
+ 	    --_dl_argc;
+-	    ++INTUSE(_dl_argv);
++	    ++_dl_argv;
+ 	  }
+-	else if (! strcmp (INTUSE(_dl_argv)[1], "--verify"))
++	else if (! strcmp (_dl_argv[1], "--verify"))
+ 	  {
+ 	    mode = verify;
+ 
+ 	    ++_dl_skip_args;
+ 	    --_dl_argc;
+-	    ++INTUSE(_dl_argv);
++	    ++_dl_argv;
+ 	  }
+-	else if (! strcmp (INTUSE(_dl_argv)[1], "--inhibit-cache"))
++	else if (! strcmp (_dl_argv[1], "--inhibit-cache"))
+ 	  {
+ 	    GLRO(dl_inhibit_cache) = 1;
+ 	    ++_dl_skip_args;
+ 	    --_dl_argc;
+-	    ++INTUSE(_dl_argv);
++	    ++_dl_argv;
+ 	  }
+-	else if (! strcmp (INTUSE(_dl_argv)[1], "--library-path")
++	else if (! strcmp (_dl_argv[1], "--library-path")
+ 		 && _dl_argc > 2)
+ 	  {
+-	    library_path = INTUSE(_dl_argv)[2];
++	    library_path = _dl_argv[2];
+ 
+ 	    _dl_skip_args += 2;
+ 	    _dl_argc -= 2;
+-	    INTUSE(_dl_argv) += 2;
++	    _dl_argv += 2;
+ 	  }
+-	else if (! strcmp (INTUSE(_dl_argv)[1], "--inhibit-rpath")
++	else if (! strcmp (_dl_argv[1], "--inhibit-rpath")
+ 		 && _dl_argc > 2)
+ 	  {
+-	    GLRO(dl_inhibit_rpath) = INTUSE(_dl_argv)[2];
++	    GLRO(dl_inhibit_rpath) = _dl_argv[2];
+ 
+ 	    _dl_skip_args += 2;
+ 	    _dl_argc -= 2;
+-	    INTUSE(_dl_argv) += 2;
++	    _dl_argv += 2;
+ 	  }
+-	else if (! strcmp (INTUSE(_dl_argv)[1], "--audit") && _dl_argc > 2)
++	else if (! strcmp (_dl_argv[1], "--audit") && _dl_argc > 2)
+ 	  {
+-	    process_dl_audit (INTUSE(_dl_argv)[2]);
++	    process_dl_audit (_dl_argv[2]);
+ 
+ 	    _dl_skip_args += 2;
+ 	    _dl_argc -= 2;
+-	    INTUSE(_dl_argv) += 2;
++	    _dl_argv += 2;
+ 	  }
+ 	else
+ 	  break;
+@@ -1034,7 +1034,7 @@ of this helper program; chances are you did not intend to run this program.\n\
+ 
+       ++_dl_skip_args;
+       --_dl_argc;
+-      ++INTUSE(_dl_argv);
++      ++_dl_argv;
+ 
+       /* The initialization of _dl_stack_flags done below assumes the
+ 	 executable's PT_GNU_STACK may have been honored by the kernel, and
+@@ -1929,7 +1929,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
+ 	    ElfW(Addr) loadbase;
+ 	    lookup_t result;
+ 
+-	    result = _dl_lookup_symbol_x (INTUSE(_dl_argv)[i], main_map,
++	    result = _dl_lookup_symbol_x (_dl_argv[i], main_map,
+ 					  &ref, main_map->l_scope,
+ 					  NULL, ELF_RTYPE_CLASS_PLT,
+ 					  DL_LOOKUP_ADD_DEPENDENCY, NULL);
+@@ -1937,7 +1937,7 @@ ERROR: ld.so: object '%s' cannot be loaded as audit interface: %s; ignored.\n",
+ 	    loadbase = LOOKUP_VALUE_ADDRESS (result);
+ 
+ 	    _dl_printf ("%s found at 0x%0*Zd in object at 0x%0*Zd\n",
+-			INTUSE(_dl_argv)[i],
++			_dl_argv[i],
+ 			(int) sizeof ref->st_value * 2,
+ 			(size_t) ref->st_value,
+ 			(int) sizeof loadbase * 2, (size_t) loadbase);
+diff --git a/ports/sysdeps/aarch64/dl-machine.h b/ports/sysdeps/aarch64/dl-machine.h
+index 997c860ccb..09fb09c164 100644
+--- a/ports/sysdeps/aarch64/dl-machine.h
++++ b/ports/sysdeps/aarch64/dl-machine.h
+@@ -49,23 +49,10 @@ elf_machine_load_address (void)
+   /* To figure out the load address we use the definition that for any symbol:
+      dynamic_addr(symbol) = static_addr(symbol) + load_addr
+ 
+-     The choice of symbol is arbitrary. The static address we obtain
+-     by constructing a non GOT reference to the symbol, the dynamic
+-     address of the symbol we compute using adrp/add to compute the
+-     symbol's address relative to the PC. */
+-
+-  ElfW(Addr) static_addr;
+-  ElfW(Addr) dynamic_addr;
+-
+-  asm ("					\n\
+-	adrp	%1, _dl_start;			\n\
+-        add	%1, %1, #:lo12:_dl_start        \n\
+-        ldr	%w0, 1f				\n\
+-	b	2f				\n\
+-1:	.word	_dl_start			\n\
+-2:						\n\
+-       " : "=r" (static_addr),  "=r" (dynamic_addr));
+-  return dynamic_addr - static_addr;
++     _DYNAMIC sysmbol is used here as its link-time address stored in
++     the special unrelocated first GOT entry.  */
++  extern ElfW(Dyn) _DYNAMIC[] attribute_hidden;
++  return (ElfW(Addr)) &_DYNAMIC - elf_machine_dynamic ();
+ }
+ 
+ /* Set up the loaded object described by L so its unrelocated PLT
+@@ -169,8 +156,8 @@ _dl_start_user:							\n\
+ 	cmp	x0, #0						\n\
+ 	bne	1b						\n\
+ 	// Update _dl_argv					\n\
+-	adrp	x3, _dl_argv					\n\
+-	str	x2, [x3, #:lo12:_dl_argv]			\n\
++	adrp	x3, __GI__dl_argv					\n\
++	str	x2, [x3, #:lo12:__GI__dl_argv]			\n\
+ .L_done_stack_adjust:						\n\
+ 	// compute envp						\n\
+ 	add	x3, x2, x1, lsl #3				\n\
+diff --git a/sysdeps/generic/ldsodefs.h b/sysdeps/generic/ldsodefs.h
+index ffeb093887..051bb4d954 100644
+--- a/sysdeps/generic/ldsodefs.h
++++ b/sysdeps/generic/ldsodefs.h
+@@ -649,6 +649,7 @@ extern char **_dl_argv
+      attribute_relro
+ #endif
+      ;
++rtld_hidden_proto (_dl_argv)
+ #ifdef IS_IN_rtld
+ extern unsigned int _dl_skip_args attribute_hidden
+ # ifndef DL_ARGV_NOT_RELRO
+@@ -660,15 +661,8 @@ extern unsigned int _dl_skip_args_internal attribute_hidden
+      attribute_relro
+ # endif
+      ;
+-extern char **_dl_argv_internal attribute_hidden
+-# ifndef DL_ARGV_NOT_RELRO
+-     attribute_relro
+-# endif
+-     ;
+-# define rtld_progname (INTUSE(_dl_argv)[0])
+-#else
+-# define rtld_progname _dl_argv[0]
+ #endif
++# define rtld_progname _dl_argv[0]
+ 
+ /* Flag set at startup and cleared when the last initializer has run.  */
+ extern int _dl_starting_up;
+diff --git a/sysdeps/powerpc/powerpc64/dl-machine.h b/sysdeps/powerpc/powerpc64/dl-machine.h
+index 735a549f541..3007e80f90a 100644
+--- a/sysdeps/powerpc/powerpc64/dl-machine.h
++++ b/sysdeps/powerpc/powerpc64/dl-machine.h
+@@ -169,7 +169,7 @@ DL_STARTING_UP_DEF							\
+ ".LC__dl_argc:\n"							\
+ "	.tc _dl_argc[TC],_dl_argc\n"					\
+ ".LC__dl_argv:\n"							\
+-"	.tc _dl_argv_internal[TC],_dl_argv_internal\n"			\
++"	.tc __GI__dl_argv[TC],__GI__dl_argv\n"				\
+ ".LC__dl_fini:\n"							\
+ "	.tc _dl_fini[TC],_dl_fini\n"					\
+ "	.popsection\n"							\

@@ -1,24 +1,19 @@
 using BinaryBuilder
 
 name = "WCS"
-version = v"7.6.0"
+version = v"7.7.0"
 
 # Collection of sources required to build WCS
 sources = [
     ArchiveSource("https://cache.julialang.org/ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib-$(version.major).$(version.minor).tar.bz2",
-                  "54bb8c92167a7f13f8aa73fc4b8a09785256d2c98213467debc7a282a431318b"),
-    DirectorySource("./bundled"),
+                  "a708e6b4e90e2cd6427434715b591bb9c3d4005c99725ec494b8e0bed2de5355"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wcslib-*/
 if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure-mingw.patch"
-    autoconf
     export CFLAGS="${CFLAGS} -DNO_OLDNAMES"
-elif [[ "${target}" == *-darwin* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/soname-macos.patch"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-fortran --without-cfitsio --without-pgplot --disable-utils
 make -j${nproc}
@@ -33,7 +28,7 @@ install_license COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

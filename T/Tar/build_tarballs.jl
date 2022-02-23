@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tar"
-version = v"1.32"
+version = v"1.34"
 
 # Collection of sources required to build tar
 sources = [
-    "https://ftp.gnu.org/gnu/tar/tar-$(version.major).$(version.minor).tar.xz" =>
-    "d0d3ae07f103323be809bc3eac0dcc386d52c5262499fe05511ac4788af1fdd8",
+    ArchiveSource("https://ftp.gnu.org/gnu/tar/tar-$(version.major).$(version.minor).tar.xz",
+                  "63bebd26879c5e1eea4352f0d03c991f966aeb3ddeb3c7445c902568d5411d28"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = [p for p in supported_platforms() if !Sys.iswindows(p)]
+platforms = filter!(!Sys.iswindows, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -32,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Attr_jll",
+    Dependency("Attr_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

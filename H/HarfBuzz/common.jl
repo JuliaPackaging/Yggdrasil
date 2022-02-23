@@ -22,6 +22,7 @@ cd $WORKSPACE/srcdir/harfbuzz-*/
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
     -Dcairo=enabled \
     -Dfreetype=enabled \
     -Dglib=enabled \

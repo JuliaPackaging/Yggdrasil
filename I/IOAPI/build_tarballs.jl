@@ -47,7 +47,11 @@ cp *.h ${includedir} # C header files
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
 
 # Convert static library to dynamic library
-gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -L${libdir} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdf -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lnetcdff
+if [[ "${target}" == *-apple-* ]]; then
+    gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -L${libdir} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -lnetcdf -lnetcdff
+else
+    gfortran -shared -fPIC -fopenmp -o ${libdir}/libioapi.${dlext} -L${libdir} -Wl,$(flagon --whole-archive) ${BINDIR}/libioapi.a -Wl,$(flagon --no-whole-archive) -lnetcdf -Wl,$(flagon --no-whole-archive) -lnetcdff
+fi
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
@@ -136,10 +140,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.701.400 - 400.799")
     Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-
+    # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
+    # a compatible build version for this to work.
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

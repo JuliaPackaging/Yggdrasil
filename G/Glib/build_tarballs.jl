@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.68.1"
+version = v"2.68.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "241654b96bd36b88aaa12814efc4843b578e55d47440103727959ac346944333"),
+                  "e7e1a3c20c026109c45c9ec4a31d8dcebc22e86c69486993e565817d64be3138"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,6 +30,7 @@ fi
 
 mkdir build_glib && cd build_glib
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
     -Dman=false \
     -Diconv=external \
     "${MESON_FLAGS[@]}" \
@@ -61,7 +62,7 @@ dependencies = [
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE_jll"),
     Dependency("Zlib_jll"),
-    Dependency("Libmount_jll"),
+    Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

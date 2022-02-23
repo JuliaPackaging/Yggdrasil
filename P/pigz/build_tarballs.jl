@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "pigz"
-version = v"2.5"
+version = v"2.7"
 
 # Collection of sources required to build pigz
 sources = [
-    ArchiveSource("https://zlib.net/pigz/pigz-2.5.tar.gz",
-                  "a006645702caaecace633a89eb5c371482b44a48d04f34e0058e2b85d75d4c36"),
+    ArchiveSource("https://zlib.net/pigz/pigz-$(version.major).$(version.minor).tar.gz",
+                  "b4c9e60344a08d5db37ca7ad00a5b2c76ccb9556354b722d56d55ca7e8b1c707"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

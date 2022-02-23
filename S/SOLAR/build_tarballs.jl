@@ -3,20 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "SOLAR"
-version = v"0.3.0"
+version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/solar.git", "d0c2932a3f25d4b0a71010b87b1f929c6fc1e020")
+    GitSource("https://github.com/bbopt/solar.git", "37615c09482b6e8b28f430c7633b59b1fc0d1b77")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/solar/src
-make COMPILATOR="c++" LIBS="-lm"
 mkdir -p $bindir
-cp "../bin/solar${exeext}" "${bindir}/solar${exeext}"
-exit
+cd $WORKSPACE/srcdir/solar/src
+make COMPILATOR="c++" LIBS="-lm" EXE="${bindir}/solar${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further

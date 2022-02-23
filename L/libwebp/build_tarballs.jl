@@ -3,22 +3,20 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to build libwebp
 sources = [
     ArchiveSource("https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$(version).tar.gz",
-                  "98a052268cc4d5ece27f76572a7f50293f439c17a98e67c4ea0c7ed6f50ef043"),
+                  "2fc8bbde9f97f2ab403c0224fb9ca62b2e6852cbc519e91ceaa7c153ffd88a0c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebp-*/
 export CFLAGS="-std=c99"
-export CPPFLAGS="-I${prefix}/include"
-if [[ "${target}" == *-freebsd* ]]; then
-    export LDFLAGS="-L${libdir}"
-fi
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-swap-16bit-csp \
     --enable-experimental \
@@ -30,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -51,9 +49,9 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Libglvnd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

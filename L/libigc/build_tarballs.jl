@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.7423"
+version = v"1.0.8744"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -11,13 +11,17 @@ version = v"1.0.7423"
 # in-tree build with known-good versions.
 
 # Collection of sources required to build IGC
-# NOTE: these hashes are taken from the release notes in GitHub
+# NOTE: these hashes are taken from the release notes in GitHub,
+#       https://github.com/intel/intel-graphics-compiler/releases
+# NOTE: the SPIRV-LLVM-Translator doesn't match what's in the release notes,
+#       but gets checked out to $SPIRV_REV_PATCH in IGC/VectorCompiler/cmake/spirv.cmake,
+#       https://github.com/intel/intel-graphics-compiler/blob/master/IGC/VectorCompiler/cmake/spirv.cmake
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3104b45be5ed35a7f6a8d52ff4a7f339f582e055"),
-    GitSource("https://github.com/intel/opencl-clang.git", "c8cd72e32b6abc18ce6da71c357ea45ba78b52f0"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "9d8d0329fe41d7fd1b859d1988b8c89d7cce0a7e"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "069ced1e8a408d8b602b3b210017603792df6260"),
-    GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3ba8dde8c414a0e47df58b1bba12a64f8ba2089e"),
+    GitSource("https://github.com/intel/opencl-clang.git", "fd68f64b33e67d58f6c36b9e25c31c1178a1962a"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "d8d516efa27a8b3d9c40d8c78390c5c53c6e99d6"),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "e5ad7e02aa4aa21a3cd7b3e5d1f3ec9b95f58872"),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
     # patches
     DirectorySource("./bundled"),
 ]

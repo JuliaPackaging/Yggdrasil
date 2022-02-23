@@ -59,7 +59,7 @@ cmake ../cosma \
     -DOPENBLAS_INCLUDE_DIR=$includedir \
     $OPENMP_CMAKE_FLAGS
 
-make -j$(nproc)
+make -j${nproc}
 make install
 
 install_license ../cosma/LICENCE

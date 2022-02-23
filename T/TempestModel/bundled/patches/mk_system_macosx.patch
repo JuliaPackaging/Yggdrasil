@@ -1,0 +1,29 @@
+diff --git a/mk/system/macosx.make b/mk/system/macosx.make
+index a36cc9e..8d4ca1f 100644
+--- a/mk/system/macosx.make
++++ b/mk/system/macosx.make
+@@ -8,7 +8,7 @@
+ 
+ CXX=               clang
+ F90=               gfortran
+-MPICXX=            mpicxx
++MPICXX=            mpic++
+ MPIF90=            mpif90
+ 
+ F90_RUNTIME=       -L/usr/local/lib -lgfortran
+@@ -27,10 +27,11 @@ PETSC_CXXFLAGS=    -I$(PETSC_ROOT)/include
+ PETSC_LIBRARIES=   -lpetsc -lX11
+ PETSC_LDFLAGS=     -L$(PETSC_ROOT)/lib -L$(X11_ROOT)/lib
+ 
+-# LAPACK (Mac OS X Accelerate Framework)
+-LAPACK_INTERFACE=  FORTRAN
++# LAPACK (Mac OS X use MKL as well)
++LAPACK_INTERFACE= FORTRAN
+ LAPACK_CXXFLAGS=
+-LAPACK_LIBRARIES=  
+-LAPACK_LDFLAGS=    -framework accelerate
++LAPACK_LIBRARIES= -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread
++LAPACK_LDFLAGS= -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm -ldl
++
+ 
+ # DO NOT DELETE

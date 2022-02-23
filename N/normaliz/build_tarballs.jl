@@ -22,13 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.800.901"
-upstream_version = v"3.8.9"
+version = v"300.900.100"
+upstream_version = v"3.9.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-                  "a4c3eda39ffe42120adfd3bda9433b01d9965516e3f98e401b62752a54bee5dd")
+                  "ad5dbecc3ca3991bcd7b18774ebe2b68dae12ccca33c813ab29891beb85daa20")
 ]
 
 # Bash recipe for building across all platforms
@@ -44,7 +44,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # windows build would require MPIR instead of GMP for 'long long'
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms(;experimental=true)
+filter!(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -56,12 +57,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700"),
-    Dependency(PackageSpec(name="nauty_jll", uuid="55c6dc9b-343a-50ca-8ff2-b71adb3733d5")),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("FLINT_jll"; compat = "~200.800.101"),
+    Dependency("nauty_jll"; compat = "~2.6.13"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

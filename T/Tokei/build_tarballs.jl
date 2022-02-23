@@ -4,34 +4,21 @@ name = "Tokei"
 version = v"12.1.2"
 
 sources = [
-    ArchiveSource("https://github.com/XAMPPRocky/tokei/releases/download/v$(version)/tokei-x86_64-apple-darwin.tar.gz", "2af8abb6a08b0513f9d16ca2c7cd37949b858d2a3e3227be8cc412b3b4937d5b"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("https://github.com/XAMPPRocky/tokei/releases/download/v$(version)/tokei-x86_64-unknown-linux-gnu.tar.gz", "c8c5c4ab9e1ff47e745de70f4af3214078657399fa7a0da0b5f209d780e49978"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("https://github.com/XAMPPRocky/tokei/releases/download/v$(version)/tokei-x86_64-unknown-linux-musl.tar.gz", "331e77046935d655dce8d97ebb943fcc7e9684586dadf3d197f3df5e760cd31b"; unpack_target="x86_64-linux-musl"),
-    ArchiveSource("https://github.com/XAMPPRocky/tokei/releases/download/v$(version)/tokei-aarch64-unknown-linux-gnu.tar.gz", "ef514fd12cfc3ee2d1725e5ecb866ee1123163004879ec285b22f3323389ebe2"; unpack_target="aarch64-linux-gnu"),
-    FileSource("https://github.com/XAMPPRocky/tokei/releases/download/v$(version)/tokei-x86_64-pc-windows-msvc.exe", "b1d6c4b18f5fa238bd2c6e47caa65a7a3e4a1bd0de6df0b7c19c8083c941f57b"; filename="x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/XAMPPRocky/tokei/v$(version)/LICENCE-MIT", "ee1201a73de9b44ad1ef02a2f9f82705b1350b878e2bab3c3fb6282daf038a73"; filename="LICENCE-MIT"),
-    FileSource("https://raw.githubusercontent.com/XAMPPRocky/tokei/v$(version)/LICENCE-APACHE", "ebd8153ef4d2d160d0bdc76a1821ac2a0eb1f57e8c056f3674032f8140c41745"; filename="LICENCE-APACHE")
+    ArchiveSource("https://github.com/XAMPPRocky/tokei/archive/refs/tags/v$(version).tar.gz",
+                  "81ef14ab8eaa70a68249a299f26f26eba22f342fb8e22fca463b08080f436e50"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
+cd ${WORKSPACE}/srcdir/tokei*/
+cargo build --release
+install -D -m 755 "target/${rust_target}/release/tokei${exeext}" "${bindir}/tokei${exeext}"
 install_license LICENCE-MIT LICENCE-APACHE
-mkdir -p ${bindir}
-if [[ "${target}" == *-mingw* ]]; then
-    install -m 755 "${target}" "${bindir}/tokei${exeext}"
-else
-    install -m 755 "${target}/tokei${exeext}" "${bindir}/tokei${exeext}"
-fi
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
+# Our Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -43,4 +30,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])

@@ -1,0 +1,600 @@
+diff --git a/M2DO_3D_LSM/lsm_3d.cpp b/M2DO_3D_LSM/lsm_3d.cpp
+index bffa6e3..6d66211 100644
+--- a/M2DO_3D_LSM/lsm_3d.cpp
++++ b/M2DO_3D_LSM/lsm_3d.cpp
+@@ -1,4 +1,7 @@
+-
++#include "lsm_3d.h"
++#include <ostream>
++#include <iostream>
++#include <fstream>
+ void LevelSet3D::CalculateVolumeFractions()
+ {
+   /*
+diff --git a/M2DO_3D_LSM/lsm_3d.h b/M2DO_3D_LSM/lsm_3d.h
+index 94e0f43..c979b98 100755
+--- a/M2DO_3D_LSM/lsm_3d.h
++++ b/M2DO_3D_LSM/lsm_3d.h
+@@ -8,9 +8,6 @@
+ #include "marching_cubes_cross.h"
+ #include "mp_vector.h"
+ 
+-#include "marching_cubes_cross.cpp"
+-#include "mp_vector.cpp"
+-
+ 
+ 
+ typedef unsigned int uint;
+@@ -129,8 +126,4 @@ class LevelSet3D
+   void WriteSTL(int box_smooth);
+ };
+ 
+-
+-
+-#include "lsm_3d.cpp"
+-
+ #endif
+diff --git a/M2DO_3D_LSM/lsm_opti_3d.cpp b/M2DO_3D_LSM/lsm_opti_3d.cpp
+index 273e6c5..32779b7 100755
+--- a/M2DO_3D_LSM/lsm_opti_3d.cpp
++++ b/M2DO_3D_LSM/lsm_opti_3d.cpp
+@@ -1,6 +1,4 @@
+-
+-
+-
++#include "lsm_opti_3d.h"
+ void PerformOptimization ( SensitivityData &SensData) {
+ 
+   // number of elements in x, y, and z directions
+diff --git a/M2DO_3D_LSM/lsm_opti_3d.h b/M2DO_3D_LSM/lsm_opti_3d.h
+index 6b8ed23..5e0f26b 100755
+--- a/M2DO_3D_LSM/lsm_opti_3d.h
++++ b/M2DO_3D_LSM/lsm_opti_3d.h
+@@ -3,7 +3,8 @@
+ 
+ #include <cmath>
+ #include <vector>
+-
++#include "M2DO_FEA.h"
++#include <Eigen/Dense>
+ 
+ 
+ namespace FEA = M2DO_FEA ;
+@@ -67,6 +68,4 @@ void PerformOptimization (SensitivityData &SensData); // optimizes the boundary
+ 
+ void PerformOptimization_Stress_LBeam (SensitivityData &SensData); // optimized the boundary velocities for the L beam
+ 
+-#include "lsm_opti_3d.cpp"
+-
+ #endif
+diff --git a/M2DO_FEA/include/M2DO_FEA.h b/M2DO_FEA/include/M2DO_FEA.h
+index a61d070..f32a6d1 100755
+--- a/M2DO_FEA/include/M2DO_FEA.h
++++ b/M2DO_FEA/include/M2DO_FEA.h
+@@ -14,8 +14,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/boundary_conditions.h b/M2DO_FEA/include/boundary_conditions.h
+index 72b9211..b69857d 100755
+--- a/M2DO_FEA/include/boundary_conditions.h
++++ b/M2DO_FEA/include/boundary_conditions.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/heaviside_function.h b/M2DO_FEA/include/heaviside_function.h
+index 6b9e2e4..2c549e0 100755
+--- a/M2DO_FEA/include/heaviside_function.h
++++ b/M2DO_FEA/include/heaviside_function.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/linear_shape_function.h b/M2DO_FEA/include/linear_shape_function.h
+index 0d3b4f8..510c980 100755
+--- a/M2DO_FEA/include/linear_shape_function.h
++++ b/M2DO_FEA/include/linear_shape_function.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/mesh.h b/M2DO_FEA/include/mesh.h
+index 96d3230..2224acb 100755
+--- a/M2DO_FEA/include/mesh.h
++++ b/M2DO_FEA/include/mesh.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "quadrature.h"
+ #include "linear_shape_function.h"
+diff --git a/M2DO_FEA/include/node.h b/M2DO_FEA/include/node.h
+index 4e5a66e..1144a51 100755
+--- a/M2DO_FEA/include/node.h
++++ b/M2DO_FEA/include/node.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/pressure_load_study.h b/M2DO_FEA/include/pressure_load_study.h
+index 11e61ac..0b6804d 100755
+--- a/M2DO_FEA/include/pressure_load_study.h
++++ b/M2DO_FEA/include/pressure_load_study.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "mesh.h"
+ #include "boundary_conditions.h"
+diff --git a/M2DO_FEA/include/sensitivity.h b/M2DO_FEA/include/sensitivity.h
+index db8e80b..ce41a4f 100755
+--- a/M2DO_FEA/include/sensitivity.h
++++ b/M2DO_FEA/include/sensitivity.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/solid_element.h b/M2DO_FEA/include/solid_element.h
+index a010ac6..7d2140f 100755
+--- a/M2DO_FEA/include/solid_element.h
++++ b/M2DO_FEA/include/solid_element.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/solid_material.h b/M2DO_FEA/include/solid_material.h
+index 93f7735..1add8fd 100755
+--- a/M2DO_FEA/include/solid_material.h
++++ b/M2DO_FEA/include/solid_material.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ using namespace std ;
+ using namespace Eigen ;
+diff --git a/M2DO_FEA/include/stationary_study.h b/M2DO_FEA/include/stationary_study.h
+index a4f4898..33117ab 100755
+--- a/M2DO_FEA/include/stationary_study.h
++++ b/M2DO_FEA/include/stationary_study.h
+@@ -13,8 +13,8 @@
+ #include <cassert>
+ #include <set>
+ 
+-#include <../../vendor/eigen3/Eigen/Dense>
+-#include <../../vendor/eigen3/Eigen/Sparse>
++#include <Eigen/Dense>
++#include <Eigen/Sparse>
+ 
+ #include "mesh.h"
+ #include "boundary_conditions.h"
+diff --git a/M2DO_LSM/include/boundary.h b/M2DO_LSM/include/boundary.h
+index b2f25a2..1191660 100755
+--- a/M2DO_LSM/include/boundary.h
++++ b/M2DO_LSM/include/boundary.h
+@@ -1,5 +1,8 @@
+ #ifndef _BOUNDARY_H
+ #define _BOUNDARY_H
++#pragma once
++#include "common.h"
++#include "level_set.h"
+ 
+ /*! \file Boundary.h
+     \brief A class for the discretised boundary.
+@@ -158,6 +161,4 @@ private:
+     void computePointLengths();
+ };
+ 
+-#include "../src/boundary.cpp"
+-
+ #endif  /* _BOUNDARY_H */
+diff --git a/M2DO_LSM/include/common.h b/M2DO_LSM/include/common.h
+index 8b6dd78..e8483a8 100755
+--- a/M2DO_LSM/include/common.h
++++ b/M2DO_LSM/include/common.h
+@@ -1,6 +1,22 @@
+ #ifndef _COMMON_H
+ #define _COMMON_H
+ 
++#include <random>
++#include <algorithm>
++#include <functional>
++#include <limits>
++#include <stdlib.h>
++#include <vector>
++#include <fstream>
++#include <sstream>
++#include <string>
++#include <cmath>
++#include <cstdlib>
++#include <iostream>
++
++// #include "debug.h"
++// #include "min_unit.h"
++
+ /*! \file Common.h
+     \brief Common data types.
+  */
+diff --git a/M2DO_LSM/include/fast_marching_method.h b/M2DO_LSM/include/fast_marching_method.h
+index 964a507..d39ca8c 100755
+--- a/M2DO_LSM/include/fast_marching_method.h
++++ b/M2DO_LSM/include/fast_marching_method.h
+@@ -3,6 +3,11 @@
+ #ifndef _FASTMARCHINGMETHOD_H
+ #define _FASTMARCHINGMETHOD_H
+ 
++#include "common.h"
++#include "debug.h"
++#include "mesh.h"
++#include "heap.h"
++
+ /*! \file FastMarchingMethod.h
+     \brief An implementation of the Fast Marching Method.
+  */
+@@ -146,6 +151,4 @@ private:
+     const double maxDouble = std::numeric_limits<double>::max();
+ };
+ 
+-#include "../src/fast_marching_method.cpp"
+-
+ #endif  /* _FASTMARCHINGMETHOD_H */
+diff --git a/M2DO_LSM/include/heap.h b/M2DO_LSM/include/heap.h
+index 461318c..a35a17b 100755
+--- a/M2DO_LSM/include/heap.h
++++ b/M2DO_LSM/include/heap.h
+@@ -3,6 +3,10 @@
+ #ifndef _HEAP_H
+ #define _HEAP_H
+ 
++#include "common.h"
++#include "debug.h"
++
++
+ /*! \file Heap.h
+     \brief An implementation of a heap data structure (binary tree).
+  */
+@@ -128,6 +132,4 @@ private:
+     bool isTest;
+ };
+ 
+-#include "../src/heap.cpp"
+-
+ #endif  /* _HEAP_H */
+diff --git a/M2DO_LSM/include/hole.h b/M2DO_LSM/include/hole.h
+index 189395d..5942762 100755
+--- a/M2DO_LSM/include/hole.h
++++ b/M2DO_LSM/include/hole.h
+@@ -1,6 +1,7 @@
+ #ifndef _HOLE_H
+ #define _HOLE_H
+ 
++#include "common.h"
+ /*! \file Hole.h
+     \brief A simple circular hole data type.
+  */
+@@ -40,6 +41,4 @@ public:
+     double r;
+ };
+ 
+-#include "../src/hole.cpp"
+-
+ #endif  /* _HOLE_H */
+diff --git a/M2DO_LSM/include/input_output.h b/M2DO_LSM/include/input_output.h
+index f6a59e6..17546de 100755
+--- a/M2DO_LSM/include/input_output.h
++++ b/M2DO_LSM/include/input_output.h
+@@ -4,6 +4,10 @@
+ /*! \file InputOutput.h
+     \brief A class for reading and writing data.
+  */
++#include "common.h"
++#include "level_set.h"
++#include "boundary.h"
++#include "mesh.h"
+ 
+ //! A class for reading and writing data.
+ class InputOutput
+@@ -174,6 +178,4 @@ public:
+     void WriteOptimisationHistoryTXT(std::vector<double>, std::vector<std::vector<double> >);
+ };
+ 
+-#include "../src/input_output.cpp"
+-
+ #endif  /* _INPUTOUTPUT_H */
+diff --git a/M2DO_LSM/include/level_set.h b/M2DO_LSM/include/level_set.h
+index a844a85..37c1060 100755
+--- a/M2DO_LSM/include/level_set.h
++++ b/M2DO_LSM/include/level_set.h
+@@ -1,6 +1,12 @@
+ #ifndef _LEVELSET_H
+ #define _LEVELSET_H
+ 
++#include "common.h"
++#include "hole.h"
++#include "mesh.h"
++#include "mersenne_twister.h"
++#include "fast_marching_method.h"
++
+ /*! \file LevelSet.h
+     \brief A class for the level set function.
+  */
+@@ -157,6 +163,8 @@ public:
+             Whether the signed distance was reinitialised.
+      */
+     bool update(double);
++
++    bool update_no_WENO(double timeStep);
+     
+     //! Kill nodes in a region of the domain.
+     /*! param points
+@@ -326,6 +334,4 @@ private:
+     int isLeftOfLine(const Coord&, const Coord&, const Coord&) const;
+ };
+ 
+-#include "../src/level_set.cpp"
+-
+ #endif  /* _LEVELSET_H */
+diff --git a/M2DO_LSM/include/mersenne_twister.h b/M2DO_LSM/include/mersenne_twister.h
+index bfbfba1..98e2315 100755
+--- a/M2DO_LSM/include/mersenne_twister.h
++++ b/M2DO_LSM/include/mersenne_twister.h
+@@ -6,6 +6,8 @@
+     random number generator class.
+  */
+ 
++#include "common.h"
++
+ //! Mersenne-Twister class.
+ class MersenneTwister
+ {
+diff --git a/M2DO_LSM/include/mesh.h b/M2DO_LSM/include/mesh.h
+index 93e8187..3ca4ec3 100755
+--- a/M2DO_LSM/include/mesh.h
++++ b/M2DO_LSM/include/mesh.h
+@@ -1,6 +1,7 @@
+ #ifndef _MESH_H
+ #define _MESH_H
+ 
++#include "hole.h"
+ /*! \file Mesh.h
+     \brief A class for the level-set domain fixed-grid mesh.
+  */
+@@ -200,6 +201,4 @@ private:
+     void initialiseNeighbours(unsigned int, unsigned int, unsigned int);
+ };
+ 
+-#include "../src/mesh.cpp"
+-
+ #endif  /* _MESH_H */
+diff --git a/M2DO_LSM/include/optimise.h b/M2DO_LSM/include/optimise.h
+index 516c363..ff8548b 100755
+--- a/M2DO_LSM/include/optimise.h
++++ b/M2DO_LSM/include/optimise.h
+@@ -5,7 +5,8 @@
+ 
+ #ifndef _OPTIMISE_H
+ #define _OPTIMISE_H
+-
++#include <vector>
++#include "common.h"
+ 
+ class Optimise
+ {
+@@ -21,7 +22,6 @@ public:
+     double length_y; // length of structure in y direction
+ 
+     void Solve_With_NewtonRaphson(); // function to calculate lambda_f
+-
+     void Solve_LbeamStress_With_NewtonRaphson(double reduced_move_limit = 0.5); // function to calculate lambda_f for stress problem
+ 
+     void get_lambdas(std::vector<double> &lambdas);
+@@ -41,9 +41,6 @@ private:
+     double lambda_f;// psuedo lagrange parameter corresponding to objective
+     double lambda_g;// psuedo lagrange parameter corresponding to constraint
+ 
+-
+ };
+ 
+-#include "../src/optimise.cpp"
+-
+ #endif  /* _OPTIMISE_H */
+diff --git a/M2DO_LSM/include/sensitivity.h b/M2DO_LSM/include/sensitivity.h
+index 5b7c3f4..b229987 100755
+--- a/M2DO_LSM/include/sensitivity.h
++++ b/M2DO_LSM/include/sensitivity.h
+@@ -1,6 +1,6 @@
+ #ifndef _SENSITIVITY_H
+ #define _SENSITIVITY_H
+-
++#include "common.h"
+ /*! \file Sensitivity.h
+     \brief A class for calculating finite-difference boundary point sensitivities.
+  */
+@@ -42,6 +42,4 @@ private:
+     double delta;
+ };
+ 
+-#include "../src/sensitivity.cpp"
+-
+ #endif	/* _SENSITIVITY_H */
+diff --git a/M2DO_LSM/src/boundary.cpp b/M2DO_LSM/src/boundary.cpp
+index a145851..2e33ca8 100755
+--- a/M2DO_LSM/src/boundary.cpp
++++ b/M2DO_LSM/src/boundary.cpp
+@@ -1,7 +1,7 @@
+ /*! \file Boundary.cpp
+     \brief A class for the discretised boundary.
+  */
+-
++#include "boundary.h"
+ Boundary::Boundary(LevelSet& levelSet_) : levelSet(levelSet_)
+ {
+ }
+diff --git a/M2DO_LSM/src/fast_marching_method.cpp b/M2DO_LSM/src/fast_marching_method.cpp
+index a3f42ff..fa5d981 100755
+--- a/M2DO_LSM/src/fast_marching_method.cpp
++++ b/M2DO_LSM/src/fast_marching_method.cpp
+@@ -3,7 +3,7 @@
+ /*! \file FastMarchingMethod.cpp
+     \brief An implementation of the Fast Marching Method.
+  */
+-
++#include "fast_marching_method.h"
+ FastMarchingMethod::FastMarchingMethod(const Mesh& mesh_, bool isTest_) :
+     mesh(mesh_),
+     isTest(isTest_),
+diff --git a/M2DO_LSM/src/heap.cpp b/M2DO_LSM/src/heap.cpp
+index 4c6fefd..a7caab1 100755
+--- a/M2DO_LSM/src/heap.cpp
++++ b/M2DO_LSM/src/heap.cpp
+@@ -3,7 +3,7 @@
+ /*! \file Heap.cpp
+     \brief An implementation of a heap data structure (binary tree).
+  */
+-
++#include "heap.h"
+ Heap::Heap(unsigned int maxLength_, bool isTest_) :
+     maxLength(maxLength_),
+     isTest(isTest_)
+diff --git a/M2DO_LSM/src/hole.cpp b/M2DO_LSM/src/hole.cpp
+index 8c1277a..1f8997b 100755
+--- a/M2DO_LSM/src/hole.cpp
++++ b/M2DO_LSM/src/hole.cpp
+@@ -1,7 +1,7 @@
+ /*! \file Hole.cpp
+     \brief A simple circular hole data type.
+  */
+-
++#include "hole.h"
+ Hole::Hole() {}
+ 
+ Hole::Hole(double x, double y, double r) : r(r)
+diff --git a/M2DO_LSM/src/input_output.cpp b/M2DO_LSM/src/input_output.cpp
+index b52bb5e..009726a 100755
+--- a/M2DO_LSM/src/input_output.cpp
++++ b/M2DO_LSM/src/input_output.cpp
+@@ -1,7 +1,7 @@
+ /*! \file InputOutput.cpp
+     \brief A class for reading and writing data.
+  */
+-
++#include "input_output.h"
+ InputOutput::InputOutput() {}
+ 
+ void InputOutput::saveLevelSetVTK(const unsigned int& datapoint, const LevelSet& levelSet,
+diff --git a/M2DO_LSM/src/level_set.cpp b/M2DO_LSM/src/level_set.cpp
+index 0e19f23..0ca9ea3 100755
+--- a/M2DO_LSM/src/level_set.cpp
++++ b/M2DO_LSM/src/level_set.cpp
+@@ -1,7 +1,7 @@
+ /*! \file LevelSet.cpp
+     \brief A class for the level set function.
+  */
+-
++#include "level_set.h"
+ LevelSet::LevelSet(Mesh& mesh_, double moveLimit_, unsigned int bandWidth_, bool isFixed_) :
+     moveLimit(moveLimit_),
+     mesh(mesh_),
+diff --git a/M2DO_LSM/src/mesh.cpp b/M2DO_LSM/src/mesh.cpp
+index 51991f2..8f031f9 100755
+--- a/M2DO_LSM/src/mesh.cpp
++++ b/M2DO_LSM/src/mesh.cpp
+@@ -1,7 +1,7 @@
+ /*! \file Mesh.cpp
+     \brief A class for the level-set domain fixed-grid mesh.
+  */
+-
++#include "mesh.h"
+ Mesh::Mesh(unsigned int width_,
+            unsigned int height_,
+            bool isPeriodic_) :
+diff --git a/M2DO_LSM/src/optimise.cpp b/M2DO_LSM/src/optimise.cpp
+index 3a38faa..0f28f48 100755
+--- a/M2DO_LSM/src/optimise.cpp
++++ b/M2DO_LSM/src/optimise.cpp
+@@ -2,7 +2,7 @@
+     A class for finding the solution for the optimum velocity vector.
+   */
+ 
+-
++#include "optimise.h"
+ Optimise::Optimise(std::vector<BoundaryPoint>& boundaryPoints_,
+                    double& timeStep_,
+                    double& moveLimit_) :
+diff --git a/M2DO_LSM/src/sensitivity.cpp b/M2DO_LSM/src/sensitivity.cpp
+index 296aea7..e1d8271 100755
+--- a/M2DO_LSM/src/sensitivity.cpp
++++ b/M2DO_LSM/src/sensitivity.cpp
+@@ -1,7 +1,7 @@
+ /*! \file Sensitivity.cpp
+     \brief A class for calculating finite-difference boundary point sensitivities.
+  */
+-
++#include "sensitivity.h"
+ Sensitivity::Sensitivity(double delta_) : delta(delta_)
+ {
+ }

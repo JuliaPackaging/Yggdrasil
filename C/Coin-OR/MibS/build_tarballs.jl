@@ -40,15 +40,15 @@ products = [
 ]
 
 dependencies = [
-    Dependency("CoinUtils_jll", CoinUtils_version),
-    Dependency("Osi_jll", Osi_version),
-    Dependency("Clp_jll", Clp_version),
-    Dependency("Cgl_jll", Cgl_version),
-    Dependency("Cbc_jll", Cbc_version),
-    Dependency("SYMPHONY_jll", SYMPHONY_version),
-    Dependency("ALPS_jll", ALPS_version),
-    Dependency("BiCePS_jll", BiCePS_version),
-    Dependency("CHiPPS_BLIS_jll", CHiPPS_BLIS_version),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
+    Dependency("Osi_jll", compat="$(Osi_version)"),
+    Dependency("Clp_jll", compat="$(Clp_version)"),
+    Dependency("Cgl_jll", compat="$(Cgl_version)"),
+    Dependency("Cbc_jll", compat="$(Cbc_version)"),
+    Dependency("SYMPHONY_jll", compat="$(SYMPHONY_version)"),
+    Dependency("ALPS_jll", compat="$(ALPS_version)"),
+    Dependency("BiCePS_jll", compat="$(BiCePS_version)"),
+    Dependency("CHiPPS_BLIS_jll", compat="$(CHiPPS_BLIS_version)"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

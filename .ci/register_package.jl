@@ -1,5 +1,8 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
+# FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
+ENV["GODEBUG"] = "http2client=0"
+
 verbose = "--verbose" in ARGS
 
 # Read in input `.json` file
@@ -32,7 +35,6 @@ julia_compat = merged["julia_compat"]
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
-    name,
     code_dir,
     repo,
 )

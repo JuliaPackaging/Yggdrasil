@@ -1,11 +1,7 @@
-using BinaryBuilder, Pkg
-
-name = "Couenne"
-version = v"0.5.8"
+include("../coin-or-common.jl")
 
 sources = [
-    GitSource("https://github.com/coin-or/Couenne.git",
-              "7154f7a9b3cd84be378d02b483d090b76fc79ce8"),
+    GitSource("https://github.com/coin-or/Couenne.git", Couenne_gitsha),
     DirectorySource("./bundled")
 ]
 
@@ -58,9 +54,6 @@ make -j${nproc}
 make install
 """
 
-platforms = supported_platforms()
-platforms = filter!(!Sys.isfreebsd, platforms)
-platforms = expand_cxxstring_abis(platforms)
 platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # The products that we will ensure are always built
@@ -71,10 +64,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("ASL_jll", v"0.1.2"),
-    Dependency("Bonmin_jll", v"1.8.8"),
-    Dependency("Cbc_jll", v"2.10.5"),
-    Dependency("Ipopt_jll", v"3.13.4"),
+    Dependency("ASL_jll"),
+    Dependency("Bonmin_jll", compat="$(Bonmin_version)"),
+    Dependency("Cbc_jll", compat="$(Cbc_version)"),
+    Dependency("Ipopt_jll", compat="$(Ipopt_version)"),
 ]
 
 # Note: for obscure reasons I miss, `Clp_jll` built for
@@ -90,4 +83,15 @@ dependencies = [
 #    /tmp/jl_KKxJ1h/artifacts/ecc837f417130ef88b6288424541354733c387b1/lib/libCouenne.so: undefined symbol: _ZTv0_n720_NK21OsiClpSolverInterface10getRowNameEij
 # The solution is to build Couenne with GCC 7 (=> libgfortran4) so that
 # `Clp_jll` used during the build has the correctly tagged symbol.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(
+    ARGS,
+    "Couenne",
+    Couenne_version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = v"7",
+    julia_compat = "1.6",
+)

@@ -1,0 +1,10 @@
+--- bliss-0.77/CMakeLists.txt.orig	2021-12-06 20:41:29.264752974 +0100
++++ bliss-0.77/CMakeLists.txt	2021-12-06 20:41:48.839856607 +0100
+@@ -59,6 +59,7 @@
+ add_executable(bliss-executable src/bliss.cc)
+ target_link_libraries(bliss-executable bliss_static)
+ if(USE_GMP)
++  target_link_libraries(bliss ${GMP_LIBRARIES})
+   target_link_libraries(bliss-executable ${GMP_LIBRARIES})
+ endif(USE_GMP)
+ set_target_properties(bliss-executable PROPERTIES OUTPUT_NAME bliss)

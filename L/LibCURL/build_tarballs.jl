@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibCURL"
-version = v"7.73.0"
+version = v"7.81.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    ArchiveSource("https://curl.haxx.se/download/curl-$(version).tar.gz", 
-                  "ba98332752257b47b9dea6d8c0ad25ec1745c20424f1dd3ff2c99ab59e97cf91"),
+    ArchiveSource("https://curl.se/download/curl-$(version).tar.gz",
+                  "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,14 +19,15 @@ cd $WORKSPACE/srcdir/curl-*
 FLAGS=(
     # Disable....almost everything
     --without-ssl --without-gnutls --without-gssapi
-    --without-libidn --without-libidn2 --without-libmetalink --without-librtmp
+    --without-libidn --without-libidn2 --without-librtmp
     --without-nss --without-polarssl
     --without-spnego --without-libpsl --disable-ares --disable-manual
     --disable-ldap --disable-ldaps --without-zsh-functions-dir
-    --disable-static
+    --disable-static --without-libgsasl
 
     # A few things we actually enable
     --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+    --enable-versioned-symbols
 )
 
 
@@ -75,8 +76,8 @@ dependencies = [
     Dependency("nghttp2_jll"),
     # Note that while we unconditionally list MbedTLS as a dependency,
     # we default to schannel/SecureTransport on Windows/MacOS.
-    Dependency(Pkg.Types.PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
+    Dependency("MbedTLS_jll"; compat="~2.28.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")

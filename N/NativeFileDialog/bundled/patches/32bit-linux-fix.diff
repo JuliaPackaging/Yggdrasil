@@ -1,0 +1,30 @@
+diff --git a/src/ftg_core.h b/src/ftg_core.h
+index 857f03a..4762b3c 100644
+--- a/src/ftg_core.h
++++ b/src/ftg_core.h
+@@ -542,7 +542,9 @@ FTG_STATIC_ASSERT(sizeof(int64_t)==8);
+ #endif
+ 
+ #if defined(__linux__)
+-#  define FTG__HAVE_EXPLICIT_BZERO
++#  ifdef __GLIBC__
++#    define FTG__HAVE_EXPLICIT_BZERO
++#  endif
+ #elif defined(__APPLE__)
+ #  define FTG__HAVE_MEMSET_S
+ #endif
+diff --git a/src/nfd_gtk.c b/src/nfd_gtk.c
+index cdb1305..f356f58 100644
+--- a/src/nfd_gtk.c
++++ b/src/nfd_gtk.c
+@@ -19,10 +19,6 @@
+ 
+ const char INIT_FAIL_MSG[] = "gtk_init_check failed to initilaize GTK+";
+ 
+-#ifdef __GNUC__
+-#    pragma GCC diagnostic ignored "-Wstringop-truncation"
+-#endif
+-
+ static void
+ AddTypeToFilterName(const char* typebuf, char* filterName, size_t bufsize)
+ {

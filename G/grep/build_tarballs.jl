@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "grep"
-version = v"3.4.0"
+version = v"3.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.4.tar.xz", "58e6751c41a7c25bfc6e9363a41786cff3ba5709cf11d5ad903cf7cce31cc3fb")
+    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.7.tar.xz", "5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/grep-3.4/
+cd $WORKSPACE/srcdir/grep-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -33,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

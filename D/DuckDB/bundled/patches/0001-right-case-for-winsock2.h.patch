@@ -1,0 +1,26 @@
+From eab00b8a2cbb8c1917c05175de135d8411f6444f Mon Sep 17 00:00:00 2001
+From: Kimmo Linna <kimmo.linna@gmail.com>
+Date: Fri, 31 Dec 2021 20:20:09 +0200
+Subject: [PATCH 1/1] right case for winsock2.h
+
+You are able to compile this file also in Linux when the case is the correct one.
+---
+ third_party/thrift/thrift/protocol/TProtocol.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/thrift/thrift/protocol/TProtocol.h b/third_party/thrift/thrift/protocol/TProtocol.h
+index 813d02fc5..400808894 100755
+--- a/third_party/thrift/thrift/protocol/TProtocol.h
++++ b/third_party/thrift/thrift/protocol/TProtocol.h
+@@ -22,7 +22,7 @@
+ 
+ #ifdef _WIN32
+ // Need to come before any Windows.h includes
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #endif
+ 
+ #include "thrift/transport/TTransport.h"
+-- 
+2.33.1
+

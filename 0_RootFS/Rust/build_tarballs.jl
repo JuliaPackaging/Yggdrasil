@@ -1,3 +1,13 @@
+### Instructions for adding a new version of the Rust toolchain
+#
+# * update the `version` variable
+# * To deploy the shard and automatically update your BinaryBuilderBase's
+#   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
+#   You can build & deploy by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy
+#
+
 using BinaryBuilderBase, BinaryBuilder, Pkg.Artifacts
 using BinaryBuilderBase: map_rust_target
 
@@ -5,15 +15,15 @@ include("../common.jl")
 
 # We first download Rustup, and use that to install rust
 rustup_name = "RustStage1"
-rustup_version = v"1.22.0"
+rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
-version = v"1.43.0"
+version = v"1.57.0"
 
 sources = [
-    # We'll use rustup v1.22.0 to install rust
+    # We'll use rustup to install rust
     FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
-               "c1ef65260024f9f2e5999d77e327ff20369b4814f4a3e9d644fe548011a92b0a"),
+               "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
 ]
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
@@ -28,8 +38,11 @@ chmod +x rustup-init
 
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
+    aarch64-apple-darwin
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
+    arm-unknown-linux-gnueabihf
+    arm-unknown-linux-musleabihf
     armv7-unknown-linux-gnueabihf
     armv7-unknown-linux-musleabihf
     i686-unknown-linux-gnu
@@ -110,22 +123,6 @@ unpacked_hash = create_artifact() do dir
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "etc"); recursive=true)
     for rust_target_triplet in map_rust_target.(supported_platforms())
         rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
-    end
-
-    # Also generate "config" file for Cargo where we give it the linkers for all our targets
-    open(joinpath(dir, "config"), "w") do io
-        write(io, """
-        # Configuration file for `cargo`
-        """)
-        for platform in supported_platforms()
-            # Use `aatriplet` for the linker to match how the wrappers are
-            # written in
-            # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/30d056ef68f81dca9cb91ededcce6b68c6466b37/src/Runner.jl#L599.
-            write(io, """
-            [target.$(map_rust_target(platform))]
-            linker = "$(BinaryBuilderBase.aatriplet(platform))-gcc"
-            """)
-        end
     end
 end
 
