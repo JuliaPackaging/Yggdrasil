@@ -5,18 +5,15 @@ version = v"0.0.1"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-                  "4f261d0aea9eaf1c220de29c5f396d95025e4af2"),
+                  "c0927268fc7544878c58a606e01503ba3fed615e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-export PYO3_CROSS_INCLUDE_DIR=${includedir}
-export PYO3_CROSS_LIB_DIR=${libdir}
-
-cd ${WORKSPACE}/srcdir/vegafusion/
+cd ${WORKSPACE}/srcdir/vegafusion-server/
 cargo build --release
 mkdir -p "${libdir}"
-cp "target/${rust_target}/release/libvegafusion.${dlext}" "${libdir}/."
+cp "target/${rust_target}/release/libvegafusion-server.${dlext}" "${libdir}/."
 install_license LICENSE
 """
 
@@ -26,7 +23,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libvegafusion", :libvegafusion),
+    LibraryProduct("libvegafusion-server", :libvegafusionserver),
 ]
 
 # Dependencies that must be installed before this package can be built
