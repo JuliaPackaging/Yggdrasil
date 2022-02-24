@@ -28,7 +28,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="Python_jll"), v"3.8.1"; compat="~3.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
