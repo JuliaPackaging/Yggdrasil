@@ -12,7 +12,8 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 name = "libpolymake_julia"
 version = v"0.8.0"
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+
 
 # Collection of sources required to build libpolymake_julia
 sources = [
