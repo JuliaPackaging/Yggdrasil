@@ -21,7 +21,7 @@ function build_libcurl(ARGS, name::String)
     ]
 
     # Bash recipe for building across all platforms
-    script = raw"""
+    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Holy crow we really configure the bitlets out of this thing
@@ -62,7 +62,15 @@ function build_libcurl(ARGS, name::String)
 
     ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
     make -j${nproc}
-    make install
+    if [[ "${THIS_IS_CURL}" == true ]]; then
+        # Manually install only `curl`
+        install -Dm 755 "src/.libs/curl${exeext}" "${bindir}/curl${exeext}"
+    else
+        # Install everything...
+        make install
+        # ...but remove `curl`
+        rm "${bindir}/curl${exeext}"
+    fi
     install_license COPYING
     """
 
