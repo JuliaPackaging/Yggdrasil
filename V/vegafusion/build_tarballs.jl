@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/vegafusion-server/
+cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
 mkdir -p "${libdir}"
 cp "target/${rust_target}/release/libvegafusion-server.${dlext}" "${libdir}/."
