@@ -2,7 +2,7 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_GPU"
-version = v"3.0.0"
+version = v"3.0.1"
 
 # Collection of sources required to build SCSBuilder
 sources = [
@@ -12,8 +12,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-flags="DLONG=0 USE_OPENMP=0 BLAS64=1 BLASSUFFIX=_64_"
-blasldflags="-L${libdir} -lopenblas64_"
+flags="DLONG=0 USE_OPENMP=0"
+blasldflags="-L${prefix}/lib -lopenblas"
 
 CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
@@ -40,9 +40,9 @@ products = [
 cuda_version = v"10.1.243"
 
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll", v"0.3.10"),
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
