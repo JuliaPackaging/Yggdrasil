@@ -19,7 +19,7 @@ cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
 mkdir -p "${bindir}"
 cp "../target/${rust_target}/release/vegafusion-server" "${bindir}/."
-install_license LICENSE
+install_license ../LICENSE
 """
 
 platforms = supported_platforms()
