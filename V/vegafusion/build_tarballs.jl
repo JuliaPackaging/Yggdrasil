@@ -12,8 +12,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
-mkdir -p "${libdir}"
-cp "target/${rust_target}/release/libvegafusion-server.${dlext}" "${libdir}/."
+mkdir -p "${bindir}"
+cp "target/${rust_target}/release/vegafusion-server" "${bindir}/."
 install_license LICENSE
 """
 
@@ -23,7 +23,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libvegafusion-server", :libvegafusionserver),
+    BinaryProduct("vegafusion-server", :libvegafusionserver),
 ]
 
 # Dependencies that must be installed before this package can be built
