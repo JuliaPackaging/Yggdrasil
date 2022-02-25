@@ -11,24 +11,24 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 export TARGET_CC=$CC
-if [[ "$bb_full_target" == armv7l-linux-* ]]; then
-    export TARGET_CFLAGS="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
-    export CFLAGS="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
-    export "CFLAGS_armv7-unknown-linux-musleabihf"="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
-
-
-fi
 
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
 mkdir -p "${bindir}"
-cp "../target/${rust_target}/release/vegafusion-server" "${bindir}/."
+cp "../target/${rust_target}/release/vegafusion-server${exeext}" "${bindir}/."
 install_license ../LICENSE
 """
 
 platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
+# Build fails with error 'BinaryBuilder: Cannot force an architecture via -march'
+# while compiling c code in https://github.com/briansmith/ring dependency
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
+# PowerPC not supported https://github.com/briansmith/ring/issues/389
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
