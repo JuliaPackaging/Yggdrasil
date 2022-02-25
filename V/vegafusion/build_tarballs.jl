@@ -12,7 +12,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
-install -Dm 755 "../target/${rust_target}/release/vegafusion-server${exeext}" "${bindir}/vegafusion-server${exeext}"
+
+mkdir -p "${bindir}"
+cp "../target/${rust_target}/release/vegafusion-server${exeext}" "${bindir}/."
 """
 
 platforms = supported_platforms()
