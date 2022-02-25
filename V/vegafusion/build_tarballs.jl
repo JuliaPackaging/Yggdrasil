@@ -18,7 +18,7 @@ fi
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
 mkdir -p "${bindir}"
-cp "target/release/${rust_target}/release/vegafusion-server" "${bindir}/."
+cp "../target/${rust_target}/release/vegafusion-server" "${bindir}/."
 install_license LICENSE
 """
 
