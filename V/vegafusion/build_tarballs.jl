@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "vegafusion"
-version = v"0.0.1"
+version = v"0.0.4"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
