@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
+export TARGET_CC=$CC
 if [[ "$target" == armv7l-linux-* ]]; then
     export TARGET_CFLAGS="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
 fi
