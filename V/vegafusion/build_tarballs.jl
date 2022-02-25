@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "vegafusion"
+name = "VegaFusion"
 version = v"0.0.4"
 
 sources = [
