@@ -14,21 +14,36 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mesa/
-#mkdir build
-#cd build
-apk add py3-mako #meson wayland-dev
-#
-## pkgconfig returns the wrong path here. It's an ugly hack, but it works
-#mkdir -p /workspace/destdir/usr/bin/
-#ln -s $(which wayland-scanner) /workspace/destdir/usr/bin/
 
-meson -D egl=enabled -D gles1=enabled -D gles2=enabled -D platforms=wayland -D glx=disabled -D c_args="-Wno-implicit-function-declaration" ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/wl_scanner-no-native.patch
+# Note: Currently unused, until `LIBPATH` becomes updated with search path of products with `dont_dlopen=true`
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative-dlopen.patch
+
+apk add py3-mako meson
+
+mkdir build
+cd build
+
+PATH=${host_prefix}/tools:$PATH meson -D egl=enabled \
+                                      -D gles1=enabled \
+                                      -D gles2=enabled \
+                                      -D opengl=true \
+                                      -D platforms=x11,wayland \
+                                      -D glx=dri \
+                                      -D c_args="-Wno-implicit-function-declaration" \
+                                      -D cpp_rtti=false \
+                                      ../ \
+                                      --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 
-#rm /workspace/destdir/usr/bin/wayland-scanner
 # taken from https://metadata.ftp-master.debian.org/changelogs//main/m/mesa/mesa_20.3.5-1_copyright
 install_license ../../copyright
+"""
+
+# TODO: Hack to ensure we load the right drivers
+init_block = """
+ENV["LIBGL_DRIVERS_PATH"] = joinpath(artifact_dir, "lib", "dri")
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,25 +58,56 @@ products = Product[
     LibraryProduct("libEGL", :libEGL),
     LibraryProduct("libGLESv1_CM", :libGLESv1_CM),
     LibraryProduct("libGLESv2", :libGLESv2),
+    LibraryProduct("libGL", :libGL),
     LibraryProduct("libvulkan_intel", :libvulkan_intel),
     LibraryProduct("libvulkan_lvp", :libvulkan_lvp),
     LibraryProduct("libvulkan_radeon", :libvulkan_radeon),
     LibraryProduct("libxatracker", :libxatracker),
     LibraryProduct("libgbm", :libgbm),
     LibraryProduct("libglapi", :libglapi),
+
+    # Drivers
+    LibraryProduct("crocus_dri", :crocus_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("iris_dri", :iris_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("libgallium_dri", :libgallium_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("r300_dri", :r300_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("radeonsi_dri", :radeonsi_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("virtio_gpu_dri", :virtio_gpu_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("i915_dri", :i915_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("kms_swrast_dri", :kms_swrast_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("nouveau_dri", :nouveau_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("r600_dri", :r600_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("swrast_dri", :swrast_dri, ["lib/dri"]; dont_dlopen=true),
+    LibraryProduct("vmwgfx_dri", :vmwgfx_dri, ["lib/dri"]; dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Wayland_jll"),
+    BuildDependency("Wayland_jll"), # FIXME: HostBuildDependency
+    Dependency("libLLVM_jll"; compat="11.0.0"),
+    HostBuildDependency(PackageSpec(;name="LLVM_jll", version=v"11.0.1")),
     Dependency("Zlib_jll"),
     Dependency("libdrm_jll"; compat="2.4.110"),
-    Dependency("LLVM_jll"),
     Dependency("Elfutils_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Wayland_protocols_jll"),
+    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_xproto_jll"),
+    Dependency("Xorg_kbproto_jll"),
+    Dependency("Xorg_libXext_jll"),
+    Dependency("Xorg_xextproto_jll"),
+    Dependency("Xorg_libXfixes_jll"),
+    Dependency("Xorg_fixesproto_jll"),
+    Dependency("Xorg_libxshmfence_jll"),
+    Dependency("Xorg_glproto_jll"),
+    Dependency("Xorg_dri2proto_jll"),
+    Dependency("Xorg_libXxf86vm_jll"),
+    Dependency("Xorg_xf86vidmodeproto_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Xorg_randrproto_jll"),
+    Dependency("Xorg_renderproto_jll"),
+    Dependency("Wayland_protocols_jll"; compat="1.24"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", init_block)
