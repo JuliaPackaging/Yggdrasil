@@ -5,7 +5,7 @@ version = v"0.0.4"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-                  "c0927268fc7544878c58a606e01503ba3fed615e"),
+              "c0927268fc7544878c58a606e01503ba3fed615e"),
 ]
 
 # Bash recipe for building across all platforms
