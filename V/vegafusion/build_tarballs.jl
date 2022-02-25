@@ -13,7 +13,7 @@ script = raw"""
 export TARGET_CC=$CC
 if [[ "$bb_full_target" == armv7l-linux-* ]]; then
     export TARGET_CFLAGS="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
-    export CFLAGS_armv7-unknown-linux-gnueabihf="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
+    export CFLAGS="-O3 -ffunction-sections -fdata-sections -fPIC -mfpu=vfpv3-d16"
 
 fi
 
