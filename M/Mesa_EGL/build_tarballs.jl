@@ -24,16 +24,21 @@ apk add py3-mako meson
 mkdir build
 cd build
 
-PATH=${host_prefix}/tools:$PATH meson -D egl=enabled \
-                                      -D gles1=enabled \
-                                      -D gles2=enabled \
-                                      -D opengl=true \
-                                      -D platforms=x11,wayland \
-                                      -D glx=dri \
-                                      -D c_args="-Wno-implicit-function-declaration" \
-                                      -D cpp_rtti=false \
-                                      ../ \
-                                      --cross-file="${MESON_TARGET_TOOLCHAIN}"
+# Make a cross-file for llvm-config
+echo "[binaries]" >llvm-cross.ini
+echo "llvm-config = '${host_prefix}/tools/llvm-config'" >>llvm-cross.ini
+
+meson -D egl=enabled \
+      -D gles1=enabled \
+      -D gles2=enabled \
+      -D opengl=true \
+      -D platforms=x11,wayland \
+      -D glx=dri \
+      -D c_args="-Wno-implicit-function-declaration" \
+      -D cpp_rtti=false \
+      ../ \
+      --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+      --cross-file=llvm-cross.ini
 ninja -j${nproc}
 ninja install
 
