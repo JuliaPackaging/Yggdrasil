@@ -28,7 +28,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("vegafusion-server", :libvegafusionserver),
+    ExecutableProduct("vegafusion-server", :vegafusionserver),
 ]
 
 # Dependencies that must be installed before this package can be built
