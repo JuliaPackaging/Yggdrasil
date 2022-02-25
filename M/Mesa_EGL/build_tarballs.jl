@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/mesa/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/wl_scanner-no-native.patch
 # Note: Currently unused, until `LIBPATH` becomes updated with search path of products with `dont_dlopen=true`
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative-dlopen.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/static_assert.patch
 
 apk add py3-mako meson
 
