@@ -28,7 +28,8 @@ export CPPFLAGS="-I${includedir}"
     r_cv_have_pcre2utf=yes \
     r_cv_have_curl728=yes \
     r_cv_have_curl_https=yes \
-    r_cv_size_max=yes
+    r_cv_size_max=yes \
+    r_cv_prog_fc_char_len_t=size_t
 
 make -j${nproc}
 make install
