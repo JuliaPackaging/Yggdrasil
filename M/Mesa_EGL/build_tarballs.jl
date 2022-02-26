@@ -20,7 +20,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/wl_scanner-no-native.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative-dlopen.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/static_assert.patch
 
-apk add py3-mako meson
+apk add py3-mako
 
 mkdir build
 cd build
@@ -97,21 +97,14 @@ dependencies = [
     Dependency("Elfutils_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_xproto_jll"),
-    Dependency("Xorg_kbproto_jll"),
     Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_xextproto_jll"),
     Dependency("Xorg_libXfixes_jll"),
-    Dependency("Xorg_fixesproto_jll"),
     Dependency("Xorg_libxshmfence_jll"),
-    Dependency("Xorg_glproto_jll"),
-    Dependency("Xorg_dri2proto_jll"),
     Dependency("Xorg_libXxf86vm_jll"),
     Dependency("Xorg_xf86vidmodeproto_jll"),
     Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_randrproto_jll"),
-    Dependency("Xorg_renderproto_jll"),
     Dependency("Wayland_protocols_jll"; compat="1.24"),
 ]
 
