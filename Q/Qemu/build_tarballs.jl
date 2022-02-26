@@ -48,13 +48,40 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="musl"),
-    Platform("i686", "linux"; libc="musl"),
 ]
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("qemu-system-x86_64", :qemu_system_x86_64),
-    ExecutableProduct("qemu-system-aarch64", :qemu_system_aarch64),
+    ExecutableProduct("qemu-system-xtensaeb"    , :qemu_system_xtensaeb    ),
+    ExecutableProduct("qemu-system-xtensa"      , :qemu_system_xtensa      ),
+    ExecutableProduct("qemu-system-tricore"     , :qemu_system_tricore     ),
+    ExecutableProduct("qemu-system-sparc64"     , :qemu_system_sparc64     ),
+    ExecutableProduct("qemu-system-sparc"       , :qemu_system_sparc       ),
+    ExecutableProduct("qemu-system-x86_64"      , :qemu_system_x86_64      ),
+    ExecutableProduct("qemu-system-sh4eb"       , :qemu_system_sh4eb       ),
+    ExecutableProduct("qemu-system-s390x"       , :qemu_system_s390x       ),
+    ExecutableProduct("qemu-system-sh4"         , :qemu_system_sh4         ),
+    ExecutableProduct("qemu-system-rx"          , :qemu_system_rx          ),
+    ExecutableProduct("qemu-system-riscv32"     , :qemu_system_riscv32     ),
+    ExecutableProduct("qemu-system-riscv64"     , :qemu_system_riscv64     ),
+    ExecutableProduct("qemu-system-ppc64"       , :qemu_system_ppc64       ),
+    ExecutableProduct("qemu-system-ppc"         , :qemu_system_ppc         ),
+    ExecutableProduct("qemu-system-or1k"        , :qemu_system_or1k        ),
+    ExecutableProduct("qemu-system-nios2"       , :qemu_system_nios2       ),
+    ExecutableProduct("qemu-system-microblazeel", :qemu_system_microblazeel),
+    ExecutableProduct("qemu-system-microblaze"  , :qemu_system_microblaze  ),
+    ExecutableProduct("qemu-system-m68k"        , :qemu_system_m68k        ),
+    ExecutableProduct("qemu-system-i386"        , :qemu_system_i386        ),
+    ExecutableProduct("qemu-system-cris"        , :qemu_system_cris        ),
+    ExecutableProduct("qemu-system-hppa"        , :qemu_system_hppa        ),
+    ExecutableProduct("qemu-system-avr"         , :qemu_system_avr         ),
+    ExecutableProduct("qemu-system-arm"         , :qemu_system_arm         ),
+    ExecutableProduct("qemu-system-alpha"       , :qemu_system_alpha       ),
+    ExecutableProduct("qemu-system-aarch64"     , :qemu_system_aarch64     ),
+    ExecutableProduct("qemu-system-mips"        , :qemu_system_mips        ),
+    ExecutableProduct("qemu-system-mipsel"      , :qemu_system_mipsel      ),
+    ExecutableProduct("qemu-system-mips64el"    , :qemu_system_mips64el    ),
+    ExecutableProduct("qemu-system-mips64"      , :qemu_system_mips64      ),
 ]
 
 # Dependencies that must be installed before this package can be built
