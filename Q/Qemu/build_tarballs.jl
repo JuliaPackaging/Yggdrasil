@@ -49,6 +49,7 @@ platforms = [
     Platform("i686", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="musl"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
