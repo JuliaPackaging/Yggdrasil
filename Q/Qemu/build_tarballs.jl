@@ -23,6 +23,11 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 # Patch to not fail if trying to clean up non-existent files
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_no_fail_in_cleanup.patch"
 
+if [[ "${target}" == *-*-musl ]]
+    # Patch to fix messy header situation on musl
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
+fi
+
 ## Patch in adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
 #
