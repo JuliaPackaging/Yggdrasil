@@ -12,8 +12,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/vegafusion/vegafusion-server/
 cargo build --release
-
-mkdir -p "${bindir}"
 install -Dm 755 "../target/${rust_target}/release/vegafusion-server${exeext}" "${bindir}/vegafusion-server${exeext}"
 """
 
