@@ -91,7 +91,7 @@ dependencies = [
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("PCRE_jll"),
     # TOOD: verify Gettext is actually needed at runtime
-    Dependency("Gettext_jll"),
+    BuildDependency("Gettext_jll"),
     Dependency("libcap_jll"),
 ]
 
