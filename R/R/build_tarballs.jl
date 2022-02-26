@@ -20,6 +20,8 @@ export CPPFLAGS="-I${includedir}"
     --host=${target} \
     --with-x=no \
     --enable-R-shlib=yes \
+    --with-blas=${libdir}/libblastrampoline.so \
+    --with-lapack \
     r_cv_header_zlib_h=yes \
     r_cv_have_bzlib=yes \
     r_cv_have_lzma=yes \
@@ -34,11 +36,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libR", :libR, "lib/R/lib"),
+    ExecutableProduct("R", :R),
+    ExecutableProduct("Rscript", :Rscript),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -50,6 +54,10 @@ dependencies = [
     Dependency("PCRE2_jll"),
     Dependency("LibCURL_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("libblastrampoline_jll"),
+    Dependency("OpenBLAS_jll"),
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
