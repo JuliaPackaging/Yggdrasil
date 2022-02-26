@@ -33,17 +33,18 @@ echo '#!/bin/true ' > /usr/bin/Rez
 echo '#!/bin/true ' > /usr/bin/SetFile
 chmod +x /usr/bin/Rez
 chmod +x /usr/bin/SetFile
-make -j${nproc}
-make install
+make -j${nproc} --trace || true
+make install --trace || true
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("i686", "linux"; libc="musl"),
 ]
-platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
