@@ -23,7 +23,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 # Patch to not fail if trying to clean up non-existent files
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_no_fail_in_cleanup.patch"
 
-if [[ "${target}" == *-*-musl ]]
+if [[ "${target}" == *-*-musl ]]; then
     # Patch to fix messy header situation on musl
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
 fi
