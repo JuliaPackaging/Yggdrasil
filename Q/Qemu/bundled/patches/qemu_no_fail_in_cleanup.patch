@@ -1,0 +1,13 @@
+diff --git a/configure b/configure
+index 48c2177..401b0ca 100755
+--- a/configure
++++ b/configure
+@@ -49,7 +49,7 @@ endif
+ 	@if test "$(MAKECMDGOALS)" = "distclean" && \
+ 	    test -e build/auto-created-by-configure ; \
+ 	then \
+-	    rm -rf build GNUmakefile ; \
++	    rm -rf build GNUmakefile || true ; \
+ 	fi
+ force: ;
+ .PHONY: force

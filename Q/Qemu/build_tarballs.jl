@@ -20,6 +20,9 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
 # Patch to include `falloc` header in `strace.c`
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 
+# Patch to not fail if trying to clean up non-existent files
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_no_fail_in_cleanup.patch"
+
 ## Patch in adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
 #
@@ -33,8 +36,8 @@ echo '#!/bin/true ' > /usr/bin/Rez
 echo '#!/bin/true ' > /usr/bin/SetFile
 chmod +x /usr/bin/Rez
 chmod +x /usr/bin/SetFile
-make -j${nproc} --trace || true
-make install --trace || true
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
