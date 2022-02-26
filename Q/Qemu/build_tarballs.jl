@@ -20,9 +20,6 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
 # Patch to include `falloc` header in `strace.c`
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 
-# Patch to not fail if trying to clean up non-existent files
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_no_fail_in_cleanup.patch"
-
 if [[ "${target}" == *-*-musl ]]; then
     # Patch to fix messy header situation on musl
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
@@ -41,7 +38,7 @@ echo '#!/bin/true ' > /usr/bin/Rez
 echo '#!/bin/true ' > /usr/bin/SetFile
 chmod +x /usr/bin/Rez
 chmod +x /usr/bin/SetFile
-make -j${nproc}
+make -j${nproc} || true
 make install
 """
 
