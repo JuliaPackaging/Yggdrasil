@@ -1,0 +1,51 @@
+diff --git a/contrib/vhost-user-input/meson.build b/contrib/vhost-user-input/meson.build
+index 21a9ed4f15..543cee285c 100644
+--- a/contrib/vhost-user-input/meson.build
++++ b/contrib/vhost-user-input/meson.build
+@@ -1,4 +1,4 @@
+ executable('vhost-user-input', files('main.c'),
+-           dependencies: [qemuutil, vhost_user],
++           dependencies: [qemuutil, vhost_user, rt],
+            build_by_default: targetos == 'linux',
+            install: false)
+diff --git a/meson.build b/meson.build
+index 8df40bfac4..3079e99e9a 100644
+--- a/meson.build
++++ b/meson.build
+@@ -3276,7 +3276,7 @@ if have_tools
+   subdir('contrib/elf2dmp')
+ 
+   executable('qemu-edid', files('qemu-edid.c', 'hw/display/edid-generate.c'),
+-             dependencies: qemuutil,
++             dependencies: [qemuutil, rt],
+              install: true)
+ 
+   if 'CONFIG_VHOST_USER' in config_host
+@@ -3288,13 +3288,13 @@ if have_tools
+ 
+   if targetos == 'linux'
+     executable('qemu-bridge-helper', files('qemu-bridge-helper.c'),
+-               dependencies: [qemuutil, libcap_ng],
++               dependencies: [qemuutil, libcap_ng, rt],
+                install: true,
+                install_dir: get_option('libexecdir'))
+ 
+     executable('qemu-pr-helper', files('scsi/qemu-pr-helper.c', 'scsi/utils.c'),
+                dependencies: [authz, crypto, io, qom, qemuutil,
+-                              libcap_ng, mpathpersist],
++                              libcap_ng, mpathpersist, rt],
+                install: true)
+   endif
+ 
+diff --git a/qga/meson.build b/qga/meson.build
+index 54f2da5b07..21a5f44880 100644
+--- a/qga/meson.build
++++ b/qga/meson.build
+@@ -95,7 +95,7 @@ endif
+ 
+ qga = executable('qemu-ga', qga_ss.sources(),
+                  link_args: qga_libs,
+-                 dependencies: [qemuutil, libudev],
++                 dependencies: [qemuutil, libudev, rt],
+                  install: true)
+ all_qga += qga

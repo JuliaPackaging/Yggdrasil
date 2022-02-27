@@ -28,6 +28,9 @@ fi
 # Patch to disable tests
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
 
+# Patch to properly link to rt
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_link_rt.patch"
+
 ## Patch in adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
 #
