@@ -9,10 +9,10 @@ index 21a9ed4f15..543cee285c 100644
             build_by_default: targetos == 'linux',
             install: false)
 diff --git a/meson.build b/meson.build
-index 8df40bfac4..3079e99e9a 100644
+index 96de1a6ef9..96ba587d1a 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -3276,7 +3276,7 @@ if have_tools
+@@ -3075,7 +3075,7 @@ if have_tools
    subdir('contrib/elf2dmp')
  
    executable('qemu-edid', files('qemu-edid.c', 'hw/display/edid-generate.c'),
@@ -21,7 +21,7 @@ index 8df40bfac4..3079e99e9a 100644
               install: true)
  
    if 'CONFIG_VHOST_USER' in config_host
-@@ -3288,13 +3288,13 @@ if have_tools
+@@ -3087,13 +3087,13 @@ if have_tools
  
    if targetos == 'linux'
      executable('qemu-bridge-helper', files('qemu-bridge-helper.c'),
@@ -38,14 +38,15 @@ index 8df40bfac4..3079e99e9a 100644
    endif
  
 diff --git a/qga/meson.build b/qga/meson.build
-index 54f2da5b07..21a5f44880 100644
+index cfb1fbc085..f4f9475050 100644
 --- a/qga/meson.build
 +++ b/qga/meson.build
-@@ -95,7 +95,7 @@ endif
+@@ -44,7 +44,7 @@ qga_ss = qga_ss.apply(config_host, strict: false)
  
  qga = executable('qemu-ga', qga_ss.sources(),
-                  link_args: qga_libs,
+                  link_args: config_host['LIBS_QGA'].split(),
 -                 dependencies: [qemuutil, libudev],
 +                 dependencies: [qemuutil, libudev, rt],
                   install: true)
- all_qga += qga
+ all_qga = [qga]
+ 
