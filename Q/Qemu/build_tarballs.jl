@@ -88,9 +88,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Pixman_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("PCRE_jll"),
-    # TOOD: verify Gettext is actually needed at runtime
     BuildDependency("Gettext_jll"),
     Dependency("libcap_jll"),
 ]
