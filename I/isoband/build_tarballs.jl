@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "isoband"
-version = v"0.2.2"
+version = v"0.2.3" # Fake version for building experimental platforms and setting Julia version to 1.6
 
 # Collection of sources required to complete build
 sources = [
@@ -19,7 +19,7 @@ $CXX -shared -std=c++11 -O3 -fPIC -o ${libdir}/libisoband.${dlext} isoband/src/i
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -31,4 +31,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
