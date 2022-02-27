@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "isoband"
-version = v"0.2.2"
+version = v"0.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jkrumbiegel/isoband.git", "8c0050541c02d0cc5b3dd737c78cbf81ee61f802")
+    GitSource("https://github.com/jeremiahpslewis/isoband.git", "e9cac53f18cc7e9e8da8b01a1122cd65d9fa68f2")
 ]
 
 # Bash recipe for building across all platforms
