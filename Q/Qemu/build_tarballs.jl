@@ -25,6 +25,9 @@ if [[ "${target}" == *-*-musl ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
 fi
 
+# Patch to disable tests
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
+
 ## Patch in adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
 #
