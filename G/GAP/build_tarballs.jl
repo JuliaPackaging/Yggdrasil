@@ -85,8 +85,8 @@ make -j${nproc}
 # install GAP binaries
 make install-bin install-headers install-libgap
 
-# also install config.h
-cp build/config.h ${prefix}/include/gap
+# FIXME: until install-headers is fixed, also install generated headers
+cp build/*.h ${prefix}/include/gap/
 
 # the license
 install_license LICENSE
