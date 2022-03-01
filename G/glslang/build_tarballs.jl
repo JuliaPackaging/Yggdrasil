@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "glslang"
-version = v"8.13.3743"
+version = v"11.7.0"
 
 source = "https://github.com/KhronosGroup/glslang.git"
-commit = "bcf6a2430e99e8fc24f9f266e99316905e6d5134" # April 27th, 2020
+commit = "925503088e2bcd76921b1e102c37fc320bace254" # Nov 11, 2021 (tag 11.7.0)
 
 sources = [
     GitSource(source, commit)
@@ -41,4 +41,4 @@ dependencies = [
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

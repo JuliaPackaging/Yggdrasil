@@ -1,0 +1,21 @@
+--- a/etc/bashrc
++++ b/etc/bashrc
+@@ -43,8 +43,7 @@
+ # Please set to the appropriate path if the default is not correct.
+ #
+ [ "$BASH" -o "$ZSH_NAME" ] && \
+-export FOAM_INST_DIR=$(cd $(dirname ${BASH_SOURCE:-$0})/../.. && pwd -P) || \
+-export FOAM_INST_DIR=$HOME/$WM_PROJECT
++export FOAM_INST_DIR="$(dirname "${PWD}")"
+ # export FOAM_INST_DIR=~$WM_PROJECT
+ # export FOAM_INST_DIR=/opt/$WM_PROJECT
+ # export FOAM_INST_DIR=/usr/local/$WM_PROJECT
+@@ -111,7 +110,7 @@
+ # Location of installation
+ # ~~~~~~~~~~~~~~~~~~~~~~~~
+ export WM_PROJECT_INST_DIR=$FOAM_INST_DIR
+-export WM_PROJECT_DIR=$WM_PROJECT_INST_DIR/$WM_PROJECT-$WM_PROJECT_VERSION
++export WM_PROJECT_DIR="${PWD}"
+ 
+ if [ -d "$WM_PROJECT_DIR" ]
+ then

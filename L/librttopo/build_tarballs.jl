@@ -39,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GEOS_jll", uuid="d604d12d-fa86-5845-992e-78dc15976526"))
+    Dependency("GEOS_jll"; compat="~3.9")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

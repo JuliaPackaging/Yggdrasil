@@ -3,35 +3,38 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.9.0"
+version = v"3.10.0"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "bd8082cf12f45f27630193c78bdb5a3cba847b81e72b20268356c2a4fc065269")
+                  "097d70e3c8f688e59633ceb8d38ad5c9b0d7ead5729adeb925dbc489437abe13")
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geos-*/
 
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-S.) # source
+
 # arm complains about duplicate symbols unless we disable inlining
-EXTRA_CONFIGURE_FLAGS=()
 if [[ ${target} == arm* ]]; then
-    EXTRA_CONFIGURE_FLAGS+=(--disable-inline)
+    CMAKE_FLAGS+=(-DDISABLE_GEOS_INLINE=true)
 fi
-export CFLAGS="-O2"
-export CXXFLAGS="-O2"
-autoreconf -vi
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-shared --disable-static ${EXTRA_CONFIGURE_FLAGS[@]}
+
+cmake ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -43,4 +46,4 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

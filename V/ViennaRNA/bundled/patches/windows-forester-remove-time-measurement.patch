@@ -1,0 +1,49 @@
+diff --git a/src/RNAforester/src/aligner.cpp b/src/RNAforester/src/aligner.cpp
+index f036a0b..f8d43ff 100644
+--- a/src/RNAforester/src/aligner.cpp
++++ b/src/RNAforester/src/aligner.cpp
+@@ -272,7 +272,7 @@ void computeSpaceTimeInfo(const RNAForest* f1, const RNAForest* f2, const Score
+ 
+         std::cout << std::endl;
+     }
+-    tms tmsStart, tmsEnd;
++    //tms tmsStart, tmsEnd;
+     Algebra<double,RNA_Alphabet> *alg = new DoubleDist_Algebra(score);
+     AlgebraAffine<double,RNA_Alphabet> *alg_affine = new AffineDoubleDist_Algebra(score);
+ 
+@@ -322,16 +322,16 @@ void computeSpaceTimeInfo(const RNAForest* f1, const RNAForest* f2, const Score
+ 						//std::cout << std::endl;
+ 
+ 						if (affine) {
+-	        		times(&tmsStart);
++						  //times(&tmsStart);
+ 	        		AlignmentAffine<double,RNA_Alphabet,RNA_AlphaPair> ali(f1,f2,*alg_affine,topdown,anchored,local,!printBT,speedup);
+-		     		 	times(&tmsEnd);
+-			  		  std::cout <<((double) (tmsEnd.tms_utime - tmsStart.tms_utime))/sysconf(_SC_CLK_TCK) << "\t" << std::flush;
++				                  //times(&tmsEnd);
++				                  //std::cout <<((double) (tmsEnd.tms_utime - tmsStart.tms_utime))/sysconf(_SC_CLK_TCK) << "\t" << std::flush;
+ 						}
+ 						else {
+-				  		times(&tmsStart);
++						  //times(&tmsStart);
+ 							AlignmentLinear<double,RNA_Alphabet,RNA_AlphaPair> ali(f1,f2,*alg,topdown,anchored,local,!printBT,speedup);
+-						 	times(&tmsEnd);
+-						  std::cout <<((double) (tmsEnd.tms_utime - tmsStart.tms_utime))/sysconf(_SC_CLK_TCK) << "\t" << std::flush;
++						  //times(&tmsEnd);
++						  //std::cout <<((double) (tmsEnd.tms_utime - tmsStart.tms_utime))/sysconf(_SC_CLK_TCK) << "\t" << std::flush;
+ 						}
+ 
+ 					}
+diff --git a/src/RNAforester/src/aligner.h b/src/RNAforester/src/aligner.h
+index b60501a..75ec605 100644
+--- a/src/RNAforester/src/aligner.h
++++ b/src/RNAforester/src/aligner.h
+@@ -18,7 +18,7 @@
+ #include "treeedit.t.cpp"
+ 
+ #include <vector>
+-#include <sys/times.h>
++//#include <sys/times.h>
+ 
+ 
+ // forward decls

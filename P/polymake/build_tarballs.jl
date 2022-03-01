@@ -22,13 +22,16 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.5"
-version = VersionNumber(upstream_version.major*100,upstream_version.minor*100,0)
+upstream_version = v"4.6"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major*100+version_offset.major,
+                        upstream_version.minor*100+version_offset.minor,
+                        version_offset.patch)
 
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "77e98f1d41ed7d0eee8e983814bcb3f1a1b2b6100420ccd432bd2e796f0bc48a")
+                  "f88341465f412e1fed459313a7dc5fa3ddbc56807ecc7246e836ae25e54585a8")
     DirectorySource("./bundled")
 ]
 
@@ -38,8 +41,6 @@ script = raw"""
 # assume a fixed source directory
 mv $WORKSPACE/srcdir/{polymake-*,polymake}
 cd $WORKSPACE/srcdir/polymake
-
-perl_version=5.30.3
 
 # to be able to generate a similiar dependency tree at runtime
 # we prepare a symlink tree for all dependencies
@@ -57,22 +58,26 @@ atomic_patch -p1 ../patches/sigint.patch
 # work around sigchld-handler conflicts with other libraries
 atomic_patch -p1 ../patches/sigchld.patch
 
-if [[ $target == *darwin* ]]; then
+# patch for bliss compatibility
+atomic_patch -p1 ../patches/bliss.patch
+
+if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
+  perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
+  perl_version=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 2)
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
-  mkdir -p build/perlx/$perl_version/apple-darwin14
+  mkdir -p build/perlx/$perl_version/$perl_arch
   cp ../config/config-$target.ninja build/config.ninja
   cp ../config/build-Opt-$target.ninja build/Opt/build.ninja
   cp ../config/targets.ninja build/targets.ninja
   ln -s ../config.ninja build/Opt/config.ninja
-  cp ../config/perlx-config-$target.ninja build/perlx/$perl_version/apple-darwin14/config.ninja
-  # for a modified pure perl JSON module and to make miniperl find the correct modules
-  export PERL5LIB=$prefix/lib/perl5/$perl_version:$prefix/lib/perl5/$perl_version/darwin-2level:$WORKSPACE/srcdir/patches
-  atomic_patch -p1 ../patches/polymake-cross.patch
-  atomic_patch -p1 ../patches/polymake-cross-build.patch
-else
+  cp ../config/perlx-config-$target.ninja build/perlx/$perl_version/$perl_arch/config.ninja
 
-  ./configure CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
+  atomic_patch -p1 ../patches/polymake-cross.patch
+else
+  unset LD_LIBRARY_PATH
+  $bindir/perl \
+  support/configure.pl CFLAGS="-Wno-error" CC="$CC" CXX="$CXX" \
               PERL=${prefix}/deps/Perl_jll/bin/perl \
               LDFLAGS="$LDFLAGS -L${prefix}/deps/Perl_jll/lib -Wl,-rpath,${prefix}/deps/Perl_jll/lib" \
               --prefix=${prefix} \
@@ -86,29 +91,27 @@ else
               --with-lrs=${prefix}/deps/lrslib_jll \
               --with-libnormaliz=${prefix}/deps/normaliz_jll \
               --without-singular \
-              --without-native
+              --without-native \
+              --without-prereq
 fi
+
+# C++ templates to need quite a lot of memory during compilation...
+(( nproc=1+nproc/3 ))
 
 ninja -v -C build/Opt -j${nproc}
 
 ninja -v -C build/Opt install
 
-# undo patch needed for building
-if [[ $target == *darwin* ]]; then
-  atomic_patch -R -p1 ../patches/polymake-cross-build.patch
-fi
-install -m 644 -D support/*.pl $prefix/share/polymake/support/
-
-# replace miniperl
-sed -i -e "s/miniperl-for-build/perl/" ${libdir}/polymake/config.ninja ${bindir}/polymake*
-# replace binary path with env
-sed -i -e "s#$bindir/perl#/usr/bin/env perl#g" ${libdir}/polymake/config.ninja ${bindir}/polymake*
 # remove target and sysroot
 sed -i -e "s#--sysroot[ =]\S\+##g" ${libdir}/polymake/config.ninja
 sed -i -e "s#-target[ =]\S\+##g" ${libdir}/polymake/config.ninja
 
 # copy of build config that has prefix as a variable
 sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/polymake/config-reloc.ninja
+
+# adjust perl path
+sed -i -e "s|^#!.*perl|#!/usr/bin/env perl|g" ${bindir}/polymake*
+sed -i -e "s#^PERL = .*#PERL = /usr/bin/env perl#g" ${libdir}/polymake/config*
 
 # cleanup symlink tree
 rm -rf ${prefix}/deps
@@ -121,10 +124,9 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-]
+platforms = filter!(p -> !Sys.iswindows(p) &&
+                         arch(p) != "armv6l",
+                    supported_platforms(;experimental=true))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -136,21 +138,25 @@ products = [
     FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
 ]
 
+
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("FLINT_jll", compat = "~200.800"),
-    Dependency("PPL_jll", compat = "~1.2"),
-    Dependency("Perl_jll", compat = "=5.30.3"),
-    Dependency("bliss_jll", compat = "~0.73"),
-    Dependency("boost_jll", compat = "=1.71.0"),
-    Dependency("cddlib_jll", compat = "~0.94.10"),
-    Dependency("lib4ti2_jll"),
-    Dependency("lrslib_jll", compat = "~0.3.2"),
-    Dependency("normaliz_jll", compat = "~300.900"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("PPL_jll", compat = "~1.2.1"),
+    Dependency("Perl_jll", compat = "=5.34.0"),
+    Dependency("bliss_jll", compat = "~0.77.0"),
+    Dependency("boost_jll", compat = "=1.76.0"),
+    Dependency("cddlib_jll", compat = "~0.94.13"),
+    Dependency("lrslib_jll", compat = "~0.3.3"),
+    Dependency("normaliz_jll", compat = "~300.900.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               preferred_gcc_version=v"7")

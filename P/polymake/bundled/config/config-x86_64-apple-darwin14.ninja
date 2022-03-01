@@ -17,6 +17,8 @@ CXXSANITIZE = -fno-omit-frame-pointer -O1 -g
 CflagsSuppressWarnings = 
 CLANGversion = 4.0
 CPPStd = 201402
+DlExt = bundle
+So = dylib
 XcodeVersion = 9.1.0
 LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
 LDsharedFLAGS = -bundle -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -undefined dynamic_lookup -fstack-protector-strong
@@ -34,8 +36,8 @@ InstallInc = /workspace/destdir/include
 InstallLib = /workspace/destdir/lib
 InstallDoc = /workspace/destdir/share/polymake/doc
 AR = ar
-GMP.version = 6.1.2
-MPFR.version = 4.0.2
+GMP.version = 6.2.0
+MPFR.version = 4.1.1
 bundled.atint.RequireExtensions=cdd
 bundled.bliss.CXXFLAGS = -I/workspace/destdir/deps/bliss_jll/include
 bundled.bliss.LDFLAGS = -L/workspace/destdir/deps/bliss_jll/lib -Wl,-rpath,/workspace/destdir/deps/bliss_jll/lib

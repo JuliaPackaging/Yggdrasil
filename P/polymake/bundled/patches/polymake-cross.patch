@@ -1,5 +1,5 @@
 diff --git a/perl/polymake-config b/perl/polymake-config
-index 8990e897d9..23a55ff67a 100644
+index 0bff8c6a04..4f4cef5f47 100644
 --- a/perl/polymake-config
 +++ b/perl/polymake-config
 @@ -90,7 +90,7 @@ while (defined ($_=shift)) {
@@ -21,33 +21,55 @@ index 8990e897d9..23a55ff67a 100644
        } else {
           $ldflags .= " -Wl,-E";
 diff --git a/support/generate_applib_fake.pl b/support/generate_applib_fake.pl
-index 3b6762df05..a671fd1c6b 100644
+index 8b3fbf17f1..4b1740a719 100644
 --- a/support/generate_applib_fake.pl
 +++ b/support/generate_applib_fake.pl
-@@ -21,7 +21,7 @@ use strict;
- use Config;
+@@ -18,10 +18,20 @@
+ #  and generates a source file pretending to define them all.
+ 
+ use strict;
+-use Config;
++require File::Path;
++use File::Basename qw( dirname );
++
++my $root = dirname($0)."/../";
++my $config = dirname($ARGV[0])."/../config.ninja";
++
++do "$root/support/install_utils.pl";
++die $@ if $@;
++
++my %ConfigFlags = load_config_file($config, $root);
++my $isdarwin = $ConfigFlags{Arch} =~ /^darwin/;
  
  my @out;
 -my $nmopts= $^O eq "darwin" ? "-Ugp" : "--defined-only --extern-only -p";
-+my $nmopts= $Config::Config{osname} eq "darwin" ? "-Ugp" : "--defined-only --extern-only -p";
++my $nmopts= $isdarwin ? "-Ugp" : "--defined-only --extern-only -p";
  
  for my $shlib (@ARGV) {
     -r $shlib or die "shared module $shlib does not exist or unreadable\n";
-@@ -36,7 +36,7 @@ for my $shlib (@ARGV) {
+@@ -29,14 +39,14 @@ for my $shlib (@ARGV) {
+    open SYMS, "nm $nmopts $shlib |"
+      or die "can't run nm $shlib: $!\n";
+ 
+-   my ($appname)= $shlib =~ m{(?:^|/)(\w+)\.$Config::Config{dlext}$}
++   my ($appname)= $shlib =~ m{(?:^|/)(\w+)\.$ConfigFlags{DlExt}$}
+      or die "can't derive application name from shared module name $shlib\n";
+ 
+    my $prefix="8polymake".length($appname).$appname;
  
     while (<SYMS>) {
        if (/ [TW] ([_ZNK]+$prefix\w+)$/) {
 -	  if ( $^O eq "darwin" ) {    # aliases don't seem to work on MacOS, so we actually define the functions with empty body
-+	  if ( $Config::Config{osname} eq "darwin" ) {    # aliases don't seem to work on MacOS, so we actually define the functions with empty body
++	  if ($isdarwin) {    # aliases don't seem to work on MacOS, so we actually define the functions with empty body
  	      my $functionname = $1;
  	      $functionname =~ s/^__/_/;
  	      push @out, "void $functionname() {};\n";
-@@ -49,14 +49,14 @@ for my $shlib (@ARGV) {
+@@ -49,14 +59,14 @@ for my $shlib (@ARGV) {
  }
  
  if (@out) {
 -   if ($^O eq "darwin") {
-+   if ($Config::Config{osname} eq "darwin") {
++   if ($isdarwin) {
        print "#ifndef POLYMAKE_FAKE_FUNCTIONS\n";
     }
     print <<'.';
@@ -55,7 +77,194 @@ index 3b6762df05..a671fd1c6b 100644
  void __dummy() { }
  .
 -   if ($^O eq "darwin") {
-+   if ($Config::Config{osname} eq "darwin") {
++   if ($isdarwin) {
        print "#endif\n";
     }
     print "#ifdef POLYMAKE_FAKE_FUNCTIONS\n", @out, "#endif\n";
+diff --git a/support/generate_ninja_targets.pl b/support/generate_ninja_targets.pl
+index cfe2a39240..fd70dbdf17 100644
+--- a/support/generate_ninja_targets.pl
++++ b/support/generate_ninja_targets.pl
+@@ -406,7 +406,7 @@ LIBS=\${partial.LIBS} @add_libs
+ 
+    foreach my $app (@apps) {
+       my $app_name = basename($app);
+-      my $app_shared_module = "\${buildtop}/lib/$app_name.$Config::Config{dlext}";
++      my $app_shared_module = "\${buildtop}/lib/$app_name.\${DlExt}";
+       push @all_app_targets, $app_shared_module;
+ 
+       if (defined(my $objects = $objects_per_app{$app_name})) {
+@@ -433,7 +433,7 @@ LIBS=\${partial.LIBS} @add_libs
+          print "\n";
+       } else {
+          # application without any C++ components
+-         if (my @obsolete = grep { (stat $_)[7] != 0 } glob("$builddir/*/lib/$app_name.$Config::Config{dlext}")) {
++         if (my @obsolete = grep { (stat $_)[7] != 0 } glob("$builddir/*/lib/$app_name.{so,dylib,bundle}")) {
+             print STDERR "removing obsolete shared module(s) @obsolete\n";
+             unlink @obsolete;
+          }
+@@ -443,8 +443,8 @@ LIBS=\${partial.LIBS} @add_libs
+ 
+    if (!$core_mode) {
+       # wipe disappeared applications from the extension
+-      foreach my $app_mod (glob("$builddir/*/lib/*.$Config::Config{dlext}")) {
+-         my ($app_name) = $app_mod =~ m{/([^/]+)\.$Config::Config{dlext}$};
++      foreach my $app_mod (glob("$builddir/*/lib/*.{so,dylib,bundle}")) {
++         my ($app_name) = $app_mod =~ m{/([^/]+)\.(?:so|dylib|bundle)$};
+          if (!exists $objects_per_app{$app_name}) {
+             print STDERR "removing obsolete shared module $app_mod\n";
+             unlink $app_mod;
+@@ -500,7 +500,7 @@ build install : install_core || all $install_deps
+       my @bundled_config_scripts = map { s/^\Q$root\E/$srcrootname/r } grep { -f }
+                                    map { "$root/bundled/$_/support/configure.pl" } @bundled;
+       print <<"---";
+-build \${config.file}: reconfigure | \${root}/support/configure.pl @bundled_config_scripts
++# build \${config.file}: reconfigure | \${root}/support/configure.pl @bundled_config_scripts
+ ---
+    } else {
+       if (-f "$srcroot/support/rules.ninja") {
+@@ -534,7 +534,7 @@ sub add_custom_targets {
+ 
+ sub generate_corelib_targets {
+ 
+-   my $Ext_module="\${buildtop}/\${perlxpath}/auto/Polymake/Ext/Ext.$Config::Config{dlext}";
++   my $Ext_module="\${buildtop}/\${perlxpath}/auto/Polymake/Ext/Ext.$ConfigFlags{DlExt}";
+ 
+    my ($callable_libname, $callable_link, $fakeapps_libname, $fakeapps_link, $stubapps_libname, $stubapps_link, $corelib_archive);
+    if ($ConfigFlags{LDcallableFLAGS} ne "none") {
+@@ -571,7 +571,7 @@ corelib_archive=\${buildtop}/lib/$corelib_archive
+ 
+       # perl-dependent modules
+       $out_dir = '${buildtop}/lib/${perlxpath}';
+-      my $mode_flags = $Config::Config{optimize} =~ /-O[1-9]/ ? "" : "  CmodeFLAGS=\${CDebugFLAGS}\n";
++      my $mode_flags = "";#$Config::Config{optimize} =~ /-O[1-9]/ ? "" : "  CmodeFLAGS=\${CDebugFLAGS}\n";
+ 
+       my @perl_cc = glob("$root/lib/core/src/perl/*.cc");
+       my @perl_xxs = glob("$root/lib/core/src/perl/*.xxs");
+@@ -673,8 +673,8 @@ build all.libs : phony $Ext_module
+ # stem, version => libname, versioned libname
+ sub compose_sharedlib_names {
+    my ($stem, $version)=@_;
+-   ( $Config::Config{so} eq "so" ? "lib$stem.$Config::Config{so}.$version" : "lib$stem.$version.$Config::Config{so}",
+-     "lib$stem.$Config::Config{so}"
++   ( $ConfigFlags{So} eq "so" ? "lib$stem.$ConfigFlags{So}.$version" : "lib$stem.$version.$ConfigFlags{So}",
++     "lib$stem.$ConfigFlags{So}"
+    )
+ }
+ 
+diff --git a/support/install.pl b/support/install.pl
+index 7106f5e5c3..398313374c 100644
+--- a/support/install.pl
++++ b/support/install.pl
+@@ -89,7 +89,8 @@ if (length($destdir)) {
+    }
+ }
+ 
+-my $perlxpath = "perlx/$Config::Config{version}/$Config::Config{archname}";
++my @perlpaths = glob("$builddir/perlx/*/*");
++my $perlxpath = @perlpaths == 1 && -d $perlpaths[0] ? substr($perlpaths[0],length($builddir)+1) : "perlx/$Config::Config{version}/$Config::Config{archname}";
+ 
+ if ($buildmode eq "San") {
+    load_sanitizer_flags();
+@@ -179,7 +180,7 @@ sub install_core {
+    -d $InstallLib || make_dir($InstallLib);
+ 
+    if (defined($xsmod)) {
+-      $xsmod =~ m{($perlxpath/auto/.*\.$Config::Config{dlext})$}o
++      $xsmod =~ m{($perlxpath/auto/.*\.$ConfigFlags{DlExt})$}o
+         or die "$0: path of perl extension module does not match the expected pattern\n";
+       copy_file($xsmod, "$InstallArch/$1", mode => 0555, clean_dir => 1);
+    }
+@@ -189,19 +190,19 @@ sub install_core {
+       if (-l $lib_file) {
+          copy_link($lib_file, $to);
+       } else {
+-         copy_file($lib_file, $to, mode => 0555, $^O eq "darwin" ? (lib_id => $to) : ());
++         copy_file($lib_file, $to, mode => 0555, $ConfigFlags{Arch} =~ /^darwin/ ? (lib_id => $to) : ());
+       }
+    }
+    make_dir("$InstallArch/lib", clean_dir => 1);
+    foreach my $app_dir (glob("$root/apps/*")) {
+-      my $app_mod = basename($app_dir).".$Config::Config{dlext}";
++      my $app_mod = basename($app_dir).".$ConfigFlags{DlExt}";
+       copy_file("$buildtop/lib/$app_mod", "$InstallArch/lib/$app_mod", mode => 0555);
+    }
+ 
+    # These symlinks are used by the callable library bootstrap module.
+    # Any change in naming scheme must be reflected in Main.cc as well.
+    rel_symlink($InstallTop, "$InstallArch/shared");
+-   if ($^O eq "darwin" && $ConfigFlags{FinkBase}) {
++   if ($ConfigFlags{Arch} =~ /^darwin/ && $ConfigFlags{FinkBase}) {
+       rel_symlink($ConfigFlags{FinkBase}, "$InstallArch/fink-base");
+    }
+ 
+@@ -215,7 +216,7 @@ sub install_core {
+             copy_link($lib_file, "$InstallLib/$basename");
+          } else {
+             $stub_lib_name //= $to;
+-            copy_file($lib_file, $to, mode => 0555, $^O eq "darwin" ? (lib_id => $stub_lib_name) : ());
++            copy_file($lib_file, $to, mode => 0555, $ConfigFlags{Arch} =~ /^darwin/ ? (lib_id => $stub_lib_name) : ());
+             # This symlink is also used by the callable library bootstrap module.
+             rel_symlink($to, "$InstallLib/$basename");
+          }
+@@ -263,7 +264,7 @@ sub install_extension {
+ 
+    make_dir("$ExtArch/lib");
+    foreach my $app_dir (glob("$ext_root/apps/*")) {
+-      my $app_mod = basename($app_dir).".$Config::Config{dlext}";
++      my $app_mod = basename($app_dir).".$ConfigFlags{DlExt}";
+       copy_file("$buildtop/lib/$app_mod", "$ExtArch/lib/$app_mod", mode => 0555);
+    }
+ 
+@@ -545,11 +546,11 @@ sub install_bin_scripts {
+    $_ = <S>;
+    close S;
+ 
+-   if ($^O eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
+-      s{^\#!/usr/bin/env perl}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
+-   } else {
+-      s{^\#!/usr/bin/env perl}{#!$Config::Config{perlpath}}s;
+-   }
++   #if ($ConfigFlags{Arch} =~ /^darwin/ && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
++   #   s{^\#!/usr/bin/env perl}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
++   #} else {
++   #   s{^\#!/usr/bin/env perl}{#!$Config::Config{perlpath}}s;
++   #}
+ 
+    my $init_block = <<"---";
+    \$InstallTop='$ConfigFlags{InstallTop}';
+@@ -557,7 +558,7 @@ sub install_bin_scripts {
+    \$Arch="$ConfigFlags{Arch}";
+    \@BundledExts=qw(@BundledExts);
+ ---
+-   if ($^O eq "darwin" && $ConfigFlags{FinkBase}) {
++   if ($ConfigFlags{Arch} =~ /^darwin/ && $ConfigFlags{FinkBase}) {
+       $init_block.="   \@addlibs=qw($ConfigFlags{FinkBase}/lib/perl5);\n";
+    }
+    s/(^BEGIN\s*\{\s*\n)(?s:.*?)(^\}\n)/$1$init_block$2/m;
+@@ -583,11 +584,11 @@ sub install_bin_scripts {
+    $_ = <S>;
+    close S;
+ 
+-   if ($^O eq "darwin" && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
+-      s{^\#!\S+}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
+-   } else {
+-      s{^\#!\S+}{#!$Config::Config{perlpath}}s;
+-   }
++   #if ($ConfigFlags{Arch} =~ /^darwin/ && $ConfigFlags{ARCHFLAGS} =~ /-arch /) {
++   #   s{^\#!\S+}{#!/usr/bin/arch $ConfigFlags{ARCHFLAGS} $^X}s;
++   #} else {
++       s{^\#!\S+}{#!/usr/bin/env perl}s;
++   #}
+ 
+    s{=Version(?=;)}{=$Version};
+    s{=InstallTop(?=;)}{='$ConfigFlags{InstallTop}'};
+@@ -635,7 +636,7 @@ sub transform_core_config_file {
+    my $external_includes = $ConfigFlags{ExternalHeaders} =~ /\S/ ? "-I$ConfigFlags{InstallInc}/polymake/external" : "";
+    s{^\s* app\.includes \s*= \K .*}{$external_includes}xm;
+ 
+-   s{^(?=\s*Arch\s*=)}{PERL = $Config::Config{perlpath}\n}m;
++   s{^(?=\s*Arch\s*=)}{PERL = perl\n}m;
+    s{^\s* BuildModes \s*= \K .*}{$buildmode}xm;
+    s{^\s* (?: DESTDIR | CCACHE | CCWRAPPER ) \s*= .*$}{}xm;
+ 

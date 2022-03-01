@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GTK3"
-version = v"3.24.30"
+version = v"3.24.31"
 
 # Collection of sources required to build GTK
 sources = [
     GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
-              "d4e2d05cd9518ba04d6fbe1cbcec27142788ac95"),
+              "ab45bde94c7bbd140b12fa0dd6203f7b98d1a715"),
     DirectorySource("./bundled"),
 ]
 
@@ -26,7 +26,10 @@ ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
 # Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
 rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build.patch
+atomic_patch -p1 ../patches/meson_build.patch
+# Fix bugs in v3.24.31
+atomic_patch -p1 ../patches/macos-3.24.31.patch
+atomic_patch -p1 ../patches/0001-Use-lowercase-name-for-windows.h.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
@@ -58,17 +61,21 @@ rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schema
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("libgailutil-3", :libgailutil3),
     LibraryProduct("libgdk-3", :libgdk3),
     LibraryProduct("libgtk-3", :libgtk3),
 ]
 
+# Some dependencies are needed only on Linux or Linux and FreeBSD
+linux = filter(Sys.islinux, platforms)
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host Wayland for wayland-scanner
-    HostBuildDependency("Wayland_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    HostBuildDependency("Wayland_jll"; platforms=linux),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.47.0"),
@@ -79,21 +86,21 @@ dependencies = [
     # Gtk 3.24.29 requires ATK 2.35.1
     Dependency("ATK_jll", v"2.36.1"; compat="2.35.1"),
     Dependency("HarfBuzz_jll"),
-    Dependency("xkbcommon_jll"),
+    Dependency("xkbcommon_jll"; platforms=linux),
     Dependency("iso_codes_jll"),
-    Dependency("Wayland_jll"),
-    Dependency("Xorg_libXrandr_jll"),
-    Dependency("Xorg_libX11_jll"),
-    Dependency("Xorg_libXrender_jll"),
-    Dependency("Xorg_libXi_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libXcursor_jll"),
-    Dependency("Xorg_libXdamage_jll"),
-    Dependency("Xorg_libXfixes_jll"),
-    Dependency("Xorg_libXcomposite_jll"),
-    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Wayland_jll"; platforms=linux),
+    Dependency("Xorg_libXrandr_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXi_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXcursor_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXdamage_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXfixes_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXcomposite_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXinerama_jll"; platforms=linux_freebsd),
     Dependency("Fontconfig_jll"),
-    Dependency("at_spi2_atk_jll"),
+    Dependency("at_spi2_atk_jll"; platforms=linux_freebsd),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

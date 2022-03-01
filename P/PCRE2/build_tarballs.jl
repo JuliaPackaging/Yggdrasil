@@ -7,8 +7,8 @@ version = v"10.36"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "b95ddb9414f91a967a887d69617059fb672b914f56fa3d613812c1ee8e8a1a37"),
+    ArchiveSource("https://github.com/PhilipHazel/pcre2/archive/refs/tags/pcre2-$(version.major).$(version.minor).tar.gz",
+                  "4975181fa486a595fc2de1ebce85793412d631e0ac006a7906f854caf62c9745"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/pcre2-*/
 
 # Update configure scripts
 update_configure_scripts
+
+# NOTE: this step may be removed if we switch to release tarballs in the future.
+./autogen.sh
 
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
@@ -45,7 +48,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

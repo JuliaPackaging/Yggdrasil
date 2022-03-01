@@ -35,7 +35,6 @@ julia_compat = merged["julia_compat"]
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
-    name,
     code_dir,
     repo,
 )
@@ -128,7 +127,7 @@ mktempdir() do download_dir
 
     if !skip_build
         # Upload the tarballs to GitHub releases
-        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose, ncpu=8)
+        BinaryBuilder.upload_to_github_releases(repo, tag, download_dir; verbose=verbose)
     end
 end
 

@@ -1,0 +1,24 @@
+From 08761400a39878ba5418ef39df1f159370fd4554 Mon Sep 17 00:00:00 2001
+From: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Fri, 17 Dec 2021 11:18:32 -0600
+Subject: [PATCH] Link libamdrocclr_static.a with -lrt
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d713eeb7..63399bf0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -225,6 +225,7 @@ endif()
+ 
+ target_link_libraries(amdrocclr_static PUBLIC Threads::Threads)
+ target_link_libraries(amdrocclr_static PUBLIC dl)
++target_link_libraries(amdrocclr_static PUBLIC rt)
+ 
+ 
+ if (BUILD_PAL)
+-- 
+2.34.1
+

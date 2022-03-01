@@ -22,20 +22,21 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Arb"
-version = v"200.2000.0"
-upstream_version = v"2.20.0"
+upstream_version = v"2.22.0"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/fredrik-johansson/arb/archive/refs/tags/$(upstream_version).tar.gz",
-                  "d2f186b10590c622c11d1ca190c01c3da08bac9bc04e84cb591534b917faffe7"),
+    GitSource("https://github.com/fredrik-johansson/arb.git", "c2b7e36915a451455c1f115ce343dd85bdc30c59")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd arb*/
-
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1
 elif [[ ${target} == *mingw* ]]; then
@@ -44,7 +45,6 @@ elif [[ ${target} == *mingw* ]]; then
    # MSYS_NT-6.3 is not detected as MINGW
    extraflags=--build=MINGW${nbits}
 fi
-
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
@@ -61,10 +61,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "1.6")

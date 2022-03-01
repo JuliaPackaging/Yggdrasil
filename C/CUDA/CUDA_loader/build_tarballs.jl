@@ -7,7 +7,7 @@ version = v"0.2.1"
 
 cuda_versions = [v"9.0", v"9.2",
                  v"10.0", v"10.1", v"10.2",
-                 v"11.0", v"11.1", v"11.2", v"11.3", v"11.4"]
+                 v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
@@ -16,3 +16,5 @@ for cuda_version in cuda_versions
     build_tarballs(ARGS, name, version, [], script, platforms, products, dependencies;
                    lazy_artifacts=true)
 end
+
+# bump

@@ -67,7 +67,7 @@ fi
 export CMAKEOPT="${CMAKE_FLAGS[@]}"
 export PREFIX=$prefix
 
-make -j$(nproc) all
+make -j${nproc} all
 make install
 """
 

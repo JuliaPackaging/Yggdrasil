@@ -184,7 +184,7 @@ Index: b/gcc/config/linux.h
  #else
  #error "Unsupported DEFAULT_LIBC"
  #endif /* DEFAULT_LIBC */
-@@ -82,23 +87,103 @@
+@@ -82,23 +87,104 @@
  #define BIONIC_DYNAMIC_LINKER64 "/system/bin/linker64"
  #define BIONIC_DYNAMIC_LINKERX32 "/system/bin/linkerx32"
  
@@ -280,6 +280,7 @@ Index: b/gcc/config/linux.h
 +#define INCLUDE_DEFAULTS				\
 +  {							\
 +    INCLUDE_DEFAULTS_MUSL_GPP				\
++    INCLUDE_DEFAULTS_MUSL_LOCAL			\
 +    INCLUDE_DEFAULTS_MUSL_PREFIX			\
 +    INCLUDE_DEFAULTS_MUSL_CROSS				\
 +    INCLUDE_DEFAULTS_MUSL_TOOL				\

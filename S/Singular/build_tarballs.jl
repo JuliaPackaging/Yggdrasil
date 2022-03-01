@@ -27,12 +27,15 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.100.101" # actually 4.2.1p1 plus some more changes
-upstream_version = v"4.2.1"
+upstream_version = v"4.3.0-1" # 4.3.0 plus some changes
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
+                        upstream_version.patch * 100 + version_offset.minor,
+                        Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "6d6e14e2098b18d473ba6b37065ba3830d790a35"),
+    GitSource("https://github.com/Singular/Singular.git", "bbc293564bf76fcdfdc37354d406b7ca77bc780f"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -89,10 +92,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800.401"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"6", julia_compat = "1.6")

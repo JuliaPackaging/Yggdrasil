@@ -1,18 +1,19 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "gmsh"
-version = v"4.8.4"
+version = v"4.9.3"
 
 # Collection of sources required to build Gmsh
 sources = [
-    ArchiveSource("https://gmsh.info/src/gmsh-$version-source.tgz", "760dbdc072eaa3c82d066c5ba3b06eacdd3304eb2a97373fe4ada9509f0b6ace")
+    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+                  "9e06751e9fef59ba5ba8e6feded164d725d7e9bc63e1cb327b083cbc7a993adb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/gmsh-4.8.4-source
+cd ${WORKSPACE}/srcdir/gmsh-*
 install_license LICENSE.txt
 mkdir build
 cd build
@@ -43,8 +44,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,  preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")

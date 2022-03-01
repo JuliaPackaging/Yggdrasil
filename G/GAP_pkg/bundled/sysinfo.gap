@@ -21,7 +21,7 @@ GAP_CC="cc "
 GAP_CXX="c++ -std=gnu++11 "
 GAP_CFLAGS="-g -O2"
 GAP_CXXFLAGS="-g -O2"
-GAP_CPPFLAGS="-I/workspace/destdir/include/gap -DHAVE_CONFIG_H -fPIC "
+GAP_CPPFLAGS="-I/workspace/destdir/include/gap -DUSE_JULIA_GC=1 -fPIC "
 GAP_LDFLAGS="-L/workspace/destdir/lib "
 GAP_LIBS="-lgmp"
 

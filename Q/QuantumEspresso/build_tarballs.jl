@@ -1,18 +1,18 @@
 using BinaryBuilder, Pkg
 
 name = "QuantumEspresso"
-version = v"6.7.0"
+version = v"7.0.0"
 
 sources = [
-    ArchiveSource("https://github.com/QEF/q-e/releases/download/qe-6.7.0/qe-6.7-ReleasePack.tgz",
-                  "8f06ea31ae52ad54e900a2f51afd5c70f78096d9dcf39c86c2b17dccb1ec9c87"),
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.0/q-e-qe-7.0.tar.gz",
+                  "85beceb1aaa1678a49e774c085866d4612d9d64108e0ac49b23152c8622880ee"),
     DirectorySource("bundled"),
 ]
 
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd qe-*
+cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
@@ -30,8 +30,10 @@ if [ "${nbits}" == 64 ]; then
     flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
 fi
 
-if [[ "${target}" == powerpc64le-linux-gnu ]]; then
-    # No scalapack binary available on PowerPC
+if [[    "${target}" == powerpc64le-linux-* \
+      || "${bb_full_target}" == armv6l-linux-* \
+      || "${target}" == aarch64-apple-darwin* ]]; then
+    # No scalapack binary available on these platforms
     flags+=(--with-scalapack=no)
 else
     export SCALAPACK_LIBS="-L${libdir} -lscalapack"
@@ -48,7 +50,10 @@ chmod +x "${bindir}"/*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-platforms = filter!(!Sys.iswindows, platforms)
+filter!(!Sys.iswindows, platforms)
+# On aarch64-apple-darwin we get
+#    f951: internal compiler error: in doloop_contained_procedure_code, at fortran/frontend-passes.c:2464
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -80,4 +85,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", julia_compat="1.6", preferred_llvm_version=v"11")
+               preferred_gcc_version=v"6", julia_compat="1.6")

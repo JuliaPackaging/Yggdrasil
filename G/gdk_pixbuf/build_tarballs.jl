@@ -46,6 +46,9 @@ products = [
     FileProduct("lib/gdk-pixbuf-2.0/2.10.0/loaders", :gdk_pixbuf_loaders_dir),
 ]
 
+# Some dependencies are needed only on Linux and FreeBSD
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
@@ -56,9 +59,9 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
-    Dependency("Xorg_libX11_jll"),
-    BuildDependency("Xorg_xproto_jll"),
-    BuildDependency("Xorg_kbproto_jll"),
+    Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
+    BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
+    BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
 ]
 
 # Build the tarballs.

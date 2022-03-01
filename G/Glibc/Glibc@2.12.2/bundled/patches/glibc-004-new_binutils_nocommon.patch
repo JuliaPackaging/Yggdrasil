@@ -1,0 +1,11 @@
+--- ./malloc/obstack.c.old	2017-10-27 17:08:52.000000000 -0400
++++ ./malloc/obstack.c	2017-10-27 17:09:54.000000000 -0400
+@@ -117,7 +117,7 @@
+ /* A looong time ago (before 1994, anyway; we're not sure) this global variable
+    was used by non-GNU-C macros to avoid multiple evaluation.  The GNU C
+    library still exports it because somebody might use it.  */
+-struct obstack *_obstack_compat;
++struct obstack *_obstack_compat __attribute__((nocommon));
+ compat_symbol (libc, _obstack_compat, _obstack, GLIBC_2_0);
+ #  endif
+ # endif

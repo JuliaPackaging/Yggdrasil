@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.1.2"
+version = v"0.1.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "e62794b7bd3b7c34fca5364017c278e116abc1ab"),
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "2c085f06b4e153cc7d9f6f60b6e75d565ed4e449"),
     #= ArchiveSource("https://www.mathematik.uni-kl.de/~ederc/msolve-0.1.2.tar.gz", "ce6454b28477cb3b5670042faf7b3282e234fe1e0ee5a62c184d0512ef4126e1") =#
 ]
 
@@ -16,34 +16,31 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd msolve/
 ./autogen.sh
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-openmp
+
+export CPPFLAGS="-I${includedir}"
+
+ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nprocs}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; )
-]
-
+platforms = supported_platforms(; experimental=true)
+filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmsolve", :libmsolve),
-    LibraryProduct("libneogb", :libneogb)
+    LibraryProduct("libneogb", :libneogb),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"; compat="6.1.2")
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.700")
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("FLINT_jll", compat = "~200.800.101"),
+    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

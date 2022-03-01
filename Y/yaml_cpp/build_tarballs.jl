@@ -15,19 +15,20 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/yaml-cpp*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DYAML_BUILD_SHARED_LIBS=ON \
-    ..
+    -DYAML_CPP_BUILD_TESTS=OFF
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-platforms = expand_cxxstring_abis(platforms; skip=p->false)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [

@@ -2,10 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1190.200"
+gap_version = v"400.1192.000"
+gap_lib_version = v"400.1192.000"
 name = "ferret"
 upstream_version = v"1.0.5" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build libsingular-julia
@@ -18,20 +19,22 @@ sources = [
 script = raw"""
 cd ferret*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Replace-u_int32_t-uint32_t.patch
+for f in ${WORKSPACE}/srcdir/patches/ferret*.patch; do
+    atomic_patch -p1 ${f}
+done
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gaproot=${prefix}/share/gap/
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gaproot=${prefix}/share/gap
 make -j${nproc}
 
-# copy just the loadable module
-mkdir -p ${prefix}/lib/gap/
+# copy the loadable module
+mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
 install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version; uses_cxx = true)
+platforms, dependencies = setup_gap_package(gap_version, gap_lib_version; uses_cxx = true)
 
 # The products that we will ensure are always built
 products = [
@@ -40,4 +43,4 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"7")

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libxc"
-version = v"5.1.5"
+version = v"5.2.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/$(version)/libxc-$(version).tar.gz",
-                  "101d6ea9e013006deae074843f0d02ab2813e16734e47ff7b0551babc4497163"),
+                  "bb843bcc3b3fa7f9e529473c4709e181f7522a10686b0d0fffd74c4519ec77f0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
 
 
 # The products that we will ensure are always built
@@ -53,6 +53,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# For the time being use LLVM 11 because LLVM 12 has troubles with GCC 4-5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", preferred_llvm_version=v"11")
+               preferred_gcc_version=v"5", julia_compat="1.6")

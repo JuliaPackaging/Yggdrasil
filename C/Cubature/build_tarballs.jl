@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name="Cubature"
-version=v"1.0.4"
+version=v"1.0.5" # <-- This version is a lie, we need to bump it to build for experimental platforms
 
 # Collection of sources required to build Cubature
 sources = [
@@ -18,7 +18,7 @@ ${CC} ${LDFLAGS} -shared -fPIC -O3 hcubature.c pcubature.c -o ${libdir}/libcubat
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -26,7 +26,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

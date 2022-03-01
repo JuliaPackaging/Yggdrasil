@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Xyce"
-version = v"7.3.1"
+version = v"7.4.99"
 
 # Collection of sources required to complete build
 sources = [
-            GitSource("https://github.com/Xyce/Xyce.git", "9dd4374f64f272dd9186471fd402fdb7241986c0"),
+            GitSource("https://github.com/Xyce/Xyce.git", "b7bb12d81f11d8b50141262537299b09d64b5565"),
             DirectorySource("./bundled")
           ]
 

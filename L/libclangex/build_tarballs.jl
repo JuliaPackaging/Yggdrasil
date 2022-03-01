@@ -6,11 +6,11 @@ using Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 name = "libclangex"
-version = v"0.1.3"
+version = v"0.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "c27bb2040d9e2cff4eee9e4abaaa1f5dbb30dd24")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "527f22f606f43682c89ef76746d5d9652b2db1dc")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,7 +40,10 @@ function configure(julia_version, llvm_version)
 
     # The products that we will ensure are always built
     products = Product[
-        LibraryProduct("libclangex", :libclangex)
+        # Life is horrible and we can't add Clang_jll as a dependency, thus
+        # loading the library will always fail. We can fix this in the consumer
+        # so don't dlopen
+        LibraryProduct("libclangex", :libclangex, dont_dlopen=true),
     ]
     # ver = "$(llvm_version.major).$(llvm_version.minor).$(llvm_version.patch)"
     dependencies = [
@@ -55,8 +58,8 @@ end
 # TODO: Don't require build-id on LLVM version
 supported = (
     # (v"1.6", v"11.0.1+3"),
-    (v"1.7", v"12.0.1+0"),
-    (v"1.8", v"12.0.1+0"),
+    (v"1.7", v"12.0.1+3"),
+    (v"1.8", v"12.0.1+3"),
 )
 
 for (julia_version, llvm_version) in supported

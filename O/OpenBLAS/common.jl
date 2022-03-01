@@ -3,6 +3,14 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.20" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.20.tar.gz",
+                          "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
+        ],
+        v"0.3.19" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.19.tar.gz",
+                          "947f51bfe50c2a0749304fbe373e00e7637600b0a47b78a51382aeb30ca08562")
+        ],
         v"0.3.17" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
                           "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
@@ -38,7 +46,9 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=4096, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
+# Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
+# that should opt into a higher thread count.
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)

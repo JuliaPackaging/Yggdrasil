@@ -7,10 +7,22 @@ index 607d9fa57f..523bd679b3 100644
  
     # these redefinitions must happen before the whole slew of polymake perl code is loaded!
 -   if ($must_reset_SIGCHLD) {
--      *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe(@_) };
+-      *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe($_[0]) };
 -   }
-+   *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe(@_) };
++   *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe($_[0]) };
 +   *CORE::GLOBAL::system=sub { local $SIG{CHLD}='DEFAULT'; CORE::system(@_) };
  
     require DynaLoader;
     Polymake::Ext::bootstrap();
+diff --git a/perllib/Polymake/Interrupts.pm b/perllib/Polymake/Interrupts.pm
+index ca9cf3b6e3..fe9cff8a71 100644
+--- a/perllib/Polymake/Interrupts.pm
++++ b/perllib/Polymake/Interrupts.pm
+@@ -26,6 +26,7 @@ use Polymake::Ext;
+ 
+ # standard perl system() function can't be interrupted by a signal, but pipe write can.
+ sub system {
++   local $SIG{CHLD} = 'DEFAULT';
+    open my $dummy, join(" ", "|", @_)
+    or die "can't execute @_: $!\n";
+    close $dummy;

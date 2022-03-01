@@ -9,7 +9,7 @@ function configure(version_offset, min_julia_version)
     # So for example version 2.6.3 would become 200.600.300.
 
     name = "NetCDF"
-    upstream_version = v"4.8.1"
+    upstream_version = v"4.7.4"
     version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                             upstream_version.minor * 100 + version_offset.minor,
                             upstream_version.patch * 100 + version_offset.patch)
@@ -17,7 +17,7 @@ function configure(version_offset, min_julia_version)
     # Collection of sources required to build NetCDF
     sources = [
         ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(upstream_version).zip",
-                      "e4e75523466de4187cff29784ff12755925f17e753bff0c9c46cd670ca63c6b2")
+                      "170c9c9020f8909811b06e1034d5ea9288b3d5bd90793e3dd27490191faa7566")
     ]
 
     # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -28,18 +28,12 @@ cd $WORKSPACE/srcdir/netcdf-c-*
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
-CONFIGURE_OPTIONS=""
 
 if [[ ${target} == *-mingw* ]]; then
     export LIBS="-lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz"
     # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
     # unless -no-undefined is added to LDFLAGS
     LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined"
-
-    # testset fails on mingw (NetCDF 4.8.1)
-    # libtool: link: cc -fno-strict-aliasing -o .libs/pathcvt.exe pathcvt.o  -L/workspace/destdir/bin ../liblib/.libs/libnetcdf.dll.a -lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz -L/workspace/destdir/lib
-    # pathcvt.o:pathcvt.c:(.text+0x15c): undefined reference to `NCpathcvt'
-    CONFIGURE_OPTIONS="--disable-testsets"
 
 elif [[ "${target}" == *-apple-* ]]; then
     # this file is referenced by hdf.h by not installed
@@ -51,8 +45,7 @@ fi
     --host=${target} \
     --disable-utilities \
     --enable-shared \
-    --disable-static \
-    $CONFIGURE_OPTIONS
+    --disable-static
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 make install
 nc-config --all
@@ -72,7 +65,9 @@ nc-config --all
         Platform("x86_64", "windows"),
         Platform("i686", "windows"),
     ]
-
+    if min_julia_version == v"1.6"
+        push!(platforms, Platform("aarch64","macos"))
+    end
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libnetcdf", :libnetcdf),
@@ -80,7 +75,7 @@ nc-config --all
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.0"),
+        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.1"),
         Dependency("Zlib_jll"),
     ]
 

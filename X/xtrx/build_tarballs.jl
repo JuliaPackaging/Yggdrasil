@@ -83,7 +83,7 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     ExecutableProduct("test_xtrxll", :test_xtrxll),
     ExecutableProduct("test_xtrxflash", :test_xtrxflash),
-    ExecutableProduct("test_xtrx", :test_xtrxflash),
+    ExecutableProduct("test_xtrx", :test_xtrx),
     LibraryProduct("libxtrx", :libxtrx),
     LibraryProduct("libxtrxll", :libxtrxll),
     LibraryProduct("libxtrxdsp", :libxtrxdsp),

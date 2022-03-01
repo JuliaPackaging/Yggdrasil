@@ -27,7 +27,8 @@ include("./common.jl")
 
 using BinaryBuilder
 using BinaryBuilder: BinaryBuilderBase
-Core.eval(BinaryBuilderBase, :(bootstrap_list = [:rootfs, :platform_support]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
     # Since we can build a variety of GCC versions, track them and their hashes here.
@@ -700,6 +701,9 @@ function gcc_script(compiler_target::Platform)
 
         # Fix broken symlink
         ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
+        # `libc.so` has soname `libc.musl-$(musl_arch).so.1`, we need to have
+        # that file as well.
+        ln -fsv libc.so ${sysroot}/usr/lib/libc.musl-$(musl_arch).so.1
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
         cd $WORKSPACE/srcdir/mingw_crt_build

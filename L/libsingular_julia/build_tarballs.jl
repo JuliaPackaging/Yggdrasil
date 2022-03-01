@@ -3,14 +3,18 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-name = "libsingular_julia"
-version = v"0.18.10"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+name = "libsingular_julia"
+version = v"0.21.0"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "2887b9c452936c82e7de1acc2da1b9f099bc086d"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "c96232eaa85e582ec94e257a69548b486ab0eadc"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,12 +39,6 @@ install_license LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
-# disable experimental platforms for now: support would require rebuilding
-# all dependencies; and it would require them to have julia_compat >= 1.6
-# (so either we drop support for all older Julia versions, or have to build
-# those dependencies twice)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # M1
-filter!(p -> arch(p) != "armv6l", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -54,10 +52,11 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~402.100.101"),
+    Dependency("Singular_jll", compat = "~403.0.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     julia_compat = "1.6")
+

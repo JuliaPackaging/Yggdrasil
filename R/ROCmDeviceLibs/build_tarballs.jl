@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg.Types
 
 name = "ROCmDeviceLibs"
-version = v"4.0.0"
+version = v"4.2.0"
 
 # Collection of sources required to build ROCm-Device-Libs
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCm-Device-Libs/archive/rocm-$(version).tar.gz",
-                  "d0aa495f9b63f6d8cf8ac668f4dc61831d996e9ae3f15280052a37b9d7670d2a"), # 4.0.0
+                  "34a2ac39b9bb7cfa8175cbab05d30e7f3c06aaffce99eed5f79c616d0f910f5f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,10 @@ mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
+      -DLLVM_DIR="${prefix}/lib/cmake/llvm" \
+      -DClang_DIR="${prefix}/lib/cmake/clang" \
+      -DLLD_DIR="${prefix}/lib/cmake/ldd" \
       ..
 make -j${nproc}
 make install
@@ -43,9 +46,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"12.0.1")),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.7",
                preferred_gcc_version=v"8", preferred_llvm_version=v"11")

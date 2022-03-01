@@ -19,7 +19,7 @@ sed -i 's/-fPIC//g' Makefile
 elif [[ "${target}" == *bsd* ]]; then
 sed -i 's#endian.h#sys/endian.h#g' *.c *.h
 fi
-make -j $(nproc)
+make -j ${nproc}
 make PREFIX=${prefix} install
 cd ..
 install_license LICENSE-APACHE

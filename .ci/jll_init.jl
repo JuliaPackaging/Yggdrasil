@@ -17,4 +17,4 @@ repo_name = string("JuliaBinaryWrappers/", jll_name, ".jl")
 
 @info "Initializing $(repo_name)..."
 
-BinaryBuilder.init_jll_package(name, joinpath(Pkg.devdir(), jll_name), repo_name)
+BinaryBuilder.init_jll_package(joinpath(Pkg.devdir(), jll_name), repo_name)

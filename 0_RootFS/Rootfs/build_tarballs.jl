@@ -3,10 +3,16 @@
 # * Update the bits you want to update, for example:
 #   * version of the Alpine RootFS: visit https://github.com/alpinelinux/docker-alpine,
 #     select the branch corresponding to the version of Alpine you want to use, browse to
-#     the directory `x86_64` and obtain the permanent link of the image (press `Y`)
-#   * version of Meson
-#   * version of patchelf
+#     the directory `x86_64` and obtain the permanent link of the image (press `Y`).  NOTE:
+#     if you upgrade version of Alpine Linux, makes sure to use the same version of Musl
+#     libc as upstream (see below), otherwise system application may not work
+#   * version of Meson (https://github.com/mesonbuild/meson/releases)
+#   * version of patchelf (https://github.com/NixOS/patchelf/releases/)
 #   * version of CSL in `bundled/libs/csl/download_csls.sh`
+#     (https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl/releases)
+#   * version of C libraries in `bundled/libs/libc/download_libcs.sh`
+#     (https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases and
+#     https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases)
 #   * etc...
 # * to build and deploy the new image, run
 #
@@ -26,8 +32,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/8b8051f1c11daff18ada363488e145af9e201802/x86_64/alpine-minirootfs-3.12.7-x86_64.tar.gz"
-rootfs_hash = "3bcc63d60f54d32ae58e6670934bd17aef659c8a17609323a50d3c48d1d8947b"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/818c831891a18d2453ad6458011ea8cbff74d0e1/x86_64/alpine-minirootfs-3.15.0-x86_64.tar.gz"
+rootfs_hash = "ec7ec80a96500f13c189a6125f2dbe8600ef593b87fc4670fe959dc02db727a2"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
@@ -96,7 +102,8 @@ verbose && @info("Binding barebones bootstrap RootFS shards...")
 
 insert_compiler_shard(name, version, rootfs_unpacked_hash, :unpacked)
 insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
-Core.eval(BinaryBuilder.BinaryBuilderBase, :(bootstrap_list = Symbol[:rootfs]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs)
 
 # PHWEW.  Okay.  Now, we do some of the same steps over again, but within BinaryBuilder, where
 # we can actulaly run tools inside of the rootfs (e.g. if we're building on OSX through docker)
@@ -110,10 +117,10 @@ sources = [
                   "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
-              "e1e39f3639e39360ceebb2f7ed533cede4623070"),
+              "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.58.1/meson-0.58.1.tar.gz",
-                  "3144a3da662fcf79f1e5602fa929f2821cba4eba28c2c923fe0a7d3e3db04d5d"),
+    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.61.1/meson-0.61.1.tar.gz",
+                  "feb2cefb325b437dbf36146df7c6b87688ddff0b0205caa31dc64055c6da410c"),
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
@@ -154,13 +161,10 @@ mkdir ./dev/shm
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
-FILE_TOOLS="tar zip unzip xz findutils squashfs-tools unrar rsync"
+FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
-# Install a more recent version of `apk`, which understands `--no-chown`.
-# TODO: remove this when we move to Alpine v3.13+.
-apk add --root $prefix --upgrade apk-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # chgrp and chown should be no-ops since we run in a single-user mode
 rm -f ./bin/chown ./bin/chgrp
