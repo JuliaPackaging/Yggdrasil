@@ -9,11 +9,11 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1192.000"
-gap_lib_version = v"400.1192.000"
+gap_version = v"400.1191.001"
+gap_lib_version = v"400.1191.000"
 name = "JuliaInterface"
 upstream_version = v"0.7.3" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
