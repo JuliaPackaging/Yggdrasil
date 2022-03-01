@@ -27,9 +27,6 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     echo "[INFO] setting CMAKE_TARGET_TOOLCHAIN = ${CMAKE_TARGET_TOOLCHAIN}"
 fi
 
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-
 arch_opts=
 if [[ ${target} == x86_64-* ]]; then
     arch_opts="-DHAVE_SSE2=ON -DHAVE_SSE4_1=ON -DHAVE_AVX2=ON"

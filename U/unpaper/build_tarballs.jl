@@ -16,7 +16,6 @@ if [[ "${target}" == *-mingw* ]]; then
     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
     # Give some hints to the linker
-    export LDFLAGS="-L${libdir}"
     export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
 update_configure_scripts
