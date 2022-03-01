@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mesa/
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/wl_scanner-no-native.patch
 # Note: Currently unused, until `LIBPATH` becomes updated with search path of products with `dont_dlopen=true`
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative-dlopen.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/static_assert.patch
@@ -89,7 +88,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Wayland_jll"), # FIXME: HostBuildDependency
+    HostBuildDependency("Wayland_jll"),
     Dependency("libLLVM_jll"; compat="11.0.0"),
     HostBuildDependency(PackageSpec(;name="LLVM_jll", version=v"11.0.1")),
     Dependency("Zlib_jll"),
