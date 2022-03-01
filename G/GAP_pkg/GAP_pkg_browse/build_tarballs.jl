@@ -20,7 +20,7 @@ script = raw"""
 cd Browse*
 
 ./configure ${prefix}/share/gap
-make -j${nproc} CFLAGS="-I$includedir -I$includedir/ncurses"
+make -j${nproc} CFLAGS="-I$includedir/ncurses"
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap

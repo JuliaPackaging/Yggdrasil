@@ -27,7 +27,7 @@ sources = [
 script = raw"""
 cd GAP.jl/pkg/JuliaInterface
 ./configure --with-gaproot=${prefix}/share/gap
-make -j${nproc} CFLAGS="-I${includedir}"
+make -j${nproc}
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
