@@ -21,7 +21,7 @@ cd ranger-0.13.1/cpp_version/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIB=1
 make -j$nproc
 make install
-exit
+install_license /usr/share/licenses/MIT
 """
 
 # These are the platforms we will build for by default, unless further
