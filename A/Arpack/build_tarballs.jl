@@ -76,7 +76,7 @@ fi
 
 mkdir build
 cd build
-export LDFLAGS="${EXE_LINK_FLAGS[@]} -L$prefix/lib -lpthread"
+export LDFLAGS="${EXE_LINK_FLAGS[@]} -L${libdir} -lpthread"
 cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
@@ -84,6 +84,23 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DBLAS_LIBRARIES="-l${BLAS}" \
     -DLAPACK_LIBRARIES="-l${LAPACK}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
+
+# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
+# Eventually, this should be fixed upstream
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
+    echo "-- Modifying library name for Lbt"
+
+    for nm in libarpack; do
+        # Figure out what version it probably latched on to:
+        if [[ ${target} == *-apple-* ]]; then
+            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+            install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+        elif [[ ${target} == *freebsd* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+        fi
+    done
+fi
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
