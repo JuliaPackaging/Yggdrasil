@@ -101,6 +101,9 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
         elif [[ ${target} == *freebsd* ]]; then
             LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS} | sed -e 's/.*\[\(.*\)\].*/\1/')
             patchelf --replace-needed ${LBT_LINK} lib${BLAS}.so ${libdir}/${nm}.so
+        elif [[ ${target} == *linux* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${BLAS}.so ${libdir}/${nm}.so
         fi
     done
 fi
