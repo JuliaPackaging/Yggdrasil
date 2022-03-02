@@ -39,7 +39,6 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("FLINT_jll", compat = "~200.800.401"),
-    Dependency("MPFR_jll", v"4.1.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
