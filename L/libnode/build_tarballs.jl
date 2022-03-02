@@ -8,9 +8,8 @@ version = v"16.14.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "29dfce13650f063ff009d18349636333fa4305468b6a8965d442c2e88b1dd60f"),
+    DirectorySource("bundled")
 ]
-
-host_platform = HostPlatform()
 
 
 # Bash recipe for building across all platforms
@@ -20,6 +19,7 @@ cd node-*
 
 export CC_host=$HOSTCC
 export CXX_host=$HOSTCXX
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node_main.cc.patch"
 # Build & install libnode
 if [[ $target == $MACHTYPE ]]
 then
