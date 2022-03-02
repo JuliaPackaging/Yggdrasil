@@ -28,6 +28,14 @@ cd build
 echo "[binaries]" >llvm-cross.ini
 echo "llvm-config = '${host_prefix}/tools/llvm-config'" >>llvm-cross.ini
 
+# Ensure pkg-config sees our Wayland configs
+export PKG_CONFIG_PATH=${host_libdir}/pkgconfig:$PKG_CONFIG_PATH
+
+# Fixup paths in Wayland pkg-config files
+sed -i "s?prefix=.*?prefix=${host_prefix}?" "${host_prefix}/lib/pkgconfig/wayland-scanner.pc"
+sed -i "s?prefix=.*?prefix=${host_prefix}?" "${host_prefix}/lib/pkgconfig/wayland-client.pc"
+sed -i "s?prefix=.*?prefix=${host_prefix}?" "${host_prefix}/lib/pkgconfig/wayland-server.pc"
+
 meson -D egl=enabled \
       -D gles1=enabled \
       -D gles2=enabled \
