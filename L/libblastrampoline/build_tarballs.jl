@@ -36,8 +36,8 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.8",
                init_block = """
-  using OpenBLAS_jll
   if VERSION < v"1.7"
+     using OpenBLAS_jll
      ccall((:lbt_forward, libblastrampoline), Int32, (Cstring, Int32, Int32, Cstring), OpenBLAS_jll.libopenblas_path, 1, 0, C_NULL)
   end
 """)
