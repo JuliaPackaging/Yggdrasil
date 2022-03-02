@@ -7,8 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "813f419e928344f518ff1d3b0b54a7069ec2b37f"),
-    #= ArchiveSource("https://www.mathematik.uni-kl.de/~ederc/msolve-0.1.2.tar.gz", "ce6454b28477cb3b5670042faf7b3282e234fe1e0ee5a62c184d0512ef4126e1") =#
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "813f419e928344f518ff1d3b0b54a7069ec2b37f")
 ]
 
 # Bash recipe for building across all platforms
