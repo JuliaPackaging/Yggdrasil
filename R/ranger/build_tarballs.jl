@@ -14,10 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ranger*/cpp_version/
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p2 ${f}
-done
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIB=1
+atomic_patch -p2 ${WORKSPACE}/srcdir/patches/make_lib_and_install.patch
+atomic_patch -p2 ${WORKSPACE}/srcdir/patches/cmake-pthreads.patch
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIB=1 \
+    ..
 make -j$nproc
 make install
 install_license /usr/share/licenses/MIT
@@ -25,7 +29,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;exclude=Sys.iswindows)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
