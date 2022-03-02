@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MiniFB"
-version = v"0.1.1"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -46,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat="1.6")
