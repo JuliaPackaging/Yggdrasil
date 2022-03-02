@@ -20,7 +20,7 @@ export CPPFLAGS="-I${includedir}"
     --host=${target} \
     --with-x=no \
     --enable-R-shlib=yes \
-    --with-blas=${libdir}/libblastrampoline.so \
+    --with-blas="-L${libdir} -lopenblas" \
     --with-lapack \
     r_cv_header_zlib_h=yes \
     r_cv_have_bzlib=yes \
@@ -56,9 +56,7 @@ dependencies = [
     Dependency("LibCURL_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("libblastrampoline_jll"),
-    Dependency("OpenBLAS_jll"),
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
