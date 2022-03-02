@@ -14,10 +14,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/minifb/
 sed -i -e 's/add_library(minifb STATIC/add_library(minifb SHARED/' \
-    -e 's/ -Wall/-I$ENV{includedir} -Wall/' \
+    -e 's/-Wall/-I$ENV{includedir} -Wall/' \
     -e 's/Opengl32/opengl32/' \
     CMakeLists.txt
-sed -i -e 's/<gl\/gl.h>/<GL\/gl.h>/' src/gl/MiniFB_GL.c 
+sed -i -e 's?<gl/gl.h>?<GL/gl.h>?' src/gl/MiniFB_GL.c
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
