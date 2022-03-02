@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.1.7"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "2c085f06b4e153cc7d9f6f60b6e75d565ed4e449"),
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "4a311407636f040615536d8a8c8e69cff99eca5d"),
     #= ArchiveSource("https://www.mathematik.uni-kl.de/~ederc/msolve-0.1.2.tar.gz", "ce6454b28477cb3b5670042faf7b3282e234fe1e0ee5a62c184d0512ef4126e1") =#
 ]
 
@@ -38,7 +38,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.800.101"),
+    Dependency("FLINT_jll", compat = "~200.800.401"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
