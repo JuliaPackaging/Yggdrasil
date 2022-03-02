@@ -58,9 +58,9 @@ done
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
-LIBOPENBLAS=openblas
+BLAS=blastrampoline
+LAPACK=blastrampoline
 if [[ ${nbits} == 64 ]]; then
-    LIBOPENBLAS=openblas64_
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
@@ -81,19 +81,12 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLAS_LIBRARIES="-l${LIBOPENBLAS}" \
-    -DLAPACK_LIBRARIES="-l${LIBOPENBLAS}" \
+    -DBLAS_LIBRARIES="-l${BLAS}" \
+    -DLAPACK_LIBRARIES="-l${LAPACK}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
-
-# Arpack links against a _very_ specific version of OpenBLAS on macOS by default:
-if [[ ${target} == *apple* ]]; then
-    # Figure out what version it probably latched on to:
-    OPENBLAS_LINK=$(otool -L ${prefix}/lib/libarpack.dylib | grep libopenblas64_ | awk '{ print $1 }')
-    install_name_tool -change ${OPENBLAS_LINK} @rpath/libopenblas64_.dylib ${prefix}/lib/libarpack.dylib
-fi
 """
 
 # These are the platforms we will build for by default, unless further
