@@ -26,13 +26,12 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DMINIFB_AVOID_CPP_HEADERS=ON \
     ..
 make -j${nproc}
-mv libminifb* ${libdir}
+install -Dm 755 "libminifb.${dlext}" "${libdir}/libminifb.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
+platforms = supported_platforms(; exclude=p->arch(p)=="armv6l")
 
 # The products that we will ensure are always built
 products = [
@@ -41,10 +40,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
-    Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"))
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"); platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms))
+    Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"); platforms=filter(Sys.islinux, platforms))
+    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"); platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms))
+    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"); platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
