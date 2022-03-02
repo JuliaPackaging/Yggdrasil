@@ -109,7 +109,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS_jll"),
+    Dependency("libblastrampoline_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
