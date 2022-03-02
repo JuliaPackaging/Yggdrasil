@@ -7,7 +7,7 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/emoon/minifb.git", "dda1275bd741752d1b7cdc1ee4d9941887a1891a") #master as of 10Sep2020
+	    GitSource("https://github.com/emoon/minifb.git", "5066489cd81b23b0c79952f7d6f464b20c54867c") #master as of 24Feb2022
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DMINIFB_BUILD_EXAMPLES=OFF \
+    -DMINIFB_AVOID_CPP_HEADERS=ON \
     ..
 make -j${nproc}
 mv libminifb* ${libdir}
@@ -39,6 +40,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
+    Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"))
+    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
 ]
 
