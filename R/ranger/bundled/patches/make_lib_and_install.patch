@@ -1,7 +1,7 @@
 diff --git before/ranger-0.13.1/cpp_version/CMakeLists.txt after/ranger-0.13.1/cpp_version/CMakeLists.txt
 index 397bb53..34ee308 100644
---- before/ranger-0.13.1/cpp_version/CMakeLists.txt
-+++ after/ranger-0.13.1/cpp_version/CMakeLists.txt
+--- before/cpp_version/CMakeLists.txt
++++ after/cpp_version/CMakeLists.txt
 @@ -1,6 +1,8 @@
  project(ranger)
  cmake_minimum_required(VERSION 2.0)
