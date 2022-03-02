@@ -85,6 +85,9 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DLAPACK_LIBRARIES="-l${LAPACK}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
+make -j${nproc} VERBOSE=1
+make install VERBOSE=1
+
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
@@ -102,8 +105,11 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     done
 fi
 
-make -j${nproc} VERBOSE=1
-make install VERBOSE=1
+# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${libdir}/lib*.*.${dlext}
+    rm -f ${libdir}/lib*.*.*.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
