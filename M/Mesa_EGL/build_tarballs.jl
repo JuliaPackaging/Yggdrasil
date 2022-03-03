@@ -112,6 +112,7 @@ dependencies = [
     Dependency("Xorg_libXxf86vm_jll"),
     Dependency("Xorg_xf86vidmodeproto_jll"),
     Dependency("Xorg_libXrandr_jll"),
+    Dependency("Wayland_jll"),
     Dependency("Wayland_protocols_jll"; compat="1.24"),
 ]
 
