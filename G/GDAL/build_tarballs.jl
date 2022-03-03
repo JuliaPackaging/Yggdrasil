@@ -60,7 +60,7 @@ rm -f ${prefix}/lib/*.la
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
-    --with-tiff=$prefix \
+    --with-libtiff=internal \
     --with-geotiff=$prefix \
     --with-libz=$prefix \
     --with-expat=$prefix \
@@ -120,7 +120,6 @@ dependencies = [
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"; compat="4.3"),
     Dependency("libgeotiff_jll"; compat="1.7"),
     Dependency("LibCURL_jll"),
 ]
