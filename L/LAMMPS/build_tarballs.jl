@@ -89,3 +89,5 @@ append!(dependencies, platform_dependencies)
 build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8",
                augment_platform_block, lazy_artifacts=true) # Change lazy_artifacts after https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1179
+
+# bump
