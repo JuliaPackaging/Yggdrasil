@@ -2,7 +2,7 @@ module MPI
 
 const tag_name = "mpi"
 
-const augment = """
+const augment = raw"""
     # Can't use Preferences since we might be running this very early with a non-existing Manifest
     MPIPreferences_UUID = Base.UUID("3da0fdf6-3ccc-4f1b-acd9-58baa6c99267")
     const preferences = Base.get_preferences(MPIPreferences_UUID)
