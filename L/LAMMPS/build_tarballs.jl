@@ -1,9 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.2.0" # Equivalent to 29Sep2021_update2
+version = v"2.2.1" # Equivalent to 29Sep2021_update2
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -44,6 +47,14 @@ if [[ "${target}" == *mingw* ]]; then
 fi
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+    end
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = supported_platforms(; experimental=true)
@@ -69,9 +80,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
-    Dependency(PackageSpec(name="MPItrampoline_jll"); compat="2", platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
+all_platforms, platform_dependencies = MPI.augment_platforms(platforms)
+append!(dependencies, platform_dependencies)
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8", augment_platform_block)
