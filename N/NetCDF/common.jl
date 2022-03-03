@@ -84,10 +84,11 @@ nc-config --all
         # Platform("armv7l", "linux"; libc="glibc"),
         Platform("aarch64", "linux"; libc="glibc"),
         Platform("x86_64", "macos"),
-        Platform("x86_64", "windows"),
-        Platform("i686", "windows"),
+        # Windows build is known to fail with HDF5 1.12.1
+        #Platform("x86_64", "windows"),
+        #Platform("i686", "windows"),
     ]
-    if min_julia_version == v"1.6"
+    if min_julia_version ≥ v"1.6"
         push!(platforms, Platform("aarch64","macos"))
     end
     # The products that we will ensure are always built
@@ -111,11 +112,19 @@ nc-config --all
             Dependency("nghttp2_jll", v"1.40.0"),
         ],
         v"1.6" => [
-            Dependency("LibCURL_jll"),
+            Dependency("LibCURL_jll", v"7.73.0"),
             # The following libraries are dependencies of LibCURL_jll which is now a
             # stdlib, but the stdlib doesn't explicitly list its dependencies
-            Dependency("LibSSH2_jll"),
+            Dependency("LibSSH2_jll", v"1.9.1"),
             Dependency("MbedTLS_jll", v"2.24.0"),
+            Dependency("nghttp2_jll"),
+        ],
+        v"1.8" => [
+            Dependency("LibCURL_jll", v"7.81.0"),
+            # The following libraries are dependencies of LibCURL_jll which is now a
+            # stdlib, but the stdlib doesn't explicitly list its dependencies
+            Dependency("LibSSH2_jll", v"1.10.2"),
+            Dependency("MbedTLS_jll", v"2.28.0"),
             Dependency("nghttp2_jll"),
         ]
     )
