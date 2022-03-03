@@ -37,9 +37,9 @@ using Base.BinaryPlatforms
 
 mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
-    ("OpenMPI", PackageSpec(name="OpenMPI"), "", !Sys.iswindows),
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPIwrapper", PackageSpec(name="MPItrampoline_jll"), "2", !Sys.iswindows)
+    ("MPIwrapper", PackageSpec(name="MPItrampoline_jll"), "3", !Sys.iswindows)
 )
 
 function augment_platforms(platforms)
