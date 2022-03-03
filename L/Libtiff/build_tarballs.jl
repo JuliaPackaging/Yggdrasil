@@ -32,6 +32,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
+    Dependency("LERC_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
 ]
