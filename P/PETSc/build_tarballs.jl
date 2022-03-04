@@ -69,6 +69,12 @@ build_petsc()
         CFLAGS="${CFLAGS}" \
         FFLAGS="${FFLAGS}"
     make install
+    if [[ "${target}" == *-mingw* ]]; then
+        # changing the extension from so to dll.
+        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.so "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
+    else
+        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.${dlext} "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
+    fi
 }
 
 build_petsc double real Int32
@@ -86,15 +92,15 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct("libpetsc", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
 ]
 
 dependencies = [
@@ -105,4 +111,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
