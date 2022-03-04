@@ -40,7 +40,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("FLINT_jll", compat = "~200.800.101"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
