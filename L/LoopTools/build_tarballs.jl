@@ -31,7 +31,7 @@ else
     no_whole_archive="--no-whole-archive"
 fi
 mkdir -p "${libdir}"
-gfortran  -fPIC -shared -Wl,${whole_archive} libooptools.a -Wl,${no_whole_archive} -o "${libdir}/libooptools.${dlext}"
+gfortran -fPIC -shared -Wl,${whole_archive} libooptools.a -Wl,${no_whole_archive} -o "${libdir}/libooptools.${dlext}"
 rm  libooptools.a
 """
 
