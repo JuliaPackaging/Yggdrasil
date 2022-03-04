@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPAC}/srcdir/LoopTools-*
+cd ${WORKSPACE}/srcdir/LoopTools-*
 atomic_patch -p1 ../patches/simplify-configure.patch
 export AR=ar
 export RANLIB=ranlib
