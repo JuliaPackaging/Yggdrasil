@@ -7,8 +7,7 @@ version = v"2.16"
 
 # Collection of sources required to complete build
 sources = [
-#     ArchiveSource("http://www.feynarts.de/looptools/LoopTools-2.15.tar.gz", "a065ffdc4fe6882aa3bb926134ba8ec875d6c0a633c3d4aa5f70db26542713f2"),
-    ArchiveSource("http://www.feynarts.de/looptools/LoopTools-2.16.tar.gz", "D2D07C98F8520C67EABE22973B2F9823D5B636353FFA01DFBCD3A22F65D404B7"),
+    ArchiveSource("http://www.feynarts.de/looptools/LoopTools-$(version.major).$(version.minor).tar.gz", "D2D07C98F8520C67EABE22973B2F9823D5B636353FFA01DFBCD3A22F65D404B7"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,15 +22,8 @@ make -j${nproc}
 make install EXE="${exeext}"
 # Now let's build the shared library
 cd "${prefix}/lib"
-if [[ "${target}" == *-apple-* ]]; then
-    whole_archive="-all_load"
-    no_whole_archive="-noall_load"
-else
-    whole_archive="--whole-archive"
-    no_whole_archive="--no-whole-archive"
-fi
 mkdir -p "${libdir}"
-gfortran -fPIC -shared -Wl,${whole_archive} libooptools.a -Wl,${no_whole_archive} -o "${libdir}/libooptools.${dlext}"
+gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libooptools.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libooptools.${dlext}"
 rm  libooptools.a
 """
 
