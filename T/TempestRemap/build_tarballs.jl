@@ -26,7 +26,6 @@ mkdir -p build && cd build
   --with-blas=openblas \
   --with-lapack=openblas \
   --with-netcdf=${prefix} \
-  --with-hdf5=${prefix} \
   --enable-shared \
   --disable-static
 
@@ -73,8 +72,7 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("NetCDF_jll", compat="400.701.400 - 400.799"),
-    Dependency("HDF5_jll"),
+    Dependency("NetCDF_jll", compat="400.702.402 - 400.799"),
     # The following is adapted from NetCDF_jll
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
