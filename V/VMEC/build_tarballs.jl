@@ -9,7 +9,7 @@ version = VersionNumber(upstream_version.major,
 
 sources = [
     ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-                  "044095587db0fe8c3fa5588b9047208fa765bb931779e55a88f79f9a3ed5883b"),
+                  "98a09a9436e98411960a34d642ea808f72d596e408004ea4c0ea475cc614f7f5"),
 ]
 
 script = raw"""
