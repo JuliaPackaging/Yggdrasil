@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LoopTools"
-version = v"2.15"
+version = v"2.16"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.feynarts.de/looptools/LoopTools-2.15.tar.gz", "a065ffdc4fe6882aa3bb926134ba8ec875d6c0a633c3d4aa5f70db26542713f2"),
+    ArchiveSource("http://www.feynarts.de/looptools/LoopTools-2.16.tar.gz", "D2D07C98F8520C67EABE22973B2F9823D5B636353FFA01DFBCD3A22F65D404B7"),
     DirectorySource("./bundled"),
 ]
 
