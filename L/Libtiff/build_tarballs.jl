@@ -22,7 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -32,6 +32,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
+    Dependency("LERC_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
 ]
