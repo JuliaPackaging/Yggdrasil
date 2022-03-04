@@ -16,7 +16,9 @@ cd $WORKSPACE/srcdir
 cd msolve/
 ./autogen.sh
 
-export CC=gcc
+if [[ "${target}" == *-apple-* ]]; then
+    export CC=gcc
+fi
 export CPPFLAGS="-I${includedir}"
 
 ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
