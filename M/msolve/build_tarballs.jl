@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "813f419e928344f518ff1d3b0b54a7069ec2b37f")
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "85071af5929fddfe9e15ea60831088d072dbf28b")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir
 cd msolve/
 ./autogen.sh
 
+export CC=gcc
 export CPPFLAGS="-I${includedir}"
 
 ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -37,7 +38,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.800.101"),
+    Dependency("FLINT_jll", compat = "~200.800.401"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
