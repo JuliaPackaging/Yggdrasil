@@ -1,0 +1,13 @@
+diff --git a/libxtrxll/CMakeLists.txt b/libxtrxll/CMakeLists.txt
+index 07a8ba1..7f59df9 100644
+--- a/libxtrxll/CMakeLists.txt
++++ b/libxtrxll/CMakeLists.txt
+@@ -53,7 +53,7 @@ endif()
+ 
+ set(XTRXLL_LIBRARY_DIR      lib${LIB_SUFFIX})
+ set(XTRXLL_INCLUDE_DIR      include)
+-set(XTRXLL_UTILS_DIR        ${XTRXLL_LIBRARY_DIR}/xtrxll)
++set(XTRXLL_UTILS_DIR        bin)
+ 
+ CONFIGURE_FILE(
+ 	${CMAKE_CURRENT_SOURCE_DIR}/libxtrxll.pc.in

@@ -2,7 +2,7 @@
 configure.command=/workspace/srcdir/polymake/configure CXX=clang++ --with-libcxx --with-lrs-include=/workspace/destdir/include/lrslib
 root=/workspace/srcdir/polymake
 core.includes=-I${root}/include/core-wrappers -I${root}/include/core
-app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/include/external/permlib -I${root}/include/external/TOSimplex
+app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/include/external/permlib -I${root}/include/external/TOSimplex -I${root}/include/external/Miniball
 
 CC = clang -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
 CXX = clang++ -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
@@ -17,13 +17,15 @@ CXXSANITIZE = -fno-omit-frame-pointer -O1 -g
 CflagsSuppressWarnings = 
 CLANGversion = 4.0
 CPPStd = 201402
+DlExt = bundle
+So = dylib
 XcodeVersion = 9.1.0
-LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
-LDsharedFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong
+LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
+LDsharedFLAGS = -bundle -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -undefined dynamic_lookup -fstack-protector-strong
 LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong  -mmacosx-version-min=10.8 -fstack-protector-strong
 LDsonameFLAGS = -install_name /workspace/destdir/lib/
 LIBS =  -lc++ -lflint -lmpfr -lgmp -lpthread
-ExternalHeaders =  permlib TOSimplex
+ExternalHeaders =  permlib TOSimplex Miniball
 Arch = darwin.x86_64
 BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
 BuildModes = Opt Debug
@@ -34,8 +36,8 @@ InstallInc = /workspace/destdir/include
 InstallLib = /workspace/destdir/lib
 InstallDoc = /workspace/destdir/share/polymake/doc
 AR = ar
-GMP.version = 6.1.2
-MPFR.version = 4.0.2
+GMP.version = 6.2.0
+MPFR.version = 4.1.1
 bundled.atint.RequireExtensions=cdd
 bundled.bliss.CXXFLAGS = -I/workspace/destdir/deps/bliss_jll/include
 bundled.bliss.LDFLAGS = -L/workspace/destdir/deps/bliss_jll/lib -Wl,-rpath,/workspace/destdir/deps/bliss_jll/lib

@@ -29,7 +29,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
 
 # The products that we will ensure are always built
 products = [
@@ -38,9 +38,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Dbus_jll",
-    "Glib_jll",
-    "Xorg_libXtst_jll",
+    Dependency("Dbus_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Xorg_libXtst_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

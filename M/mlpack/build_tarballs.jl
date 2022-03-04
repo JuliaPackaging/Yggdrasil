@@ -6,14 +6,21 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.3.2"
+version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
-                  "11904a39a7e34ee66028292fd054afb460eacd07ec5e6c63789aba117e4d854c")
+                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
+
+# Apply any patches that are needed.
+for f in ${WORKSPACE}/srcdir/patches/*.patch;
+do
+    atomic_patch -p1 ${f};
+done
 
 mkdir build && cd build
 
@@ -37,6 +44,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
        -DBUILD_GO_BINDINGS=OFF
+       -DBUILD_R_BINDINGS=OFF
        -DBUILD_PYTHON_BINDINGS=OFF
        -DBUILD_TESTS=OFF)
 
@@ -108,6 +116,8 @@ products = [
     # binding.
     LibraryProduct("libmlpack_julia_adaboost", :libmlpack_julia_adaboost),
     LibraryProduct("libmlpack_julia_approx_kfn", :libmlpack_julia_approx_kfn),
+    LibraryProduct("libmlpack_julia_bayesian_linear_regression",
+        :libmlpack_julia_bayesian_linear_regression),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
     LibraryProduct("libmlpack_julia_decision_stump",
@@ -131,6 +141,7 @@ products = [
         :libmlpack_julia_hoeffding_tree),
     LibraryProduct("libmlpack_julia_image_converter",
         :libmlpack_julia_image_converter),
+    LibraryProduct("libmlpack_julia_kde", :libmlpack_julia_kde),
     LibraryProduct("libmlpack_julia_kernel_pca", :libmlpack_julia_kernel_pca),
     LibraryProduct("libmlpack_julia_kfn", :libmlpack_julia_kfn),
     LibraryProduct("libmlpack_julia_kmeans", :libmlpack_julia_kmeans),
@@ -156,6 +167,8 @@ products = [
         :libmlpack_julia_preprocess_binarize),
     LibraryProduct("libmlpack_julia_preprocess_describe",
         :libmlpack_julia_preprocess_describe),
+    LibraryProduct("libmlpack_julia_preprocess_one_hot_encoding",
+        :libmlpack_julia_preprocess_one_hot_encoding),
     LibraryProduct("libmlpack_julia_preprocess_scale",
         :libmlpack_julia_preprocess_scale),
     LibraryProduct("libmlpack_julia_preprocess_split",
@@ -171,9 +184,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll")
+    Dependency("OpenBLAS_jll", v"0.3.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

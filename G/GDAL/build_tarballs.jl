@@ -1,12 +1,18 @@
-using BinaryBuilder
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
 
 name = "GDAL"
-version = v"3.0.4"
+upstream_version = v"3.4.1"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
-    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz",
-        "fc15d2b9107b250305a1e0bd8421dd9ec1ba7ac73421e4509267052995af5e83"),
+    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
+        "e360387bc25ec24940f46afbeada48002d72c74aaf9eccf2a40e8d74e711a2e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,47 +25,67 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_7_0"
+    export PROJ_LIBS="proj_8_2"
 elif [[ "${target}" == *-linux-* ]]; then
-    # Make sure GEOS is linked against libstdc++
-     atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-libs.patch"
-     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_curl_libs.patch"
-    export EXTRA_GEOS_LIBS="-lstdc++"
-    export EXTRA_CURL_LIBS="-lstdc++"
+    # Hint to find libstdc++, required to link against C++ libs when using C compiler
+    if [[ "${nbits}" == 32 ]]; then
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+    else
+        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
+    fi
+    # Use same flags also for GEOS
+    atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-cflags.patch"
+    export EXTRA_GEOS_CFLAGS="${CFLAGS}"
     if [[ "${target}" == powerpc64le-* ]]; then
         atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
         export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
         export EXTRA_SQLITE3_LIBS="-lm"
         # libpthread and libldl are needed for libgdal, so let's always use them
-        export LDFLAGS="-lpthread -ldl"
+        export LDFLAGS="$LDFLAGS -lpthread -ldl"
     fi
     autoreconf -vi
+fi
+
+# same fix as used for PROJ
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="$LDFLAGS -lcurl"
 fi
 
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
-./configure --prefix=$prefix --host=$target \
+# Read the options in the log file
+./configure --help
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
+    --with-tiff=$prefix \
+    --with-geotiff=$prefix \
     --with-libz=$prefix \
+    --with-expat=$prefix \
+    --with-zstd=$prefix \
     --with-sqlite3=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
     --with-python=no \
     --enable-shared \
     --disable-static
+
 # Make sure that some important libraries are found
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
 grep "CURL_SETTING='yes'" config.log
+grep "ZSTD_SETTING='yes'" config.log
+grep "HAVE_EXPAT='yes'" config.log
 
 make -j${nproc}
 make install
 """
 
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -87,13 +113,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"),
-    Dependency("PROJ_jll"),
+    Dependency("GEOS_jll"; compat="~3.10"),
+    Dependency("PROJ_jll"; compat="~800.200"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
-    Dependency("LibCURL_jll"),
     Dependency("OpenJpeg_jll"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Zstd_jll"),
+    Dependency("Libtiff_jll"; compat="4.3"),
+    Dependency("libgeotiff_jll"; compat="1.7"),
+    Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

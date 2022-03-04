@@ -21,7 +21,7 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(--disable-Bsymbolic)
 fi
 
-./configure --prefix=$prefix --host=$target --disable-gtk-doc "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-gtk-doc "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
@@ -39,9 +39,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "XML2_jll",
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+

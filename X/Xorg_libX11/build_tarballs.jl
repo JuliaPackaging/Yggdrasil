@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/libX11-*/
 CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
-./configure --prefix=${prefix} --host=${target} --enable-malloc0returnsnull=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
 # For some obscure reason, this Makefile may not get the value of CPPFLAGS
 sed -i "s?CPPFLAGS = ?CPPFLAGS = ${CPPFLAGS}?" src/util/Makefile
 make -j${nproc}
@@ -26,7 +26,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
 
 products = [
     LibraryProduct("libX11", :libX11),

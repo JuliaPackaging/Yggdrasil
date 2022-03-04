@@ -1,30 +1,71 @@
-using BinaryBuilder, Dates, Pkg
+### Instructions for adding a new version
+#
+# Check out a branch of BinaryBuilderBase from the current master of that repo.
+# Run this script for each target platform. The following will do the job:
+# ```
+# using BinaryBuilder
+# using BinaryBuilder: aatriplet
+# for platform in supported_platforms()
+#     # Append version numbers for BSD systems
+#     if Sys.isapple(platform)
+#         suffix = arch(platform) == "aarch64" ? "20" : "14"
+#     elseif Sys.isfreebsd(platform)
+#         suffix = "12.2"
+#     else
+#         suffix = ""
+#     end
+#     target = aatriplet(platform) * suffix
+#     run(`julia build_tarballs.jl --debug --verbose --deploy $target`)
+# end
+# ```
+# (Note that `--deploy` requires a GitHub personal access token in a `GITHUB_TOKEN`
+# environment variable with write access to Yggdrasil.)
+# Running this will update BinaryBuilderBase/Artifacts.toml with the entries formatted as
+# `PlatformSupport-<target triplet>.v<today's date>.<builder triplet>.<squashfs|unpacked>`.
+# You can open a PR to BinaryBuilderBase with this change and update the default
+# PlatformSupport version to use in `choose_shards` to be `v<today's date>`.
+
+using BinaryBuilder, Dates, Pkg, Base.BinaryPlatforms
 include("../common.jl")
 
 # Don't mount any shards that you don't need to
-Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs)
 
-compiler_target = platform_key_abi(ARGS[end])
-if isa(compiler_target, UnknownPlatform)
+compiler_target = try
+    parse(Platform, ARGS[end])
+catch
     error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
 end
 deleteat!(ARGS, length(ARGS))
 name = "PlatformSupport"
 version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 
+# Add check that FreeBSD and MacOS shards have version numbers embedded
+if (Sys.isapple(compiler_target) || Sys.isfreebsd(compiler_target)) && os_version(compiler_target) === nothing
+    error("Compiler target $(triplet(compiler_target)) does not have an `os_version` tag!")
+end
+
 sources = [
-    "https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz" =>
-    "a45c3becd4d08ce411c14628a949d08e2433d8cdeca92036c7013980e93858ab",
-    "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2" =>
-    "805e11101e26d7897fce7d49cbb140d7bac15f3e085a91e0001e80b2adaf48f0",
-    "https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz" =>
-    "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce",
-    "https://download.freebsd.org/ftp/releases/amd64/11.2-RELEASE/base.txz" =>
-    "a002be690462ad4f5f2ada6d01784836946894ed9449de6289b3e67d8496fd19",
-    "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz" =>
-    "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78",
-    "./bundled",
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.20.9.tar.xz",
+                  "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
+                  "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
+    ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/12.2-RELEASE/base.txz",
+                  "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
+                  "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
 ]
+
+macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6")
+else
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                  "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774")
+end
+
+push!(sources, macos_sdk)
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
 ## Function to take in a target such as `aarch64-linux-gnu`` and spit out a
@@ -96,7 +137,7 @@ case "${COMPILER_TARGET}" in
         ;;
 
     *-apple-*)
-        cd ${WORKSPACE}/srcdir/MacOSX10.10.sdk
+        cd ${WORKSPACE}/srcdir/MacOSX*.sdk
         mkdir -p "${sysroot}/usr"
         mv usr/include "${sysroot}/usr"
         mv System "${sysroot}/"
@@ -111,8 +152,7 @@ case "${COMPILER_TARGET}" in
                  -DCMAKE_INSTALL_PREFIX="${sysroot}/usr" \
                  -DCMAKE_CROSSCOMPILING=True \
                  -DLLVM_HOST_TRIPLE=${COMPILER_TARGET} \
-                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}" \
-                 -DDARWIN_osx_ARCHS=x86_64
+                 -DDARWIN_macosx_CACHED_SYSROOT:STRING="${sysroot}"
         make install-cxx-headers
         ;;
     *)
@@ -120,11 +160,6 @@ case "${COMPILER_TARGET}" in
         exit 1
         ;;
 esac
-
-# Install cmake templates
-cd ${WORKSPACE}/srcdir/buildsystem_toolchains
-./build_toolchains.sh ${COMPILER_TARGET}
-mv ${COMPILER_TARGET}/* ${prefix}
 
 # We create a link from ${COMPILER_TARGET}/sys-root/usr/local to ${prefix}.
 # This is the most reliable way for our sysroot'ed compilers to find destination
@@ -134,9 +169,8 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 """
 
 # Build the artifacts
-ndARGS = filter(x -> !occursin("--deploy", x), ARGS)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
-
-if any(occursin.("--deploy", ARGS))
-    upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info; target=compiler_target)
+if deploy_target !== nothing
+    upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
 end

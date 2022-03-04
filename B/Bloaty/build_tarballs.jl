@@ -34,7 +34,7 @@ rm -rf ${prefix}/lib64/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([p for p in supported_platforms() if !isa(p, Windows)])
+platforms = expand_cxxstring_abis([p for p in supported_platforms() if !Sys.iswindows(p)])
 
 # The products that we will ensure are always built
 products = [

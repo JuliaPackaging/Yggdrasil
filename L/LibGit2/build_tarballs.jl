@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.0.1"
+version = v"1.3.0"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "0ced29612dacb67eefe0c562a5c1d3aab21cce96"),
+              "b7bad55e4bb0a285b073ba5e02b01d3f522fc95d"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -30,6 +31,9 @@ if [[ ${target} == *-mingw* ]]; then
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
+
+    # For some reason, CMake fails to find libssh2 using pkg-config.
+    BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
 elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
@@ -54,9 +58,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"),
-    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"; compat="~2.28.0"),
+    Dependency("LibSSH2_jll"; compat="1.10.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+

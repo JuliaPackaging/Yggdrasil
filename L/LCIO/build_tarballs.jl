@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "LCIO"
-version = v"02.14.01"
+version = v"02.17"
 
 # Collection of sources required to build LCIO
 sources = [
-    GitSource("https://github.com/iLCSoft/LCIO.git", "e18ec38f569c85ad878f6404fa8f6c24ca08353d"),
+    GitSource("https://github.com/iLCSoft/LCIO.git", "3511c1506e15517eb2532d5385cae4a51e4f13e3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,11 +23,12 @@ cmake --build . --target install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64, compiler_abi=CompilerABI(cxxstring_abi=:cxx11))
-]
+platforms = supported_platforms(; experimental=true)
+filter!(!Sys.isfreebsd, platforms)
+filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
 platforms = expand_cxxstring_abis(platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblcio", :liblcio),
@@ -40,4 +41,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7", julia_compat="1.6")

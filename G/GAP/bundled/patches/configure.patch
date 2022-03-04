@@ -1,0 +1,45 @@
+diff --git a/configure.ac b/configure.ac
+index 0b89a87f9..fd21b1800 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -701,35 +701,20 @@ AS_IF([test "x$with_julia" != xno ],[
+         [ AC_MSG_ERROR([invalid argument to --with-julia]) ] )
+       JULIA_PATH="${PATH}"
+     ])
+-    AC_PATH_PROG([JULIA], [julia], [], [$JULIA_PATH])
++    dnl AC_PATH_PROG([JULIA], [julia], [], [$JULIA_PATH])
+   ])
+-  AS_IF([test "x$JULIA" = x],[ AC_MSG_ERROR([no julia executable found]) ])
+-
+-  JL_SHARE=$($JULIA --startup-file=no -e 'print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, "julia"))')
+-  AS_IF([test -f "${JL_SHARE}/julia-config.jl"], [], [AC_MSG_ERROR([no julia-config.jl found])])
++  dnl AS_IF([test "x$JULIA" = x],[ AC_MSG_ERROR([no julia executable found]) ])
+ 
+   AC_MSG_CHECKING([for JULIA_CPPFLAGS])
+-  JULIA_CPPFLAGS=$(${JULIA} --startup-file=no ${JL_SHARE}/julia-config.jl --cflags 2>/dev/null)
+-  AS_IF([ test $? != 0 ], [AC_MSG_ERROR([failed to obtain JULIA_CPPFLAGS from julia-config.jl])])
+-  JULIA_CPPFLAGS=${JULIA_CPPFLAGS/-std=gnu99/}  # need to remove -std=gnu99 for our C++ code
+-  # remove apostrophes, they mess up quoting when used in shell code(although
+-  # they are fine inside of Makefiles); this could cause problems if any
+-  # paths involve spaces, but then we likely will haves problem in other
+-  # places; in any case, if anybody ever cares about this, we can work on
+-  # finding a better solution.
+-  JULIA_CPPFLAGS=${JULIA_CPPFLAGS//\'/}
++  JULIA_CPPFLAGS="-I/workspace/destdir/include/julia -fPIC"
+   AC_MSG_RESULT([${JULIA_CPPFLAGS}])
+ 
+   AC_MSG_CHECKING([for JULIA_LDFLAGS])
+-  JULIA_LDFLAGS=$(${JULIA} --startup-file=no ${JL_SHARE}/julia-config.jl --ldflags)
+-  AS_IF([ test $? != 0 ], [AC_MSG_ERROR([failed to obtain JULIA_LDFLAGS from julia-config.jl])])
+-  JULIA_LDFLAGS=${JULIA_LDFLAGS//\'/}
++  JULIA_LDFLAGS="-L/workspace/destdir/lib -L/workspace/destdir/lib/julia"
+   AC_MSG_RESULT([${JULIA_LDFLAGS}])
+ 
+   AC_MSG_CHECKING([for JULIA_LIBS])
+-  JULIA_LIBS=$(${JULIA} --startup-file=no ${JL_SHARE}/julia-config.jl --ldlibs)
+-  AS_IF([ test $? != 0 ], [AC_MSG_ERROR([failed to obtain JULIA_LIBS from julia-config.jl])])
+-  JULIA_LIBS=${JULIA_LIBS//\'/}
++  JULIA_LIBS="-Wl,-rpath,/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib/julia -ljulia"
+   AC_MSG_RESULT([${JULIA_LIBS}])
+ ],
+ [

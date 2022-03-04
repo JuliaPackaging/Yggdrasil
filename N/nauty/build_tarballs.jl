@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "nauty"
-version = v"2.6.12" # Make sure to adjust version in the script down below, too!
+version = v"2.6.13" # <-- This is a lie, we're bumping from 2.6.12 to 2.6.13 to create a Julia v1.6+ release with experimental platforms
 
-# Collection of sources required to build 4ti2
+# Collection of sources required to build nauty
 sources = [
-    ArchiveSource("http://pallini.di.uniroma1.it/nauty$(version.major)$(version.minor)r$(version.patch).tar.gz",
+    ArchiveSource("http://pallini.di.uniroma1.it/nauty$(version.major)$(version.minor)r12.tar.gz",
                   "862ae0dc3656db34ede6fafdb0999f7b875b14c7ab4fedbb3da4f28291eb95dc"),
     DirectorySource("./bundled"),
 ]
@@ -18,8 +18,6 @@ cd ${WORKSPACE}/srcdir/nauty*
 
 # Remove misleading libtool files 
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
-rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
 
 # Patch based on one from Debian: add autotools build system which creates a
 # shared library; compared to the Debian version, a bunch of things we don't
@@ -49,7 +47,8 @@ install_license COPYRIGHT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> !(p isa Windows), supported_platforms())
+platforms = supported_platforms(;experimental=true)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -108,8 +107,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"), # for sumlines
+    Dependency("GMP_jll", v"6.2.0"), # for sumlines
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+

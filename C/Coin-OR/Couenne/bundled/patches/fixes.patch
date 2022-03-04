@@ -1,0 +1,79 @@
+diff --git a/Couenne/src/readnl/CouenneAmplInterface.cpp b/Couenne/src/readnl/CouenneAmplInterface.cpp
+index 00e1548..95f8a05 100644
+--- a/Couenne/src/readnl/CouenneAmplInterface.cpp
++++ b/Couenne/src/readnl/CouenneAmplInterface.cpp
+@@ -788,7 +788,7 @@ expression *CouenneAmplInterface::nl2e(expr *e) {
+   }
+ 
+   default:
+-    jnlst -> Printf (Ipopt::J_ERROR, Ipopt::J_INITIALIZATION, "ERROR: unknown operator (address %p), aborting.\n", Intcast (e -> op));
++    jnlst -> Printf (Ipopt::J_ERROR, Ipopt::J_INITIALIZATION, "ERROR: unknown operator (address %p), aborting.\n", (size_t)(e -> op));
+     throw -2;
+   }
+ 
+diff --git a/Couenne/src/readnl/invmap.cpp b/Couenne/src/readnl/invmap.cpp
+index ece4485..fe24853 100644
+--- a/Couenne/src/readnl/invmap.cpp
++++ b/Couenne/src/readnl/invmap.cpp
+@@ -32,8 +32,8 @@ static int pair_compare (const void *p1, const void *p2) {
+ 
+   /* FIX! weak cast for 64 bit machines */
+ 
+-  register size_t f1 = Intcast (((AslCouPair *) p1) -> fp); 
+-  register size_t f2 = Intcast (((AslCouPair *) p2) -> fp); 
++  size_t f1 = (size_t)(((AslCouPair *) p1) -> fp);
++  size_t f2 = (size_t)(((AslCouPair *) p2) -> fp);
+ 
+   if      (f1 < f2) return -1;
+   else if (f1 > f2) return  1;
+@@ -54,10 +54,9 @@ size_t getOperator (efunc *f) {
+   AslCouPair key, *res;
+ 
+   /* FIX cast for 64 bit machines */
+-
+-  if ((Intcast f <  N_OPS) && 
+-      (Intcast f > -N_OPS))
+-    return Intcast f;
++  size_t int_f = (size_t)(f);
++  if ((int_f <  N_OPS) && (int_f > -N_OPS))
++    return int_f;
+ 
+   key.fp = f;
+ 
+diff --git a/Couenne/src/readnl/nl2e.cpp b/Couenne/src/readnl/nl2e.cpp
+index def7faf..b069444 100644
+--- a/Couenne/src/readnl/nl2e.cpp
++++ b/Couenne/src/readnl/nl2e.cpp
+@@ -137,7 +137,7 @@ expression *CouenneProblem::nl2e (expr *e, const ASL *asl) {
+   }
+ 
+   default: 
+-    printf ("Couenne error: unknown operator (address %p), aborting.\n", Intcast (e -> op));
++    printf ("Couenne error: unknown operator (address %p), aborting.\n", (size_t)(e -> op));
+     exit (-1);
+     //return new exprConst (0);
+   }
+diff --git a/Couenne/src/readnl/readnl.cpp b/Couenne/src/readnl/readnl.cpp
+index b6a2e55..a462c98 100644
+--- a/Couenne/src/readnl/readnl.cpp
++++ b/Couenne/src/readnl/readnl.cpp
+@@ -48,12 +48,13 @@
+ using namespace Couenne;
+ 
+ // check if an expression is a null pointer or equals zero
+-inline bool is_expr_zero (expr* e)
+-{return ((e==NULL) || ((((Intcast (e->op)) == OPNUM) && 
+-			  (fabs (((expr_n *)e) -> v)  < COUENNE_EPS) 
+-			  //  && (fabs (e -> dL) < COUENNE_EPS)
+-			  // *** CHECK THIS! dL is the derivative
+-			  )));} 
++inline bool is_expr_zero (expr* e) {
++  if (e==NULL) {
++    return true;
++  }
++  size_t op = (size_t)(e->op);
++  return (op == OPNUM) && (fabs(((expr_n *)e) -> v)  < COUENNE_EPS);
++}
+ 
+ void createCommonExpr (CouenneProblem *p, const ASL *asl, int i, int which);
+ 

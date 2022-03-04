@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tk"
-version = v"8.6.9" # current version number is actually 8.6.9.1
+version = v"8.6.11" # current version number is actually 8.6.11.1
 
 # Collection of sources required to build Tk
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tk$(version).1-src.tar.gz",
-                  "8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4"),
+                  "006CAB171BEECA6A968B6D617588538176F27BE232A2B334A0E96173E89909BE"),
     DirectorySource("./bundled"),
 ]
 
@@ -41,7 +41,7 @@ if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p2 "${WORKSPACE}/srcdir/patches/win_tk_rc_include.patch"
 fi
 
-./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 make install-private-headers
@@ -62,9 +62,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Tcl_jll",
-    "Xorg_libXft_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Tcl_jll"),
+    Dependency("Xorg_libXft_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+

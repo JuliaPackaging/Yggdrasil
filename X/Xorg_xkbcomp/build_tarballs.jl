@@ -14,14 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xkbcomp-*
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
 
 products = [
     ExecutableProduct("xkbcomp", :xkbcomp)

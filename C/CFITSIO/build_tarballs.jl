@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"3.48.0"
+version = v"4.0.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
-    ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version.major).$(version.minor).tar.gz",
-                  "91b48ffef544eb8ea3908543052331072c99bf09ceb139cb3c6977fc3e47aac1"),
+    ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
+                  "b2a8efba0b9f86d3e1bd619f662a476ec18112b4f27cc441cc680a4e3777425e"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,17 +20,19 @@ atomic_patch -p1 ../patches/Makefile_in.patch
 autoreconf
 if [[ "${target}" == *-mingw* ]]; then
     # This is ridiculous: when CURL is enabled, CFITSIO defines a macro,
-    # `TBYTE`, that has the same name as a mingw macro.  The following patch
-    # renames `TBYTE` to `_TBYTE`.
-    atomic_patch -p1 ../patches/tbyte.patch
+    # `TBYTE`, that has the same name as a mingw macro.  Let's rename all
+    # `TBYTE` to `_TBYTE`.
+    sed -i 's/\<TBYTE\>/_TBYTE/g' $(grep -lr '\<TBYTE\>')
 fi
-./configure --prefix=$prefix --host=$target --enable-reentrant
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
+# Delete the static library
+rm ${prefix}/lib/libcfitsio.a
 # On Windows platforms, we need to move our .dll files to bin
 if [[ "${target}" == *-mingw* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/*.dll ${prefix}/bin
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/*.dll ${libdir}/.
 fi
 """
 
@@ -46,7 +48,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibCURL_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

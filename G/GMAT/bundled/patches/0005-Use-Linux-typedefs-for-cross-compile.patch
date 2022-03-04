@@ -1,0 +1,59 @@
+From a0f58f1581c3dddedd593b08fa627b11d045e749 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:46:14 +0200
+Subject: [PATCH 5/8] Use Linux typedefs for cross-compile
+
+---
+ .../measurement/Ionosphere/Ionosphere.hpp     | 29 -------------------
+ 1 file changed, 29 deletions(-)
+
+diff --git a/plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp b/plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
+index 038be61..e8e3e58 100644
+--- a/plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
++++ b/plugins/EstimationPlugin/src/base/measurement/Ionosphere/Ionosphere.hpp
+@@ -34,8 +34,6 @@
+ 
+ #include "f2c.h"
+ 
+-#ifdef __linux__
+-
+ #ifndef integer
+ typedef int integer;
+ #endif
+@@ -53,33 +51,6 @@ typedef int ftnlen;
+ #undef max
+ #endif
+ 
+-#endif
+-
+-#ifdef __APPLE__
+-
+-//#undef abs  // to work on Mac - the macro for abs confuses the Mac C++ code
+-
+-#ifndef integer
+-typedef int integer;
+-#endif
+-
+-#ifndef logical
+-typedef int logical;
+-#endif
+-
+-#ifndef ftnlen
+-typedef int ftnlen;
+-#endif
+-
+-#endif
+-
+-#ifdef _MSC_VER
+-//#else
+-typedef long int integer;
+-typedef long int logical;
+-typedef long int ftnlen;
+-#endif
+-
+ typedef float real;
+ typedef double doublereal;
+ 
+-- 
+2.24.3 (Apple Git-128)
+

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Gnuastro"
-version = v"0.11"
+version = v"0.14"
 
 # Collection of sources required to build gnuastro
 sources = [
     ArchiveSource("http://ftp.gnu.org/gnu/gnuastro/gnuastro-$(version.major).$(version.minor).tar.gz",
-                  "f51a5fe6c2ac7218442aa87be883dbd98d130b48d5e2dff3abb2730113c76c2f"),
+                  "873bb7d5de4a84229f8f28cfcc7be845478fb7d1344dc17d0c2789534839c377"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,7 +42,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 export CPPFLAGS="-I${prefix}/include"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
 """
@@ -50,7 +50,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = filter!(p -> !isa(p, Windows), supported_platforms())
+platforms = filter!(!Sys.iswindows, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -75,13 +75,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CFITSIO_jll"),
+    Dependency("CFITSIO_jll", v"3.49"; compat="~3.49"),
     Dependency("GSL_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("LibGit2_jll"),
-    Dependency("WCS_jll"),
+    # TODO: v4.3.0 is available, use that next time
+    Dependency("Libtiff_jll"; compat="4.1.0"),
+    # This is a bit complicated because LibGit2 is a dependency of Julia.
+    # `LibGit2_jll` v1.2.3, corresponding to upstream v1.1.0, is what is used in
+    # Julia v1.6.
+    Dependency("LibGit2_jll", v"1.2.3"),
+    Dependency("WCS_jll", v"7.2.0"; compat="7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

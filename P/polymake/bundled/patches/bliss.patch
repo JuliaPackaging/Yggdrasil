@@ -1,0 +1,24 @@
+diff --git a/bundled/bliss/apps/graph/src/GraphIso.cc b/bundled/bliss/apps/graph/src/GraphIso.cc
+index 1b3f91c145..b4f817183e 100644
+--- a/bundled/bliss/apps/graph/src/GraphIso.cc
++++ b/bundled/bliss/apps/graph/src/GraphIso.cc
+@@ -28,6 +28,7 @@
+ #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+ #endif
+ 
++#include <bliss/defs.hh>
+ #include <bliss/graph.hh>
+ #if BLISS_VERSION_MAJOR > 0 || BLISS_VERSION_MINOR >= 76
+ #include <bliss/digraph.hh>
+diff --git a/bundled/bliss/support/configure.pl b/bundled/bliss/support/configure.pl
+index 5aacbbe08f..2b7ae6eab4 100644
+--- a/bundled/bliss/support/configure.pl
++++ b/bundled/bliss/support/configure.pl
+@@ -57,6 +57,7 @@ To use bliss directly from the source package please do the following:
+ 
+    }
+    my $testfile = <<'---';
++#include "bliss/defs.hh"
+ #include "bliss/graph.hh"
+ #include <stdio.h>
+ int main() {

@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libcap-ng-*/
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-static=no \
     -with-python=no \
     CFLAGS="${CFLAGS} -pthread"
@@ -25,7 +25,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = [p for p in supported_platforms() if p isa Linux]
+platforms = [p for p in supported_platforms() if Sys.islinux(p)]
 
 # The products that we will ensure are always built
 products = [

@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "ghr"
-version = v"0.13.0"
+version = v"0.14.0"
 
 # Collection of sources required to build ghr
 sources = [
-    "https://github.com/tcnksm/ghr.git" =>
-    "d43a5d2dae1573e03dec545a2103f1bc61a3e0d6",
+    GitSource("https://github.com/tcnksm/ghr.git",
+              "668a85fd0ed2a35a6e5f42af13483ea4e16fb26f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,8 +26,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
+# Build the tarballs.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat = "1.6")

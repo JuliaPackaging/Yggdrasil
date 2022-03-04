@@ -1,45 +1,104 @@
-using BinaryBuilder, ObjectFile
-
-verbose = "--verbose" in ARGS
-
-# GR already contains a bunch of tarballs for us, so we basically just download
-# and rename them for our own nefarious purposes.
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder
 
 name = "GR"
-version = v"0.41.0"
-name_mapping = Dict(
-    Linux(:x86_64, libc=:glibc) => ("Linux-x86_64", "516bbd70640f4f49df5968d9d85513c6f5fa923681f59c1876d54c3b055bf2c3"),
-    Linux(:i686, libc=:glibc) => ("Linux-i386", "095b98bef33f3e140c7f8ed0008685b9c79925ee5c45545242e51fce837dd7a9"),
-    Windows(:x86_64) => ("Windows-x86_64", "ac7437bcb067cefa17c54d6851d18d4f8220dee8bb4177e4f7c5761965c0d6cc"),
-    Windows(:i686) => ("Windows-i686", "5e9ef15f0a53746fa6db965959458992314f59d33c013f693b8be3e093420e4e"),
-    MacOS(:x86_64) => ("Darwin-x86_64", "1aaa4c6cfef141a3298518178e8f8dc0f73b1ac8ab5ef826c59158ab6a590500"),
-)
+version = v"0.64.0"
 
-# Downoad, unpack, extract, then repackage each of these guys
-mkpath(joinpath(@__DIR__, "build"))
-mkpath(joinpath(@__DIR__, "products"))
-product_hashes = Dict()
-for (platform, (suffix, hash)) in name_mapping
-    extract_dir = joinpath(@__DIR__, "build", triplet(platform))
-    rm(extract_dir; force=true, recursive=true)
-    tarball_path = joinpath(@__DIR__, "build", "$(name)-v$(version)-$(triplet(platform)).tar.gz")
-    BinaryBuilder.download_verify_unpack("https://github.com/sciapp/gr/releases/download/v$(version)/gr-$(version)-$(suffix).tar.gz", hash, extract_dir; tarball_path=tarball_path, ignore_existence=true, force=true, verbose=verbose)
-
-    if platform isa MacOS
-        # If we're dealing with a MacOS build, rename the top-level `.so` objects to `.dylib`
-        libdir = joinpath(extract_dir, "gr", "lib")
-        symlink("libGR.so", joinpath(libdir, "libGR.dylib"))
-        symlink("libGR3.so", joinpath(libdir, "libGR3.dylib"))
-    end
-
-    tarball_path, hash = BinaryBuilder.package(Prefix(joinpath(extract_dir, "gr")), joinpath(@__DIR__, "products", name), version; platform=platform, verbose=verbose, force=true)
-    product_hashes[triplet(platform)] = (basename(tarball_path), hash)
-end
-
-products = [
-    LibraryProduct(Prefix(pwd()), "libGR", :libGR),
-    LibraryProduct(Prefix(pwd()), "libGR3", :libGR3),
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://github.com/sciapp/gr.git", "08c185a6ee3fc0ceaebb9b92017def13131bff22"),
+    FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
+               "5d5f80104639a51e40b8fc35b741f5a12291f90c33cfd4d90075ecbd393352e2", "gr.js")
 ]
 
-bin_path = "https://github.com/$(BinaryBuilder.get_repo_name())/releases/download/$(BinaryBuilder.get_tag_name())"
-BinaryBuilder.print_buildjl(@__DIR__, name, version, products, product_hashes, bin_path)
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/gr
+
+if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
+    sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
+fi
+
+update_configure_scripts
+
+make -C 3rdparty/qhull -j${nproc}
+
+if [[ $target == *"mingw"* ]]; then
+    winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
+    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
+else
+    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
+fi
+
+if [[ "${target}" == *apple* ]]; then
+    make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
+fi
+
+if [[ "${target}" == arm-* ]]; then
+    export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
+fi
+
+mkdir build
+cd build
+cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
+
+VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+cp ../../gr.js ${libdir}/
+
+install_license $WORKSPACE/srcdir/gr/LICENSE.md
+
+if [[ $target == *"apple-darwin"* ]]; then
+    cd ${bindir}
+    ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
+fi
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = [
+    Platform("armv7l",  "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",  "linux"; libc="glibc"),
+    Platform("powerpc64le",  "linux"; libc="glibc"),
+    Platform("x86_64",  "windows"),
+    Platform("i686",  "windows"),
+    Platform("x86_64",  "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64",  "freebsd"),
+]
+platforms = expand_cxxstring_abis(platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libGR", :libGR),
+    LibraryProduct("libGR3", :libGR3),
+    LibraryProduct("libGRM", :libGRM),
+    LibraryProduct("libGKS", :libGKS),
+    ExecutableProduct("gksqt", :gksqt),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("FFMPEG_jll"),
+    Dependency("Fontconfig_jll"),
+    Dependency("GLFW_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Pixman_jll"),
+#    Dependency("Qhull_jll"),
+    Dependency("Qt5Base_jll"),
+    BuildDependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_xproto_jll"),
+    Dependency("Zlib_jll"),
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+# GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"8", julia_compat="1.6")

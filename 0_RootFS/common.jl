@@ -1,11 +1,8 @@
-using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
+using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
+using BinaryBuilderBase: archive_artifact
 
-host_platform = Linux(:x86_64; libc=:musl)
-
-if !haskey(ENV, "GITHUB_TOKEN")
-    error("export GITHUB_TOKEN you dolt!")
-end
+host_platform = Platform("x86_64", "linux"; libc="musl")
 
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
@@ -50,7 +47,11 @@ end
 function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString)
     mktempdir() do dir
         tarball_hash = archive_artifact(hash, joinpath(dir, "$(filename).tar.gz"))
-        BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        if repo == "local"
+            @info "Skipping upload to GitHub because local build was requested!"
+        else
+            BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        end
         return tarball_hash
     end
 end
@@ -104,8 +105,12 @@ end
 
 function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
     # Upload them both to GH releases on Yggdrasil
-    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
-    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    unpacked_dl_info = nothing
+    squashfs_dl_info = nothing
+    if repo != "local"
+        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    end
 
     # Insert these final versions into BB
     insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
@@ -145,4 +150,23 @@ function build_tarballs(project_path::String, args::String...; deploy=false, reg
     end
 end
 
+function find_deploy_arg(ARGS)
+    dargs = ARGS[findall(arg->startswith(arg, "--deploy"), ARGS)]
+    if length(dargs) > 1
+        error("More than one deploy argument. Usage: --deploy|--deploy=local")
+    end
 
+    # No deployment
+    if length(dargs) == 0
+        return (ARGS, nothing)
+    end
+
+    ndARGS = filter(arg->!startswith(arg, "--deploy"), ARGS)
+    if dargs[] == "--deploy"
+        return (ndARGS, "JuliaPackaging/Yggdrasil")
+    elseif dargs[] == "--deploy=local"
+        return (ndARGS, "local")
+    else
+        error("--deploy argument must be --deploy or --deploy=local")
+    end
+end

@@ -40,14 +40,14 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64; libc=:glibc),
+    Platform("x86_64", "linux"; libc="glibc"),
 
     # Fails with can't find `execinfo.h`
-    #Linux(:x86_64; libc=:musl),
-    MacOS(:x86_64),
+    #Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
 
     # dll import woes
-    #Windows(:x86_64),
+    #Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built

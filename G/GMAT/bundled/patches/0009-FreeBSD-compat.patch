@@ -1,0 +1,130 @@
+From 3e234acf9cd12550cc0119499bc64e42f6490208 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Wed, 26 Aug 2020 11:47:27 +0200
+Subject: [PATCH 9/9] FreeBSD compat
+
+---
+ .../src/base/estimator/Estimator.cpp                 | 12 ++++++------
+ src/base/executive/Moderator.cpp                     |  4 ++--
+ src/base/plugin/DynamicLibrary.cpp                   |  2 +-
+ src/gmatutil/util/FileUtil.cpp                       |  4 ++--
+ 4 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/plugins/EstimationPlugin/src/base/estimator/Estimator.cpp b/plugins/EstimationPlugin/src/base/estimator/Estimator.cpp
+index def3cfc..3fb8db1 100644
+--- a/plugins/EstimationPlugin/src/base/estimator/Estimator.cpp
++++ b/plugins/EstimationPlugin/src/base/estimator/Estimator.cpp
+@@ -66,7 +66,7 @@
+ 
+ 
+ // This is used for getting computer operating system name and version
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+ #include <sys/utsname.h>
+ #else
+ #ifdef __APPLE__
+@@ -75,7 +75,7 @@
+ #endif
+ 
+ // This is used for getting hostname and user ID
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+ #include <unistd.h>
+ #endif
+ #ifdef __APPLE__
+@@ -4989,7 +4989,7 @@ std::string Estimator::GetDayOfWeek(Integer day, Integer month, Integer year)
+ std::string Estimator::GetOperatingSystemName()
+ {
+    std::string osName = "";
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+    struct utsname uts;
+    if (uname(&uts) == -1)
+       throw EstimatorException("Error: cannot get OS information\n");
+@@ -5026,7 +5026,7 @@ std::string Estimator::GetOperatingSystemName()
+ std::string Estimator::GetOperatingSystemVersion()
+ {
+    std::string osVersion = "";
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+    struct utsname uts;
+    if (uname(&uts) == -1)
+       throw EstimatorException("Error: cannot get OS information\n");
+@@ -5074,7 +5074,7 @@ std::string Estimator::GetHostName()
+ {
+    std::string hostName = "";
+    char s[256];
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+    gethostname(s, sizeof(s));
+ #else
+ #ifdef __APPLE__
+@@ -5104,7 +5104,7 @@ std::string Estimator::GetUserID()
+ {
+    std::string userName = "";
+    
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+    char *name;
+    name = getlogin();
+    if (name != NULL)
+diff --git a/src/base/executive/Moderator.cpp b/src/base/executive/Moderator.cpp
+index 30ad303..6cd3e48 100644
+--- a/src/base/executive/Moderator.cpp
++++ b/src/base/executive/Moderator.cpp
+@@ -87,7 +87,7 @@
+ 
+ #include <chrono>
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+    #include <iostream>              // to detect GUI plugins
+ #endif
+ 
+@@ -918,7 +918,7 @@ void Moderator::LoadAPlugin(std::string pluginName)
+       MessageInterface::ShowMessage("Used plugin name:  \"%s\"\n", pluginName.c_str());
+    #endif
+ 
+-   #ifdef __linux__
++   #if defined(__linux__) || defined(__FreeBSD__)
+       if (!isFromGui)
+       {
+          // Linux exclusion code: if running without GUI, don't load GUI plugin
+diff --git a/src/base/plugin/DynamicLibrary.cpp b/src/base/plugin/DynamicLibrary.cpp
+index 9293cab..48c3883 100644
+--- a/src/base/plugin/DynamicLibrary.cpp
++++ b/src/base/plugin/DynamicLibrary.cpp
+@@ -191,7 +191,7 @@ bool DynamicLibrary::LoadDynamicLibrary()
+       // compatibility, first try opening with just the plugin filename so
+       // that dlopen() will search rpaths and LD_LIBRARY_PATH.
+       // See dlopen manpage for more info.
+-      #ifdef __linux__
++      #if defined(__linux__) || defined(__FreeBSD__)
+          std::string libFullName = libName + UNIX_EXTENSION;
+          libHandle = dlopen(libFullName.c_str(), RTLD_LAZY);
+       #endif
+diff --git a/src/gmatutil/util/FileUtil.cpp b/src/gmatutil/util/FileUtil.cpp
+index 8ada0a4..6ffedc0 100644
+--- a/src/gmatutil/util/FileUtil.cpp
++++ b/src/gmatutil/util/FileUtil.cpp
+@@ -57,7 +57,7 @@
+ #include <unistd.h>                // for getcwd
+ #endif
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__FreeBSD__)
+ #include <unistd.h>		// Needed for (linux) gcc 4.7 or later
+ #endif
+ 
+@@ -296,7 +296,7 @@ std::string GmatFileUtil::GetApplicationPath()
+    return appPath;
+    #endif
+    
+-#elif __linux__
++#elif defined(__linux__) || defined(__FreeBSD__)
+ 
+    std::string appPath;
+    char buffer[GmatFile::MAX_PATH_LEN];
+-- 
+2.24.3 (Apple Git-128)
+

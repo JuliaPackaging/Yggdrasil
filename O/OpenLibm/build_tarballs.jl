@@ -1,15 +1,15 @@
 using BinaryBuilder
 
 name = "OpenLibm"
-version = v"0.7.0"
+version = v"0.8.1"
 sources = [
-    "https://github.com/JuliaMath/openlibm/archive/v$(version).tar.gz" =>
-    "1699f773198018b55b12631db9c1801fe3ed191e618a1ee1be743f4570ae06a3",
+    GitSource("https://github.com/JuliaMath/openlibm.git",
+              "ae2d91698508701c83cab83714d42a1146dccf85"),
 ]
 
 script = raw"""
 # Enter the funzone
-cd ${WORKSPACE}/srcdir/openlibm-*
+cd ${WORKSPACE}/srcdir/openlibm*
 
 # Install into output
 flags=("prefix=${prefix}")
@@ -31,19 +31,19 @@ make "${flags[@]}" -j${nproc}
 # Install the library
 make "${flags[@]}" install
 
-install_license ${WORKSPACE}/srcdir/openlibm-*/LICENSE.md
+install_license ./LICENSE.md
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-platforms = supported_platforms()
+# We enable experimental platforms as this is a core Julia dependency
+platforms = supported_platforms(;experimental=true)
 
 products = [
-    LibraryProduct("libopenlibm", :libopenlibm)
+    LibraryProduct("libopenlibm", :libopenlibm),
 ]
 
 dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               lock_microarchitecture=false, julia_compat="1.6")

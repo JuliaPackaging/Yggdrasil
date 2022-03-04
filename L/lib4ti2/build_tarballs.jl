@@ -5,11 +5,11 @@ using BinaryBuilder
 # Julia does not allow identifiers starting with a digit, so we can't
 # call this just "4ti2"
 name = "lib4ti2"
-version = v"1.6.9"
+version = v"1.6.10" # <-- This is a lie, we're bumping from 1.6.9 to 1.6.10 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build 4ti2
 sources = [
-    ArchiveSource("https://github.com/4ti2/4ti2/releases/download/Release_$(version.major)_$(version.minor)_$(version.patch)/4ti2-$(version).tar.gz",
+    ArchiveSource("https://github.com/4ti2/4ti2/releases/download/Release_1_6_9/4ti2-1.6.9.tar.gz",
                   "3053e7467b5585ad852f6a56e78e28352653943e7249ad5e5174d4744d174966"),
     DirectorySource("./bundled"),
 ]
@@ -20,8 +20,6 @@ cd ${WORKSPACE}/srcdir/4ti2-*
 
 # Remove misleading libtool files 
 rm -f ${prefix}/lib/*.la
-rm -f /opt/${target}/${target}/lib*/*.la
-rm -f /opt/${MACHTYPE}/${MACHTYPE}/lib*/*.la
 
 # Patch #1 for fixing cross-compilation: The correctness of the patch
 # relies on us using clang or GCC (in a new enough version) as compiler;
@@ -34,7 +32,6 @@ atomic_patch -p1 ../patches/gmp.patch
 
 # Patch to fix compilation on mingw32: add missing #include <time.h>
 atomic_patch -p1 ../patches/time.patch
-
 
 ./configure \
     --prefix=$prefix \
@@ -62,7 +59,7 @@ fi
 """
 
 # Build for all platforms
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # 4ti2 contains std::string values; to avoid incompatibilities across
 # the GCC 4/5 version boundary, we need the following:
@@ -105,9 +102,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll", v"6.2.0"),
     Dependency("GLPK_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+

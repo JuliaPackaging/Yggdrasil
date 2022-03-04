@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.3.5"
+version = v"5.4.3"
 
 sources = [
-    "https://www.lua.org/ftp/lua-5.3.5.tar.gz" =>
-        "0c2eed3f960446e1a3e4b9a1ca2f3ff893b6ce41942cf54d5dd59ab4b3b058ac",
-    "./bundled",
+    ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
+                  "f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -31,7 +31,7 @@ fi
 # XXX: Work around Lua apparently not understanding its own Windows setup
 if [[ ${target} == *-mingw* ]]; then
     TO_BIN="lua.exe luac.exe"
-    TO_LIB="lua53.dll"
+    TO_LIB="lua54.dll"
 else
     TO_BIN="lua luac"
     TO_LIB="liblua.${dlext}"
@@ -43,16 +43,17 @@ make install INSTALL_TOP="${prefix}" INSTALL_LIB="${libdir}" TO_BIN="${TO_BIN}" 
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(experimental=true)
 
 products = [
     ExecutableProduct("lua", :lua),
     ExecutableProduct("luac", :luac),
-    LibraryProduct(["liblua", "lua53"], :liblua),
+    LibraryProduct(["liblua", "lua54"], :liblua),
 ]
 
 dependencies = [
-    "Readline_jll",
+    Dependency("Readline_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

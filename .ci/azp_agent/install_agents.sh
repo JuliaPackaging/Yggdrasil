@@ -2,16 +2,23 @@
 
 set -e
 
-NUM_AGENTS=8
+REQUIRED_TOOLS="debootstrap jq"
+for TOOL in ${REQUIRED_TOOLS}; do
+    if [[ -z $(PATH=/usr/sbin:$PATH which "${TOOL}") ]]; then
+        echo "Must install '${TOOL}'"
+    fi
+done
+
+NUM_AGENTS=16
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 mkdir -p ${HOME}/.config/systemd/user
 source .env
 
 # Create a nice little rootfs for our agents
-if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
+if [[ ! -d "${STORAGE_DIR}/rootfs" ]] || [[ ! -d "${STORAGE_DIR}/rootfs/etc" ]]; then
     echo "Setting up rootfs..."
     mkdir -p "${STORAGE_DIR}/rootfs"
-    sudo debootstrap --variant=minbase --include=curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,expect,locales,libgomp1 buster "${STORAGE_DIR}/rootfs"
+    sudo debootstrap --variant=minbase --include=ssh,curl,libicu63,git,xz-utils,bzip2,unzip,p7zip,zstd,expect,locales,libgomp1 buster "${STORAGE_DIR}/rootfs"
 
     # Remove special `dev` files
     sudo rm -rf "${STORAGE_DIR}/rootfs/dev/*"
@@ -23,24 +30,41 @@ if [[ ! -d "${STORAGE_DIR}/rootfs" ]]; then
     # Set up the one true locale
     echo "en_US.UTF-8 UTF-8" >> ${STORAGE_DIR}/rootfs/etc/locale.gen
     sudo chroot ${STORAGE_DIR}/rootfs locale-gen
+fi
 
+if [[ ! -f "${STORAGE_DIR}/rootfs/etc/gitconfig" ]]; then
+    # Add `git` username
+    echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+    echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
+fi
+
+# Add SSH keys
+SSH_DIR="${STORAGE_DIR}/rootfs/root/.ssh"
+if [[ ! -d "${SSH_DIR}" ]]; then
+    mkdir -p "${SSH_DIR}"
+    cp -a ./yggdrasil_rsa "${SSH_DIR}/id_rsa"
+    chmod 0600 "${SSH_DIR}/id_rsa"
+    chmod 0700 "${SSH_DIR}"
+fi
+
+if [[ ! -f "${STORAGE_DIR}/rootfs/usr/local/bin/julia" ]]; then
     # Install Julia into the rootfs
     echo "Installing Julia..."
-    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.4/julia-1.4.1-linux-x86_64.tar.gz"
-    curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs"
+    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-1.7.1-linux-x86_64.tar.gz"
+    curl -# -L "$JULIA_URL" | tar --strip-components=1 -zx -C "${STORAGE_DIR}/rootfs/usr/local"
+fi
 
+if [[ ! -f "${STORAGE_DIR}/rootfs/sandbox" ]]; then
     # Install `sandbox` and `run_agent.sh` into the rootfs
     echo "Installing sandbox..."
     SANDBOX_URL="https://github.com/JuliaPackaging/Yggdrasil/raw/master/0_RootFS/Rootfs/bundled/utils/sandbox"
     curl -# -L "${SANDBOX_URL}" -o "${STORAGE_DIR}/rootfs/sandbox"
     chmod +x "${STORAGE_DIR}/rootfs/sandbox"
     cp -a "${SRC_DIR}/run_agent.sh" "${STORAGE_DIR}/rootfs/run_agent.sh"
+fi
 
-    # Add `git` username
-    echo "[user]"                               > ${STORAGE_DIR}/rootfs/etc/gitconfig
-    echo "    email = juliabuildbot@gmail.com" >> ${STORAGE_DIR}/rootfs/etc/gitconfig
-    echo "    name = jlbuild"                  >> ${STORAGE_DIR}/rootfs/etc/gitconfig
-
+if [[ ! -d "${STORAGE_DIR}/rootfs/agent" ]]; then
     # Install agent executable
     AZP_AGENTPACKAGE_URL=$(
         curl -LsS -u "user:${AZP_TOKEN}" \

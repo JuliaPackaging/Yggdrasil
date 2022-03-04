@@ -19,9 +19,9 @@ install_license ../pgplot/copyright.notice
 """
 
 platforms = [
-    Linux(:x86_64, libc=:musl),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:glibc),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
 ]
 platforms = expand_gfortran_versions(platforms)
 

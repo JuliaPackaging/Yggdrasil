@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.9.10"
+version = v"2.9.12"
 
-# Collection of sources required to build XML2Builder
+# Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "3bdffb4d728e4dc135b3210bf2a2cebb76548b820a5617c68abb7b83654066dd"),
+                  "8a4ddd706419c210b30b8978a51388937fd9362c34fc9a3d69e4fcc6f8055ee0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
-./autogen.sh --prefix=${prefix} --host=${target} \
+./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
@@ -28,7 +28,7 @@ rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -44,5 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

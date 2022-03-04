@@ -1,22 +1,42 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+import Pkg.Types: VersionSpec
+
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version, except when upstream itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
 
 name = "Arb"
-version = v"2.18.1"
+upstream_version = v"2.22.0"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-           ArchiveSource("https://github.com/fredrik-johansson/arb/archive/2.18.1.tar.gz",
-                         "9c5c6128c2e7bdc6e7e8d212f2b301068b87b956e1a238fe3b8d69d10175ceec")
-              
+    GitSource("https://github.com/fredrik-johansson/arb.git", "c2b7e36915a451455c1f115ce343dd85bdc30c59")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd arb*/
-
 if [[ ${target} == *musl* ]]; then
    export CFLAGS=-D_GNU_SOURCE=1
 elif [[ ${target} == *mingw* ]]; then
@@ -25,7 +45,6 @@ elif [[ ${target} == *mingw* ]]; then
    # MSYS_NT-6.3 is not detected as MINGW
    extraflags=--build=MINGW${nbits}
 fi
-
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
@@ -33,7 +52,6 @@ make install LIBDIR=$(basename ${libdir})
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
@@ -43,10 +61,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82", version=v"2.6.2"))
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
+    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "1.6")

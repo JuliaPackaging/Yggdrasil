@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tcl"
-version = v"8.6.9"
+version = v"8.6.11"
 
 # Collection of sources required to build Tcl
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
-                  "ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e"),
+                  "8C0486668586672C5693D7D95817CB05A18C5ECCA2F40E2836B9578064088258"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,7 @@ FLAGS=()
 if [[ "${target}" == x86_64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
-./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 # Tk needs private headers
@@ -46,8 +46,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+

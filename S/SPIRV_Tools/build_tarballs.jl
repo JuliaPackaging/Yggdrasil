@@ -1,16 +1,17 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2020.2"
+version = v"2021.2"
 
-# Collection of sources required to build IGC
+# Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "fd8e130510a6b002b28eee5885a9505040a9bdc9"),
-    # vendored dependencies
-    GitSource("https://github.com/google/effcee.git", "6fa2a03cebb4fb18fbad086d53d1054928bef54e"), # 2019.0
-    GitSource("https://github.com/google/re2.git", "209eda1b607909cf3c9ad084264039546155aeaa"), # 2020-04-01
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "5775a63ab44f6ffef2978de424062eb92719bdd0"),
+    # vendored dependencies, see the DEPS file
+    GitSource("https://github.com/google/effcee.git", "2ec8f8738118cc483b67c04a759fee53496c5659"),
+    GitSource("https://github.com/google/re2.git", "f8e389f3acdc2517562924239e2a188037393683"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "07f259e68af3a540038fa32df522554e74f53ed5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,7 @@ script = raw"""
 # put vendored dependencies in places they will be picked up by the build system
 mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
+mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 
 cd SPIRV-Tools
 install_license LICENSE
@@ -38,9 +40,6 @@ CMAKE_FLAGS+=(-DSPIRV_SKIP_TESTS=ON)
 
 # Don't use -Werror
 CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
-
-# Point to the SPIRV Headers JLL
-CMAKE_FLAGS+=(-DSPIRV-Headers_SOURCE_DIR=${prefix})
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -64,8 +63,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency("SPIRV_Headers_jll")
-]
+dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

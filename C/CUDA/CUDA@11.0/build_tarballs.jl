@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA"
-version = v"11.0.2"
+version = v"11.0.3"
 
 dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=version))]
 
@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -23,7 +23,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == *-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -64,8 +64,13 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
-    # CUDA Disassembler
+    # Compute Sanitizer
+    rm -r Sanitizer/{docs,include}
+    mv Sanitizer/* ${bindir}
+
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -108,8 +113,16 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
-    # CUDA Disassembler
+    # Compute Sanitizer
+    rm -r Sanitizer/{docs,include}
+    mv Sanitizer/* ${bindir}
+
+    # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
+    mv bin/cuda-memcheck.exe ${bindir}
+
+    # Fix permissions
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
@@ -138,10 +151,12 @@ products = [
     LibraryProduct(["libnpps", "npps64_11"], :libnpps),
     LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_2020.1.0"], :libcupti),
+    LibraryProduct(["libcupti", "cupti64_2020.1.1"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     ExecutableProduct("nvdisasm", :nvdisasm),
+    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Linux(:x86_64), Windows(:x86_64)], products, dependencies)
+               [Platform("x86_64", "linux"), Platform("powerpc64le", "linux"), Platform("x86_64", "windows")],
+               products, dependencies)

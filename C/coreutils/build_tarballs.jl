@@ -3,35 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"8.32.0"
+version = v"9.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.xz", "4458d8de7849df44ccab15e16b1548b285224dbba5f08fac070c1c0e0bcc4cfa")
+    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz", "ce30acdf4a41bc5bb30dd955e9eaa75fa216b4e3deb08889ed32433c7b3b97ce")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd coreutils-8.32
+cd $WORKSPACE/srcdir/coreutils-9.*
+
+# Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
+if [[ ${target} == x86_64-linux-musl* ]]; then
+    export FORCE_UNSAFE_CONFIGURE=1
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    FreeBSD(:x86_64)
-]
-
+platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
 
 # The products that we will ensure are always built
 products = [
@@ -149,4 +144,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

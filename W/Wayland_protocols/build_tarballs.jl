@@ -3,25 +3,27 @@
 using BinaryBuilder
 
 name = "Wayland_protocols"
-version = v"1.18"
+version = v"1.25"
 
 # Collection of sources required to build Wayland-protocols
 sources = [
-    "https://wayland.freedesktop.org/releases/wayland-protocols-$(version.major).$(version.minor).tar.xz" =>
-    "3d73b7e7661763dc09d7d9107678400101ecff2b5b1e531674abfa81e04874b3",
+    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-protocols-$(version.major).$(version.minor).tar.xz",
+                  "f1ff0f7199d0a0da337217dd8c99979967808dc37731a1e759e822b75b571460"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wayland-protocols-*/
-./configure --prefix=${prefix} --host=${target}
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/wayland-protocols*/
+mkdir build && cd build
+meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Linux]
+platforms = [AnyPlatform()]
+
 
 # The products that we will ensure are always built
 products = Product[
@@ -29,8 +31,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Wayland_jll",
+    HostBuildDependency("Wayland_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

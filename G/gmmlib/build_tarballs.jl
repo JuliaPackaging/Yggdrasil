@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmmlib"
-version = v"20.2.2"
+version = v"22.0.2"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/gmmlib.git",
-              "40c7d14fd16a4282410a2f6b0cd59251c8e41d5c"),
+              "9290546f493656d80a4aa05b63dfeaf9f8527b0a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,10 +44,10 @@ ninja -C build -j ${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 
 # The products that we will ensure are always built
@@ -59,4 +59,4 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
+               preferred_gcc_version=v"5", lock_microarchitecture=false)

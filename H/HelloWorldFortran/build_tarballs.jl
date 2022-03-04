@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldFortran"
-version = v"1.0.2"
+version = v"1.1.0"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -27,5 +27,5 @@ products = [
 dependencies = [
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

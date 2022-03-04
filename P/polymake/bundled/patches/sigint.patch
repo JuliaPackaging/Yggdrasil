@@ -1,0 +1,13 @@
+diff --git a/perllib/Polymake/Main.pm b/perllib/Polymake/Main.pm
+index ce048584af..7a9a723dac 100644
+--- a/perllib/Polymake/Main.pm
++++ b/perllib/Polymake/Main.pm
+@@ -23,7 +23,7 @@ sub import {
+    (undef, my ($user_opts, $must_reset_SIGCHLD)) = @_;
+ 
+    # this guarantees initialization of internal structures for signal handling
+-   local $SIG{INT} = 'IGNORE';
++   local $SIG{USR1} = 'IGNORE';
+ 
+    # these redefinitions must happen before the whole slew of polymake perl code is loaded!
+    if ($must_reset_SIGCHLD) {

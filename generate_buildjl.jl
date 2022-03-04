@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using GitHub, BinaryBuilder, Pkg, Pkg.PlatformEngines, SHA
+using GitHub, BinaryBuilder, Pkg, Pkg.PlatformEngines, SHA, Pkg.BinaryPlatforms
 
 """
     extract_platform_key(path::AbstractString)
@@ -35,9 +35,9 @@ function extract_name_version_platform_key(path::AbstractString)
 end
 
 function product_hashes_from_github_release(repo_name::AbstractString, tag_name::AbstractString;
-                                            verbose::Bool = true)
+                                            verbose::Bool=true)
     # Get list of files within this release
-    release = GitHub.gh_get_json(GitHub.DEFAULT_API, "/repos/$(repo_name)/releases/tags/$(tag_name)", auth=BinaryBuilder.github_auth())
+    release = GitHub.gh_get_json(GitHub.DEFAULT_API, "/repos/$(repo_name)/releases/tags/$(tag_name)", auth=BinaryBuilder.Wizard.github_auth())
 
     # Try to extract the platform key from each, use that to find all tarballs
     function can_extract_platform(filename)
@@ -68,8 +68,10 @@ function product_hashes_from_github_release(repo_name::AbstractString, tag_name:
                 return bytes2hex(sha256(file))
             end
 
+            println(compat_string_of_platform_key_abi(split(asset["name"], '.')[5]))
+
             # Then fit it into our product_hashes
-            file_triplet = triplet(extract_platform_key(asset["name"]))
+            file_triplet = BinaryBuilder.triplet(extract_platform_key(asset["name"]))
             product_hashes[file_triplet] = (asset["name"], hash)
 
             if verbose
@@ -87,22 +89,75 @@ function _repr(p::Product)
     return replace(repr(p), "(" => "(prefix, ")
 end
 
-# `Pkg.CompilerABI` has diverged from `BinaryProvider.CompilerABI`.
-# This function fixes common differences.
-function _pkey(platform)
-    pkey = string(platform_key_abi(platform))
-    for (i, j) in [(3, 4), (4, 7), (5, 8)]
-        pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\")" => "CompilerABI(:gcc$j)")
+function compat_string_of_platform_key_abi(platform)
+    splited = split(platform, '-')
+    if length(splited) == 3
+        arch, vendor, abi = splited
+        cxx = nothing
+        fortran = nothing
+    elseif length(splited) == 4
+        arch, vendor, abi, other = splited
+        if startswith(other, "cxx")
+            cxx = other
+            fortran = nothing
+        elseif startswith(other, "libgfortran")
+            cxx = nothing
+            fortran = other
+        end
+    else
+        arch, vendor, abi, fortran, cxx = splited
+        @assert startswith(fortran, "libgfortran")
+        @assert startswith(cxx, "cxx")
     end
-    for k in ["03", "11"]
-        pkey = replace(pkey, "CompilerABI(cxxstring_abi=:cxx$k)" => "CompilerABI(:gcc_any, :cxx$k)")
+
+    if vendor == "linux"
+        result = "Linux("
+    elseif vendor == "apple" && startswith(abi, "darwin")
+        result = "MacOS("
+    elseif vendor == "unknown" && startswith(abi, "freebsd")
+        result = "FreeBSD("
+    elseif vendor == "w64" && abi == "mingw32"
+        result = "Windows("
+    else
+        error("Unknown vendor in platform '$platform'")
     end
-    for (i, j) in [(3, 4), (4, 7), (5, 8)]
-        for k in ["03", "11"]
-            pkey = replace(pkey, "CompilerABI(libgfortran_version=v\"$i.0.0\", cxxstring_abi=:cxx$k)" => "CompilerABI(:gcc$j, :cxx$k)")
+
+    result *= ":$(arch)"
+
+    if vendor == "linux"
+        if abi == "gnu"
+            result *= ", libc=:glibc"
+        elseif abi == "musl"
+            result *= ", libc=:musl"
+        elseif abi == "gnueabihf"
+            result *= ", libc=:glibc, call_abi=:eabihf"
+        elseif abi == "musleabihf"
+            result *= ", libc=:musl, call_abi=:eabihf"
+        else
+            error("Platform '$platform' has unknown ABI")
         end
     end
-    return pkey
+
+    # check for required compiler ABI
+    if !(isnothing(cxx) && isnothing(fortran))
+        result *= ", compiler_abi=CompilerABI("
+        if fortran == "libgfortran3"
+            result *= ":gcc4"
+        elseif fortran == "libgfortran4"
+            result *= ":gcc7"
+        elseif fortran == "libgfortran5"
+            result *= ":gcc8"
+        else
+            result *= ":gcc_any"
+        end
+
+        if !isnothing(cxx)
+            result *= ", :$cxx"
+        end
+        result *= ")"
+    end
+
+    return result * ")"
 end
 
 function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
@@ -133,7 +188,7 @@ function print_buildjl(io::IO, products::Vector, product_hashes::Dict,
     println(io, "download_info = Dict(")
     for platform in sort(collect(keys(product_hashes)))
         fname, hash = product_hashes[platform]
-        pkey = _pkey(platform)
+        pkey = compat_string_of_platform_key_abi(platform)
         println(io, "    $(pkey) => (\"\$bin_prefix/$(fname)\", \"$(hash)\"),")
     end
     println(io, ")\n")

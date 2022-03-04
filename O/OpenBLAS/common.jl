@@ -3,6 +3,30 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.20" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.20.tar.gz",
+                          "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
+        ],
+        v"0.3.19" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.19.tar.gz",
+                          "947f51bfe50c2a0749304fbe373e00e7637600b0a47b78a51382aeb30ca08562")
+        ],
+        v"0.3.17" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
+                          "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
+        ],
+        v"0.3.13" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.13.tar.gz",
+                          "79197543b17cc314b7e43f7a33148c308b0807cd6381ee77f77e15acf3e6459e")
+        ],
+        v"0.3.12" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.12.tar.gz",
+                          "65a7d3a4010a4e3bd5c0baa41a234797cd3a1735449a4a5902129152601dc57b")
+        ],
+        v"0.3.10" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz",
+                          "0484d275f87e9b8641ff2eecaa9df2830cbe276ac79ad80494822721de6e1693"),
+        ],
         v"0.3.9" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz",
                           "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380"),
@@ -22,11 +46,15 @@ function openblas_sources(version::VersionNumber; kwargs...)
     ]
 end
 
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, kwargs...)
+# Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
+# that should opt into a higher thread count.
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
     OPENBLAS32=$(openblas32)
+    AARCH64_ILP64=$(aarch64_ilp64)
+    version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
     script *= raw"""
@@ -42,15 +70,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # Slim the binaries by not shipping static libs
     flags+=(NO_STATIC=1)
 
-    if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
-        if [[ "${OPENBLAS32}" == "true" ]]; then
-            # We're building an LP64 BLAS with 32-bit BlasInt on a 64-bit platform
-            LIBPREFIX=libopenblas
-        else
-            # We're building an ILP64 BLAS with 64-bit BlasInt
-            LIBPREFIX=libopenblas64_
-            flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
-        fi
+    if [[ ${nbits} == 64 ]] && [[ "${OPENBLAS32}" != "true" ]] && [[ "${AARCH64_ILP64}${target}" != "falseaarch64-"* ]]; then
+        # We're building an ILP64 BLAS with 64-bit BlasInt
+        LIBPREFIX=libopenblas64_
+        flags+=(INTERFACE64=1 SYMBOLSUFFIX=64_)
     else
         LIBPREFIX=libopenblas
     fi
@@ -70,12 +93,20 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(BINARY=64)
     fi
 
-    # On Intel architectures, engage DYNAMIC_ARCH
+    # On Intel and most aarch64 architectures, engage DYNAMIC_ARCH.
+    # When using DYNAMIC_ARCH the TARGET specifies the minimum architecture requirement.
     if [[ ${proc_family} == intel ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
-    # Otherwise, engage a specific target
+        flags+=(DYNAMIC_ARCH=1)
+        # Before OpenBLAS 0.3.13, there appears to be a miscompilation bug with `clang` on setting `TARGET=GENERIC`
+        # As that is the case, we're just going to be safe and only use `TARGET=GENERIC` on 0.3.13+
+        if [ ${version_patch} -gt 12 ]; then
+            flags+=(TARGET=GENERIC)
+        else
+            flags+=(TARGET=)
+        fi
     elif [[ ${target} == aarch64-* ]] && [[ ${bb_full_target} != *-libgfortran3* ]]; then
-        flags+=(TARGET= DYNAMIC_ARCH=1)
+        flags+=(TARGET=ARMV8 DYNAMIC_ARCH=1)
+    # Otherwise, engage a specific target
     elif [[ ${bb_full_target} == aarch64*-libgfortran3* ]]; then
         # Old GCC versions, with libgfortran3, can't build for newer
         # microarchitectures, let's just use the generic one
@@ -158,7 +189,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 end
 
 # Nothing complicated here; we build for everywhere
-openblas_platforms(;kwargs...) = expand_gfortran_versions(supported_platforms())
+openblas_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental))
 
 # The products that we will ensure are always built
 function openblas_products(;kwargs...)

@@ -7,8 +7,8 @@ version = v"3.28"
 
 # Collection of sources required to build gnome-themes-extra
 sources = [
-    "http://ftp.gnome.org/pub/gnome/sources/gnome-themes-extra/$(version.major).$(version.minor)/gnome-themes-extra-$(version.major).$(version.minor).tar.xz" =>
-    "7c4ba0bff001f06d8983cfc105adaac42df1d1267a2591798a780bac557a5819",
+    ArchiveSource("http://ftp.gnome.org/pub/gnome/sources/gnome-themes-extra/$(version.major).$(version.minor)/gnome-themes-extra-$(version.major).$(version.minor).tar.xz",
+                  "7c4ba0bff001f06d8983cfc105adaac42df1d1267a2591798a780bac557a5819"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,18 +19,14 @@ apk add intltool
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
-FLAGS=()
-if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(ac_cv_path_GTK_UPDATE_ICON_CACHE=gtk-update-icon-cache.exe)
-fi
+# Remove a library from the host filesystem that is accidentally picked up by
+# the build when doing a native compilation
+rm /usr/lib/libexpat.so.1
 
-if [[ "${target}" == powerpc64le-* ]]; then
-    export CFLAGS="-Wl,-rpath-link,${prefix}/lib64"
-fi
-
-./configure --prefix=${prefix} --host=${target} \
-    --disable-gtk2-engine \
-    "${FLAGS[@]}"
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-gtk2-engine
 make -j${nproc}
 make install
 """
@@ -41,7 +37,7 @@ make install
 #platforms = supported_platforms()
 
 # Limit to the same platforms as Gtk for now
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = [
@@ -50,8 +46,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "GTK3_jll",
-    "Librsvg_jll",
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("GTK3_jll"),
+    Dependency("Librsvg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

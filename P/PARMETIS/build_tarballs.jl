@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "PARMETIS"
-version = v"4.0.3"
+version = v"4.0.4" # <-- This is a lie, we're bumping to 4.0.4 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build PARMETIS.
 # The patch prevents building the source of METIS that ships with PARMETIS;
@@ -36,7 +36,7 @@ make install
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-platforms = filter!(p -> !isa(p, Windows), supported_platforms())
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
@@ -50,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

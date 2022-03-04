@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.4241"
+version = v"1.0.10395"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -11,14 +11,17 @@ version = v"1.0.4241"
 # in-tree build with known-good versions.
 
 # Collection of sources required to build IGC
+# NOTE: these hashes are taken from the release notes in GitHub,
+#       https://github.com/intel/intel-graphics-compiler/releases
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "9a456d81355b266ac60b26c1865935b4a266d6e2"),
-    # use LLVM 10 as provided by the official packages for Ubuntu 18.04
-    GitSource("https://github.com/llvm/llvm-project.git", "d32170dbd5b0d54436537b6b75beaf44324e0c28"), # v10.0.0
-    GitSource("https://github.com/intel/opencl-clang.git", "92f3f7f1a06f25fb13708f87c26b0fbf50924c96"), # v10.0.0-2
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "4d43f68a30a510b4e7607351caab3df8e7426a6b"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "775a850f9b0c2d7249503b47ad6bd39a4eb9b3d7"),
+    GitSource("https://github.com/intel/opencl-clang.git", "50bf6d7524bea3e3d595b7c252c9ad2f91340231"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "cf681c88ea3f0c40d1a85677232fe6102b7e084f"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "eeb973f5020a5f0e92ad6da879bc4df9f5985a1c"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "ae217c17809fadb232ec94b29304b4afcd417bb4"),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "5066d947985dd0c5107765daec5f24f735f3259a"),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
     # patches
-    GitSource("https://github.com/intel/llvm-patches.git", "0e35a4a02de23c235f28505f52c1222731667d17"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,46 +32,18 @@ export HOME=$(pwd)
 git config --global user.name "Binary Builder"
 git config --global user.email "your@email.com"
 
-# apply opencl-clang's patches ourself, which is more robust than letting the build system do it
-if [[ -d opencl-clang/patches/clang ]]; then
-    pushd llvm-project
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/clang/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-if [[ -d opencl-clang/patches/spirv ]]; then
-    pushd SPIRV-LLVM-Translator
-    for patch in ${WORKSPACE}/srcdir/opencl-clang/patches/spirv/*.patch; do
-        atomic_patch -p1 $patch
-        rm $patch
-    done
-    popd
-fi
-
 # move everything in places where it will get detected by the IGC build system
-mv llvm-project/clang llvm-project/llvm/tools/
 mv opencl-clang llvm-project/llvm/projects/opencl-clang
 mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
-mv llvm-patches llvm_patches
-
-cd intel-graphics-compiler
-install_license LICENSE.md
 
 # Work around compilation failures
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
-atomic_patch -p1 ../patches/gcc-constexpr_assert_bug.patch
-if [[ "${target}" == *86*-linux-musl* ]]; then
-    atomic_patch -p1 ../patches/musl-concat.patch
-    atomic_patch -p1 ../patches/musl-inttypes.patch
-    # https://github.com/JuliaPackaging/Yggdrasil/issues/739
-    sed -i '/-fstack-protector/d' IGC/CMakeLists.txt
-    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/387
-    pushd /opt/${target}/lib/gcc/${target}/*/include
-    atomic_patch -p0 $WORKSPACE/srcdir/patches/musl-malloc.patch
-    popd
-fi
+atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+# https://reviews.llvm.org/D64388
+sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
+
+cd intel-graphics-compiler
+install_license LICENSE.md
 
 CMAKE_FLAGS=()
 
@@ -96,9 +71,8 @@ ninja -C build -j ${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:x86_64, libc=:musl),
+    Platform("i686", "linux", libc="glibc"),
+    Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -118,4 +92,5 @@ dependencies = Dependency[]
 
 # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+               preferred_gcc_version=v"8", lock_microarchitecture=false)
+

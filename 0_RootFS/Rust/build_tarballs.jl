@@ -1,31 +1,48 @@
-using BinaryBuilder, Pkg.Artifacts
+### Instructions for adding a new version of the Rust toolchain
+#
+# * update the `version` variable
+# * To deploy the shard and automatically update your BinaryBuilderBase's
+#   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
+#   You can build & deploy by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy
+#
+
+using BinaryBuilderBase, BinaryBuilder, Pkg.Artifacts
+using BinaryBuilderBase: map_rust_target
 
 include("../common.jl")
 
-name = "MegaRust"
-version = v"1.18.3"
+# We first download Rustup, and use that to install rust
+rustup_name = "RustStage1"
+rustup_version = v"1.24.3"
+
+# This is the version of the Rust toolchain we install
+version = v"1.57.0"
 
 sources = [
-    # TODO: Switch to musl once https://github.com/rust-lang/rustup.rs/pull/1882 is released
-    "https://static.rust-lang.org/rustup/archive/$(version)/x86_64-unknown-linux-gnu/rustup-init" =>
-    "a46fe67199b7bcbbde2dcbc23ae08db6f29883e260e23899a88b9073effc9076",
+    # We'll use rustup to install rust
+    FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
+               "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
 ]
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
-script = raw"""
+script = "version=$(version)\n" * raw"""
 cd ${WORKSPACE}/srcdir
 
 # We reinstall RustBase because that's easier than re-using it
 export CARGO_HOME=${prefix}
 export RUSTUP_HOME=${prefix}
-mv *-rustup-init rustup-init
 chmod +x rustup-init
-./rustup-init -y --no-modify-path --default-host=${rust_host}
+./rustup-init -y --no-modify-path --default-host=${rust_host} --default-toolchain ${version}
 
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
+    aarch64-apple-darwin
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
+    arm-unknown-linux-gnueabihf
+    arm-unknown-linux-musleabihf
     armv7-unknown-linux-gnueabihf
     armv7-unknown-linux-musleabihf
     i686-unknown-linux-gnu
@@ -40,8 +57,8 @@ RUST_TARGETS=(
 )
 
 for rust_target in "${RUST_TARGETS[@]}"; do
-    # Install our target-specific stuffs
-    ${CARGO_HOME}/bin/rustup target add ${rust_target}
+    # Install our target-specific stuffs for the toolchain we're requesting
+    ${CARGO_HOME}/bin/rustup target add --toolchain ${version} ${rust_target}
 done
 
 # We're going to bundle cargo-edit since it's a useful dep
@@ -50,40 +67,40 @@ ${CARGO_HOME}/bin/cargo install cargo-edit
 """
 
 # We assemble this giant tarball, then will split it up immediately after this:
-platforms = [Linux(:x86_64; libc=:glibc)]
+platforms = [Platform("x86_64", "linux"; libc="musl")]
 products = [
     ExecutableProduct("cargo", :cargo),
 ]
 dependencies = [
-    "OpenSSL_jll",
+    Dependency("OpenSSL_jll"),
 ]
 ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
-build_info = build_tarballs(ndARGS, "MegaRust", version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script, platforms, products, dependencies; skip_audit=true)
 
 # We don't actually need the .tar.gz it creates, so delete that to save space
 rm(joinpath("products", first(values(build_info))[1]))
 
-# Take the hash of the unpacked MegaRust artifact, then split it into a bunch of smaller ones
+# Take the hash of the unpacked Rustup artifact, then split it into a bunch of smaller ones
 mega_rust_path = artifact_path(first(values(build_info))[3])
-rust_host = Linux(:x86_64; libc=:glibc)
-rust_host_triplet = BinaryBuilder.map_rust_target(rust_host)
+rust_host = Platform("x86_64", "linux"; libc="musl")
+rust_host_triplet = map_rust_target(rust_host)
 
 for target_platform in supported_platforms()
-    rust_target_triplet = BinaryBuilder.map_rust_target(target_platform)
+    rust_target_triplet = map_rust_target(target_platform)
     @info("Generating artifacts for $(rust_target_triplet)...")
     unpacked_hash = create_artifact() do dir
-        srcpath = joinpath(mega_rust_path, "toolchains", "stable-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet)
-        dstpath = joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "lib", "rustlib")
+        srcpath = joinpath(mega_rust_path, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet)
+        dstpath = joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib")
         mkpath(dstpath)
         cp(srcpath, joinpath(dstpath, rust_target_triplet))
 
         # Our mingw rust shards need to have their crt2.o updated
         # https://github.com/rust-lang/rust/issues/48272#issuecomment-429596397
-        if isa(target_platform, Windows)
+        if Sys.iswindows(target_platform)
             # Find the corresponding mingw toolchain within a GCC shard
-            all_cs = BinaryBuilder.all_compiler_shards()
+            all_cs = BinaryBuilderBase.all_compiler_shards()
             cs = first(filter(cs -> cs.name == "GCCBootstrap" && cs.target == target_platform && cs.archive_type == :unpacked, all_cs))
-            cs_path = BinaryBuilder.mount(cs, "")
+            cs_path = BinaryBuilderBase.mount(cs, "")
 
             # Locate our GCC's mingw's crt2.o
             crt_src = joinpath(cs_path, triplet(target_platform), "sys-root", "lib", "crt2.o")
@@ -102,23 +119,10 @@ end
 unpacked_hash = create_artifact() do dir
     cp(joinpath(mega_rust_path, "bin"), joinpath(dir, "bin"))
     cp(joinpath(mega_rust_path, "toolchains"), joinpath(dir, "toolchains"))
-    rm(joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "share"); recursive=true)
-    rm(joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "etc"); recursive=true)
-    for rust_target_triplet in BinaryBuilder.map_rust_target.(supported_platforms())
-        rm(joinpath(dir, "toolchains", "stable-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
-    end
-
-    # Also generate "config" file for Cargo where we give it the linkers for all our targets
-    open(joinpath(dir, "config"), "w") do io
-        write(io, """
-        # Configuration file for `cargo`
-        """)
-        for platform in supported_platforms()
-            write(io, """
-            [target.$(BinaryBuilder.map_rust_target(platform))]
-            linker = "$(triplet(platform))-gcc"
-            """)
-        end
+    rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "share"); recursive=true)
+    rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "etc"); recursive=true)
+    for rust_target_triplet in map_rust_target.(supported_platforms())
+        rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
     end
 end
 

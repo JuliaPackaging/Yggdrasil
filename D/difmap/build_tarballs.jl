@@ -3,14 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "difmap"
-# difmap version is 2.5e, mapped here to numerical value of 2.5.5
-version = v"2.5.5"
+# difmap version is 2.5k, mapped here to numerical value of 2.5.11
+version = v"2.5.11"
 
-sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5e.tar.gz", "457cd77c146e22b5332403c19b29485388a863ec494fff87137176396fc6a9ff")]
+sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5k.tar.gz", "d754dcc094a758a817677fe493bde13408cc270910f6bb7bbc3487e002cc184e")]
 
 script = raw"""
-cd $WORKSPACE/srcdir
-cd uvf_difmap
+cd $WORKSPACE/srcdir/uvf_difmap*
 sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
 ./configure linux-i486-gcc
 ./makeall
@@ -19,9 +18,9 @@ install_license ./README
 """
 
 platforms = [
-    Linux(:x86_64, libc=:musl),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:i686, libc=:glibc),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
 ]
 platforms = expand_gfortran_versions(platforms)
 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "acl"
-version = v"2.2.53"
+version = v"2.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-2.2.53.tar.gz",
-                  "06be9865c6f418d851ff4494e12406568353b891ffe1f596b34693c387af26c7")
+    ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-$(version).tar.xz",
+                  "c0234042e17f11306c23c038b08e5e070edb7be44bef6697fb8734dcff1c66b1")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ install_license doc/COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Linux]
+platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -39,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

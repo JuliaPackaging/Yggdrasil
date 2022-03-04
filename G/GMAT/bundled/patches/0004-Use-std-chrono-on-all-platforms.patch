@@ -1,0 +1,87 @@
+From 36d88c5b8753e3a4cd91663a43db4506f57bfbd3 Mon Sep 17 00:00:00 2001
+From: Helge Eichhorn <git@helgeeichhorn.de>
+Date: Mon, 24 Aug 2020 08:44:35 +0200
+Subject: [PATCH 4/8] Use std::chrono on all platforms
+
+---
+ src/base/function/SystemTime.cpp | 60 +++++++++++++-------------------
+ 1 file changed, 24 insertions(+), 36 deletions(-)
+
+diff --git a/src/base/function/SystemTime.cpp b/src/base/function/SystemTime.cpp
+index d936c14..287d300 100644
+--- a/src/base/function/SystemTime.cpp
++++ b/src/base/function/SystemTime.cpp
+@@ -335,46 +335,34 @@ bool SystemTime::Execute(ObjectInitializer *objInit, bool reinitialize)
+    Integer year, month, day, hour, min, sec;
+    Real msec;
+ 
+-   #ifdef _WIN32
+-      SYSTEMTIME theTime;
+-      GetSystemTime(&theTime);
+-
+-      year = theTime.wYear;
+-      month = theTime.wMonth;
+-      day = theTime.wDay;
+-      hour = theTime.wHour;
+-      min = theTime.wMinute;
+-      msec = theTime.wSecond + theTime.wMilliseconds / 1000.0;
+-   #else
+-      //Retrieve the system time. This result is UTCGregorian, but not in the accepted
+-      //GMAT format.
+-      std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+-      std::time_t now_t = std::chrono::system_clock::to_time_t(now);
+-
+-      long int millis =
+-            std::chrono::duration_cast<std::chrono::milliseconds>
+-            (now.time_since_epoch()).count();
+-
+-      #ifdef DEBUG_TIME_SYSTEM
+-         // What is the epoch time?
+-         std::chrono::time_point<std::chrono::system_clock> p1;
+-         std::time_t epoch_time = std::chrono::system_clock::to_time_t(p1);
+-         std::string epstr = std::ctime(&epoch_time);
+-      #endif
+-
+-      msec = millis / 1000.0 - (Integer)(millis / 1000);
++   //Retrieve the system time. This result is UTCGregorian, but not in the accepted
++   //GMAT format.
++   std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
++   std::time_t now_t = std::chrono::system_clock::to_time_t(now);
+ 
+-      //Convert the retrieved system time to a proper formatted UTCModJulian time.
+-      struct tm *now_struct = gmtime(&now_t);
++   long int millis =
++         std::chrono::duration_cast<std::chrono::milliseconds>
++         (now.time_since_epoch()).count();
+ 
+-      year = now_struct->tm_year + 1900;
+-      month = now_struct->tm_mon + 1;
+-      day = now_struct->tm_mday;
+-      hour = now_struct->tm_hour;
+-      min = now_struct->tm_min;
+-      msec = now_struct->tm_sec + msec;
++   #ifdef DEBUG_TIME_SYSTEM
++      // What is the epoch time?
++      std::chrono::time_point<std::chrono::system_clock> p1;
++      std::time_t epoch_time = std::chrono::system_clock::to_time_t(p1);
++      std::string epstr = std::ctime(&epoch_time);
+    #endif
+ 
++   msec = millis / 1000.0 - (Integer)(millis / 1000);
++
++   //Convert the retrieved system time to a proper formatted UTCModJulian time.
++   struct tm *now_struct = gmtime(&now_t);
++
++   year = now_struct->tm_year + 1900;
++   month = now_struct->tm_mon + 1;
++   day = now_struct->tm_mday;
++   hour = now_struct->tm_hour;
++   min = now_struct->tm_min;
++   msec = now_struct->tm_sec + msec;
++
+    #ifdef DEBUG_SYSTEM_TIME
+       MessageInterface::ShowMessage("SystemTime is %02d:%02d:%02d.%03d\n",
+          hour, min, sec, msec);
+-- 
+2.24.3 (Apple Git-128)
+

@@ -2,17 +2,16 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build XGBoost
 name = "XGBoost"
-version = v"1.1.1"
+version = v"1.5.2"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","34408a7fdcebc0e32142ed2f52156ea65d813400"), 
+    GitSource("https://github.com/dmlc/xgboost.git","742c19f3ecf2135b4e008a4f4a10b59add8b1045"), 
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
-git submodule init
-git submodule update
+git submodule update --init
 
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core; atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows.patch")
@@ -43,8 +42,6 @@ fi
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Disable powerpc for now
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
@@ -57,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
