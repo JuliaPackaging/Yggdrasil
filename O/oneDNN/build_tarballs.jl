@@ -31,7 +31,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # oneDNN supports 64 bit platforms only
-filter!(p -> arch(p) == "x86_64", platforms) # Temp. disabled non-x86_64
 filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
 filter!(p -> os(p) != "windows", platforms) # windows fails to compile: error: ‘_MCW_DN’ was not declared in this scope
 platforms = expand_cxxstring_abis(platforms)
