@@ -20,6 +20,7 @@ cd node-*
 export CC_host=$HOSTCC
 export CXX_host=$HOSTCXX
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node_main.cc.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/trap-handler.h.patch"
 # Build & install libnode
 if [[ $target == $MACHTYPE ]]
 then
