@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/oneDNN
 
 mkdir build && cd build/
 if [[ $target == x86_64* && $target != *apple* ]]; then
-    cmake_extra_args="-DONEDNN_CPU_RUNTIME=TBB"
+    cmake_extra_args="-DONEDNN_CPU_RUNTIME=TBB -DTBBROOT=$prefix"
 fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
