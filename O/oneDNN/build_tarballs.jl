@@ -16,6 +16,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneDNN
 
 mkdir build && cd build/
+if [[ $target == aarch64* ]]; then
+    cmake_extra_args="-DCMAKE_SYSTEM_PROCESSOR=AARCH64"
+fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
