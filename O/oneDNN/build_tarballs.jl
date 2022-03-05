@@ -16,15 +16,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneDNN
 
 mkdir build && cd build/
-if [[ $target == x86_64* && $target != *apple* ]]; then
-    cmake_extra_args="-DONEDNN_CPU_RUNTIME=TBB -DTBBROOT=$prefix"
-fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DONEDNN_BUILD_EXAMPLES=OFF \
     -DONEDNN_BUILD_TESTS=OFF \
+    -DONEDNN_CPU_RUNTIME=TBB \
+    -DTBBROOT=$prefix \
     $cmake_extra_args \
     ..
 make -j${nproc}
@@ -39,9 +38,6 @@ filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
 filter!(p -> os(p) != "windows", platforms) # windows fails to compile: error: ‘_MCW_DN’ was not declared in this scope
 platforms = expand_cxxstring_abis(platforms)
 
-intel_tbb_platforms = filter(p -> arch(p) != "x86_64" || os(p) != "macos", platforms) # (x86_64, macos) fails to link with TBB
-intel_openmp_platforms = filter(p -> arch(p) == "x86_64" && p ∉ intel_tbb_platforms, platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libdnnl", "dnnl"], :libdnnl)
@@ -50,8 +46,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("oneTBB_jll"; platforms = intel_tbb_platforms),
-    Dependency("IntelOpenMP_jll"; platforms = intel_openmp_platforms)
+    Dependency("oneTBB_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
