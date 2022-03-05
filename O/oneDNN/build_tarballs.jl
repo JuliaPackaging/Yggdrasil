@@ -39,8 +39,6 @@ filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
 filter!(p -> os(p) != "windows", platforms) # windows fails to compile: error: ‘_MCW_DN’ was not declared in this scope
 platforms = expand_cxxstring_abis(platforms)
 
-intel_tbb_platforms = filter(p -> arch(p) == "x86_64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libdnnl", "dnnl"], :libdnnl)
@@ -49,7 +47,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("oneTBB_jll"; platforms = intel_tbb_platforms)
+    Dependency("oneTBB_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
