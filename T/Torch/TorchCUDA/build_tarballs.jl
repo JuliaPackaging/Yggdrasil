@@ -57,11 +57,22 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("CUDA_full_jll"),
     Dependency("CUDNN_jll")
 ]
 
 cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
+
+cuda_full_version = Dict{VersionNumber,VersionNumber}(
+    v"10.2" => v"10.2.89",
+    v"11.0" => v"11.0.3",
+    v"11.1" => v"11.1.1",
+    v"11.2" => v"11.2.2",
+    v"11.3" => v"11.3.1",
+    v"11.4" => v"11.4.2",
+    v"11.5" => v"11.5.1",
+    v"11.6" => v"11.6.0"
+)
+
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     if cuda_version.major == 10
@@ -73,8 +84,11 @@ for cuda_version in cuda_versions
     for platform in platforms
         augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
         should_build_platform(triplet(augmented_platform)) || continue
+        platform_dependencies = vcat(dependencies, [
+            BuildDependency(PackageSpec("CUDA_full_jll", Base.UUID("4f82f1eb-248c-5f56-a42e-99106d144614"), cuda_full_version[cuda_version]))
+        ])
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true,
+                       products, platform_dependencies; lazy_artifacts=true,
                        preferred_gcc_version = v"7.1.0")
     end
 end
