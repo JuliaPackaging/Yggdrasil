@@ -16,12 +16,16 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneDNN
 
 mkdir build && cd build/
+if [[ $target == x86_64* ]]; then
+    cmake_extra_args="-DONEDNN_CPU_RUNTIME=TBB"
+fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DONEDNN_BUILD_EXAMPLES=OFF \
     -DONEDNN_BUILD_TESTS=OFF \
+    $cmake_extra_args \
     ..
 make -j${nproc}
 make install
@@ -35,7 +39,7 @@ filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
 filter!(p -> os(p) != "windows", platforms) # windows fails to compile: error: ‘_MCW_DN’ was not declared in this scope
 platforms = expand_cxxstring_abis(platforms)
 
-intel_openmp_platforms = filter(p -> arch(p) == "x86_64", platforms)
+intel_tbb_platforms = filter(p -> arch(p) == "x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -45,7 +49,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("IntelOpenMP_jll"; platforms = intel_openmp_platforms)
+    Dependency("oneTBB_jll"; platforms = intel_tbb_platforms)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
