@@ -1,5 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilderBase: os
 using BinaryBuilder, Pkg
 
 name = "oneDNN"
@@ -31,6 +32,7 @@ make install
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # oneDNN supports 64 bit platforms only
 filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
+filter!(p -> os(p) != "windows", platforms) # windows fails to compile: error: ‘_MCW_DN’ was not declared in this scope
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
