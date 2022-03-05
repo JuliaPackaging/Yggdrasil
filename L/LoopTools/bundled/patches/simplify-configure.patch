@@ -64,11 +64,11 @@
  CONF_CFLAGS+=" $CONF_BITS"
  CONF_CXXFLAGS+=" $CONF_BITS"
  
-@@ -276,29 +257,15 @@
+@@ -278,27 +259,15 @@
  
- ## does f77 support REAL*16?
+ echo -n "does $CONF_FC support REAL*$CONF_QUADSIZE... " 1>&3
  
--echo -n "does $CONF_FC support REAL*$CONF_QUADSIZE... " 1>&3
+-rm -fr $test*
 +if [[ "${target}" == arm-* ]]; then
 +    # On 32-bit the Fortran compiler doesn't support quadsize reals
 +    CONF_QUADSIZE=0
@@ -76,8 +76,6 @@
 +else
 +    echo "yes" 1>&3
 +fi
- 
--rm -fr $test*
  
 -tee $test.f << _EOF_ 1>&2
 -	program test
@@ -87,7 +85,7 @@
 -	if( a .eq. b ) call exit(1)
 -	end
 -_EOF_
--
+ 
 -eval $CONF_FC$CONF_FFLAGS -o $test$CONF_EXE $test.f 1>&2
 -
 -./$test$CONF_EXE 1>&2 && {
@@ -101,7 +99,7 @@
  ## does Fortran need 'external' for U77 routines?
  
  echo -n "does $CONF_FC need 'external' for U77 routines... " 1>&3
-@@ -325,27 +292,9 @@
+@@ -325,27 +294,9 @@
  
  echo -n "are we big-endian... " 1>&3
  
