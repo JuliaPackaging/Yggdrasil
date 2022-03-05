@@ -8,6 +8,7 @@ version = v"1.10.2"
 
 common_sources = [
     GitSource("https://github.com/FluxML/Torch.jl.git", "4167e3c21421555ad90868ca5483cd5c2ad0c449"), # v0.1.2
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.6.0%2B0/CUDA_full.v11.6.0.x86_64-linux-gnu.tar.gz", "c86b0638417588585c66a121b9bd6c863ddffd5aaf07f51db6f0dcfbff11d98b"; unpack_target = "CUDA_full.v11.6"),
 ]
 
 cuda_10_sources = [
@@ -23,6 +24,9 @@ cuda_11_sources = [
 ]
 
 script = raw"""
+cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
+cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version"
+
 mkdir -p $includedir $libdir $prefix/share
 
 cd $WORKSPACE/srcdir
@@ -38,7 +42,7 @@ mv libtorch/lib/* $libdir
 
 cd $WORKSPACE/srcdir/Torch.jl/build
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda ..
+cmake -DCMAKE_PREFIX_PATH=$prefix -DTorch_DIR=$prefix/share/cmake/Torch -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path/cuda ..
 cmake --build .
 
 cp -r $WORKSPACE/srcdir/Torch.jl/build/build/*.${dlext} "${libdir}"
@@ -57,11 +61,10 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("CUDA_full_jll"),
     Dependency("CUDNN_jll")
 ]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
+cuda_versions = [v"11.6"]#[v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     if cuda_version.major == 10
