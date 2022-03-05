@@ -30,6 +30,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # oneDNN supports 64 bit platforms only
+filter!(p -> libc(p) != "musl", platforms) # musl fails to link with ssp(?)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
