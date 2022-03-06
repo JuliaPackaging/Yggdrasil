@@ -13,19 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/FXdiv
-mkdir build
-cd build
-cmake \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_LIBDIR=$libdir \
-    -DFXDIV_BUILD_TESTS=OFF \
-    -DFXDIV_BUILD_BENCHMARKS=OFF \
-    ..
-cmake --build . -- -j $nproc
-make install
-install_license ../LICENSE
+install -Dvm 644 include/fxdiv.h "${includedir}/fxdiv.h"
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
