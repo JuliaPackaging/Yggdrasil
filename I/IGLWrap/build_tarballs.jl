@@ -28,7 +28,7 @@ cmake \
     ..
 make -j${nproc}
 make install
-install_license /usr/share/licenses/GPL3
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 products = [

@@ -54,7 +54,7 @@ if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     rm -r ${prefix}/lib
     if [[ "${target}" == *-mingw* ]]; then
         # The Windows build ships also GCC runtime, add its license as well
-        install_license /usr/share/licenses/GPL3
+        install_license /usr/share/licenses/GPL-3.0+
     fi
 fi
 """
