@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: os
 
 name = "CPUInfo"
 version = v"0.0.20200122"
@@ -37,6 +38,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(p -> arch(p) != "aarch64" || os(p) != "macos", platforms) # aarch64-macos unsupported
+filter!(p -> os(p) != "freebsd", platforms) # FreeBSD unsupported
 
 # The products that we will ensure are always built
 products = [
