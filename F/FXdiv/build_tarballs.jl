@@ -33,7 +33,8 @@ install_license ../LICENSE
 platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
-products = Product[
+products = [
+    FileProduct("include/fxdiv.h", :fxdiv_h)
 ]
 
 # Dependencies that must be installed before this package can be built
