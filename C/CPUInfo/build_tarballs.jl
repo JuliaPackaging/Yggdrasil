@@ -7,13 +7,17 @@ version = v"0.0.20200122"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/cpuinfo.git", "0e6bde92b343c5fbcfe34ecd41abf9515d54b4a7")
+    GitSource("https://github.com/pytorch/cpuinfo.git", "0e6bde92b343c5fbcfe34ecd41abf9515d54b4a7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd cpuinfo
+if [[ $target == *-w64-mingw32 ]]; then
+    atomic_patch -p1 ../patches/lowercase-windows-include.patch
+fi
 mkdir build
 cd build
 cmake \
