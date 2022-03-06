@@ -42,6 +42,7 @@ fi
 platforms = supported_platforms()
 filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # aarch64-macos unsupported
 filter!(p -> !Sys.isfreebsd(p), platforms) # FreeBSD unsupported
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms) # Failing to link
 
 # The products that we will ensure are always built
 products = [
