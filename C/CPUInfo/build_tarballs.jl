@@ -44,9 +44,6 @@ filter!(p -> os(p) != "freebsd", platforms) # FreeBSD unsupported
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcpuinfo", :libcpuinfo),
-    ExecutableProduct("isa-info", :isa_info),
-    ExecutableProduct("cpu-info", :cpu_info),
-    ExecutableProduct("cache-info", :cache_info)
 ]
 
 # Dependencies that must be installed before this package can be built
