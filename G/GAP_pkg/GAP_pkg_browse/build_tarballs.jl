@@ -26,7 +26,7 @@ make -j${nproc} CFLAGS="-I$includedir -I$includedir/ncurses"
 mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
-install_license /usr/share/licenses/GPL3
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 name = gap_pkg_name(name)
