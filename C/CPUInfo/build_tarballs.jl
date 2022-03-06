@@ -32,6 +32,9 @@ cmake \
     ..
 cmake --build . -- -j $nproc
 make install
+if [[ $target == *-w64-mingw32 ]]; then
+    install -Dvm 755 libcpuinfo.dll "${libdir}/libcpuinfo.dll"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
