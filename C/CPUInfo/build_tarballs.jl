@@ -39,7 +39,6 @@ products = [
     LibraryProduct("libcpuinfo", :libcpuinfo),
     ExecutableProduct("isa-info", :isa_info),
     ExecutableProduct("cpu-info", :cpu_info),
-    ExecutableProduct("cpuid-dump", :cpuid_dump),
     ExecutableProduct("cache-info", :cache_info)
 ]
 
