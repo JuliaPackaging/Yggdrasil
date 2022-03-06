@@ -378,6 +378,7 @@ function gcc_script(compiler_target::Platform)
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
+        export DSYMUTIL_FOR_TARGET=${prefix}/bin/dsymutil
 
         # GCC build needs a little extra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
