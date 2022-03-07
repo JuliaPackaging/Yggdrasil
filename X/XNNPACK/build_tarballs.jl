@@ -22,6 +22,7 @@ cd $WORKSPACE/srcdir/XNNPACK
 atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 atomic_patch -p1 ../patches/xnnpack-pic.patch
 atomic_patch -p1 ../patches/xnnpack-aarch64.patch
+atomic_patch -p1 ../patches/xnnpack-windows.patch
 mkdir build
 cd build
 # Omitted cmake define of CPUINFO_SOURCE_DIR as there is a patch for cpuinfo
