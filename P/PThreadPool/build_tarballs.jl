@@ -8,7 +8,7 @@ version = v"0.0.20200302"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Maratyszcza/pthreadpool.git", "ebd50d0cfa3664d454ffdf246fcd228c3b370a11"),
-    GitSource("https://github.com/Maratyszcza/FXdiv.git", "b742d1143724d646cd0f914646f1240eacf5bd73"),
+    GitSource("https://github.com/Maratyszcza/FXdiv.git", "fd804a929fc64be9e40ee58bb51ed9f9cac98244"),
 ]
 
 # Bash recipe for building across all platforms
