@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase
 
 name = "XNNPACK"
 version = v"0.0.20200225"
@@ -50,6 +51,10 @@ platforms = supported_platforms()
 filter!(p -> !Sys.isfreebsd(p), platforms) # FreeBSD is unsupported
 filter!(p -> !Sys.iswindows(p), platforms) # Windows is unsupported
 filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported
+platforms = vcat(
+    filter(p -> arch(p) != "aarch64", platforms),
+    expand_microarchitectures(filter(p -> arch(p) == "aarch64", platforms))
+)
 
 # The products that we will ensure are always built
 products = [
