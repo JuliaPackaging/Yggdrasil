@@ -29,6 +29,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # Gloo can only be built on 64-bit systems
+filter!(!Sys.iswindows, platforms) # Windows support will be available from 20200910, i.e. 881f7f0dcf06f7e49e134a45d3284860fb244fa9
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
