@@ -22,8 +22,6 @@ cd $WORKSPACE/srcdir/XNNPACK
 atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 atomic_patch -p1 ../patches/xnnpack-pic.patch
 atomic_patch -p1 ../patches/xnnpack-aarch64.patch
-atomic_patch -p1 ../patches/xnnpack-windows.patch
-atomic_patch -p1 ../patches/xnnpack-ppc64le.patch
 mkdir build
 cd build
 # Omitted cmake define of CPUINFO_SOURCE_DIR as there is a patch for cpuinfo
@@ -49,6 +47,8 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(p -> !Sys.iswindows(p), platforms) # Windows is unsupported
+filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported
 
 # The products that we will ensure are always built
 products = [
