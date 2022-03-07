@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "protoc"
-version = v"3.13.0"
+version = v"3.13.0" # 3.13.0.1
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "fde7cf7358ec7cd69e8db9be4f1fa6a5c431386a"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "d1eca4e4b421cd2997495c4b4e65cea6be4e9b8a"),
 ]
 
 # Bash recipe for building across all platforms
