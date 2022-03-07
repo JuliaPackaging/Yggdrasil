@@ -1,7 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: os
 
 name = "XNNPACK"
 version = v"0.0.20200225"
@@ -22,7 +21,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/XNNPACK
 atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 atomic_patch -p1 ../patches/xnnpack-pic.patch
-atomic_patch -p1 ../patches/xnnpack-aarch64.patch
 mkdir build
 cd build
 # Omitted cmake define of CPUINFO_SOURCE_DIR as there is a patch for cpuinfo
@@ -51,10 +49,7 @@ platforms = supported_platforms()
 filter!(p -> !Sys.isfreebsd(p), platforms) # FreeBSD is unsupported
 filter!(p -> !Sys.iswindows(p), platforms) # Windows is unsupported
 filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported
-platforms = vcat(
-    filter(p -> arch(p) != "aarch64", platforms),
-    [Platform(arch(p), os(p); march = "armv8.2-a_fp16") for p in filter(p -> arch(p) == "aarch64", platforms)]
-)
+filter!(p -> arch(p) != "aarch64", platforms) # Disabled aarch64 as XNNPACK seems to specifically support armv8.2-a+fp16 which is not in https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/master/src/Platforms.jl#L91
 
 # The products that we will ensure are always built
 products = [
