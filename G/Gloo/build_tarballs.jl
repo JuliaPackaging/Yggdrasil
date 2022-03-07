@@ -20,6 +20,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DUSE_LIBUV=ON \
     ..
 cmake --build . -- -j $nproc
 make install
@@ -38,7 +39,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("LibUV_jll", v"2.0.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
