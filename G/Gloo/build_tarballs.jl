@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Gloo"
-version = v"0.0.20200317"
+version = v"0.0.20200910"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/facebookincubator/gloo.git", "113bde13035594cafdca247be953610b53026553"),
+    GitSource("https://github.com/facebookincubator/gloo.git", "881f7f0dcf06f7e49e134a45d3284860fb244fa9"),
     DirectorySource("./bundled"),
 ]
 
