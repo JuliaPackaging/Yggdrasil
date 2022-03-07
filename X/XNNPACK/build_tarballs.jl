@@ -8,6 +8,7 @@ version = v"0.0.20200225"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/XNNPACK.git", "7493bfb9d412e59529bcbced6a902d44cfa8ea1c"),
+    DirectorySource("./bundled"),
     GitSource("https://github.com/pytorch/cpuinfo.git", "d5e37adf1406cf899d7d9ec1d317c47506ccb970"),
     GitSource("https://github.com/Maratyszcza/FP16.git", "ba1d31f5eed2eb4a69e4dea3870a68c7c95f998f"),
     GitSource("https://github.com/Maratyszcza/FXdiv.git", "f8c5354679ec2597792bc70a9e06eff50c508b9a"),
@@ -18,6 +19,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/XNNPACK
+atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 mkdir build
 cd build
 # Omitted cmake define of CPUINFO_SOURCE_DIR as there is a patch for cpuinfo
