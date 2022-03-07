@@ -59,6 +59,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("CPUInfo_jll", v"0.0.20200122"),
+    Dependency("PThreadPool_jll", v"0.0.20191029"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
