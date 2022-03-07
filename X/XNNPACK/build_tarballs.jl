@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase
+using BinaryBuilderBase: os
 
 name = "XNNPACK"
 version = v"0.0.20200225"
@@ -53,7 +53,7 @@ filter!(p -> !Sys.iswindows(p), platforms) # Windows is unsupported
 filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported
 platforms = vcat(
     filter(p -> arch(p) != "aarch64", platforms),
-    expand_microarchitectures(filter(p -> arch(p) == "aarch64", platforms))
+    [Platform(arch(p), os(p); march = "armv8.2-a_fp16") for p in filter(p -> arch(p) == "aarch64", platforms)]
 )
 
 # The products that we will ensure are always built
