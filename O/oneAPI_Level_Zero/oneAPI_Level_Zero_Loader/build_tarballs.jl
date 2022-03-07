@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include("../common.jl"); push!(source, DirectorySource("./bundled"))
+include("../common.jl"); push!(sources, DirectorySource("./bundled"))
 name = "oneAPI_Level_Zero_Loader"
 
 
