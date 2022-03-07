@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2021.2"
+version = v"2022.1"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "5775a63ab44f6ffef2978de424062eb92719bdd0"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "b1877de5cd776117050bd42f08d04b52bce16099"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "2ec8f8738118cc483b67c04a759fee53496c5659"),
-    GitSource("https://github.com/google/re2.git", "f8e389f3acdc2517562924239e2a188037393683"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "07f259e68af3a540038fa32df522554e74f53ed5"),
+    GitSource("https://github.com/google/effcee.git", "ddf5e2bb92957dc8a12c5392f8495333d6844133"),
+    GitSource("https://github.com/google/re2.git", "611baecbcedc9cec1f46e38616b6d8880b676c03"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "6a55fade62dec6a406a5a721148f88a2211cbefa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,7 +47,7 @@ ninja -C build -j ${nproc} install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -65,4 +65,5 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = []
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
