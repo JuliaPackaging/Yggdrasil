@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "XNNPACK"
-version = v"0.0.20200225"
+version = v"0.0.20200323"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/XNNPACK.git", "7493bfb9d412e59529bcbced6a902d44cfa8ea1c"),
+    GitSource("https://github.com/google/XNNPACK.git", "1b354636b5942826547055252f3b359b54acff95"),
     DirectorySource("./bundled"),
-    GitSource("https://github.com/pytorch/cpuinfo.git", "d5e37adf1406cf899d7d9ec1d317c47506ccb970"),
+    GitSource("https://github.com/pytorch/cpuinfo.git", "d5e37adf1406cf899d7d9ec1d317c47506ccb970"; unpack_target="clog"),
     GitSource("https://github.com/Maratyszcza/FP16.git", "ba1d31f5eed2eb4a69e4dea3870a68c7c95f998f"),
     GitSource("https://github.com/Maratyszcza/FXdiv.git", "f8c5354679ec2597792bc70a9e06eff50c508b9a"),
     GitSource("https://github.com/Maratyszcza/psimd.git", "10b4ffc6ea9e2e11668f86969586f88bc82aaefa"),
-    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "7ad026703b3109907ad124025918da15cfd3f100"),
+    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "ebd50d0cfa3664d454ffdf246fcd228c3b370a11"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_LIBDIR=$libdir \
-    -DCLOG_SOURCE_DIR=$WORKSPACE/srcdir/cpuinfo \
+    -DCLOG_SOURCE_DIR=$WORKSPACE/srcdir/clog/cpuinfo \
     -DFP16_SOURCE_DIR=$WORKSPACE/srcdir/FP16 \
     -DFXDIV_SOURCE_DIR=$WORKSPACE/srcdir/FXdiv \
     -DPSIMD_SOURCE_DIR=$WORKSPACE/srcdir/psimd \
@@ -46,10 +46,6 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !Sys.isfreebsd(p), platforms) # FreeBSD is unsupported
-filter!(p -> !Sys.iswindows(p), platforms) # Windows is unsupported
-filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported
-filter!(p -> arch(p) != "aarch64", platforms) # Disabled aarch64 as XNNPACK seems to specifically support armv8.2-a+fp16 which is not in https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/master/src/Platforms.jl#L91
 
 # The products that we will ensure are always built
 products = [
@@ -58,8 +54,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("CPUInfo_jll"; compat="0.0.20200122"),
-    Dependency("PThreadPool_jll"; compat="0.0.20191029"),
+    Dependency("CPUInfo_jll"; compat="0.0.20200228"),
+    Dependency("PThreadPool_jll"; compat="0.0.20200302"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
