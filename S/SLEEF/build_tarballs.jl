@@ -8,6 +8,7 @@ version = v"3.4.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/shibatch/sleef.git", "8df2bce4596ec6b86f357beebf2e428564f0a4ec"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +26,9 @@ cmake \
 ninja all
 
 cd $WORKSPACE/srcdir/sleef
+if [[ $target == *w64-mingw32* ]]; then
+    atomic_patch -p1 ../patches/lowercase-windows-include.patch
+fi
 mkdir build-cross
 cd build-cross
 cmake \

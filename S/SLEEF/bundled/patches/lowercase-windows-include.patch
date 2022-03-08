@@ -1,0 +1,13 @@
+diff --git a/src/common/arraymap.c b/src/common/arraymap.c
+index 43d4491..f47b932 100644
+--- a/src/common/arraymap.c
++++ b/src/common/arraymap.c
+@@ -27,7 +27,7 @@ static void FTRUNCATE(FILE *fp, off_t z) {
+ static FILE *OPENTMPFILE() { return tmpfile(); }
+ static void CLOSETMPFILE(FILE *fp) { fclose(fp); }
+ #else
+-#include <Windows.h>
++#include <windows.h>
+ 
+ static void FLOCK(FILE *fp) { }
+ static void FUNLOCK(FILE *fp) { }
