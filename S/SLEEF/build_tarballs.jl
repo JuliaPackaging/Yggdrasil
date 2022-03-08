@@ -50,7 +50,6 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libsleef", :libsleef),
     LibraryProduct("libsleefdft", :libsleefdft),
-    LibraryProduct("libsleefgnuabi", :libsleefgnuabi),
     LibraryProduct("libsleefquad", :libsleefquad),
 ]
 
