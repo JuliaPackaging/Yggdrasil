@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "PETSc"
-version = v"3.15.2"
+version = v"3.16.5"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
     ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(version).tar.gz",
-    "3b10c19c69fc42e01a38132668724a01f1da56f5c353105cd28f1120cc9041d8"),
+    "7de8570eeb94062752d82a83208fc2bafc77b3f515023a4c14d8ff9440e66cac"),
     DirectorySource("./bundled"),
 ]
 
