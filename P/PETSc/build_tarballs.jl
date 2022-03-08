@@ -111,8 +111,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("MPICH_jll"),
-    Dependency("MicrosoftMPI_jll"),
+    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
