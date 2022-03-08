@@ -53,7 +53,6 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsleef", :libsleef),
-    LibraryProduct("libsleefdft", :libsleefdft),
     LibraryProduct("libsleefquad", :libsleefquad),
 ]
 
