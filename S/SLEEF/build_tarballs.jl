@@ -28,6 +28,8 @@ ninja all
 cd $WORKSPACE/srcdir/sleef
 if [[ $target == *w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/lowercase-windows-include.patch
+elif [[ $target == arm-* ]]; then
+    atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
 fi
 mkdir build-cross
 cd build-cross
