@@ -51,6 +51,7 @@ ninja install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms) # i686-windows build fails
 
 # The products that we will ensure are always built
 products = [
