@@ -70,10 +70,7 @@ build_petsc()
         FFLAGS="${FFLAGS}"
     make install
 
-    if [[ "${target}" == *-mingw* ]]; then
-        # changing the extension from so to dll.
-        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.so.*.*.* "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
-    elif [[ "${target}" == *-apple* ]]; then
+    if [[ "${target}" == *-apple* ]]; then
         mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*.*.*.${dlext} "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
     else
         mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.${dlext}.*.*.* "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
