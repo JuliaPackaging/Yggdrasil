@@ -22,13 +22,18 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Antic"
-version = v"0.200.300"
-upstream_version = v"0.2.3"
+upstream_version = v"0.2.5"
+build_for_julia16_or_newer = true
+version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
-                  "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
+    GitSource("https://github.com/wbhart/antic.git", "a071e65dd82884b3a048c6436830cea6c6ce59b8"),
+#    ArchiveSource("https://github.com/wbhart/antic/archive/v$(upstream_version).tar.gz",
+#                  "78a06f67352d7a94905a5399ef0f0add1a34e90fb0c30b8dbdedf8254393e9dd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +53,7 @@ make install LIBDIR=$(basename ${libdir})
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=build_for_julia16_or_newer)
 
 # The products that we will ensure are always built
 products = [
@@ -56,11 +61,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+v = build_for_julia16_or_newer ? v"200.800.101" : v"200.800.100"
 dependencies = [
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency("FLINT_jll", v; compat = "~$v"),
+    Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
+    Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = build_for_julia16_or_newer ? "1.6" : "1.0-1.5")

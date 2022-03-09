@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.53.2"
+version = v"1.55.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/rclone/rclone.git", "30dae752c9258f6aca9521a205696648fde4a98e")
+    GitSource("https://github.com/rclone/rclone.git", "825dd65e1de3b2a1d3926659194298f10b611923")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +36,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c], julia_compat="1.6")

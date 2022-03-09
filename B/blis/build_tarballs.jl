@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.7.0"
+version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "68b88aca6692c75a9f686187e6c4a4e196ae60a9")
+    GitSource("https://github.com/flame/blis.git", "c9700f369aa84fc00f36c4b817ffb7dab72b865d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,8 +18,9 @@ cd blis/
 
 for i in ./config/*/*.mk; do
 
-    # Building in container forbids -march options
-    sed -i "s/-march[^ ]*//g" $i
+    # Building in container forbids -march options <<< Settings overrided.
+    # sed -i "s/-march[^ ]*//g" $i
+
     # Building in container forbids unsafe optimization.
     sed -i "s/-ffast-math//g" $i
     sed -i "s/-funsafe-math-optimizations//g" $i
@@ -49,29 +51,71 @@ case ${target} in
         export CC=gcc
         export CXX=g++
         ;;
+    *"aarch64"*"apple"*)
+        # Metaconfig arm64 is not needed here.
+        # All Mac processors should have equal or higher specs then firestorm
+        export BLI_CONFIG=firestorm
+        export BLI_THREAD=openmp
+        export CC=gcc
+        export CXX=g++
+        ;;
     *"aarch64"*"linux"*) 
-        # Aarch64 has no metaconfiguration support yet.
-        # Use Cortex-A57 for the moment.
-        export BLI_CONFIG=cortexa57
+        export BLI_CONFIG=arm64
         export BLI_THREAD=openmp
         ;;
     *"arm"*"linux"*) 
-        export BLI_CONFIG=cortexa9
+        export BLI_CONFIG=arm32
         export BLI_THREAD=none
         ;;
     *)
+        # Default (Generic) configuration without optimized kernel.
+        export BLI_CONFIG=generic
+        export BLI_THREAD=none
         ;; 
 
 esac
 
-./configure -p ${prefix} -t ${BLI_THREAD} ${BLI_CONFIG}
+# For 64-bit builds, add _64 suffix to exported BLAS routines.
+# This corresponds to ILP64 handling of OpenBLAS thus Julia.
+if [ ${nbits} = 64 ]; then
+    patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
+fi
+
+# Include SVE support in this metaconfig.
+if [ ${BLI_CONFIG} = arm64 ]; then
+    # Add SVE configs to the registry.
+    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+armsve.patch
+
+    # Unscreen Arm SVE code for metaconfig.
+    patch kernels/armsve/bli_kernels_armsve.h \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+    patch kernels/armsve/1m/old/bli_dpackm_armsve512_int_12xk.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+    patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+
+    # Config armsve depends on some family header defines.
+    cp config/armsve/bli_family_armsve.h config/arm64/bli_family_arm64.h
+
+    # Screen out SVE instructions in config-stage.
+    patch config/a64fx/bli_cntx_init_a64fx.c \
+        < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+    patch config/armsve/bli_cntx_init_armsve.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_config_screen_non_sve.patch
+fi
+
+export BLI_F77BITS=${nbits}
+./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
 make -j${nproc}
 make install
 
+# Static library is not needed.
+rm ${prefix}/lib/libblis.a
+
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
-    mkdir -p ${prefix}/bin
-    mv ${prefix}/lib/libblis.3.dll ${prefix}/bin/libblis.dll
+    mkdir -p ${libdir}
+    mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
 fi
 """
 
@@ -84,6 +128,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "freebsd")
 ]
 
@@ -99,4 +144,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"11", lock_microarchitecture=false, julia_compat="1.6")

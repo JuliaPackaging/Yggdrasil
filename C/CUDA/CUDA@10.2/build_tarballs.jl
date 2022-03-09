@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -23,7 +23,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -43,7 +43,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     mv lib64/libcusolver.so* ${libdir}
 
     # CUDA Linear Solver Multi GPU Library
-    mv lib64/libcusolverMg.so* ${libdir}
+    if [[ $target != aarch64-linux-gnu ]]; then
+        mv lib64/libcusolverMg.so* ${libdir}
+    fi
 
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
@@ -124,6 +126,12 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+platforms = [
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "windows")
+]
+
 products = [
     LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
@@ -134,7 +142,6 @@ products = [
     LibraryProduct(["libnvblas", "nvblas64_10"], :libnvblas),
     LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
     LibraryProduct(["libnvgraph", "nvgraph64_10"], :libnvgraph),
     LibraryProduct(["libnppc", "nppc64_10"], :libnppc),
@@ -157,4 +164,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Platform("x86_64", "linux"), Platform("x86_64", "windows")], products, dependencies)
+               platforms, products, dependencies)

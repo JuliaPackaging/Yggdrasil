@@ -1,0 +1,13 @@
+--- a/linux-user/strace.c
++++ b/linux-user/strace.c
+@@ -18,6 +18,10 @@
+ #include "user-internals.h"
+ #include "strace.h"
+ 
++#if defined(CONFIG_FALLOCATE_PUNCH_HOLE) || defined(CONFIG_FALLOCATE_ZERO_RANGE)
++#include <linux/falloc.h>
++#endif
++
+ struct syscallname {
+     int nr;
+     const char *name;

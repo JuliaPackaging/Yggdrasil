@@ -1,12 +1,18 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-version = v"3.2.1"
+upstream_version = v"3.4.1"
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
-    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$version/gdal-$version.tar.gz",
-        "43d40ba940e3927e38f9e98062ff62f9fa993ceade82f26f16fab7e73edb572e"),
+    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
+        "e360387bc25ec24940f46afbeada48002d72c74aaf9eccf2a40e8d74e711a2e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,7 +25,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_7_2"
+    export PROJ_LIBS="proj_8_2"
 elif [[ "${target}" == *-linux-* ]]; then
     # Hint to find libstdc++, required to link against C++ libs when using C compiler
     if [[ "${nbits}" == 32 ]]; then
@@ -40,11 +46,18 @@ elif [[ "${target}" == *-linux-* ]]; then
     autoreconf -vi
 fi
 
+# same fix as used for PROJ
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="$LDFLAGS -lcurl"
+fi
+
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
+# Read the options in the log file
 ./configure --help
-./configure --prefix=$prefix --host=$target \
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
     --with-tiff=$prefix \
@@ -58,6 +71,7 @@ rm -f ${prefix}/lib/*.la
     --with-python=no \
     --enable-shared \
     --disable-static
+
 # Make sure that some important libraries are found
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
@@ -69,6 +83,8 @@ make -j${nproc}
 make install
 """
 
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
@@ -97,25 +113,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"),
-    # fix to minor PROJ version; also update PROJ_LIBS above
-    # needed for Windows because of https://github.com/OSGeo/PROJ/blob/949171a6e/cmake/ProjVersion.cmake#L40-L46
-    # to avoid this problem https://github.com/JuliaGeo/GDAL.jl/pull/102
-    Dependency(PackageSpec(name="PROJ_jll", version="7.2")),
+    Dependency("GEOS_jll"; compat="~3.10"),
+    Dependency("PROJ_jll"; compat="~800.200"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
-    Dependency("LibCURL_jll", v"7.71.1"),
     Dependency("OpenJpeg_jll"),
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("libgeotiff_jll"),
-    # The following libraries are dependencies of LibCURL_jll which is now a
-    # stdlib, but the stdlib doesn't explicitly list its dependencies
-    Dependency("LibSSH2_jll", v"1.9.0"),
-    Dependency("MbedTLS_jll", v"2.16.8"),
-    Dependency("nghttp2_jll", v"1.40.0"),
+    Dependency("Libtiff_jll"; compat="4.3"),
+    Dependency("libgeotiff_jll"; compat="1.7"),
+    Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

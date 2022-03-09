@@ -1,0 +1,43 @@
+From 06a182e38a7d7f06dd7bf2bcdb2b526ce4fccee5 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Mon, 8 Feb 2021 21:59:29 -0500
+Subject: [PATCH] Fix ntohll/htonll handling
+
+---
+ src/zosc.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/src/zosc.c b/src/zosc.c
+index 6080c113..67ac3474 100644
+--- a/src/zosc.c
++++ b/src/zosc.c
+@@ -18,14 +18,22 @@
+ @end
+ */
+ 
+-#ifdef WIN32
+-#include <winsock2.h>           //  needed for ntohll/htonll
+-#endif
+ #include "czmq_classes.h"
+-#if __unix__ && !__APPLE__
++
++// ntohll/htonll is not standard
++#if defined(__linux__)
+ #include <endian.h>
+ #define htonll(x) htobe64(x)
+ #define ntohll(x) be64toh(x)
++#elif defined(__FreeBSD__) || defined(__NetBSD__)
++#include <sys/endian.h>
++#define htonll(x) htobe64(x)
++#define ntohll(x) be64toh(x)
++#elif defined(__MINGW32__)
++#define htonll(x) ((((uint64_t)htonl(x&0xFFFFFFFF)) << 32) + htonl(x >> 32))
++#define ntohll(x) ((((uint64_t)ntohl(x&0xFFFFFFFF)) << 32) + ntohl(x >> 32))
++#elif defined(WIN32)
++#include <winsock2.h>
+ #endif
+ //  Structure of our class
+ 
+-- 
+2.30.0
+

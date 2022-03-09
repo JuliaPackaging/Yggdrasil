@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "neofetch"
-version = v"6.1.0"
+version = v"7.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/dylanaraps/neofetch/archive/6.1.0.tar.gz" =>
-    "ece351e35286b64d362000d409b27597fcbdcf77e8e60fa0adae1f29d3c29637",
+    ArchiveSource("https://github.com/dylanaraps/neofetch/archive/refs/tags/$(version).tar.gz",
+                  "58a95e6b714e41efc804eca389a223309169b2def35e57fa934482a6b47c27e7"),
 ]
 
 # Bash recipe for building across all platforms

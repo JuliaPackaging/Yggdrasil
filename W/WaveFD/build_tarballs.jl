@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "WaveFD"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/WaveFD.jl.git",
-        "acd1517c2457b456c568ecef322b70bab242563b"
+        "d0aa5dda65904317b4c7b30e6fd90a90b6c368c7"
     )
 ]
 

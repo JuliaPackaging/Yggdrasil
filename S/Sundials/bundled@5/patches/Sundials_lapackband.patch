@@ -1,0 +1,19 @@
+From 887af4374af2271db9310d31eaa9b5aeff49e829 Mon Sep 17 00:00:00 2001
+From: "Balos, Cody Joe" <balos1@llnl.gov>
+Date: Thu, 21 May 2020 10:27:40 -0700
+Subject: [PATCH] SUNDIALS Release v5.3.0
+
+diff --git a/src/sunlinsol/lapackband/CMakeLists.txt b/src/sunlinsol/lapackband/CMakeLists.txt
+index 2bb5a4ef..b736ed09 100644
+--- a/src/sunlinsol/lapackband/CMakeLists.txt
++++ b/src/sunlinsol/lapackband/CMakeLists.txt
+@@ -74,6 +74,9 @@ if(BUILD_SHARED_LIBS)
+   target_link_libraries(sundials_sunlinsollapackband_shared
+     PUBLIC sundials_sunmatrixband_shared ${LAPACK_LIBRARIES})
+ 
++  target_compile_definitions(sundials_sunlinsollapackband_shared
++    PUBLIC -DBUILD_SUNDIALS_LIBRARY)
++
+   install(TARGETS sundials_sunlinsollapackband_shared
+     DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ 

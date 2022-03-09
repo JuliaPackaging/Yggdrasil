@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version = v"4.3.1"
+version = v"4.4"
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version).tar.xz",
-                  "ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb"),
+    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.xz",
+                  "06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909"),
 ]
 
 # Bash recipe for building across all platforms
@@ -58,11 +58,16 @@ else
     export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
 fi
 
+EXTRA_FLAGS=()
+if [[ "${target}" == *-darwin* ]]; then
+    EXTRA_FLAGS+=(--objcc="${CC} -x objective-c")
+fi
 if [[ "${FFPLAY}" == "true" ]]; then
-    EXTRA_FLAGS=("--enable-ffplay")
+    EXTRA_FLAGS+=("--enable-ffplay")
 fi
 
-pkg-config --list-all
+# Remove `-march` flags
+sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 
 ./configure            \
   --enable-cross-compile \
@@ -74,7 +79,6 @@ pkg-config --list-all
   --dep-cc="${CC}"     \
   --ar=ar              \
   --nm=nm              \
-  --objcc="${OBJC}"    \
   --sysinclude=${prefix}/include \
   --pkg-config=$(which pkg-config) \
   --pkg-config-flags=--static \
@@ -123,6 +127,6 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 preferred_gcc_version = v"8"

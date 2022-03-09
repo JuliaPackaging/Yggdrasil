@@ -1,12 +1,13 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.6.13"
+version = v"3.7.1"
 
 # Collection of sources required to build GnuTLS
 sources = [
-    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.13.tar.xz",
-                  "32041df447d9f4644570cf573c9f60358e865637d69b7e59d1159b7240b52f38"),
+    ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
+                  "3777d7963eca5e06eb315686163b7b3f5045e2baac5e54e038ace9835e5cac6f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +19,21 @@ cd $WORKSPACE/srcdir/gnutls-*/
 #    export AR=/opt/${target}/bin/ar
 #fi
 
-GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --host=${target} \
+if [[ ${target} == *darwin* ]]; then
+    # Fix undefined reference to "_c_isdigit"
+    # See https://gitlab.com/gnutls/gnutls/-/issues/1033
+    atomic_patch -p1 ../patches/03-undo-libtasn1-cisdigit.patch
+
+    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
+    # complain about: `Symbol not found: ___isOSVersionAtLeast`
+    if [[ "${target}" == aarch64* ]]; then
+        export CFLAGS="-mmacosx-version-min=11.0"
+    else
+        export CFLAGS="-mmacosx-version-min=10.11"
+    fi
+fi
+
+GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
     --without-p11-kit 
@@ -29,13 +44,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
-# Wimp out of doing FreeBSD since we don't have that for some targets
-platforms = [p for p in platforms if !(typeof(p) <: FreeBSD)]
+platforms = supported_platforms(; experimental=true)
 
 # Disable windows because O_NONBLOCK isn't defined
-platforms = [p for p in platforms if !(typeof(p) <: Windows)]
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -45,9 +57,10 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("Nettle_jll"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("Nettle_jll", v"3.7.2"; compat="~3.7.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.6")

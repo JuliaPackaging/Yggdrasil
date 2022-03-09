@@ -1,0 +1,234 @@
+diff --git before/pulseaudio-15.0/src/daemon/meson.build after/pulseaudio-15.0/src/daemon/meson.build
+index 262e193..0e457b0 100644
+--- before/pulseaudio-15.0/src/daemon/meson.build
++++ after/pulseaudio-15.0/src/daemon/meson.build
+@@ -27,7 +27,7 @@ executable('pulseaudio',
+   pulseaudio_sources,
+   pulseaudio_headers,
+   install: true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   include_directories : [configinc, topinc],
+   link_args : ['-ffast-math'],
+   link_with : [libpulsecore, libpulsecommon, libpulse],
+diff --git before/pulseaudio-15.0/src/modules/alsa/meson.build after/pulseaudio-15.0/src/modules/alsa/meson.build
+index f31eeb5..81910a9 100644
+--- before/pulseaudio-15.0/src/modules/alsa/meson.build
++++ after/pulseaudio-15.0/src/modules/alsa/meson.build
+@@ -34,7 +34,7 @@ libalsa_util = shared_library('alsa-util',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, alsa_dep, dbus_dep, libatomic_ops_dep, libm_dep, udev_dep, libintl_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+diff --git before/pulseaudio-15.0/src/modules/bluetooth/meson.build after/pulseaudio-15.0/src/modules/bluetooth/meson.build
+index ca77ee6..861ce1f 100644
+--- before/pulseaudio-15.0/src/modules/bluetooth/meson.build
++++ after/pulseaudio-15.0/src/modules/bluetooth/meson.build
+@@ -37,6 +37,6 @@ libbluez5_util = shared_library('bluez5-util',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, bluez_dep, dbus_dep, sbc_dep, libintl_dep, bluez5_gst_dep, bluez5_gstapp_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+diff --git before/pulseaudio-15.0/src/modules/echo-cancel/meson.build after/pulseaudio-15.0/src/modules/echo-cancel/meson.build
+index 641cd35..b3ac0e1 100644
+--- before/pulseaudio-15.0/src/modules/echo-cancel/meson.build
++++ after/pulseaudio-15.0/src/modules/echo-cancel/meson.build
+@@ -17,6 +17,6 @@ libwebrtc_util = shared_library('webrtc-util',
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, libatomic_ops_dep, webrtc_dep, libintl_dep],
+   link_args : [nodelete_link_args, '-Wl,--unresolved-symbols=ignore-in-object-files'],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+diff --git before/pulseaudio-15.0/src/modules/gsettings/meson.build after/pulseaudio-15.0/src/modules/gsettings/meson.build
+index 68a72c3..39ef6b1 100644
+--- before/pulseaudio-15.0/src/modules/gsettings/meson.build
++++ after/pulseaudio-15.0/src/modules/gsettings/meson.build
+@@ -11,7 +11,7 @@ gsettings_helper = executable('gsettings-helper',
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [gio_dep],
+   install_dir : pulselibexecdir,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install : true,
+ )
+ 
+diff --git before/pulseaudio-15.0/src/modules/oss/meson.build after/pulseaudio-15.0/src/modules/oss/meson.build
+index cb3e08a..58f18fd 100644
+--- before/pulseaudio-15.0/src/modules/oss/meson.build
++++ after/pulseaudio-15.0/src/modules/oss/meson.build
+@@ -13,6 +13,6 @@ liboss_util = shared_library('oss-util',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+diff --git before/pulseaudio-15.0/src/modules/rtp/meson.build after/pulseaudio-15.0/src/modules/rtp/meson.build
+index 119cf08..a529f33 100644
+--- before/pulseaudio-15.0/src/modules/rtp/meson.build
++++ after/pulseaudio-15.0/src/modules/rtp/meson.build
+@@ -28,7 +28,7 @@ librtp = shared_library('rtp',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, libatomic_ops_dep, gst_dep, gstapp_dep, gstrtp_dep, gio_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+diff --git before/pulseaudio-15.0/src/pulse/meson.build after/pulseaudio-15.0/src/pulse/meson.build
+index c2128e0..23862da 100644
+--- before/pulseaudio-15.0/src/pulse/meson.build
++++ after/pulseaudio-15.0/src/pulse/meson.build
+@@ -84,7 +84,7 @@ libpulse = shared_library('pulse',
+   c_args : [pa_c_args],
+   link_args : [nodelete_link_args, versioning_link_args],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   dependencies : [libm_dep, thread_dep, libpulsecommon_dep, dbus_dep, dl_dep, iconv_dep, libintl_dep, platform_dep, platform_socket_dep],
+   implicit_include_directories : false)
+ 
+@@ -104,7 +104,7 @@ libpulse_simple = shared_library('pulse-simple',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+ )
+ 
+ libpulse_simple_dep = declare_dependency(link_with: libpulse_simple)
+@@ -119,7 +119,7 @@ if glib_dep.found()
+     include_directories : [configinc, topinc],
+     dependencies : [libpulse_dep, libpulsecommon_dep, glib_dep],
+     install : true,
+-    install_rpath : privlibdir,
++    install_rpath : '$ORIGIN/pulseaudio',
+   )
+ 
+   libpulse_mainloop_glib_dep = declare_dependency(link_with: libpulse_mainloop_glib)
+diff --git before/pulseaudio-15.0/src/pulsecore/meson.build after/pulseaudio-15.0/src/pulsecore/meson.build
+index d7f9ef2..e70dd0d 100644
+--- before/pulseaudio-15.0/src/pulsecore/meson.build
++++ after/pulseaudio-15.0/src/pulsecore/meson.build
+@@ -219,7 +219,7 @@ libpulsecore = shared_library('pulsecore-' + pa_version_major_minor,
+   c_args : [pa_c_args, server_c_args],
+   link_args : [nodelete_link_args],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : privlibdir,
+   link_with : libpulsecore_simd_lib,
+   dependencies : [libm_dep, libpulsecommon_dep, ltdl_dep, shm_dep, sndfile_dep, database_dep, dbus_dep, libatomic_ops_dep, orc_dep, samplerate_dep, soxr_dep, speex_dep, x11_dep, libintl_dep, platform_dep, platform_socket_dep,],
+@@ -239,7 +239,7 @@ libavahi_wrap = shared_library('avahi-wrap',
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, avahi_dep],
+   implicit_include_directories : false, # pulsecore/poll.h <vs> /usr/include/poll.h
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -251,7 +251,7 @@ libcli = shared_library('cli',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -280,7 +280,7 @@ libprotocol_http = shared_library('protocol-http',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -292,7 +292,7 @@ libprotocol_native = shared_library('protocol-native',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep, dbus_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+ 
+@@ -304,6 +304,6 @@ libprotocol_simple = shared_library('protocol-simple',
+   include_directories : [configinc, topinc],
+   dependencies : [libpulse_dep, libpulsecommon_dep, libpulsecore_dep],
+   install : true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   install_dir : modlibexecdir,
+ )
+diff --git before/pulseaudio-15.0/src/utils/meson.build after/pulseaudio-15.0/src/utils/meson.build
+index c9635fd..3506ba4 100644
+--- before/pulseaudio-15.0/src/utils/meson.build
++++ after/pulseaudio-15.0/src/utils/meson.build
+@@ -12,7 +12,7 @@ pacat_aliases = [
+ executable('pacat',
+   pacat_sources,
+   install: true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   include_directories : [configinc, topinc],
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [sndfile_dep, libintl_dep],
+@@ -35,7 +35,7 @@ pactl_sources = [
+ executable('pactl',
+   pactl_sources,
+   install: true,
+-  install_rpath : privlibdir,
++  install_rpath : '$ORIGIN/pulseaudio',
+   include_directories : [configinc, topinc],
+   link_with : [libpulsecommon, libpulse],
+   dependencies : [sndfile_dep, libintl_dep],
+@@ -51,7 +51,7 @@ if get_option('daemon')
+     executable('pasuspender',
+       pasuspender_sources,
+       install: true,
+-      install_rpath : privlibdir,
++      install_rpath : '$ORIGIN/pulseaudio',
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       dependencies: [libintl_dep],
+@@ -65,7 +65,7 @@ if get_option('daemon')
+     executable('pacmd',
+       pacmd_sources,
+       install: true,
+-      install_rpath : privlibdir,
++      install_rpath : '$ORIGIN/pulseaudio',
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       dependencies: [libintl_dep],
+@@ -82,7 +82,7 @@ if x11_dep.found()
+   executable('pax11publish',
+     pax11publish_sources,
+     install: true,
+-    install_rpath : privlibdir,
++    install_rpath : '$ORIGIN/pulseaudio',
+     include_directories : [configinc, topinc],
+     link_with : [libpulsecommon, libpulse],
+     dependencies : [x11_dep, libintl_dep],
+@@ -99,7 +99,7 @@ if cdata.has('HAVE_OSS_WRAPPER')
+     libpulsecommon_sources,
+     install: true,
+     install_dir : padsplibdir,
+-    install_rpath : privlibdir,
++    install_rpath : '$ORIGIN/pulseaudio',
+     include_directories : [configinc, topinc],
+     link_with : [libpulsecommon, libpulse],
+     link_args : [nodelete_link_args],

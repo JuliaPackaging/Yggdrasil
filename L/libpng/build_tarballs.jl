@@ -11,18 +11,29 @@ sources = [
                   "daeb2620d829575513e35fecc83f0d3791a620b9b93d800b763542ece9390fb4"),
 ]
 
+version = v"1.6.38" # <--- This version number is a lie, we need to bump it to build for experimental platforms
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libpng-*/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" ..
-make -j${ncore}
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Let CMake know this platform supports NEON extension
+    FLAGS=(-DPNG_ARM_NEON=on)
+fi
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPNG_STATIC=OFF \
+    "${FLAGS[@]}" \
+    ..
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

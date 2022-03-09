@@ -2,14 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.5.3"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
 
 name = "jlqml"
-version = v"0.1.5"
+version = v"0.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/barche/jlqml.git", "a36226c77ad712611ae142b9a5855e33eaddbb53"),
+    GitSource("https://github.com/barche/jlqml.git", "4d21e2fcf0bcae29c45e76c8ac9d1d45893a77e6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,10 +49,13 @@ install_license $WORKSPACE/srcdir/jlqml*/LICENSE.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 filter!(p -> libc(p) != "musl", platforms) # Qt_jll is currently not available for muslc
+# Qt5Declarative_jll is not available for these architectures:
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -57,12 +65,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Qt_jll"),
+    Dependency("Qt5Declarative_jll"),
+    Dependency("Qt5Svg_jll"),
     BuildDependency("Libglvnd_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+    BuildDependency("libjulia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version = v"9",
+    julia_compat = "1.6")

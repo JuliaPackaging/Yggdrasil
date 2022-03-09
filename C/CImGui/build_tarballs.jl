@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "CImGui"
-version = v"1.79.0"
+version = v"1.82.0"
 
 # Collection of sources required to build CImGui
 sources = [
     GitSource("https://github.com/ocornut/imgui.git",
-              "e5cb04b132cba94f902beb6186cb58b864777012"),
+              "64aab8480a5643cec1880af17931963a90a8f990"),
 
     GitSource("https://github.com/cimgui/cimgui.git",
-              "c0d36ab1d657cfd73ec204a4b0c86ee989e2b72b"),
+              "83f729b09313749a56948604c4bc13492ac47e00"),
 
     DirectorySource("./bundled"),
 ]
@@ -20,7 +20,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 rm cimgui/CMakeLists.txt
-mv imgui wrapper/helper.c wrapper/helper.h wrapper/CMakeLists.txt cimgui/
+mv imgui wrapper/CMakeLists.txt cimgui/
 mkdir -p cimgui/build && cd cimgui/build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
@@ -36,7 +36,6 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libimgui-cpp", :libimgui),
     LibraryProduct("libcimgui", :libcimgui),
-    LibraryProduct("libcimgui_helper", :libcimgui_helper),
     FileProduct("share/compile_commands.json", :compile_commands)
 ]
 

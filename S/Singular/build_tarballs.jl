@@ -27,26 +27,29 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-version = v"402.000.001"
-upstream_version = v"4.2.0"
+upstream_version = v"4.3.0-1" # 4.3.0 plus some changes
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
+                        upstream_version.patch * 100 + version_offset.minor,
+                        Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    #GitSource("https://github.com/Singular/Singular.git", "8cf4d31bb708e264c0e6082a13985538a2acd84f"),
-    ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
-                  "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/Singular/Singular.git", "bbc293564bf76fcdfdc37354d406b7ca77bc780f"),
+    #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
+    #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
+    #DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd [Ss]ingular*
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
 
-#./autogen.sh
+./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
     --with-libparse \
@@ -58,7 +61,8 @@ export CPPFLAGS="-I${prefix}/include"
     --with-readline=no \
     --with-gmp=$prefix \
     --with-flint=$prefix \
-    --without-python
+    --without-python \
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
 
 make -j${nproc}
 make install
@@ -88,10 +92,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll", version=VersionSpec("200.700"))),
-    Dependency("GMP_jll", v"6.1.2"),
-    Dependency("MPFR_jll", v"4.0.2"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800.401"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"6", julia_compat = "1.6")

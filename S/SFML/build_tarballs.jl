@@ -10,10 +10,6 @@ sources = [
     GitSource(
         "https://github.com/SFML/SFML.git",
         "2f11710abc5aa478503a7ff3f9e654bd2078ebab",
-    ),
-    ArchiveSource(
-        "https://www.sfml-dev.org/files/SFML-2.5.1-linux-gcc-64-bit.tar.gz",
-        "34ad106e4592d2ec03245db5e8ad8fbf85c256d6ef9e337e8cf5c4345dc583dd",
     )
 ]
 
@@ -22,24 +18,10 @@ script = raw"""
 # build SFML
 cd ${WORKSPACE}/srcdir
 
-if [[ "${target}" == *linux* ]]; then
-
-cd SFML-2.5.1/
-mkdir -p ${prefix}
-cp -r ./include/* ${prefix}/include
-cp -r ./lib/* ${prefix}/lib
-install_license ./share/SFML/license.md
-
-else
-
 cd SFML
 mkdir build && cd build
 
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release"
-
-# if [[ "${target}" == *-linux-* ]]; then
-#     apk add eudev-dev
-# fi
 
 if [[ "${target}" == *apple* ]]; then
 CMAKE_FLAGS="${CMAKE_FLAGS} -DSFML_DEPENDENCIES_INSTALL_PREFIX=${WORKSPACE}/destdir/Frameworks"
@@ -58,19 +40,20 @@ make
 make install
 install_license ../license.md
 
-fi
-
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("i686", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows")
 ]
-platforms = expand_cxxstring_abis(platforms; skip=!Sys.iswindows)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -90,7 +73,9 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Xorg_libXrandr_jll"),
     Dependency("Xorg_libX11_jll"),
-    Dependency("OpenAL_jll")
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("OpenAL_jll"),
+    Dependency("eudev_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

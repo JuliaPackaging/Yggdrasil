@@ -1,0 +1,92 @@
+diff --git a/src/c_boost/expr/ast_common.hpp b/src/c_boost/expr/ast_common.hpp
+index 126ee9c..4df743f 100755
+--- a/src/c_boost/expr/ast_common.hpp
++++ b/src/c_boost/expr/ast_common.hpp
+@@ -593,14 +593,14 @@ namespace ast_common
+ 
+         double operator()(boolOperation const& x, double lhs)
+         {
+-            if(isnan(lhs))
++            if(std::isnan(lhs))
+             {
+                 return std::numeric_limits<double>::quiet_NaN();
+             }
+ 
+             double rhs = boost::apply_visitor(*this, x.operand_);
+ 
+-            if(isnan(rhs))
++            if(std::isnan(rhs))
+             {
+                 return std::numeric_limits<double>::quiet_NaN();
+             }
+@@ -763,7 +763,7 @@ namespace ast_common
+                 variable_map[function_variable_map[curr_func_name][arg_num]] = eval_result;
+ 
+                 // check if any of the arguments are NaN. If so, restore variable map and return NaN as result
+-                if(isnan(eval_result))
++                if(std::isnan(eval_result))
+                 {
+                     for(auto const & elem:global_variable_map)
+                     {
+@@ -857,7 +857,7 @@ namespace ast_common
+                     double eval_result = eval(arg_top);
+ 
+                     // check if any of the arguments are NaN. If so, return NaN as result
+-                    if(isnan(eval_result))
++                    if(std::isnan(eval_result))
+                     {
+                         return std::numeric_limits<double>::quiet_NaN();
+                     }
+@@ -1020,7 +1020,7 @@ namespace ast_common
+             double conditional = eval(top);
+ 
+             // check if conditional is NaN. if so, discontinue and return NaN
+-            if(isnan(conditional))
++            if(std::isnan(conditional))
+             {
+                 return std::numeric_limits<double>::quiet_NaN();
+             }
+diff --git a/src/c_boost/expr/hspice_expr_parser_interface.cpp b/src/c_boost/expr/hspice_expr_parser_interface.cpp
+index 2c57099..0ce3076 100755
+--- a/src/c_boost/expr/hspice_expr_parser_interface.cpp
++++ b/src/c_boost/expr/hspice_expr_parser_interface.cpp
+@@ -137,7 +137,7 @@ void HSPICEExprBoostParser::import_param_statements(boost::python::list & py_lis
+ 
+         ast_common::process_input(value_str(), g, variable_map, function_variable_map, function_map, out_val);
+ 
+-        if(isnan(variable_map[param_name]) || isinf(variable_map[param_name]))
++        if(std::isnan(variable_map[param_name]) || std::isinf(variable_map[param_name]))
+         {
+             unresolved_param_list.push_back(value_str());
+         }
+@@ -163,7 +163,7 @@ void HSPICEExprBoostParser::import_param_statements(boost::python::list & py_lis
+ 
+             ast_common::process_input(unresolved_param_list[j], g, variable_map, function_variable_map, function_map, out_val);
+ 
+-            if(isnan(variable_map[param_name]) || isinf(variable_map[param_name]))
++            if(std::isnan(variable_map[param_name]) || std::isinf(variable_map[param_name]))
+             {
+                 new_unresolved_param_list.push_back(unresolved_param_list[j]);
+             }
+diff --git a/src/c_boost/expr/spectre_expr_parser_interface.cpp b/src/c_boost/expr/spectre_expr_parser_interface.cpp
+index cf229bc..a36686c 100755
+--- a/src/c_boost/expr/spectre_expr_parser_interface.cpp
++++ b/src/c_boost/expr/spectre_expr_parser_interface.cpp
+@@ -137,7 +137,7 @@ void SpectreExprBoostParser::import_param_statements(boost::python::list & py_li
+ 
+         ast_common::process_input(value_str(), g, variable_map, function_variable_map, function_map, out_val);
+ 
+-        if(isnan(variable_map[param_name]) || isinf(variable_map[param_name]))
++        if(std::isnan(variable_map[param_name]) || std::isinf(variable_map[param_name]))
+         {
+             unresolved_param_list.push_back(value_str());
+         }
+@@ -165,7 +165,7 @@ void SpectreExprBoostParser::import_param_statements(boost::python::list & py_li
+ 
+             ast_common::process_input(unresolved_param_list[j], g, variable_map, function_variable_map, function_map, out_val);
+ 
+-            if(isnan(variable_map[param_name]) || isinf(variable_map[param_name]))
++            if(std::isnan(variable_map[param_name]) || std::isinf(variable_map[param_name]))
+             {
+                 new_unresolved_param_list.push_back(unresolved_param_list[j]);
+             }

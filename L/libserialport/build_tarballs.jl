@@ -1,19 +1,19 @@
 using BinaryBuilder
 
 name = "libserialport"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sigrokproject/libserialport.git",
-        "ffbfc5c76ba8100d21d0141478a6c0d761ecfb2f")
+        "6f9b03e597ea7200eb616a4e410add3dd1690cb1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libserialport/
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-include-path=$prefix/include
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -34,4 +34,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;  julia_compat="1.6")

@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hicolor-icon-theme-*/
-./configure --prefix=$prefix --host=$target
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make install
 """
 

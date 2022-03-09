@@ -1,9 +1,9 @@
 using BinaryBuilder
 
 name = "BLST"
-version = v"0.3.2"
+version = v"0.3.3"
 sources = [
-    ArchiveSource("https://github.com/supranational/blst/archive/v0.3.2.tar.gz", "075f7c7f22cdf93de528ca7fa9aab53d255bf9f4e51155088d10d28e605715d9"),
+    ArchiveSource("https://github.com/supranational/blst/archive/v$(version).tar.gz", "ec800ed0a834f9912d8e2d664773e897b42def628adca108845f57cd56241d97"),
 ]
 
 script = raw"""

@@ -3,17 +3,21 @@
 using BinaryBuilder
 
 name = "hsa_rocr"
-version = v"3.7.0"
+version = v"4.2.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCR-Runtime/archive/rocm-$(version).tar.gz",
-                  "0071d14431f73ce74574e61d0786f2b7cf34b14ea898a1f54b6e1b06b2d468c0")
+                  "fa0e7bcd64e97cbff7c39c9e87c84a49d2184dc977b341794770805ec3f896cc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
+
+# Do not install legacy symlinks which only creates confusion with RUNPATHs
+atomic_patch -p1 ../patches/no-symlinks.patch
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -31,6 +35,7 @@ make install
 # Only supports Linux, seemingly only 64bit
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -49,4 +54,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"8") 
+               julia_compat="1.7",
+               preferred_gcc_version=v"8")

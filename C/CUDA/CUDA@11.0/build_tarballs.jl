@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -64,6 +64,10 @@ if [[ ${target} == *-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
+    # Compute Sanitizer
+    rm -r Sanitizer/{docs,include}
+    mv Sanitizer/* ${bindir}
+
     # Additional binaries
     mv bin/nvdisasm ${bindir}
     mv bin/cuda-memcheck ${bindir}
@@ -109,6 +113,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
+    # Compute Sanitizer
+    rm -r Sanitizer/{docs,include}
+    mv Sanitizer/* ${bindir}
+
     # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
     mv bin/cuda-memcheck.exe ${bindir}
@@ -146,6 +154,7 @@ products = [
     LibraryProduct(["libcupti", "cupti64_2020.1.1"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     ExecutableProduct("nvdisasm", :nvdisasm),
+    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
 build_tarballs(ARGS, name, version, [], script,

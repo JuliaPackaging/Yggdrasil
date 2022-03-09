@@ -1,20 +1,17 @@
 using BinaryBuilder
 
 name = "JpegTurbo"
-version = v"2.0.1"
+version = v"2.1.2"
 
 # Collection of sources required to build Ogg
 sources = [
     ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/archive/$(version).tar.gz",
-                  "a30db8bcc8a0fab56998ea134233a8cdcb7ac81170e7d87f8bc900f02dda39d4"),
+                  "e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libjpeg-turbo-*/
-
-# Avengers; ASSEMBLE!
-apk add yasm
 
 mkdir build
 cd build
@@ -38,8 +35,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    # Avengers; ASSEMBLE!
+    HostBuildDependency("YASM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.1.0"
+version = v"1.3.0"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "7f4fa178629d559c037a1f72f79f79af9c1ef8ce"),
+              "b7bad55e4bb0a285b073ba5e02b01d3f522fc95d"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -48,7 +49,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -57,9 +58,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"),
-    Dependency("LibSSH2_jll"),
+    Dependency("MbedTLS_jll"; compat="~2.28.0"),
+    Dependency("LibSSH2_jll"; compat="1.10.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+

@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "MUMPS_seq"
-version = v"5.3.5"
+version = v"5.4.1"
 
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
-                "e5d665fdb7043043f0799ae3dbe3b37e5b200d1ab7a6f7b2a4e463fd89507fa4"),
-  "./bundled",
+                "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
 
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Fix the error:
+    #     Type mismatch in argument ‘s’ at (1); passed INTEGER(4) to LOGICAL(4)
+    FFLAGS=("-fallow-argument-mismatch")
+fi
+
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
@@ -27,14 +33,15 @@ make_args+=(OPTF=-O3
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lopenblas"
+            LAPACK="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"
@@ -72,7 +79,7 @@ cp include/* ${prefix}/include/mumps_seq
 cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -90,4 +97,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"5")

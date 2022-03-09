@@ -34,7 +34,8 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc")),
-    Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1")),
+    # TOOD: verify Gettext is actually needed at runtime
+    Dependency(PackageSpec(name="Gettext_jll", uuid="78b55507-aeef-58d4-861c-77aaff3498b1"), v"0.20.1"; compat="=0.20.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

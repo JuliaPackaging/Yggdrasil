@@ -3,19 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.6.0"
+version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/v1.6.tar.gz", "60748f3f7b22dae846bc489b22a4f1b75eab052bf403dd8e16c8279f16f5171e"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v1.8.tar.gz", 
+                  "50711ad4e9d3862f8dfb11b97eb53631a86ee3ce49c0e68ec2b6d059a9662f61"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd libdeflate-1.6/
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_makefile.patch
+cd libdeflate-*/
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 """
@@ -23,7 +22,7 @@ make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

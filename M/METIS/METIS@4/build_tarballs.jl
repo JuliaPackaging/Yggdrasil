@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "METIS"
+name = "METIS4"
 version = v"4.0.3"
 
 # Collection of sources required to build METIS

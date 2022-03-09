@@ -3,23 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "libdrm"
-version = v"2.4.103"
+version = v"2.4.110"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-2.4.103.tar.xz", "3fe0affdba6460166a7323290c18cf68e9b59edcb520722826cb244e9cb50222"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://dri.freedesktop.org/libdrm/libdrm-$version.tar.xz", "eecee4c4b47ed6d6ce1a9be3d6d92102548ea35e442282216d47d05293cf9737"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 cd libdrm-*
+atomic_patch -p1 ../no_stress.patch
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} -Dudev=false -Dvalgrind=false build
 ninja -C build install
+# taken from https://salsa.debian.org/xorg-team/lib/libdrm/-/blob/libdrm-2.4.105-3/debian/copyright
+install_license ../copyright
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

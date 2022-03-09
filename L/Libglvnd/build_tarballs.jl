@@ -19,7 +19,7 @@ FLAGS=()
 if [[ "${target}" == *musl* ]]; then
     FLAGS=(--disable-tls)
 fi
-./configure --prefix=${prefix} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 # The license is embedded in the README file

@@ -2,16 +2,36 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# The version of this JLL is decoupled from the upstream version.
+# Whenever we package a new upstream release, we initially map its
+# version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
+# So for example version 2.6.3 would become 200.600.300.
+#
+# Moreover, all our packages using this JLL use `~` in their compat ranges.
+#
+# Together, this allows us to increment the patch level of the JLL for minor tweaks.
+# If a rebuild of the JLL is needed which keeps the upstream version identical
+# but breaks ABI compatibility for any reason, we can increment the minor version
+# e.g. go from 200.600.300 to 200.601.300.
+# To package prerelease versions, we can also adjust the minor version; e.g. we may
+# map a prerelease of 2.7.0 to 200.690.000.
+#
+# There is currently no plan to change the major version, except when upstream itself
+# changes its major version. It simply seemed sensible to apply the same transformation
+# to all components.
+
 name = "GAP_lib"
-version = v"4.11.0"
+upstream_version = v"4.11.1"
+version = v"400.1192.000"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gap-system/gap.git", "9ec24ed6221b2429bc0a79457814c1b1bda09df4"),
-#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(version)/gap-$(version)-core.tar.bz2",
-#                  "6637f66409bc91af21eaa38368153270b71b13b55b75cc1550ed867c629901d1"),
-    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(version)/packages-required-v$(version).tar.gz",
-                  "29ab6e2752f39d22e3f0a19e5bcbfec1710993b4cfd52337a0ca10fda6a76537";
+    # snapshot of GAP master branch leading up to GAP 4.12:
+    GitSource("https://github.com/gap-system/gap.git", "c67fb7d89cafeb9231facd80f85426199e0d62db"),
+#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+#                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
+                  "5f66ac4053db34e4c0ebca25dd7666b891c812c084082db6cc28c551c57a3792";
                   unpack_target="pkg"),
 ]
 

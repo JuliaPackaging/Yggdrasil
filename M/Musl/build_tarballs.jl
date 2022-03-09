@@ -1,16 +1,20 @@
 using BinaryBuilder
 
 name = "Musl"
-version = v"1.1.24"
+version = v"1.2.2"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
     ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
-                  "1370c9a812b2cf2a7d92802510cca0058cc37e66a7bedd70051f0a34015022a3"),
+                  "9b969322012d796dc23dda27a35866034fa67d8fb67e0e2c45c913c3d43219dd"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/musl-*
+atomic_patch -p1 ../patches/qsort_r.patch
+
 mkdir ${WORKSPACE}/srcdir/musl_build
 cd ${WORKSPACE}/srcdir/musl_build
 musl_arch()
@@ -27,6 +31,7 @@ musl_arch()
 
 export LDFLAGS="${LDFLAGS} -Wl,-soname,libc.musl-$(musl_target).so.1"
 ${WORKSPACE}/srcdir/musl-*/configure --prefix=/usr \
+    --build=${MACHTYPE} \
     --host=${target} \
     --disable-multilib \
     --disable-werror \
@@ -43,11 +48,13 @@ make install DESTDIR=${WORKSPACE}/srcdir/musl_deploy
 mkdir -p ${prefix}/lib
 loader=$(echo ${WORKSPACE}/srcdir/musl_deploy/lib/*.so*)
 mv ${WORKSPACE}/srcdir/musl_deploy/usr/lib/libc.so ${prefix}/lib/$(basename "${loader}")
+
+install_license ${WORKSPACE}/srcdir/musl-*/COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if libc(p) == :musl]
+platforms = supported_platforms(; exclude=p->libc(p) != "musl")
 
 # The products that we will ensure are always built
 products = [
@@ -59,4 +66,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", skip_audit=true)

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.4.1"
+version = v"5.5"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "82910b8f189b79529cf678ec30a7f2f087d08072")
+              "2bf0e4aa88b70b09d3ae0f32b5607a0bd785545d")
 ]
 
 # Bash recipe for building across all platforms

@@ -114,7 +114,7 @@ function compat_string_of_platform_key_abi(platform)
         result = "Linux("
     elseif vendor == "apple" && startswith(abi, "darwin")
         result = "MacOS("
-    elseif vender == "unknonw" && startswith(abi, "freebsd")
+    elseif vendor == "unknown" && startswith(abi, "freebsd")
         result = "FreeBSD("
     elseif vendor == "w64" && abi == "mingw32"
         result = "Windows("

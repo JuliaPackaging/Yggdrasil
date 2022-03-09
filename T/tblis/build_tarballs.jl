@@ -27,11 +27,11 @@ case ${target} in
     # Unlike stated in Wiki, 
     # TBLIS automatically detects threading model.
     *"x86_64"*"linux"*"gnu"*) 
-        export BLI_CONFIG=x86
+        export BLI_CONFIG=x86,reference
         export BLI_THREAD=openmp
         ;;
     *"x86_64"*"linux"*"musl"*)
-        export BLI_CONFIG=x86
+        export BLI_CONFIG=x86,reference
         export BLI_THREAD=pthreads
         export CC=clang
         export CXX=clang++
@@ -39,7 +39,7 @@ case ${target} in
     *"x86_64"*"w64"*)
         # Windows lacks support for some instructions.
         # Building only for AMD processors.
-        export BLI_CONFIG=amd
+        export BLI_CONFIG=amd,reference
         export BLI_THREAD=openmp
         # Wrapper for posix_memalign calls.
         patch src/memory/aligned_allocator.hpp < ${WORKSPACE}/srcdir/patches/aligned_allocator.hpp.mingw.patch
@@ -55,13 +55,13 @@ case ${target} in
         update_configure_scripts --reconf
         ;;
     *"x86_64"*"apple"*) 
-        export BLI_CONFIG=x86
+        export BLI_CONFIG=x86,reference
         export BLI_THREAD=openmp
         export CC=gcc
         export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
-        export BLI_CONFIG=x86
+        export BLI_CONFIG=x86,reference
         export BLI_THREAD=openmp
         export CC=gcc
         export CXX=g++

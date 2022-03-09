@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Chemfiles"
-version = v"0.10.0"
+version = v"0.10.2"
 
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/chemfiles/chemfiles/archive/$version.tar.gz",
-                  "521e7b3a4fe007ffca198b276e5c40a0ae4f2824050e29ccf32ef91dce21b102"),
+                  "2e3b58167f25d561ab19ae06acdc02f26b5640bd6c85e0a5b10fedfec59f5285"),
 ]
 
 # Bash recipe for building across all platforms

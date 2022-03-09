@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/optimpack-*
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes --enable-static=no
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     # This is needed in order to build the shared library on Windows

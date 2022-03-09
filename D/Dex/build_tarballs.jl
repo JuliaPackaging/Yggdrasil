@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Dex"
-version = v"2.23.0"
+version = v"2.30.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dexidp/dex.git", "d820fd45d80cef74d4c65f5fcc5766ddb1fa514e"),
+    GitSource("https://github.com/dexidp/dex.git", "6e30b362b7238d5de80b8277bb47ece3994fec95"),
     DirectorySource("bundled"),
 ]
 
@@ -16,12 +16,13 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p "${bindir}" "${prefix}/share"
 cd dex/
-atomic_patch -p1 ../patches/01-allow-optional-github-gitlab-scopes.patch
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 install_license LICENSE 
-make
+make build
+mkdir -p $bindir
 mv bin/dex "$bindir/dex${exeext}"
-mv bin/example-app "$bindir/example-app${exeext}"
-mv bin/grpc-client "$bindir/grpc-client${exeext}"
 tar -czvf $prefix/share/webtemplates.tar.gz -C ./web static templates themes
 """
 
@@ -35,8 +36,6 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("example-app", :exampleapp),
-    ExecutableProduct("grpc-client", :grpcclient),
     ExecutableProduct("dex", :dex),
     FileProduct("share/webtemplates.tar.gz", :webtemplates),
 ]

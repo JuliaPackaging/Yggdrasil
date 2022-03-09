@@ -1,0 +1,14 @@
+--- a/src/Paths.cc
++++ b/src/Paths.cc
+@@ -34,7 +34,11 @@
+ 
+ 
+   void setPaths(const std::string& pathstr) {
++#ifdef _WIN32
++    putenv(("LHAPDF_DATA_PATH=" + pathstr).c_str());
++#else // _WIN32
+     setenv("LHAPDF_DATA_PATH", pathstr.c_str(), 1);
++#endif // _WIN32
+   }
+ 
+ 

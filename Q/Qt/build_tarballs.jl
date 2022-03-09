@@ -148,6 +148,15 @@ esac
 
 make -j${nproc}
 make install
+
+# Deleting static libraries is problematic: https://github.com/JuliaPackaging/Yggdrasil/pull/2713
+#rm ${prefix}/lib/*.a
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Make executables for Windows... executable
+    chmod 755 ${bindir}/*${exeext}
+fi
+
 install_license $WORKSPACE/srcdir/qt-everywhere-src-*/LICENSE.LGPLv3
 """
 
@@ -275,7 +284,7 @@ dependencies = [
     Dependency("xkbcommon_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"),

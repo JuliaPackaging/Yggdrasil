@@ -1,0 +1,44 @@
+From 8af61e19e2a40d5edecc78161deda415b0fa15f6 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Tue, 21 Jan 2020 21:45:39 -0500
+Subject: [PATCH] allow shlib on mingw
+
+---
+ clang/tools/CMakeLists.txt             | 4 +---
+ clang/tools/clang-shlib/CMakeLists.txt | 5 +++++
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/clang/tools/CMakeLists.txt b/clang/tools/CMakeLists.txt
+index e46c3669a2c..5608357fe58 100644
+--- a/clang/tools/CMakeLists.txt
++++ b/clang/tools/CMakeLists.txt
+@@ -15,9 +15,7 @@ add_clang_subdirectory(c-index-test)
+ 
+ add_clang_subdirectory(clang-rename)
+ add_clang_subdirectory(clang-refactor)
+-if(UNIX)
+-  add_clang_subdirectory(clang-shlib)
+-endif()
++add_clang_subdirectory(clang-shlib)
+ 
+ if(CLANG_ENABLE_ARCMT)
+   add_clang_subdirectory(arcmt-test)
+diff --git a/clang/tools/clang-shlib/CMakeLists.txt b/clang/tools/clang-shlib/CMakeLists.txt
+index a0fc8f6bfbd..63954c90fdf 100644
+--- a/clang/tools/clang-shlib/CMakeLists.txt
++++ b/clang/tools/clang-shlib/CMakeLists.txt
+@@ -3,6 +3,11 @@ if (NOT LLVM_ENABLE_PIC)
+   return()
+ endif()
+ 
++# Building libclang-cpp.so may not work on MSVC
++if (MSVC)
++  return()
++endif()
++
+ get_property(clang_libs GLOBAL PROPERTY CLANG_STATIC_LIBS)
+ 
+ foreach (lib ${clang_libs})
+-- 
+2.25.0
+

@@ -1,0 +1,12 @@
+diff --git a/cmake/system.cmake b/cmake/system.cmake
+index 15f8021..9e7820f 100644
+--- a/cmake/system.cmake
++++ b/cmake/system.cmake
+@@ -1,6 +1,6 @@
+ if (WIN32)
+     include(${CMAKE_DIR}/windows_compiler_options.cmake)
+-    find_library(SHLWAPI Shlwapi.lib)
++    find_library(SHLWAPI shlwapi)
+ 	
+ else()
+     include(${CMAKE_DIR}/unix_compiler_options.cmake)

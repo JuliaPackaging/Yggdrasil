@@ -17,8 +17,8 @@ cd $WORKSPACE/srcdir/adwaita-icon-theme-*/
 
 # Install native gtk+3.0 so that we get `gtk-encode-symbolic-svg`
 apk add gtk+3.0 librsvg
-./autogen.sh --prefix=$prefix --host=$target
-./configure --prefix=$prefix --host=$target
+./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """

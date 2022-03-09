@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.53.0"
+version = v"0.64.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "b490cbfacc6f4dc08c2a2de52c6f6594e8c7c5f9"),
+    GitSource("https://github.com/sciapp/gr.git", "08c185a6ee3fc0ceaebb9b92017def13131bff22"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "60b856b8bb834d30612653da42eebef56e4e329d3a73d52c303684ee42b027f1", "gr.js")
+               "5d5f80104639a51e40b8fc35b741f5a12291f90c33cfd4d90075ecbd393352e2", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -49,12 +49,7 @@ cp ../../gr.js ${libdir}/
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
 
 if [[ $target == *"apple-darwin"* ]]; then
-    cd $prefix/lib
-    ln -s libGR.so libGR.dylib
-    ln -s libGR3.so libGR3.dylib
-    ln -s libGRM.so libGRM.dylib
-    ln -s libGKS.so libGKS.dylib
-    cd ../bin
+    cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
@@ -66,8 +61,13 @@ platforms = [
     Platform("armv7l",  "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64",  "linux"; libc="glibc"),
+    Platform("i686",  "linux"; libc="glibc"),
+    Platform("powerpc64le",  "linux"; libc="glibc"),
     Platform("x86_64",  "windows"),
+    Platform("i686",  "windows"),
     Platform("x86_64",  "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -82,16 +82,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"),
-    Dependency("Cairo_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Pixman_jll"),
-    Dependency("Qt_jll"),
+#    Dependency("Qhull_jll"),
+    Dependency("Qt5Base_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
@@ -100,4 +101,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"8")
+               preferred_gcc_version = v"8", julia_compat="1.6")

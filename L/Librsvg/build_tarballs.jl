@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.42.2"
+version = v"2.52.4"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "0c550a0bffef768a436286116c03d9f6cd3f97f5021c13e7f093b550fac12562"),
+                  "660ec8836a3a91587bc9384920132d4c38d1d1718c67fe160c5213fe4dec2928"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,57 +16,43 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
-# Pango's `.la` files are wrong on certain platforms, and we don't need them anyway
-rm -f ${prefix}/lib/*.la
+atomic_patch -p1 ../patches/0001-Makefile.am-use-the-correct-EXEEXT-extension-for-the.patch
+autoreconf -fiv
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/librsvg_link_order.patch"
-autoreconf -f -i
-
-# We need this for bootstrapping purposes
-apk add gdk-pixbuf
-
-FLAGS=()
-if [[ "${target}" == *-apple-* ]]; then
-    # We purposefully use an old binutils, so we must disable -Bsymbolic
-    FLAGS+=(--disable-Bsymbolic)
+# On most platforms we have to use `${rust_target}` as `host`
+FLAGS=(--host=${rust_target})
+if [[ "${target}" == *-mingw* ]]; then
+    # On Windows using `${rust_target}` wouldn't work:
+    #
+    #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
+    #
+    # Then we have to use `RUST_TARGET` to set the Rust target.  I haven't found
+    # a combination host and RUST_TARGET that would work on all platforms.  If
+    # you do, let me know!
+    FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
 fi
 
-# cssparser must be upgraded as it doesn't build properly anymore
-sed -i.bak -e 's&cssparser = "0.23"&cssparser = "0.25"&' rust/Cargo.toml
-(cd rust && cargo vendor)
-
-LDFLAGS="-L${prefix}/lib -L${prefix}/lib64 -Wl,-rpath,${prefix}/lib -Wl,-rpath,${prefix}/lib64" ./configure --prefix=$prefix --host=$target \
+./configure \
+    --build=${MACHTYPE} \
+    --prefix=${prefix} \
     --disable-static \
     --enable-pixbuf-loader \
     --disable-introspection \
     --disable-gtk-doc-html \
     --enable-shared \
     "${FLAGS[@]}"
-
-if [[ ${target} == *mingw* ]]; then
-    # pass static rust package to linker
-    sed -i "s/^deplibs_check_method=.*/deplibs_check_method=\"pass_all\"/g" libtool
-    # add missing crt libs (ws2_32 and userenv) to LIBRSVG_LIBS
-    sed -i "s/^LIBRSVG_LIBS = .*/& -lws2_32 -luserenv/g" Makefile
-fi
-
-# Don't try to unwind on i686-w64-mingw32, just panic because rust doesn't know how to SLJL
-# https://github.com/rust-lang/rust/issues/12859#issuecomment-185081071
-if [[ ${target} == i686-w64-mingw32 ]]; then
-    export RUSTFLAGS="-C panic=abort"
-fi
-
-# Manually build rust library because rust target doesn't match C target
-(cd rust && PKG_CONFIG_ALLOW_CROSS=1 cargo build --release)
-
-RUST_LIB="$(pwd)/rust/target/${rust_target}/release/librsvg_internals.a"
-make RUST_LIB="${RUST_LIB}" -j${nproc}
-make RUST_LIB="${RUST_LIB}" install
+make
+make install
+install_license COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
+# We dont have all dependencies for armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -84,12 +70,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We need to run `gdk-pixbuf-query-loaders`
+    HostBuildDependency("gdk_pixbuf_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"),
-    Dependency("Libcroco_jll"),
+    Dependency("Pango_jll"; compat="1.47.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers=[:c, :rust])

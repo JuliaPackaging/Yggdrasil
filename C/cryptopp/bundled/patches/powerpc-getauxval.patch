@@ -1,0 +1,11 @@
+--- a/cpu.cpp
++++ b/cpu.cpp
+@@ -30,7 +30,7 @@
+ 
+ // Capability queries, requires Glibc 2.16, http://lwn.net/Articles/519085/
+ // CRYPTOPP_GLIBC_VERSION not used because config.h is missing <feature.h>
+-#if (((__GLIBC__ * 100) + __GLIBC_MINOR__) >= 216)
++#if (((__GLIBC__ * 100) + __GLIBC_MINOR__) >= 218)
+ # define CRYPTOPP_GETAUXV_AVAILABLE 1
+ #endif
+ 

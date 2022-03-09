@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ASL"
-version = v"0.1.1"
+version = v"0.1.3"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
     ArchiveSource("http://netlib.org/ampl/solvers.tgz",
-                  "775b92cadaf95af73fdeec3effba6b9c6ffdc518e5f628b575140fb170885903"),
+                  "2d599272e22fc66673cb03d2065f53f587140493fb50501adde5acf6be2adc93"),
     DirectorySource("./bundled")
 ]
 
@@ -16,9 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/solvers/
 head -17 asl.h > LICENSE.txt
+mkdir -p ${includedir}
 mkdir -p ${libdir}
-incdir=${prefix}/include
-mkdir -p ${incdir}
 
 all_load="--whole-archive"
 noall_load="--no-whole-archive"
@@ -47,14 +46,15 @@ fi
 
 make -f $makefile CC="$CC" CFLAGS="-O -fPIC $cflags"
 c++ -fPIC -shared -I$WORKSPACE/srcdir/asl-extra -I. $WORKSPACE/srcdir/asl-extra/aslinterface.cc -Wl,${all_load} amplsolver.a -Wl,${noall_load} -o libasl.${dlext}
-mv libasl.${dlext} ${libdir}
-cp *.h ${incdir}
+cp libasl.${dlext} ${libdir}
+cp *.h ${includedir}
+cp *.hd ${includedir}
 install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -66,4 +66,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")

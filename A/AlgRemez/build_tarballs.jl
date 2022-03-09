@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "AlgRemez"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,7 +20,7 @@ make INCLIST=-I${includedir} LDFLAGS="-L${libdir} -lmpfr -lgmp" BIN=${bindir}/al
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -29,9 +29,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
     Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,julia_compat="1.6")

@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.3.7"
+version = v"0.5.2"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -41,6 +41,7 @@ else
         extraction_products,
         Dependency[];
         skip_audit=true,
+        # Force latest compatible version.
         preferred_gcc_version=v"100",
         verbose="--verbose" in ARGS,
         debug="--debug" in ARGS,
@@ -55,14 +56,14 @@ tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
 echo ***********************************************************
 echo LatestLibraries logs, reproduced here for debuggability:
-zcat ${prefix}/logs/LatestLibraries.log.gz
+zcat ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 echo ***********************************************************
-rm -f ${prefix}/logs/LatestLibraries.log.gz
+rm -f ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
 
 # Make sure expansions aren't empty
 shopt -s nullglob
 
-# copy out all the libraries we can find, excepting libstdc++ and libgomp.
+# copy out all the libraries we can find except libstdc++ and libgomp,
 # which we copied out in the extraction step above.
 for lib in /opt/${target}/${target}/lib*/*.${dlext}*; do
     if [[ "${lib}" != *libstdc++* ]] && [[ "${lib}" != *libgomp* ]]; then
@@ -80,8 +81,8 @@ rm -f ${libdir}/*.a ${libdir}/*.py
 
 # Delete any `.so` files that are not ELF files, since they're mostly likely linker scripts
 for f in ${libdir}/*.so; do
-    if [[ "$(file -b "$f")" != ELF* ]]; then
-        rm -f "$f"
+    if [[ "$(file -b "$(realpath "$f")")" != ELF* ]]; then
+        rm -vf "$f"
     fi
 done
 
@@ -97,8 +98,11 @@ if [[ ${target} == *apple* ]]; then
     install_name_tool -id @rpath/${LIBGCC_NAME} ${libdir}/${LIBGCC_NAME}
 fi
 
+# Remove extraneous libraries
+rm -f ${libdir}/{libiconv,libxml2,libz}*.${dlext}*
+
 # Install license (we license these all as GPL3, since they're from GCC)
-install_license /usr/share/licenses/GPL3
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further
@@ -128,6 +132,7 @@ for platform in platforms
         else
             common_products
         end
-        build_tarballs(ARGS, name, version, sources, script, [platform], products, []; julia_compat="1.6")
+        # Prefer GCC 100 to always force latest compatible version.
+        build_tarballs(ARGS, name, version, sources, script, [platform], products, []; preferred_gcc_version=v"100", julia_compat="1.6")
     end
 end

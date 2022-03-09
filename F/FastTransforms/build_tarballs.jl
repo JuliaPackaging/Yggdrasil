@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.4.1"
+version = v"0.5.4"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "5d30b3b9cb8e1260072b81831e4beeb73e5a956fa8952df8281e9dab399bbbb4"),
+                  "3e9932215acc973a9e2f7379bf1424243effa9bdf0a6a26fd2c65b8fc7e916e6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,7 @@ if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
 else
     export CFLAGS="-O3 "
 fi
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
     SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
@@ -36,11 +36,8 @@ if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
 else
     BLAS=openblas
 fi
-if [[ ${target} == *apple* ]]; then
-    export FT_OPENMP="-fopenmp=libgomp "
-fi
-make assembly
-make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
+make assembly CC=gcc
+make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
 
@@ -55,9 +52,9 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
-    Dependency("MPFR_jll", v"4.0.2"),
-    Dependency("OpenBLAS_jll", v"0.3.9"),
+    Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("OpenBLAS_jll", v"0.3.17"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")

@@ -11,7 +11,7 @@ cd level-zero
 install_license LICENSE
 
 mkdir -p ${includedir}/level_zero
-mv include/*.h ${includedir}/level_zero
+rsync --archive --exclude="*.py" include/ ${includedir}/level_zero
 """
 
 # These are the platforms we will build for by default, unless further
@@ -27,5 +27,3 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, api_version, sources, script, platforms, products, dependencies)
-
-# bump counter: 1

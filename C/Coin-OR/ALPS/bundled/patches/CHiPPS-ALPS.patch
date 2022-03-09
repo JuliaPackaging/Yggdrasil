@@ -1,0 +1,30 @@
+diff --git a/Alps/src/Alps.h b/Alps/src/Alps.h
+index 159179a..43c775c 100644
+--- a/Alps/src/Alps.h
++++ b/Alps/src/Alps.h
+@@ -32,9 +32,9 @@
+ 
+ //#############################################################################
+ 
+-#if defined(__linux__)
+-#define ALPS_MEMORY_USAGE 1
+-#endif
++// #if defined(__linux__)
++// #define ALPS_MEMORY_USAGE 1
++// #endif
+ 
+ //#############################################################################
+ /** The possible values for clock type. */
+diff --git a/Alps/src/AlpsSearchStrategyBase.h b/Alps/src/AlpsSearchStrategyBase.h
+index d5b90ff..83bf10c 100644
+--- a/Alps/src/AlpsSearchStrategyBase.h
++++ b/Alps/src/AlpsSearchStrategyBase.h
+@@ -94,7 +94,7 @@ public:
+     int getType(){ return type_; }
+     
+     /** Set type of strategy */
+-    void setType(int t) { type_ = t; }
++    void setType(int t) { type_ = (AlpsSearchType) t; }
+ };
+ 
+ //#############################################################################
