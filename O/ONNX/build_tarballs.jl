@@ -21,18 +21,14 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DONNX_USE_LITE_PROTO=ON \
     -DONNX_USE_PROTOBUF_SHARED_LIBS=ON \
+    -DONNX_CUSTOM_PROTOC_EXECUTABLE=${host_bindir}/protoc \
     -DProtobuf_PROTOC_EXECUTABLE=${host_bindir}/protoc \
     ..
 cmake --build . --config Release --target install -- -j${nproc}
 """
 
-#=
-Sadly, no windows support yet. It looks to me like the upstream treats
-`defined(_WIN32)` as synonymous with `build with MSVC`.
-=#
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true, exclude=Sys.iswindows))
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 products = [
     FileProduct("lib/libonnx.a", :libonnx),
