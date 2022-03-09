@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ONNX"
-version = v"1.10.2"
+version = v"1.10.1"
 
 sources = [
     ArchiveSource(
         "https://github.com/onnx/onnx/archive/refs/tags/v$(version).tar.gz",
-        "520b3aa34272cc215e2eb41385f58adf01750d88858d4722563edca8410c5dc9",
+        "cb2fe3e0c9bba128a5790a565d81be30f4b5571eaca5418fb19df8d2d0f11ce2",
     ),
 ]
 
