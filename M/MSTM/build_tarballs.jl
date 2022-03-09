@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "MSTM"
-version = v"4.0.0"
+version = v"4.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dmckwski/MSTM.git", "b15798c1ef216cd5e6b6022463dd972b058d372d")
+    GitSource("https://github.com/dmckwski/MSTM.git", "a33194e34e7929a4f3a00135388688e02085d4c5")
 ]
 
 # Bash recipe for building across all platforms
