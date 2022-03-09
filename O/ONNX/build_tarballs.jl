@@ -21,6 +21,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DONNX_USE_LITE_PROTO=ON \
     -DONNX_USE_PROTOBUF_SHARED_LIBS=ON \
     -DONNX_CUSTOM_PROTOC_EXECUTABLE=${host_bindir}/protoc \
     -DProtobuf_PROTOC_EXECUTABLE=${host_bindir}/protoc \
