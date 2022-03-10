@@ -17,77 +17,18 @@ sources = [
 # New makefiles added, the patches fix some weird include issues mostly.
 # There is likely a better way to fix them, or upstream the fixes.
 script = raw"""
-cd $WORKSPACE/srcdir/petsc*
-atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-
-if [[ "${target}" == *-mingw* ]]; then
-    #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
-    MPI_LIBS="${libdir}/msmpi.${dlext}"
-else
-    MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
-fi
-
-build_petsc()
-{
-
-    if [[ "${3}" == "Int64" ]]; then
-        USE_INT64=1
-    else
-        USE_INT64=0
-    fi
-
-    ./configure --prefix=${prefix} \
-        CC=${CC} \
-        FC=${FC} \
-        CXX=${CXX} \
-        COPTFLAGS='-O3' \
-        CXXOPTFLAGS='-O3' \
-        CFLAGS='-fno-stack-protector' \
-        FOPTFLAGS='-O3' \
-        --with-64-bit-indices=${USE_INT64} \
-        --with-debugging=0 \
-        --with-batch \
-        --PETSC_ARCH=${target}_${1}_${2}_${3} \
-        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-        --with-blaslapack-suffix="" \
-        --known-64-bit-blas-indices=0 \
-        --with-mpi-lib="${MPI_LIBS}" \
-        --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
-        --with-sowing=0 \
-        --with-precision=${1} \
-        --with-scalar-type=${2}
-
-    if [[ "${target}" == *-mingw* ]]; then
-        export CPPFLAGS="-Dpetsc_EXPORTS"
-    elif [[ "${target}" == powerpc64le-* ]]; then
-        export CFLAGS="-fPIC"
-        export FFLAGS="-fPIC"
-    fi
-
-    make -j${nproc} \
-        PETSC_DIR="${PWD}" \
-        PETSC_ARCH="${target}_${1}_${2}_${3}" \
-        CPPFLAGS="${CPPFLAGS}" \
-        CFLAGS="${CFLAGS}" \
-        FFLAGS="${FFLAGS}" \
-        DEST_DIR="${prefix}" \
-        all
-
-    make PETSC_DIR=$PWD PETSC_ARCH=${target}_${1}_${2}_${3} DEST_DIR=$prefix install
-}
-
-build_petsc double real Int32
-
-cd ../TopOpt_in_PETSc
+cd TopOpt_in_PETSc
 cp ../Makefile Makefile
-make topopt
-cp topopt ${bindir}/topopt
 make libtopopt
+make topopt
+patchelf --replace-needed libpetsc.so.3.16 libpetsc_double_real_Int32.so ./topopt
+patchelf --replace-needed libpetsc.so.3.16 libpetsc_double_real_Int32.so ./libtopopt.so
+cp topopt ${bindir}/topopt
 cp libtopopt.$dlext ${libdir}/libtopopt.$dlext
 install_license ${WORKSPACE}/srcdir/TopOpt_in_PETSc/lesser.txt
+# just for testing purposes: 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/workspace/destdir/lib/petsc/double_real_Int32/lib
 """
 
 # These are the platforms we will build for by default, unless further
@@ -103,11 +44,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
-    Dependency("MPICH_jll"),
-    Dependency("MicrosoftMPI_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("PETSc_jll", v"3.16.5"; compat="3.16.5")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
