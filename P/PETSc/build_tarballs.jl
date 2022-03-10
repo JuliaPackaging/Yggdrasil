@@ -72,11 +72,15 @@ build_petsc()
 
     if [[ "${target}" == *-apple* ]]; then
         mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*.*.*.${dlext} "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
-    else
+        install_name_tool -id libpetsc_${1}_${2}_${3}.${dlext} ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
+    else # windows and linux:
         mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.${dlext}.*.*.* "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
     fi
-
-    # Remove now broken(?) links
+    if [["${target}" == *-linux* ]]; then
+        patchelf --set-soname libpetsc_${1}_${2}_${3}.${dlext} ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
+    fi
+    # Remove now broken links
+    
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
 }
 
