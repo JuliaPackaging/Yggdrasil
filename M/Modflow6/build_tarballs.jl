@@ -15,6 +15,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/modflow6*
 
+# change ar for macOS, llvm-ar seems to generate corrupted static archives
+# fix copied from https://github.com/JuliaPackaging/Yggdrasil/pull/3915/commits/b952adb6f936
+if [[ "${target}" == *apple* ]]; then
+    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
+fi
+
 meson -Ddebug=false -Doptimization=2 --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
 meson compile -C builddir -j${nproc}
 meson install -C builddir
