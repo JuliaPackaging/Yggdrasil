@@ -36,6 +36,13 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms()
+# Windows is unsupported
+filter!(!Sys.iswindows, platforms)
+# The library do non-standard stuff like using `__off64_t` and `mmap64` which
+# Musl doesn't like
+filter!(p -> libc(p) != "musl", platforms)
+# `stat64` isn't defined on aarch64 macOS and on FreeBSD
+filter!(p -> !Sys.isfreebsd(p) && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_gfortran_versions(platforms)
 
 products = [
