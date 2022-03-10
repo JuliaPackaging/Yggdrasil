@@ -3,19 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Modflow6"
-version = v"6.2.2"
+version = v"6.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MODFLOW-USGS/modflow6.git", "04ab9e1a9ccf428a16f84c477aa24ac76dd56224")
+    ArchiveSource("https://github.com/MODFLOW-USGS/modflow6/archive/refs/tags/$version.tar.gz",
+                  "07c4ceda5adcda21426ab7936be1c9133350e206357baeb1313863ee6a837171")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/modflow6
-
-# lower the minimum required meson version
-sed -i s/0.59.0/0.58.0/ meson.build
+cd $WORKSPACE/srcdir/modflow6*
 
 meson -Ddebug=false -Doptimization=2 --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
 meson compile -C builddir -j${nproc}
@@ -24,7 +22,7 @@ meson install -C builddir
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 
