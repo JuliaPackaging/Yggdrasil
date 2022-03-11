@@ -18,8 +18,7 @@ script = raw"""
 
 cd TopOpt_in_PETSc
 cp ../Makefile Makefile
-make libtopopt
-make topopt
+make libtopopt.${dlext} topopt${exeext}
 cp topopt ${bindir}/topopt
 cp libtopopt.$dlext ${libdir}/libtopopt.$dlext
 install_license ${WORKSPACE}/srcdir/TopOpt_in_PETSc/lesser.txt
