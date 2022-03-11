@@ -4,7 +4,7 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "CUDNN"
-version = v"8.2.1"
+version = v"8.2.4"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -24,7 +24,7 @@ elif [[ ${target} == aarch64-linux-gnu && ${bb_full_target} == aarch64-linux-gnu
     dpkg-deb -x libcudnn8-dev_*.deb .
     mv -nv ./usr/include/aarch64-linux-gnu/* ${includedir}
     mv -nv ./usr/lib/aarch64-linux-gnu/libcudnn*.so* ${libdir}
-    install_license ./usr/share/doc/libcudnn8/copyright
+    install_license ./usr/src/cudnn_samples_v8/NVIDIA_SLA_cuDNN_Support.txt
 elif [[ ${target} == *-linux-gnu ]]; then
     cd cuda
     find .
