@@ -7,8 +7,6 @@ version = v"0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-3.15.2.tar.gz",
-    "3b10c19c69fc42e01a38132668724a01f1da56f5c353105cd28f1120cc9041d8"),
     GitSource("https://github.com/topopt/TopOpt_in_PETSc", "26eecbf3b1d0135956e0364d77c30e43e9bc3db2"),
     DirectorySource("./bundled"),
 ]
@@ -22,13 +20,9 @@ cd TopOpt_in_PETSc
 cp ../Makefile Makefile
 make libtopopt
 make topopt
-patchelf --replace-needed libpetsc.so.3.16 libpetsc_double_real_Int32.so ./topopt
-patchelf --replace-needed libpetsc.so.3.16 libpetsc_double_real_Int32.so ./libtopopt.so
 cp topopt ${bindir}/topopt
 cp libtopopt.$dlext ${libdir}/libtopopt.$dlext
 install_license ${WORKSPACE}/srcdir/TopOpt_in_PETSc/lesser.txt
-# just for testing purposes: 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/workspace/destdir/lib/petsc/double_real_Int32/lib
 """
 
 # These are the platforms we will build for by default, unless further
