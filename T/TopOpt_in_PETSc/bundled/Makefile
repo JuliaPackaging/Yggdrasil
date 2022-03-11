@@ -1,4 +1,4 @@
-PETSC_DIR=$(prefix)/lib/petsc/double_real_Int32
+PETSC_DIR=$(libdir)/petsc/double_real_Int32
 PETSC_ARCH=x86_64-linux-gnu_double_real_Int32
 CXXFLAGS = -fPIC
 CPPFLAGS=-I. -I$(includedir) -I$(PETSC_DIR)/include -I$(PETSC_DIR)/
