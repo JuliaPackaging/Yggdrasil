@@ -25,7 +25,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcbf_small", :cbflib)
+    LibraryProduct("libcbf_small", :libcbf)
 ]
 
 # Dependencies that must be installed before this package can be built
