@@ -18,15 +18,15 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-ls
 cd lapack-3.10.0/LAPACKE/
 cmake ../ -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLAPACKE=ON -DBUILD_SHARED_LIBS=ON
 make lapacke -j${nproc}
 make install
 cd ../../MAGEMin/
- make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt -lmpi" INC=-I$prefix/include lib
+make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt -lmpi" INC=-I$prefix/include lib
 cp libMAGEMin.dylib $prefix/lib
 cp src/*.h $prefix/include/
+install_license ${WORKSPACE}/MAGEMin
 exit
 """
 
