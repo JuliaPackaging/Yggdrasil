@@ -22,7 +22,7 @@ cd $WORKSPACE/srcdir
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 else
-    MPI_LIBS="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]"
+    MPI_LIBS="libmpi.${dlext}"
 fi
 
 cd lapack-3.10.0/LAPACKE/
@@ -30,7 +30,7 @@ cmake ../ -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_T
 make lapacke -j${nproc}
 make install
 cd ../../MAGEMin/
-make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt $MPI_LIBS" INC=-I$prefix/include lib
+make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm -llapacke -lnlopt ${MPI_LIBS}" INC=-I$prefix/include lib
 cp libMAGEMin.dylib $prefix/lib
 cp src/*.h $prefix/include/
 install_license LICENSE
