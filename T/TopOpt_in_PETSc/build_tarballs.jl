@@ -15,13 +15,11 @@ sources = [
 # New makefiles added, the patches fix some weird include issues mostly.
 # There is likely a better way to fix them, or upstream the fixes.
 script = raw"""
-
 cd TopOpt_in_PETSc
-cp ../Makefile Makefile
-make libtopopt.${dlext} topopt${exeext}
-cp topopt ${bindir}/topopt
-cp libtopopt.$dlext ${libdir}/libtopopt.$dlext
-install_license ${WORKSPACE}/srcdir/TopOpt_in_PETSc/lesser.txt
+make -f ../Makefile libtopopt.${dlext} topopt${exeext}
+install -Dvm 755 "topopt${exeext}" "${bindir}/topopt${exeext}"
+install -Dvm 755 "libtopopt.${dlext}" "${libdir}/libtopopt.${dlext}"
+install_license lesser.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,7 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PETSc_jll", v"3.16.5"; compat="3.16.5"),
+    Dependency("PETSc_jll"; compat="3.16.5"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
