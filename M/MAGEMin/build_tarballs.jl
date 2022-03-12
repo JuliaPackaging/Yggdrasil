@@ -26,7 +26,7 @@ cd ../../MAGEMin/
 make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt -lmpi" INC=-I$prefix/include lib
 cp libMAGEMin.dylib $prefix/lib
 cp src/*.h $prefix/include/
-install_license ${WORKSPACE}/MAGEMin
+install_license ${WORKSPACE}/MAGEMin/LICENSE
 exit
 """
 
