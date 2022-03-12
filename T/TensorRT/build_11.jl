@@ -1,11 +1,11 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.2/tars/TensorRT-8.2.2.1.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz",
-                      "da130296ac6636437ff8465812eb55dbab0621747d82dc4fe9b9376f00d214af")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3/tars/TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz",
+                      "207c0c4820e5acf471925b7da4c59d48c58c265a27d88287c4263038c389e106")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.2/tars/TensorRT-8.2.2.1.Ubuntu-20.04.aarch64-gnu.cuda-11.4.cudnn8.2.tar.gz",
-                      "ed3bea21f44da7b43e93803a1e0ce0f4d68678afe5c7c0393b3e41d5c099555c")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3/tars/TensorRT-8.2.3.0.Ubuntu-20.04.aarch64-gnu.cuda-11.4.cudnn8.2.tar.gz",
+                      "6f18651b153d2ce97ccc4556b8dd11847bde177336767487e1a22095e3c16c08")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.2/zip/TensorRT-8.2.2.1.Windows10.x86_64.cuda-11.4.cudnn8.2.zip",
-                      "9efd246b1f518314f8912c6997fe8064ee9d557ae01665c2c4cb4f1a11ed8865")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip",
+                      "f3aa6ebe5d554b10e5b7bb4db9357b25746a600b95e17f3cf49686cfeeddb0ff")],
 )

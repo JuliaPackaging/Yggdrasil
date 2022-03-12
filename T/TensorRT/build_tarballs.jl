@@ -4,7 +4,7 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "TensorRT"
-version = v"8.2.2"
+version = v"8.2.3"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir
