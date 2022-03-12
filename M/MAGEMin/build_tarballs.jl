@@ -14,51 +14,27 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-#    atomic_patch -p1 ${f}
-#done
-
-if [[ "${target}" == *-mingw* ]]; then
-    MPI_LIBS="${prefix}/lib/msmpi.${dlext}"
-    LAPACKE_LIB="${prefix}/lib/lapacke.${dlext}"
-    NLOPT_LIB="${prefix}/lib/nlopt.${dlext}"
-else
-    MPI_LIBS="-lmpi"
-    LAPACKE_LIB="-llapacke"
-    NLOPT_LIB="-lnlopt"
-fi
-
-cd lapack-3.10.0/LAPACKE/
+cd $WORKSPACE/srcdir/lapack-*/LAPACKE/
 cmake ../ -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLAPACKE=ON -DBUILD_SHARED_LIBS=ON
 make lapacke -j${nproc}
 make install
+
 cd ../../MAGEMin/
-make CC=$CC CCFLAGS="-O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm ${LAPACKE_LIB} ${NLOPT_LIB} ${MPI_LIBS}" INC=-I$prefix/include lib
-cp libMAGEMin.dylib $prefix/lib
-cp src/*.h $prefix/include/
+if [[ "${target}" == *-mingw* ]]; then
+    MPI_LIBS="-lmsmpi"
+else
+    MPI_LIBS="-lmpi"
+fi
+make CC=$CC CCFLAGS="-O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm -llapacke -lnlopt ${MPI_LIBS}" INC="-I${includedir}" lib
+install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
+install -Dvm 644 src/*.h "${includedir}"
 install_license LICENSE
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,8 +43,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
+    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms))
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     #Dependency("MicrosoftMPI_jll")
 ]
 
