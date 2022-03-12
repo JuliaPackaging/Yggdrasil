@@ -15,18 +15,25 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#    atomic_patch -p1 ${f}
+#done
+
+if [[ "${target}" == *-mingw* ]]; then
+    MPI_LIBS="${libdir}/msmpi.${dlext}"
+else
+    MPI_LIBS="[${libdir}/libmpi.${dlext},libmpifort.${dlext}]"
+fi
+
 cd lapack-3.10.0/LAPACKE/
 cmake ../ -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLAPACKE=ON -DBUILD_SHARED_LIBS=ON
 make lapacke -j${nproc}
 make install
 cd ../../MAGEMin/
-make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt -lmpi" INC=-I$prefix/include lib
+make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L/$prefix/libs -lm -llapacke -lnlopt $MPI_LIBS" INC=-I$prefix/include lib
 cp libMAGEMin.dylib $prefix/lib
 cp src/*.h $prefix/include/
-install_license ${WORKSPACE}/MAGEMin/LICENSE
+install_license LICENSE
 exit
 """
 
@@ -58,6 +65,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
+    Dependency("MicrosoftMPI_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
