@@ -45,7 +45,7 @@ products = vcat(
     [ExecutableProduct("trtexec", :trtexec)]
 )
 
-dependencies = [Dependency("CUDNN_jll")]
+dependencies = [Dependency("CUDNN_jll", v"8.2.1"; compat="8.2")]
 
 cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3"]
 for cuda_version in cuda_versions
