@@ -20,9 +20,13 @@ cd $WORKSPACE/srcdir
 #done
 
 if [[ "${target}" == *-mingw* ]]; then
-    MPI_LIBS="${libdir}/msmpi.${dlext}"
+    MPI_LIBS="${prefix}/lib/msmpi.${dlext}"
+    LAPACKE_LIB="${prefix}/lib/lapacke.${dlext}"
+    NLOPT_LIB="${prefix}/lib/nlopt.${dlext}"
 else
-    MPI_LIBS="libmpi.${dlext}"
+    MPI_LIBS="-lmpi"
+    LAPACKE_LIB="-llapacke"
+    NLOPT_LIB="-lnlopt"
 fi
 
 cd lapack-3.10.0/LAPACKE/
@@ -30,7 +34,7 @@ cmake ../ -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_T
 make lapacke -j${nproc}
 make install
 cd ../../MAGEMin/
-make CC=$CC CCFLAGS="-Wall -O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm -llapacke -lnlopt ${MPI_LIBS}" INC=-I$prefix/include lib
+make CC=$CC CCFLAGS="-O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm ${LAPACKE_LIB} ${NLOPT_LIB} ${MPI_LIBS}" INC=-I$prefix/include lib
 cp libMAGEMin.dylib $prefix/lib
 cp src/*.h $prefix/include/
 install_license LICENSE
@@ -65,7 +69,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
-    Dependency("MicrosoftMPI_jll")
+    #Dependency("MicrosoftMPI_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
