@@ -38,7 +38,7 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libMAGEMin", :MAGEMin_library)
+    LibraryProduct("libMAGEMin", :libMAGEMin)
 ]
 
 # Dependencies that must be installed before this package can be built
