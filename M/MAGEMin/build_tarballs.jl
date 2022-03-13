@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd MAGEMin
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="-lmsmpi"
@@ -20,15 +19,19 @@ else
     MPI_LIBS="-lmpi"
 fi
 
+CCFLAGS="-O3 -g -fPIC -std=c99"
+LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
+INC="-I${includedir}"
+
 # compile binary
-make CC=$CC CCFLAGS="-O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}" INC="-I${includedir}" all
+make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 # Compile library:
-make CC=$CC CCFLAGS="-O3 -g -fPIC -std=c99" LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}" INC="-I${includedir}" lib
+make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
-install -Dvm 644 src/*.h "${includedir}"
-install MAGEMin "${bindir}"
+install -vm 644 src/*.h "${includedir}"
+install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
 
 install_license LICENSE
 """
