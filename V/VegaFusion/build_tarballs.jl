@@ -24,7 +24,7 @@ filter!(p -> !(Sys.islinux(p) && (arch(p) == "i686")), platforms)
 
 
 # PowerPC not supported https://github.com/briansmith/ring/issues/389
-# filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
