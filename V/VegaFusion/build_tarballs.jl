@@ -19,8 +19,12 @@ platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
+# i686 Linux currently blocked by "undefined reference to `__atomic_load'" eror, see https://github.com/vegafusion/vegafusion/issues/92
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "i686")), platforms)
+
+
 # PowerPC not supported https://github.com/briansmith/ring/issues/389
-filter!(p -> arch(p) != "powerpc64le", platforms)
+# filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
