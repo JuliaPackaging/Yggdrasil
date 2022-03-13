@@ -1,7 +1,5 @@
-PETSC_DIR = $(libdir)/petsc/double_real_Int32
-PETSC_ARCH = x86_64-linux-gnu_double_real_Int32
 CXXFLAGS = -fPIC
-CPPFLAGS =-I. -I$(includedir) -I$(PETSC_DIR)/include -I$(PETSC_DIR)/
+CPPFLAGS =-I. -I$(includedir) -I$(libdir)/petsc/double_real_Int32/include -I$(libdir)/petsc/double_real_Int32/
 LDFLAGS = -L${libdir} -Wl,-rpath,${libdir}/petsc/double_real_Int32/lib -L${libdir}/petsc/double_real_Int32/lib
 LDLIBS = -lpetsc_double_real_Int32
 ifneq (,$(findstring mingw,$(target)))
