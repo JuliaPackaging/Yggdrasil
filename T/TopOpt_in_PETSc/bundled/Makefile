@@ -1,6 +1,6 @@
 CXXFLAGS = -fPIC
 CPPFLAGS =-I. -I$(includedir) -I$(libdir)/petsc/double_real_Int32/include -I$(libdir)/petsc/double_real_Int32/
-LDFLAGS = -L${libdir} -Wl,-rpath,${libdir}/petsc/double_real_Int32/lib -L${libdir}/petsc/double_real_Int32/lib
+LDFLAGS = -L$(libdir) -Wl,-rpath,$(libdir)/petsc/double_real_Int32/lib -L$(libdir)/petsc/double_real_Int32/lib
 LDLIBS = -lpetsc_double_real_Int32
 ifneq (,$(findstring mingw,$(target)))
 	LDLIBS += -lmsmpi
