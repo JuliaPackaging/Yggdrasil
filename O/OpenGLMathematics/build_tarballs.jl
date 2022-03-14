@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "glm"
+name = "OpenGLMathematics"
 version = v"0.9.9"
 
 # Collection of sources required to build this package
