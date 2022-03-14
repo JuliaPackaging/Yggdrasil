@@ -25,7 +25,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("include/glm/glm.hpp", glm_hpp),
+    FileProduct("include/glm/glm.hpp", :glm_hpp),
 ]
 
 # Dependencies that must be installed before this package can be built
