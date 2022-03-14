@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "glm"
-version = v"9.9.9"
+version = v"0.9.9"
 
 # Collection of sources required to build this package
 sources = [
