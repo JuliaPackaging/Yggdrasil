@@ -8,7 +8,7 @@ version = v"9.9.9"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/g-truc/glm.git",
-                  "6ad79aae3eb5bf809c30bf1168171e9e55857e45"),
+              "6ad79aae3eb5bf809c30bf1168171e9e55857e45"),
 ]
 
 # Bash recipe for building across all platforms
