@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "shaderc"
+name = "Shaderc"
 version = v"2022.1.0"
 
 # Collection of sources required to complete build
