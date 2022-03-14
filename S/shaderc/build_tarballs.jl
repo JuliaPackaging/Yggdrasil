@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/shaderc.git
+cd $WORKSPACE/srcdir/shaderc*/
 
 ./utils/git-sync-deps 
 
