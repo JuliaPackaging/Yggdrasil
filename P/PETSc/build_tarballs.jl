@@ -41,7 +41,7 @@ build_petsc()
     
     if [[ "${1}" == "single" ]]; then
         USE_SUITESPARSE=0
-    elif [[ "${1}" == "single" ]] && [[ "${3}" == "Int64" ]]; then
+    elif [[ "${3}" == "Int64" ]]; then
         USE_SUITESPARSE=0
     elif [[ "${1}" == "single" ]] && [[ "${2}" == "complex" ]]; then
         USE_SUITESPARSE=0
