@@ -6,15 +6,15 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "Enzyme"
-repo = "https://github.com/wsmoses/Enzyme.git"
+repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.27"
+auto_version = "refs/tags/v0.0.28"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "44f8ca43431acc57797e82806bc6483c27cbaf95")]
+sources = [GitSource(repo, "f3bd406b008d8120bffc49242ff3f440730ddfb6")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -25,9 +25,9 @@ script = raw"""
 cd Enzyme
 # install_license LICENSE.TXT
 CMAKE_FLAGS=()
-# Release build for best performance
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
+# RelWithDebInfo for decent performance, with debugability
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -49,9 +49,7 @@ ninja -C build -j ${nproc} install
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-
     $(LLVM.augment)
-
     function augment_platform!(platform::Platform)
         augment_llvm!(platform)
     end"""
