@@ -9,25 +9,33 @@ version = v"2.0.1"
 sources = [
     ArchiveSource("https://libsdl.org/projects/SDL_net/release/SDL2_net-$(version).tar.gz",
                   "15ce8a7e5a23dafe8177c8df6e6c79b6749a03fff1e8196742d3571657609d21"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
 
+if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # We need to regenerate `configure` for this platforms
+
+    # Include directory with M4 macros
+    atomic_patch -p1 ../patches/configure-add-macro-dir.patch
+    # Create absolutely important files
+    touch AUTHORS NEWS README ChangeLog
+    # Regnerate `configure` script
+    autoreconf -fiv
+fi
+
 mkdir build && cd build
-
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-
 make -j${nproc}
-
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [
