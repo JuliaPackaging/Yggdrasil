@@ -29,7 +29,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -53,4 +53,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
