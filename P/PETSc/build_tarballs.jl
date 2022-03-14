@@ -3,8 +3,6 @@ using BinaryBuilder, Pkg
 name = "PETSc"
 version = v"3.16.5"
 
-# SuiteSparse does not support 64bit indices in 32bit (pointer) mode.
-
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
@@ -38,9 +36,11 @@ build_petsc()
     fi
 
     USE_MUMPS=1
-    
+    USE_SUPERLU_DIST=1
+
     if [[ "${1}" == "single" ]]; then
         USE_SUITESPARSE=0
+        USE_SUPERLU_DIST=0      
     elif [[ "${3}" == "Int64" ]]; then
         USE_SUITESPARSE=0
     elif [[ "${1}" == "single" ]] && [[ "${2}" == "complex" ]]; then
@@ -49,11 +49,22 @@ build_petsc()
         USE_SUITESPARSE=1
     fi
 
+    if [[ "${target}" == *-mingw* ]]; then
+        MPICC=${CC}
+        MPIFC=${FC}
+        MPICXX=${CXX}
+    else
+        # Superlu_dist expects this:
+        MPICC=mpicc
+        MPIFC=mpif90
+        MPICXX=mpicxx
+    fi;
+
     mkdir $libdir/petsc/${1}_${2}_${3}
     ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
-        CC=${CC} \
-        FC=${FC} \
-        CXX=${CXX} \
+        CC=${MPICC} \
+        FC=${MPIFC} \
+        CXX=${MPICXX} \
         COPTFLAGS='-O3' \
         CXXOPTFLAGS='-O3' \
         CFLAGS='-fno-stack-protector' \
@@ -67,6 +78,7 @@ build_petsc()
         --download-mumps=${USE_MUMPS} \
         --download-scalapack=${USE_MUMPS} \
         --download-suitesparse=${USE_SUITESPARSE} \
+        --download-superlu_dist=${USE_SUPERLU_DIST} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
@@ -99,19 +111,22 @@ build_petsc()
     if [[ "${target}" == *-linux* ]]; then
         patchelf --set-soname "libpetsc_${1}_${2}_${3}.${dlext}" ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
     fi
-    # Remove now broken links
     
+    # Remove now broken links
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
+
+
 }
 
 build_petsc double real Int32
 build_petsc single real Int32
-build_petsc double complex Int32
+build_petsc double complex Int32 
 build_petsc single complex Int32
 build_petsc double real Int64
 build_petsc single real Int64
 build_petsc double complex Int64
 build_petsc single complex Int64
+
 """
 
 # We attempt to build for all defined platforms
