@@ -13,15 +13,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/shaderc*/
-
 ./utils/git-sync-deps 
-
 mkdir build && cd build
-
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DSHADERC_SKIP_TESTS=1 -DSHADERC_SKIP_EXAMPLES=1 -DSHADERC_SKIP_COPYRIGHT_CHECK=1 -S .. -B .
-
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DSHADERC_SKIP_TESTS=1 \
+    -DSHADERC_SKIP_EXAMPLES=1 \
+    -DSHADERC_SKIP_COPYRIGHT_CHECK=1 \
+    -S .. \
+    -B .
 make -j${nproc}
-
 make install
 """
 
