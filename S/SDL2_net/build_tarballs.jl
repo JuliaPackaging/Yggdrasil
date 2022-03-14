@@ -15,10 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SDL_net*/
 
-autoreconf -vi
-
-update_configure_scripts
-
 mkdir build && cd build
 
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
