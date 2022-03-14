@@ -11,6 +11,7 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
@@ -33,6 +34,13 @@ build_petsc()
     else
         USE_INT64=0
     fi
+    USE_MUMPS=1
+    if [[ "${1}" == "single" ]]; then
+        USE_SUITESPARSE=0
+    else
+        USE_SUITESPARSE=1
+    fi
+
     mkdir $libdir/petsc/${1}_${2}_${3}
     ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
         CC=${CC} \
@@ -48,6 +56,10 @@ build_petsc()
         --with-batch \
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
+        --download-mumps=${USE_MUMPS} \
+        --download-scalapack=${USE_MUMPS} \
+        --download-suitesparse=${USE_SUITESPARSE} \
+        --with-suitesparse=${USE_SUITESPARSE} \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -58,6 +70,7 @@ build_petsc()
         --PETSC_ARCH=${target}_${1}_${2}_${3}
 
     if [[ "${target}" == *-mingw* ]]; then
+
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
         export CFLAGS="-fPIC"
@@ -95,7 +108,8 @@ build_petsc single complex Int64
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+#platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+platforms = expand_gfortran_versions(supported_platforms())
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
@@ -115,6 +129,8 @@ dependencies = [
     Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("CMake_jll"),
 ]
 
 # Build the tarballs.
