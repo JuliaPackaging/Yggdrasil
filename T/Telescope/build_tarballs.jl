@@ -46,4 +46,4 @@ dependencies = [
     Dependency("Vulkan_Headers_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11.1.0")
