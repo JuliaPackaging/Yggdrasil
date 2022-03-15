@@ -82,6 +82,8 @@ build_petsc()
     # Remove now broken links
     
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
+    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
+    rm ${libdir}/petsc/${1}_${2}_${3}/lib/pkgconfig/PETSc.pc
 }
 
 build_petsc double real Int32
