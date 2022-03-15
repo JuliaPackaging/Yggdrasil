@@ -3,15 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "CPUInfo"
-version = v"0.0.20200522"
+version = v"0.0.20201217"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/cpuinfo.git", "19b9316c71e4e45b170a664bf62ddefd7ac9feb5"),
+    GitSource("https://github.com/pytorch/cpuinfo.git", "5916273f79a21551890fd3d56fc5375a78d1598d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ $target == aarch64-apple-darwin* ]]; then
+    cmake_extra_args="-DCMAKE_OSX_ARCHITECTURES=arm64"
+fi
+
 cd $WORKSPACE/srcdir
 cd cpuinfo
 mkdir build
@@ -25,6 +29,7 @@ cmake \
     -DCPUINFO_BUILD_MOCK_TESTS=OFF \
     -DCPUINFO_BUILD_BENCHMARKS=OFF \
     -DCPUINFO_LIBRARY_TYPE=shared \
+    $cmake_extra_args \
     ..
 cmake --build . -- -j $nproc
 make install
@@ -36,7 +41,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # aarch64-macos unsupported
 
 # The products that we will ensure are always built
 products = [
