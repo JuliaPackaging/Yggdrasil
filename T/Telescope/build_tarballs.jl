@@ -13,6 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+export CFLAGS="-I${prefix}/include"
+export CXXFLAGS="-I${prefix}/include"
 cd $WORKSPACE/srcdir/Telescope*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -46,4 +48,4 @@ dependencies = [
     Dependency("Vulkan_Headers_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9.1.0")
