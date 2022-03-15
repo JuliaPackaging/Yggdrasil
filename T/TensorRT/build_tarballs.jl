@@ -34,13 +34,12 @@ products = vcat(
     [ExecutableProduct("trtexec", :trtexec)]
 )
 
-dependencies = [Dependency("CUDNN_jll", v"8.2.1"; compat="8.2")]
-
 cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
-
+    cudnn_build_version = cuda_version < v"11.4" ? v"8.2.1" : cuda_version < v"11.5" ? v"8.2.2" : v"8.3.1"
+    dependencies = [Dependency("CUDNN_jll", cudnn_build_version; compat="8.2")]
     for (platform, sources) in platforms_and_sources
         augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
         should_build_platform(triplet(augmented_platform)) || continue
