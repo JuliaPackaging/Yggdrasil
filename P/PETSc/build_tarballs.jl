@@ -11,7 +11,6 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/petsc*
@@ -37,6 +36,7 @@ build_petsc()
 
     USE_MUMPS=1
     USE_SUPERLU_DIST=1
+    USE_SUITESPARSE=1
 
     if [[ "${1}" == "single" ]]; then
         USE_SUITESPARSE=0
@@ -45,29 +45,64 @@ build_petsc()
         USE_SUITESPARSE=0
     elif [[ "${1}" == "single" ]] && [[ "${2}" == "complex" ]]; then
         USE_SUITESPARSE=0
-    else
-        USE_SUITESPARSE=1
     fi
 
+    if [[ "${target}" == *-apple* ]]; then
+        # This fails because of a linker problem (-soname should be -dynamic_name)
+        USE_SUPERLU_DIST=0    
+    fi;
+    
+    mkdir $libdir/petsc/${1}_${2}_${3}
+
     if [[ "${target}" == *-mingw* ]]; then
-        MPICC=${CC}
-        MPIFC=${FC}
-        MPICXX=${CXX}
+        # Windows machines 
+        #  Note: the reason to split this up in two configures, rather than one with $FLAGS is that passing 
+        #  such a $FLAG to, for example, CFLAGS=$FLAGS does not seem to work (not sure why). 
+
+        USE_SUPERLU_DIST=0
+
+        ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
+        CC=${CC} \
+        FC=${FC} \
+        CXX=${CXX} \
+        COPTFLAGS='-O3' \
+        CXXOPTFLAGS='-O3' \
+        CFLAGS='-fno-stack-protector -Wl,--enable-stdcall-fixup' \
+        CXXFLAGS='-fno-stack-protector -Wl,--enable-stdcall-fixup' \
+        LDFLAGS="-L${libdir}" \
+        FOPTFLAGS='-O3' \
+        --with-64-bit-indices=${USE_INT64} \
+        --with-debugging=0 \
+        --with-batch \
+        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
+        --with-blaslapack-suffix="" \
+        --with-superlu_dist=$USE_SUPERLU_DIST \
+        --download-superlu_dist=0 \
+        --download-superlu_dist-commit=v7.1.1 \
+        --known-64-bit-blas-indices=0 \
+        --with-mpi-lib="${MPI_LIBS}" \
+        --known-mpi-int64_t=0 \
+        --with-mpi-include="${includedir}" \
+        --with-precision=${1} \
+        --with-scalar-type=${2} \
+        --PETSC_ARCH=${target}_${1}_${2}_${3}
+
     else
+        # Non windows
+
         # Superlu_dist expects this:
         MPICC=mpicc
         MPIFC=mpif90
         MPICXX=mpicxx
-    fi;
 
-    mkdir $libdir/petsc/${1}_${2}_${3}
-    ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
+        ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
         CC=${MPICC} \
         FC=${MPIFC} \
         CXX=${MPICXX} \
         COPTFLAGS='-O3' \
         CXXOPTFLAGS='-O3' \
         CFLAGS='-fno-stack-protector' \
+        CPPFLAGS='-fno-stack-protector' \
         LDFLAGS="-L${libdir}" \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
@@ -77,9 +112,12 @@ build_petsc()
         --with-blaslapack-suffix="" \
         --download-mumps=${USE_MUMPS} \
         --download-scalapack=${USE_MUMPS} \
+        --with-scalapack=${USE_MUMPS} \
         --download-suitesparse=${USE_SUITESPARSE} \
-        --download-superlu_dist=${USE_SUPERLU_DIST} \
         --with-suitesparse=${USE_SUITESPARSE} \
+        --download-superlu_dist=${USE_SUPERLU_DIST} \
+        --download-superlu_dist-commit=HEAD \
+        --download-superlu_dist-cmake-arguments="-DMPI_GUESS_LIBRARY_NAME=/workspace/destdir/bin/msmpi.dll" \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -87,7 +125,10 @@ build_petsc()
         --with-sowing=0 \
         --with-precision=${1} \
         --with-scalar-type=${2} \
+        --with-clean=1 \
         --PETSC_ARCH=${target}_${1}_${2}_${3}
+    fi;
+
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
@@ -118,11 +159,11 @@ build_petsc()
 
 }
 
+build_petsc double real Int64
 build_petsc double real Int32
 build_petsc single real Int32
 build_petsc double complex Int32 
 build_petsc single complex Int32
-build_petsc double real Int64
 build_petsc single real Int64
 build_petsc double complex Int64
 build_petsc single complex Int64
@@ -152,7 +193,7 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs.
