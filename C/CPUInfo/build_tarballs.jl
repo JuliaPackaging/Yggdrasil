@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CPUInfo"
-version = v"0.0.20200522"
+version = v"0.0.20201217"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/cpuinfo.git", "19b9316c71e4e45b170a664bf62ddefd7ac9feb5"),
+    GitSource("https://github.com/pytorch/cpuinfo.git", "5916273f79a21551890fd3d56fc5375a78d1598d"),
 ]
 
 # Bash recipe for building across all platforms
