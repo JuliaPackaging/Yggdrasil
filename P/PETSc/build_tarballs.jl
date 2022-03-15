@@ -116,8 +116,6 @@ build_petsc()
         --download-suitesparse=${USE_SUITESPARSE} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
-        --download-superlu_dist-commit=HEAD \
-        --download-superlu_dist-cmake-arguments="-DMPI_GUESS_LIBRARY_NAME=/workspace/destdir/bin/msmpi.dll" \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
