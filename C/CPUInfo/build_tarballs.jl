@@ -3,17 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "CPUInfo"
-version = v"0.0.20200612"
+version = v"0.0.20200228"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/cpuinfo.git", "63b254577ed77a8004a9be6ac707f3dccc4e1fd9"),
+    GitSource("https://github.com/pytorch/cpuinfo.git", "d6c0f915ee737f961915c9d17f1679b6777af207"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd cpuinfo
+if [[ $target == *-w64-mingw32 ]]; then
+    atomic_patch -p1 ../patches/lowercase-windows-include.patch
+fi
 mkdir build
 cd build
 cmake \
@@ -37,6 +41,7 @@ fi
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # aarch64-macos unsupported
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms) # Failing to link
 
 # The products that we will ensure are always built
 products = [
