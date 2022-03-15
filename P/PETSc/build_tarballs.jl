@@ -18,6 +18,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
+
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
@@ -37,6 +38,7 @@ build_petsc()
     USE_MUMPS=1
     USE_SUPERLU_DIST=1
     USE_SUITESPARSE=1
+    USE_PASTIX=1
 
     if [[ "${1}" == "single" ]]; then
         USE_SUITESPARSE=0
@@ -77,7 +79,7 @@ build_petsc()
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
         --with-superlu_dist=$USE_SUPERLU_DIST \
-        --download-superlu_dist=0 \
+        --download-superlu_dist=$USE_SUPERLU_DIST \
         --download-superlu_dist-commit=v7.1.1 \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
@@ -111,8 +113,9 @@ build_petsc()
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
         --download-mumps=${USE_MUMPS} \
-        --download-scalapack=${USE_MUMPS} \
         --with-scalapack=${USE_MUMPS} \
+        --with-scalapack=${USE_MUMPS} \
+        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
         --download-suitesparse=${USE_SUITESPARSE} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
@@ -192,6 +195,7 @@ dependencies = [
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273"); platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs.
