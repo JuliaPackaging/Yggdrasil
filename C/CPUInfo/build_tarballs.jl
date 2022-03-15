@@ -12,6 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ $target == aarch64-apple-darwin* ]]; then
+    cmake_extra_args="-DCMAKE_OSX_ARCHITECTURES=arm64"
+fi
+
 cd $WORKSPACE/srcdir
 cd cpuinfo
 mkdir build
@@ -25,6 +29,7 @@ cmake \
     -DCPUINFO_BUILD_MOCK_TESTS=OFF \
     -DCPUINFO_BUILD_BENCHMARKS=OFF \
     -DCPUINFO_LIBRARY_TYPE=shared \
+    $cmake_extra_args \
     ..
 cmake --build . -- -j $nproc
 make install
@@ -36,7 +41,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms) # aarch64-macos unsupported
 
 # The products that we will ensure are always built
 products = [
