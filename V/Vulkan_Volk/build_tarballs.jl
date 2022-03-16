@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Vulkan_Headers_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
