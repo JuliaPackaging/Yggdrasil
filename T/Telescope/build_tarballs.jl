@@ -46,14 +46,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenGLMathematics_jll"),
+    HostBuildDependency("OpenGLMathematics_jll"),
     Dependency("SDL2_jll"),
     Dependency("SDL2_image_jll"),
     Dependency("SDL2_mixer_jll"),
     Dependency("SDL2_net_jll"),
     Dependency("SDL2_ttf_jll"),
     Dependency("Shaderc_jll"),
-    Dependency("Vulkan_Headers_jll"),
+    HostBuildDependency("Vulkan_Headers_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
