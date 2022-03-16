@@ -28,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [AnyPlatform()]
+platforms = supported_platforms()
 
 products = [
     FileProduct("include/volk.h", :volk_h),
