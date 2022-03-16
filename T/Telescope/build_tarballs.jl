@@ -28,7 +28,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) && nbits(p) == "64"))
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl")
+]
 
 platforms = expand_cxxstring_abis(platforms)
 
