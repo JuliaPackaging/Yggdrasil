@@ -28,7 +28,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) && nbits(p) == "64"))
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl")
+]
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -40,14 +46,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("OpenGLMathematics_jll"),
+    BuildDependency("OpenGLMathematics_jll"),
     Dependency("SDL2_jll"),
     Dependency("SDL2_image_jll"),
     Dependency("SDL2_mixer_jll"),
     Dependency("SDL2_net_jll"),
     Dependency("SDL2_ttf_jll"),
     Dependency("Shaderc_jll"),
-    HostBuildDependency("Vulkan_Headers_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
