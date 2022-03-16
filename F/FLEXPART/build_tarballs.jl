@@ -20,7 +20,7 @@ cd flexpart
 atomic_patch -p1 /workspace/srcdir/patches/flexpart-makefile.patch
 atomic_patch -p1 /workspace/srcdir/patches/flexpart-parmod.patch
 cd src
-make necf=yes
+make ncf=yes
 cp FLEXPART $bindir
 
 cd ../../flex_extract
