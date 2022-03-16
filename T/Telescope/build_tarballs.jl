@@ -13,8 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CFLAGS="-I${prefix}/include"
-export CXXFLAGS="-I${prefix}/include"
+export CFLAGS="-I${includedir}"
+export CXXFLAGS="-I${includedir}"
 cd $WORKSPACE/srcdir/Telescope*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
