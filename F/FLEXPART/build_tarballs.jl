@@ -1,3 +1,4 @@
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
@@ -13,14 +14,19 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# The flexpart-parmod.patch modify some parameters to extend the size of 
+# the meteorological input files and the maximum number of particules that FLEXPART can handle.
 script = raw"""
 cd flexpart
-atomic_patch -p1 /workspace/srcdir/patches/makefile.patch
+atomic_patch -p1 /workspace/srcdir/patches/flexpart-makefile.patch
+atomic_patch -p1 /workspace/srcdir/patches/flexpart-parmod.patch
 cd src
-make
+make ncf=yes
 cp FLEXPART $bindir
 
-cd ../../flex_extract/Source/Fortran/
+cd ../../flex_extract
+atomic_patch -p1 /workspace/srcdir/patches/flexextract-makefile.patch
+cd Source/Fortran/
 make -f makefile_local_gfortran
 cp calc_etadot_fast.out $bindir/calc_etadot
 """
