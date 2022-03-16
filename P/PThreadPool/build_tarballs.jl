@@ -13,6 +13,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ $target == x86_64-apple-darwin* ]]; then
+    PTHREADPOOL_SYNC_PRIMITIVE=condvar
+else
+    PTHREADPOOL_SYNC_PRIMITIVE=default
+fi
+
 cd $WORKSPACE/srcdir/pthreadpool
 mkdir build
 cd build
@@ -24,6 +30,7 @@ cmake \
     -DPTHREADPOOL_LIBRARY_TYPE=shared \
     -DPTHREADPOOL_BUILD_TESTS=OFF \
     -DPTHREADPOOL_BUILD_BENCHMARKS=OFF \
+    -DPTHREADPOOL_SYNC_PRIMITIVE=$PTHREADPOOL_SYNC_PRIMITIVE \
     ..
 cmake --build . -- -j $nproc
 make install
