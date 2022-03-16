@@ -45,6 +45,7 @@ platforms = expand_gfortran_versions(platforms)
 products = [
     LibraryProduct("libMAGEMin", :libMAGEMin)
     ExecutableProduct("MAGEMin", :MAGEMin)
+    ExecutableProduct("mpiexec", :mpiexec)
 ]
 
 # Dependencies that must be installed before this package can be built
