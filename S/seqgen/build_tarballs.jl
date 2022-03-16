@@ -20,15 +20,7 @@ install_license ${WORKSPACE}/srcdir/Seq-Gen/source/license
 make -j${nproc}
 
 # move to bindir
-mkdir ${bindir}
-
-if [[ "${target}" == *-mingw32* ]]; then
-    # not entirely sure this will work on windows
-    # but it is wourth a shot
-    cp seq-gen ${bindir}/seq-gen.exe
-else
-    cp seq-gen ${bindir}/seq-gen
-fi
+install -Dvm 755 "seq-gen" "${bindir}/seq-gen${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
