@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sleef
+atomic_patch -p1 ../patches/version.patch
 mkdir build-native
 cd build-native
 cmake \
