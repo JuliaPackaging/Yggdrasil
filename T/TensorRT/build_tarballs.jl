@@ -41,7 +41,7 @@ lib_names = [
 ]
 
 products = vcat(
-    [LibraryProduct(["lib" * lib_name, lib_name], Symbol("lib" * lib_name)) for lib_name in lib_names],
+    [LibraryProduct(["lib" * lib_name, lib_name], Symbol("lib" * lib_name); dont_dlopen=true) for lib_name in lib_names],
     [ExecutableProduct("trtexec", :trtexec)]
 )
 
