@@ -40,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibUV_jll", v"2.0.0"),
+    BuildDependency("LibUV_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
