@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PThreadPool"
-version = v"0.0.20200616"
+version = v"0.0.20201005"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "029c88620802e1361ccf41d1970bd5b07fd6b7bb"),
+    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "fa75e65a58a5c70c09c30d17a1fe1c1dff1093ae"),
     GitSource("https://github.com/Maratyszcza/FXdiv.git", "b408327ac2a15ec3e43352421954f5b1967701d1"),
 ]
 
