@@ -12,7 +12,7 @@ sources = [
     GitSource("https://github.com/pytorch/cpuinfo.git", "d5e37adf1406cf899d7d9ec1d317c47506ccb970"; unpack_target="clog"),
     GitSource("https://github.com/Maratyszcza/FP16.git", "ba1d31f5eed2eb4a69e4dea3870a68c7c95f998f"),
     GitSource("https://github.com/Maratyszcza/FXdiv.git", "f8c5354679ec2597792bc70a9e06eff50c508b9a"),
-    GitSource("https://github.com/Maratyszcza/psimd.git", "10b4ffc6ea9e2e11668f86969586f88bc82aaefa"),
+    GitSource("https://github.com/Maratyszcza/psimd.git", "88882f601f8179e1987b7e7cf4a8012c9080ad44"),
     GitSource("https://github.com/Maratyszcza/pthreadpool.git", "ebd50d0cfa3664d454ffdf246fcd228c3b370a11"),
 ]
 
