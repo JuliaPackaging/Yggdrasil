@@ -5,6 +5,21 @@ using BinaryBuilder, Pkg
 name = "XNNPACK"
 version = v"0.0.20200323"
 
+cpuinfo_build_version = v"0.0.20200228"
+
+cpuinfo_compat = [
+    cpuinfo_build_version,
+    v"0.0.20200522", # previously released
+    v"0.0.20200612", # due to pytorch v1.6.0 - v1.7.1, e.g. https://github.com/pytorch/pytorch/tree/v1.6.0/third_party/cpuinfo @ 63b254577ed77a8004a9be6ac707f3dccc4e1fd9
+]
+
+pthreadpool_build_version = v"0.0.20200302"
+
+pthreadpool_compat = [
+    pthreadpool_build_version,
+    v"0.0.20200616", # due to pytorch v1.6.0 - v1.7.1, e.g. https://github.com/pytorch/pytorch/tree/v1.6.0/third_party/pthreadpool @ 029c88620802e1361ccf41d1970bd5b07fd6b7bb
+]
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/XNNPACK.git", "1b354636b5942826547055252f3b359b54acff95"),
@@ -54,8 +69,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("CPUInfo_jll"; compat="0.0.20200228"),
-    Dependency("PThreadPool_jll"; compat="0.0.20200302"),
+    Dependency("CPUInfo_jll", cpuinfo_build_version; compat=join(string.(cpuinfo_compat), ", ")),
+    Dependency("PThreadPool_jll", pthreadpool_build_version; compat=join(string.(pthreadpool_compat), ", ")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
