@@ -36,6 +36,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/XNNPACK
 atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 atomic_patch -p1 ../patches/xnnpack-pic.patch
+if [[ $target == aarch64-* ]]; then
+    atomic_patch -p1 ../patches/xnnpack-disable-neon-fp16-arithmetic.patch
+fi
 mkdir build
 cd build
 # Omitted cmake define of CPUINFO_SOURCE_DIR as there is a patch for cpuinfo
