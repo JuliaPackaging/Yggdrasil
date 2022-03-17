@@ -28,6 +28,7 @@ ninja all
 cd $WORKSPACE/srcdir/sleef
 if [[ $target == *w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/lowercase-windows-include.patch
+    atomic_patch -p1 ../patches/cross-compile-mingw-on-unix.patch
 elif [[ $target == arm-* ]]; then
     atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
 fi
