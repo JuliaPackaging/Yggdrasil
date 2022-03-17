@@ -73,6 +73,8 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms) # i686-Windows fails to link
+filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is unsupported by XNNPACK (Unsupported architecture in src/init.c)
 
 # The products that we will ensure are always built
 products = [
