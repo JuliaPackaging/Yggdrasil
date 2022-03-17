@@ -28,14 +28,14 @@ import Pkg.Types: VersionSpec
 #
 name = "Singular"
 upstream_version = v"4.3.0-1" # 4.3.0 plus some changes
-version_offset = v"0.0.0"
+version_offset = v"0.1.0"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "bbc293564bf76fcdfdc37354d406b7ca77bc780f"),
+    GitSource("https://github.com/Singular/Singular.git", "cc6d81065346de893a1f8d4cbc4503b403d688e6"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -62,7 +62,15 @@ export CPPFLAGS="-I${prefix}/include"
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
-    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra \
+    --disable-partialgb-module \
+    --disable-polymake-module \
+    --disable-pyobject-module \
+    --disable-singmathic-module \
+    --disable-systhreads-module \
+    --disable-cohomo-module \
+    --disable-machinelearning-module \
+    --disable-sispasm-module
 
 make -j${nproc}
 make install
