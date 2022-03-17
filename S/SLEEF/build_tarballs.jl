@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"3.4.0"
+version = v"3.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/shibatch/sleef.git", "8df2bce4596ec6b86f357beebf2e428564f0a4ec"),
+    GitSource("https://github.com/shibatch/sleef.git", "233ed22c45b239230bf12a2f81585e857ede5e26"),
     DirectorySource("./bundled"),
 ]
 
