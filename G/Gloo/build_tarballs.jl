@@ -8,19 +8,24 @@ version = v"0.0.20200317"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/facebookincubator/gloo.git", "113bde13035594cafdca247be953610b53026553"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gloo
+atomic_patch -p1 ../patches/mingw32.patch
 mkdir build
 cd build
+if [[ $target != *w64-mingw32* ]]; then
+    cmake_extra_args="-DUSE_LIBUV=ON"
+fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DUSE_LIBUV=ON \
+    $cmake_extra_args \
     ..
 cmake --build . -- -j $nproc
 make install
@@ -30,7 +35,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # Gloo can only be built on 64-bit systems
-filter!(!Sys.iswindows, platforms) # Windows support will be available from 20200910, i.e. 881f7f0dcf06f7e49e134a45d3284860fb244fa9
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
