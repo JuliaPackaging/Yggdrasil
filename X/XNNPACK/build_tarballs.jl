@@ -63,6 +63,9 @@ if [[ $target == *-w64-mingw32* ]]; then
 fi
 cmake --build . -- -j $nproc
 make install
+if [[ $target == *-w64-mingw32 ]]; then
+    install -Dvm 755 libXNNPACK.dll "${libdir}/libXNNPACK.dll"
+fi
 install_license ../LICENSE
 """
 
