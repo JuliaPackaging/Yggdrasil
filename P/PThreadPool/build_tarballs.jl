@@ -3,16 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "PThreadPool"
-version = v"0.0.20200302"
+version = v"0.0.20200616"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "ebd50d0cfa3664d454ffdf246fcd228c3b370a11"),
-    GitSource("https://github.com/Maratyszcza/FXdiv.git", "fd804a929fc64be9e40ee58bb51ed9f9cac98244"),
+    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "029c88620802e1361ccf41d1970bd5b07fd6b7bb"),
+    GitSource("https://github.com/Maratyszcza/FXdiv.git", "b408327ac2a15ec3e43352421954f5b1967701d1"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ $target == x86_64-apple-darwin* ]]; then
+    PTHREADPOOL_SYNC_PRIMITIVE=condvar
+else
+    PTHREADPOOL_SYNC_PRIMITIVE=default
+fi
+
 cd $WORKSPACE/srcdir/pthreadpool
 mkdir build
 cd build
@@ -24,6 +30,7 @@ cmake \
     -DPTHREADPOOL_LIBRARY_TYPE=shared \
     -DPTHREADPOOL_BUILD_TESTS=OFF \
     -DPTHREADPOOL_BUILD_BENCHMARKS=OFF \
+    -DPTHREADPOOL_SYNC_PRIMITIVE=$PTHREADPOOL_SYNC_PRIMITIVE \
     ..
 cmake --build . -- -j $nproc
 make install
