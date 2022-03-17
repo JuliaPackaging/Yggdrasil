@@ -84,6 +84,8 @@ build_petsc()
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/pkgconfig/PETSc.pc
+    sed -i -e "s/-lpetsc/-lpetsc_${1}_${2}_${3}/g" "$libdir/petsc/${1}_${2}_${3}/lib/pkgconfig/petsc.pc"
+    mv $libdir/petsc/${1}_${2}_${3}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${1}_${2}_${3}.pc
 }
 
 build_petsc double real Int32
