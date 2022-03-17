@@ -56,6 +56,11 @@ cmake \
     -DXNNPACK_BUILD_TESTS=OFF \
     -DXNNPACK_BUILD_BENCHMARKS=OFF \
     ..
+if [[ $target == *-w64-mingw32* ]]; then
+    cd cpuinfo-source
+        atomic_patch -p1 ../../../patches/cpuinfo-mingw-lowercase-windows-include.patch
+    cd ..
+fi
 cmake --build . -- -j $nproc
 make install
 install_license ../LICENSE
