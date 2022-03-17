@@ -3,17 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"3.4.0"
+version = v"3.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/shibatch/sleef.git", "8df2bce4596ec6b86f357beebf2e428564f0a4ec"),
+    GitSource("https://github.com/shibatch/sleef.git", "233ed22c45b239230bf12a2f81585e857ede5e26"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sleef
+atomic_patch -p1 ../patches/version.patch
 mkdir build-native
 cd build-native
 cmake \
@@ -28,6 +29,7 @@ ninja all
 cd $WORKSPACE/srcdir/sleef
 if [[ $target == *w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/lowercase-windows-include.patch
+    atomic_patch -p1 ../patches/cross-compile-mingw-on-unix.patch
 elif [[ $target == arm-* ]]; then
     atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
 fi
