@@ -62,7 +62,15 @@ export CPPFLAGS="-I${prefix}/include"
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
-    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra \
+    --disable-partialgb-module \
+    --disable-polymake-module \
+    --disable-pyobject-module \
+    --disable-singmathic-module \
+    --disable-systhreads-module \
+    --disable-cohomo-module \
+    --disable-machinelearning-module \
+    --disable-sispasm-module
 
 make -j${nproc}
 make install
