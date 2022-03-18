@@ -24,15 +24,15 @@ CCFLAGS="-O3 -g -fPIC -std=c99"
 LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
 INC="-I${includedir}"
 
-# compile binary
-make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
-
 # Compile library:
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
+# compile binary
+make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -vm 644 src/*.h "${includedir}"
-install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
+install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
 
 install_license LICENSE
 """
