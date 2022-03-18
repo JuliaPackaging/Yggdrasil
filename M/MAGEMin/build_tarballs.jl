@@ -7,12 +7,13 @@ version = v"1.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ComputationalThermodynamics/MAGEMin.git", "975aba1bb00458bb0d0b6d58afb204f616019f3c"),
+    ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
+                  "1969e0ea72f0406ac6a16d91fa757b96d0d795eaa19e8a44a877d9fcf4caace6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd MAGEMin
+cd MAGEMin*
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="-lmsmpi"
 else
