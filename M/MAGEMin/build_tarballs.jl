@@ -9,7 +9,7 @@ version = v"1.0.5"
 sources = [
     ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
                   "06e5bc79b9f35eeab4a04aee3a52a449d85c395204df0ee15ddec7d801120d74"),
-]
+  ]
 
 # Bash recipe for building across all platforms
 script = raw"""
