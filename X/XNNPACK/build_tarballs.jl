@@ -36,6 +36,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/XNNPACK
 atomic_patch -p1 ../patches/xnnpack-disable-fast-math.patch
 atomic_patch -p1 ../patches/xnnpack-pic.patch
+atomic_patch -p1 ../patches/xnnpack-soversion.patch
 atomic_patch -p1 ../patches/xnnpack-freebsd.patch
 if [[ $target == aarch64-* ]]; then
     atomic_patch -p1 ../patches/xnnpack-disable-neon-fp16-arithmetic.patch
