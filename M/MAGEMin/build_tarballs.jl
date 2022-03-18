@@ -3,16 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "MAGEMin"
-version = v"1.0.4"
+version = v"1.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ComputationalThermodynamics/MAGEMin.git", "975aba1bb00458bb0d0b6d58afb204f616019f3c"),
-]
+    ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
+                  "06e5bc79b9f35eeab4a04aee3a52a449d85c395204df0ee15ddec7d801120d74"),
+  ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd MAGEMin
+cd MAGEMin*
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="-lmsmpi"
 else
