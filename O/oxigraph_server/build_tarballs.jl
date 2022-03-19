@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/oxigraph
 git submodule update --init --recursive
 
 cd server
-
+export LIBCLANG_PATH=/usr/bin
 cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
@@ -40,7 +40,6 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenSSL_jll"),
-    Dependency(PackageSpec(name="Clang_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
