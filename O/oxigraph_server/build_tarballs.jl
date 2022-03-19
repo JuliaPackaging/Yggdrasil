@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/oxigraph
 git submodule update --init --recursive
 
 cd server
-export LIBCLANG_PATH=/usr/lib
+export LIBCLANG_PATH=${libdir}
 cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
