@@ -8,7 +8,9 @@ version = v"1.10.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/pytorch/pytorch.git", "71f889c7d265b9636b93ede9d651c0a9c4bee191"),
-    FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2")
+    FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v10.2.89%2B5/CUDA_full.v10.2.89.x86_64-linux-gnu.tar.gz", "60e6f614db3b66d955b7e6aa02406765e874ff475c69e2b4a04eb95ba65e4f3b"; unpack_target = "CUDA_full.v10.2"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.3.1%2B1/CUDA_full.v11.3.1.x86_64-linux-gnu.tar.gz", "9ae00d36d39b04e8e99ace63641254c93a931dcf4ac24c8eddcdfd4625ab57d6"; unpack_target = "CUDA_full.v11.3"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,6 +32,7 @@ cd $WORKSPACE/srcdir/pytorch
 atomic_patch -p1 ../patches/pytorch-aten-qnnpack-cmake-windows.patch
 
 cmake_extra_args=""
+include_paths=""
 
 if [[ $bb_full_target == *cxx11* ]]; then
     cmake_extra_args+="-DGLIBCXX_USE_CXX11_ABI=1 "
@@ -99,6 +102,39 @@ if [[ $target == x86_64-apple-darwin* # Fails to compile: /workspace/srcdir/pyto
     cmake_extra_args+="-DUSE_MKLDNN=OFF "
 fi
 
+if [[ $bb_full_target == *cuda* ]]; then
+    cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
+    cuda_version_major=`echo $cuda_version | cut -d . -f 1`
+    cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
+    cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
+    export PATH=$PATH:$cuda_full_path/bin
+    export CUDACXX=$cuda_full_path/bin/nvcc
+    export CUDAHOSTCXX=$CXX
+    mkdir $WORKSPACE/tmpdir
+    export TMPDIR=$WORKSPACE/tmpdir
+    cmake_extra_args+="\
+        -DUSE_CUDA=ON \
+        -DUSE_CUDNN=ON \
+        -DUSE_MAGMA=ON \
+        -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path \
+        -DCUDA_CUDART_LIBRARY=$cuda_full_path/lib64/libcudart.$dlext \
+        -DCMAKE_CUDA_FLAGS='-cudart shared' \
+        -DCUDA_cublas_LIBRARY=$cuda_full_path/lib64/libcublas.$dlext \
+        -DCUDA_cufft_LIBRARY=$cuda_full_path/lib64/libcufft.$dlext \
+        -DCUDA_curand_LIBRARY=$cuda_full_path/lib64/libcurand.$dlext \
+        -DCUDA_cusolver_LIBRARY=$cuda_full_path/lib64/libcusolver.$dlext \
+        -DCUDA_cusparse_LIBRARY=$cuda_full_path/lib64/libcusparse.$dlext \
+        -DCUDA_TOOLKIT_INCLUDE=$includedir;$cuda_full_path/include \
+        -DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub "
+    include_paths+=":$cuda_full_path/include"
+    micromamba install -y magma-cuda${cuda_version_major}${cuda_version_minor} -c pytorch
+    git submodule update --init \
+        third_party/cub \
+        third_party/cudnn_frontend
+else
+    cmake_extra_args+="-DUSE_CUDA=OFF -DUSE_MAGMA=OFF "
+fi
+
 git submodule update --init \
     third_party/FP16 \
     third_party/FXdiv \
@@ -118,33 +154,40 @@ cd third_party/fbgemm && git submodule update --init third_party/asmjit && cd ..
 cd third_party/tensorpipe && git submodule update --init third_party/libnop third_party/libuv && cd ../..
 mkdir build
 cd build
-cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_CUSTOM_PROTOBUF=OFF \
-    -DBUILD_PYTHON=OFF \
-    -DPYTHON_EXECUTABLE=`which python3` \
-    -DBUILD_SHARED_LIBS=ON \
-    -DHAVE_SOVERSION=ON \
-    -DUSE_CUDA=OFF \
-    -DUSE_MAGMA=OFF \
-    -DUSE_METAL=OFF \
-    -DUSE_MPI=OFF \
-    -DUSE_NCCL=OFF \
-    -DUSE_NNPACK=OFF \
-    -DUSE_NUMA=OFF \
-    -DUSE_NUMPY=OFF \
-    -DUSE_QNNPACK=OFF \
-    -DUSE_SYSTEM_CPUINFO=ON \
-    -DUSE_SYSTEM_PTHREADPOOL=ON \
-    -DUSE_SYSTEM_SLEEF=ON \
-    -DUSE_SYSTEM_XNNPACK=ON \
-    -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
-    -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
-    -Wno-dev \
-    $cmake_extra_args \
-    ..
+configure() {
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_INCLUDE_PATH=$include_paths \
+        -DBUILD_CUSTOM_PROTOBUF=OFF \
+        -DBUILD_PYTHON=OFF \
+        -DPYTHON_EXECUTABLE=`which python3` \
+        -DBUILD_SHARED_LIBS=ON \
+        -DHAVE_SOVERSION=ON \
+        -DUSE_METAL=OFF \
+        -DUSE_MPI=OFF \
+        -DUSE_NCCL=OFF \
+        -DUSE_NNPACK=OFF \
+        -DUSE_NUMA=OFF \
+        -DUSE_NUMPY=OFF \
+        -DUSE_QNNPACK=OFF \
+        -DUSE_SYSTEM_CPUINFO=ON \
+        -DUSE_SYSTEM_PTHREADPOOL=ON \
+        -DUSE_SYSTEM_SLEEF=ON \
+        -DUSE_SYSTEM_XNNPACK=ON \
+        -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
+        -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
+        -Wno-dev \
+        $cmake_extra_args \
+        ..
+}
+if [[ $bb_full_target != *cuda* ]]; then
+    configure
+else
+    configure
+    configure || configure
+fi
 cmake --build . -- -j $nproc
 make install
 install_license ../LICENSE
@@ -180,10 +223,19 @@ blis_platforms = filter(p -> p ∉ mkl_platforms, [
 
 openblas_platforms = filter(p -> p ∉ union(mkl_platforms, blis_platforms), platforms)
 
+cuda_platforms = [
+    Platform("x86_64", "Linux"; cuda = "10.2"),
+    Platform("x86_64", "Linux"; cuda = "11.3"),
+]
+for p in cuda_platforms
+    push!(platforms, p)
+end
+
 platforms = expand_cxxstring_abis(platforms)
 mkl_platforms = expand_cxxstring_abis(mkl_platforms)
 blis_platforms = expand_cxxstring_abis(blis_platforms)
 openblas_platforms = expand_cxxstring_abis(openblas_platforms)
+cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -196,6 +248,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("blis_jll"; platforms = blis_platforms),
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
+    Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
     Dependency("LAPACK_jll"; platforms = openblas_platforms),
     Dependency("MKL_jll"; platforms = mkl_platforms),
@@ -203,6 +256,7 @@ dependencies = [
     Dependency("OpenBLAS_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
+#    Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
     BuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
