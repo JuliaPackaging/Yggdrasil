@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.1.7"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "2c085f06b4e153cc7d9f6f60b6e75d565ed4e449"),
-    #= ArchiveSource("https://www.mathematik.uni-kl.de/~ederc/msolve-0.1.2.tar.gz", "ce6454b28477cb3b5670042faf7b3282e234fe1e0ee5a62c184d0512ef4126e1") =#
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "723ee02db3bed1919209b0111a8c3ea83069494e")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +16,9 @@ cd $WORKSPACE/srcdir
 cd msolve/
 ./autogen.sh
 
+if [[ "${target}" == *-apple-* ]]; then
+    export CC=gcc
+fi
 export CPPFLAGS="-I${includedir}"
 
 ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -39,7 +41,6 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("FLINT_jll", compat = "~200.800.101"),
-    Dependency("MPFR_jll", v"4.1.1"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

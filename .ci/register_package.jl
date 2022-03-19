@@ -35,7 +35,6 @@ julia_compat = merged["julia_compat"]
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
-    name,
     code_dir,
     repo,
 )

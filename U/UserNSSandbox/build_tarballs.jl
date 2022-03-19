@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2021.08.18"
+version = v"2022.03.10"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/staticfloat/Sandbox.jl",
-              "47814f76eca5336f7b61e05747c6ae6130a6e5a8"),
+    GitSource("https://github.com/staticfloat/Sandbox.jl.git",
+              "9023307c1eed13058a517afe66197cf559cf454d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,4 +26,4 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-build_tarballs(ARGS, name, version, sources, script, platforms, products, Dependency[])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, Dependency[]; julia_compat="1.6")

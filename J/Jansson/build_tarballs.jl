@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Jansson"
-version = v"2.13.1"
+version = v"2.14"
 
 # Collection of sources required to build ZMQ
 sources = [
-    GitSource("https://github.com/akheron/jansson.git", "e9ebfa7e77a6bee77df44e096b100e7131044059"),
+    GitSource("https://github.com/akheron/jansson.git", "684e18c927e89615c2d501737e90018f4930d6c5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,4 +31,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

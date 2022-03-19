@@ -1,19 +1,16 @@
 diff --git a/bin/hipcc b/bin/hipcc
-index 3d579783..89b526a1 100755
+index 17a80755..b9f1c51f 100755
 --- a/bin/hipcc
 +++ b/bin/hipcc
-@@ -837,12 +837,11 @@ if ($HIP_PLATFORM eq "rocclr" and $HIP_COMPILER eq "clang") {
+@@ -682,9 +682,8 @@ if ($HIP_PLATFORM eq "amd") {
      }
- 
+
      if ($hasHIP) {
 -        if ($DEVICE_LIB_PATH ne "$ROCM_PATH/amdgcn/bitcode") {
--            $HIPCXXFLAGS .= " --hip-device-lib-path=$DEVICE_LIB_PATH";
+-            $HIPCXXFLAGS .= " --hip-device-lib-path=\"$DEVICE_LIB_PATH\"";
 -        }
 +        $HIPCXXFLAGS .= " --hip-device-lib-path=$DEVICE_LIB_PATH";
-         if ($HIP_RUNTIME ne "HCC") {
-             $HIPCXXFLAGS .= " -fhip-new-launch-api";
-         }
 +        $HIPCXXFLAGS .= " --rocm-path=$ROCM_PATH";
+         $HIPCXXFLAGS .= " -fhip-new-launch-api";
      }
      if (not $isWindows) {
-         $HIPLDFLAGS .= " -lgcc_s -lgcc -lpthread -lm";

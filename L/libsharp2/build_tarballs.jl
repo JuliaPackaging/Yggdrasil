@@ -25,6 +25,7 @@ if [[ "${target}" == x86_64-* ]] && [[ "${target}" != *-apple-* ]] && [[ "${targ
     # For Windows, see https://github.com/ziotom78/Libsharp.jl/issues/3
     export CFLAGS="-DMULTIARCH"
 fi
+export CFLAGS="${CFLAGS} -O3"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install

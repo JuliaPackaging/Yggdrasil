@@ -3,18 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Cross"
-version = v"2020.04.03"
+version = v"2021.01.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Cross.git", "6637610b16aacfe43c77ad4060da62008a83cd12")
+    GitSource("https://github.com/KhronosGroup/SPIRV-Cross.git", "9acb9ec31f5a8ef80ea6b994bb77be787b08d3d1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-
-cd SPIRV-Cross/
+cd $WORKSPACE/srcdir/SPIRV-Cross/
 
 install_license LICENSE
 
@@ -49,4 +47,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

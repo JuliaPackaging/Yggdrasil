@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Ghostscript"
-version = v"9.53.3"
+version = v"9.55.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
         "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(version.major)$(version.minor)$(version.patch)/ghostscript-$(version).tar.gz", # URL
-        "6eaf422f26a81854a230b80fd18aaef7e8d94d661485bd2e97e695b9dce7bf7f" # SHA256 hash
+        "31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b" # SHA256 hash
     ),
     DirectorySource("./bundled"),
 ]
@@ -24,22 +24,21 @@ if [[ "${target}" == *-mingw* ]]; then
     # (we don't need to patch configure.ac)
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
-    atomic_patch -p1 ../patches/004-FT_CALLBACK_DEF-deprecated.patch
-    # Patch adapted from
-    # https://github.com/mxe/mxe/commit/3fee463ee24536144b053cc519cf963afb08dfb4
-    atomic_patch -p1 ../patches/005-fix-conflicting-types-gp_local_arg_encoding_get_codepoint.patch
 fi
 
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
-# configure the Makefiles
+# configure the Makefiles.  Note we disable Tesseract because we don't need it
+# at the moment, it requires a C++17 compiler, and configure for Windows fails
+# because it doesn't find "threading".
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --without-x \
     --disable-contrib \
-    --disable-cups
+    --disable-cups \
+    --without-tesseract
 
 # create the binaries
 make -j${nproc}
@@ -83,4 +82,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

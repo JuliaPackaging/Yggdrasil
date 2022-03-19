@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TDLib"
-version = v"1.7.4"
+version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tdlib/td.git", "e1ebf743988edfcf4400cd5d33a664ff941dc13e")
+    GitSource("https://github.com/tdlib/td.git", "ca14dfe7ad2cc704b6c63d54c556a3a17e0aa2fe")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7", julia_compat="1.6")

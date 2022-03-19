@@ -2,17 +2,16 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build XGBoost
 name = "XGBoost"
-version = v"1.4.2"
+version = v"1.5.2"
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","522b8977c27b422a4cdbe1ecc59a4d57a5df2c36"), 
+    GitSource("https://github.com/dmlc/xgboost.git","742c19f3ecf2135b4e008a4f4a10b59add8b1045"), 
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
-git submodule init
-git submodule update
+git submodule update --init
 
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core; atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows.patch")
@@ -41,7 +40,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

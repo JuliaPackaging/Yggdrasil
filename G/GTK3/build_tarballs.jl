@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GTK3"
-version = v"3.24.30"
+version = v"3.24.31"
 
 # Collection of sources required to build GTK
 sources = [
     GitSource("https://gitlab.gnome.org/GNOME/gtk.git",
-              "d4e2d05cd9518ba04d6fbe1cbcec27142788ac95"),
+              "ab45bde94c7bbd140b12fa0dd6203f7b98d1a715"),
     DirectorySource("./bundled"),
 ]
 
@@ -26,7 +26,10 @@ ln -sf /usr/bin/gdk-pixbuf-pixdata ${prefix}/bin/gdk-pixbuf-pixdata
 # Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
 rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/meson_build.patch
+atomic_patch -p1 ../patches/meson_build.patch
+# Fix bugs in v3.24.31
+atomic_patch -p1 ../patches/macos-3.24.31.patch
+atomic_patch -p1 ../patches/0001-Use-lowercase-name-for-windows.h.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then

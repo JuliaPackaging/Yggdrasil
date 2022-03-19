@@ -3,14 +3,18 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-name = "libsingular_julia"
-version = v"0.20.00"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+name = "libsingular_julia"
+version = v"0.22.0"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/libsingular-julia.git", "dc655e75960c9f5fb1b6e838197dddb8b8c7501b"),
+    GitSource("https://github.com/oscar-system/libsingular-julia.git", "ca249677b8e3e1cb15515869798855fe190c5696"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,10 +52,11 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~402.101.200"),
+    Dependency("Singular_jll", compat = "~403.1.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     julia_compat = "1.6")
+

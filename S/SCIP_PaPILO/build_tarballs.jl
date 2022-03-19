@@ -7,7 +7,7 @@ name = "SCIP_PaPILO"
 version = v"0.1.0"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "9b85283db0ac939b2d8eb3475067c8e1164b239e0c78e68f55dcc55859b78b2d"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "b6ada57f14a728198cc9bc5d22bc6e61dc18cb750a17846df9d853ff6380fbd1"),
 ]
 
 # Bash recipe for building across all platforms

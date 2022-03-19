@@ -1,7 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-
-include("../../fancy_toys.jl")
+using BinaryBuilderBase: get_addable_spec
 
 # Everybody is just going to use the same set of platforms
 
@@ -14,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.0" => "9e892ea33cc65b79370df975b73e98eb5de68683", # julia-13.0.0-1
+    v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
 )
 
 const buildscript = raw"""
@@ -153,6 +152,8 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
     # set a SONAME suffix for FreeBSD https://github.com/JuliaLang/julia/issues/32462
     CMAKE_FLAGS+=(-DLLVM_VERSION_SUFFIX:STRING="jl")
+    # Aggressively symbol version (added in LLVM 13.0.1)
+    CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
 if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
@@ -208,10 +209,6 @@ if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
     CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
-
-    # LLVM actually won't build against 10.8, so we bump ourselves up slightly to 10.9
-    export MACOSX_DEPLOYMENT_TARGET=10.9
-    export LDFLAGS=-mmacosx-version-min=10.9
 
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
@@ -353,6 +350,9 @@ rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
+
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -377,7 +377,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct("clang", :clang, "bin"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
@@ -395,7 +395,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
-        push!(products, ExecutableProduct("lld", :lld, "bin"))
+        push!(products, ExecutableProduct("lld", :lld, "tools"))
+        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+        push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
+        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
     end
 
     name = "LLVM_full"
@@ -438,7 +443,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         products = [
             LibraryProduct("libclang", :libclang, dont_dlopen=true),
             LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
-            ExecutableProduct("clang", :clang, "tools"),
+            ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
         script = mlirscript
@@ -459,7 +464,12 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
         if version >= v"12"
-            push!(products, ExecutableProduct("lld", :lld, "bin"))
+            push!(products, ExecutableProduct("lld", :lld, "tools"))
+            push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
+            push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+            push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))

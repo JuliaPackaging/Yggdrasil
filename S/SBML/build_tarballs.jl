@@ -2,15 +2,21 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.0"
+version = v"5.19.2"
 sources = [
     ArchiveSource(
-        "https://github.com/sbmlteam/libsbml/archive/v5.19.0.tar.gz",
-        "127a44cc8352f998943bb0b91aaf4961604662541b701c993e0efd9bece5dfa8"),
+        "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
+        "ac75218f6477945bd58ee0bf3c115ddec083d2d26c8df7b3fdf8caaf69a6b608"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
+
+for p in ../patches/*.patch; do
+    atomic_patch -p1 "${p}"
+done
+
 mkdir build
 cd build
 cmake \
@@ -39,7 +45,7 @@ make install
 rm ${prefix}/lib/libsbml-static.a
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 products = [
     LibraryProduct("libsbml", :libsbml),
@@ -51,4 +57,4 @@ dependencies = [
 ]
 
 # GCC 6 is necessary to work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67557
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
