@@ -12,7 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph/server
+cd $WORKSPACE/srcdir/oxigraph
+
+git submodule update --init --recursive
+
+cd server
 
 cargo build --release
 
