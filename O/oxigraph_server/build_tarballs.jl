@@ -3,20 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.2.5"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxigraph/oxigraph.git", "a21dcbb4f7355d7a00a86fbc5ad2c350a53629c4"),
+    GitSource("https://github.com/oxigraph/oxigraph.git", "913a82614032366c27dfc032a922fb61ebcc1d20"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/server
 
-# Env vars which do NOT work...
-# LIBCLANG_PATH=/opt/x86_64-linux-musl/lib/libclang.so.12 CC=clang CXX=clang++ 
-CC=clang CXX=clang++ USE_CLANG=1 PORTABLE=1 cargo build --release --no-default-features --features=sled,rocksdb
+cargo build --release
 
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
