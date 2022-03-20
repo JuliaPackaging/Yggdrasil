@@ -20,12 +20,6 @@ if [[ "${GPU}" -eq 1 ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/makefile-fix-cuda-paths.patch"
 fi
 
-## Required for OPENMP=1
-if [[ ${OPENMP} -eq 1 ]] && ([[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]); then
-    CC=gcc
-    CXX=g++
-fi
-
 ## Note for the future: Supporting AVX will make more sense with microarchitecture support
 # if [[ "${target}" = powerpc64le-* ]] || [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]] || [[ "${target}" == *-mingw* ]] then
 #     # Disable AVX on powerpc, arm, aarch, windows, apple
@@ -67,7 +61,12 @@ rm -rf "${prefix}/cuda"
     # Dependencies that must be installed before this package can be built
     dependencies = BinaryBuilder.AbstractDependency[]
     if openmp
-        push!(dependencies, Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")))
+        append!(dependencies, [
+            # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+            # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+            Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+            Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+        ])
     end
 
     return version, sources, script, products, dependencies
