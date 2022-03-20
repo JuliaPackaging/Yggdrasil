@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"12.0.0"
+version = v"12.0.1"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "eb1b7022a247332114985ed155a8fb632c28ce7c35a476e2c0caf865150f167d"
+        "60fe79440eaa9ebf583a6ea7f81501310388c02754dbe7dc210776014d06b091"
     ),
     DirectorySource("./bundled"),
 ]
