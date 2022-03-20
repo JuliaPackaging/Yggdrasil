@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
 version = v"13.0.1"
@@ -31,6 +31,10 @@ elif [[ "${target}" == *-mingw* ]]; then
         platform_config+=(-DLIBOMP_ASMFLAGS="-win64")
     fi
     platform_config+=(-DCMAKE_ASM_MASM_COMPILER="uasm")
+elif [[ "${target}" == aarch64-apple-* ]]; then
+    # Linking libomp requires the function `__divdc3`, which is implemented in
+    # `libclang_rt.osx.a` from LLVM compiler-rt.
+    platform_config+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx")
 fi
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -53,6 +57,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We need libclang_rt.osx.a for linking libomp, because this library provides the
+    # implementation of `__divdc3`.
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=[Platform("aarch64", "macos")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
