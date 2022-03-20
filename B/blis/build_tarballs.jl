@@ -42,22 +42,16 @@ case ${target} in
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"aarch64"*"apple"*)
         # Metaconfig arm64 is not needed here.
         # All Mac processors should have equal or higher specs then firestorm
         export BLI_CONFIG=firestorm
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"aarch64"*"linux"*) 
         export BLI_CONFIG=arm64
@@ -140,7 +134,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
