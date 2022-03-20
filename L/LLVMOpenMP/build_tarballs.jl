@@ -23,7 +23,6 @@ platform_config=()
 if [[ "${target}" == *-freebsd* ]]; then
     platform_config+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt")
 elif [[ "${target}" == *-mingw* ]]; then
-    apk add uasm --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
     sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" runtime/cmake/LibompHandleFlags.cmake
@@ -57,6 +56,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # We use UASM only for Windows
+    HostBuildDependency(PackageSpec(name="UASM_jll", uuid="bbf38c07-751d-5a2b-a7fc-5c0acd9bd57e")),
     # We need libclang_rt.osx.a for linking libomp, because this library provides the
     # implementation of `__divdc3`.
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=[Platform("aarch64", "macos")]),
