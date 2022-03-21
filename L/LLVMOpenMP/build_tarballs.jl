@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"12.0.1"
+version = v"13.0.1"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "60fe79440eaa9ebf583a6ea7f81501310388c02754dbe7dc210776014d06b091"
+        "6b79261371616c31fea18cd3ee1797c79ee38bcaf8417676d4fa366a24c96b4f"
     ),
     DirectorySource("./bundled"),
 ]
@@ -39,6 +39,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DLIBOMP_INSTALL_ALIASES=OFF \
+    -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
     "${platform_config[@]}" \
     ..
 make -j${nproc}
