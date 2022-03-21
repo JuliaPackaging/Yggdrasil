@@ -39,6 +39,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DLIBOMP_INSTALL_ALIASES=OFF \
+    -DCLANG_TOOL="$(which clang)" \
     "${platform_config[@]}" \
     ..
 make -j${nproc}
@@ -61,6 +62,8 @@ dependencies = [
     # We need libclang_rt.osx.a for linking libomp, because this library provides the
     # implementation of `__divdc3`.
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=[Platform("aarch64", "macos")]),
+    # libomptarget.so links to Zlib on Linux
+    Dependency("Zlib_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
