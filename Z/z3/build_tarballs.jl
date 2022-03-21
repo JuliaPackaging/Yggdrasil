@@ -1,32 +1,41 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.8.8"
+version = v"4.8.14"
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Z3Prover/z3.git", "ad55a1f1c617a7f0c3dd735c0780fc758424c7f1"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/armv7l/1.3/julia-1.3.1-linux-armv7l.tar.gz", "965c8fab2214f8ce1b3d449d088561a6de61be42543b48c3bbadaed5b02bf824"; unpack_target="julia-arm-linux-gnueabihf"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/linux/x64/1.3/julia-1.3.1-linux-x86_64.tar.gz", "faa707c8343780a6fe5eaf13490355e8190acf8e2c189b9e7ecbddb0fa2643ad"; unpack_target="julia-x86_64-linux-gnu"),
-    ArchiveSource("https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-x86_64-apple-darwin14.tar.gz", "f2e5359f03314656c06e2a0a28a497f62e78f027dbe7f5155a5710b4914439b1"; unpack_target="julia-x86_64-apple-darwin14"),
-    ArchiveSource("https://github.com/Gnimuc/JuliaBuilder/releases/download/v1.3.0/julia-1.3.0-x86_64-w64-mingw32.tar.gz", "c7b2db68156150d0e882e98e39269301d7bf56660f4fc2e38ed2734a7a8d1551"; unpack_target="julia-x86_64-w64-mingw32"),
+    GitSource("https://github.com/Z3Prover/z3.git", "df8f9d7dcb8b9f9b3de1072017b7c2b7f63f0af8"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
-# Bash recipe for building across all platforms
-script = raw"""
-case $target in
-  arm-linux-gnueabihf|x86_64-linux-gnu)
-    Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/julia-1.3.1
-    Julia_ARGS="-DZ3_BUILD_JULIA_BINDINGS=True -DJulia_PREFIX=${Julia_PREFIX}"
-    ;;
-  x86_64-apple-darwin14|x86_64-w64-mingw32)
-    Julia_PREFIX=${WORKSPACE}/srcdir/julia-$target/juliabin
-    Julia_ARGS="-DZ3_BUILD_JULIA_BINDINGS=True -DJulia_PREFIX=${Julia_PREFIX}"
-    ;;
-esac
+macfix = raw"""
+# See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1185
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # work around macOS SDK issue
+    #     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
+    #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
+    #         introduced in macOS 10.14
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+fi
+"""
 
+# Bash recipe for building across all platforms
+script_libcxxwrap = macfix * raw"""
 cd $WORKSPACE/srcdir/z3/
 
 mkdir z3-build && cd z3-build
@@ -34,7 +43,22 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    ${Julia_ARGS} \
+    -DZ3_BUILD_JULIA_BINDINGS=True \
+    -DJulia_PREFIX="${prefix}" \
+    ..
+make -j${nproc}
+make install
+install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
+"""
+
+script = macfix * raw"""
+cd $WORKSPACE/srcdir/z3/
+
+mkdir z3-build && cd z3-build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     ..
 make -j${nproc}
 make install
@@ -43,12 +67,8 @@ install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms_libcxxwrap = [
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows")
-]
+include("../../L/libjulia/common.jl")
+platforms_libcxxwrap = vcat(libjulia_platforms.(julia_versions)...)
 
 platforms = filter(x->!(x in platforms_libcxxwrap), supported_platforms())
 
@@ -68,7 +88,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll")
 ]
 
@@ -78,8 +99,11 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
-    build_tarballs(non_reg_ARGS, name, version, sources, script, platforms_libcxxwrap, products_libcxxwrap, dependencies; preferred_gcc_version=v"8")
+    build_tarballs(non_reg_ARGS, name, version, sources, script_libcxxwrap, platforms_libcxxwrap, 
+        products_libcxxwrap, dependencies; preferred_gcc_version=v"9", 
+        julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+        preferred_gcc_version=v"9", julia_compat="1.6")
 end
