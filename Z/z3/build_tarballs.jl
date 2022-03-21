@@ -15,7 +15,7 @@ julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 sources = [
     GitSource("https://github.com/Z3Prover/z3.git", "df8f9d7dcb8b9f9b3de1072017b7c2b7f63f0af8"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 macfix = raw"""
@@ -99,11 +99,11 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_libcxxwrap)))
-    build_tarballs(non_reg_ARGS, name, version, sources, script_libcxxwrap, platforms_libcxxwrap, 
-        products_libcxxwrap, dependencies; preferred_gcc_version=v"9", 
-        julia_compat="1.6")
+    build_tarballs(non_reg_ARGS, name, version, sources, script_libcxxwrap, platforms_libcxxwrap,
+                   products_libcxxwrap, dependencies; preferred_gcc_version=v"9",
+                   julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-        preferred_gcc_version=v"9", julia_compat="1.6")
+                   preferred_gcc_version=v"9", julia_compat="1.6")
 end
