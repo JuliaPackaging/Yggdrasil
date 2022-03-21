@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir
 ls
 
 #cd seacas.git && export ACCESS=`pwd`
-cd seacas.git && export ACCESS=`pwd`
+cd seacas && export ACCESS=`pwd`
 
 #MPI=NO ./install-tpl.sh
 #MPI=NO BUILD=NO ./install-tpl.sh
