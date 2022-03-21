@@ -42,7 +42,7 @@ build_petsc()
 
     if [[ "${1}" == "single" ]]; then
         USE_SUITESPARSE=0
-        USE_SUPERLU_DIST=0      
+        USE_SUPERLU_DIST=0
     elif [[ "${3}" == "Int64" ]]; then
         USE_SUITESPARSE=0
     elif [[ "${1}" == "single" ]] && [[ "${2}" == "complex" ]]; then
@@ -51,88 +51,71 @@ build_petsc()
 
     if [[ "${target}" == *-apple* ]]; then
         # This fails because of a linker problem (-soname should be -dynamic_name)
-        USE_SUPERLU_DIST=0    
+        USE_SUPERLU_DIST=0
     fi;
-    
+
     mkdir $libdir/petsc/${1}_${2}_${3}
 
     if [[ "${target}" == *-mingw* ]]; then
-        # Windows machines 
-        #  Note: the reason to split this up in two configures, rather than one with $FLAGS is that passing 
-        #  such a $FLAG to, for example, CFLAGS=$FLAGS does not seem to work (not sure why). 
+        # Windows machines
+        #  Note: the reason to split this up in two configures, rather than one with $FLAGS is that passing
+        #  such a $FLAG to, for example, CFLAGS=$FLAGS does not seem to work (not sure why).
 
         USE_SUPERLU_DIST=0
-
-        ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
-        CC=${CC} \
-        FC=${FC} \
-        CXX=${CXX} \
-        COPTFLAGS='-O3' \
-        CXXOPTFLAGS='-O3' \
-        CFLAGS='-fno-stack-protector -Wl,--enable-stdcall-fixup' \
-        CXXFLAGS='-fno-stack-protector -Wl,--enable-stdcall-fixup' \
-        LDFLAGS="-L${libdir}" \
-        FOPTFLAGS='-O3' \
-        --with-64-bit-indices=${USE_INT64} \
-        --with-debugging=0 \
-        --with-batch \
-        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-        --with-blaslapack-suffix="" \
-        --with-superlu_dist=$USE_SUPERLU_DIST \
-        --download-superlu_dist=$USE_SUPERLU_DIST \
-        --download-superlu_dist-commit=v7.1.1 \
-        --known-64-bit-blas-indices=0 \
-        --with-mpi-lib="${MPI_LIBS}" \
-        --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
-        --with-precision=${1} \
-        --with-scalar-type=${2} \
-        --PETSC_ARCH=${target}_${1}_${2}_${3}
-
+        CFLAGS="-fno-stack-protector -Wl,--enable-stdcall-fixup"
+        CXXFLAGS="-fno-stack-protector -Wl,--enable-stdcall-fixup"
+        EXTRA_ARGS=(
+            --with-superlu_dist=${USE_SUPERLU_DIST}
+            --download-superlu_dist-commit=v7.1.1
+        )
     else
         # Non windows
 
         # Superlu_dist expects this:
-        MPICC=mpicc
-        MPIFC=mpif90
-        MPICXX=mpicxx
+        CC=mpicc
+        FC=mpif90
+        CXX=mpicxx
+        CFLAGS="-fno-stack-protector"
+        CXXFLAGS="-fno-stack-protector"
+        EXTRA_ARGS=(
+            --download-mumps=${USE_MUMPS}
+            --with-scalapack=${USE_MUMPS}
+            --with-scalapack-lib=${libdir}/libscalapack32.${dlext}
+            --download-suitesparse=${USE_SUITESPARSE}
+            --with-suitesparse=${USE_SUITESPARSE}
+            --download-superlu_dist=${USE_SUPERLU_DIST}
+            --with-sowing=0
+            --with-clean=1
+        )
+    fi
 
-        ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
-        CC=${MPICC} \
-        FC=${MPIFC} \
-        CXX=${MPICXX} \
-        COPTFLAGS='-O3' \
-        CXXOPTFLAGS='-O3' \
-        CFLAGS='-fno-stack-protector' \
-        CPPFLAGS='-fno-stack-protector' \
-        LDFLAGS="-L${libdir}" \
-        FOPTFLAGS='-O3' \
-        --with-64-bit-indices=${USE_INT64} \
-        --with-debugging=0 \
-        --with-batch \
-        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-        --with-blaslapack-suffix="" \
-        --download-mumps=${USE_MUMPS} \
-        --with-scalapack=${USE_MUMPS} \
-        --with-scalapack=${USE_MUMPS} \
-        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
-        --download-suitesparse=${USE_SUITESPARSE} \
-        --with-suitesparse=${USE_SUITESPARSE} \
-        --download-superlu_dist=${USE_SUPERLU_DIST} \
-        --known-64-bit-blas-indices=0 \
-        --with-mpi-lib="${MPI_LIBS}" \
-        --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
-        --with-sowing=0 \
-        --with-precision=${1} \
-        --with-scalar-type=${2} \
-        --with-clean=1 \
-        --PETSC_ARCH=${target}_${1}_${2}_${3}
-    fi;
-
+    ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
+    CC=${CC} \
+    FC=${FC} \
+    CXX=${CXX} \
+    COPTFLAGS='-O3' \
+    CXXOPTFLAGS='-O3' \
+    CFLAGS="${CFLAGS}" \
+    CPPFLAGS="${CXXFLAGS}" \
+    LDFLAGS="-L${libdir}" \
+    FOPTFLAGS='-O3' \
+    --with-64-bit-indices=${USE_INT64} \
+    --with-debugging=0 \
+    --with-batch \
+    --with-blaslapack-lib=$BLAS_LAPACK_LIB \
+    --with-blaslapack-suffix="" \
+    --known-64-bit-blas-indices=0 \
+    --with-mpi-lib="${MPI_LIBS}" \
+    --known-mpi-int64_t=0 \
+    --with-mpi-include="${includedir}" \
+    --with-precision=${1} \
+    --with-scalar-type=${2} \
+    --PETSC_ARCH=${target}_${1}_${2}_${3} \
+    "${EXTRA_FLAGS[@]}"
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
+        CFLAGS=""
     elif [[ "${target}" == powerpc64le-* ]]; then
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
@@ -153,10 +136,10 @@ build_petsc()
     if [[ "${target}" == *-linux* ]]; then
         patchelf --set-soname "libpetsc_${1}_${2}_${3}.${dlext}" ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
     fi
-    
+
     # Remove now broken links
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
-    
+
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
     rm ${libdir}/petsc/${1}_${2}_${3}/lib/pkgconfig/PETSc.pc
     sed -i -e "s/-lpetsc/-lpetsc_${1}_${2}_${3}/g" "$libdir/petsc/${1}_${2}_${3}/lib/pkgconfig/petsc.pc"
@@ -182,13 +165,13 @@ products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    
+
     LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
     LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    
+
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
