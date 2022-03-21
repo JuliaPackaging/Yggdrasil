@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-ll
+ls
 
 #cd seacas.git && export ACCESS=`pwd`
 cd seacas.git && export ACCESS=`pwd`
