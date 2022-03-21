@@ -14,8 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
+ll
 
-
+#cd seacas.git && export ACCESS=`pwd`
 cd seacas.git && export ACCESS=`pwd`
 
 #MPI=NO ./install-tpl.sh
