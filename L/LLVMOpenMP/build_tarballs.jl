@@ -40,7 +40,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DLIBOMP_INSTALL_ALIASES=OFF \
     -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
-    -DCLANG_TOOL="$(which clang)" \
     "${platform_config[@]}" \
     ..
 make -j${nproc}
