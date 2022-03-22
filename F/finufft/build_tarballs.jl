@@ -17,13 +17,22 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
+
+CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -Iinclude"
+if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]]; then
+    CFLAGS="${CFLAGS} -fcx-limited-range"
+fi
+
 # Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
 # Make use of the -DFFTW_PLAN_SAFE flag to allow for multiple threads using finufft at the same time.
 make lib \
-    CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude" \
-    CXXFLAGS="-fopenmp -fPIC -O3 -funroll-loops -fcx-limited-range -Iinclude -std=c++14 -DFFTW_PLAN_SAFE" \
-    LIBSFFT="-lfftw3 -lfftw3f -lm"
-install -Dvm 0755 lib/libfinufft.so "${libdir}/libfinufft.${dlext}"
+    CC=${CC} \
+    CXX=${CXX} \
+    CFLAGS="${CFLAGS}" \
+    CXXFLAGS="${CFLAGS} -std=c++14 -DFFTW_PLAN_SAFE" \
+    LIBSFFT="-lfftw3 -lfftw3f -lm" \
+    DYNLIB="lib/libfinufft.${dlext}"
+install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
 """
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
@@ -51,9 +60,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a")),
-    # TODO: we should use clang as compiler on BSD systems and use
-    # `LLVMOpenMP_jll` to provide the OpenMP implementation.
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
