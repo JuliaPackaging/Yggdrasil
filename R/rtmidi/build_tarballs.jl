@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg, Base.BinaryPlatforms
 
 name = "rtmidi"
-version = v"4.0.0"
+version = v"6.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/thestk/rtmidi.git", "6e4e763a19860c17784992ff3170704ba73c10b7")
+    GitSource("https://github.com/thestk/rtmidi.git", "454e1ce473ef3436fae70eca23623d267d4fbac7") #16/03/2021
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
+    Dependency(PackageSpec(name="alsa_jll",uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e");platforms=filter(p->Sys.islinux(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
