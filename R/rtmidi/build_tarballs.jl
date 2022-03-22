@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="alsa_jll",uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e");platforms=filter(p->Sys.islinux(p), platforms))
+    Dependency(PackageSpec(name="alsa_jll",uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e");platforms=filter(Sys.islinux, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
