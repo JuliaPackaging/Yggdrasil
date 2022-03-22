@@ -41,7 +41,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb cuda_memcheck \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
+                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_thrust \
                    libcublas libcufft libcurand libcusolver libcusparse \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
@@ -63,7 +63,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_memcheck \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
+                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_thrust \
                    libcublas libcufft libcurand libcusolver libcusparse  \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
