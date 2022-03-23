@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "SuperLU"
+name = "SuperLU_DIST"
 version = v"7.2.0"
 
 # Collection of sources required to complete build
