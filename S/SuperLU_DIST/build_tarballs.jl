@@ -32,6 +32,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DTPL_PARMETIS_LIBRARIES="${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}" \
     -DCMAKE_C_FLAGS="-std=c99" \
     -DXSDK_INDEX_SIZE=32 \
+    -DXSDK_ENABLE_Fortran=OFF \
     ..
 make -j${nproc}
 make install
@@ -43,18 +44,20 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsuperlu", :libsuperlu)
+    LibraryProduct("libsuperlu_dist", :libsuperlu_dist)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
-    Dependency("MPICH_jll")
+    Dependency("MPICH_jll"),
+    Dependency("METIS_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
