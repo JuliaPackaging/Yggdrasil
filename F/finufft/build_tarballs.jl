@@ -7,7 +7,6 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
 version = v"2.0.4"
-julia_compat = "1.6"
 
 # Collection of sources required to complete build
 sources = [
@@ -68,4 +67,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"8", julia_compat, augment_platform_block)
+               preferred_gcc_version=v"8", julia_compat="1.6", augment_platform_block)
