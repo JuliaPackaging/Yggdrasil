@@ -63,7 +63,7 @@ for cuda_version in cuda_versions
                               "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
         end
 
-        dependencies = [Dependency(PackageSpec(name="CUDA_Runtime_jll");
+        dependencies = [Dependency(PackageSpec(name="CUDA_Runtime_jll", uuid="76a88914-d11a-5bdc-97e0-2f5a05c973a2");
                                    platforms=[augmented_platform])]
 
         push!(builds, (;
