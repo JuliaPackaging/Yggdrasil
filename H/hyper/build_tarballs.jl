@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "hyper"
-version = v"0.14.17"
+version = v"0.14.18"
 
 # Collection of sources required to complete build
 sources = [
