@@ -54,6 +54,7 @@ const augment = """
 
         cuda_version_override = get(ENV, "JULIA_CUDA_VERSION", nothing)
         # TODO: support for Preferences.jl-based override?
+        # XXX: this doesn't work, because it doesn't trigger re-compilation
 
         # "[...] applications built against any of the older CUDA Toolkits always continued
         #  to function on newer drivers due to binary backward compatibility"
@@ -100,7 +101,13 @@ const augment = """
 
     # imported by caller: CUDA_Runtime_jll
 
-    function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
+    function cuda_comparison_strategy(a::String, b::String,
+                                      a_requested::Bool, b_requested::Bool)
+        if a == "none" || b == "none"
+            # FIXME: does this need to respec assymetry?
+            #        can it happen we request cuda=none on a platform with CUDA?
+            return false
+        end
         a = VersionNumber(a)
         b = VersionNumber(b)
 
