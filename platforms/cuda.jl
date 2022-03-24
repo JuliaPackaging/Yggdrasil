@@ -4,6 +4,7 @@ const platform_name = "cuda"
 const augment = """
     using Libdl
     using Base: thisminor
+    using Base.BinaryPlatforms: set_compare_strategy!
 
 
     #
@@ -126,9 +127,11 @@ const augment = """
     end
 
     function augment_cuda_dependent!(platform::Platform)
+        if !haskey(platform, "cuda")
+            platform = CUDA_Runtime_jll.augment_cuda_toolkit!(platform)
+        end
         set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
-        haskey(platform, "cuda") && return platform
-        CUDA_Runtime_jll.augment_cuda_toolkit!(platform)
+        return platform
     end"""
 
 function platform(cuda::VersionNumber)
