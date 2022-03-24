@@ -15,11 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qcdnum*/
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # Fix the error:
-    #     Rank mismatch between actual argument at (1) and actual argument at (2) (rank-1 and scalar)
-    export FFLAGS="-fallow-argument-mismatch"
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/link-no-undefined-windows.patch
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
