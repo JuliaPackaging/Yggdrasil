@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hyper*/
-cargo build --release
+RUSTFLAGS="--cfg hyper_unstable_ffi" cargo build --release --features client,http1,http2,ff
 install -Dm 755 target/${rust_target}/release/*hyper.${dlext} "${libdir}/libhyper.${dlext}"
 """
 
