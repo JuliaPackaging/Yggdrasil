@@ -31,29 +31,59 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+
+    using CUDA_Runtime_jll
+    $(CUDA.augment)
+
+    function augment_platform!(platform::Platform)
+        augment_cuda_dependent!(platform)
+    end"""
+
 products = [
-    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn, dont_dlopen = true),
+    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
 ]
 
-# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
-#      lacking that, we can't currently dlopen the library
-
-dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
-
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4"]
+# determine exactly which tarballs we should build
+builds = []
+cuda_versions = [v"10.2", v"11.5"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
 
     for (platform, sources) in platforms_and_sources
-        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        augmented_platform = deepcopy(platform)
+        augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
         should_build_platform(triplet(augmented_platform)) || continue
+
         if platform == Platform("x86_64", "windows")
             push!(sources,
                 ArchiveSource("http://www.winimage.com/zLibDll/zlib123dllx64.zip",
                               "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
         end
-        build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true)
+
+        dependencies = [Dependency(PackageSpec(name="CUDA_Runtime_jll");
+                                   platforms=[augmented_platform])]
+
+        push!(builds, (;
+            sources, dependencies, platforms=[augmented_platform],
+        ))
     end
 end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script,
+                   build.platforms, products, build.dependencies;
+                   julia_compat="1.6", lazy_artifacts=true,
+                   augment_platform_block)
+end
+
