@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "hyper"
-version = v"0.14.18"
+version = v"0.14.17"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/hyperium/hyper/archive/refs/tags/v$(version).tar.gz",
-                  "6095636d02ea5af3ff5f06d80b9466f7b58ba76339f39813b33c3f24c663fdef"),
+                  "64420fd550f43af09b0722b3504d4fd919de642d63f01ad54108aa854f5f5470"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hyper*/
-sed '21 a [lib]\ncrate-type=["cdylib"]\n' -i Cargo.toml
 RUSTFLAGS="--cfg hyper_unstable_ffi" cargo build --release --features client,http1,http2,ffi
 install -Dm 755 target/${rust_target}/release/*hyper.${dlext} "${libdir}/libhyper.${dlext}"
 """
