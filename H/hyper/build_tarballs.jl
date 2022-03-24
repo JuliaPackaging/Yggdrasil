@@ -8,7 +8,7 @@ version = v"0.14.18"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/hyperium/hyper/archive/refs/tags/v$(version).tar.gz",
-                  "64420fd550f43af09b0722b3504d4fd919de642d63f01ad54108aa854f5f5470"),
+                  "6095636d02ea5af3ff5f06d80b9466f7b58ba76339f39813b33c3f24c663fdef"),
 ]
 
 # Bash recipe for building across all platforms
