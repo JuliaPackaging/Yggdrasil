@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "QCDNUM"
-version = v"17.1.83"
+version = v"18.0.00"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.nikhef.nl/~h24/download/qcdnum170183.tar.gz",
-                  "ae1380d3bf8c8c13af4c1e9fe889213f0ef900a073e2d25229f6744ff040fa82"),
+    ArchiveSource("https://www.nikhef.nl/~h24/download/qcdnum180000.tar.gz",
+                  "376a2e6d56761c5356b4ff66cf1c47b48e1155efafc53813cc2e6f11747ca98e"),
     DirectorySource("./bundled"),
 ]
 
