@@ -1,1 +1,2 @@
 bundled/patches/decfp.patch -text diff
+bundled/patches/string.patch -text diff

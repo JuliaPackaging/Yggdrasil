@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "DecFP"
-version = v"2.0.3" # --> This is a lie to build for experimental platforms, upstream version is 2.0 Update 2
+version = v"2.0.3+1" # --> This is a lie to build for experimental platforms, upstream version is 2.0 Update 2
 
 # Collection of sources required to build DecFP
 sources = [
@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/IntelRDFPMathLib20U2
+patch --binary -p1 < $WORKSPACE/srcdir/patches/string.patch
 patch --binary -p1 < $WORKSPACE/srcdir/patches/decfp.patch
 cd LIBRARY
 if [[ $nbits == 64 ]]; then
