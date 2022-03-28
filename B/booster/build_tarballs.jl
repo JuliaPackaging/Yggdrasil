@@ -12,9 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/booster
-install_license ${WORKSPACE}/srcdir/booster/LICENSE
-
 # compile booster
 cd ${WORKSPACE}/srcdir/booster/src
 make -j${nproc}
