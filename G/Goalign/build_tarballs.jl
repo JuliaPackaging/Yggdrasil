@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "goalign"
+name = "Goalign"
 version = v"0.3.5"
 hash = "9593e5fba495e67b4c15aeee53fd292547518c2c"
 
