@@ -48,6 +48,7 @@ make install
 # Cleanup
 rm ${prefix}/tools/clang
 
+
 # link to .hipVersion so clang can find it
 ln -s ../hip/bin/.hipVersion ${bindir}/.hipVersion
 """
