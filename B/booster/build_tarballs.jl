@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 # compile booster
 cd ${WORKSPACE}/srcdir/booster/src
-make -j${nproc}
+make -j${nproc} CC=${CC} CFLAGS_OMP="-Wall -g -fopenmp"
 
 # move to bindir
 install -Dvm 755 "booster" "${bindir}/booster${exeext}"
