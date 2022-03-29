@@ -1,3 +1,5 @@
+include(joinpath("..", "cuda_products.jl"))
+
 using BinaryBuilder, Pkg
 
 name = "CUDA"
@@ -162,35 +164,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_100"], :libcudart),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    LibraryProduct(["libcufft", "cufft64_100"], :libcufft),
-    LibraryProduct(["libcufftw", "cufftw64_100"], :libcufftw),
-    LibraryProduct(["libcublas", "cublas64_100"], :libcublas),
-    LibraryProduct(["libnvblas", "nvblas64_100"], :libnvblas),
-    LibraryProduct(["libcusparse", "cusparse64_100"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_100"], :libcusolver),
-    LibraryProduct(["libcurand", "curand64_100"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_100"], :libnvgraph),
-    LibraryProduct(["libnppc", "nppc64_100"], :libnppc),
-    LibraryProduct(["libnppial", "nppial64_100"], :libnppial),
-    LibraryProduct(["libnppicc", "nppicc64_100"], :libnppicc),
-    LibraryProduct(["libnppicom", "nppicom64_100"], :libnppicom),
-    LibraryProduct(["libnppidei", "nppidei64_100"], :libnppidei),
-    LibraryProduct(["libnppif", "nppif64_100"], :libnppif),
-    LibraryProduct(["libnppig", "nppig64_100"], :libnppig),
-    LibraryProduct(["libnppim", "nppim64_100"], :libnppim),
-    LibraryProduct(["libnppist", "nppist64_100"], :libnppist),
-    LibraryProduct(["libnppisu", "nppisu64_100"], :libnppisu),
-    LibraryProduct(["libnppitc", "nppitc64_100"], :libnppitc),
-    LibraryProduct(["libnpps", "npps64_100"], :libnpps),
-    LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_100"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-]
+products = cuda_products(version;
+    cupti_windows_library_name = "cupti64_100",
+    nvvm_windows_library_name = "nvvm64_33_0")
 
 build_tarballs(ARGS, name, version, [], script,
                [Platform("x86_64", "linux"), Platform("x86_64", "macos"), Platform("x86_64", "windows")], products, dependencies)

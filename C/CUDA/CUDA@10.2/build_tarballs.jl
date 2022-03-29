@@ -1,3 +1,5 @@
+include(joinpath("..", "cuda_products.jl"))
+
 using BinaryBuilder, Pkg
 
 name = "CUDA"
@@ -132,36 +134,9 @@ platforms = [
     Platform("x86_64", "windows")
 ]
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
-    LibraryProduct(["libcufftw", "cufftw64_10"], :libcufftw),
-    LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
-    LibraryProduct(["libcublasLt", "cublasLt64_10"], :libcublasLt),
-    LibraryProduct(["libnvblas", "nvblas64_10"], :libnvblas),
-    LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
-    LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libnvgraph),
-    LibraryProduct(["libnppc", "nppc64_10"], :libnppc),
-    LibraryProduct(["libnppial", "nppial64_10"], :libnppial),
-    LibraryProduct(["libnppicc", "nppicc64_10"], :libnppicc),
-    LibraryProduct(["libnppicom", "nppicom64_10"], :libnppicom),
-    LibraryProduct(["libnppidei", "nppidei64_10"], :libnppidei),
-    LibraryProduct(["libnppif", "nppif64_10"], :libnppif),
-    LibraryProduct(["libnppig", "nppig64_10"], :libnppig),
-    LibraryProduct(["libnppim", "nppim64_10"], :libnppim),
-    LibraryProduct(["libnppist", "nppist64_10"], :libnppist),
-    LibraryProduct(["libnppisu", "nppisu64_10"], :libnppisu),
-    LibraryProduct(["libnppitc", "nppitc64_10"], :libnppitc),
-    LibraryProduct(["libnpps", "npps64_10"], :libnpps),
-    LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-]
+products = cuda_products(version;
+    cupti_windows_library_name = "cupti64_102",
+    nvvm_windows_library_name = "nvvm64_33_0")
 
 build_tarballs(ARGS, name, version, [], script,
                platforms, products, dependencies)

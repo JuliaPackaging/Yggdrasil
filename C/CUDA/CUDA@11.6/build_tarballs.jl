@@ -1,3 +1,5 @@
+include(joinpath("..", "cuda_products.jl"))
+
 using BinaryBuilder, Pkg
 
 name = "CUDA"
@@ -124,36 +126,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
-    LibraryProduct(["libcufftw", "cufftw64_10"], :libcufftw),
-    LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
-    LibraryProduct(["libcublasLt", "cublasLt64_11"], :libcublasLt),
-    LibraryProduct(["libnvblas", "nvblas64_11"], :libnvblas),
-    LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
-    LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libnppc", "nppc64_11"], :libnppc),
-    LibraryProduct(["libnppial", "nppial64_11"], :libnppial),
-    LibraryProduct(["libnppicc", "nppicc64_11"], :libnppicc),
-    LibraryProduct(["libnppidei", "nppidei64_11"], :libnppidei),
-    LibraryProduct(["libnppif", "nppif64_11"], :libnppif),
-    LibraryProduct(["libnppig", "nppig64_11"], :libnppig),
-    LibraryProduct(["libnppim", "nppim64_11"], :libnppim),
-    LibraryProduct(["libnppist", "nppist64_11"], :libnppist),
-    LibraryProduct(["libnppisu", "nppisu64_11"], :libnppisu),
-    LibraryProduct(["libnppitc", "nppitc64_11"], :libnppitc),
-    LibraryProduct(["libnpps", "npps64_11"], :libnpps),
-    LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_2022.1.0"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
-]
+products = cuda_products(version;
+    cupti_windows_library_name = "cupti64_2022.1.0",
+    nvvm_windows_library_name = "nvvm64_40_0")
 
 build_tarballs(ARGS, name, version, [], script,
                [Platform("x86_64", "linux"),

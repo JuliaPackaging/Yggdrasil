@@ -1,3 +1,5 @@
+include(joinpath("..", "cuda_products.jl"))
+
 using BinaryBuilder, Pkg
 
 name = "CUDA"
@@ -162,35 +164,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_92"], :libcudart),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    LibraryProduct(["libcufft", "cufft64_92"], :libcufft),
-    LibraryProduct(["libcufftw", "cufftw64_92"], :libcufftw),
-    LibraryProduct(["libcublas", "cublas64_92"], :libcublas),
-    LibraryProduct(["libnvblas", "nvblas64_92"], :libnvblas),
-    LibraryProduct(["libcusparse", "cusparse64_92"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_92"], :libcusolver),
-    LibraryProduct(["libcurand", "curand64_92"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_92"], :libnvgraph),
-    LibraryProduct(["libnppc", "nppc64_92"], :libnppc),
-    LibraryProduct(["libnppial", "nppial64_92"], :libnppial),
-    LibraryProduct(["libnppicc", "nppicc64_92"], :libnppicc),
-    LibraryProduct(["libnppicom", "nppicom64_92"], :libnppicom),
-    LibraryProduct(["libnppidei", "nppidei64_92"], :libnppidei),
-    LibraryProduct(["libnppif", "nppif64_92"], :libnppif),
-    LibraryProduct(["libnppig", "nppig64_92"], :libnppig),
-    LibraryProduct(["libnppim", "nppim64_92"], :libnppim),
-    LibraryProduct(["libnppist", "nppist64_92"], :libnppist),
-    LibraryProduct(["libnppisu", "nppisu64_92"], :libnppisu),
-    LibraryProduct(["libnppitc", "nppitc64_92"], :libnppitc),
-    LibraryProduct(["libnpps", "npps64_92"], :libnpps),
-    LibraryProduct(["libnvvm", "nvvm64_32_0"], :libnvvm),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    LibraryProduct(["libcupti", "cupti64_92"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-]
+products = cuda_products(version;
+    cupti_windows_library_name = "cupti64_92",
+    nvvm_windows_library_name = "nvvm64_32_0")
 
 build_tarballs(ARGS, name, version, [], script,
                [Platform("x86_64", "linux"), Platform("x86_64", "macos"), Platform("x86_64", "windows")], products, dependencies)
