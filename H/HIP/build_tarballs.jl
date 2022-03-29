@@ -25,6 +25,9 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-force-paths.patch"
 # help hipcc to find BB C++ headers+libs+crt
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-bb-paths.patch"
 
+# disable tests
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/disable-tests.patch"
+
 apk add coreutils dateutils
 
 mkdir build && cd build
