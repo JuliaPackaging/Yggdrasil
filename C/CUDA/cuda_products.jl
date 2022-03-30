@@ -45,7 +45,8 @@ function cuda_products(cuda_version::VersionNumber;
         LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
         ExecutableProduct("nvdisasm", :nvdisasm),
     ]
-    if cuda_version.major != 10 && cuda_version.minor != 0
+    if !(cuda_version.major == 9
+        || (cuda_version.major == 10 && cuda_version.minor == 0))
         products = vcat(products, [
             LibraryProduct(["libcublasLt", "cublasLt64_$cuda_version_lib_extension"], :libcublasLt),
         ])
