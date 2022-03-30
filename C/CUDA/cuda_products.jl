@@ -1,6 +1,7 @@
 function cuda_products(cuda_version::VersionNumber;
     cupti_windows_library_name::AbstractString,
     cusolver_version::Union{VersionNumber,Nothing} = nothing,
+    include_nvtoolsext::Bool = true,
     nvvm_windows_library_name::AbstractString)
     if (cusolver_version === nothing)
         cusolver_version = cuda_version
@@ -48,7 +49,6 @@ function cuda_products(cuda_version::VersionNumber;
         LibraryProduct(["libnvvm", nvvm_windows_library_name], :libnvvm),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
         LibraryProduct(["libcupti", cupti_windows_library_name], :libcupti),
-        LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
         ExecutableProduct("nvdisasm", :nvdisasm),
     ]
     if !(cuda_version.major == 9
@@ -62,6 +62,11 @@ function cuda_products(cuda_version::VersionNumber;
         || (cuda_version.major == 10 && cuda_version.minor == 2)) # Excluded cusolverMg in CUDA 10.2 due to aarch64-linux-gnu
         products = vcat(products, [
             LibraryProduct(["libcusolverMg", "cusolverMg64_$cusolver_version_lib_extension"], :libcusolverMg)
+        ])
+    end
+    if include_nvtoolsext # no libnvtoolsext in CUDA 10.2 on x86_64-apple-darwin
+        products = vcat(products, [
+            LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
         ])
     end
     if cuda_version.major == 9 || cuda_version.major == 10
