@@ -16,7 +16,7 @@ script = raw"""
 ls
 cd $WORKSPACE/srcdir/
 
-# Use cargo-rustc to build tree-sitter-highlight as a dynamic library here vvvvvv
+# Use cargo-rustc to build tree-sitter-highlight as a dynamic library here
 cargo rustc --release --manifest-path highlight/Cargo.toml -- --crate-type=cdylib
 
 install -Dm 755 target/${rust_target}/release/deps/libtree_sitter_highlight-*.${dlext} "${libdir}/libtree_sitter_highlight.${dlext}"
