@@ -50,7 +50,7 @@ function cuda_products(cuda_version::VersionNumber;
             LibraryProduct(["libcublasLt", "cublasLt64_$cuda_version_lib_extension"], :libcublasLt),
         ])
     end
-    if !((cuda_version.major == 9 && cuda_version.minor == 2)
+    if !(cuda_version.major == 9
         || (cuda_version.major == 10 && cuda_version.minor == 0)
         || (cuda_version.major == 10 && cuda_version.minor == 2)) # Excluded cusolverMg in CUDA 10.2 due to aarch64-linux-gnu
         products = vcat(products, [
