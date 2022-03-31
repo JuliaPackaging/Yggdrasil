@@ -11,6 +11,12 @@ function cuda_products(cuda_version::VersionNumber;
         cufft_version_lib_extension = cuda_version_lib_extension
         cusolver_version_lib_extension = cuda_version_lib_extension
         curand_version_lib_extension = cuda_version_lib_extension
+    elseif cuda_version.major == 10 && (cuda_version.minor == 1 || cuda_version.minor == 2)
+        cuda_version_lib_extension = "$(cuda_version.major)"
+        cudart_version_lib_extension = "$(cuda_version.major)$(cuda_version.minor)"
+        cufft_version_lib_extension = cuda_version_lib_extension
+        cusolver_version_lib_extension = cuda_version_lib_extension
+        curand_version_lib_extension = cuda_version_lib_extension
     else
         cuda_version_lib_extension = "$(cuda_version.major)"
         cudart_version_lib_extension = "110"
