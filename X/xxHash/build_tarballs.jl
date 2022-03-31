@@ -7,12 +7,14 @@ version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Cyan4973/xxHash.git", "35b0373c697b5f160d3db26b1cbb45a0d5ba788c")
+    GitSource("https://github.com/Cyan4973/xxHash.git", "35b0373c697b5f160d3db26b1cbb45a0d5ba788c"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xxHash/
+atomic_patch -p1 ../patches/0001-fix-cmake-install.patch
 mkdir build && cd build
 cmake ../cmake_unofficial -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 CPPFLAGS=-DXXH_INLINE_ALL make -j${nproc}
