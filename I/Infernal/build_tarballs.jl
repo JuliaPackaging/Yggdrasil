@@ -38,7 +38,11 @@ autoreconf -vi
 make -j${nproc}
 make install
 
-install_license LICENSE
+cd easel && make install
+mv LICENSE LICENSE.easel
+
+install_license LICENSE.easel
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,16 +57,40 @@ platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || proc_family
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("cmemit", :cmemit),
+    ExecutableProduct("cmalign", :cmalign),
+    ExecutableProduct("cmbuild", :cmbuild),
+    ExecutableProduct("cmcalibrate", :cmcalibrate),
     ExecutableProduct("cmconvert", :cmconvert),
+    ExecutableProduct("cmemit", :cmemit),
     ExecutableProduct("cmfetch", :cmfetch),
     ExecutableProduct("cmpress", :cmpress),
-    ExecutableProduct("cmbuild", :cmbuild),
-    ExecutableProduct("cmstat", :cmstat),
-    ExecutableProduct("cmsearch", :cmsearch),
     ExecutableProduct("cmscan", :cmscan),
-    ExecutableProduct("cmcalibrate", :cmcalibrate),
-    ExecutableProduct("cmalign", :cmalign),
+    ExecutableProduct("cmsearch", :cmsearch),
+    ExecutableProduct("cmstat", :cmstat),
+    ExecutableProduct("easel", :easel),
+    ExecutableProduct("esl-afetch", :esl_afetch),
+    ExecutableProduct("esl-alimanip", :esl_alimanip),
+    ExecutableProduct("esl-alimap", :esl_alimap),
+    ExecutableProduct("esl-alimask", :esl_alimask),
+    ExecutableProduct("esl-alimerge", :esl_alimerge),
+    ExecutableProduct("esl-alipid", :esl_alipid),
+    ExecutableProduct("esl-alirev", :esl_alirev),
+    ExecutableProduct("esl-alistat", :esl_alistat),
+    ExecutableProduct("esl-compalign", :esl_compalign),
+    ExecutableProduct("esl-compstruct", :esl_compstruct),
+    ExecutableProduct("esl-construct", :esl_construct),
+    ExecutableProduct("esl-histplot", :esl_histplot),
+    ExecutableProduct("esl-mask", :esl_mask),
+    ExecutableProduct("esl-mixdchlet", :esl_mixdchlet),
+    ExecutableProduct("esl-reformat", :esl_reformat),
+    ExecutableProduct("esl-selectn", :esl_selectn),
+    ExecutableProduct("esl-seqrange", :esl_seqrange),
+    ExecutableProduct("esl-seqstat", :esl_seqstat),
+    ExecutableProduct("esl-sfetch", :esl_sfetch),
+    ExecutableProduct("esl-shuffle", :esl_shuffle),
+    ExecutableProduct("esl-ssdraw", :esl_ssdraw),
+    ExecutableProduct("esl-translate", :esl_translate),
+    ExecutableProduct("esl-weight", :esl_weight),
 ]
 
 # Dependencies that must be installed before this package can be built
