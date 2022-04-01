@@ -24,6 +24,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_C_FLAGS="-Dstatic_assert=_Static_assert" \
+      -DBUILD_SHARED_LIBS=ON \
       ..
 make -j${nproc}
 make install
