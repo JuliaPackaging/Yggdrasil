@@ -3,17 +3,14 @@
 using BinaryBuilder
 
 name = "FLAC"
-version = v"1.3.3"
+version = v"1.3.4"
 
 # Collection of sources required to build FLAC
 sources = [
     ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$(version).tar.xz",
-                  "213e82bd716c9de6db2f98bcadbc4c24c7e2efe8c75939a1a84e28539c4e1748"),
+                  "8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737"),
     DirectorySource("./bundled"),
 ]
-
-# This version number is falsely incremented to build for experimental platforms
-version = v"1.3.4"
 
 # Bash recipe for building across all platforms
 script = raw"""
