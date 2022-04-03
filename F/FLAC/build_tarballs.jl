@@ -20,11 +20,21 @@ cd $WORKSPACE/srcdir/flac-*/
 # kernel headers, rather than the glibc headers, sicne our glibc is too old
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
 
-if [[ "${target}" == *-mingw* ]]; then 
-    # Fix error 
+if [[ "${target}" == *-mingw* ]]; then
+    # Fix error
     #     .libs/metadata_iterators.o:metadata_iterators.c:(.text+0x106b): undefined reference to `__memset_chk'
-    # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564 
-    export LIBS="-lssp" 
+    # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564
+    export LIBS="-lssp"
+elif [[ "${target}" == *-musl ]]; then
+    # We need to create a dummy libssp_noshared, like Alpine does:
+    # https://git.alpinelinux.org/aports/tree/main/musl/APKBUILD?h=3.15-stable#n53
+    cat | cc -x c -c - -o __stack_chk_fail_local.o <<EOF
+extern void __stack_chk_fail(void);
+void __attribute__((visibility ("hidden"))) __stack_chk_fail_local(void) { __stack_chk_fail(); }
+EOF
+    mkdir lib
+    ar r lib/libssp_nonshared.a __stack_chk_fail_local.o
+    export LDFLAGS="-L${PWD}/lib"
 fi
 
 ./configure --prefix=$prefix --host=$target  --build=${MACHTYPE}
