@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libsndfile"
-version = v"1.0.31"
+version = v"1.1.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.bz2",
-                  "a8cfb1c09ea6e90eff4ca87322d4168cdbe5035cb48717b40bf77e751cc02163")
+                  "0f98e101c0f7c850a71225fb5feaf33b106227b3d331333ddc9bacee190bcf41")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,6 +51,8 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("Opus_jll"),
+    Dependency("mpg123_jll"),
+    Dependency("LAME_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
