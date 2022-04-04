@@ -16,9 +16,9 @@ echo ${target}
 cd $WORKSPACE/srcdir/RadeonProRenderSDK/RadeonProRender
 if [[ ${target} == x86_64-linux-gnu ]]; then
     cp binUbuntu18/* ${libdir}/
-elif [[ ${target} == x86_64-apple-darwin* ]]; then
+elif [[ ${target} == *-apple-darwin* ]]; then
     cp binMacOS/* ${libdir}/
-elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+elif [[ ${target} == *-mingw* ]]; then
     cp binWin64/* ${libdir}/
 fi
 """
