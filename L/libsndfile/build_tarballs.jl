@@ -7,7 +7,7 @@ version = v"1.1.0"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.bz2",
+    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.xz",
                   "0f98e101c0f7c850a71225fb5feaf33b106227b3d331333ddc9bacee190bcf41")
 ]
 
