@@ -7,7 +7,7 @@ version = v"2.2.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "5916c58f9cc037899e0aa85e5f5a67c6e1ee7b29")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "e284dfac04ee3a142603ba955a2bf8d11a78d945")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?
@@ -27,6 +27,7 @@ fi
 platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "windows")
 ]
 
