@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"2.2.9"
+version = v"2.02.12"
 
 # Collection of sources required to complete build
 sources = [
@@ -69,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
