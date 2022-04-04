@@ -42,6 +42,7 @@ if [[ $target == *-mingw* ]]; then
 else
     rsync -av include/ ${includedir}
 fi
+install_license info/licenses/*.txt
 """
 
 # These are the platforms we will build for by default, unless further
