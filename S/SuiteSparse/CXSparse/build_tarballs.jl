@@ -3,18 +3,17 @@ using BinaryBuilderBase: get_addable_spec
 
 const cxsparsescript = raw"""
 # First, find (true) SuiteSparse library directory in ~/.artifacts somewhere
-SuiteSparse_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+SS_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/include/cs.h)))
 
 # Clear out our `${prefix}`
 rm -rf ${prefix}/*
 
 # Copy over `libMLIR` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
-mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
-mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
-install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+mkdir -p ${prefix}/include ${libdir} ${prefix}/lib
+mv -v ${SS_ARTIFACT_DIR}/include/cs.h ${prefix}/include/
+
+mv -v ${SS_ARTIFACT_DIR}/$(basename ${libdir})/*cxsparse*.${dlext}* ${libdir}/
+install_license ${SS_ARTIFACT_DIR}/share/licenses/SuiteSparse*/*
 """
 
 function configure_extraction(ARGS, name, SuiteSparse_version=nothing; experimental_platforms=false)
@@ -27,6 +26,7 @@ function configure_extraction(ARGS, name, SuiteSparse_version=nothing; experimen
     if name == "CXSparse"
         script = cxsparsescript
         products = Product[
+	    LibraryProduct(["libcxsparse"], :libcxsparse)
         ]
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
