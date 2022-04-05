@@ -34,7 +34,11 @@ function configure_extraction(ARGS, name, SuiteSparse_version=nothing; experimen
     dependencies = BinaryBuilder.AbstractDependency[
     ]
 
-    push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", SuiteSparse_version)))
+    ctx = Pkg.Types.Context()
+    name = "SuiteSparse_jll"
+    first(Pkg.Types.registry_resolve!(ctx.registries, Pkg.Types.PackageSpec(;name))).uuid
+UUID("bea87d4a-7f5b-5778-9afe-8cc45184846c")
+    push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", SuiteSparse_version;ctx)))
 
     return name, version, [], script, platforms, products, dependencies
 end
