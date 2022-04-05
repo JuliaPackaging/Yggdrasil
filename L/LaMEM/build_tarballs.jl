@@ -7,7 +7,8 @@ version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", "c16efe542c17b1a98df5a00fce5d15e99c2be7ec")
+    GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", 
+    "42c96e68f0cff03e7603328565cd5f3557067b59")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,6 +27,7 @@ cd $WORKSPACE/srcdir/lamem
 # Install binaries
 install -Dvm 755 LaMEM* "${bindir}/LaMEM${exeext}"
 
+install_license LICENSE
 exit
 """
 
