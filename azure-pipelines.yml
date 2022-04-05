@@ -48,7 +48,6 @@ jobs:
 
       $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
           versioninfo()
-          Pkg.Registry.update()
           if !isnothing(Pkg.pkg_server())
               resp = try
                   Downloads.request("$(Pkg.pkg_server())/registries")
