@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "ff83d265c0049df3d56dbe03d200b6a2c417dd7b")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "4ba6179b22ddabb3cababddb0bf9990eeff31184")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,8 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 # The products that we will ensure are always built
