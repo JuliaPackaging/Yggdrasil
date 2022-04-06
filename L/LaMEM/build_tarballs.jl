@@ -8,7 +8,7 @@ version = v"1.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", 
-    "747a36d27f1d7c83cf2ca0d1eb237703bc27edfa")
+    "40c8582c2dce42876d7f3d787aa0d03c253447e3")
 ]
 
 # Bash recipe for building across all platforms
