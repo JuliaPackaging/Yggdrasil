@@ -7,8 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "e8c3e4ee1801356179e236da6532a7403163a9a1"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "e8c3e4ee1801356179e236da6532a7403163a9a1")
 ]
 
 # Bash recipe for building across all platforms
