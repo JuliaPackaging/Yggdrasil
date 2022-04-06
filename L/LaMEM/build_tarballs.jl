@@ -7,7 +7,7 @@ version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", 
+    GitSource("https://bitbucket.org/bkaus/lamem.git", 
     "40c8582c2dce42876d7f3d787aa0d03c253447e3")
 ]
 
