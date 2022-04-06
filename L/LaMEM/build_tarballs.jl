@@ -8,7 +8,7 @@ version = v"1.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", 
-    "42c96e68f0cff03e7603328565cd5f3557067b59")
+    "1fb9c28ada1cd095e1b3c70c8478e1b537150d9f")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +20,7 @@ ln -s  ${PETSC_OPT}/lib/libpetsc_double_real_Int32.${dlext} ${PETSC_OPT}/lib/lib
 make mode=opt all
 
 cd  $WORKSPACE/srcdir/lamem/bin/opt
+mv LaMEM LaMEM${exeext}
 cp LaMEM${exeext} $WORKSPACE/srcdir/lamem/
 cp LaMEM${exeext} $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/lamem
@@ -33,10 +34,7 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"), 
-                                                                  Platform("x86_64", "windows"), 
-                                                                  Platform("i686", "linux"; libc = "musl")]))
-
+platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
 
 # The products that we will ensure are always built
 products = [
