@@ -13,8 +13,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+# Create required directories
 mkdir $WORKSPACE/srcdir/lamem/bin
 mkdir $WORKSPACE/srcdir/lamem/bin/opt
+mkdir $WORKSPACE/srcdir/lamem/dep
+mkdir $WORKSPACE/srcdir/lamem/dep/opt
+mkdir $WORKSPACE/srcdir/lamem/lib
+mkdir $WORKSPACE/srcdir/lamem/lib/opt
+
 cd $WORKSPACE/srcdir/lamem/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
 ln -s  ${PETSC_OPT}/lib/libpetsc_double_real_Int32.${dlext} ${PETSC_OPT}/lib/libpetsc.${dlext}
