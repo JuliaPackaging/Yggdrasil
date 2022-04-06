@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "aa58a5d4c85ed44b09429799dbcf77acf94180bd")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "be082e15cccf272432ad2a2d4dce0659d885a9c1")
 ]
 
 # Bash recipe for building across all platforms
