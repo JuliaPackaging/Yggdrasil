@@ -25,6 +25,15 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
+pushd metis
+if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0003-WIN32-Install-RUNTIME-to-bin.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
+fi
+popd
+
 grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
 grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
@@ -72,9 +81,7 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-# OpenMPI and MPICH are not precompiled for Windows
 platforms = supported_platforms()
-
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -94,7 +101,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("METIS_jll"; compat="5.1.2"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.2"),
 ]
 append!(dependencies, platform_dependencies)
 
