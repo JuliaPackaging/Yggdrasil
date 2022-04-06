@@ -7,16 +7,13 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "612340c414915bfbfdfeb32071e96ae8fba2ff5b"),
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "e8c3e4ee1801356179e236da6532a7403163a9a1"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 cd MDOODZ7.0.git/
 rm makefile
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
@@ -26,7 +23,17 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# platforms = supported_platforms()
+
+# due to hdf5 dependency
+platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
+    Platform("aarch64", "macos"),
+]
 
 # The products that we will ensure are always built
 products = [
