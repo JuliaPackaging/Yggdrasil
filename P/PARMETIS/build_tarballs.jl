@@ -28,6 +28,7 @@ done
 grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
 grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
+grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
@@ -72,7 +73,7 @@ augment_platform_block = """
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
