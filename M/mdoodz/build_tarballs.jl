@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "af11c52c2d2342daf13e2f46ea3ab3e2bc246209")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "a1969909337723b7b5246d74c9f7699629fe25d1")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd MDOODZ*/
 rm makefile
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOMP=ON -DOPT=ON
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOMP=ON -DOPT=ON -DJULIA=ON
 make
 make install
 """
