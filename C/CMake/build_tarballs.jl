@@ -3,36 +3,29 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.19.2"
+version = v"3.22.2"
 
 # Collection of sources required to build CMake
 sources = [
     ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
-                  "e3e0fd3b23b7fb13e1a856581078e0776ffa2df4e9d3164039c36d3315e0c7f0"),
+                  "3c1c478b9650b107d452c5bd545c72e2fad4e37c09b89a1984b9a2f46df6aced"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cmake-*/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE:STRING=Release \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
 
 make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line.
-# CMake is in C++ and it exports the C++ string ABIs, but when compiling it with
-# the C++03 string ABI it seems to ignore our request, so let's just build for
-# the C++11 string ABI.
-platforms = [
-    Platform("i686", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi = "cxx11"),
-]
-
-# platforms = expand_cxxstring_abis(platforms)
+# Build for all supported platforms.
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -45,5 +38,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-upstream_version = v"8.2.0"
+upstream_version = v"8.2.1"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -11,7 +11,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "de93df9a4aa88d09459ead791f2dbc874b897bf67a5bbb3e4b68de7b1bdef13c")
+    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "76ed3d0c3a348a6693dfae535e5658bbfd47f71cb7ff7eb96d9f12f7e068b1cf")
 ]
 
 # Bash recipe for building across all platforms
@@ -56,7 +56,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

@@ -1,13 +1,16 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version = v"3.4.3"
+version_str = "4.0.1"
+version = VersionNumber(version_str)
+
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "8154d89f3051903181018166678018155f4c2b6f04a9bb6fe9515656452c4fd7"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
+                  "66a1fe8052734af2eb52f47808c4dfef4010ceac461cb93c42b99acfb1a43687"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -18,37 +21,42 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
+atomic_patch -p1 ../patches/musl-mpl-thread-posix.patch
+
 EXTRA_FLAGS=()
-if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
-    # Define some obscure undocumented variables needed for cross compilation of
-    # the Fortran bindings.  See for example
-    # * https://stackoverflow.com/q/56759636/2442087
-    # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
-    export CROSS_F77_SIZEOF_INTEGER=4
-    export CROSS_F77_TRUE_VALUE=1
-    export CROSS_F77_FALSE_VALUE=0
+# Define some obscure undocumented variables needed for cross compilation of
+# the Fortran bindings.  See for example
+# * https://stackoverflow.com/q/56759636/2442087
+# * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+export CROSS_F77_SIZEOF_INTEGER=4
+export CROSS_F77_SIZEOF_REAL=4
+export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_TRUE_VALUE=1
+export CROSS_F77_FALSE_VALUE=0
 
-    export CROSS_F90_ADDRESS_KIND=8
-    export CROSS_F90_OFFSET_KIND=8
-    export CROSS_F90_INTEGER_KIND=4
-    export CROSS_F90_DOUBLE_MODEL=15,307
-    export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_ADDRESS_KIND=8
+export CROSS_F90_OFFSET_KIND=8
+export CROSS_F90_INTEGER_KIND=4
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_REAL_MODEL=6,37
 
-    if [[ "${target}" == i686-linux-musl ]]; then
-        # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
-        # but not C++ or Fortran.  `configure` runs a C program to determine
-        # whether it's cross-compiling or not, but when it comes to running
-        # Fortran programs, it fails.  In addition, `configure` ignores the
-        # above exported variables if it believes it's doing a native build.
-        # Small hack: edit `configure` script to force `cross_compiling` to be
-        # always "yes".
-        sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-        EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-    fi
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
+    # but not C++ or Fortran.  `configure` runs a C program to determine
+    # whether it's cross-compiling or not, but when it comes to running
+    # Fortran programs, it fails.  In addition, `configure` ignores the
+    # above exported variables if it believes it's doing a native build.
+    # Small hack: edit `configure` script to force `cross_compiling` to be
+    # always "yes".
+    sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
+    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
 if [[ "${target}" == aarch64-apple-* ]]; then
-    export FFLAGS=-fallow-argument-mismatch
+    EXTRA_FLAGS+=(
+        FFLAGS=-fallow-argument-mismatch
+        FCFLAGS=-fallow-argument-mismatch
+    )
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -56,6 +64,7 @@ fi
     --with-device=ch3 --disable-dependency-tracking \
     --enable-fast=all,O3 \
     --docdir=/tmp \
+    --disable-opencl \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool

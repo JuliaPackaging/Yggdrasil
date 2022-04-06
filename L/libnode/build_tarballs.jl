@@ -3,14 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libnode"
-version = v"14.17.3"
+version = v"16.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://nodejs.org/dist/v14.17.3/node-v14.17.3.tar.gz", "dcbd156506ee79ee48439257626ca0a6db3d7eab8cb0208db6979125ae7d3a95"),
+    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "29dfce13650f063ff009d18349636333fa4305468b6a8965d442c2e88b1dd60f"),
+    DirectorySource("bundled")
 ]
-
-host_platform = HostPlatform()
 
 
 # Bash recipe for building across all platforms
@@ -20,6 +19,8 @@ cd node-*
 
 export CC_host=$HOSTCC
 export CXX_host=$HOSTCXX
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node_main.cc.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/trap-handler.h.patch"
 # Build & install libnode
 if [[ $target == $MACHTYPE ]]
 then
@@ -76,6 +77,6 @@ build_tarballs(
     ARGS, name, version, sources, script,
     platforms, products, dependencies;
     julia_compat="1.6",
-    preferred_gcc_version = v"7",
+    preferred_gcc_version = v"9",
     init_block = init_block
 )

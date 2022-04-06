@@ -61,13 +61,6 @@ install_license ../LICENSE.txt
 sed -i "s#$ROCCLR_SRC/build#$WORKSPACE/destdir/lib#" $WORKSPACE/destdir/lib/cmake/rocclr/rocclr-targets.cmake
 sed -i "s#$ROCCLR_SRC/include\;##" $WORKSPACE/destdir/lib/cmake/rocclr/rocclr-targets.cmake
 sed -i "s#$ROCCLR_SRC#$WORKSPACE/destdir/include#g;s#$OPENCL_SRC.*\;##g" $WORKSPACE/destdir/lib/cmake/rocclr/rocclr-targets.cmake
-
-# Manually patch runpaths of `libamdocl64.so`, but we need to investigate why
-# this is happening.  For more information see
-# https://github.com/JuliaPackaging/Yggdrasil/pull/4077#issuecomment-999926020
-if [[ "${target}" == *-linux-gnu ]]; then
-    patchelf --set-rpath '$ORIGIN/../lib64:$ORIGIN:$ORIGIN/../hsa/lib' "${libdir}/libamdocl64.so"
-fi
 """
 
 # These are the platforms we will build for by default, unless further

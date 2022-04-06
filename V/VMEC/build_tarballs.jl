@@ -1,29 +1,62 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "VMEC"
-version = v"1.0.0"
+upstream_version = v"1.1.0"
+version_patch_offset = 0
+version = VersionNumber(upstream_version.major,
+                        upstream_version.minor,
+                        upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v1.0.0.tar", "179761d5f02cb530fbf6da4121c394a1d585c49c24391ebd87fe5c014e0addcf"),
+    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+                  "98a09a9436e98411960a34d642ea808f72d596e408004ea4c0ea475cc614f7f5"),
 ]
 
 script = raw"""
-mkdir -p ${libdir}
-cd ${WORKSPACE}/srcdir/VMEC2000*
-make USE_MKL=1
-install -m755 lib/libvmec_mkl.so ${libdir}
-make USE_MKL=1 vmec_clean ; make USE_MKL=0
-install -m755 lib/libvmec_openblas.so ${libdir}
-make USE_MKL=0 vmec_clean
+cd ${WORKSPACE}/srcdir/VMEC*
+if [[ ${target} == *mingw* ]]; then
+  sed "s/LT_INIT/LT_INIT(win32-dll)/" configure.ac | cat > configure.ac.2
+  mv configure.ac.2 configure.ac
+  ./autogen.sh
+  ./configure CC=gcc FC=gfortran F77=gfortran --build=${MACHTYPE} --with-mkl --host=${target} --target=${target} --prefix=${prefix}
+  # Deal with the issue that gcc doesn't accept -no-undefined at configure step
+  sed "s/AM_LDFLAGS =/AM_LDFLAGS =-no-undefined/" Makefile | cat > Makefile.2
+  mv Makefile.2 Makefile
+  make && make install && make clean
+
+  ./configure CC=gcc FC=gfortran F77=gfortran --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+  # Deal with the issue that gcc doesn't accept -no-undefined at configure step
+  sed "s/AM_LDFLAGS =/AM_LDFLAGS =-no-undefined/" Makefile | cat > Makefile.2
+  mv Makefile.2 Makefile
+  make && make install && make clean
+
+else
+  # Configure with MKL provided ScaLAPACK
+  ./autogen.sh
+  ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS=-O3 FCFLAGS=-O3 --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+  make && make install && make clean
+
+  # Configure with OpenBLAS and ScaLAPACK from SCALAPACK_jll
+  ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS=-O3 FCFLAGS=-O3 --build=${MACHTYPE}  --host=${target} --target=${target} --prefix=${prefix}
+  make && make install && make clean
+fi
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version="4.0.0"),
-    Platform("x86_64", "linux"; libc = "glibc", libgfortran_version="5.0.0"),
-]
-#platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
+
+# Filter out libgfortran_version = 3.0.0 which is incompatible with VMEC
+filter!(p ->libgfortran_version(p) >= v"4", platforms)
+
+# Filter incompatible architectures and operating systems
+filter!(p -> arch(p) == "x86_64", platforms)
+filter!(!Sys.isfreebsd, platforms)
+
+# Right now VMEC only works with libc=glibc, filter out any musl dependencies
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
+# Don't automatically dl_open so that the appropriate 
+# library can be loaded on intiation of VMEC.jl
 products = [
     LibraryProduct("libvmec_mkl", :libvmec_mkl, dont_dlopen = true),
     LibraryProduct("libvmec_openblas", :libvmec_openblas, dont_dlopen = true),
@@ -31,13 +64,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MPICH_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.17"),
-    Dependency("SCALAPACK_jll"),
-    Dependency("MKL_jll"),
-    Dependency("oneTBB_jll"),
-    Dependency("NetCDF_jll"),
-    Dependency("NetCDFF_jll"),
+    # MbedTLS is an indirect dependency, fix the version for building 
+    BuildDependency(PackageSpec(name = "MbedTLS_jll", version = v"2.24.0")),
+    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenBLAS_jll"),
+    Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("MKL_jll", v"2020.1.216"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 

@@ -1,14 +1,14 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-x86_64-8.3.1.22_cuda11.5-archive.tar.xz",
-                      "f5ff3c69b6a8a9454289b42eca1dd41c3527f70fcf49428eb80502bcf6b02f6e")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-x64-v8.2.4.15.tgz",
+                      "0e5d2df890b9967efa6619da421310d97323565a79f05a1a8cb9b7165baad0d7")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-ppc64le-8.3.1.22_cuda11.5-archive.tar.xz",
-                      "1d2419a20ee193dc6a3a0ba87e79f408286d3d317c9831cbc1f0b7a268c100b0")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-ppc64le-v8.2.4.15.tgz",
+                      "af8749ca83fd6bba117c8bee31b787b7f204946e864294030ee0091eb7d3577e")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-linux-sbsa-8.3.1.22_cuda11.5-archive.tar.xz",
-                      "ff23a881366c0ee79b973a8921c6dd400628a321557550ad4e0a26a21caad263")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-aarch64sbsa-v8.2.4.15.tgz",
+                      "48b11f19e9cd3414ec3c6c357ad228aebbd43282aae372d42cab2af67c32a08b")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.3.1/local_installers/11.5/cudnn-windows-x86_64-8.3.1.22_cuda11.5-archive.zip",
-                      "f0d5cb8d899e5405c00c3ea3925d9143a832ea6239bc70309bb2ded2bfb8d824")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-windows-x64-v8.2.4.15.zip",
+                      "f01594639de35c380b4e360673ccaf04cdb238578e4b284935ee3d5a45f51f3c")],
 )

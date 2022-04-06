@@ -15,11 +15,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/jemalloc/
 autoconf
 
+FLAGS=(--disable-initial-exec-tls)
 if [[ "${target}" == *-freebsd* ]]; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls --with-jemalloc-prefix
-else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-initial-exec-tls
+     FLAGS+=(--with-jemalloc-prefix)
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+     # Use correct 'system page size' per https://uwekorn.com/2021/01/11/apache-arrow-on-the-apple-m1.html
+     FLAGS+=(--with-lg-page=14)
 fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 
 make -j${nproc}
 make install
@@ -28,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

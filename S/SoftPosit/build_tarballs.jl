@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "SoftPosit"
-version = v"0.4.1"
+version = v"0.4.2"
 
 # Collection of sources required to build SoftPosit
 sources = [
     ArchiveSource("https://gitlab.com/cerlane/SoftPosit/-/archive/$version/SoftPosit-$version.tar.gz",
-                  "13f7360c5b91ad3704f66537a754ba3748a764e1291eaa33940866ca37c7dbf5"),
+                  "03b796dbc3189e94fe81c4e730c673504161ad51562066211c51b5be943c0893"),
     DirectorySource("./bundled")
 ]
 
@@ -30,8 +30,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
