@@ -34,7 +34,8 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
+                                                                  Platform("i686", "linux"; libc = "musl")]))
 
 # The products that we will ensure are always built
 products = [
