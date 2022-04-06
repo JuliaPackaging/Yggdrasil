@@ -13,14 +13,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lamem/src/
-
+mkdir $WORKSPACE/srcdir/lamem/bin
+mkdir $WORKSPACE/srcdir/lamem/bin/opt
+cd $WORKSPACE/srcdir/lamem/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
 ln -s  ${PETSC_OPT}/lib/libpetsc_double_real_Int32.${dlext} ${PETSC_OPT}/lib/libpetsc.${dlext}
-make mode=opt all
+make mode=opt all -j${nproc}
 
 cd  $WORKSPACE/srcdir/lamem/bin/opt
-mv LaMEM LaMEM${exeext}
+
+# On some windows versions it automatically puts the .exe extension; on others not. 
+# this deals with that
+if [[ -f LaMEM ]]
+then
+    mv LaMEM LaMEM${exeext}
+fi
+
 cp LaMEM${exeext} $WORKSPACE/srcdir/lamem/
 cp LaMEM${exeext} $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/lamem
@@ -28,7 +36,9 @@ cd $WORKSPACE/srcdir/lamem
 # Install binaries
 install -Dvm 755 LaMEM* "${bindir}/LaMEM${exeext}"
 
+# Install license
 install_license LICENSE
+
 exit
 """
 
