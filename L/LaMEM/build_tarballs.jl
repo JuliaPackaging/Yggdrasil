@@ -8,7 +8,7 @@ version = v"1.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bkaus@bitbucket.org/bkaus/lamem.git", 
-    "1fb9c28ada1cd095e1b3c70c8478e1b537150d9f")
+    "747a36d27f1d7c83cf2ca0d1eb237703bc27edfa")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +27,13 @@ export PETSC_OPT=${libdir}/petsc/double_real_Int32/
 ln -s  ${PETSC_OPT}/lib/libpetsc_double_real_Int32.${dlext} ${PETSC_OPT}/lib/libpetsc.${dlext}
 make mode=opt all -j${nproc}
 
+# compile dynamic library
+make mode=opt dylib -j${nproc}
+
 cd  $WORKSPACE/srcdir/lamem/bin/opt
 
 # On some windows versions it automatically puts the .exe extension; on others not. 
-# this deals with that
+# This deals with that
 if [[ -f LaMEM ]]
 then
     mv LaMEM LaMEM${exeext}
@@ -42,6 +45,8 @@ cd $WORKSPACE/srcdir/lamem
 
 # Install binaries
 install -Dvm 755 LaMEM* "${bindir}/LaMEM${exeext}"
+install -vm 644 src/*.h "${includedir}"
+install -Dvm 755 lib/opt/LaMEMLib.dylib "${libdir}/LaMEMLib.${dlext}"
 
 # Install license
 install_license LICENSE
@@ -57,6 +62,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("LaMEM", :LaMEM)
+    LibraryProduct("LaMEMLib", :LaMEMLib)
 ]
 
 # Dependencies that must be installed before this package can be built
