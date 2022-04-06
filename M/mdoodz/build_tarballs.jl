@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mdoodz"
-version = v"0.1.0"
+version = v"0.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "d740e657154f527bc0e1a1de1faad7034a9f3505")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "c1d81293d995972f58660ba9f60db2a2bb6f4258")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd MDOODZ*/
 rm makefile
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOMP=ON -DOPT=ON
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DOMP=ON -DOPT=ON -DJULIA=ON
 make
 make install
 """
@@ -31,6 +31,8 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 # The products that we will ensure are always built
