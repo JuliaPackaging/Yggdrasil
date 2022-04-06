@@ -25,6 +25,7 @@ make install
 # platforms = supported_platforms()
 
 # due to hdf5 dependency
+# also due to Find scripts are not working on windows
 platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
