@@ -29,8 +29,6 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
     Platform("aarch64", "macos"),
 ]
 
