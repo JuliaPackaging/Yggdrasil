@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mdoodz"
-version = v"0.5.0"
+version = v"0.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "c1d81293d995972f58660ba9f60db2a2bb6f4258")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "2e18a7685a8e7ef79e910d3461b317d52b8ff079")
 ]
 
 # Bash recipe for building across all platforms
