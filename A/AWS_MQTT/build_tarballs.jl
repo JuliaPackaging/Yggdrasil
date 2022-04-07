@@ -111,7 +111,7 @@ cmake --build . -j${nproc} --target install
 cd $WORKSPACE/srcdir/aws-c-mqtt
 
 # Patch the aws-c-mqtt CMakeLists.txt file so that we can build it as a shared library with static library dependencies
-atomic-patch -p1 "${WORKSPACE}/srcdir/patches/mqtt_cmake.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mqtt_cmake.patch"
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
