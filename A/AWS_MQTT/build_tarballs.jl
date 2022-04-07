@@ -125,7 +125,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct(["lib64/libaws-c-mqtt.a"], :libawsmqtt),
+    FileProduct(["lib/libaws-c-mqtt.a", "lib64/libaws-c-mqtt.a"], :libawsmqtt),
 ]
 
 # Dependencies that must be installed before this package can be built
