@@ -36,7 +36,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    # TODO: this is needed only for Windows, but it looks like filtering
+    # platforms for `HostBuildDependency` is broken
+    HostBuildDependency("NASM_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
