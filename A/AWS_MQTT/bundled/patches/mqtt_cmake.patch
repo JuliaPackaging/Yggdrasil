@@ -1,14 +1,15 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,8 @@
  cmake_minimum_required(VERSION 3.1)
  project(aws-c-mqtt C)
  
 +set(BUILD_SHARED_LIBS OFF)
++
  option(MQTT_WITH_WEBSOCKETS "Enable MQTT connections over websockets. Requires aws-c-http. " ON)
  
  if (POLICY CMP0069)
-@@ -64,7 +65,10 @@ file(GLOB MQTT_SRC
+@@ -64,7 +66,10 @@ file(GLOB MQTT_SRC
          ${AWS_MQTT_SRC}
          )
  
@@ -19,17 +20,23 @@
  aws_set_common_properties(${PROJECT_NAME})
  aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_MQTT")
  aws_check_headers(${PROJECT_NAME} ${MQTT_HEADERS})
-@@ -86,7 +90,12 @@ if (MQTT_WITH_WEBSOCKETS)
+@@ -86,7 +91,18 @@ if (MQTT_WITH_WEBSOCKETS)
  endif ()
  
  target_link_libraries(${PROJECT_NAME} PUBLIC ${DEP_AWS_LIBS})
 -aws_prepare_shared_lib_exports(${PROJECT_NAME})
 +install(TARGETS ${PROJECT_NAME}
 +        EXPORT ${PROJECT_NAME}-targets
++        ARCHIVE
++        DESTINATION ${LIBRARY_DIRECTORY}
++        COMPONENT Development
 +        LIBRARY
 +        DESTINATION ${LIBRARY_DIRECTORY}
-+        NAMELINK_ONLY
-+        COMPONENT Development)
++        NAMELINK_SKIP
++        COMPONENT Runtime
++        RUNTIME
++        DESTINATION ${RUNTIME_DIRECTORY}
++        COMPONENT Runtime)
  
  install(FILES ${AWS_MQTT_HEADERS} DESTINATION "include/aws/mqtt" COMPONENT Development)
  install(FILES ${AWS_MQTT_TESTING_HEADERS} DESTINATION "include/aws/testing/mqtt" COMPONENT Development)
