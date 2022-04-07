@@ -13,6 +13,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/aws-lc
+
+# Disable -Werror because there are... well... warnings
+sed -i 's/-Werror//g' CMakeLists.txt
+
+if [[ "${target}" == *-mingw* ]]; then
+    # GetTickCount64 requires Windows Vista:
+    # https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
+    export CXXFLAGS=-D_WIN32_WINNT=0x0600
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
