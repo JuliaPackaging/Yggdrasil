@@ -23,7 +23,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/aws-lc
 
 # Patch for finding definition of `AT_HWCAP2` for PowerPC
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mqtt_cmake.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/auxvec.patch"
 
 # Disable -Werror because there are... well... warnings
 sed -i 's/-Werror//g' CMakeLists.txt
