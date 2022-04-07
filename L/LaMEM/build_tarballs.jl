@@ -8,7 +8,7 @@ version = v"1.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "40c8582c2dce42876d7f3d787aa0d03c253447e3")
+    "734724d6686c203f6e0012c1f087181de3da4f53")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,8 @@ mkdir $WORKSPACE/srcdir/lamem/lib/opt
 
 cd $WORKSPACE/srcdir/lamem/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
-ln -s  ${PETSC_OPT}/lib/libpetsc_double_real_Int32.${dlext} ${PETSC_OPT}/lib/libpetsc.${dlext}
+export LAMEM_BINARYBUILDER=true
+
 make mode=opt all -j${nproc}
 
 # compile dynamic library
