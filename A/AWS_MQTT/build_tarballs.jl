@@ -122,6 +122,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DBUILD_SHARED_LIBS=ON \
 	..
 cmake --build . -j${nproc} --target install
+
+install_license ${WORKSPACE}/srcdir/license/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
