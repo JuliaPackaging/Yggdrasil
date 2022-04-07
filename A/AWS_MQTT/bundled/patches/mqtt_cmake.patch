@@ -20,7 +20,7 @@
  aws_set_common_properties(${PROJECT_NAME})
  aws_prepare_symbol_visibility_args(${PROJECT_NAME} "AWS_MQTT")
  aws_check_headers(${PROJECT_NAME} ${MQTT_HEADERS})
-@@ -86,7 +91,18 @@ if (MQTT_WITH_WEBSOCKETS)
+@@ -86,7 +91,17 @@ if (MQTT_WITH_WEBSOCKETS)
  endif ()
  
  target_link_libraries(${PROJECT_NAME} PUBLIC ${DEP_AWS_LIBS})
@@ -32,7 +32,6 @@
 +        COMPONENT Development
 +        LIBRARY
 +        DESTINATION ${LIBRARY_DIRECTORY}
-+        NAMELINK_SKIP
 +        COMPONENT Runtime
 +        RUNTIME
 +        DESTINATION ${RUNTIME_DIRECTORY}
