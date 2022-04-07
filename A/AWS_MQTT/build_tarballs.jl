@@ -14,7 +14,8 @@ sources = [
     GitSource("https://github.com/awslabs/aws-c-cal.git", "001007e36dddc5da47b8c56d41bb63e5fa9328d7"),
     GitSource("https://github.com/awslabs/aws-c-io.git", "59b4225bb87021d44d7fd2509b54d7038f11b7e7"),
     GitSource("https://github.com/awslabs/aws-c-compression.git", "5fab8bc5ab5321d86f6d153b06062419080820ec"),
-    GitSource("https://github.com/awslabs/aws-c-http.git", "3f8ffda541eab815646f739cef2b350d6e7d5406")
+    GitSource("https://github.com/awslabs/aws-c-http.git", "3f8ffda541eab815646f739cef2b350d6e7d5406"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -108,13 +109,17 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 
 cd $WORKSPACE/srcdir/aws-c-mqtt
+
+# Patch the aws-c-mqtt CMakeLists.txt file so that we can build it as a shared library with static library dependencies
+atomic-patch -p1 "${WORKSPACE}/srcdir/patches/mqtt_cmake.patch"
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
-	-DBUILD_SHARED_LIBS=OFF \
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
 	..
 cmake --build . -j${nproc} --target install
 """
@@ -125,7 +130,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct(["lib/libaws-c-mqtt.a", "lib64/libaws-c-mqtt.a"], :libawsmqtt),
+    LibraryProduct("libaws-c-mqtt", :libawsmqtt),
 ]
 
 # Dependencies that must be installed before this package can be built
