@@ -99,6 +99,12 @@ build_petsc double real Int64
 build_petsc single real Int64
 build_petsc double complex Int64
 build_petsc single complex Int64
+
+# On windows move back since we can't change the install name
+if [[ "${target}" == *-mingw32* ]]; then
+   mv ${libdir}/petsc/double_real_Int32/lib/libpetsc_double_real_Int32.${dlext} "${libdir}/petsc/double_real_Int32/lib/libpetsc.${dlext}.3.6.5" # TODO fix version suffix
+fi
+   
 """
 
 # We attempt to build for all defined platforms
@@ -106,8 +112,8 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct(["libpetsc_double_real_Int32", "libpetsc.dll.3.6.5"], :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct(["libpetsc_double_real_Int32", "libpetsc.dll.3.6.5"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
