@@ -15,10 +15,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/shtns/
 export CFLAGS="-fPIC"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+if [[ "${target}" == *-apple-* ]]; then
+    # For some reasons, `configure` insists on setting CC2=gcc, also on macOS
+    sed -i -e 's/gcc/cc/' -e 's/ -fno-tree-loop-distribute-patterns//' Makefile
+fi
 make -j${nproc}
 make install
 mkdir -p ${libdir}
-gcc -shared -o "${libdir}/libshtns.${dlext}" *.o -lfftw3
+cc -shared -o "${libdir}/libshtns.${dlext}" *.o -lfftw3
 rm "${prefix}/lib/libshtns.a"
 install_license LICENSE
 """
