@@ -3,20 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"22.1.0"
+version = v"22.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.01/amrex-22.01.tar.gz",
-                  "857df5b2fa8e3010b8856b81879a5be32ba7cc2e575474256eae7ef815b8354d"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.04/amrex-22.04.tar.gz",
+                  "c33f5bdbc1ca21d8dd34b494a9c6c67a7eda4f42403cec3a7c13963f9140ebcf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd amrex
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi-constants.patch
 mkdir build
 cd build
 if [[ "$target" == *-apple-* ]]; then
