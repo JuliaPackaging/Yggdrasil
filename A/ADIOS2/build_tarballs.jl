@@ -51,6 +51,7 @@ elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
 # Fortran is not supported with Clang
+#    -DADIOS2_USE_ZFP=ON
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
