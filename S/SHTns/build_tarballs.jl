@@ -12,13 +12,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd shtns/
+cd $WORKSPACE/srcdir/shtns/
 export CFLAGS="-fPIC"
- ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j ; make install
-gcc -shared -o libshtns.so *.o -lfftw3
-cp libshtns.so $prefix/lib/
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc}
+make install
+mkdir -p ${libdir}
+gcc -shared -o "${libdir}/libshtns.${dlext}" *.o -lfftw3
+rm "${prefix}/lib/libshtns.a"
 install_license LICENSE
 """
 
