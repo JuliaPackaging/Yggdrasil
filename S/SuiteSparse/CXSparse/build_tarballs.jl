@@ -1,49 +1,38 @@
-using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec
-
-const cxsparsescript = raw"""
-# First, find (true) SuiteSparse library directory in ~/.artifacts somewhere
-SS_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/include/cs.h)))
-
-# Clear out our `${prefix}`
-rm -rf ${prefix}/*
-
-# Copy over `libMLIR` and `include`, specifically.
-mkdir -p ${prefix}/include ${libdir} ${prefix}/lib
-mv -v ${SS_ARTIFACT_DIR}/include/cs.h ${prefix}/include/
-
-mv -v ${SS_ARTIFACT_DIR}/$(basename ${libdir})/*cxsparse*.${dlext}* ${libdir}/
-install_license ${SS_ARTIFACT_DIR}/share/licenses/SuiteSparse*/*
-"""
-
-function configure_extraction(ARGS, name, SuiteSparse_version=nothing; experimental_platforms=false)
-    if isempty(SuiteSparse_version.build)
-        error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
-    end
-
-    version = VersionNumber(SuiteSparse_version.major, SuiteSparse_version.minor, SuiteSparse_version.patch)
-    compat_version = "$(version.major).$(version.minor).$(version.patch)"
-    if name == "CXSparse"
-        script = cxsparsescript
-        products = Product[
-	    LibraryProduct(["libcxsparse"], :libcxsparse)
-        ]
-    end
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
-
-    dependencies = BinaryBuilder.AbstractDependency[
-    ]
-
-    ctx = Pkg.Types.Context()
-    libname = "SuiteSparse_jll"
-    uuid = Base.UUID("bea87d4a-7f5b-5778-9afe-8cc45184846c")
-    Pkg.Types.registry_resolve!(ctx.registries, Pkg.Types.PackageSpec(;name=libname, uuid))
-    push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", SuiteSparse_version ;ctx)))
-
-    return name, version, [], script, platforms, products, dependencies
-end
+include("../common.jl")
 
 name = "CXSparse"
-SuiteSparse_version = v"5.10.1+2"
 
-build_tarballs(ARGS, configure_extraction(ARGS, name, SuiteSparse_version; experimental_platforms=true)...; skip_audit=true,  julia_compat="1.7")
+sources = [
+    GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+              "538273cfd53720a10e34a3d80d3779b607e1ac26"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/SuiteSparse
+FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
+
+if [[ ${target} == *mingw32* ]]; then
+    FLAGS+=(UNAME=Windows)
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
+else
+    FLAGS+=(UNAME="$(uname)")
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
+fi
+
+make -j${nproc} -C CXSparse "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
+make -j${nproc} -C CXSparse "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
+
+install_license LICENSE.txt
+"""
+
+platforms = supported_platforms(;experimental=true)
+
+dependencies = [
+    Dependency("SuiteSparse_jll")
+]
+
+products = [
+    LibraryProduct("libcxsparse", :libcxsparse)
+]
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
