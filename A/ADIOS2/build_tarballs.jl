@@ -23,6 +23,9 @@ cd ADIOS2-*
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
+# Don't use `ERROR` as identifier; it is reserved on Windows.
+# Already implemented on master.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fatalerror.patch
 
 mkdir build
 cd build
@@ -51,11 +54,13 @@ elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
 # Fortran is not supported with Clang
+# DataMan has linker error on Windows
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
