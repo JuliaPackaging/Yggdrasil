@@ -19,6 +19,8 @@ export CPPFLAGS="-I${includedir}"
 make -j${nproc}
 make install
 install_license leptonica-license.txt
+# Get rid of libtool files
+rm ${prefix}/lib/liblept*.la
 """
 
 # These are the platforms we will build for by default, unless further
