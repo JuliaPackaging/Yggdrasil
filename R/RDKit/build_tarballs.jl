@@ -5,10 +5,15 @@ version = v"2022.03.1"
 
 sources = [
     GitSource("https://github.com/rdkit/rdkit.git", "7e205e0d93a3046c1eaab37120c9f6971194ddf2"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
+
+# Fix name of static libraries dependencies of `librdkitcffi` when building for Windows.
+atomic_patch -p1 ../patches/static-libraries-windows.patch
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF -DRDK_USE_URF=OFF)
