@@ -1,5 +1,5 @@
 diff --git a/Code/MinimalLib/CMakeLists.txt b/Code/MinimalLib/CMakeLists.txt
-index 21cc55d02..ce8544847 100644
+index 21cc55d02..5b0efea9d 100644
 --- a/Code/MinimalLib/CMakeLists.txt
 +++ b/Code/MinimalLib/CMakeLists.txt
 @@ -21,30 +21,30 @@ endif(RDK_BUILD_MINIMAL_LIB)
@@ -15,11 +15,12 @@ index 21cc55d02..ce8544847 100644
 -            MolInterchange_static Abbreviations_static CIPLabeler_static 
 -            MolDraw2D_static Depictor_static 
 -            RDInchiLib_static SubstructMatch_static FileParsers_static 
+-            SmilesParse_static GraphMol_static RingDecomposerLib_static RDGeometryLib_static RDGeneral_static )
+-        if(RDK_URF_LIBS)
 +            MolInterchange_static Abbreviations_static CIPLabeler_static
 +            MolDraw2D_static Depictor_static
 +            RDInchiLib_static SubstructMatch_static FileParsers_static
-             SmilesParse_static GraphMol_static RingDecomposerLib_static RDGeometryLib_static RDGeneral_static )
--        if(RDK_URF_LIBS)
++            SmilesParse_static GraphMol_static RDGeometryLib_static RDGeneral_static )
 +        if(RDK_USE_URF)
              list(APPEND LIBS_TO_USE RingDecomposerLib_static)
          endif()
@@ -31,11 +32,12 @@ index 21cc55d02..ce8544847 100644
 -        MolInterchange Abbreviations CIPLabeler 
 -        MolDraw2D Depictor 
 -        RDInchiLib SubstructMatch FileParsers 
+-        SmilesParse GraphMol RingDecomposerLib RDGeometryLib RDGeneral )
+-        if(RDK_URF_LIBS)
 +        MolInterchange Abbreviations CIPLabeler
 +        MolDraw2D Depictor
 +        RDInchiLib SubstructMatch FileParsers
-         SmilesParse GraphMol RingDecomposerLib RDGeometryLib RDGeneral )
--        if(RDK_URF_LIBS)
++        SmilesParse GraphMol RDGeometryLib RDGeneral )
 +        if(RDK_USE_URF)
              list(APPEND LIBS_TO_USE RingDecomposerLib)
          endif()
