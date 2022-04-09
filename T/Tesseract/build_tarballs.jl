@@ -15,24 +15,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tesseract-*/
-# if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd* ]]; then
-#     # Apply layman patch to make this work
-#     atomic_patch -p1 "$WORKSPACE/srcdir/patches/sys_time_musl_freebsd.patch"
-# fi
-if [[ "${target}" == *-apple-* ]]; then
-    cp "$WORKSPACE/srcdir/libtiff.la/apple.la" "$WORKSPACE/destdir/lib/libtiff.la"
-elif [[ "${target}" == *-freebsd* ]]; then
-    cp "$WORKSPACE/srcdir/libtiff.la/freebsd.la" "$WORKSPACE/destdir/lib/libtiff.la"
-elif [[ "${target}" == *-linux* ]]; then
-    cp "$WORKSPACE/srcdir/libtiff.la/linux.la" "$WORKSPACE/destdir/lib/libtiff.la"
-else
-    cp "$WORKSPACE/srcdir/libtiff.la/win.la" "$WORKSPACE/destdir/lib/libtiff.la"
-fi
 atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license ./LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
