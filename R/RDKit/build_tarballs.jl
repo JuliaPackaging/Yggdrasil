@@ -13,19 +13,15 @@ cd ${WORKSPACE}/srcdir/rdkit
 
 # Fix name of static libraries dependencies of `librdkitcffi` when building for Windows.
 atomic_patch -p1 ../patches/static-libraries-windows.patch
+# To check whether to optimise popcnt you must check the _*TARGET*_ system, not
+# the host one.
+atomic_patch -p1 ../patches/popcnt-target-system.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF -DRDK_USE_URF=OFF)
 fi
-if [[ "${proc_family}" == intel ]]; then
-    FLAGS+=(-DRDK_OPTIMIZE_POPCNT=ON)
-else
-    # For some reasons they think unconditionally enabling this option by
-    # default on all platforms is a good idea, so we have to manually disable it
-    # on non-Intel platforms
-    FLAGS+=(-DRDK_OPTIMIZE_POPCNT=OFF)
-fi
+
 mkdir build
 cd build
 cmake \
