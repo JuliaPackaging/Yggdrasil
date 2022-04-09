@@ -19,7 +19,7 @@ atomic_patch -p1 ../patches/popcnt-target-system.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF -DRDK_USE_URF=OFF)
+    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
 fi
 
 mkdir build
