@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Leptonica"
-version = v"1.81.1"
+version = v"1.82.0"
 
 # Collection of sources required to build Leptonica
 sources = [
     ArchiveSource("https://github.com/DanBloomberg/leptonica/releases/download/$(version)/leptonica-$(version).tar.gz",
-                  "0f4eb315e9bdddd797f4c55fdea4e1f45fca7e3b358a2fc693fd957ce2c43ca9"),
+                  "155302ee914668c27b6fe3ca9ff2da63b245f6d62f3061c8f27563774b8ae2d6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,11 +19,13 @@ export CPPFLAGS="-I${includedir}"
 make -j${nproc}
 make install
 install_license leptonica-license.txt
+# Get rid of libtool files
+rm ${prefix}/lib/liblept*.la
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
