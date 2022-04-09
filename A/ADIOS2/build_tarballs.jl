@@ -3,28 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "ADIOS2"
-version = v"2.7.1"
+version = v"2.8.0"
+
+# Newest version (2022-03-08):
+# commit: e2e94f2943e79df6c69239b6aa4cdee62bb6c0f9
+# sha256: 00dd6243dc9b445b5e33fb044f592f2b6f6d99bd04ec7963782dd323d2684a02
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.7.1.tar.gz", "c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e"),
+    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.8.0.tar.gz",
+                  "5af3d950e616989133955c2430bd09bcf6bad3a04cf62317b401eaf6e7c2d479"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ADIOS2-2.7.1
+cd ADIOS2-*
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-# See <https://github.com/ornladios/ADIOS2/issues/2705>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gettid.patch
-# PR <https://github.com/ornladios/ADIOS2/pull/2712>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ndims.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/sockaddr_in.patch
-# PR <https://github.com/ornladios/ADIOS2/issues/2808>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/adios2_init_config_serial.patch
+# Don't use `ERROR` as identifier; it is reserved on Windows.
+# Already implemented on master.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fatalerror.patch
 
 mkdir build
 cd build
@@ -53,15 +54,16 @@ elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
 # Fortran is not supported with Clang
+# DataMan has linker error on Windows
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
-    -DADIOS2_USE_BZIP2=ON \
+    -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
-    -DADIOS2_USE_ZFP=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
@@ -129,4 +131,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")
