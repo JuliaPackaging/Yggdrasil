@@ -23,7 +23,7 @@ index e9d814633d..d3323f93d6 100755
      import sys
 
      self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
-+    if self.framework.argDB['SOSUFFIX'] is None
++    if self.framework.argDB['SOSUFFIX'] is None:
 +        self.SOSUFFIX = ''
 +    else:
 +        self.SOSUFFIX = '_{0}'.format(self.framework.argDB['SOSUFFIX'])
