@@ -24,17 +24,22 @@ if [[ "${target}" == *-mingw* ]]; then
 else
     MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
 fi
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
+
 mkdir $libdir/petsc
 build_petsc()
 {
 
+    PETSC_CONFIG="${1}_${2}_${3}"
     if [[ "${3}" == "Int64" ]]; then
         USE_INT64=1
     else
         USE_INT64=0
     fi
-    mkdir $libdir/petsc/${1}_${2}_${3}
-    ./configure --prefix=${libdir}/petsc/${1}_${2}_${3} \
+    mkdir $libdir/petsc/${PETSC_CONFIG}
+    ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
         FC=${FC} \
         CXX=${CXX} \
@@ -55,7 +60,8 @@ build_petsc()
         --with-sowing=0 \
         --with-precision=${1} \
         --with-scalar-type=${2} \
-        --PETSC_ARCH=${target}_${1}_${2}_${3}
+        --PETSC_ARCH=${target}_${PETSC_CONFIG} \
+        --SOSUFFIX=${PETSC_CONFIG}
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
@@ -70,25 +76,13 @@ build_petsc()
         FFLAGS="${FFLAGS}"
     make install
 
-    if [[ "${target}" == *-apple* ]]; then
-        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*.*.*.${dlext} "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
-        install_name_tool -id libpetsc_${1}_${2}_${3}.${dlext} ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
-    else # windows and linux:
-        mv ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.${dlext}.*.*.* "${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}"
-    fi
-    if [[ "${target}" == *-linux* ]]; then
-        patchelf --set-soname "libpetsc_${1}_${2}_${3}.${dlext}" ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc_${1}_${2}_${3}.${dlext}
-    fi
-    # Remove now broken links
-    
-    rm ${libdir}/petsc/${1}_${2}_${3}/lib/libpetsc.*
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
-    rm ${libdir}/petsc/${1}_${2}_${3}/lib/pkgconfig/PETSc.pc
-    sed -i -e "s/-lpetsc/-lpetsc_${1}_${2}_${3}/g" "$libdir/petsc/${1}_${2}_${3}/lib/pkgconfig/petsc.pc"
-    mv $libdir/petsc/${1}_${2}_${3}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${1}_${2}_${3}.pc
+    rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
+    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     # we don't particularly care about the examples
-    rm -r ${libdir}/petsc/${1}_${2}_${3}/share/petsc/examples
+    rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
 }
 
 build_petsc double real Int32
@@ -100,11 +94,6 @@ build_petsc single real Int64
 build_petsc double complex Int64
 build_petsc single complex Int64
 
-# On windows move back since we can't change the install name
-if [[ "${target}" == *-mingw32* ]]; then
-   mv ${libdir}/petsc/double_real_Int32/lib/libpetsc_double_real_Int32.${dlext} "${libdir}/petsc/double_real_Int32/lib/libpetsc.${dlext}.3.6.5" # TODO fix version suffix
-fi
-   
 """
 
 # We attempt to build for all defined platforms
@@ -112,8 +101,8 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct(["libpetsc_double_real_Int32", "libpetsc.dll.3.6.5"], :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct(["libpetsc_double_real_Int32", "libpetsc.dll.3.6.5"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
