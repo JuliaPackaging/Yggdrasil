@@ -1,13 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "MPICH"
-version_str = "4.0.1"
+version_str = "4.0.2"
 version = VersionNumber(version_str)
 
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "66a1fe8052734af2eb52f47808c4dfef4010ceac461cb93c42b99acfb1a43687"),
+                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
     DirectorySource("./bundled"),
@@ -20,8 +20,6 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
-
-atomic_patch -p1 ../patches/musl-mpl-thread-posix.patch
 
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
