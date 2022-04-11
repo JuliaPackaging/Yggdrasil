@@ -24,7 +24,6 @@ mkdir $WORKSPACE/srcdir/lamem/lib/opt
 
 cd $WORKSPACE/srcdir/lamem/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
-export LAMEM_BINARYBUILDER=true
 make mode=opt all -j${nproc}
 
 # compile dynamic library
@@ -72,6 +71,7 @@ dependencies = [
     Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("CompilerSupportLibraries_jll")
 ]
+
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
