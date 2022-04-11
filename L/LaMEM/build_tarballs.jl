@@ -24,7 +24,6 @@ mkdir $WORKSPACE/srcdir/lamem/lib/opt
 
 cd $WORKSPACE/srcdir/lamem/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
-export LAMEM_BINARYBUILDER=true
 make mode=opt all -j${nproc}
 
 # compile dynamic library
