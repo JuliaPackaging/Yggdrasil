@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "MIT_kerberos_krb5"
+name = "Kerberos_MIT_krb5"
 version = v"1.19.3"
 
 # Collection of sources required to complete build
