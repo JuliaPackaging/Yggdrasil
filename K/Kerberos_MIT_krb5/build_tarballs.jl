@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/krb5-1.19.3/src
+cd $WORKSPACE/srcdir/krb5*/src
 ac_cv_func_regcomp=yes ac_cv_printf_positional=yes krb5_cv_attr_constructor_destructor=yes,yes ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
