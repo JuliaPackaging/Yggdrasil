@@ -12,10 +12,9 @@ ArchiveSource("https://kerberos.org/dist/krb5/1.19/krb5-1.19.3.tar.gz", "56d0486
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd krb5-1.19.3/src
+cd $WORKSPACE/srcdir/krb5-1.19.3/src
 ac_cv_func_regcomp=yes ac_cv_printf_positional=yes krb5_cv_attr_constructor_destructor=yes,yes ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
