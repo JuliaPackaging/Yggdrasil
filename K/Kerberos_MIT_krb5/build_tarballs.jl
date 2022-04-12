@@ -7,7 +7,8 @@ version = v"1.19.3"
 
 # Collection of sources required to complete build
 sources = [
-ArchiveSource("https://kerberos.org/dist/krb5/1.19/krb5-1.19.3.tar.gz", "56d04863cfddc9d9eb7af17556e043e3537d41c6e545610778676cf551b9dcd0")
+    ArchiveSource("https://kerberos.org/dist/krb5/$(version.major).$(version.minor)/krb5-$(version).tar.gz",
+                  "56d04863cfddc9d9eb7af17556e043e3537d41c6e545610778676cf551b9dcd0"),
 ]
 
 # Bash recipe for building across all platforms
