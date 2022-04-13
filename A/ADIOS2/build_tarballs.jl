@@ -138,6 +138,8 @@ dependencies = [
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# This build script doesn't support OpenMPI yet. (This could easily be added.)
+platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
