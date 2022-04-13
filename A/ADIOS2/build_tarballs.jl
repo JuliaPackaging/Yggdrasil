@@ -142,7 +142,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
 platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && Sys.isfreebsd), platforms)
+platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && libgfortran_version(p) == v"3"), platforms)
 append!(dependencies, platform_dependencies)
 
