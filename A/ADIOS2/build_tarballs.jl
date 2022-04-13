@@ -137,7 +137,7 @@ dependencies = [
     Dependency(PackageSpec(name="zfp_jll")),
 ]
 
-all_platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
