@@ -141,8 +141,8 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # This build script doesn't support OpenMPI yet. (This could easily be added.)
 platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd, platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 append!(dependencies, platform_dependencies)
 
