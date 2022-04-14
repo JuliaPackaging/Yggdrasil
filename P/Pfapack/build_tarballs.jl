@@ -34,17 +34,9 @@ install_license LapackLicence
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd")
-]
-platforms = expand_cxxstring_abis(platforms)
+# No need to expand Fortran version since there code make no call to
+# standard Fortran libraries
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
@@ -54,8 +46,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
