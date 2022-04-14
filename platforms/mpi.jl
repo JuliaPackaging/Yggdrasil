@@ -55,7 +55,7 @@ function augment_platforms(platforms)
         append!(all_platforms, pkg_platforms)
         push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
     end
-    push(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"))
+    push!(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"))
     return all_platforms, dependencies
 end
 
