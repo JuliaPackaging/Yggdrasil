@@ -22,26 +22,11 @@ cmake fortran \
 make -j${nproc} VERBOSE=1
 make install
 
-case ${target} in
-
-    *"w64"*) 
-        export so_suffix=dll
-        ;;
-    *"apple"*) 
-        export so_suffix=dylib
-        ;;
-    *)
-        export so_suffix=so
-        ;; 
-
-esac
-
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
 cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
-    -o ${prefix}/lib/libpfapack.${so_suffix} \
-    -L/workspace/destdir/lib \
-    -L/workspace/destdir/bin -lblastrampoline -lm \
+    -o ${prefix}/lib/libpfapack.${dlext} \
+    -L${libdir} -lblastrampoline -lm \
 
 # Copy license file
 install_license LapackLicence
