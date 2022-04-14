@@ -34,7 +34,11 @@ script = raw"""
             # other tests.
             sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
     fi
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
+    if [[ "${target}" == *"linux"* ]] ; then
+        ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl --with-gssapi
+    else
+        ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
+    fi
 make -C src/interfaces/libpq install
 
 install_license COPYRIGHT
@@ -52,6 +56,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenSSL_jll"),
+    Dependency("Kerberos_krb5_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
