@@ -70,7 +70,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
-    export LDFLAGS="${LDFLAGS} -L${prefix}/${target}/lib64"
+    export LDFLAGS="-L${prefix}/${target}/lib64 -Wl,-rpath-link,${prefix}/${target}/lib64"
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches
