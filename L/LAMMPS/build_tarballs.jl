@@ -38,7 +38,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_USER-DPD=OFF \
     -DPKG_USER-SDPD=OFF \
     -DPKG_DPD-SMOOTH=OFF
-	
+
 make -j${nproc}
 make install
 
@@ -88,6 +88,6 @@ append!(dependencies, platform_dependencies)
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8",
-               augment_platform_block, lazy_artifacts=true) # Change lazy_artifacts after https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1179
+               augment_platform_block)
 
 # bump
