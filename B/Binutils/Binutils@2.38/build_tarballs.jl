@@ -3,7 +3,7 @@ using BinaryBuilder
 include("../common.jl")
 
 name = "Binutils"
-version = v"2.31"
+version = v"2.38"
 
 sources = binutils_sources(version)
 script = binutils_script()

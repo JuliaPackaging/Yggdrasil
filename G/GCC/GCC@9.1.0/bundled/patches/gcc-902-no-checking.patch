@@ -1,0 +1,48 @@
+commit 405661b6d5218f1fa1f83d9f1d7eaa26b28dd644
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Sun Feb 27 04:02:56 2022 +0000
+
+    Remove `-fno-checking` and `-fchecking` as that's not supported on GCC v4.8.X
+
+diff --git a/Makefile.in b/Makefile.in
+index 64e091ba71d..8ee44504148 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -552,11 +552,11 @@ STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
+ # enable it when using the stage2 compiler instead.  As we later compare
+ # stage2 and stage3 we are merely avoid doing redundant work, plus we apply
+ # checking when building all target libraries for release builds.
+-STAGE1_TFLAGS += -fno-checking
+-STAGE2_CFLAGS += -fno-checking
+-STAGE2_TFLAGS += -fno-checking
+-STAGE3_CFLAGS += -fchecking=1
+-STAGE3_TFLAGS += -fchecking=1
++STAGE1_TFLAGS += 
++STAGE2_CFLAGS += 
++STAGE2_TFLAGS += 
++STAGE3_CFLAGS += 
++STAGE3_TFLAGS += 
+ 
+ STAGEprofile_CFLAGS = $(STAGE2_CFLAGS) -fprofile-generate
+ STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)
+diff --git a/Makefile.tpl b/Makefile.tpl
+index 41cae58a267..6a6016dca93 100644
+--- a/Makefile.tpl
++++ b/Makefile.tpl
+@@ -475,11 +475,11 @@ STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
+ # enable it when using the stage2 compiler instead.  As we later compare
+ # stage2 and stage3 we are merely avoid doing redundant work, plus we apply
+ # checking when building all target libraries for release builds.
+-STAGE1_TFLAGS += -fno-checking
+-STAGE2_CFLAGS += -fno-checking
+-STAGE2_TFLAGS += -fno-checking
+-STAGE3_CFLAGS += -fchecking=1
+-STAGE3_TFLAGS += -fchecking=1
++STAGE1_TFLAGS += 
++STAGE2_CFLAGS += 
++STAGE2_TFLAGS += 
++STAGE3_CFLAGS += 
++STAGE3_TFLAGS += 
+ 
+ STAGEprofile_CFLAGS = $(STAGE2_CFLAGS) -fprofile-generate
+ STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)

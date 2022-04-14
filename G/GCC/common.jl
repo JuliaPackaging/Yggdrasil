@@ -100,21 +100,63 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
     ],
 )
 
-function gcc_sources(gcc_version::VersionNumber)
-    # We bundle together GCC, Binutils and libc.
-    return [
+const glibc_version_sources = Dict{VersionNumber,Vector}(
+    v"2.12.2" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
+                        "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
+    ],
+    v"2.17" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
+                        "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
+    ],
+    v"2.19" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
+                        "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
+    ],
+)
+
+
+function gcc_sources(gcc_version::VersionNumber, platform::AbstractPlatform)
+    sources = [
+        # First, the GCC version we're going to build
         gcc_version_sources[gcc_version]...,
+        # Also, our patches
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
+
+    # We bundle together GCC, Binutils and libc.
+    local glibc_version
+    if libc(platform) == "glibc"
+        if arch(platform) ∈ ("x86_64", "i686")
+            glibc_version = v"2.12.2"
+        elseif arch(platform) ∈ ("powerpc64le",)
+            glibc_version = v"2.17"
+        else
+            glibc_version = v"2.19"
+        end
+        push!(sources, glibc_version_sources[glibc_version]...)
+    end
+    return sources
 end
 
 function gcc_script()
-    return string(bash_parse_encoded_target_triplet(),
-    raw"""
+    return raw"""
     cd ${WORKSPACE}/srcdir
 
+    # Figure out the GCC version from the directory name
+    gcc_version="$(echo gcc-* | cut -d- -f2)"
+
+    # GCC shouldn't ever use the target compilers, only the host compilers
+    PATH=$(echo ${PATH} | tr ':' '\n' | grep -v ${target} | tr '\n' ':')
+    unset gcc g++ cc cxx CC CXX
+
+    # We do, however, need to provide some host tools without prefixes, apparently
+    ln -s $(which ${HOSTAR}) $(dirname $(which ${HOSTAR}))/ar
+    ln -s $(which ${HOSTCC}) $(dirname $(which ${HOSTAR}))/cc
+    ln -s $(which ${HOSTCXX}) $(dirname $(which ${HOSTAR}))/c++
+
     # Some things need /lib64, others just need /lib
-    case ${encoded_target} in
+    case ${bb_target} in
         x86_64*)
             LIB64=lib64
             ;;
@@ -145,17 +187,17 @@ function gcc_script()
 
     ## Architecture-dependent arguments
     # Choose a default arch, and on arm*hf targets, pass `--with-float=hard` explicitly
-    if [[ "${encoded_target}" == arm*hf ]]; then
+    if [[ "${target}" == arm*hf ]]; then
         # We choose the armv6 arch by default for compatibility
         GCC_CONF_ARGS+=( --with-float=hard --with-arch=armv6 --with-fpu=vfp )
-    elif [[ "${encoded_target}" == x86_64* ]]; then
+    elif [[ "${target}" == x86_64* ]]; then
         GCC_CONF_ARGS+=( --with-arch=x86-64 )
-    elif [[ "${encoded_target}" == i686* ]]; then
+    elif [[ "${target}" == i686* ]]; then
         GCC_CONF_ARGS+=( --with-arch=pentium4 )
     fi
 
     # On musl targets, disable a bunch of things we don't want
-    if [[ "${encoded_target}" == *-musl* ]]; then
+    if [[ "${target}" == *-musl* ]]; then
         GCC_CONF_ARGS+=( --disable-libssp --disable-libmpx --disable-libmudflap )
         GCC_CONF_ARGS+=( --disable-libsanitizer --disable-symvers )
         export libat_cv_have_ifunc=no
@@ -163,31 +205,31 @@ function gcc_script()
 
         musl_arch()
         {
-            case "${encoded_target}" in
+            case "${target}" in
                 i686*)
                     echo i386 ;;
                 arm*)
                     echo armhf ;;
                 *)
-                    echo ${encoded_target%%-*} ;;
+                    echo ${target%%-*} ;;
             esac
         }
 
-    elif [[ "${encoded_target}" == *-mingw* ]]; then
+    elif [[ "${target}" == *-mingw* ]]; then
         # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
         export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
 
-    elif [[ "${encoded_target}" == *-darwin* ]]; then
+    elif [[ "${target}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
-        export LD_FOR_TARGET=${prefix}/bin/${encoded_target}-ld
+        export LD_FOR_TARGET=${prefix}/bin/${target}-ld
         export AS_FOR_TARGET=${prefix}/bin/llvm-as
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
 
         # GCC build needs a little extra help finding our binutils
-        GCC_CONF_ARGS+=( "--with-ld=${prefix}/bin/${encoded_target}-ld" )
-        GCC_CONF_ARGS+=( "--with-as=${prefix}/bin/${encoded_target}-as" )
+        GCC_CONF_ARGS+=( "--with-ld=${prefix}/bin/${target}-ld" )
+        GCC_CONF_ARGS+=( "--with-as=${prefix}/bin/${target}-as" )
 
         # GCC doesn't turn LTO on by default for some reason.
         GCC_CONF_ARGS+=( --enable-lto --enable-plugin )
@@ -210,7 +252,7 @@ function gcc_script()
     done
 
     # Do not run fixincludes except on Darwin
-    if [[ ${encoded_target} != *-darwin* ]]; then
+    if [[ ${target} != *-darwin* ]]; then
         sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
     fi
 
@@ -226,21 +268,18 @@ function gcc_script()
     cd $WORKSPACE/srcdir/gcc_build
 
     # This is the "sysroot" that we've placed all our dependencies inside of
-    sysroot="${prefix}/${encoded_target}"
+    sysroot="${prefix}/${target}"
 
     ## Platform-dependent arguments
-    if [[ "$encoded_target" == *-darwin* ]]; then
-        GCC_CONF_ARGS+=( --enable-languages=c,c++ )
-
-    elif [[ "${encoded_target}" == *linux* ]]; then
-        GCC_CONF_ARGS+=( --enable-languages=c,c++ )
-
-    elif [[ "${encoded_target}" == *freebsd* ]]; then
-        GCC_CONF_ARGS+=( --enable-languages=c,c++ )
-
+    GCC_CONF_ARGS+=( --enable-languages=c,c++ )
+    if [[ "$target" == *-darwin* ]]; then
+        echo
+    elif [[ "${target}" == *linux* ]]; then
+        echo
+    elif [[ "${target}" == *freebsd* ]]; then
+        echo
     # On mingw32 override native system header directories
-    elif [[ "${encoded_target}" == *mingw* ]]; then
-        GCC_CONF_ARGS+=( --enable-languages=c,c++ )
+    elif [[ "${target}" == *mingw* ]]; then
         GCC_CONF_ARGS+=( --with-native-system-header-dir=/include )
 
         # On mingw, we need to explicitly enable openmp
@@ -255,54 +294,54 @@ function gcc_script()
     mkdir -p ${sysroot}/lib #${sysroot}/usr/lib
     $WORKSPACE/srcdir/gcc-*/configure \
         --prefix="${prefix}" \
+        --target="${target}" \
+        --host="${host}" \
+        --build="${MACHTYPE}" \
         --with-build-sysroot="${sysroot}" \
         --with-sysroot="${sysroot}" \
-        --with-native-system-header-dir="/include" \
-        --oldincludedir="/include" \
-        --target="${encoded_target}" \
-        --host="${target}" \
-        --build="${target}" \
+        --with-gxx-include-dir="${sysroot}/include/c++/${gcc_version}" \
         --disable-multilib \
         --disable-werror \
-        --disable-bootstrap \
+        --enable-bootstrap \
         --enable-threads=posix \
-        --program-prefix="${encoded_target}-" \
+        --program-prefix="${target}-" \
         ${GCC_CONF_ARGS[@]}
 
     ## Build, build, build!
-    make CPP=$(which cpp) -j ${nproc}
+    make -j ${nproc}
     make install
 
     # Remove misleading libtool archives
-    rm -f ${prefix}/${encoded_target}/lib*/*.la
+    rm -f ${prefix}/${target}/lib*/*.la
 
     # Remove heavy doc directories
     rm -rf ${prefix}/share/man
-    """)
+    """
 end
 
 function gcc_platforms(;
                         # We're going to build cross-compilers that can run from the following platforms:
                         cross_host_platforms = [
-                           Platform("x86_64", "linux"; libc="musl"),
-                           #Platform("x86_64", "linux"; libc="glibc"),
+                           #Platform("x86_64", "linux"; libc="musl"),
+                           Platform("x86_64", "linux"; libc="glibc"),
                         ],
                         # We're going to build compilers that can target the following platforms:
                         target_platforms = supported_platforms(;experimental=true))
-    platforms_to_build = AbstractPlatform[]
+    platforms_to_build = CrossPlatform[]
 
-    # TODO: For now, only build for glibc Linux
+    # TODO: For now, only build for x86_64 glibc Linux
     filter!(p -> Sys.islinux(p) && libc(p) == "glibc", target_platforms)
+    filter!(p -> Sys.islinux(p) && arch(p) == "x86_64", target_platforms)
 
     # Now, in a loop, add target platforms for cross and native compilers
     for target_platform in target_platforms
         # Add a target for this platform for each cross-host we want to build
         for host_platform in cross_host_platforms
-            push!(platforms_to_build, encode_target_platform(target_platform; host_platform))
+            push!(platforms_to_build, CrossPlatform(host_platform => target_platform))
         end
         # Also add a native build
         if target_platform ∉ cross_host_platforms
-            push!(platforms_to_build, encode_target_platform(target_platform; host_platform=target_platform))
+            push!(platforms_to_build, CrossPlatform(target_platform))
         end
     end
     return platforms_to_build
@@ -310,7 +349,7 @@ end
 
 # The products that we will ensure are always built
 function gcc_products(platform)
-    target = BinaryBuilder.BinaryBuilderBase.aatriplet(decode_target_platform(platform))
+    target = BinaryBuilderBase.aatriplet(platform.target)
     return Product[
         FileProduct("bin", :bindir),
         ExecutableProduct("$(target)-gcc", :gcc),
@@ -321,7 +360,7 @@ end
 function gcc_dependencies(gcc_version::VersionNumber, platform::AbstractPlatform)
     # GCC likes to find things in `${prefix}/${triplet}`, so we place things
     # in the "target subdir" with the `prefix` Dependency attribute
-    target_subdir = BinaryBuilder.BinaryBuilderBase.aatriplet(decode_target_platform(platform))
+    target_subdir = BinaryBuilderBase.aatriplet(platform.target)
 
     # Build up list of dependencies that we'll return
     dependencies = AbstractDependency[
@@ -330,8 +369,8 @@ function gcc_dependencies(gcc_version::VersionNumber, platform::AbstractPlatform
     ]
 
     if Sys.islinux(platform)
-        # Linux always requires the LinuxKernelHeaders_jll
-        push!(dependencies, BuildDependency("LinuxKernelHeaders_jll"; prefix=target_subdir))
+        # Linux always requires the LinuxKernelHeaders_jll, and we want them in `${target}/usr`
+        push!(dependencies, BuildDependency("LinuxKernelHeaders_jll"; prefix=joinpath(target_subdir, "usr")))
 
         # Add Binutils_jll, as that's definitely needed on Linux as well
         push!(dependencies, BuildDependency("Binutils_jll"))
@@ -369,7 +408,7 @@ function gcc_metadata(gcc_versions = [], platforms = gcc_platforms())
     for gcc_version in gcc_versions
         for platform in platforms
             push!(metadata, (
-                gcc_sources(gcc_version),
+                gcc_sources(gcc_version, platform),
                 gcc_script(),
                 [platform],
                 gcc_products(platform),

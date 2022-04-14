@@ -122,6 +122,7 @@ as having a single "host" architecture.
 """
 function encode_target_platform(target_platform::Platform;
                                 host_platform::Platform = Platform("x86_64", "linux"; libc="musl"))
+    error("Don't use this, use `CrossPlatform` instead!")
     p = deepcopy(host_platform)
     for (tag, value) in tags(target_platform)
         p["target_"*tag] = value

@@ -1,0 +1,44 @@
+commit f3e3e034bc638a9de4b6ef67e6c7499810d4fca6
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Fri Feb 25 23:37:28 2022 +0000
+
+    Disable selftests, as the `-fself-test` flag is not supported on GCC 4.8.X
+
+diff --git a/gcc/configure b/gcc/configure
+index 3dcf7752b7f..e3856567b33 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -29680,10 +29680,10 @@ do
+ done
+ 
+ selftest_languages=
+-for language in $all_selected_languages
+-do
+-	selftest_languages="$selftest_languages selftest-$language"
+-done
++#for language in $all_selected_languages
++#do
++#	selftest_languages="$selftest_languages selftest-$language"
++#done
+ 
+ # We link each language in with a set of hooks, reached indirectly via
+ # lang.${target}.  Only do so for selected languages.
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 51f520c1508..01e70e142b8 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -6309,10 +6309,10 @@ do
+ done
+ 
+ selftest_languages=
+-for language in $all_selected_languages
+-do
+-	selftest_languages="$selftest_languages selftest-$language"
+-done
++#for language in $all_selected_languages
++#do
++#	selftest_languages="$selftest_languages selftest-$language"
++#done
+ 
+ # We link each language in with a set of hooks, reached indirectly via
+ # lang.${target}.  Only do so for selected languages.

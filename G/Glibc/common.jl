@@ -66,10 +66,11 @@ function glibc_script()
     # to be consistent, for our own sanity:
     GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_slibdir=/${lib64} libdir="/${lib64}" )
 
-    mkdir -p $WORKSPACE/srcdir/glibc_build
-    cd $WORKSPACE/srcdir/glibc_build
-    $WORKSPACE/srcdir/glibc-*/configure \
-        --prefix=/ \
+    rm -rf ${WORKSPACE}/srcdir/glibc_build
+    mkdir -p ${WORKSPACE}/srcdir/glibc_build
+    cd ${WORKSPACE}/srcdir/glibc_build
+    ${WORKSPACE}/srcdir/glibc-*/configure \
+        --prefix=/usr \
         --build=${MACHTYPE} \
         --host=${target} \
         --disable-multilib \

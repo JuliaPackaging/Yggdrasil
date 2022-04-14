@@ -1,4 +1,4 @@
-using BinaryBuilder, Base.BinaryPlatforms
+using BinaryBuilder, BinaryBuilderBase, Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 function binutils_sources(version)
@@ -39,17 +39,19 @@ function binutils_sources(version)
             ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.36.tar.xz",
                           "5788292cc5bbcca0848545af05986f6b17058b105be59e99ba7d0f9eb5336fb8"),
         ],
+        v"2.38" => [
+            ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.38.tar.xz",
+                          "e316477a914f567eccc34d5d29785b8b0f5a10208d36bbacedcc39048ecfe024"),
+        ],
     )
     return [
         binutils_version_sources[version]...,
-        # We've got a bevvy of patches for binutils, include them in.
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 end
 
 function binutils_script()
-    return string(bash_parse_encoded_target_triplet(),
-    raw"""
+    return raw"""
     # FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
     ln -sf $(which uname) /usr/bin/uname
     cd ${WORKSPACE}/srcdir/binutils-*/
@@ -61,28 +63,41 @@ function binutils_script()
     done
 
     ./configure --prefix=${prefix} \
-        --target=${encoded_target} \
-        --with-sysroot=${prefix}/${encoded_target} \
         --build=${MACHTYPE} \
-        --enable-multilib \
+        --host=${target} \
+        --target=${target} \
+        --with-sysroot=${prefix}/${target} \
+        --disable-multilib \
+        --program-prefix="${target}-" \
         --disable-werror
 
-    make -j${nproc}
-    make install
-    """)
+    # Force `make` to use `/bin/true` instead of `makeinfo` so that we don't
+    # die while failing to build docs.
+    MAKEVARS=( MAKEINFO=true )
+
+    make -j${nproc} ${MAKEVARS[@]}
+    make install ${MAKEVARS[@]}
+    """
 end
 
 function binutils_platforms()
-    # only macOS doesn't use binutils, so collect platforms for everyone else
-    platforms = filter(p -> !Sys.isapple(p), supported_platforms(;experimental=true))
+    # Build for two host platforms:
+    host_platforms = [
+        Platform("x86_64", "linux"; libc="glibc"),
+        Platform("x86_64", "linux"; libc="musl"),
+    ]
+
+    # Build for all supported target platforms, except for macOS, which uses cctools, not binutils :(
+    target_platforms = filter(p -> !Sys.isapple(p), supported_platforms(;experimental=true))
+
     return vcat(
-        encode_target_platform.(platforms; host_platform=Platform("x86_64", "linux"; libc="glibc")),
-        encode_target_platform.(platforms; host_platform=Platform("x86_64", "linux"; libc="musl")),
+        (CrossPlatform(host, target) for host in host_platforms, target in target_platforms)...,
     )
 end
 
 function binutils_products()
     return Product[
+        # Eventually, it would be nice to be able to template in `${target}-ld` or something like that.
         FileProduct("bin", :bindir),
     ]
 end
