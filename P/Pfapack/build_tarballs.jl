@@ -24,9 +24,6 @@ make install
 
 case ${target} in
 
-    *"linux"*) 
-        export so_suffix=so
-        ;;
     *"w64"*) 
         export so_suffix=dll
         ;;
@@ -34,6 +31,7 @@ case ${target} in
         export so_suffix=dylib
         ;;
     *)
+        export so_suffix=so
         ;; 
 
 esac
