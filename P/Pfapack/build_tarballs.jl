@@ -25,7 +25,7 @@ make install
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
 cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
-    -o ${prefix}/lib/libpfapack.${dlext} \
+    -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm \
 
 # Copy license file
