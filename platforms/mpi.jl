@@ -22,7 +22,7 @@ const augment = raw"""
         elseif binary == "OpenMPI_jll"
             "OpenMPI"
         elseif binary == "MPItrampoline_jll"
-            "MPIwrapper"
+            "MPItrampoline"
         else
             error("Unknown binary: $binary")
         end
@@ -41,7 +41,7 @@ mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
     ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPIwrapper", PackageSpec(name="MPItrampoline_jll"), "", !Sys.iswindows)
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "", !Sys.iswindows)
 )
 
 function augment_platforms(platforms)
@@ -55,6 +55,7 @@ function augment_platforms(platforms)
         append!(all_platforms, pkg_platforms)
         push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
     end
+    push!(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"))
     return all_platforms, dependencies
 end
 
