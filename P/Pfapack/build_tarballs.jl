@@ -26,7 +26,7 @@ make install
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
 cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
     -o ${libdir}/libpfapack.${dlext} \
-    -L${libdir} -lblastrampoline -lm \
+    -L${libdir} -lblastrampoline -lm
 
 # Copy license file
 install_license LapackLicence
