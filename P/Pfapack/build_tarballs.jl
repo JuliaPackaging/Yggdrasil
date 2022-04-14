@@ -40,7 +40,8 @@ esac
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
 cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
     -o ${prefix}/lib/libpfapack.${so_suffix} \
-    -L/workspace/destdir/lib -lblastrampoline -lm \
+    -L/workspace/destdir/lib \
+    -L/workspace/destdir/bin -lblastrampoline -lm \
 
 # Copy license file
 install_license LapackLicence
