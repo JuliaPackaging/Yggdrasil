@@ -71,6 +71,8 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
 
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
     export LDFLAGS="-L${prefix}/${target}/lib64 -Wl,-rpath-link,${prefix}/${target}/lib64"
+    # We will also need to run programs which require these libraries, so let them available to the dynamic loader
+    export LD_LIBRARY_PATH="${prefix}/${target}/lib64"
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches
