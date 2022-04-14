@@ -7,7 +7,7 @@ version = v"0.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/darnstrom/daqp.git", "2cf7ff97f9224897d197d8c1946548f465c2d21d")
+    GitSource("https://github.com/darnstrom/daqp.git", "324c9117b4de2f74ad0774ae2da102ded1081014")
 ]
 
 # Bash recipe for building across all platforms
