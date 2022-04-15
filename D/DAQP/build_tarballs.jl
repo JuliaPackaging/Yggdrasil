@@ -2,19 +2,26 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "fzf"
-version = v"0.30.0"
+name = "DAQP"
+version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/junegunn/fzf.git", "209366754892b04a01fd40de03cb9874a1e8fef7")
+    GitSource("https://github.com/darnstrom/daqp.git", "324c9117b4de2f74ad0774ae2da102ded1081014")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fzf/
-mkdir -p ${bindir}
-go build -o ${bindir}
+cd $WORKSPACE/srcdir/daqp
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="-std=gnu99" \
+    ..
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -23,7 +30,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("fzf", :fzf)
+    LibraryProduct("libdaqp", :libdaqp)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -31,4 +38,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go], julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

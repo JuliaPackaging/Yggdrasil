@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mold"
-version = v"1.1.1"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/rui314/mold.git", "c1af9c97e763a1d521889191a83b27bd6c43b351")
+    GitSource("https://github.com/rui314/mold.git", "1f55e40a8a967894816d6366bcc3d08de74c84b4")
 ]
 
 # Bash recipe for building across all platforms
