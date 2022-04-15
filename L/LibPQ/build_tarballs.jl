@@ -55,6 +55,8 @@ fi
 make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
 
+# Delete static library
+rm ${prefix}/lib/libpq.a
 install_license COPYRIGHT
 """
 
