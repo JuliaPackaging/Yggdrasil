@@ -8,14 +8,11 @@ version = v"0.1.0"
 
 sources = [
     ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "74c2bb3be6b9b99e75b03b3161ebcfbfb1d211e7becdd9929328a6e92ffce5a7"),
-    GitSource("https://github.com/scipopt/papilo.git", "9a1215a1f5db0ce2c422edc1205abfd4c0eba086"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
-rm -rf papilo
-cp -r ../papilo .
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -53,7 +50,7 @@ products = [
     ExecutableProduct("papilo", :papilo),
     ExecutableProduct("scip", :scip),
     LibraryProduct("libscip", :libscip),
-    # LibraryProduct("libgcg", :libgcg),
+    LibraryProduct("libgcg", :libgcg),
 ]
 
 dependencies = [
