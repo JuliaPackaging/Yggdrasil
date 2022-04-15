@@ -1,0 +1,40 @@
+diff --git before/hptt/include/hptt_types.h after/hptt/include/hptt_types.h
+index 170288e..ebc5796 100644
+--- before/hptt/include/hptt_types.h
++++ after/hptt/include/hptt_types.h
+@@ -1,7 +1,6 @@
+ #pragma once
+ 
+ #include <complex>
+-#include <complex.h>
+ 
+ #define REGISTER_BITS 256 // AVX
+ #ifdef HPTT_ARCH_ARM
+diff --git before/hptt/src/hptt.cpp after/hptt/src/hptt.cpp
+index 82d4e73..3018664 100644
+--- before/hptt/src/hptt.cpp
++++ after/hptt/src/hptt.cpp
+@@ -180,8 +180,10 @@ void cTensorTranspose( const int *perm, const int dim,
+                  const float _Complex beta,        float _Complex *B,                   const int *outerSizeB, 
+                  const int numThreads, const int useRowMajor)
+ {
++   const hptt::FloatComplex* calpha = reinterpret_cast<const hptt::FloatComplex*>(&alpha);
++   const hptt::FloatComplex* cbeta = reinterpret_cast<const hptt::FloatComplex*>(&beta);
+    auto plan(std::make_shared<hptt::Transpose<hptt::FloatComplex> >(sizeA, perm, outerSizeA, outerSizeB, dim, 
+-                         (const hptt::FloatComplex*) A, (hptt::FloatComplex) alpha, (hptt::FloatComplex*) B, (hptt::FloatComplex) beta, hptt::ESTIMATE, numThreads, nullptr, useRowMajor));
++                         (const hptt::FloatComplex*) A, *calpha, (hptt::FloatComplex*) B, *cbeta, hptt::ESTIMATE, numThreads, nullptr, useRowMajor));
+    plan->setConjA(conjA);
+    plan->execute();
+ }
+@@ -191,8 +193,10 @@ void zTensorTranspose( const int *perm, const int dim,
+                  const double _Complex beta,        double _Complex *B,                   const int *outerSizeB, 
+                  const int numThreads, const int useRowMajor)
+ {
++   const hptt::DoubleComplex* calpha = reinterpret_cast<const hptt::DoubleComplex*>(&alpha);
++   const hptt::DoubleComplex* cbeta = reinterpret_cast<const hptt::DoubleComplex*>(&beta);
+    auto plan(std::make_shared<hptt::Transpose<hptt::DoubleComplex> >(sizeA, perm, outerSizeA, outerSizeB, dim, 
+-                         (const hptt::DoubleComplex*) A, (hptt::DoubleComplex) alpha, (hptt::DoubleComplex*) B, (hptt::DoubleComplex) beta, hptt::ESTIMATE, numThreads, nullptr, useRowMajor));
++                         (const hptt::DoubleComplex*) A, *calpha, (hptt::DoubleComplex*) B, *cbeta, hptt::ESTIMATE, numThreads, nullptr, useRowMajor));
+    plan->setConjA(conjA);
+    plan->execute();
+ }
