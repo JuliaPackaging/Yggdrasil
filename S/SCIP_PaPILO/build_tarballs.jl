@@ -21,6 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DZIMPL=OFF\
   -DUG=0\
   -DAMPL=0\
+  -DGCG=0\
   -DSYM=bliss\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc} scip
@@ -49,7 +50,6 @@ products = [
     ExecutableProduct("papilo", :papilo),
     ExecutableProduct("scip", :scip),
     LibraryProduct("libscip", :libscip),
-    LibraryProduct("libgcg", :libgcg),
 ]
 
 dependencies = [
