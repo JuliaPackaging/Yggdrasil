@@ -34,11 +34,25 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # other tests.
     sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
 fi
-if [[ "${target}" == *"linux"* ]] ; then
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl --with-gssapi
- else
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
- fi
+FLAGS=()
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    FLAGS+=(--with-gssapi)
+    if [[ "${target}" == *-freebsd* ]]; then
+        # Only for FreeBSD we need to hint that we need to libcom_err to get
+        # functions `add_error_table` and `remove_error_table`
+        export LIBS=-lcom_err
+    fi
+fi
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-includes=${includedir} \
+    --with-libraries=${libdir} \
+    --without-readline \
+    --without-zlib \
+    --with-openssl \
+    "${FLAGS[@]}"
+make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
 
 install_license COPYRIGHT
@@ -46,7 +60,7 @@ install_license COPYRIGHT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -56,7 +70,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenSSL_jll"),
-    Dependency("Kerberos_krb5_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
