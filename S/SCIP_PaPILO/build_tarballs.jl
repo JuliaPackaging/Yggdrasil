@@ -22,7 +22,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DUG=0\
   -DAMPL=0\
   -DSYM=bliss\
-  -DGCG=off\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc} scip
 make papilo-executable
