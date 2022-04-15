@@ -1,53 +1,13 @@
-diff --git a/src/EquationTags.hh b/src/EquationTags.hh
-index 34277bae..7db769b3 100644
---- a/src/EquationTags.hh
-+++ b/src/EquationTags.hh
-@@ -20,12 +20,13 @@
- #ifndef _EQUATION_TAGS_HH
- #define _EQUATION_TAGS_HH
+diff --git a/src/macro/Driver.cc b/src/macro/Driver.cc
+index c0419e02..760f592a 100644
+--- a/src/macro/Driver.cc
++++ b/src/macro/Driver.cc
+@@ -41,7 +41,7 @@ Driver::parse(const string &file_arg, const string &basename_arg, const istream
+     }
  
--using namespace std;
--
-+#include <iostream>
- #include <map>
- #include <set>
- #include <string>
+   // Handle empty files
+-  if (modfile.rdbuf()->in_avail() == 0)
++  if (modfile.peek() == std::istream::traits_type::eof())
+     return;
  
-+using namespace std;
-+
- class EquationTags
- {
- private:
-diff --git a/src/SubModel.cc b/src/SubModel.cc
-index 8d59e5dd..fb5aee76 100644
---- a/src/SubModel.cc
-+++ b/src/SubModel.cc
-@@ -1006,16 +1006,18 @@ PacModelTable::transformPass(const lag_equivalence_table_t &unary_ops_nodes,
- 
-           // Associate the coefficients of the linear combination with the right components
-           for (auto [var, coeff] : terms)
--            if (auto it = find_if(components.begin(), components.end(),
--                                  [&](const auto &v) { return get<0>(v) == dynamic_model.AddVariable(var); });
--                it != components.end())
--              get<4>(*it) = coeff;
--            else
--              {
--                cerr << "ERROR: the model equation defining the 'target' of 'pac_target_info(" << name << ")' contains a variable (" << symbol_table.getName(var) << ") that is not declared as a 'component'" << endl;
--                exit(EXIT_FAILURE);
--              }
--
-+	    {
-+	      auto tmp = dynamic_model.AddVariable(var);
-+	      if (auto it = find_if(components.begin(), components.end(),
-+				    [& tmp = tmp](const auto &v) { return get<0>(v) == tmp; });
-+		  it != components.end())
-+		get<4>(*it) = coeff;
-+	      else
-+		{
-+		  cerr << "ERROR: the model equation defining the 'target' of 'pac_target_info(" << name << ")' contains a variable (" << symbol_table.getName(var) << ") that is not declared as a 'component'" << endl;
-+		  exit(EXIT_FAILURE);
-+		}
-+	    }
-           // Verify that all declared components appear in that equation
-           for (const auto &[component, growth_component, auxname, kind, coeff, growth_neutrality_param, h_indices, original_growth_component, growth_component_info] : components)
-             if (!coeff)
+   stringstream file_with_endl;
