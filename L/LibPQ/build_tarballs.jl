@@ -22,23 +22,23 @@ sources = [
 # Bash recipe for building across all platforms
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
-    cd $WORKSPACE/srcdir
-    make CC=$BUILD_CC VERSION_DEPS= zic
-    export ZIC=$WORKSPACE/srcdir/zic
-    cd $WORKSPACE/srcdir/postgresql-*/
-    if [[ "${target}" == i686-linux-musl ]]; then
-            # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
-            # bugged and it can run only a few programs, with the result that the
-            # configure test to check whether we're cross-compiling returns that we're
-            # doing a native build, but then it fails to run a bunch of programs during
-            # other tests.
-            sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
-    fi
-    if [[ "${target}" == *"linux"* ]] ; then
-        ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl --with-gssapi
-    else
-        ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
-    fi
+cd $WORKSPACE/srcdir
+make CC=$BUILD_CC VERSION_DEPS= zic
+export ZIC=$WORKSPACE/srcdir/zic
+cd $WORKSPACE/srcdir/postgresql-*/
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
+    # bugged and it can run only a few programs, with the result that the
+    # configure test to check whether we're cross-compiling returns that we're
+    # doing a native build, but then it fails to run a bunch of programs during
+    # other tests.
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+fi
+if [[ "${target}" == *"linux"* ]] ; then
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl --with-gssapi
+ else
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-includes=$prefix/include --with-libraries=$prefix/lib --without-readline --without-zlib --with-openssl
+ fi
 make -C src/interfaces/libpq install
 
 install_license COPYRIGHT
