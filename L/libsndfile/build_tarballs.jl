@@ -51,8 +51,6 @@ dependencies = [
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("Opus_jll"),
-    Dependency("mpg123_jll"),
-    Dependency("LAME_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
