@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "Pfapack"
 version = v"0.1.0"
@@ -38,6 +39,19 @@ install_license LapackLicence
 # standard Fortran libraries
 platforms = supported_platforms()
 
+# Since we need to link to libblastrampoline which has seen multiple
+# ABI-incompatible versions, we need to expand the julia versions we target
+julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+function set_julia_version(platforms::Vector{Platform}, julia_version::VersionNumber)
+    _platforms = deepcopy(platforms)
+    for p in _platforms
+        p["julia_version"] = string(julia_version)
+    end
+    return _platforms
+end
+expand_julia_versions(platforms::Vector{Platform}, julia_versions::Vector{VersionNumber}) =
+    vcat(set_julia_version.(Ref(platforms), julia_versions)...)
+platforms = expand_julia_versions(platforms, julia_versions)
 
 # The products that we will ensure are always built
 products = [
@@ -46,7 +60,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
+    Dependency(get_addable_spec("libblastrampoline_jll", v"3.0.4+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.7.0", platforms)),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.0+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.8.0", platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
