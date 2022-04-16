@@ -1,0 +1,19 @@
+steps:
+  - label: "generator"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1.7"
+    agents:
+      queue: "juliagpu"
+      cuda: "*"
+    if: build.message !~ /\[skip tests\]/
+    timeout_in_minutes: 60
+    env:
+      JULIA_PKG_SERVER: us-east.pkg.julialang.org
+    commands: |
+      echo "--- Setup Julia packages"
+      julia --color=yes --project=.buildkite -e 'import Pkg; Pkg.instantiate()'
+      julia --color=yes --project=.buildkite -e 'import Pkg; Pkg.precompile()'
+
+      echo "+++ Run generator"
+      julia --color=yes --project=.buildkite .buildkite/generator.jl
