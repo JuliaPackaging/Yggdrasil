@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MKL_jll", v"2022.0.0"),
+    Dependency("MKL_jll"; compat="2022.0.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
