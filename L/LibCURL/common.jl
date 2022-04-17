@@ -60,9 +60,14 @@ function build_libcurl(ARGS, name::String)
         FLAGS+=(--with-mbedtls=${prefix})
     fi
 
-    if [[ ${target} == *linux* ]]; then
-        ## use gssapi on linux
+    if [[ "${target}" == *linux* ]] || [[ "${target}" == *-freebsd* ]]; then
+        # Use gssapi on Linux and FreeBSD
         FLAGS+=(--with-gssapi=${prefix})
+        if [[ "${target}" == *-freebsd* ]]; then
+            # Only for FreeBSD we need to hint that we need to link to libkrb5 and
+            # libcom_err to resolve some undefined symbols.
+            export LIBS="-lkrb5 -lcom_err"
+        fi
     else
         FLAGS+=(--without-gssapi)
     fi
@@ -106,7 +111,7 @@ function build_libcurl(ARGS, name::String)
         # Note that while we unconditionally list MbedTLS as a dependency,
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-        Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p), platforms)),
+        Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
     ]
 
     if this_is_curl_jll
