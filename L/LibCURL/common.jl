@@ -27,7 +27,7 @@ function build_libcurl(ARGS, name::String)
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls --without-gssapi
+        --without-ssl --without-gnutls
         --without-libidn --without-libidn2 --without-librtmp
         --without-nss --without-polarssl
         --without-spnego --without-libpsl --disable-ares --disable-manual
@@ -58,6 +58,13 @@ function build_libcurl(ARGS, name::String)
     else
         # On all other systems, we use MbedTLS
         FLAGS+=(--with-mbedtls=${prefix})
+    fi
+
+    if [[ ${target} == *linux* ]]; then
+        ## use gssapi on linux
+        FLAGS+=(--with-gssapi=${prefix})
+    else
+        FLAGS+=(--without-gssapi)
     fi
 
     ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
@@ -99,6 +106,7 @@ function build_libcurl(ARGS, name::String)
         # Note that while we unconditionally list MbedTLS as a dependency,
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p), platforms)),
     ]
 
     if this_is_curl_jll
