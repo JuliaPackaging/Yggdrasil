@@ -2,10 +2,14 @@ steps:
   - label: "generator"
     plugins:
       - JuliaCI/julia#v1:
+          persist_depot_dirs: packages,artifacts,compiled
           version: "1.7"
     agents:
-      queue: "juliagpu"
-      cuda: "*"
+      queue: "juliaecosystem"
+      arch:  "x86_64"
+      os:    "linux"
+      # Only run on "sandbox.jl" machines
+      sandbox_capable: "true"
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 60
     env:

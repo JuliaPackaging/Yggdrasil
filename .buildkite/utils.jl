@@ -30,8 +30,10 @@ function annotate(annotation; context="default", style="info", append=true)
 end
 
 agent() = Dict(
-                :queue => "juliagpu",
-                :cuda => "*"
+                :queue => "juliaecosystem",
+                :arch => "x86_64",
+                :os => "linux",
+                :sandbox_capable => "true"
             )
 wait_step() = Dict(:wait => "~")
 group_step(name, steps) = Dict(:group => name, :steps => steps)
