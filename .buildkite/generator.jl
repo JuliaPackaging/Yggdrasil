@@ -211,16 +211,19 @@ for PROJECT in PROJECTS_ACCEPTED
         rm("/tmp/curl_$(PROJ_HASH)_$(PLATFORM).log")
     end
 
-    project_info = (; NAME, PROJECT, BB_HASH, PROJ_HASH)
+    STEPS = Any[]
+    if !IS_PR
+        push!(STEPS, jll_init_step(NAME, PROJECT, BB_HASH, PROJ_HASH))
+        push!(STEPS, wait_step())
+    end
+    push!(STEPS, group_step(NAME, BUILD_STEPS))
+    if !IS_PR
+        push!(STEPS, wait_step())
+        push!(STEPS, register_step(NAME, PROJECT, BB_HASH, PROJ_HASH))
+    end
 
     definition = Dict(
-        :steps => [
-            jll_init_step(NAME, PROJECT, BB_HASH, PROJ_HASH),
-            wait_step(),
-            group_step(NAME, BUILD_STEPS),
-            wait_step(),
-            register_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
-        ]
+        :steps => STEPS
     )
     upload_pipeline(definition)
 end
