@@ -1,9 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Elemental"
-version = v"0.87.7"
+version = v"0.87.8"
 
 # Collection of sources required to build Elemental
 sources = [
@@ -52,11 +55,22 @@ make "-j$nproc"
 make install
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+    end
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(!Sys.iswindows, platforms)
+
+# We need this since currently MPItrampoline_jll has a dependency on gfortran
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,9 +81,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("METIS_jll"),
-    Dependency("MPICH_jll"),
     Dependency("OpenBLAS_jll"),
 ]
 
+all_platforms, platform_dependencies = MPI.augment_platforms(platforms)
+append!(dependencies, platform_dependencies)
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies;
+               julia_compat="1.6", augment_platform_block)
