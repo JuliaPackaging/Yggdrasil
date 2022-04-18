@@ -90,34 +90,6 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
 
     cd ${PROJECT}
     julia ./build_tarballs.jl --verbose ${PLATFORM}
-
-    # # After building, we take the single tarball produced with the proper NAME, and upload it:
-    # TARBALLS=( ./products/${NAME%@*}*${PLATFORM}*.tar.gz )
-    # if [[ "${#TARBALLS[@]}" != 1 ]]; then
-    #     echo "Multiple tarballs?  This isn't right!" >&2
-    #     exit 1
-    # fi
-    # # Upload with curl
-    # ACL="x-amz-acl:public-read"
-    # CONTENT_TYPE="application/x-gtar"
-    # BUCKET="julia-bb-buildcache"
-    # BUCKET_PATH="${BB_HASH}/${PROJ_HASH}/${PLATFORM}.tar.gz"
-    # DATE="$(date -R)"
-    # S3SIGNATURE=\$(echo -en "PUT\n\n${CONTENT_TYPE}\n${DATE}\n${ACL}\n/${BUCKET}/${BUCKET_PATH}" | openssl sha1 -hmac "${S3SECRET}" -binary | base64)
-    # HOST="${BUCKET}.s3.amazonaws.com"
-    # echo "Uploading artifact to https://${HOST}/${BUCKET_PATH}"
-    # curl -X PUT -T "${TARBALLS[0]}" \
-    #     -H "Host: ${HOST}" \
-    #     -H "Date: ${DATE}" \
-    #     -H "Content-Type: ${CONTENT_TYPE}" \
-    #     -H "${ACL}" \
-    #     -H "Authorization: AWS ${S3KEY}:${S3SIGNATURE}" \
-    #     "https://${HOST}/${BUCKET_PATH}"
-
-    # if [[ "$?" != 0 ]]; then
-    #     echo "Failed to upload artifact!" >&2
-    #     exit 1
-    # fi
     """
 
     Dict(
