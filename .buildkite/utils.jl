@@ -9,7 +9,7 @@ function upload_pipeline(definition)
     if DEBUG
         YAML.write(stderr, definition)
     else
-        open(`buildkite-agent pipeline upload`, stdout, write=true) do io
+        open(`buildkite-agent pipeline upload --no-interpolation`, stdout, write=true) do io
             YAML.write(io, definition)
         end
     end
@@ -88,8 +88,8 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
     ./clean_builds.sh
     ./clean_products.sh
 
-    cd ${PROJECT}
-    julia ./build_tarballs.jl --verbose ${PLATFORM}
+    cd "${PROJECT}"
+    julia ./build_tarballs.jl --verbose "${PLATFORM}"
     """
 
     Dict(
@@ -118,12 +118,12 @@ function register_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
 
     export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
-    cd ${PROJECT}
+    cd "${PROJECT}"
     echo "Generating meta.json..."
     julia --compile=min ./build_tarballs.jl --meta-json=${NAME}.meta.json
     echo "Registering ${NAME}..."
     export BB_HASH PROJ_HASH
-    julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/register_package.jl ${NAME}.meta.json --verbose
+    julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/register_package.jl "${NAME}.meta.json" --verbose
     """
 
     Dict(
