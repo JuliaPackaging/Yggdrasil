@@ -53,10 +53,13 @@ function jll_init_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
 
     export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
+    echo "--- Setup Julia packages"
+    julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+
     cd ${PROJECT}
-    echo "Generating meta.json..."
+    echo "--- Generating meta.json..."
     julia --compile=min ./build_tarballs.jl --meta-json=${NAME}.meta.json
-    echo "Initializing JLL package..."
+    echo "--- Initializing JLL package..."
     julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/jll_init.jl ${NAME}.meta.json
     """
 
@@ -84,10 +87,15 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
 
     export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
+    echo "--- Setup Julia packages"
+    julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+
     # Cleanup temporary things that might have been left-over
+    echo "--- Cleanup"
     ./clean_builds.sh
     ./clean_products.sh
 
+    echo "+++ Build"
     cd "${PROJECT}"
     julia ./build_tarballs.jl --verbose "${PLATFORM}"
     """
@@ -118,10 +126,13 @@ function register_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
 
     export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
+    echo "--- Setup Julia packages"
+    julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+
     cd "${PROJECT}"
-    echo "Generating meta.json..."
+    echo "--- Generating meta.json..."
     julia --compile=min ./build_tarballs.jl --meta-json=${NAME}.meta.json
-    echo "Registering ${NAME}..."
+    echo "--- Registering ${NAME}..."
     export BB_HASH PROJ_HASH
     julia ${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci/register_package.jl "${NAME}.meta.json" --verbose
     """
