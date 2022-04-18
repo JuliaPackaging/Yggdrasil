@@ -43,6 +43,8 @@ function jll_init_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
         :label => "jll_init -- $NAME",
         :agents => agent(),
         :timeout_in_minutes => 60,
+        :concurrency => 1,
+        :concurrency_group => "yggdrasil/jll_init",
         :commands => [
             "true"
         ]
@@ -54,6 +56,9 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
         :label => "build -- $NAME -- $PLATFORM",
         :agents => agent(),
         :timeout_in_minutes => 60,
+        :priority => -1,
+        :concurrency => 16,
+        :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [
             "true"
         ]
