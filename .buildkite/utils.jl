@@ -98,6 +98,9 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
     echo "+++ Build"
     cd "${PROJECT}"
     julia ./build_tarballs.jl --verbose "${PLATFORM}"
+
+    echo "--- Upload"
+    buildkite-agent artifact upload "./products/${NAME%@*}*${PLATFORM}*.tar.gz"
     """
 
     Dict(
