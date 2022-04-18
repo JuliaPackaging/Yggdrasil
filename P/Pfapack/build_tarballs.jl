@@ -34,11 +34,12 @@ if (( ${nbits} == 64 )); then
     # Relocate 32bit symbols to 64bit counterparts.
     objcopy --redefine-syms=${WORKSPACE}/srcdir/sym-table.dat \
         libpfapack.a renamed.a
+    mv renamed.a libpfapack.a
 fi
 
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
-cc -shared -Wl,--whole-archive renamed.a -Wl,--no-whole-archive \
+cc -shared -Wl,--whole-archive libpfapack.a -Wl,--no-whole-archive \
     -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm
 
