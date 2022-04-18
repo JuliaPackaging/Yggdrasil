@@ -1,11 +1,10 @@
 # Trigger on pushes to `master`
 trigger:
-- master
+- blah
 
 # Trigger on PRs against `master`
 pr:
-- master
-drafts: false
+- blah
 
 # By default, use the `Native` pool of agents
 pool: Native
