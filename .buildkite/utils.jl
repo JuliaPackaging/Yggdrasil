@@ -30,11 +30,19 @@ function annotate(annotation; context="default", style="info", append=true)
 end
 
 agent() = Dict(
-                :queue => "juliaecosystem",
-                :arch => "x86_64",
-                :os => "linux",
-                :sandbox_capable => "true"
-            )
+    :queue => "juliaecosystem",
+    :arch => "x86_64",
+    :os => "linux",
+    :sandbox_capable => "true"
+)
+
+plugins() = [
+    "JuliaCI/julia#v1" => Dict(
+        "persist_depot_dirs" => "packages,artifacts,compiled",
+        "version" => "1.7"
+    )
+]
+
 wait_step() = Dict(:wait => "~")
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
@@ -42,6 +50,7 @@ function jll_init_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
     Dict(
         :label => "jll_init -- $NAME",
         :agents => agent(),
+        :plugins => plugins(),
         :timeout_in_minutes => 60,
         :concurrency => 1,
         :concurrency_group => "yggdrasil/jll_init",
@@ -55,6 +64,7 @@ function build_step(NAME, PLATFORM, PROJECT, BB_HASH, PROJ_HASH)
     Dict(
         :label => "build -- $NAME -- $PLATFORM",
         :agents => agent(),
+        :plugins => plugins(),
         :timeout_in_minutes => 60,
         :priority => -1,
         :concurrency => 16,
@@ -69,6 +79,7 @@ function register_step(NAME, PROJECT, BB_HASH, PROJ_HASH)
     Dict(
         :label => "register -- $NAME",
         :agents => agent(),
+        :plugins => plugins(),
         :timeout_in_minutes => 60,
         :commands => [
             "true"
