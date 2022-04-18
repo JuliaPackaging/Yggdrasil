@@ -8,7 +8,8 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xrq-phys/Pfapack.git", "0c71536b9641a0c8f4da67b373e3d4d5514561ab")
+    GitSource("https://github.com/xrq-phys/Pfapack.git", "ed885d81e31d88c86016f6664f7df08e50c32d6a"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,16 +17,28 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd Pfapack
 
+if (( ${nbits} == 64 )); then
+    export FFLAGS_="-fdefault-integer-8"
+fi
+
 cmake fortran \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_Fortran_FLAGS="${FFLAGS_}" \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
+    # Don't use CMake's installation.
+    # -DCMAKE_INSTALL_PREFIX=${prefix}
 make -j${nproc} VERBOSE=1
-make install
+
+if (( ${nbits} == 64 )); then
+    # Relocate 32bit symbols to 64bit counterparts.
+    objcopy --redefine-syms=${WORKSPACE}/srcdir/sym-table.dat \
+        libpfapack.a renamed.a
+fi
 
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
-cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
+cc -shared -Wl,--whole-archive renamed.a -Wl,--no-whole-archive \
     -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm
 
