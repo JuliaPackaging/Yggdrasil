@@ -8,7 +8,6 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
 cd ${WORKSPACE}/srcdir/pathfinder*
 
 # by default, pathfinder will compile to a static library,
