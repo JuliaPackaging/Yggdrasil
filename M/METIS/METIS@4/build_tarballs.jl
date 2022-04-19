@@ -14,7 +14,7 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "METIS4"
-upstream_version = 4.0.3
+upstream_version = v"4.0.3"
 version = v"400.001.300"
 
 # Collection of sources required to build METIS
