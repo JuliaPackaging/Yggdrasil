@@ -1,0 +1,25 @@
+From 196166fc93a25b0daa6afe9e7c835eff253ab64e Mon Sep 17 00:00:00 2001
+From: Jorge Brito <jorge.brito.xyz@gmail.com>
+Date: Tue, 19 Apr 2022 12:33:24 -0300
+Subject: [PATCH] Compile to dynamic lib
+
+---
+ c/Cargo.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/c/Cargo.toml b/c/Cargo.toml
+index ad5125f8..b30eef7e 100644
+--- a/c/Cargo.toml
++++ b/c/Cargo.toml
+@@ -8,7 +8,7 @@ edition = "2018"
+ capi = []
+ 
+ [lib]
+-crate-type = ["staticlib"]
++crate-type = ["cdylib"]
+ name = "pathfinder"
+ 
+ [dependencies]
+-- 
+2.32.0
+
