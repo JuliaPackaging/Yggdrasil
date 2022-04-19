@@ -43,7 +43,7 @@ install -D -m 755 "../target/${rust_target}/release/libpathfinder.${dlext}" "${l
 install_license ../LICENSE-APACHE ../LICENSE-MIT
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # font-kit fails to compile on arm and i686 linux
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
