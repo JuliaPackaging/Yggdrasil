@@ -44,7 +44,6 @@ if !isnothing(Pkg.pkg_server())
     catch e
         # Let us know the download of the registry went wrong, but do not hard fail
         @error "Could not download the registry" exception=(e, catch_backtrace())
-        exit(0)
     end
     last_mod_idx = findfirst(h -> first(h) == "last-modified", resp.headers)
     msg = "PkgServer: " * resp.url
@@ -135,7 +134,7 @@ BB_HASH = julia(```
             gethash(\"7f725544-6523-48cd-82d1-3fa08ff4056e\"), \
             gethash(\"12aac903-9f7c-5d81-afc2-d9565ea332ae\"), \
         ))));"
-```) |> cmd -> read(cmd, String)
+```) |> readchomp
 
 # Next, for each project, download its sources. We do this by generating meta.json
 # files, then parsing them with `download_sources.jl`
@@ -168,13 +167,13 @@ for PROJECT in PROJECTS_ACCEPTED
     # hash the actual content.
 
     TMP_PROJECT = mktempdir()
-    exec(`cp -RL $(PROJECT) $(TMP_PROJECT)`)
-    TREE_HASH = julia(`-e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"$(TMP_PROJECT)\")))"`) |> cmd->read(cmd, String)
-    META_HASH = open(io->sha256(io), "$(TEMP)/$(NAME).meta.json") |> bytes2hex
+    cp(PROJECT, TMP_PROJECT; follow_symlinks=true)
+    TREE_HASH = julia(`-e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"$(TMP_PROJECT)\")))"`) |> readchomp
+    META_HASH = open(sha256, "$(TEMP)/$(NAME).meta.json") |> bytes2hex
     PROJ_HASH = sha256(TREE_HASH*META_HASH) |> bytes2hex
 
     # Load in the platforms
-    PLATFORMS = split(read(joinpath(TEMP, "$(NAME).platforms.list"), String))
+    PLATFORMS = split(readchomp(joinpath(TEMP, "$(NAME).platforms.list")))
     if isempty(PLATFORMS)
         annotate("Unable to determine the proper platforms for $(NAME)", style="error", context=NAME)
         continue
@@ -195,7 +194,7 @@ for PROJECT in PROJECTS_ACCEPTED
 
         # Here, we hit the build cache to see if we can skip this particular combo
         CACHE_URL = "https://julia-bb-buildcache.s3.amazonaws.com/$(BB_HASH)/$(PROJ_HASH)/$(PLATFORM).tar.gz"
-        CURL_HTTP_CODE = read(`curl --output /tmp/curl_$(PROJ_HASH)_$(PLATFORM).log --silent --include --HEAD "$(CACHE_URL)" --write-out '%{http_code}'`, String)
+        CURL_HTTP_CODE = readchomp(`curl --output /tmp/curl_$(PROJ_HASH)_$(PLATFORM).log --silent --include --HEAD "$(CACHE_URL)" --write-out '%{http_code}'`)
         if CURL_HTTP_CODE == "200"
             println("    $(PLATFORM): skipping, existant")
             continue
