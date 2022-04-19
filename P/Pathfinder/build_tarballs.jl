@@ -1,23 +1,20 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Pathfinder"
 version = v"0.5.0"
+
 sources = [
-    GitSource("https://github.com/servo/pathfinder.git", "7281a607a80dacc5470d7d3ec208341b6f0b0727"),
+    GitSource("https://github.com/servo/pathfinder.git",
+              "7281a607a80dacc5470d7d3ec208341b6f0b0727"),
     DirectorySource("./bundled")
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/pathfinder*
+cd ${WORKSPACE}/srcdir/pathfinder*/c
 
 # by default, pathfinder will compile to a static library,
 # so we change "staticlib" to "cdylib" to compile to a dynamic library
-atomic_patch -p1 ../patches/Compile-to-dynamic-lib.patch
-
-# we need cbindgen to generate the header file
-cargo install cbindgen --force --target "${rust_host}"
-
-cd c
+atomic_patch -d .. -p1 ../../patches/Compile-to-dynamic-lib.patch
 
 # generate the header file
 cbindgen \
@@ -29,15 +26,8 @@ cbindgen \
 # build pathfinder
 cargo build --release --lib --target=${rust_target}
 
-# On windows the generated .dll doesn't start with lib
-if [[ "${target}" == *-mingw* ]]; then
-    cp \
-        ../target/${rust_target}/release/pathfinder.dll \
-        ../target/${rust_target}/release/libpathfinder.dll
-fi
-
 # install the library
-install -D -m 755 "../target/${rust_target}/release/libpathfinder.${dlext}" "${libdir}/libpathfinder.${dlext}"
+install -Dvm 755 ../target/${rust_target}/release/*pathfinder.${dlext} "${libdir}/libpathfinder.${dlext}"
 
 # install the licenses
 install_license ../LICENSE-APACHE ../LICENSE-MIT
@@ -60,9 +50,10 @@ products = [
 not_windows = filter(!Sys.iswindows, platforms)
 
 dependencies = [
-    BuildDependency("Fontconfig_jll", platforms=not_windows),
-    BuildDependency("FreeType2_jll",  platforms=not_windows),
-    BuildDependency("HarfBuzz_jll",   platforms=not_windows),
+    Dependency("Fontconfig_jll", platforms=not_windows),
+    Dependency("FreeType2_jll",  platforms=not_windows),
+    Dependency("HarfBuzz_jll",   platforms=not_windows),
+    HostBuildDependency(PackageSpec(; name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558")),
 ]
 
 compilers = [:rust, :c]
