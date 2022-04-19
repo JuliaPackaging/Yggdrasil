@@ -15,7 +15,7 @@ cd ${WORKSPACE}/srcdir/pathfinder*
 atomic_patch -p1 ../patches/Compile-to-dynamic-lib.patch
 
 # we need cbindgen to generate the header file
-cargo install cbindgen --force --target x86_64-unknown-linux-musl
+cargo install cbindgen --force --target "${rust_host}"
 
 cd c
 
