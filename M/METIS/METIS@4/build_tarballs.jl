@@ -19,7 +19,7 @@ version = v"400.001.300"
 
 # Collection of sources required to build METIS
 sources = [
-    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-$(version).tar.gz",
+    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-$(upstream_version).tar.gz",
                   "5efa35de80703c1b2c4d0de080fafbcf4e0d363a21149a1ad2f96e0144841a55"),
     DirectorySource("./bundled"),
 ]
