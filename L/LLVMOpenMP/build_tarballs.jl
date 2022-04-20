@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"13.0.1"
+version = v"14.0.1"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "6b79261371616c31fea18cd3ee1797c79ee38bcaf8417676d4fa366a24c96b4f"
+        "ea8a791c7dea7d08ad69c62cfc5e77a1ee700997fcde6a74c30a1c8e663ca3ae"
     ),
     DirectorySource("./bundled"),
 ]
@@ -55,14 +55,16 @@ products = [
     LibraryProduct("libomp", :libomp),
 ]
 
+llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We use UASM only for Windows
     HostBuildDependency(PackageSpec(name="UASM_jll", uuid="bbf38c07-751d-5a2b-a7fc-5c0acd9bd57e")),
     # We need libclang_rt.osx.a for linking libomp, because this library provides the
     # implementation of `__divdc3`.
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=[Platform("aarch64", "macos")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=[Platform("aarch64", "macos")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8", preferred_llvm_version=llvm_version)
