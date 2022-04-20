@@ -14,6 +14,7 @@ cd ${WORKSPACE}/srcdir/FastME
 wget https://www.gnu.org/licenses/gpl-3.0.txt > LICENSE
 
 update_configure_scripts --reconf
+autoupdate
 
 # optimized multi-threading
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
