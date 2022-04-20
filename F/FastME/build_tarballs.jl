@@ -11,17 +11,24 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/FastME
 
 install_license /usr/share/licenses/GPL-3.0+
+
 update_configure_scripts --reconf
 autoupdate
 
+# Checks from macros `AC_FUNC_MALLOC` and `AC_FUNC_REALLOC` may fail when cross-compiling,
+# which can cause configure to remap `malloc` and `realloc` to replacement functions
+# `rpl_malloc` and `rpl_realloc`, which will cause a linking error.  For more information,
+# see https://stackoverflow.com/q/70725646/2442087
+FLAGS=(ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes)
+
 # optimized multi-threading
-./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 install -Dvm 755 $bindir/fastme${exeext} $bindir/fastmeMP${exeext}
 
 # optimized single-threading
-./configure --disable-OpenMP --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./configure --disable-OpenMP --prefix=$prefix --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make clean
 make -j${nproc}
 make install
@@ -29,14 +36,6 @@ make install
 
 
 platforms = supported_platforms()
-# errors when glibc is not available on linux-musl and apple platforms
-# [13:38:50] Undefined symbols for architecture arm64:
-# [13:38:50]   "_rpl_realloc", referenced from:
-# [13:38:50]       _Read_Branch_Label in p_bootstrap.o
-# [13:38:50]       _Make_New_Edge_Label in p_bootstrap.o
-# [13:38:50] ld: symbol(s) not found for architecture arm64
-filter!(p-> libc(p) != "musl", platforms)
-filter!(!Sys.isapple, platforms)
 
 products = [
     ExecutableProduct("fastme", :fastme),
