@@ -36,7 +36,7 @@ platforms = supported_platforms()
 # [13:38:50]       _Make_New_Edge_Label in p_bootstrap.o
 # [13:38:50] ld: symbol(s) not found for architecture arm64
 filter!(p-> libc(p) != "musl", platforms)
-filter!(p-> !(Sys.isapple(p)), platforms)
+filter!(!Sys.isapple, platforms)
 
 products = [
     ExecutableProduct("fastme", :fastme),
