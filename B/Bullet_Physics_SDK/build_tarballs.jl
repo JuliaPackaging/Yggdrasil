@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Bullet"
+name = "Bullet_Physics_SDK"
 version = v"3.22.0"
 
 # Collection of sources required to complete build
