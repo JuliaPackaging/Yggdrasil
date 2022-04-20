@@ -10,9 +10,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/FastME
 
-# using license as specified here: http://www.atgc-montpellier.fr/fastme/binaries.php
-wget https://www.gnu.org/licenses/gpl-3.0.txt > LICENSE
-
+install_license /usr/share/licenses/GPL-3.0+
 update_configure_scripts --reconf
 autoupdate
 
