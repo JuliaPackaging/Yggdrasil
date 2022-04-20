@@ -8,7 +8,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xrq-phys/Pfapack.git", "0c71536b9641a0c8f4da67b373e3d4d5514561ab")
+    GitSource("https://github.com/xrq-phys/Pfapack.git", "ed885d81e31d88c86016f6664f7df08e50c32d6a")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir
 cd Pfapack
 
 cmake fortran \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
@@ -25,7 +26,7 @@ make install
 
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
-cc -shared -Wl,-force_load,${prefix}/lib/libpfapack.a \
+cc -shared $(flagon -Wl,--whole-archive) ${prefix}/lib/libpfapack.a $(flagon -Wl,--no-whole-archive) \
     -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm
 
