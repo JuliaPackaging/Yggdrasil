@@ -12,21 +12,19 @@ cd ${WORKSPACE}/srcdir/
 
 head -42 FastTree*.c > LICENSE
 
+mkdir -p "${bindir}"
+
 # install single thread with SSE instructions 
-gcc -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree*.c -lm
-install -Dvm 755 "FastTree" "${bindir}/fasttree${exeext}"
+cc -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttree${exeext}" FastTree*.c -lm
 
 # install single thread no SSE
-gcc -DNO_SSE -O3 -finline-functions -funroll-loops -Wall -o FastTree_noSSE FastTree*.c -lm
-install -Dvm 755 "FastTree_noSSE" "${bindir}/fasttree_noSSE${exeext}"
+cc -DNO_SSE -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttree_noSSE${exeext}" FastTree*.c -lm
 
 # install multithread with SSE
-gcc -DOPENMP -fopenmp -O3 -finline-functions -funroll-loops -Wall -o FastTreeMP FastTree*.c -lm
-install -Dvm 755 "FastTreeMP" "${bindir}/fasttreeMP${exeext}"
+cc -DOPENMP -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttreeMP${exeext}" FastTree*.c -lm
 
 # install multithread no SSE
-gcc -DNO_SSE -fopenmp -O3 -finline-functions -funroll-loops -Wall -o FastTreeMP_noSSE FastTree*.c -lm
-install -Dvm 755 "FastTreeMP_noSSE" "${bindir}/fasttreeMP_noSSE${exeext}"
+cc -DNO_SSE -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttreeMP_noSSE${exeext}" FastTree*.c -lm
 
 """
 
