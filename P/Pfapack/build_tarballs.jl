@@ -26,7 +26,7 @@ make install
 
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
-cc -shared cc -shared $(flagon -Wl,--whole-archive) ${prefix}/lib/libpfapack.a $(flagon -Wl,--no-whole-archive) \
+cc -shared $(flagon -Wl,--whole-archive) ${prefix}/lib/libpfapack.a $(flagon -Wl,--no-whole-archive) \
     -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm
 
