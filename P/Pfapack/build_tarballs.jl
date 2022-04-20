@@ -24,9 +24,20 @@ cmake fortran \
 make -j${nproc} VERBOSE=1
 make install
 
+case ${target} in
+
+    *"apple"*)
+        # Apple implements a different linker option.
+        export A2SO="-Wl,-force_load,${prefix}/lib/libpfapack.a"
+        ;;
+    *)
+        export A2SO="-Wl,--whole-archive ${prefix}/lib/libpfapack.a -Wl,--no-whole-archive"
+        ;; 
+esac
+
 # Manual conversion from static to dynamic lib.
 # Avoid linking libgfortran (these .f files make no reference to Fortran libs.)
-cc -shared -Wl,--whole-archive ${prefix}/lib/libpfapack.a -Wl,--no-whole-archive \
+cc -shared ${A2SO} \
     -o ${libdir}/libpfapack.${dlext} \
     -L${libdir} -lblastrampoline -lm
 
