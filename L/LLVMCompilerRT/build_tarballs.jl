@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "LLVMCompilerRT"
-version = v"12.0.0"
+version = v"13.0.1"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/compiler-rt-$(version).src.tar.xz",
-        "85a8cd0a62413eaa0457d8d02f8edac38c4dc0c96c00b09dc550260c23268434"
+        "7b33955031f9a9c5d63077dedb0f99d77e4e7c996266952c1cec55626dca5dfc"
     ),
     DirectorySource("./bundled"),
 ]
@@ -73,4 +73,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8", preferred_llvm_version=version)
