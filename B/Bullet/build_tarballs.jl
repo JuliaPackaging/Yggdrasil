@@ -27,7 +27,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DBUILD_EXTRAS=OFF \
     -S .. \
     -B .
-make && make install
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
