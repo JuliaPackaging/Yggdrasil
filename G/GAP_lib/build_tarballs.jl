@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP_lib"
 upstream_version = v"4.11.1"
-version = v"400.1192.001"
+version = v"400.1192.002"
 
 # Collection of sources required to complete build
 sources = [
@@ -63,7 +63,7 @@ rm -rf native-build
 install_license LICENSE
 
 # "install" most of the files
-rm -rf autom4te.cache dev etc extern hpcgap/extern pkg
+rm -rf autom4te.cache dev extern hpcgap/extern pkg
 mkdir -p ${prefix}/share/gap/
 mv * ${prefix}/share/gap/
 """
