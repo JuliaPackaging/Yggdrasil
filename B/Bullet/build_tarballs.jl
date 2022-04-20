@@ -36,7 +36,7 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
         FileProduct("lib/libBullet3OpenCL_clew.a", :libBullet3OpenCL_clew),
         FileProduct("lib/libBullet2FileLoader.a", :libBullet2FileLoader),
         FileProduct("lib/libBullet3Dynamics.a", :libBullet3Dynamics),
