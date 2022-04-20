@@ -37,7 +37,7 @@ elif [[ "${target}" == aarch64-apple-* ]]; then
 fi
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
     -DLIBOMP_INSTALL_ALIASES=OFF \
     -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
     "${platform_config[@]}" \
