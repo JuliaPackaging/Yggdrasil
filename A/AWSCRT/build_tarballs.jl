@@ -31,10 +31,10 @@ cd $WORKSPACE/srcdir/aws-lc
 # Patch for finding definition of `AT_HWCAP2` for PowerPC
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/auxvec.patch"
 
-# Disable -Werror because there are... well... warnings
-sed -i 's/-Werror//g' CMakeLists.txt
-
 if [[ "${target}" == *-mingw* ]]; then
+	# Disable -Werror because -fPIC warns `error: -fPIC ignored for target (all code is position independent) [-Werror]`
+	sed -i 's/-Werror//g' CMakeLists.txt
+
     # GetTickCount64 requires Windows Vista:
     # https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-gettickcount64
     export CXXFLAGS=-D_WIN32_WINNT=0x0600
@@ -52,6 +52,12 @@ ninja -j${nproc}
 ninja install
 
 cd $WORKSPACE/srcdir/s2n-tls
+
+if [[ "${target}" == *-mingw* ]]; then
+	# Disable -Werror because -fPIC warns `error: -fPIC ignored for target (all code is position independent) [-Werror]`
+	sed -i 's/-Werror//g' CMakeLists.txt
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
