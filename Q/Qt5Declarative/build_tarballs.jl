@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "Qt5Declarative"
 version = v"5.15.3"
 
-# Collection of sources required to build qt5
+# Collection of sources required to build qt5declarative
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-opensource-src-$(version).tar.xz",
                   "33f15a5caa451bddf8298466442ccf7ca65e4cf90453928ddbb95216c4374062"),
@@ -53,7 +53,9 @@ platforms_linux = [
     Platform("x86_64", "freebsd"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
-platforms_linux = expand_cxxstring_abis(platforms_linux)
+# We're using GCC to build for FreeBSD, so we need to expand C++ string ABI also
+# for this platform.
+platforms_linux = expand_cxxstring_abis(platforms_linux; skip=Returns(false))
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
 platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
