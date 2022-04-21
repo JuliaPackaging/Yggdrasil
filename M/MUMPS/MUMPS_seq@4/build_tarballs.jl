@@ -37,7 +37,12 @@ cd $WORKSPACE/srcdir/MUMPS_4.10.0
 
 cp Make.inc/Makefile.gfortran.SEQ Makefile.inc
 
-make_args+=(OPTF=-O3
+FFLAGS=()
+if [[ "${target}" == aarch64-apple-* ]]; then
+    FFLAGS+=(-fallow-argument-mismatch)
+fi
+
+make_args=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${prefix}/lib
             IMETIS=-I${prefix}/include
