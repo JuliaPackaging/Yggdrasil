@@ -11,3 +11,4 @@ index 7b0a215..7e17b21 100644
  #/usr/local/include/ #oldstable
  
  INC = -I. -I$(ECCODES_INCLUDE_DIR)
+ 
