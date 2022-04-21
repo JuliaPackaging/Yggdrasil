@@ -17,6 +17,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 mkdir build && cd build
+if [[ "${target}" == *-mingw* ]]; then
+    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+else
+    PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -28,8 +34,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -Denable_double=ON \
     -Denable_complex16=ON \
     -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    -DTPL_PARMETIS_INCLUDE_DIRS="${includedir}" \
-    -DTPL_PARMETIS_LIBRARIES="${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}" \
+    ${PLATFLAGS} \
     -DCMAKE_C_FLAGS="-std=c99" \
     -DXSDK_INDEX_SIZE=32 \
     -DXSDK_ENABLE_Fortran=OFF \
@@ -54,12 +59,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
-    Dependency("MPICH_jll"),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll")),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency("METIS_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
+Dependency("acl_jll"; platforms=filter(Sys.islinux, platforms)),
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
