@@ -9,7 +9,7 @@ version = v"0.1.0"
 sources = [
     GitSource("https://github.com/awslabs/aws-c-mqtt.git", "6168e32bf9f745dec40df633b78baa03420b7f83"),
     GitSource("https://github.com/awslabs/aws-lc.git", "11b50d39cf2378703a4ca6b6fee9d76a2e9852d1"),
-    GitSource("https://github.com/aws/s2n-tls.git", "88c7ae4d3fd9b3e9e49fcecc9bee1ddb8099ae70"),
+    GitSource("https://github.com/aws/s2n-tls.git", "0d41122bd2ca62a5de384b79c524dd48852b2071"),
     GitSource("https://github.com/awslabs/aws-c-common.git", "68f28f8df258390744f3c5b460250f8809161041"),
     GitSource("https://github.com/awslabs/aws-c-cal.git", "001007e36dddc5da47b8c56d41bb63e5fa9328d7"),
     GitSource("https://github.com/awslabs/aws-c-io.git", "59b4225bb87021d44d7fd2509b54d7038f11b7e7"),
@@ -43,6 +43,7 @@ fi
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_STATIC_LIBS=ON \
     -DBUILD_SHARED_LIBS=OFF \
@@ -62,17 +63,20 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
+	-GNinja \
 	..
-cmake --build . -j${nproc}
-cmake --install .
+ninja -j${nproc}
+ninja install
 
 cd $WORKSPACE/srcdir/aws-c-common
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -84,6 +88,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -95,6 +100,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -106,6 +112,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -117,6 +124,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -124,11 +132,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 
 cd $WORKSPACE/srcdir/aws-c-mqtt
-
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -140,6 +148,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -151,6 +160,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -162,6 +172,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -173,6 +184,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -184,6 +196,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -195,6 +208,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
