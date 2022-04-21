@@ -103,15 +103,62 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
 const glibc_version_sources = Dict{VersionNumber,Vector}(
     v"2.12.2" => [
         ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
-                        "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
+                      "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
     ],
     v"2.17" => [
         ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
-                        "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
+                      "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
     ],
     v"2.19" => [
         ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
-                        "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
+                      "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
+    ],
+)
+
+const gcc_buildcross_binaries = Dict{String,Vector}(
+    "x86_64-linux-gnu" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.x86_64-linux-gnu.tar.gz",
+                      "a919fd7e7a9ed8ccf12d333121dbc0155d2daaf1fa08fb91ce4f71fd38c7efd1"),
+    ],
+    "x86_64-linux-musl" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.x86_64-linux-musl.tar.gz",
+                      "2a54be3b9a59e26b576983a4e31e3aab9bdc8d82494295cf3603f493f650303f"),
+    ],
+    "i686-linux-gnu" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.i686-linux-gnu.tar.gz",
+                      "73efdc6164d5d09fdc3b9b38e09506f9d2931de7f8b140b44128bd725262c83c"),
+    ],
+    "i686-linux-musl" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.i686-linux-gnu.tar.gz",
+                      "73efdc6164d5d09fdc3b9b38e09506f9d2931de7f8b140b44128bd725262c83c"),
+    ],
+    "aarch64-linux-gnu" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.aarch64-linux-gnu.tar.gz",
+                      "b342c1c115c58027c8365416021d8ed45a7226d2ddce0397a7ea9cb36418699d"),
+    ],
+    "aarch64-linux-musl" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.aarch64-linux-musl.tar.gz",
+                      "911e5c5f9b96a6c76d67b8bc5cd89bf69aa3b45e587056ff6aec121d11310565"),
+    ],
+    "armv6l-linux-gnueabihf" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.armv6l-linux-gnueabihf.tar.gz",
+                      "f96bfab8f73591d83302ae73647da90761c930107e72c7839996a4161740c6e1"),
+    ],
+    "armv6l-linux-musleabihf" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.armv6l-linux-musleabihf.tar.gz",
+                      "7f4296aa72d1cb447273bac8b4f55192a46d6f54c079b51867ad8451e9441858"),
+    ],
+    "armv7l-linux-gnueabihf" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.armv7l-linux-gnueabihf.tar.gz",
+                      "dc4dd02dda4f172d01b204a1ccd6b181f9a4bebd27bec56a093d740f3e75a721"),
+    ],
+    "armv7l-linux-musleabihf" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.armv7l-linux-musleabihf.tar.gz",
+                      "567d071e446eb4061bef0500b78ea505409a0bd829f9febcce1f7b2be2b5608a"),
+    ],
+    "powerpc64le-linux-gnu" => [
+        ArchiveSource("https://github.com/JuliaBinaryWrappers/GCCBootstrap_jll.jl/releases/download/GCCBootstrap-v9.4.0+0/GCCBootstrap.v9.4.0.powerpc64le-linux-gnu.tar.gz",
+                      "ab1e549b37418892be10ccb7a8387e4492d2951b6dcc8b9a79c27c945efffca8"),
     ],
 )
 
@@ -134,8 +181,14 @@ function gcc_sources(gcc_version::VersionNumber, platform::AbstractPlatform)
         else
             glibc_version = v"2.19"
         end
-        push!(sources, glibc_version_sources[glibc_version]...)
+        append!(sources, glibc_version_sources[glibc_version])
     end
+
+
+    # Use our crosstool-ng built cross compilers for build -> host
+    append!(sources, gcc_buildcross_binaries[triplet(platform.host)])
+    # And also for build -> target
+    append!(sources, gcc_buildcross_binaries[triplet(platform.target)])
     return sources
 end
 
@@ -146,14 +199,18 @@ function gcc_script()
     # Figure out the GCC version from the directory name
     gcc_version="$(echo gcc-* | cut -d- -f2)"
 
-    # GCC shouldn't ever use the target compilers, only the host compilers
+    # GCC shouldn't ever use the target compilers, only the bootstrap ones we provides
     PATH=$(echo ${PATH} | tr ':' '\n' | grep -v ${target} | tr '\n' ':')
+    export PATH=${WORKSPACE}/srcdir/bin:${PATH}
+    LD_LIBRARY_PATH=$(echo ${LD_LIBRARY_PATH} | tr ':' '\n' | grep -v ${target} | tr '\n' ':')
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${WORKSPACE}/srcdir/${target}/lib:${WORKSPACE}/srcdir/${target}/lib64
     unset gcc g++ cc cxx CC CXX
 
-    # We do, however, need to provide some host tools without prefixes, apparently
     ln -s $(which ${HOSTAR}) $(dirname $(which ${HOSTAR}))/ar
     ln -s $(which ${HOSTCC}) $(dirname $(which ${HOSTAR}))/cc
     ln -s $(which ${HOSTCXX}) $(dirname $(which ${HOSTAR}))/c++
+    ln -s $(which ${HOSTCPP}) $(dirname $(which ${HOSTAR}))/cpp
+    export CXXCPP=cpp
 
     # Some things need /lib64, others just need /lib
     case ${bb_target} in
@@ -297,12 +354,11 @@ function gcc_script()
         --target="${target}" \
         --host="${host}" \
         --build="${MACHTYPE}" \
-        --with-build-sysroot="${sysroot}" \
         --with-sysroot="${sysroot}" \
         --with-gxx-include-dir="${sysroot}/include/c++/${gcc_version}" \
         --disable-multilib \
         --disable-werror \
-        --enable-bootstrap \
+        --disable-bootstrap \
         --enable-threads=posix \
         --program-prefix="${target}-" \
         ${GCC_CONF_ARGS[@]}
@@ -323,15 +379,15 @@ function gcc_platforms(;
                         # We're going to build cross-compilers that can run from the following platforms:
                         cross_host_platforms = [
                            #Platform("x86_64", "linux"; libc="musl"),
-                           Platform("x86_64", "linux"; libc="glibc"),
+                           #Platform("x86_64", "linux"; libc="glibc"),
                         ],
                         # We're going to build compilers that can target the following platforms:
                         target_platforms = supported_platforms(;experimental=true))
     platforms_to_build = CrossPlatform[]
 
-    # TODO: For now, only build for x86_64 glibc Linux
+    # TODO: For now, only build for glibc Linux
     filter!(p -> Sys.islinux(p) && libc(p) == "glibc", target_platforms)
-    filter!(p -> Sys.islinux(p) && arch(p) == "x86_64", target_platforms)
+    #filter!(p -> Sys.islinux(p) && arch(p) == "aarch64", target_platforms)
 
     # Now, in a loop, add target platforms for cross and native compilers
     for target_platform in target_platforms

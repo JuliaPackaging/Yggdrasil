@@ -92,6 +92,7 @@ function binutils_platforms()
 
     return vcat(
         (CrossPlatform(host, target) for host in host_platforms, target in target_platforms)...,
+        (CrossPlatform(target, target) for target in target_platforms)...,
     )
 end
 
