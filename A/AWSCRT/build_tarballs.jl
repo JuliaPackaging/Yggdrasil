@@ -225,4 +225,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Set lock_microarchitectures=false because aws-checksums uses the arch flag to specify the arch (-march=armv8-a+crc).
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0", lock_microarchitectures=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"4.8.5", lock_microarchitectures=false)
