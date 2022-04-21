@@ -31,7 +31,9 @@ make -f makefile_local_gfortran
 cp calc_etadot_fast.out $bindir/calc_etadot
 """
 
-platforms = supported_platforms()
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc")
+]
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
