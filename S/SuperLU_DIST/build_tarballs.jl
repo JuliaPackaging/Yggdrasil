@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 mkdir build && cd build
 if [[ "${target}" == *-mingw* ]]; then
-    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir} -DMPI_C_LIBRARIES=${bindir}/msmpi.${dlext} -DMPI_CXX_LIBRARIES=${bindir}/msmpi.${dlext}"
 else
     PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
