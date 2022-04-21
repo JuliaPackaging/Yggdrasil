@@ -1,0 +1,11 @@
+--- a/crypto/fipsmodule/cpucap/cpu_ppc64le.c
++++ b/crypto/fipsmodule/cpucap/cpu_ppc64le.c
+@@ -16,7 +16,7 @@
+ 
+ #if defined(OPENSSL_PPC64LE)
+ 
+-#include <sys/auxv.h>
++#include <linux/auxvec.h>
+ 
+ #if !defined(PPC_FEATURE2_HAS_VCRYPTO)
+ // PPC_FEATURE2_HAS_VCRYPTO was taken from section 4.1.2.3 of the “OpenPOWER
