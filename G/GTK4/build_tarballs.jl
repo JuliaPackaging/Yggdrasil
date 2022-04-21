@@ -72,6 +72,9 @@ meson .. \
 ninja -j${nproc}
 ninja install
 
+# post-install script is disabled when cross-compiling
+glib-compile-schemas ${prefix}/share/glib-2.0/schemas
+
 # Remove temporary links
 rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
