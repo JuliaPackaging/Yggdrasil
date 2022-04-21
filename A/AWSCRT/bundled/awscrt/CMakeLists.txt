@@ -43,7 +43,7 @@ aws_use_package(aws-c-s3)
 set(BUILD_SHARED_LIBS ON)
 
 if(APPLE)
-    target_link_libraries(${PROJECT_NAME} "-Wl,--force_load" ${DEP_AWS_LIBS})
+    target_link_libraries(${PROJECT_NAME} "-Wl,-force_load" ${DEP_AWS_LIBS})
 else()
     target_link_libraries(${PROJECT_NAME} "-Wl,--whole-archive" ${DEP_AWS_LIBS} "-Wl,--no-whole-archive")
 endif()
