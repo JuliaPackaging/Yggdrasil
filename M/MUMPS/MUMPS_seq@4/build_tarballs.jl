@@ -88,7 +88,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name = "METIS_jll",
                                 uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
-                                version = v"4.0.3")),
+                                version = v"400.000.300")),
     BuildDependency("OpenBLAS32_jll"),
     BuildDependency("CompilerSupportLibraries_jll"),
 ]
