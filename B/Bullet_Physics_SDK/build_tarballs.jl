@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/bullet*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_CXX_STANDARD="11" \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_PYBULLET=OFF \
     -DBUILD_UNIT_TESTS=OFF \
