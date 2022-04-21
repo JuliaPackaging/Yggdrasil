@@ -23,12 +23,14 @@ atomic_patch -p1 /workspace/srcdir/patches/flexpart-parmod.patch
 cd src
 make ncf=yes
 cp FLEXPART $bindir
+install_license ../LICENSE
 
 cd ../../flex_extract
 atomic_patch -p1 /workspace/srcdir/patches/flexextract-makefile.patch
 cd Source/Fortran/
 make -f makefile_local_gfortran
 cp calc_etadot_fast.out $bindir/calc_etadot
+install_license ../../LICENSE.md
 """
 
 platforms = [
