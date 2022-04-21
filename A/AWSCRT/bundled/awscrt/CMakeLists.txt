@@ -31,19 +31,15 @@ include(AwsFindPackage)
 
 add_library(${PROJECT_NAME} empty.c)
 
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS OFF) # Set up static libs for this part because this is required to grab static objects
+# Include the packages that AWS has marked as being part of the CRT bindings
 aws_use_package(aws-c-cal)
-# aws_use_package(aws-c-common)
-# aws_use_package(aws-c-compression)
 aws_use_package(aws-c-http)
-# aws_use_package(aws-c-io)
 aws_use_package(aws-c-mqtt)
 aws_use_package(aws-checksums)
 aws_use_package(aws-c-event-stream)
-# aws_use_package(aws-c-sdkutils)
 aws_use_package(aws-c-auth)
 aws_use_package(aws-c-s3)
-# aws_use_package(aws-c-iot)
 set(BUILD_SHARED_LIBS ON)
 
 target_link_libraries(${PROJECT_NAME} "-Wl,--whole-archive" ${DEP_AWS_LIBS} "-Wl,--no-whole-archive")
