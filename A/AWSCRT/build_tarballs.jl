@@ -65,7 +65,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	-GNinja \
 	..
@@ -78,7 +77,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -90,7 +88,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -102,7 +99,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -114,7 +110,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -126,7 +121,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -138,7 +132,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -150,7 +143,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 	cmake --build . -j${nproc} --target install
@@ -162,7 +154,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 	cmake --build . -j${nproc} --target install
@@ -174,7 +165,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 	cmake --build . -j${nproc} --target install
@@ -186,7 +176,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -198,7 +187,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
@@ -210,7 +198,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
 	..
 cmake --build . -j${nproc} --target install
