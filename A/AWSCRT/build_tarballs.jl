@@ -26,8 +26,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Only need aws-lc and s2n-tls on Linux
-if [[ "${target}" =~ "linux" ]]; then
+# Only need aws-lc and s2n-tls on linux and freebsd. macos and windows don't need it.
+if [[ "${target}" =~ "linux" || "${target}" =~ "freebsd" ]]; then
 	cd $WORKSPACE/srcdir/aws-lc
 
 	# Patch for finding definition of AT_HWCAP2 for PowerPC
