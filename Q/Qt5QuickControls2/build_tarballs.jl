@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Qt5QuickControls2"
-version = v"5.15.2"
+version = v"5.15.3"
 
 # Collection of sources required to build qt5
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtquickcontrols2-everywhere-src-$version.tar.xz",
-                  "671b6ce5f4b8ecc94db622d5d5fb29ef4ff92819be08e5ea55bfcab579de8919"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtquickcontrols2-everywhere-opensource-src-$version.tar.xz",
+                  "3b95e9be58c3d918f4c4a805116459a403ae6c61e33edf71b319672c46af562f"),
 ]
 
 script = raw"""
@@ -59,7 +59,7 @@ platforms_linux = [
 ]
 platforms_linux = expand_cxxstring_abis(platforms_linux)
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
-platforms_macos = [ Platform("x86_64", "macos") ]
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -81,12 +81,14 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+julia_compat = "1.6"
+
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
