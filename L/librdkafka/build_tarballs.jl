@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "librdkafka"
-version = v"1.5.0"
+version = v"1.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/edenhill/librdkafka/archive/v1.5.0.tar.gz", "f7fee59fdbf1286ec23ef0b35b2dfb41031c8727c90ced6435b8cf576f23a656")
+    ArchiveSource("https://github.com/edenhill/librdkafka/archive/v1.8.2.tar.gz", "6a747d293a7a4613bd2897e28e8791476fbe1ae7361f2530a876e0fd483482a6")
 ]
 
 # Bash recipe for building across all platforms
@@ -45,4 +45,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6")
