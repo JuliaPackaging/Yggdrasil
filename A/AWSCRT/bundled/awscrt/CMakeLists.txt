@@ -42,7 +42,12 @@ aws_use_package(aws-c-auth)
 aws_use_package(aws-c-s3)
 set(BUILD_SHARED_LIBS ON)
 
-target_link_libraries(${PROJECT_NAME} "-Wl,--whole-archive" ${DEP_AWS_LIBS} "-Wl,--no-whole-archive")
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} "-Wl,--force_load" ${DEP_AWS_LIBS})
+else()
+    target_link_libraries(${PROJECT_NAME} "-Wl,--whole-archive" ${DEP_AWS_LIBS} "-Wl,--no-whole-archive")
+endif()
+
 aws_prepare_shared_lib_exports(${PROJECT_NAME})
 
 set(TARGET_DIR "shared")
