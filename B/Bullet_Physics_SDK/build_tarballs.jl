@@ -18,13 +18,11 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD="11" \
     -DBUILD_PYBULLET=OFF \
     -DBUILD_UNIT_TESTS=OFF \
     -DBUILD_CPU_DEMOS=OFF \
     -DBUILD_OPENGL3_DEMOS=OFF \
     -DBUILD_BULLET2_DEMOS=OFF \
-    -DBUILD_EXTRAS=OFF \
     -S .. \
     -B .
 make -j${nproc}
