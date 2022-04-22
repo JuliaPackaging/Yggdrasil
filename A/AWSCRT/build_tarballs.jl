@@ -66,11 +66,15 @@ find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 find . -type f -exec sed -i 's/Shlwapi.h/shlwapi.h/g' {} +
 
 mkdir build && cd build
+if [[ "${target}" =~ "mingw" ]]; then
+	winflags="-D_WIN32_WINNT=0x0601"
+fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=OFF \
+	${winflags} \
 	..
 cmake --build . -j${nproc} --target install
 
