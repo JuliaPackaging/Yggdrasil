@@ -12,7 +12,9 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 name = "libpolymake_julia"
 version = v"0.8.0"
 
+# reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
 sources = [
@@ -77,4 +79,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "1.6")
+    julia_compat = julia_compat)
