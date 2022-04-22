@@ -61,6 +61,7 @@ fi
 cd $WORKSPACE/srcdir/aws-c-common
 
 # Patch for MinGW toolchain
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-common.patch"
 find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 mkdir build && cd build
