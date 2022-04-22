@@ -1,0 +1,34 @@
+From ab2832e01a18260d1f89756dd445079e52718d4d Mon Sep 17 00:00:00 2001
+From: Jacob Quinn <quinn.jacobd@gmail.com>
+Date: Sun, 17 May 2020 01:04:52 -0600
+Subject: [PATCH] don't strip
+
+---
+ iodbc/Makefile.am     | 1 -
+ iodbcinst/Makefile.am | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/iodbc/Makefile.am b/iodbc/Makefile.am
+index 6af72f5..01cad9e 100644
+--- a/iodbc/Makefile.am
++++ b/iodbc/Makefile.am
+@@ -94,7 +94,6 @@ noinst_HEADERS		= dlproc.h hdbc.h henv.h herr.h iodbc_misc.h \
+ if DARWIN
+ libiodbc.la: $(libiodbc_la_OBJECTS) $(libiodbc_la_DEPENDENCIES)
+ 	$(LINK) -rpath $(libdir) $(libiodbc_la_LDFLAGS) $(libiodbc_la_OBJECTS) $(libiodbc_la_LIBADD) $(LIBS)
+-	-$(STRIP) -s $(top_srcdir)/mac/iodbc.exp -u .libs/*.dylib
+ endif
+ 
+ EXTRA_DIST		= \
+diff --git a/iodbcinst/Makefile.am b/iodbcinst/Makefile.am
+index 6f1d7d0..d4dd815 100644
+--- a/iodbcinst/Makefile.am
++++ b/iodbcinst/Makefile.am
+@@ -133,7 +133,6 @@ noinst_HEADERS		= \
+ if DARWIN
+ libiodbcinst.la: $(libiodbcinst_la_OBJECTS) $(libiodbcinst_la_DEPENDENCIES)
+ 	$(LINK) -rpath $(libdir) $(libiodbcinst_la_LDFLAGS) $(libiodbcinst_la_OBJECTS) $(libiodbcinst_la_LIBADD) $(LIBS) 
+-	-$(STRIP) -s $(top_srcdir)/mac/iodbcinst.exp -u .libs/*.dylib
+ endif
+ 
+ EXTRA_DIST		= $(srcdir)/iodbcinst.exp
