@@ -14,7 +14,6 @@ version = v"0.8.0"
 
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
-
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
@@ -23,9 +22,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# change default perl which interferes with the hostbuild perl
+# remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
-ln -s $host_bindir/perl /usr/bin/perl
 
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
