@@ -61,7 +61,7 @@ fi
 cd $WORKSPACE/srcdir/aws-c-common
 
 # Patch for MinGW toolchain
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-common.patch"
+find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -86,7 +86,7 @@ cmake --build . -j${nproc} --target install
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-io.patch"
+find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
