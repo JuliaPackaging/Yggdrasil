@@ -1,0 +1,101 @@
+diff --git a/include/aws/io/private/pki_utils.h b/include/aws/io/private/pki_utils.h
+index 8a99038..dc70395 100644
+--- a/include/aws/io/private/pki_utils.h
++++ b/include/aws/io/private/pki_utils.h
+@@ -9,7 +9,11 @@
+ #ifdef _WIN32
+ /* It's ok to include external headers because this is a PRIVATE header file
+  * (it is usually a crime to include windows.h from header file) */
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
+ #    include <Windows.h>
++#endif
+ #endif /* _WIN32 */
+ 
+ #ifdef AWS_OS_APPLE
+diff --git a/source/windows/iocp/iocp_event_loop.c b/source/windows/iocp/iocp_event_loop.c
+index 359f7ae..ca6ea25 100644
+--- a/source/windows/iocp/iocp_event_loop.c
++++ b/source/windows/iocp/iocp_event_loop.c
+@@ -12,7 +12,11 @@
+ 
+ #include <aws/io/logging.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ /* The next set of struct definitions are taken directly from the
+     windows documentation. We can't include the header files directly
+diff --git a/source/windows/iocp/pipe.c b/source/windows/iocp/pipe.c
+index 72d5892..d7c9c21 100644
+--- a/source/windows/iocp/pipe.c
++++ b/source/windows/iocp/pipe.c
+@@ -11,7 +11,11 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ enum read_end_state {
+     /* Pipe is open. */
+diff --git a/source/windows/secure_channel_tls_handler.c b/source/windows/secure_channel_tls_handler.c
+index 7e9e52a..984d1f4 100644
+--- a/source/windows/secure_channel_tls_handler.c
++++ b/source/windows/secure_channel_tls_handler.c
+@@ -18,7 +18,11 @@
+ #include <aws/io/private/tls_channel_handler_shared.h>
+ #include <aws/io/statistics.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ #include <schannel.h>
+ #include <security.h>
+diff --git a/source/windows/shared_library.c b/source/windows/shared_library.c
+index c6c0670..ae47f1f 100644
+--- a/source/windows/shared_library.c
++++ b/source/windows/shared_library.c
+@@ -4,7 +4,11 @@
+  */
+ 
+ // clang-format off
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ #include <libloaderapi.h>
+ // clang-format on
+ 
+diff --git a/source/windows/windows_pki_utils.c b/source/windows/windows_pki_utils.c
+index d5d808f..678b7b1 100644
+--- a/source/windows/windows_pki_utils.c
++++ b/source/windows/windows_pki_utils.c
+@@ -9,7 +9,11 @@
+ 
+ #include <aws/io/logging.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ #include <stdio.h>
+ #include <string.h>
+ 

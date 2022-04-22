@@ -59,6 +59,10 @@ if [[ "${target}" =~ "linux" || "${target}" =~ "freebsd" ]]; then
 fi
 
 cd $WORKSPACE/srcdir/aws-c-common
+
+# Patch for MinGW toolchain
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-common.patch"
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -80,6 +84,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 
 cd $WORKSPACE/srcdir/aws-c-io
+
+# Patch for MinGW toolchain
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-io.patch"
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_PREFIX_PATH=${prefix} \

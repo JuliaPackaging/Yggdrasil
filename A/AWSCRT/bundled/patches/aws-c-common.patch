@@ -1,0 +1,151 @@
+diff --git a/include/aws/testing/aws_test_harness.h b/include/aws/testing/aws_test_harness.h
+index 68e3ade..4b84f7e 100644
+--- a/include/aws/testing/aws_test_harness.h
++++ b/include/aws/testing/aws_test_harness.h
+@@ -459,7 +459,11 @@ static inline int s_aws_run_test_case(struct aws_test_harness *harness) {
+ /* https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences */
+ #ifdef _WIN32
+ 
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
+ #    include <Windows.h>
++#endif
+ 
+ #    ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+ #        define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+diff --git a/source/allocator.c b/source/allocator.c
+index a672662..0a7dc18 100644
+--- a/source/allocator.c
++++ b/source/allocator.c
+@@ -12,8 +12,12 @@
+ #include <stdlib.h>
+ 
+ #ifdef _WIN32
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
+ #    include <Windows.h>
+ #endif
++#endif
+ 
+ #ifdef __MACH__
+ #    include <CoreFoundation/CoreFoundation.h>
+diff --git a/source/common.c b/source/common.c
+index af48c3a..718c910 100644
+--- a/source/common.c
++++ b/source/common.c
+@@ -13,7 +13,11 @@
+ #include <stdlib.h>
+ 
+ #ifdef _WIN32
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
+ #    include <Windows.h>
++#endif
+ #else
+ #    include <dlfcn.h>
+ #endif
+diff --git a/source/windows/clock.c b/source/windows/clock.c
+index b7b0b38..3bb56fa 100644
+--- a/source/windows/clock.c
++++ b/source/windows/clock.c
+@@ -3,7 +3,11 @@
+  * SPDX-License-Identifier: Apache-2.0.
+  */
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ #include <aws/common/clock.h>
+ 
+ static const uint64_t FILE_TIME_TO_NS = 100;
+diff --git a/source/windows/condition_variable.c b/source/windows/condition_variable.c
+index 5a989ea..9b5ad67 100644
+--- a/source/windows/condition_variable.c
++++ b/source/windows/condition_variable.c
+@@ -8,7 +8,11 @@
+ #include <aws/common/clock.h>
+ #include <aws/common/mutex.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ #define AWSCV_TO_WINDOWS(pCV) (PCONDITION_VARIABLE) & (pCV)->condition_handle
+ 
+diff --git a/source/windows/device_random.c b/source/windows/device_random.c
+index 316ed68..51eba3f 100644
+--- a/source/windows/device_random.c
++++ b/source/windows/device_random.c
+@@ -7,7 +7,11 @@
+ #include <aws/common/byte_buf.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ #include <bcrypt.h>
+ 
+ static BCRYPT_ALG_HANDLE s_alg_handle = NULL;
+diff --git a/source/windows/mutex.c b/source/windows/mutex.c
+index aedefd2..0cce579 100644
+--- a/source/windows/mutex.c
++++ b/source/windows/mutex.c
+@@ -6,7 +6,11 @@
+ #include <aws/common/mutex.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ /* Convert a string from a macro to a wide string */
+ #define WIDEN2(s) L## #s
+diff --git a/source/windows/rw_lock.c b/source/windows/rw_lock.c
+index 36cc81a..e232a25 100644
+--- a/source/windows/rw_lock.c
++++ b/source/windows/rw_lock.c
+@@ -6,7 +6,11 @@
+ #include <aws/common/rw_lock.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ #include <synchapi.h>
+ 
+ /* Convert a string from a macro to a wide string */
+diff --git a/source/windows/thread.c b/source/windows/thread.c
+index b44ba7e..42fb160 100644
+--- a/source/windows/thread.c
++++ b/source/windows/thread.c
+@@ -9,7 +9,11 @@
+ #include <aws/common/logging.h>
+ #include <aws/common/private/thread_shared.h>
+ 
+-#include <Windows.h>
++#if defined(__MINGW32__) || defined(__MINGW64__)
++#    include <windows.h>
++#else
++#    include <Windows.h>
++#endif
+ 
+ #include <inttypes.h>
+ 
