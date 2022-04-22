@@ -9,11 +9,13 @@ version = v"3.52.15"
 sources = [
     GitSource("https://github.com/openlink/iODBC.git",
               "79c7f572a7b5c4123ec3cc1dd29df1af61a3405f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/iODBC/
+atomic_patch -p1 ../patches/do-not-strip.patch
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
