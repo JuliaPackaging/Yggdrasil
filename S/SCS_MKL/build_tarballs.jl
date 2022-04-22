@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
 scsflags="DLONG=1 USE_OPENMP=0 BLAS32=1 NOBLASSUFFIX=1"
-mklflags="-L${prefix}/lib -Wl,--no-as-needed -lmkl_rt -lmkl_gnu_thread -lmkl_core -lpthread -lm -ldl"
+mklflags="-L${prefix}/lib -Wl,--no-as-needed -lmkl_rt -lmkl_core -lpthread -lm -ldl"
 
 make ${scsflags} MKLFLAGS="${mklflags}" out/libscsmkl.${dlext}
 
