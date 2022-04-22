@@ -21,42 +21,21 @@ done
 ./autogen.sh
 
 # make single-process version 
-./configure ${extraflags} --enable-phyml --prefix=$prefix --build=${MACHTYPE} --host=${target}
+ac_cv_func_malloc_0_nonnull=yes \
+ac_cv_func_realloc_0_nonnull=yes \
+./configure --enable-phyml --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make clean & make -j${nproc}
 install -Dvm 755 ./src/phyml${exeext} ${bindir}/phyml${exeext}
 
-# Make MPI version
-./configure ${extraflags} --enable-phyml-mpi --prefix=$prefix --build=${MACHTYPE} --host=${target}
+# make MPI version
+ac_cv_func_malloc_0_nonnull=yes \
+ac_cv_func_realloc_0_nonnull=yes \
+./configure --enable-phyml-mpi --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make clean & make -j${nproc}
 install -Dvm 755 ./src/phyml-mpi${exeext} ${bindir}/phymlMPI${exeext}
 """
 
 platforms = supported_platforms()
-
-# similar error for below platforms
-# [16:29:05] Undefined symbols for architecture arm64:
-# [16:29:05]   "_rpl_malloc", referenced from:
-# [16:29:05]       _Alloc_TBE_Matrices in make.o
-# [16:29:05]   "_rpl_realloc", referenced from:
-# [16:29:05]       _mRealloc in utilities.o
-# [16:29:05]       _Remove_Duplicates in utilities.o
-# [16:29:05]       _Get_Bip in utilities.o
-# [16:29:05]       _TIPO_Untangle_Node in tiporder.o
-# [16:29:05]       _Read_Nexus_Translate in nexus.o
-# [16:29:05]       _Read_Nexus_Tree in nexus.o
-# [16:29:05]       _XML_Load_File in xml.o
-# [16:29:05]       ...
-# [16:29:05] ld: symbol(s) not found for architecture arm64
-# [16:29:05] clang-12: error: linker command failed with exit code 1 (use -v to see invocation)
-_rpl_malloc_error_triplets = [
-    "aarch64-linux-musl", 
-    "armv6l-linux-musleabihf", 
-    "armv7l-linux-musleabihf",
-    "i686-linux-musl",
-    "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
-    ]
-filter!(p->triplet(p) ∉ _rpl_malloc_error_triplets, platforms)
 
 # [16:08:21] /opt/i686-w64-mingw32/bin/../i686-w64-mingw32/sys-root/lib/../lib/libmingw32.a(lib32_libmingw32_a-crt0_c.o): In function `main':
 # [16:08:21] /workspace/srcdir/mingw-w64-v7.0.0/mingw-w64-crt/crt/crt0_c.c:18: undefined reference to `WinMain@16'
