@@ -30,6 +30,7 @@ platforms = supported_platforms()
 # Remove the unsupported platforms
 filter!(!Sys.iswindows, platforms)
 filter!(!Sys.isapple, platforms)
+filter!(!Sys.isfreebsd, platforms)
 filter!(p -> libc(p) != "musl", platforms)
 platforms = expand_gfortran_versions(platforms)
 
