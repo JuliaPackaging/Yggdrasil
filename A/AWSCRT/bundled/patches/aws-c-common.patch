@@ -1,151 +1,169 @@
+diff --git a/cmake/AwsFeatureTests.cmake b/cmake/AwsFeatureTests.cmake
+index 2bc5b29..795f66e 100644
+--- a/cmake/AwsFeatureTests.cmake
++++ b/cmake/AwsFeatureTests.cmake
+@@ -45,7 +45,7 @@ if(NOT CMAKE_CROSSCOMPILING)
+ endif()
+ 
+ check_c_source_compiles("
+-    #include <Windows.h>
++    #include <windows.h>
+     #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+     int main() {
+         return 0;
+diff --git a/include/aws/common/condition_variable.h b/include/aws/common/condition_variable.h
+index e78ceea..ebea976 100644
+--- a/include/aws/common/condition_variable.h
++++ b/include/aws/common/condition_variable.h
+@@ -31,7 +31,7 @@ struct aws_condition_variable {
+  * You can do something like struct aws_condition_variable var =
+  * AWS_CONDITION_VARIABLE_INIT;
+  *
+- * If on Windows and you get an error about AWS_CONDITION_VARIABLE_INIT being undefined, please include Windows.h to get
++ * If on Windows and you get an error about AWS_CONDITION_VARIABLE_INIT being undefined, please include windows.h to get
+  * CONDITION_VARIABLE_INIT.
+  */
+ #ifdef _WIN32
+diff --git a/include/aws/common/mutex.h b/include/aws/common/mutex.h
+index edb9186..df56cdb 100644
+--- a/include/aws/common/mutex.h
++++ b/include/aws/common/mutex.h
+@@ -8,7 +8,7 @@
+ 
+ #include <aws/common/common.h>
+ #ifdef _WIN32
+-/* NOTE: Do not use this macro before including Windows.h */
++/* NOTE: Do not use this macro before including windows.h */
+ #    define AWSMUTEX_TO_WINDOWS(pMutex) (PSRWLOCK) & (pMutex)->mutex_handle
+ #else
+ #    include <pthread.h>
+diff --git a/include/aws/common/rw_lock.h b/include/aws/common/rw_lock.h
+index 01c257d..f492d61 100644
+--- a/include/aws/common/rw_lock.h
++++ b/include/aws/common/rw_lock.h
+@@ -8,7 +8,7 @@
+ 
+ #include <aws/common/common.h>
+ #ifdef _WIN32
+-/* NOTE: Do not use this macro before including Windows.h */
++/* NOTE: Do not use this macro before including windows.h */
+ #    define AWSSRW_TO_WINDOWS(pCV) (PSRWLOCK) pCV
+ #else
+ #    include <pthread.h>
 diff --git a/include/aws/testing/aws_test_harness.h b/include/aws/testing/aws_test_harness.h
-index 68e3ade..4b84f7e 100644
+index 68e3ade..2472b22 100644
 --- a/include/aws/testing/aws_test_harness.h
 +++ b/include/aws/testing/aws_test_harness.h
-@@ -459,7 +459,11 @@ static inline int s_aws_run_test_case(struct aws_test_harness *harness) {
+@@ -459,7 +459,7 @@ static inline int s_aws_run_test_case(struct aws_test_harness *harness) {
  /* https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences */
  #ifdef _WIN32
  
-+#if defined(__MINGW32__) || defined(__MINGW64__)
+-#    include <Windows.h>
 +#    include <windows.h>
-+#else
- #    include <Windows.h>
-+#endif
  
  #    ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
  #        define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 diff --git a/source/allocator.c b/source/allocator.c
-index a672662..0a7dc18 100644
+index a672662..8d62514 100644
 --- a/source/allocator.c
 +++ b/source/allocator.c
-@@ -12,8 +12,12 @@
+@@ -12,7 +12,7 @@
  #include <stdlib.h>
  
  #ifdef _WIN32
-+#if defined(__MINGW32__) || defined(__MINGW64__)
+-#    include <Windows.h>
 +#    include <windows.h>
-+#else
- #    include <Windows.h>
  #endif
-+#endif
  
  #ifdef __MACH__
- #    include <CoreFoundation/CoreFoundation.h>
 diff --git a/source/common.c b/source/common.c
-index af48c3a..718c910 100644
+index af48c3a..59add77 100644
 --- a/source/common.c
 +++ b/source/common.c
-@@ -13,7 +13,11 @@
+@@ -13,7 +13,7 @@
  #include <stdlib.h>
  
  #ifdef _WIN32
-+#if defined(__MINGW32__) || defined(__MINGW64__)
+-#    include <Windows.h>
 +#    include <windows.h>
-+#else
- #    include <Windows.h>
-+#endif
  #else
  #    include <dlfcn.h>
  #endif
 diff --git a/source/windows/clock.c b/source/windows/clock.c
-index b7b0b38..3bb56fa 100644
+index b7b0b38..3c36aa1 100644
 --- a/source/windows/clock.c
 +++ b/source/windows/clock.c
-@@ -3,7 +3,11 @@
+@@ -3,7 +3,7 @@
   * SPDX-License-Identifier: Apache-2.0.
   */
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  #include <aws/common/clock.h>
  
  static const uint64_t FILE_TIME_TO_NS = 100;
 diff --git a/source/windows/condition_variable.c b/source/windows/condition_variable.c
-index 5a989ea..9b5ad67 100644
+index 5a989ea..07d6a0c 100644
 --- a/source/windows/condition_variable.c
 +++ b/source/windows/condition_variable.c
-@@ -8,7 +8,11 @@
+@@ -8,7 +8,7 @@
  #include <aws/common/clock.h>
  #include <aws/common/mutex.h>
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  
  #define AWSCV_TO_WINDOWS(pCV) (PCONDITION_VARIABLE) & (pCV)->condition_handle
  
 diff --git a/source/windows/device_random.c b/source/windows/device_random.c
-index 316ed68..51eba3f 100644
+index 316ed68..506e298 100644
 --- a/source/windows/device_random.c
 +++ b/source/windows/device_random.c
-@@ -7,7 +7,11 @@
+@@ -7,7 +7,7 @@
  #include <aws/common/byte_buf.h>
  #include <aws/common/thread.h>
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  #include <bcrypt.h>
  
  static BCRYPT_ALG_HANDLE s_alg_handle = NULL;
 diff --git a/source/windows/mutex.c b/source/windows/mutex.c
-index aedefd2..0cce579 100644
+index aedefd2..75e7a23 100644
 --- a/source/windows/mutex.c
 +++ b/source/windows/mutex.c
-@@ -6,7 +6,11 @@
+@@ -6,7 +6,7 @@
  #include <aws/common/mutex.h>
  #include <aws/common/thread.h>
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  
  /* Convert a string from a macro to a wide string */
  #define WIDEN2(s) L## #s
 diff --git a/source/windows/rw_lock.c b/source/windows/rw_lock.c
-index 36cc81a..e232a25 100644
+index 36cc81a..5bf73c7 100644
 --- a/source/windows/rw_lock.c
 +++ b/source/windows/rw_lock.c
-@@ -6,7 +6,11 @@
+@@ -6,7 +6,7 @@
  #include <aws/common/rw_lock.h>
  #include <aws/common/thread.h>
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  #include <synchapi.h>
  
  /* Convert a string from a macro to a wide string */
 diff --git a/source/windows/thread.c b/source/windows/thread.c
-index b44ba7e..42fb160 100644
+index b44ba7e..fa41f52 100644
 --- a/source/windows/thread.c
 +++ b/source/windows/thread.c
-@@ -9,7 +9,11 @@
+@@ -9,7 +9,7 @@
  #include <aws/common/logging.h>
  #include <aws/common/private/thread_shared.h>
  
 -#include <Windows.h>
-+#if defined(__MINGW32__) || defined(__MINGW64__)
-+#    include <windows.h>
-+#else
-+#    include <Windows.h>
-+#endif
++#include <windows.h>
  
  #include <inttypes.h>
  
