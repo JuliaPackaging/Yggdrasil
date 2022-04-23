@@ -2,12 +2,12 @@ using BinaryBuilder
 
 
 name = "DynarePreprocessor"
-version = v"6.0.0"
+version = v"6.0.1"
 sources = [
-    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "285a4389a3a368774124c9ae66ed7fc367592946"),
+    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "8e3590ee712a643edb8f2e14dce98bd8138b7b4d"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
+#    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -41,7 +41,7 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-atomic_patch -p1 "../patches/patches.patch"
+#atomic_patch -p1 "../patches/patches.patch"
 
 autoreconf -si
 
@@ -55,7 +55,7 @@ cp "src/dynare-preprocessor${exeext}" "${bindir}"
 install_license COPYING
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms; experimental=true)
 
 products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
