@@ -93,6 +93,9 @@ if [ ${BLI_CONFIG} = arm64 ]; then
         < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
 fi
 
+# Import libblastrampoline-style nthreads setter.
+cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
+
 export BLI_F77BITS=${nbits}
 ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
 make -j${nproc}
