@@ -9,6 +9,7 @@ version = v"3.1.9"
 sources = [
     ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-ga-src.tar.gz",
                   "5ead3f69ccde539fd7e3de6f4b8f0e6f9f6c32b4b4f082adf0e2ff110971fe1e"),
+    DirectorySource("./bundled"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win64.msi",
                "c526714f4a65d672b86bf9c24962d55bec70661b37863d891f007f680dae71f7"; filename = "x86_64-w64-mingw32.msi"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win32.msi",
@@ -35,6 +36,12 @@ cd $WORKSPACE/srcdir/mariadb-connector*/
 
 # Skip building of macOS package
 sed -i 's/ADD_SUBDIRECTORY(osxinstall)/# ADD_SUBDIRECTORY(osxinstall)/' CMakeLists.txt
+
+# They want to run a script which changes the name of the required library
+# `libiodbcinst` from `libiodbcinst.2.dylib` to `libiodbcinst.dylib` which has the only
+# effect of making `libmaodbc` not loadable, as `libiodbcinst` is dlopened as... guess
+# what... `libiodbcinst.2.dylib`.
+atomic_patch -p1 ../patches/do-not-change-name-of-iodbcinst.patch
 
 ## Keep this for reference in case we decide to build for Windows from source
 # if [[ "${target}" == *-mingw* ]]; then
