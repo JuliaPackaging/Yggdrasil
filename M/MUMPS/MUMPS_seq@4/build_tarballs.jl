@@ -86,9 +86,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name = "METIS_jll",
-                                uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
-                                version = v"4.0.3")),
+    BuildDependency(PackageSpec(; name = "METIS4_jll",
+                                uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
+                                version = v"400.000.300")),
     BuildDependency("OpenBLAS32_jll"),
     BuildDependency("CompilerSupportLibraries_jll"),
 ]
