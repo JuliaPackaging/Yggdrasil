@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_ODBC"
-version = v"3.1.7"
+version = v"3.1.9"
 
 # Collection of sources required to build MariaDB_Connector_ODBC
 sources = [
-    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-ga-src.tar.gz",
-                  "699c575e169d770ccfae1c1e776aa7725d849046476bf6579d292c89e8c8593e"),
-    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-win64.msi",
-               "ef1ad796cc4aba67aa6606b35239302c579b7894604239d1caaa1f2d10623bd2"; filename = "x86_64-w64-mingw32.msi"),
-    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-win32.msi",
-               "a60b74dc3af0b450d892731c2973037beef6fc972e0813f3db9f28f083a63402"; filename = "i686-w64-mingw32.msi"),
+    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-ga-src.tar.gz",
+                  "5ead3f69ccde539fd7e3de6f4b8f0e6f9f6c32b4b4f082adf0e2ff110971fe1e"),
+    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win64.msi",
+               "c526714f4a65d672b86bf9c24962d55bec70661b37863d891f007f680dae71f7"; filename = "x86_64-w64-mingw32.msi"),
+    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win32.msi",
+               "5ef098aefee1d30e6e349bf2363a601007e1376508e6b4a0e23e1eb3ed5a51e2"; filename = "i686-w64-mingw32.msi"),
     ## Keep the patches just in case some day we decide to build for Windows
     ## from source
     # DirectorySource("./bundled"),
@@ -24,11 +24,10 @@ install_license $WORKSPACE/srcdir/mariadb-connector*/COPYING
 
 if [[ "${target}" == *-mingw* ]]; then
     # For Windows just use the prebuilt library
-    mkdir -p "${libdir}"
     cd $WORKSPACE/srcdir
     apk add p7zip
     7z x "${target}.msi"
-    cp mariadb_odbc_dll "${libdir}/mariadb_odbc.dll"
+    install -Dvm 755 mariadb_odbc_dll "${libdir}/mariadb/mariadb_odbc.dll"
     exit
 fi
 
@@ -80,6 +79,7 @@ platforms = [
     # Platform("aarch64", "linux"; libc="musl"),
     # Platform("armv7l", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     # Platform("x86_64", "freebsd"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
@@ -87,7 +87,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libmaodbc", "mariadb_odbc"], :libmaodbc),
+    LibraryProduct(["libmaodbc", "mariadb_odbc"], :libmaodbc,
+                   raw"${libdir}/mariadb"),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -101,4 +102,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
