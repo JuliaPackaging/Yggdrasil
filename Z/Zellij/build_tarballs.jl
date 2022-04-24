@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Zellij"
-version = v"0.24.0"
+version = v"0.27.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/zellij-org/zellij/archive/refs/tags/v$(version).tar.gz",
-                  "a7f2d1fa1dd9c55d37d1daebdf6af3c6666d144ee1e85ac7f805544ae03e3b1e"),
+                  "6159482c25d3cb55b04d23230812f4450e88ff0975161594297a7deef8979a38"),
 ]
 
 # Bash recipe for building across all platforms

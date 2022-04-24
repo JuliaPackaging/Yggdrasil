@@ -182,7 +182,7 @@ jobs:
               # Load in the platforms
               PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
               if [[ -z "${PLATFORMS}" ]]; then
-                  echo "##vso[task.logissue]error Unable to determine the proper platforms for ${NAME}"
+                  echo "##vso[task.logissue type=error]Unable to determine the proper platforms for ${NAME}"
                   continue
               fi
 

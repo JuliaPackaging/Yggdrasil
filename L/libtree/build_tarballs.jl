@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "libtree"
-version = v"3.0.3"
+version = v"3.1.0"
 
 sources = [
-    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v$(version).tar.gz", "7e4589b617775cb3a2b4b8fe03f80b81e43ef16046d680f1517ce52d7be9893f")
+    ArchiveSource("https://github.com/haampie/libtree/archive/refs/tags/v$(version).tar.gz", "8057edb2dd77b0acf6ceab6868741993979dccd41fc41a58bde743f11666d781")
 ]
 
 script = raw"""

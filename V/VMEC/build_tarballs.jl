@@ -1,15 +1,15 @@
 using BinaryBuilder, Pkg
 
 name = "VMEC"
-upstream_version = v"1.0.3"
-version_patch_offset = 1
+upstream_version = v"1.1.0"
+version_patch_offset = 0
 version = VersionNumber(upstream_version.major,
                         upstream_version.minor,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
     ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-                  "cee46dfeb452d2dd79811f8b66fdb6e1a38975d276e71b5531474b03024a5a8f"),
+                  "98a09a9436e98411960a34d642ea808f72d596e408004ea4c0ea475cc614f7f5"),
 ]
 
 script = raw"""
@@ -70,8 +70,6 @@ dependencies = [
     Dependency("OpenBLAS_jll"),
     Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MKL_jll", v"2020.1.216"),
-    Dependency("NetCDF_jll", compat = "400.702.400"),
-    Dependency("NetCDFF_jll", compat = "4.5.3"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 

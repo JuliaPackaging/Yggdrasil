@@ -7,7 +7,7 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
 name = "jlqml"
 version = v"0.3"
@@ -55,7 +55,6 @@ platforms = expand_cxxstring_abis(platforms)
 filter!(p -> libc(p) != "musl", platforms) # Qt_jll is currently not available for muslc
 # Qt5Declarative_jll is not available for these architectures:
 filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

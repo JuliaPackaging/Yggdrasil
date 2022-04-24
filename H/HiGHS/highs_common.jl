@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.2.1"
+version = v"1.2.2"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "60ad175979bbf6be309de3992adc9852625d1e7b",
+        "3f0a74587ff25009f12a73efcfbf5dd8aef45a4a",
     ),
 ]
 
@@ -54,7 +54,7 @@ if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     rm -r ${prefix}/lib
     if [[ "${target}" == *-mingw* ]]; then
         # The Windows build ships also GCC runtime, add its license as well
-        install_license /usr/share/licenses/GPL3
+        install_license /usr/share/licenses/GPL-3.0+
     fi
 fi
 """

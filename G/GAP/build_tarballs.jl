@@ -27,14 +27,14 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.12.0-dev"
-version = v"400.1191.001"
+version = v"400.1192.001"
 
 julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
 # Collection of sources required to complete build
 sources = [
     # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "401c797476b787e748a3890be4ce95ae4e5d52ae"),
+    GitSource("https://github.com/gap-system/gap.git", "977fb055cf3793aa4c329e3d6ea765774fecc8ac"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     DirectorySource("./bundled"),
@@ -48,12 +48,28 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
+# HACK: determine Julia version
+cat > version.c <<EOF
+#include <stdio.h>
+#include "julia/julia_version.h"
+int main(int argc, char**argv)
+{
+    printf("%d.%d", JULIA_VERSION_MAJOR, JULIA_VERSION_MINOR);
+    return 0;
+}
+EOF
+${CC_BUILD} -Wall version.c -o julia_version
+julia_version=$(./julia_version)
+
 # must run autogen.sh if compiling from git snapshot and/or if configure was patched;
 # it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
 # configure GAP
+# the custom ARCHEXT ensures that the different Julia versions use
+# different GAParch values
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    ARCHEXT="$julia_version" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
     --with-zlib=${prefix} \
@@ -72,8 +88,8 @@ rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
 cp build/c_*.c ../src/
-#cp ffgen ..
-#cp build/ffdata.* ../build/
+cp ffgen ..
+cp build/ffdata.* ../build/
 cd ..
 
 # remove the native build, it has done its job
@@ -95,7 +111,7 @@ install_license LICENSE
 rm ${prefix}/lib/*.la
 
 # get rid of the wrapper shell script, which is useless for us
-mv ${prefix}/bin/gap.real ${prefix}/bin/gap
+mv ${libdir}/gap/gap ${prefix}/bin/gap
 
 # install gac and sysinfo.gap
 mkdir -p ${prefix}/share/gap/

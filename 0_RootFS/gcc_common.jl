@@ -133,12 +133,27 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     # Map from GCC version and platform -> binutils sources
     if Sys.isapple(compiler_target)
         # The WIP branch by Iain Sandoe, who is working his toolchain magic to give us aarch64-darwin compilers
-        # Build this targeting aarch64-apple-darwin
+        # Build this targeting aarch64-apple-darwin.  To add new versions, go to
+        # https://github.com/iains/gcc-darwin-arm64/branches/all and find the most recent branch named
+        # `master-wip-apple-si-on-ABCDEF` and use the tip of that branch, see
+        # https://github.com/JuliaLang/julia/issues/44435#issuecomment-1059058949
         gcc_version_sources[v"11.0.0-iains"] = [
             GitSource("https://github.com/iains/gcc-darwin-arm64.git",
                       "ccc57f4ed3feed697f17d3230786389b1b410af9"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.1.tar.xz",
                           "67874a60826303ee2fb6affc6dc0ddd3e749e9bfcb4c8655e3953d0458a6e16e"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
+                          "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+                          "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.0.tar.xz",
+                          "258e6cd51b3fbdfc185c716d55f82c08aff57df0c6fbd143cf6ed561267a1526"),
+        ]
+        gcc_version_sources[v"12.0.1-iains"] = [
+            GitSource("https://github.com/iains/gcc-darwin-arm64.git",
+                      "af646bebaceed617775b5465cf06cb5d270a16f4"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz",
+                          "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a"),
             ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
                           "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
             ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
@@ -236,7 +251,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                           "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
         ]
     elseif Sys.isapple(compiler_target)
-        if gcc_version == v"11.0.0-iains"
+        if arch(compiler_target) == "aarch64"
             libc_sources = [
                 ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                               "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
@@ -363,6 +378,7 @@ function gcc_script(compiler_target::Platform)
         export AR_FOR_TARGET=${prefix}/bin/llvm-ar
         export NM_FOR_TARGET=${prefix}/bin/llvm-nm
         export RANLIB_FOR_TARGET=${prefix}/bin/llvm-ranlib
+        export DSYMUTIL_FOR_TARGET=${prefix}/bin/dsymutil
 
         # GCC build needs a little extra help finding our binutils
         GCC_CONF_ARGS="${GCC_CONF_ARGS} --with-ld=${prefix}/bin/${COMPILER_TARGET}-ld"
@@ -406,6 +422,13 @@ function gcc_script(compiler_target::Platform)
     # If we're on MacOS, we need to install cctools first, separately.
     if [[ ${COMPILER_TARGET} == *-darwin* ]]; then
         cd ${WORKSPACE}/srcdir/apple-libtapi
+
+        # Apply libtapi patches, if any
+        if [[ -d "${WORKSPACE}/srcdir/patches/libtapi" ]]; then
+            for p in ${WORKSPACE}/srcdir/patches/libtapi/*.patch; do
+                atomic_patch -p1 -d src/ "${p}"
+            done
+        fi
 
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
@@ -795,7 +818,7 @@ function gcc_products(;kwargs...)
     ]
 end
 
-function build_and_upload_gcc(version, ARGS=ARGS)
+function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     name = "GCCBootstrap"
     compiler_target = try
         parse(Platform, ARGS[end])
@@ -810,7 +833,7 @@ function build_and_upload_gcc(version, ARGS=ARGS)
 
     # Build the tarballs, and possibly a `build.jl` as well.
     ndARGS, deploy_target = find_deploy_arg(ARGS)
-    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true)
+    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true, julia_compat="1.6")
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)

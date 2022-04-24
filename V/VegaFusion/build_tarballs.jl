@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "VegaFusion"
-version = v"0.0.4"
+version = v"0.3.0"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-              "c0927268fc7544878c58a606e01503ba3fed615e"),
+              "42606e505364beacd30452cbe76744cf0a7428c4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,10 @@ install -Dm 755 "../target/${rust_target}/release/vegafusion-server${exeext}" "$
 platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
+# i686 Linux currently blocked by "undefined reference to `__atomic_load'" eror, see https://github.com/vegafusion/vegafusion/issues/92
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "i686")), platforms)
+
 
 # PowerPC not supported https://github.com/briansmith/ring/issues/389
 filter!(p -> arch(p) != "powerpc64le", platforms)

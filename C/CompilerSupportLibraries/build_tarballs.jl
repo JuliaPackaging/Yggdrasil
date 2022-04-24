@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.5.1"
+version = v"0.5.2"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -102,7 +102,7 @@ fi
 rm -f ${libdir}/{libiconv,libxml2,libz}*.${dlext}*
 
 # Install license (we license these all as GPL3, since they're from GCC)
-install_license /usr/share/licenses/GPL3
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further

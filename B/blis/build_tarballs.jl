@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.8.1"
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "c9700f369aa84fc00f36c4b817ffb7dab72b865d"),
+    GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
     DirectorySource("./bundled")
 ]
 
@@ -18,7 +18,7 @@ cd blis/
 
 for i in ./config/*/*.mk; do
 
-    # Building in container forbids -march options <<< Settings overrided.
+    # Building in container forbids -march options <<< Settings overriden.
     # sed -i "s/-march[^ ]*//g" $i
 
     # Building in container forbids unsafe optimization.
@@ -42,22 +42,16 @@ case ${target} in
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"aarch64"*"apple"*)
         # Metaconfig arm64 is not needed here.
         # All Mac processors should have equal or higher specs then firestorm
         export BLI_CONFIG=firestorm
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"aarch64"*"linux"*) 
         export BLI_CONFIG=arm64
@@ -81,10 +75,10 @@ if [ ${nbits} = 64 ]; then
     patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
 fi
 
-# Include SVE support in this metaconfig.
+# Include A64FX in Arm64 metaconfig.
 if [ ${BLI_CONFIG} = arm64 ]; then
-    # Add SVE configs to the registry.
-    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+armsve.patch
+    # Add A64FX to the registry.
+    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
     # Unscreen Arm SVE code for metaconfig.
     patch kernels/armsve/bli_kernels_armsve.h \
@@ -94,15 +88,13 @@ if [ ${BLI_CONFIG} = arm64 ]; then
     patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
         < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
 
-    # Config armsve depends on some family header defines.
-    cp config/armsve/bli_family_armsve.h config/arm64/bli_family_arm64.h
-
-    # Screen out SVE instructions in config-stage.
+    # Screen out A64FX sector cache.
     patch config/a64fx/bli_cntx_init_a64fx.c \
         < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
-    patch config/armsve/bli_cntx_init_armsve.c \
-        < ${WORKSPACE}/srcdir/patches/armsve_config_screen_non_sve.patch
 fi
+
+# Import libblastrampoline-style nthreads setter.
+cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
 export BLI_F77BITS=${nbits}
 ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
@@ -140,9 +132,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"11", lock_microarchitecture=false, julia_compat="1.6")
+               preferred_gcc_version=v"11", lock_microarchitecture=false, julia_compat="1.6")
