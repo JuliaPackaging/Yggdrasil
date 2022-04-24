@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/julia-porta
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release julia-porta
 make -j{nproc}
 make install
-install_license julia-porta/LICENSE
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
