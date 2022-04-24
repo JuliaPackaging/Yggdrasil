@@ -23,8 +23,11 @@ julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-version = v"700.301.800"
 upstream_version = v"7.3.8"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build SDPABuilder
 sources = [
@@ -33,14 +36,14 @@ sources = [
     DirectorySource("./bundled")
 ]
 
-MUMPS_seq_version = v"4.10.0"
+MUMPS_seq_version = v"400.1000.0"
 MUMPS_seq_packagespec = PackageSpec(; name = "MUMPS_seq_jll",
                                     uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
                                     version = MUMPS_seq_version)
 
-METIS_version = v"4.0.3"
-METIS_packagespec = PackageSpec(; name = "METIS_jll",
-                                uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
+METIS_version = v"400.000.300"
+METIS_packagespec = PackageSpec(; name = "METIS4_jll",
+                                uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
                                 version = METIS_version)
 
 # Bash recipe for building across all platforms
