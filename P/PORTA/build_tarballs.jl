@@ -3,20 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "PORTA"
-version = v"1.4.1"
+version = v"1.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bdoolittle/julia-porta.git", "93b99656f390c2252a0142bf9a4c22f5217a42da")
+    GitSource("https://github.com/bdoolittle/julia-porta.git", "41a7653c0df6dc0fe738aa4a2347096f27d391c0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p ${bindir}
-make -C julia-porta/gnu-make/ CC=${CC}
-cp julia-porta/gnu-make/bin/xporta${exeext} ${bindir}
-cp julia-porta/gnu-make/bin/valid${exeext} ${bindir}
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release julia-porta
+make -j
+make install
+install_license julia-porta/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,6 +26,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("xporta", :xporta),
+    LibraryProduct("libporta", :libporta),
     ExecutableProduct("valid", :valid)
 ]
 
