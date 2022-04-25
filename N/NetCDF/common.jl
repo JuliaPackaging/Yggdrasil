@@ -105,27 +105,12 @@ nc-config --all
     jll_stdlibs = Dict(
         v"1.3" => [
             Dependency("LibCURL_jll", v"7.71.1"),
-            # The following libraries are dependencies of LibCURL_jll which is now a
-            # stdlib, but the stdlib doesn't explicitly list its dependencies
-            Dependency("LibSSH2_jll", v"1.9.0"),
-            Dependency("MbedTLS_jll", v"2.16.8"),
-            Dependency("nghttp2_jll", v"1.40.0"),
         ],
         v"1.6" => [
             Dependency("LibCURL_jll", v"7.73.0"),
-            # The following libraries are dependencies of LibCURL_jll which is now a
-            # stdlib, but the stdlib doesn't explicitly list its dependencies
-            Dependency("LibSSH2_jll", v"1.9.1"),
-            Dependency("MbedTLS_jll", v"2.24.0"),
-            Dependency("nghttp2_jll"),
         ],
         v"1.8" => [
             Dependency("LibCURL_jll", v"7.81.0"),
-            # The following libraries are dependencies of LibCURL_jll which is now a
-            # stdlib, but the stdlib doesn't explicitly list its dependencies
-            Dependency("LibSSH2_jll", v"1.10.2"),
-            Dependency("MbedTLS_jll", v"2.28.0"),
-            Dependency("nghttp2_jll"),
         ]
     )
 
