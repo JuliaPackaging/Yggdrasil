@@ -45,6 +45,9 @@ sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graph
 cd intel-graphics-compiler
 install_license LICENSE.md
 
+# Fix Tiger Lake miscompilation (intel/compute-runtime#522)
+git cherry-pick 756595a9fef899a644c4d06a0153fb7706f7dc99
+
 CMAKE_FLAGS=()
 
 # Release build for best performance
