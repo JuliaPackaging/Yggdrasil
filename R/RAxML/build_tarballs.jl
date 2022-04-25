@@ -74,7 +74,7 @@ done
 
 platforms = supported_platforms()
 # currently RAxML assumes intel cpus with at least SSE instructions
-filter!(p->contains(arch(p), r"(x86_64)|(i686)"), platforms)
+filter!(p -> BinaryBuilder.proc_family(p) == "intel", supported_platforms())
 
 products = [
     ExecutableProduct("raxmlHPC", :raxmlHPC),
