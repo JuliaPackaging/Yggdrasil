@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Bullet_Physics_SDK"
-version = v"3.22.0"
+version = v"3.24.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/bulletphysics/bullet3/archive/refs/tags/3.22b.tar.gz",
+    ArchiveSource("https://github.com/bulletphysics/bullet3/archive/refs/tags/3.24.tar.gz",
                   "c6cd89ecbc4bd73fee64723c831c1578daab056d88774755a6f56afc6f417b2b")
 ]
 
@@ -17,12 +17,16 @@ cd $WORKSPACE/srcdir/bullet*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_PYBULLET=OFF \
+    -DBUILD_PYBULLET_NUMPY=OFF \
     -DBUILD_UNIT_TESTS=OFF \
     -DBUILD_CPU_DEMOS=OFF \
     -DBUILD_OPENGL3_DEMOS=OFF \
     -DBUILD_BULLET2_DEMOS=OFF \
+    -DBT_USE_EGL=OFF \
+    -DUSE_DOUBLE_PRECISION=OFF \
     -S .. \
     -B .
 make -j${nproc}
