@@ -8,7 +8,7 @@ version = v"3.24.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/bulletphysics/bullet3/archive/refs/tags/3.24.tar.gz",
-                  "c6cd89ecbc4bd73fee64723c831c1578daab056d88774755a6f56afc6f417b2b")
+                  "6b1e987d6f8156fa8a6468652f4eaad17b3e11252c9870359e5bca693e35780b")
 ]
 
 # Bash recipe for building across all platforms
