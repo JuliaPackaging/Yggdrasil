@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "mdoodz"
-version = v"0.5.1"
+version = v"0.7.1"
 
 # Collection of sources required to complete build
 sources = [
