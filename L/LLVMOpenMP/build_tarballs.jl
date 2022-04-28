@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"14.0.1"
+version = v"14.0.4"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "ea8a791c7dea7d08ad69c62cfc5e77a1ee700997fcde6a74c30a1c8e663ca3ae"
+        "d4b627e2668c3c1001b6c772297273dc67b42f2deec934a59650a55731f8d411"
     ),
     DirectorySource("./bundled"),
 ]
@@ -20,9 +20,7 @@ cd $WORKSPACE/srcdir/openmp-*/
 atomic_patch -p1 ../patches/0901-cast-to-make-gcc-happy.patch
 
 platform_config=()
-if [[ "${target}" == *-freebsd* ]]; then
-    platform_config+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt")
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
     sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" runtime/cmake/LibompHandleFlags.cmake
