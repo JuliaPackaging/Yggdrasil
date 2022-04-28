@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.12.0-dev"
-version = v"400.1192.001"
+version = v"400.1192.002"
 
 julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
