@@ -157,4 +157,3 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
     ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
 """)
-
