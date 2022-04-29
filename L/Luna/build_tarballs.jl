@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "Luna"
-version = v"0.23.0"
-
+version = v"0.26.2"
 
 sources = [
-    GitSource("https://bitbucket.org/remnrem/luna-base.git",
-              "6d333a4034f7022ba4d1aa99ce2f8afddfd6832e"),
+    GitSource("https://github.com/remnrem/luna-base.git",
+              "6155a550c534feb32e816ed3869c45f8ddc9b78a"),
     DirectorySource("./bundled"),
 ]
 
