@@ -127,13 +127,13 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 # We mostly care about clang and LLVM
 PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld;mlir')
-else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld')
+    PROJECTS+=(mlir)
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "13" ]]; then
+    PROJECTS+=(libunwind)
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
-# CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt')
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
