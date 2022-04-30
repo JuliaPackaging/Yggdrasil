@@ -18,7 +18,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 mkdir build && cd build
 if [[ "${target}" == *-mingw* ]]; then
-    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir} -DMPI_C_LIBRARIES=${bindir}/msmpi.${dlext} -DMPI_CXX_LIBRARIES=${bindir}/msmpi.${dlext}"
+    export LDFLAGS="-L${libdir} -lmsmpi"
+    PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
 else
     PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
@@ -27,6 +28,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_STATIC_LIBS=OFF \
     -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
     -Denable_tests=OFF \
     -Denable_doc=OFF \
@@ -43,7 +45,7 @@ make -j${nproc}
 make install
 if [[ "${target}" == *-mingw* ]]; then
     # Manually install the library
-    cp "SRC/libsuperlu.${dlext}" "${libdir}/libsuperlu.${dlext}"
+    install -Dvm 0755 "SRC/libsuperlu.${dlext}" "${libdir}/libsuperlu.${dlext}"
 fi
 """
 
