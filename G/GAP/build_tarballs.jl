@@ -77,11 +77,18 @@ julia_version=$(./julia_version)
     --with-julia
 mkdir -p build
 
+# WORKAROUND: avoid error: /usr/local/include: No such file or directory
+export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
+# WORKAROUND: avoid error: redundant redeclaration of ‘jl_gc_safepoint’ for Julia 1.8 & 1.9
+# (see https://github.com/JuliaLang/julia/pull/45120 for a proper fix)
+export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
+
 # configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
 mkdir native-build
 cd native-build
 rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/lib'
 ../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --enable-Werror \
     --with-gmp=${host_prefix} \
     --without-readline \
     --with-zlib=${host_prefix} \
