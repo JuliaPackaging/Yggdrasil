@@ -1,118 +1,107 @@
 diff --git a/Makefile b/Makefile
-index 5a56fad..e0ac001 100644
+index 5d7a2ed..67bfa9c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -4,7 +4,7 @@ DIRS = edf tinyxml helper timeline annot dsp miscmath spindles	\
- artifacts intervals fftw cwt defs stats graphics staging 	\
- db ica clocs pdc sstore dsp/mtm dsp/libsamplerate
- 
--EXE    = luna
-+EXE    = luna$(exeext)
- OBJS   = main.o globals.o eval.o cmddefs.o
- 
- OBJLIBS = libdefs.a libedf.a libtinyxml.a libhelper.a libtimeline.a	\
-@@ -19,20 +19,20 @@ LIBS = -L. -lspindles -llwprep -lannot -ldefs -lartifacts -ledf -ledfz -lhelper
- -lsrate -lfftw3 -lz
- 
- ifndef STATIC
--all : luna sharedlib utils
-+all : $(EXE) sharedlib utils
- endif
- 
- ifdef STATIC
- all : static utils
- endif
- 
--luna : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
-+$(EXE) : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
- 	$(ECHO) $(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
--	$(LD) $(LDFLAGS) -o luna $(OBJS) $(LIBS)
-+	$(LD) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
- 
- static : main.o globals.o eval.o cmddefs.o $(OBJLIBS)
--	g++ -static -static-libgcc -static-libstdc++ -L/usr/local/lib	\
--	-o luna main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
-+	$(CXX) -static -static-libgcc -static-libstdc++ -L$(LIBDIR)	\
-+	-o $(EXE) main.o globals.o eval.o cmddefs.o libspindles.a liblwprep.a	\
- 	libartifacts.a libtimeline.a libannot.a libedf.a		\
- 	libintervals.a libcwt.a libdsp.a libstaging.a libclocs.a	\
- 	libpdc.a libmtm.a libdefs.a libhelper.a		\
-@@ -43,10 +43,10 @@ sharedlib : globals.o eval.o cmddefs.o $(OBJLIBS)
- ifeq ($(ARCH),MAC)
- 	$(ECHO) "building libluna.dylib..."
- 
--	$(LD) -dynamiclib $(LDFLAGS) -o libluna.dylib eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
-+	$(LD) -dynamiclib $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o  -Wl,-all_load *.a  -lfftw3 -lz
+@@ -1,8 +1,11 @@
+ include Makefile.inc
++
++EXE = luna$(exeext)
++
+ ifeq ($(ARCH),WINDOWS)
+-  TARGETS = luna destrat behead tocol
++  TARGETS = $(EXE) destrat behead tocol
  else
- 	$(ECHO) "building libluna.so..."
--	$(LD) -shared      $(LDFLAGS) -o libluna.so eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive
-+	$(LD) -shared      $(LDFLAGS) -o libluna.$(dlext) eval.o cmddefs.o globals.o -Wl,--whole-archive *.a -Wl,--no-whole-archive -lfftw3 -lz
+-  TARGETS = luna libluna destrat behead dmerge tocol fixrows cgi-mapper
++  TARGETS = $(EXE) libluna destrat behead dmerge tocol fixrows cgi-mapper
  endif
  
- libedf.a : force_look
+ SRCS = globals.cpp eval.cpp cmddefs.cpp \
+@@ -46,7 +49,7 @@ DEPS := $(OBJS:.o=.d)
+ 
+ all : $(TARGETS)
+ 
+-luna: main.o $(OBJS)
++$(EXE): main.o $(OBJS)
+ 	$(CXX) -o $@ $^ $(LDFLAGS)
+ 
+ libluna: libluna.a $(SHARED_LIB)
 diff --git a/Makefile.inc b/Makefile.inc
-index d7269b1..ddf5140 100644
+index 8840537..252c1ea 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
-@@ -3,17 +3,14 @@
- ## ARCH is LINUX, MAC or WINDOWS
- ##
+@@ -15,17 +15,13 @@ endif
+ DEP_INCLUDES=
+ DEP_LIB=
  
--ARCH=LINUX
--
--
-+CFLAGS += -D$(ARCH)
-+CXXFLAGS += -D$(ARCH)
+-ifdef ZLIB
+-DEP_INCLUDES += -I$(ZLIB)/include
+-DEP_LIB += -L$(ZLIB)/lib
+-endif
++DEP_INCLUDES += -I$(includedir)
++DEP_LIB += -L$(libdir)
  
+-ifdef FFTW
+-DEP_INCLUDES += -I$(FFTW)/include
+-DEP_LIB = -L$(FFTW)/lib
++DEP_INCLUDES += -I$(includedir)
++DEP_LIB = -L$(libdir)
+ ifeq ($(ARCH),LINUX)
+-DEP_LIB	+= -Wl,-rpath,$(FFTW)/lib
+-endif
++DEP_LIB	+= -Wl,-rpath,$(libdir)
+ endif
+ 
+ 
+@@ -33,24 +29,23 @@ endif
+ ## Compiler flags
  ##
- ## Basic C/C++ compilation flags
- ## 
  
 -CXX = g++
 -
--CXXFLAGS = -O2 -I. -I.. -Wno-logical-op-parentheses -Wno-deprecated-register
-+CXXFLAGS += -O2 -I. -I.. -Wno-logical-op-parentheses -Wno-deprecated-register
+-CC = gcc
++CFLAGS += -D$(ARCH)
++CXXFLAGS += -D$(ARCH)
  
+-CXXFLAGS=-O2 -std=gnu++11 -MMD -MP -I. -I..
++CXXFLAGS+=-O2 -std=gnu++11 -MMD -MP -I. -I..
+ #CXXFLAGS=-O0 -std=gnu++11 -MMD -MP -I. -I.. -pg
  
- ##
-@@ -53,23 +50,19 @@ endif
+ CXXFLAGS +=$(DEP_INCLUDES)
  
- CXXFLAGS += $(DEP_INCLUDES) 
- 
--ifeq ($(ARCH),MAC)
+ ifeq ($(ARCH),MAC)
 -CXXFLAGS += -I/usr/local/include
--endif
-+CXXFLAGS += -I$(PREFIX)/include
++CXXFLAGS += -I$(includedir)
+ endif
+ 
+ ifeq ($(ARCH),WINDOWS)
+ CXXFLAGS += -DWINDOWS
+ endif
  
 -CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
 +CFLAGS += -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+ #CFLAGS = -O0 -g -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
  
  
- ##
+@@ -58,17 +53,11 @@ CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
  ## Linker flags
  ##
  
 -LD = g++ 
--LDFLAGS = $(DEP_LIB)
 +LD = $(CXX)
-+LDFLAGS += $(DEP_LIB)
  
--ifndef WINDOWS
--LDFLAGS += -L/usr/local/lib
+ LDFLAGS = $(DEP_LIB) -L. -L..
+ 
+-# assuming mingw64 for windows build:
+-
+-ifeq ($(ARCH),WINDOWS)
+-LDFLAGS += -L/usr/local/lib -L/mingw64/lib/ -L/mingw64/bin/ -lfftw3 -lz -static -static-libgcc -static-libstdc++
+-else
+-LDFLAGS += -L/usr/local/lib -lfftw3 -lz
 -endif
-+LDFLAGS += -L$(LIBDIR)
- 
++LDFLAGS += -L$(libdir) -lfftw3 -lz
  
  ##
-diff --git a/dsp/firWindowing/Makefile b/dsp/firWindowing/Makefile
-index d5cde2e..d462bc5 100644
---- a/dsp/firWindowing/Makefile
-+++ b/dsp/firWindowing/Makefile
-@@ -1,4 +1,3 @@
--CC			= g++
- CFLAGS	+= -Wall -O2
- LIBRARY	= -lm -lfftw3
- 
+ ## Static binary: 'make static STATIC=1', otherwise set PIC code
 diff --git a/dsp/firWindowing/Makefile~ b/dsp/firWindowing/Makefile~
 index 44504f2..6b7da26 100644
 --- a/dsp/firWindowing/Makefile~
@@ -122,46 +111,6 @@ index 44504f2..6b7da26 100644
  CFLAGS	+= -Wall
  LIBRARY	= -lm -lfftw3
  
-diff --git a/dsp/mtm/sigstuff.cpp b/dsp/mtm/sigstuff.cpp
-index 6123b52..a0fd1c6 100644
---- a/dsp/mtm/sigstuff.cpp
-+++ b/dsp/mtm/sigstuff.cpp
-@@ -34,11 +34,7 @@
- 
- #include <string>
- 
--#if defined(__MACH__)
- #include <stdlib.h>
--#else 
--#include <malloc.h>
--#endif
- 
- #define PI 3.141592654
- #define ABS(a) ((a) < (0) ? -(a) : (a))
-diff --git a/ica/libICA/src/Makefile b/ica/libICA/src/Makefile
-index 009fe95..18d4c1c 100644
---- a/ica/libICA/src/Makefile
-+++ b/ica/libICA/src/Makefile
-@@ -1,6 +1,6 @@
- CC = gcc
- CFLAGS = -O3 -fPIC
--INSTALL_PREFIX = /usr/local
-+INSTALL_PREFIX = $(PREFIX)
- 
- ICA: fastICA.c libICA.so
- 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
-diff --git a/ica/libICA/src/Makefile~ b/ica/libICA/src/Makefile~
-index 50ceb8a..b8c4b2d 100644
---- a/ica/libICA/src/Makefile~
-+++ b/ica/libICA/src/Makefile~
-@@ -1,6 +1,6 @@
- CC = gcc
- CFLAGS = -O3 -fPIC
--INSTALL_PREFIX = /usr/local
-+INSTALL_PREFIX = $(PREFIX)
- 
- ICA: fastICA.c libICA.so
- 	$(CC) $(CFLAGS) fastICA.c -o fastICA -L. -lICA 
 diff --git a/sstore/make.sh b/sstore/make.sh
 index 4d9147c..fce6e60 100644
 --- a/sstore/make.sh

@@ -12,8 +12,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/luna-base
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_it.patch
-mkdir -p ${libdir}
-mkdir -p ${bindir}
 def_windows=""
 if [[ ${target} == *-apple-* ]]; then
     suspicious_arch="MAC"
@@ -23,9 +21,9 @@ elif [[ ${target} == *-mingw* ]]; then
 else
     suspicious_arch="LINUX"
 fi
-make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir} ${def_windows}
-cp "luna${exeext}" "${bindir}/"
-cp "libluna.${dlext}" "${libdir}/"
+make -j${nproc} ARCH=${suspicious_arch} FFTW=${prefix} PREFIX=${prefix} LIBDIR=${libdir} SHARED_LIB=libluna.${dlext} ${def_windows}
+install -Dvm 0755 "luna${exeext}" "${bindir}/luna${exeext}"
+install -Dvm 0755 "libluna.${dlext}" "${libdir}/libluna.${dlext}"
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -41,4 +39,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")
