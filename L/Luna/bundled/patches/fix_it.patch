@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 5d7a2ed..67bfa9c 100644
+index 5d7a2ed..e032bc2 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,8 +1,11 @@
@@ -9,7 +9,7 @@ index 5d7a2ed..67bfa9c 100644
 +
  ifeq ($(ARCH),WINDOWS)
 -  TARGETS = luna destrat behead tocol
-+  TARGETS = $(EXE) destrat behead tocol
++  TARGETS = $(EXE) libluna destrat behead tocol
  else
 -  TARGETS = luna libluna destrat behead dmerge tocol fixrows cgi-mapper
 +  TARGETS = $(EXE) libluna destrat behead dmerge tocol fixrows cgi-mapper
@@ -25,6 +25,21 @@ index 5d7a2ed..67bfa9c 100644
  	$(CXX) -o $@ $^ $(LDFLAGS)
  
  libluna: libluna.a $(SHARED_LIB)
+@@ -57,13 +60,8 @@ libluna: libluna.a $(SHARED_LIB)
+ 
+ # shared library (libluna)
+ 
+-ifeq ($(ARCH),MAC)
+ $(SHARED_LIB) : $(OBJS)
+-	$(LD) -dynamiclib $(LDFLAGS) -o $(SHARED_LIB) $(OBJS)
+-else ifeq ($(ARCH),LINUX)
+-$(SHARED_LIB) : $(OBJS)
+-	$(LD) -shared $(LDFLAGS) -o $(SHARED_LIB) $(OBJS)
+-endif
++	$(LD) -shared -o $(SHARED_LIB) $(OBJS) $(LDFLAGS)
+ 
+ # objects
+ libluna.a : $(OBJS)
 diff --git a/Makefile.inc b/Makefile.inc
 index 8840537..252c1ea 100644
 --- a/Makefile.inc
