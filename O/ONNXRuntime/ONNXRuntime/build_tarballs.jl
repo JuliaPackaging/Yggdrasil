@@ -7,7 +7,8 @@ version = v"1.10.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
-cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3"] # No CUDA 10.2, since pre-built CUDA binaries are built for CUDA 11
+cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3"] # No CUDA 10.2, since pre-built x86_64 ONNXRuntime-CUDA binaries are built for CUDA 11
+cuda_aarch64_tag = "10.2"
 cudnn_version = v"8.2.4"
 tensorrt_version = v"8.0.1"
 
@@ -20,14 +21,17 @@ sources = [
     ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-$version.zip", "a0c6db3cff65bd282f6ba4a57789e619c27e55203321aa08c023019fe9da50d7"; unpack_target="onnxruntime-x86_64-w64-mingw32"),
     ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x86-$version.zip", "fd1680fa7248ec334efc2564086e9c5e0d6db78337b55ec32e7b666164bdb88c"; unpack_target="onnxruntime-i686-w64-mingw32"),
     ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-linux-x64-gpu-$version.tgz", "bc880ba8a572acf79d50dcd35ba6dd8e5fb708d03883959ef60efbc15f5cdcb6"; unpack_target="onnxruntime-x86_64-linux-gnu-cuda"),
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0da11b8d953fad4ec75f87bb894f72dea511a3940cff2f4dad37451586d1ebbc"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda")
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0da11b8d953fad4ec75f87bb894f72dea511a3940cff2f4dad37451586d1ebbc"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda"),
+    # aarch64-linux-gnu binaries for NVIDIA Jetson from NVIDIA-managed Jetson Zoo: https://elinux.org/Jetson_Zoo#ONNX_Runtime
+    FileSource("https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kccn2.whl", "a608b7a4a4fc6ad5c90d6005edbfe0851847b991b08aafff4549bbbbdb938bf6"; filename = "onnxruntime-aarch64-linux-gnu-cuda.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-if [[ $bb_full_target != *cuda* ]]; then
+if [[ $bb_full_target != *cuda*
+    || $bb_full_target == aarch64-linux-gnu*cuda* ]]; then # pre-built aarch64-linux-gnu binaries needs separate libonnxruntime (for CPU).
     if [[ $target == *-w64-mingw32* ]]; then
         chmod 755 onnxruntime-$target/onnxruntime-*/lib/*
         mkdir -p $includedir $libdir
@@ -66,6 +70,13 @@ else
     find onnxruntime-$target-cuda/onnxruntime-*/lib -not -type d | xargs -Isrc cp -av src $libdir
     install_license onnxruntime-$target-cuda/onnxruntime-*/LICENSE
 fi
+
+if [[ $bb_full_target == aarch64-linux-gnu*cuda* ]]; then
+    cd $WORKSPACE/srcdir
+    unzip -d onnxruntime-$target-cuda onnxruntime-$target-cuda.whl
+    mkdir -p $libdir
+    find onnxruntime-$target-cuda/onnxruntime_gpu*.data/purelib/onnxruntime/capi -name *.so* -not -name *py* | xargs -Isrc cp -av src $libdir
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -89,6 +100,8 @@ for cuda_version in cuda_versions
         push!(cuda_platforms, p)
     end
 end
+push!(platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
+push!(cuda_platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
 
 # The products that we will ensure are always built
 products = [
