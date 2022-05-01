@@ -17,6 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 mkdir build && cd build
+# This is required to ensure that MSMPI can be found by cmake
 if [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
@@ -51,7 +52,9 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+# Excluding Windows due to use of `getline` function, which is non-standard and not provided by MinGW
+# per Mose. Will return to it later and attempt to find a solution.
+platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 # The products that we will ensure are always built
 products = [
@@ -63,11 +66,10 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
+    # Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency("METIS_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
-Dependency("acl_jll"; platforms=filter(Sys.islinux, platforms)),
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
