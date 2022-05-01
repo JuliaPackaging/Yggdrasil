@@ -8,7 +8,7 @@ version = v"1.1.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
-                  "91d48b1e6105985be62bad46a84795df02c06841"),
+                  "dee90f277234dda0d6d20a5961d244e7047c964e4d9a73af3f89f60c9198ff3e"),
 ]
 
 # Bash recipe for building across all platforms
