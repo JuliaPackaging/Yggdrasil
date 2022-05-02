@@ -7,8 +7,8 @@ version = v"0.2.0"
 
 # Collection of sources required to build this package
 sources = [
-    ArchiveSource("https://github.com/jhigginbotham64/Telescope/archive/refs/tags/v$(version).tar.gz",
-              "2d09f72219df5e3d1cdd1fea02ff370cc5f71d9cc37c510cb9d2dd83f4f3e990"),
+    GitSource("https://github.com/jhigginbotham64/Telescope.git",
+              "0b88f367a1fe7905ca87b440b9d58ae1b0a43e8b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +16,7 @@ script = raw"""
 export CFLAGS="-I${includedir}"
 export CXXFLAGS="-I${includedir}"
 cd $WORKSPACE/srcdir/Telescope*
+git submodule update --init --recursive
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
