@@ -245,9 +245,9 @@ if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCLANG_INCLUDE_TESTS=OFF)
 fi
 
+CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=OFF)
 if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
-    CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=ON)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
 fi
