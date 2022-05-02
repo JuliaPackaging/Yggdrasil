@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.12.0-dev"
-version = v"400.1192.001"
+version = v"400.1192.002"
 
 julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
@@ -77,11 +77,18 @@ julia_version=$(./julia_version)
     --with-julia
 mkdir -p build
 
+# WORKAROUND: avoid error: /usr/local/include: No such file or directory
+export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
+# WORKAROUND: avoid error: redundant redeclaration of ‘jl_gc_safepoint’ for Julia 1.8 & 1.9
+# (see https://github.com/JuliaLang/julia/pull/45120 for a proper fix)
+export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
+
 # configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
 mkdir native-build
 cd native-build
 rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/lib'
 ../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --enable-Werror \
     --with-gmp=${host_prefix} \
     --without-readline \
     --with-zlib=${host_prefix} \
@@ -157,4 +164,3 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
     ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
 """)
-

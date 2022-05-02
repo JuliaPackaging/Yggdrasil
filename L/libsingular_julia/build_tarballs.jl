@@ -8,9 +8,12 @@ using Base.BinaryPlatforms
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 name = "libsingular_julia"
-version = v"0.23.0"
+version = v"0.23.1"
+
+# reminder: change the above version if restricting the supported julia versions
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -52,11 +55,10 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~403.1.200"),
+    Dependency("Singular_jll", compat = "~403.1.300"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "1.6")
-
+    julia_compat = julia_compat)
