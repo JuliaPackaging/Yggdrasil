@@ -40,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Bullet_jll"),
+    BuildDependency("Bullet_Physics_SDK_jll"),
     BuildDependency("OpenGLMathematics_jll"),
     Dependency("SDL2_jll"),
     Dependency("SDL2_image_jll"),
