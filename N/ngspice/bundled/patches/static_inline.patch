@@ -1,0 +1,146 @@
+commit c5c4fc69f6becfaf7c6f8bdc527963e789f19135
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Oct 5 04:12:32 2020 -0400
+
+    Fix repeated definition error of inline functions
+    
+    If an inline function is not marked `static`, it will emit a symbol
+    in every translation unit in which it is used. Whether this is
+    a problem or not depends on the toolchain, but most modern toolchains
+    will error with a redefinition error. Fix several such instances by
+    adding the `static` qualifier.
+
+diff --git a/src/include/ngspice/dstring.h b/src/include/ngspice/dstring.h
+index 65b88a9cb..ed0e25241 100644
+--- a/src/include/ngspice/dstring.h
++++ b/src/include/ngspice/dstring.h
+@@ -75,7 +75,7 @@ void ds_free(DSTRING *p_ds);
+ 
+ /* Concatenate string */
+ int ds_cat_str_case(DSTRING *p_ds, const char *sz, ds_case_t case_type);
+-inline int ds_cat_str(DSTRING *p_ds, const char *sz)
++static inline int ds_cat_str(DSTRING *p_ds, const char *sz)
+ {
+     return ds_cat_str_case(p_ds, sz, ds_case_as_is);
+ } /* end of function ds_cat_str */
+@@ -84,7 +84,7 @@ inline int ds_cat_str(DSTRING *p_ds, const char *sz)
+ 
+ /* Concatenate character */
+ int ds_cat_char_case(DSTRING *p_ds, char c, ds_case_t case_type);
+-inline int ds_cat_char(DSTRING *p_ds, char c)
++static inline int ds_cat_char(DSTRING *p_ds, char c)
+ {
+     return ds_cat_char_case(p_ds, c, ds_case_as_is);
+ } /* end of function ds_cat_char */
+@@ -94,7 +94,7 @@ inline int ds_cat_char(DSTRING *p_ds, char c)
+ /* Concatenate another dstring */
+ int ds_cat_ds_case(DSTRING *p_ds_dst, const DSTRING *p_ds_src,
+         ds_case_t case_type);
+-inline int ds_cat_ds(DSTRING *p_ds_dst, const DSTRING *p_ds_src)
++static inline int ds_cat_ds(DSTRING *p_ds_dst, const DSTRING *p_ds_src)
+ {
+     return ds_cat_ds_case(p_ds_dst, p_ds_src, ds_case_as_is);
+ } /* end of function ds_cat_ds */
+@@ -104,7 +104,7 @@ inline int ds_cat_ds(DSTRING *p_ds_dst, const DSTRING *p_ds_src)
+ /* General concatenation of a memory buffer */
+ int ds_cat_mem_case(DSTRING *p_ds, const char *p_src, size_t n_char,
+         ds_case_t type_case);
+-inline int ds_cat_mem(DSTRING *p_ds, const char *p_src, size_t n_char)
++static inline int ds_cat_mem(DSTRING *p_ds, const char *p_src, size_t n_char)
+ {
+     return ds_cat_mem_case(p_ds, p_src, n_char, ds_case_as_is);
+ } /* end of function ds_cat_mem */
+@@ -132,7 +132,7 @@ int ds_compact(DSTRING *p_ds);
+  * DS_E_OK: length set OK
+  * DS_E_INVALID: length to large for current allocation
+  */
+-inline int ds_set_length(DSTRING *p_ds, size_t length)
++static inline int ds_set_length(DSTRING *p_ds, size_t length)
+ {
+     if (length >= p_ds->n_byte_alloc) {
+         return DS_E_INVALID;
+@@ -147,7 +147,7 @@ inline int ds_set_length(DSTRING *p_ds, size_t length)
+ /* Sets the length of the data in the buffer to 0. It is equivalent to
+  * ds_set_length(p_ds, 0), except that the check for a valid length can
+  * be skipped since 0 is always valid. */
+-inline void ds_clear(DSTRING *p_ds)
++static inline void ds_clear(DSTRING *p_ds)
+ {
+     p_ds->length = 0;
+     p_ds->p_buf[0] = '\0';
+@@ -183,7 +183,7 @@ inline void ds_clear(DSTRING *p_ds)
+  */
+ #define DS_FREE_MOVE_OPT_FORCE_ALLOC    1
+ #define DS_FREE_MOVE_OPT_COMPACT        2
+-inline char *ds_free_move(DSTRING *p_ds, unsigned int opt)
++static inline char *ds_free_move(DSTRING *p_ds, unsigned int opt)
+ {
+     char * const p_buf_active = p_ds->p_buf;
+ 
+@@ -221,7 +221,7 @@ inline char *ds_free_move(DSTRING *p_ds, unsigned int opt)
+ /* Returns the address of the buffer. The caller should never attempt
+  * to free the buffer. With care (not changing the length), it can
+  * be modified. */
+-inline char *ds_get_buf(DSTRING *p_ds)
++static inline char *ds_get_buf(DSTRING *p_ds)
+ {
+     return p_ds->p_buf;
+ } /* end of function ds_get_buffer */
+@@ -229,7 +229,7 @@ inline char *ds_get_buf(DSTRING *p_ds)
+ 
+ 
+ /* Returns the current dstring length */
+-inline size_t ds_get_length(const DSTRING *p_ds)
++static inline size_t ds_get_length(const DSTRING *p_ds)
+ {
+     return p_ds->length;
+ } /* end of function ds_get_length */
+@@ -237,7 +237,7 @@ inline size_t ds_get_length(const DSTRING *p_ds)
+ 
+ 
+ /* Returns the allocated dstring buffer size */
+-inline size_t ds_get_buf_size(const DSTRING *p_ds)
++static inline size_t ds_get_buf_size(const DSTRING *p_ds)
+ {
+     return p_ds->n_byte_alloc;
+ } /* end of function ds_get_buf_size */
+diff --git a/src/include/ngspice/stringutil.h b/src/include/ngspice/stringutil.h
+index f02c2a6b1..a72cdd6e9 100644
+--- a/src/include/ngspice/stringutil.h
++++ b/src/include/ngspice/stringutil.h
+@@ -80,7 +80,7 @@ char *tvprintf(const char *fmt, va_list args);
+ 
+ /* Allocate and create a copy of a string if the argument is not null or
+  * returns null if it is. */
+-inline char *copy(const char *str)
++static inline char *copy(const char *str)
+ {
+     return str == (char *) NULL ?
+             (char *) NULL : dup_string(str, strlen(str));
+@@ -91,7 +91,7 @@ inline char *copy(const char *str)
+ /* Allocate a buffer and copy a substring, from 'str' to 'end'
+  *   including *str, excluding *end
+  */
+-inline char *copy_substring(const char *str, const char *end)
++static inline char *copy_substring(const char *str, const char *end)
+ {
+     return dup_string(str, (size_t) (end - str));
+ } /* end of function copy_substring */
+@@ -102,7 +102,7 @@ inline char *copy_substring(const char *str, const char *end)
+  * non- numeric character is reached. There is no way to distinguish
+  * between a value of 0 and a string that does not contain a numeric
+  * value. */
+-inline int scannum(const char *str)
++static inline int scannum(const char *str)
+ {
+     return scannum_adv((char **) &str);
+ } /* end of function scannum */
+@@ -110,7 +110,7 @@ inline int scannum(const char *str)
+ 
+ 
+ /* Determine whether sub is a substring of str. */
+-inline int substring(const char *sub, const char *str)
++static inline int substring(const char *sub, const char *str)
+ {
+     return strstr(str, sub) != (char *) NULL;
+ } /* end of function substring */
