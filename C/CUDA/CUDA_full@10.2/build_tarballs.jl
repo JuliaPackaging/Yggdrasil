@@ -133,6 +133,11 @@ elif [[ ${target} == aarch64-linux-gnu ]]; then
     find $temp
     mv $temp/usr/local/cuda-10.2/* ${prefix}/cuda
 
+    # Fix location of include/cuda/std
+    mv ${prefix}/cuda/include/cuda/std ${prefix}/cuda/include/cuda/std_
+    mv ${prefix}/cuda/include/cuda/std_/std ${prefix}/cuda/include/cuda/std
+    rmdir ${prefix}/cuda/include/cuda/std_
+
     rsync -aOv --remove-source-files $temp/usr/include/ ${prefix}/cuda/targets/aarch64-linux/include/
     rsync -aOv --remove-source-files $temp/usr/lib/$target/ ${prefix}/cuda/targets/aarch64-linux/lib/
 
