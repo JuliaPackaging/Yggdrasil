@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Telescope"
-version = v"0.1.2"
+version = v"0.2.0"
 
 # Collection of sources required to build this package
 sources = [
     ArchiveSource("https://github.com/jhigginbotham64/Telescope/archive/refs/tags/v$(version).tar.gz",
-              "025a24a5dfe4c4d5910ae0cad7664ec2c2fc21cce8ffaae56cc6b42300249de6"),
+              "2d09f72219df5e3d1cdd1fea02ff370cc5f71d9cc37c510cb9d2dd83f4f3e990"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) && nbits(p) == 64))
+platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
 
