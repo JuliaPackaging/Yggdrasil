@@ -404,7 +404,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         push!(products, ExecutableProduct("lld", :lld, "tools"))
         push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
         push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
         push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
         push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
     end
