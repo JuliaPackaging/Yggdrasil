@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"22.4.0"
+version = v"22.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.04/amrex-22.04.tar.gz",
-                  "c33f5bdbc1ca21d8dd34b494a9c6c67a7eda4f42403cec3a7c13963f9140ebcf"),
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.05/amrex-22.05.tar.gz",
+                  "a760c7ca12915ca56b60d1f3c44103185db21ec2b8c01bc7b6762ff9c84e3f53"),
 ]
 
 # Bash recipe for building across all platforms
