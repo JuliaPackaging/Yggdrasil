@@ -21,7 +21,7 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_assertions in (false, true)
-    push!(builds, configure_extraction(ARGS, version, name, libllvm_version; assert=llvm_assertions, augmentation=true))
+    push!(builds, configure_extraction(ARGS,llvm_full_version, name, libllvm_version; assert=llvm_assertions, augmentation=true))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
