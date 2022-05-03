@@ -522,3 +522,69 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     return name, version, [], script, platforms, products, dependencies
 end
+
+function configure_unified_extraction(ARGS, llvm_version, name;
+                                      experimental_platforms=false, assert=false)
+    # Parse out some args
+    if "--assert" in ARGS
+        assert = true
+        deleteat!(ARGS, findfirst(ARGS .== "--assert"))
+    end
+
+    if name == "Clang"
+        script = clangscript
+        products = [
+            LibraryProduct("libclang", :libclang, dont_dlopen=true),
+            LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
+            ExecutableProduct(["clang", "clang-$(llvm_version.major)"], :clang, "tools"),
+        ]
+    elseif name == "MLIR"
+        script = mlirscript
+        products = [
+            LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
+        ]
+        if v"12" <= llvm_version < v"13"
+            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
+        end
+    elseif name == "LLVM"
+        script = llvmscript
+        products = [
+            LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+            ExecutableProduct("opt", :opt, "tools"),
+            ExecutableProduct("llc", :llc, "tools"),
+        ]
+        if llvm_version >= v"8"
+            push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
+        end
+        if llvm_version >= v"12"
+            push!(products, ExecutableProduct("lld", :lld, "tools"))
+            push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+            push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
+            push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+            push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        end
+    end
+
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    augmented_platforms = Platform[]
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, assert)
+
+        should_build_platform(triplet(augmented_platform)) || continue
+        push!(augmented_platforms, platform)
+    end
+
+    dependencies = BinaryBuilder.AbstractDependency[
+        Dependency("Zlib_jll"), # for LLD&LTO
+    ]
+
+    if assert
+        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_assert_jll", version=llvm_version)))
+    else
+        push!(dependencies, BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)))
+    end
+
+    return [], script, augmented_platforms, products, dependencies
+end
