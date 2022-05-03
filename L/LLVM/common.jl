@@ -351,19 +351,18 @@ rm -rf ${prefix}/*
 
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{lld*,clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{lld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{lld*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
 rm -vrf ${libdir}/*MLIR*.${dlext}*
 rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
-
-# Move lld to tools/
-mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+rm -vrf ${prefix}/lib/lld
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -473,7 +472,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
-        if version >= v"12"
+        if v"12" <= version < v"14"
             push!(products, ExecutableProduct("lld", :lld, "tools"))
             push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
             push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
