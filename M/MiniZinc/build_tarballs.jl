@@ -25,6 +25,8 @@ find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 mkdir -p build
 cd build
 
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -48,7 +50,8 @@ products = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
+filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
