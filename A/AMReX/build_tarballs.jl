@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"22.4.0"
+version = v"22.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.04/amrex-22.04.tar.gz",
-                  "c33f5bdbc1ca21d8dd34b494a9c6c67a7eda4f42403cec3a7c13963f9140ebcf"),
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.05/amrex-22.05.tar.gz",
+                  "a760c7ca12915ca56b60d1f3c44103185db21ec2b8c01bc7b6762ff9c84e3f53"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,8 @@ if [[ "$target" == *-apple-* ]]; then
     # cmake doesn't know how to handle the "-framework OpenCL" option
     # and wants to use "-framework" as a stand-alone option. This fails,
     # and cmake concludes that MPI is not available.
-    mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+    # mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+    mpiopts=
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
 elif [[ "$target" == *-mingw* ]]; then
@@ -67,9 +68,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # AMReX's cmake stage fails with OpenMPI on almost all architectures
-    # Dependency(PackageSpec(name="OpenMPI_jll", uuid="fe0851c0-eecd-5654-98d4-656369965a5c")),
-    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    #TODO Dependency(PackageSpec(name="MPItrampoline_jll"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="MPItrampoline_jll",
+                           path="/Users/eschnett/.julia/dev/MPItrampoline_jll",
+                           );
+               platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
