@@ -315,7 +315,11 @@ rm -rf ${prefix}/*
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
-mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
+if [[ -f ${LLVM_ARTIFACT_DIR}/bin/clang ]]; then
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/
+else
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
+fi
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -429,7 +433,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -473,12 +477,23 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("lld", :lld, "tools"))
             push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
             push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-            push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
             push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+
+    if augmentation
+        augmented_platforms = Platform[]
+        for platform in platforms
+            augmented_platform = deepcopy(platform)
+            augmented_platform[LLVM.platform_name] = LLVM.platform(version, assert)
+
+            should_build_platform(triplet(augmented_platform)) || continue
+            push!(augmented_platforms, augmented_platform)
+        end
+        platforms = augmented_platforms
+    end
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("Zlib_jll"), # for LLD&LTO
@@ -495,7 +510,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if name in ("Clang", "LLVM", "MLIR")
             push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
         end
-        name = "$(name)_assert"
+        if !augmentation
+            name = "$(name)_assert"
+        end
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
         if name in ("Clang", "LLVM", "MLIR")
