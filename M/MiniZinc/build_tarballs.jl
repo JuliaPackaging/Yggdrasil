@@ -50,6 +50,9 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# TODO(odow): fix build issues on Windows
+platforms = filter(!Sys.iswindows, platforms)
+
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
