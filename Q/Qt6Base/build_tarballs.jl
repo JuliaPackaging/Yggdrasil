@@ -8,7 +8,7 @@ version = v"6.3.0"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -16,6 +16,8 @@ sources = [
                   "b865aae43357f792b3b0a162899d9bf6a1393a55c4e5e4ede5316b157b1a0f99"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
 ]
 
 script = raw"""
@@ -39,8 +41,6 @@ export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 sed -i 's/"-march=haswell"/"-mavx2" "-mf16c"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
-sed -i 's/.*Ws2_32 Crypt32.*//' $qtsrcdir/cmake/FindWrapOpenSSL.cmake
-sed -i "s!Qt::GuiPrivate!Qt::GuiPrivate $libdir/clang/11.0.1/lib/darwin/libclang_rt.osx.a!" $qtsrcdir/src/plugins/platforms/cocoa/CMakeLists.txt
 
 case "$target" in
 
@@ -49,7 +49,28 @@ case "$target" in
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
     ;;
 
-    *mingw*)
+    *mingw*)        
+        cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+        make install
+        
+        
+        cd ../mingw-w64-crt/
+        if [ ${target} == "i686-w64-mingw32" ]; then
+            _crt_configure_args="--disable-lib64 --enable-lib32"
+        elif [ ${target} == "x86_64-w64-mingw32" ]; then
+            _crt_configure_args="--disable-lib32 --enable-lib64"
+        fi
+        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+        make -j${nproc}
+        make install
+        
+        cd ../mingw-w64-libraries/winpthreads
+        ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
+        make -j${nproc}
+        make install
+
+        cd $WORKSPACE/srcdir/build
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -opengl dynamic -- $commoncmakeoptions
     ;;
 
@@ -66,8 +87,10 @@ case "$target" in
     ;;
 
     *)
-        sed -i 's/ELFOSABI_GNU/ELFOSABI_LINUX/' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
-        sed -i 's/.*EM_AARCH64.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
+        if [[ "$target" != *"aarch64"* ]]; then
+            sed -i 's/ELFOSABI_GNU/ELFOSABI_LINUX/' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
+            sed -i 's/.*EM_AARCH64.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
+        fi
         sed -i 's/.*EM_BLACKFIN.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
     ;;
@@ -84,7 +107,8 @@ if host_build
     platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
 else
     platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    platforms_macos = [ Platform("x86_64", "macos") ]
+    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 end
 
 # The products that we will ensure are always built
@@ -148,9 +172,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"8", julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
 end
