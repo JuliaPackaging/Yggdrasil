@@ -17,26 +17,26 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 
 # Patch for MinGW toolchain
-find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
+# find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 mkdir -p build
 cd build
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Debug \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
+        cmake --build . --config Debug
     else
-        cmake --build . --config Release --parallel
+        cmake --build . --config Debug --parallel
     fi
 fi
 make install
