@@ -1,3 +1,20 @@
+--- a/include/minizinc/process.hh
++++ b/include/minizinc/process.hh
+@@ -225,11 +225,11 @@ public:
+     std::condition_variable cv;
+ 
+     std::deque<std::string> outputQueue;
+-    thread thrStdout(&ReadPipePrint<S2O>, g_hChildStd_OUT_Rd, &doneStdout, nullptr, &outputQueue,
++    std::thread thrStdout(&ReadPipePrint<S2O>, g_hChildStd_OUT_Rd, &doneStdout, nullptr, &outputQueue,
+                      &pipeMutex, &cv_mutex, &cv);
+-    thread thrStderr(&ReadPipePrint<S2O>, g_hChildStd_ERR_Rd, &doneStderr, &_pS2Out->getLog(),
++    std::thread thrStderr(&ReadPipePrint<S2O>, g_hChildStd_ERR_Rd, &doneStderr, &_pS2Out->getLog(),
+                      nullptr, &pipeMutex, nullptr, nullptr);
+-    thread thrTimeout([&] {
++    std::thread thrTimeout([&] {
+       auto shouldStop = [&] { return hadInterrupt || (doneStderr && doneStdout); };
+       std::unique_lock<std::mutex> lck(_interruptMutex);
+       if (_timelimit != 0) {
 --- a/solvers/MIP/MIP_cplex_wrap.cpp
 +++ b/solvers/MIP/MIP_cplex_wrap.cpp
 @@ -61,7 +61,7 @@ void* dll_open(const std::string& file) {
@@ -5,7 +22,7 @@
  void* dll_sym(void* dll, const char* sym) {
  #ifdef _WIN32
 -  void* ret = GetProcAddress((HMODULE)dll, sym);
-+  void* ret = (void*)(GetProcAddress((HMODULE)dll, sym));
++  void* ret = (void*)GetProcAddress((HMODULE)dll, sym);
  #else
    void* ret = dlsym(dll, sym);
  #endif
