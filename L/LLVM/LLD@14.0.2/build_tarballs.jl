@@ -1,4 +1,4 @@
-name = "Clang"
+name = "LLD"
 llvm_full_version = v"14.0.2+0"
 libllvm_version = v"14.0.2+0"
 
