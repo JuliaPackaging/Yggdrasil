@@ -19,6 +19,10 @@ cd $WORKSPACE/srcdir/gecode
 mkdir -p build
 cd build
 
+if [[ "${target}" == *mingw* ]]; then
+    export LDFLAGS="${LDFLAGS} -lws2_32"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
