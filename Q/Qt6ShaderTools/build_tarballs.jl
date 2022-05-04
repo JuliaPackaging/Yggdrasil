@@ -8,7 +8,7 @@ version = v"6.3.0"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -35,7 +35,6 @@ case "$target" in
         cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
         ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
         make install
-        
         
         cd ../mingw-w64-crt/
         if [ ${target} == "i686-w64-mingw32" ]; then
