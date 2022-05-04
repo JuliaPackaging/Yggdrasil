@@ -355,8 +355,10 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
 if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm_ld* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm_ld* ${prefix}/tools/
 fi
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
@@ -373,8 +375,8 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld*,wasm_ld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{*lld*,wasm_ld*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
