@@ -548,7 +548,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
             name = "$(name)_assert"
         else
-            if name in ("Clang", "LLVM", "MLIR")
+            if name in ("Clang", "LLVM", "MLIR", "LLD")
                 push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
             end
         end
