@@ -489,7 +489,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         end
     elseif name == "LLD"
         script = lldscript
-        product = [
+        products = [
             ExecutableProduct("lld", :lld, "tools"),
             ExecutableProduct("ld.lld", :ld_lld, "tools"),
             ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
