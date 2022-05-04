@@ -315,7 +315,7 @@ rm -rf ${prefix}/*
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
-if [[ -f ${LLVM_ARTIFACT_DIR}/bin/clang ]]; then
+if [[ -f ${LLVM_ARTIFACT_DIR}/bin/clang* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
@@ -339,6 +339,29 @@ mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const lldscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `lld`, `libclang` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
+mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
+if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm-ld* ${prefix}/tools/
+else
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
+fi
+# mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
@@ -351,19 +374,19 @@ rm -rf ${prefix}/*
 
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
 rm -vrf ${libdir}/*MLIR*.${dlext}*
 rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
-
-# Move lld to tools/
-mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+rm -vrf ${prefix}/lib/lld
+rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -463,6 +486,16 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if v"12" <= version < v"13"
             push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
         end
+    elseif name == "LLD"
+        script = lldscript
+        products = [
+            ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
+            ExecutableProduct("lld-link", :lld_link, "tools"),
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
+        ]
+        
     elseif name == "LLVM"
         script = llvmscript
         products = [
@@ -473,7 +506,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
-        if version >= v"12"
+        if v"12" <= version < v"14"
             push!(products, ExecutableProduct("lld", :lld, "tools"))
             push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
             push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
@@ -507,15 +540,20 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR")
-            push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
-        end
         if !augmentation
+            if name in ("Clang", "LLVM", "MLIR", "LLD")
+                push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
+            end
+
             name = "$(name)_assert"
+        else
+            if name in ("Clang", "LLVM", "MLIR", "LLD")
+                push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
+            end
         end
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR")
+        if name in ("Clang", "LLVM", "MLIR", "LLD")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end
