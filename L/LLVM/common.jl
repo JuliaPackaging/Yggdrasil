@@ -358,12 +358,9 @@ if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/lld* ${prefix}/tools/
 fi
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
+# mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
-
-# Move lld to tools/
-mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
 """
 
 const llvmscript = raw"""
