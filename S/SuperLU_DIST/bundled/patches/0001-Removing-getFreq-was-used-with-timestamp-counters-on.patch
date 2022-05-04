@@ -1,0 +1,97 @@
+From f7bf3d9769b98d8206b69e0505648cf1c49a6f7e Mon Sep 17 00:00:00 2001
+From: Piyush Sao <saopk@ornl.gov>
+Date: Wed, 4 May 2022 12:44:23 -0400
+Subject: [PATCH 1/1] Removing getFreq(); was used with timestamp counters only
+ on intel machines
+
+---
+ SRC/sec_structs.c  | 20 +++++++++++---------
+ SRC/superlu_defs.h |  2 +-
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/SRC/sec_structs.c b/SRC/sec_structs.c
+index 0f2e2a5..ce2bc7a 100644
+--- a/SRC/sec_structs.c
++++ b/SRC/sec_structs.c
+@@ -36,7 +36,7 @@ at the top-level directory.
+ #include <stdio.h> /*for printfs*/
+ #include <stdlib.h> /*for getline*/
+ 
+-double CPU_CLOCK_RATE;
++// double CPU_CLOCK_RATE;
+ /*for sorting structures */
+ int Cmpfunc_R_info (const void * a, const void * b)
+ {
+@@ -108,7 +108,7 @@ double *SCT_ThreadVarInit(int_t num_threads)
+     return var;
+ }
+ 
+-
++#if 0
+ #define DEFAULT_CPU_FREQ 3000.0   // 3 GHz
+ 
+ double getFreq(void)
+@@ -161,11 +161,13 @@ double getFreq(void)
+     return 0;
+ }
+ 
++#endif
++
+ /* Initialize various counters. */
+ void SCT_init(SCT_t* SCT)
+ {
+ #if 1
+-    CPU_CLOCK_RATE = getFreq() * 1e-3;
++    // CPU_CLOCK_RATE = getFreq() * 1e-3;
+ #else
+     CPU_CLOCK_RATE = 3000. * 1e-3;
+ #endif
+@@ -443,7 +445,7 @@ void SCT_print(gridinfo_t *grid, SCT_t* SCT)
+         }
+     }
+ #endif
+-    CPU_CLOCK_RATE = 1e9 * CPU_CLOCK_RATE;
++    // CPU_CLOCK_RATE = 1e9 * CPU_CLOCK_RATE;
+ 
+     int iam = grid->iam;
+     int_t num_procs = grid->npcol * grid->nprow;
+@@ -451,7 +453,7 @@ void SCT_print(gridinfo_t *grid, SCT_t* SCT)
+     MPI_Reduce( &SCT->NetSchurUpTimer, &temp_holder,  1, MPI_DOUBLE, MPI_SUM, 0, grid->comm );
+     if (!iam)
+     {
+-        printf("CPU_CLOCK_RATE  %.1f\n", CPU_CLOCK_RATE );
++        // printf("CPU_CLOCK_RATE  %.1f\n", CPU_CLOCK_RATE );
+         printf("Total time in factorization \t: %5.2lf\n", SCT->pdgstrfTimer);
+         printf("MPI-communication phase \t: %5.2lf\n", SCT->pdgstrfTimer - (temp_holder / num_procs));
+ 
+@@ -473,10 +475,10 @@ void SCT_print(gridinfo_t *grid, SCT_t* SCT)
+ 
+     // DistPrint("Bcast_UPanel          ", SCT->Bcast_UPanel_tl / CPU_CLOCK_RATE, "Seconds", grid);
+     // DistPrint("Bcast_LPanel          ", SCT->Bcast_LPanel_tl / CPU_CLOCK_RATE, "Seconds", grid);
+-    DistPrint("Wait_LSend            ", SCT->Wait_LSend_tl / CPU_CLOCK_RATE, "Seconds", grid);
+-    DistPrint("Wait_USend            ", SCT->Wait_USend_tl / CPU_CLOCK_RATE, "Seconds", grid);
+-    DistPrint("Wait_URecv            ", SCT->Wait_URecv_tl / CPU_CLOCK_RATE, "Seconds", grid);
+-    DistPrint("Wait_LRecv            ", SCT->Wait_LRecv_tl / CPU_CLOCK_RATE, "Seconds", grid);
++    DistPrint("Wait_LSend            ", SCT->Wait_LSend_tl , "Seconds", grid);
++    DistPrint("Wait_USend            ", SCT->Wait_USend_tl , "Seconds", grid);
++    DistPrint("Wait_URecv            ", SCT->Wait_URecv_tl , "Seconds", grid);
++    DistPrint("Wait_LRecv            ", SCT->Wait_LRecv_tl , "Seconds", grid);
+     DistPrint("L_PanelUpdate         ", SCT->L_PanelUpdate_tl , "Seconds", grid);
+     DistPrint("PDGSTRS2              ", SCT->PDGSTRS2_tl , "Seconds", grid);
+     
+diff --git a/SRC/superlu_defs.h b/SRC/superlu_defs.h
+index 0eeca79..a296744 100644
+--- a/SRC/superlu_defs.h
++++ b/SRC/superlu_defs.h
+@@ -887,7 +887,7 @@ typedef struct
+ 
+ 
+ //global variable 
+-extern double CPU_CLOCK_RATE;
++// extern double CPU_CLOCK_RATE;
+ 
+ typedef struct
+ {
+-- 
+2.36.0
+

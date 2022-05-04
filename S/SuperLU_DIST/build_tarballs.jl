@@ -10,15 +10,18 @@ sources = [
     # We are using the most recent master as of this build rather than v7.2.0 release.
     # The release is strangely missing .h files that are necessary for build.
     # They exist on master.
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "b430c074a19bdfd897d5e2a285a85bc819db12e5")
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "b430c074a19bdfd897d5e2a285a85bc819db12e5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
+atomic_patch -p1 ../patches/0001-Removing-getFreq-was-used-with-timestamp-counters-on.patch
+
 mkdir build && cd build
-# This is required to ensure that MSMPI can be found by cmake
 if [[ "${target}" == *-mingw* ]]; then
+    # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
 else
@@ -44,17 +47,13 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
-if [[ "${target}" == *-mingw* ]]; then
-    # Manually install the library
-    install -Dvm 0755 "SRC/libsuperlu.${dlext}" "${libdir}/libsuperlu.${dlext}"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # Excluding Windows due to use of `getline` function, which is non-standard and not provided by MinGW
 # per Mose. Will return to it later and attempt to find a solution.
-platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
+platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 # The products that we will ensure are always built
 products = [
@@ -66,9 +65,12 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    # Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
+    Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("METIS_jll"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
