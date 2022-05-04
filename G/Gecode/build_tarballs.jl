@@ -45,9 +45,7 @@ products = [
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-]
+dependencies = []
 
 build_tarballs(
     ARGS,
