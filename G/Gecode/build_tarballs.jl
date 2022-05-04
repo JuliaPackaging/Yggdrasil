@@ -38,7 +38,6 @@ make install
 
 products = [
     ExecutableProduct("fzn-gecode", :fzngecode),
-    ExecutableProduct("mzn-gecode", :mzngecode),
 ]
 
 # These are the platforms we will build for by default, unless further
