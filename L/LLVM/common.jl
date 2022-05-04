@@ -339,7 +339,7 @@ mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/objects-Release ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
