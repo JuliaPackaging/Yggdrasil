@@ -8,9 +8,8 @@ version = v"7.2.0"
 # Collection of sources required to complete build
 sources = [
     # We are using the most recent master as of this build rather than v7.2.0 release.
-    # The release is strangely missing .h files that are necessary for build.
-    # They exist on master.
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "b430c074a19bdfd897d5e2a285a85bc819db12e5"),
+    # This commit contains important fixes for Windows building
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "f7bf3d9769b98d8206b69e0505648cf1c49a6f7e"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,6 +17,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
 atomic_patch -p1 ../patches/0001-Removing-getFreq-was-used-with-timestamp-counters-on.patch
+# allow us to set the name of the shared lib.
+sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
 
 mkdir build && cd build
 if [[ "${target}" == *-mingw* ]]; then
@@ -28,7 +29,18 @@ else
     PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+mkdir ${libdir}/superlu_dist
+
+build_superlu_dist()
+{
+    if [[ "${1}" == "Int64" ]]; then
+        INT=64
+    else
+        INT=32
+    fi
+    SUPERLU_PREFIX=${libdir}/superlu_dist/Int${INT}
+    mkdir ${SUPERLU_PREFIX}
+    cmake -DCMAKE_INSTALL_PREFIX=${SUPERLU_PREFIX} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
@@ -42,11 +54,18 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
     ${PLATFLAGS} \
     -DCMAKE_C_FLAGS="-std=c99" \
-    -DXSDK_INDEX_SIZE=32 \
+    -DXSDK_INDEX_SIZE=${INT} \
     -DXSDK_ENABLE_Fortran=OFF \
+    -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
+    -Denable_examples=OFF \
     ..
-make -j${nproc}
-make install
+    make -j${nproc}
+    make install
+}
+build_superlu_dist Int32
+build_superlu_dist Int64
+
+
 """
 
 # These are the platforms we will build for by default, unless further
@@ -56,7 +75,8 @@ make install
 platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsuperlu_dist", :libsuperlu_dist)
+    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
+    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64, ["\$libdir/superlu_dist/Int64/lib", "\$libdir/superlu_dist/Int64/bin"])
 ]
 
 # Dependencies that must be installed before this package can be built
