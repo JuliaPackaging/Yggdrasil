@@ -10,13 +10,11 @@ sources = [
     # We are using the most recent master as of this build rather than v7.2.0 release.
     # This commit contains important fixes for Windows building
     GitSource("https://github.com/xiaoyeli/superlu_dist.git", "f7bf3d9769b98d8206b69e0505648cf1c49a6f7e"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/superlu_dist*
-atomic_patch -p1 ../patches/0001-Removing-getFreq-was-used-with-timestamp-counters-on.patch
 # allow us to set the name of the shared lib.
 sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
 
