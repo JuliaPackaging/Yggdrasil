@@ -53,8 +53,7 @@ make install
 # platforms are passed in on the command line
 # Excluding Windows due to use of `getline` function, which is non-standard and not provided by MinGW
 # per Mose. Will return to it later and attempt to find a solution.
-platforms = expand_gfortran_versions(supported_platforms())
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsuperlu_dist", :libsuperlu_dist)
