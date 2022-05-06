@@ -30,9 +30,11 @@ make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
-install -vm 644 src/*.h "${includedir}"
-install -vm 644 src/* "${srcdir}"
 install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
+
+# store files
+install -vm 644 src/*.h "${includedir}"
+install -vm 644 src/* "${sourcedir}"     
 
 
 install_license LICENSE
