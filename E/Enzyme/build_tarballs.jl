@@ -11,7 +11,7 @@ repo = "https://github.com/EnzymeAD/Enzyme.git"
 auto_version = "refs/tags/v0.0.30"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build attr
 sources = [GitSource(repo, "9733bd720959473a59c298cee0551f693981778c")]
