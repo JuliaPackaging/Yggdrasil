@@ -31,9 +31,17 @@ else
     rm -f /lib/libcrypto.so*
     rm -f /usr/lib/libcrypto.so*
 
+    conf_args=()
+    if [[ "${target}" == *-linux-gnu* ]]; then
+        # We use very old versions of glibc which used to have `libcrypt.so.1`, but modern
+        # glibcs have `libcrypt.so.2`, so if we link to `libcrypt.so.1` most users would
+        # have troubles running the programs at runtime.
+        conf_args+=(ac_cv_lib_crypt_crypt=no)
+    fi
+
     export CPPFLAGS="-I${includedir}"
     autoreconf -vi
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${conf_args[@]}"
     make -j${nproc} "${PRODUCTS[@]}"
 fi
 
