@@ -6,10 +6,9 @@ name = "MAGEMin"
 version = v"1.1.1"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
-                  "72198b66c94a7026497824b460096d7e034cecca"),
-]
+sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
+                    "72198b66c94a7026497824b460096d7e034cecca")
+        ]
 
 # Bash recipe for building across all platforms
 script = raw"""
