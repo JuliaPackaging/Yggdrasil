@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "MAGEMin"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ComputationalThermodynamics/MAGEMin/archive/refs/tags/v$(version).tar.gz", 
-                  "dee90f277234dda0d6d20a5961d244e7047c964e4d9a73af3f89f60c9198ff3e"),
+                  "72198b66c94a7026497824b460096d7e034cecca"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,9 @@ make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -vm 644 src/*.h "${includedir}"
+install -vm 644 src/* "${srcdir}"
 install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
+
 
 install_license LICENSE
 """
