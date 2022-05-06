@@ -33,8 +33,7 @@ install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
 
 # store files
-install -vm 644 src/* "${includedir}"
-#install -vm 644 src/* "${sourcedir}"     
+install -vm 644 src/*.h "${includedir}"
 
 
 install_license LICENSE
