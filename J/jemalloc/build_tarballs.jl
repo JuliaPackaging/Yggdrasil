@@ -18,9 +18,6 @@ autoconf
 FLAGS=(--disable-initial-exec-tls)
 if [[ "${target}" == *-freebsd* ]]; then
      FLAGS+=(--with-jemalloc-prefix)
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-     # Use correct 'system page size' per https://uwekorn.com/2021/01/11/apache-arrow-on-the-apple-m1.html
-     FLAGS+=(--with-lg-page=14)
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 
