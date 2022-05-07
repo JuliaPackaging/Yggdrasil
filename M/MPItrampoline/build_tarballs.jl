@@ -3,22 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "MPItrampoline"
-version = v"3.3.1"
+version = v"4.0.2"
 
-mpich_version_str = "4.0"
+mpich_version_str = "4.0.2"
 mpiconstants_version = v"1.4.1"
-mpiwrapper_version = v"2.3.2"
+mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "53ce6db1f6197330883243543401d85ebab25d204687ea699f4767f6bd9890aa"),
+                  "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
                   "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
+                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "eb1d63f691eebe87f81c6c5caad379e6baa5e851dd7565d9c62c23779ef48f06"),
+                  "e6fc1c08ad778675e5b58b91b4658b12e3f985c6d4c5c2c3e9ed35986146780e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -182,8 +182,10 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
         -DMPI_CXX_COMPILER=c++ \
         -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
         -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
@@ -236,7 +238,7 @@ products = [
 
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
-    LibraryProduct("libmpi", :libmpi),
+    LibraryProduct("libmpitrampoline", :libmpi),
 
     # MPIconstants
     LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
