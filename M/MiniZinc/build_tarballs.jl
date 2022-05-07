@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.6.2"
+version = v"2.6.3"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "a56602765b4294b796c063664733b28f5a663af7",
+        "b81f14ac41bc6f6ec6cfe7ede408c9f3447a6a76",
     ),
     DirectorySource("./bundled"),
 ]
