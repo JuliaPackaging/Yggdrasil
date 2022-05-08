@@ -31,12 +31,19 @@ export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
 export CROSS_F77_TRUE_VALUE=1
 export CROSS_F77_FALSE_VALUE=0
 
-export CROSS_F90_ADDRESS_KIND=8
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
 export CROSS_F90_OFFSET_KIND=8
 export CROSS_F90_INTEGER_KIND=4
-export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_INTEGER_MODEL=9
 export CROSS_F90_REAL_MODEL=6,37
-
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
+]
 if [[ "${target}" == i686-linux-musl ]]; then
     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
     # but not C++ or Fortran.  `configure` runs a C program to determine
