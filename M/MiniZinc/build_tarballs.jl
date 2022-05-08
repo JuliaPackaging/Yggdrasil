@@ -28,7 +28,8 @@ if [[ "${target}" == *-linux-* ]]; then
     export BUILD_TYPE=Release
 else
     if [[ "${target}" == *-mingw* ]]; then
-        # Not supported
+        # But this isn't building yet
+        export BUILD_TYPE=Release
     else
         export BUILD_TYPE=Debug
     fi
