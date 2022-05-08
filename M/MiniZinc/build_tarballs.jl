@@ -24,18 +24,28 @@ cd $WORKSPACE/srcdir/libminizinc
 mkdir -p build
 cd build
 
+if [[ "${target}" == *-linux-* ]]; then
+    export BUILD_TYPE=Release
+else
+    if [[ "${target}" == *-mingw* ]]; then
+        # Not supported
+    else
+        export BUILD_TYPE=Debug
+    fi
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
 else
     if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config RelWithDebInfo
+        cmake --build . --config ${BUILD_TYPE}
     else
-        cmake --build . --config RelWithDebInfo --parallel
+        cmake --build . --config ${BUILD_TYPE} --parallel
     fi
 fi
 make install
