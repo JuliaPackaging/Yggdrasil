@@ -43,7 +43,7 @@ export CROSS_F90_REAL_MODEL=6,37
 export CROSS_F90_DOUBLE_MODEL=15,307
 export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
 export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
-]
+
 if [[ "${target}" == i686-linux-musl ]]; then
     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
     # but not C++ or Fortran.  `configure` runs a C program to determine
