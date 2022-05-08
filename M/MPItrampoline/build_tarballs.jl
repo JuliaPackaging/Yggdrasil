@@ -77,11 +77,10 @@ if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; t
 
     if [[ ${nbits} == 32 ]]; then
         export CROSS_F90_ADDRESS_KIND=4
-        export CROSS_F90_OFFSET_KIND=4
     else
         export CROSS_F90_ADDRESS_KIND=8
-        export CROSS_F90_OFFSET_KIND=8
     fi
+    export CROSS_F90_OFFSET_KIND=8
     export CROSS_F90_INTEGER_KIND=4
     export CROSS_F90_INTEGER_MODEL=9
     export CROSS_F90_REAL_MODEL=6,37
