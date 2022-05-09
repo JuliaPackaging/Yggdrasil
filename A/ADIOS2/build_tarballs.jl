@@ -38,11 +38,11 @@ if [[ "$target" == *-apple-* ]]; then
         # and wants to use "-framework" as a stand-alone option. This fails
         # gloriously, and cmake concludes that MPI is not available.
         archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    else
-        archopts=
+    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     fi
 elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
+    archopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
