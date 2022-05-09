@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.8.1"
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "c9700f369aa84fc00f36c4b817ffb7dab72b865d"),
+    GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
     DirectorySource("./bundled")
 ]
 
@@ -18,7 +18,7 @@ cd blis/
 
 for i in ./config/*/*.mk; do
 
-    # Building in container forbids -march options <<< Settings overrided.
+    # Building in container forbids -march options <<< Settings overriden.
     # sed -i "s/-march[^ ]*//g" $i
 
     # Building in container forbids unsafe optimization.
@@ -75,10 +75,10 @@ if [ ${nbits} = 64 ]; then
     patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
 fi
 
-# Include SVE support in this metaconfig.
+# Include A64FX in Arm64 metaconfig.
 if [ ${BLI_CONFIG} = arm64 ]; then
-    # Add SVE configs to the registry.
-    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+armsve.patch
+    # Add A64FX to the registry.
+    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
     # Unscreen Arm SVE code for metaconfig.
     patch kernels/armsve/bli_kernels_armsve.h \
@@ -88,15 +88,13 @@ if [ ${BLI_CONFIG} = arm64 ]; then
     patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
         < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
 
-    # Config armsve depends on some family header defines.
-    cp config/armsve/bli_family_armsve.h config/arm64/bli_family_arm64.h
-
-    # Screen out SVE instructions in config-stage.
+    # Screen out A64FX sector cache.
     patch config/a64fx/bli_cntx_init_a64fx.c \
         < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
-    patch config/armsve/bli_cntx_init_armsve.c \
-        < ${WORKSPACE}/srcdir/patches/armsve_config_screen_non_sve.patch
 fi
+
+# Import libblastrampoline-style nthreads setter.
+cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
 export BLI_F77BITS=${nbits}
 ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
@@ -142,4 +140,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"11", lock_microarchitecture=false, julia_compat="1.6")
+               preferred_gcc_version=v"11", lock_microarchitecture=false, julia_compat="1.6")

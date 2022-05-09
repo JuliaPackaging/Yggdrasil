@@ -14,6 +14,7 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
+    v"14.0.2" => "465c166c5422079185c3289cdc2613420d8d6c51", # julia-14.0.2-1
 )
 
 const buildscript = raw"""
@@ -89,9 +90,12 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
-    ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen mlir-linalg-ods-gen llvm-config
+    ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
+fi
+if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
+    ninja -j${nproc} mlir-linalg-ods-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
@@ -125,12 +129,12 @@ LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
+PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld;mlir')
-else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;compiler-rt;lld')
+    PROJECTS+=(mlir)
 fi
-# CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt')
+LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
@@ -189,6 +193,8 @@ CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
+fi
+if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
@@ -236,11 +242,12 @@ if [[ "${target}" == *mingw* ]]; then
     CMAKE_CPP_FLAGS="${CMAKE_CPP_FLAGS} -remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE"
     # Windows is case-insensitive and some dependencies take full advantage of that
     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
+    CMAKE_FLAGS+=(-DCLANG_INCLUDE_TESTS=OFF)
 fi
 
+CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=OFF)
 if [[ "${target}" == *musl* ]]; then
     # Taken from https://git.alpinelinux.org/cgit/aports/tree/main/compiler-rt/APKBUILD
-    CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=ON)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_XRAY=OFF)
 fi
@@ -308,7 +315,11 @@ rm -rf ${prefix}/*
 # Copy over `clang`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
-mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
+if [[ -f ${LLVM_ARTIFACT_DIR}/bin/clang* ]]; then
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/
+else
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
+fi
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -328,6 +339,29 @@ mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const lldscript = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `lld`, `libclang` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
+mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
+if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm-ld* ${prefix}/tools/
+else
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
+fi
+# mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
@@ -340,19 +374,19 @@ rm -rf ${prefix}/*
 
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
 rm -vrf ${libdir}/*MLIR*.${dlext}*
 rm -vrf ${prefix}/lib/*LLVM*.a
 rm -vrf ${prefix}/lib/libclang*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
-
-# Move lld to tools/
-mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+rm -vrf ${prefix}/lib/lld
+rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
@@ -398,7 +432,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         push!(products, ExecutableProduct("lld", :lld, "tools"))
         push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
         push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
         push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
         push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
     end
@@ -423,7 +456,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -453,6 +486,16 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if v"12" <= version < v"13"
             push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
         end
+    elseif name == "LLD"
+        script = lldscript
+        products = [
+            ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
+            ExecutableProduct("lld-link", :lld_link, "tools"),
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
+        ]
+        
     elseif name == "LLVM"
         script = llvmscript
         products = [
@@ -463,16 +506,27 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         if version >= v"8"
             push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
         end
-        if version >= v"12"
+        if v"12" <= version < v"14"
             push!(products, ExecutableProduct("lld", :lld, "tools"))
             push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
             push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-            push!(products, ExecutableProduct("ld64.lld.darwinnew", :ld64_lld_darwinnew, "tools"))
             push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+
+    if augmentation
+        augmented_platforms = Platform[]
+        for platform in platforms
+            augmented_platform = deepcopy(platform)
+            augmented_platform[LLVM.platform_name] = LLVM.platform(version, assert)
+
+            should_build_platform(triplet(augmented_platform)) || continue
+            push!(augmented_platforms, augmented_platform)
+        end
+        platforms = augmented_platforms
+    end
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("Zlib_jll"), # for LLD&LTO
@@ -486,13 +540,20 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     if assert
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_assert_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR")
-            push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
+        if !augmentation
+            if name in ("Clang", "LLVM", "MLIR", "LLD")
+                push!(dependencies, Dependency("libLLVM_assert_jll", libLLVM_version, compat=compat_version))
+            end
+
+            name = "$(name)_assert"
+        else
+            if name in ("Clang", "LLVM", "MLIR", "LLD")
+                push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
+            end
         end
-        name = "$(name)_assert"
     else
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
-        if name in ("Clang", "LLVM", "MLIR")
+        if name in ("Clang", "LLVM", "MLIR", "LLD")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
     end

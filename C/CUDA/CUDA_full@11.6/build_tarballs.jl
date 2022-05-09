@@ -39,7 +39,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp cuda_documentation/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
+    for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse \
@@ -61,7 +61,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     mv cuda_documentation/Doc/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti \
+    for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse  \

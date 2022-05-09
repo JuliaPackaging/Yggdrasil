@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Qt5Declarative"
-version = v"5.15.2"
+version = v"5.15.3"
 
-# Collection of sources required to build qt5
+# Collection of sources required to build qt5declarative
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
-                  "c600d09716940f75d684f61c5bdaced797f623a86db1627da599027f6c635651"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-opensource-src-$(version).tar.xz",
+                  "33f15a5caa451bddf8298466442ccf7ca65e4cf90453928ddbb95216c4374062"),
 ]
 
 script = raw"""
@@ -53,9 +53,11 @@ platforms_linux = [
     Platform("x86_64", "freebsd"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
-platforms_linux = expand_cxxstring_abis(platforms_linux)
+# We're using GCC to build for FreeBSD, so we need to expand C++ string ABI also
+# for this platform.
+platforms_linux = expand_cxxstring_abis(platforms_linux; skip=Returns(false))
 platforms_win = expand_cxxstring_abis([Platform("x86_64", "windows"), Platform("i686", "windows")])
-platforms_macos = [ Platform("x86_64", "macos") ]
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -87,12 +89,14 @@ dependencies = [
 
 include("../../fancy_toys.jl")
 
+julia_compat = "1.6"
+
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8")
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8", julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7", julia_compat)
 end
