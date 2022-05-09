@@ -5,7 +5,7 @@ name = "FastTransforms"
 version = v"0.6.0"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "ae2db2fa808ca17c5dc5ac25b079eba2dbe598d061b9b4e14c948680870abc3c"),
+                  "ae2db2fa8 08ca17c5dc5ac25b079eba2dbe598d061b9b4e14c948680870abc3c"),
 ]
 
 # Bash recipe for building across all platforms
