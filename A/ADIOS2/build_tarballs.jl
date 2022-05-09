@@ -38,6 +38,8 @@ if [[ "$target" == *-apple-* ]]; then
         # and wants to use "-framework" as a stand-alone option. This fails
         # gloriously, and cmake concludes that MPI is not available.
         archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     else
         archopts=
     fi
@@ -61,15 +63,16 @@ fi
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DBUILD_TESTING=OFF \
+    -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DADIOS2_BUILD_EXAMPLES=OFF \
-    -DBUILD_TESTING=OFF \
     -DMPI_HOME=$prefix \
     ${archopts} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
@@ -138,8 +141,6 @@ dependencies = [
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-# This build script doesn't support OpenMPI yet. (This could easily be added.)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
 platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && Sys.isfreebsd(p)), platforms)
