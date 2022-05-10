@@ -1,27 +1,35 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "gmsh"
-version = v"4.9.3"
+version = v"4.10.2"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "9e06751e9fef59ba5ba8e6feded164d725d7e9bc63e1cb327b083cbc7a993adb"),
+                  "d921109e6c419f68d5507d9612ee815d40b5239a5db175f28285e0cd0dbf2517")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gmsh-*
-install_license LICENSE.txt
+if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
+    OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
+elif [[ "${target}" == *mingw* ]]; then
+    # Built-in FindHDF5.cmake has issues on Windows
+    sed -i'.bak' 's/^  find_package(HDF5)/  # find_package(HDF5)/' CMakeLists.txt
+    HDF5_FLAGS="-DHDF5_FOUND=true -DHDF5_INCLUDE_DIRS=${includedir} -DHDF5_C_LIBRARIES=$(ls ${libdir}/libhdf5*.${dlext})"
+fi
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DENABLE_BUILD_DYNAMIC=1 \
-      ..
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_BUILD_DYNAMIC=1 \
+    -DDEFAULT=1 \
+    ${OPENGL_FLAGS} ${HDF5_FLAGS}
 make -j${nproc}
 make install
 mv ${prefix}/lib/gmsh.jl ${prefix}/lib/gmsh.jl.bak
@@ -30,22 +38,48 @@ sed ${prefix}/lib/gmsh.jl.bak \
   -e 's/^\(const lib.*\)/#\1/g' \
   -e 's/^\(module gmsh\)$/\1\nusing gmsh_jll: libgmsh\nconst lib = libgmsh/g' \
   > ${prefix}/lib/gmsh.jl
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+filter!(p -> !(Sys.iswindows(p) && cxxstring_abi(p) == "cxx03"), platforms) # Restriction from OCCT builds
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgmsh", "gmsh"], :libgmsh),
-    FileProduct("lib/gmsh.jl",:gmsh_api)
+    FileProduct("lib/gmsh.jl", :gmsh_api)
 ]
+
+# Some dependencies are needed only on Linux and FreeBSD
+x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    Dependency("Cairo_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FLTK_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("GLU_jll"; platforms=x11_platforms),
+    Dependency("GMP_jll"),
+    Dependency("HDF5_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libglvnd_jll"; platforms=x11_platforms),
+    Dependency("libpng_jll"),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isapple, platforms)),
+    Dependency("METIS_jll"),
+    Dependency("MMG_jll"),
+    Dependency("OCCT_jll"),
+    Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXft_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),
+    Dependency("Zlib_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
