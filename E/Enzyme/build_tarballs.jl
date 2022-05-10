@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.30"
+auto_version = "refs/tags/v0.0.31"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "9733bd720959473a59c298cee0551f693981778c")]
+sources = [GitSource(repo, "e020a34bae4aefd4c9d4d83b83af06b3d580c5ef")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -78,9 +78,6 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    if llvm_version == v"11.0.1" && llvm_assertions
-        continue # Does not have Clang available
-    end
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
