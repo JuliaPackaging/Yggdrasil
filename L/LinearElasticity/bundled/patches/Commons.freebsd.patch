@@ -1,0 +1,47 @@
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -1,6 +1,6 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.2)
+ set(CMAKE_BUILD_TYPE  "Release")
+-SET(CMAKE_C_FLAGS   "-w -g -O3 -funroll-loops")
++SET(CMAKE_C_FLAGS     "-w -g -O3 -funroll-loops")
+ set(CMAKE_MACOSX_RPATH 1)
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ 
+@@ -29,7 +29,10 @@ TARGET_LINK_LIBRARIES( Commons ${LIBRARIES})
+ 
+ INSTALL(
+   TARGETS Commons
+-  RUNTIME DESTINATION "$ENV{HOME}/lib"
+-  LIBRARY DESTINATION "$ENV{HOME}/lib")
++  RUNTIME DESTINATION "lib"
++  LIBRARY DESTINATION "lib")
++
++INSTALL(
++  FILES ${header_files}
++  DESTINATION "include")
+ 
+-INSTALL(               FILES   ${header_files} DESTINATION "$ENV{HOME}/include")
+
+--- /dev/null
++++ b/sources/lplib3.c
+@@ -32,6 +32,10 @@
+ #include <unistd.h>
+ #include "lplib3.h"
+ 
++#ifdef __FreeBSD__
++#include <pmc.h>
++#endif
++
+ 
+ /*----------------------------------------------------------*/
+ /* Defines													*/
+@@ -1251,6 +1255,7 @@ void qsort_mt(void *a, size_t n, size_t es, cmp_t *cmp, int maxthreads, int fork
+ 		 * NPROC environment variable (BSD/OS, CrayOS)
+ 		 * sysctl hw.ncpu or kern.smp.cpus
+ 		 */
++		int ncpu;
+ 		if (pmc_init() == 0 && (ncpu = pmc_ncpu()) != -1)
+ 			maxthreads = ncpu;
+ 		else

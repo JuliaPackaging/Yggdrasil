@@ -1,6 +1,15 @@
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -11,24 +11,21 @@
+@@ -1,6 +1,6 @@
+-cmake_minimum_required(VERSION 2.8)
++cmake_minimum_required(VERSION 3.2)
+ set(CMAKE_BUILD_TYPE  "Release")
+-SET(CMAKE_CXX_FLAGS   "-w -g -O3")
++SET(CMAKE_C_FLAGS     "-w -g -O3")
+ set(CMAKE_MACOSX_RPATH 1)
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ 
+@@ -11,24 +11,26 @@ project(Elas)
  file(                  GLOB_RECURSE source_files sources/*)
  file(                  GLOB_RECURSE header_files sources/*.h)
  ADD_LIBRARY(           Elas SHARED ${source_files})
@@ -8,9 +17,10 @@
 -INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
 -LINK_DIRECTORIES(     "$ENV{HOME}/lib")
 +find_library(          Commons NAMES Commons)
-+#INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
-+#LINK_DIRECTORIES(     "$ENV{HOME}/lib")
++# INCLUDE_DIRECTORIES(  "include")
++# LINK_DIRECTORIES(     "lib")
  target_link_libraries( Elas ${Commons})
++
  INSTALL(
    TARGETS Elas
 -  LIBRARY  DESTINATION "$ENV{HOME}/lib"
@@ -18,6 +28,7 @@
 -INSTALL(               FILES ${header_files} DESTINATION "$ENV{HOME}/include")
 +  LIBRARY  DESTINATION "lib"
 +  RUNTIME  DESTINATION "lib")
++
 +INSTALL(
 +  FILES ${header_files}
 +  DESTINATION "include")
@@ -31,6 +42,8 @@
 -
 - 
 -
--
-+INSTALL(               TARGETS elastic RUNTIME DESTINATION "bin")
+ 
++INSTALL(
++  TARGETS elastic
++  RUNTIME DESTINATION "bin")
  

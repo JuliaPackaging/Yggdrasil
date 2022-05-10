@@ -34,25 +34,19 @@ cmake .. \
     -DOPTION_USE_THREADS=ON
 make -j${nproc}
 make install
-if [[ ${target} == *mingw* ]]; then
-    # Rename binaries to correct extension
-    mv ${bindir}/fltk-config ${bindir}/fltk-config${exeext}
-fi
-cd ..
-install_license COPYING
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= p -> arch(p) == "armv6l")
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfltk", :libfltk),
     LibraryProduct("libfltk_forms", :libfltk_forms),
     LibraryProduct("libfltk_gl", :libfltk_gl),
-    LibraryProduct("libfltk_images", :libfltk_images),
-    ExecutableProduct("fltk-config", Symbol("fltk-config"))
+    LibraryProduct("libfltk_images", :libfltk_images)
 ]
 
 # Some dependencies are needed only on Linux and FreeBSD
@@ -76,4 +70,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")

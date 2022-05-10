@@ -7,15 +7,14 @@ version = v"7.6.2"
 
 # Collection of sources required to build Open CASCADE Technology (OCCT)
 sources = [
-    FileSource("https://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/tags/V7_6_2;sf=tgz",
-               "443f782f4adfd316e3f81bfad01d5367ae55ceb0d04c1acec1b87baae5c75e1c"),
+    GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
+              "bb368e271e24f63078129283148ce83db6b9670a"), # V7_6_2 @ April 29, 2022
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir
-tar zxf 'V7_6_2;sf=tgz' && cd occt-*
+cd ${WORKSPACE}/srcdir/OCCT
 if [[ ${target} == *musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_MemInfo.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_signal.cxx.patch"
@@ -42,8 +41,7 @@ if [[ ${target} == *mingw* ]]; then
     ln -s ${prefix}/win*/gcc/lib/* ${prefix}/lib
     ln -s ${prefix}/win*/gcc/bin/* ${prefix}/bin
 fi
-cd ..
-install_license LICENSE_LGPL_21.txt OCCT_LGPL_EXCEPTION.txt
+install_license ../LICENSE_LGPL_21.txt ../OCCT_LGPL_EXCEPTION.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -114,4 +112,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
