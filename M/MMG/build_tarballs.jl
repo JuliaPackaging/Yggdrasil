@@ -18,12 +18,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Temporarily override HOME for dependency installs
-BACKUP_HOME=$HOME
-HOME=$prefix
-
 # Install dependencies
 cd ${WORKSPACE}/srcdir/Commons-*
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Commons.patch"
 mkdir build
 cd build
 cmake .. \
@@ -35,6 +32,7 @@ make -j${nproc}
 make install
 
 cd ${WORKSPACE}/srcdir/LinearElasticity-*
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/LinearElasticity.patch"
 mkdir build
 cd build
 cmake .. \
@@ -44,9 +42,6 @@ cmake .. \
     -DBUILD_SHARED_LIBS=ON
 make -j${nproc}
 make install
-
-# Restore HOME
-HOME=$BACKUP_HOME
 
 # Install genheader for host platform
 cp -r ${WORKSPACE}/srcdir/mmg-* ${WORKSPACE}/srcdir/mmg-genheader
@@ -65,7 +60,7 @@ cd ${WORKSPACE}/srcdir && rm -r ${WORKSPACE}/srcdir/mmg-genheader
 # Install MMG
 cd ${WORKSPACE}/srcdir/mmg-*
 if [[ ! "${target}" == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/SCOTCH.patch"
 fi
 mkdir build
 cd build
@@ -83,7 +78,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= x -> (Sys.iswindows(x) || Sys.isfreebsd(x)))
+platforms = supported_platforms(exclude= p -> (Sys.iswindows(p) || Sys.isfreebsd(p)))
 
 # The products that we will ensure are always built
 products = [

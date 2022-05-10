@@ -1,0 +1,36 @@
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -11,24 +11,21 @@
+ file(                  GLOB_RECURSE source_files sources/*)
+ file(                  GLOB_RECURSE header_files sources/*.h)
+ ADD_LIBRARY(           Elas SHARED ${source_files})
+-find_library(          Commons NAMES Commons HINTS "$ENV{HOME}/lib")
+-INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
+-LINK_DIRECTORIES(     "$ENV{HOME}/lib")
++find_library(          Commons NAMES Commons)
++#INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
++#LINK_DIRECTORIES(     "$ENV{HOME}/lib")
+ target_link_libraries( Elas ${Commons})
+ INSTALL(
+   TARGETS Elas
+-  LIBRARY  DESTINATION "$ENV{HOME}/lib"
+-  RUNTIME  DESTINATION "$ENV{HOME}/lib")
+-INSTALL(               FILES ${header_files} DESTINATION "$ENV{HOME}/include")
++  LIBRARY  DESTINATION "lib"
++  RUNTIME  DESTINATION "lib")
++INSTALL(
++  FILES ${header_files}
++  DESTINATION "include")
+ 
+ #Executable
+ project(main)
+ add_executable(        elastic sources/elastic.c)
+ target_link_libraries( elastic ${Commons} Elas)
+-INSTALL(               TARGETS elastic RUNTIME DESTINATION "$ENV{HOME}/bin")
+-
+-
+- 
+-
+-
++INSTALL(               TARGETS elastic RUNTIME DESTINATION "bin")
+ 

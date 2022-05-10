@@ -21,6 +21,10 @@ if [[ ${target} == *musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_signal.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_StackTrace.cxx.patch"
 fi
+if [[ ${target} == *freebsd* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_CString.cxx.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
+fi
 mkdir build
 cd build
 cmake -Wno-dev .. \
@@ -33,14 +37,19 @@ cmake -Wno-dev .. \
     -DBUILD_MODULE_ApplicationFramework=0
 make -j${nproc}
 make install
+if [[ ${target} == *mingw* ]]; then
+    # Correct installation paths for windows
+    ln -s ${prefix}/win*/gcc/lib/* ${prefix}/lib
+    ln -s ${prefix}/win*/gcc/bin/* ${prefix}/bin
+fi
 cd ..
 install_license LICENSE_LGPL_21.txt OCCT_LGPL_EXCEPTION.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(filter!(p -> arch(p) != "armv6l", supported_platforms()))
+filter!(p -> !(Sys.iswindows(p) && cxxstring_abi(p) == "cxx03"), platforms) # std::swap from mingw requires c++11
 
 # The products that we will ensure are always built
 products = [
