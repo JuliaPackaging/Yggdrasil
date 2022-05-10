@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.14"
+version = v"0.0.15"
 
 llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build LLVMExtra
-sources = [GitSource(repo, "141adedf59bb868bca40b0b9ec1267127413de5c")]
+sources = [GitSource(repo, "815f00afeae7ef817db187645fc0e3774253d092")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
