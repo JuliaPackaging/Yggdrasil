@@ -12,11 +12,31 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/chibi-scheme
-apk add chibi-scheme
+
+patch CMakeLists.txt <<EOF
+@@ -202,10 +202,11 @@ if(BUILD_SHARED_LIBS)
+     # is not a generator expression within the actual custom command to process
+     # the stubs, as older CMake versions fail to properly construct the dependency
+     # on the bootstrap executable from the generator expression.
+-    set(bootstrap chibi-scheme)
++    set(_bootstrap chibi-scheme)
+ else()
+-    set(bootstrap chibi-scheme-bootstrap)
++    set(_bootstrap chibi-scheme-bootstrap)
+ endif()
++set(bootstrap ${_bootstrap} CACHE FILEPATH "chibi-scheme path for bootstrapping")
+EOF
+
+mkdir bootstrap && cd bootstrap
+cmake ..
+make -j${nproc}
+cd ..
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -Dbootstrap=$WORKSPACE/srcdir/chibi-scheme/bootstrap/chibi-scheme
     ..
 make -j${nproc}
 make install
