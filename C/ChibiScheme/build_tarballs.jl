@@ -13,18 +13,33 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/chibi-scheme
 
+# apply chibi-scheme#830
 patch CMakeLists.txt <<EOF
-@@ -202,10 +202,11 @@ if(BUILD_SHARED_LIBS)
-     # is not a generator expression within the actual custom command to process
-     # the stubs, as older CMake versions fail to properly construct the dependency
-     # on the bootstrap executable from the generator expression.
--    set(bootstrap chibi-scheme)
-+    set(_bootstrap chibi-scheme)
- else()
--    set(bootstrap chibi-scheme-bootstrap)
-+    set(_bootstrap chibi-scheme-bootstrap)
- endif()
-+set(bootstrap ${_bootstrap} CACHE FILEPATH "chibi-scheme path for bootstrapping")
+@@ -209,0 +210,3 @@ endif()
++# when cross-compiling, we need to use a separately built chibi-scheme executable:
++set(BOOTSTRAP \${bootstrap} CACHE FILEPATH "chibi-scheme path for bootstrapping")
++
+@@ -225 +228 @@ function(add_stubs_library stub)
+-        COMMAND \${bootstrap} \${chibi-ffi} \${stubfile} \${stubout}
++        COMMAND \${BOOTSTRAP} \${chibi-ffi} \${stubfile} \${stubout}
+@@ -384 +387 @@ foreach(e \${chibi-scheme-tests})
+-        COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib tests/\${e}.scm
++        COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib tests/\${e}.scm
+@@ -389 +392 @@ add_test(NAME r5rs-test
+-    COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib -xchibi tests/r5rs-tests.scm
++    COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib -xchibi tests/r5rs-tests.scm
+@@ -429 +432 @@ foreach(e \${testlibs})
+-        COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib
++        COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib
+@@ -465 +468 @@ add_custom_command(OUTPUT chibi.img
+-    COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib -mchibi.repl
++    COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib -mchibi.repl
+@@ -469 +472 @@ add_custom_command(OUTPUT red.img
+-    COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib -xscheme.red -mchibi.repl
++    COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib -xscheme.red -mchibi.repl
+@@ -473 +476 @@ add_custom_command(OUTPUT snow.img
+-    COMMAND chibi-scheme -I \${CMAKE_CURRENT_BINARY_DIR}/lib
++    COMMAND \${BOOTSTRAP} -I \${CMAKE_CURRENT_BINARY_DIR}/lib
 EOF
 
 apk add chibi-scheme
