@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "ChibiScheme"
-version = v"0.10"
+version = v"0.10.1" # NOT OFFICIAL
 
 # Collection of sources required to build NLopt
 sources = [
     GitSource("https://github.com/ashinn/chibi-scheme.git",
-              "05eb4ebd357e2bf2fe5aa7da13b0422ce20ddf7f"),
+              "b0735b3ca70620face209c5066898e5e9e1fcf62"),
 ]
 
 # Bash recipe for building across all platforms
