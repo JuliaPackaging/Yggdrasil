@@ -19,8 +19,9 @@ if [[ ${target} == *musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_MemInfo.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_signal.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_StackTrace.cxx.patch"
-fi
-if [[ ${target} == *freebsd* ]]; then
+elif [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch"
+elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_CString.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
 fi
@@ -36,11 +37,6 @@ cmake -Wno-dev .. \
     -DBUILD_MODULE_ApplicationFramework=0
 make -j${nproc}
 make install
-if [[ ${target} == *mingw* ]]; then
-    # Correct installation paths for windows
-    ln -s ${prefix}/win*/gcc/lib/* ${prefix}/lib
-    ln -s ${prefix}/win*/gcc/bin/* ${prefix}/bin
-fi
 install_license ../LICENSE_LGPL_21.txt ../OCCT_LGPL_EXCEPTION.txt
 """
 

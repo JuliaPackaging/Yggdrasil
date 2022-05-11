@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -1,6 +1,6 @@
+@@ -1,34 +1,38 @@
 -cmake_minimum_required(VERSION 2.8)
 +cmake_minimum_required(VERSION 3.2)
  set(CMAKE_BUILD_TYPE  "Release")
@@ -9,39 +9,48 @@
  set(CMAKE_MACOSX_RPATH 1)
  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
  
-@@ -11,24 +11,26 @@ project(Elas)
+ set(CMAKE_CXX_STANDARD 17)
+ 
+-#Elasticity library
+ project(Elas)
++
++#Find libraries
++FIND_LIBRARY(          Commons NAMES Commons)
++SET(                   LIBRARIES ${Commons})
++
++#Elasticity library
  file(                  GLOB_RECURSE source_files sources/*)
  file(                  GLOB_RECURSE header_files sources/*.h)
  ADD_LIBRARY(           Elas SHARED ${source_files})
 -find_library(          Commons NAMES Commons HINTS "$ENV{HOME}/lib")
 -INCLUDE_DIRECTORIES(  "$ENV{HOME}/include")
 -LINK_DIRECTORIES(     "$ENV{HOME}/lib")
-+find_library(          Commons NAMES Commons)
+-target_link_libraries( Elas ${Commons})
 +# INCLUDE_DIRECTORIES(  "include")
 +# LINK_DIRECTORIES(     "lib")
- target_link_libraries( Elas ${Commons})
++target_link_libraries( Elas ${LIBRARIES})
 +
  INSTALL(
    TARGETS Elas
 -  LIBRARY  DESTINATION "$ENV{HOME}/lib"
 -  RUNTIME  DESTINATION "$ENV{HOME}/lib")
 -INSTALL(               FILES ${header_files} DESTINATION "$ENV{HOME}/include")
-+  LIBRARY  DESTINATION "lib"
-+  RUNTIME  DESTINATION "lib")
-+
++  LIBRARY DESTINATION "lib"
++  RUNTIME DESTINATION "lib")
 +INSTALL(
 +  FILES ${header_files}
 +  DESTINATION "include")
  
  #Executable
- project(main)
+-project(main)
  add_executable(        elastic sources/elastic.c)
- target_link_libraries( elastic ${Commons} Elas)
+-target_link_libraries( elastic ${Commons} Elas)
 -INSTALL(               TARGETS elastic RUNTIME DESTINATION "$ENV{HOME}/bin")
 -
 -
 - 
 -
++target_link_libraries( elastic Elas ${LIBRARIES})
  
 +INSTALL(
 +  TARGETS elastic

@@ -40,9 +40,6 @@ if [[ "${target}" == *mingw* ]]; then
 else
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/LinearElasticity.patch"
 fi
-if [[ "${target}" == *freebsd* ]]; then
-    LDFLAGS="-lpmc -lc++"
-fi
 mkdir build
 cd build
 cmake .. \
@@ -68,7 +65,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
