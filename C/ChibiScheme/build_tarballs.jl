@@ -20,16 +20,20 @@ make \
     CC="${CC_BUILD}" \
     AR="${AR_BUILD}" \
     LD="${LD_BUILD}" \
+    CFLAGS="${CFLAGS}" \
+    CPPFLAGS="${CPPFLAGS}" \
+    LDFLAGS="${LDFLAGS}" \
     RANLIB="${RANLIB_BUILD}" \
     CHIBI=`which chibi-scheme` \
     CHIBI_FFI=`which chibi-ffi` \
     CHIBI_DOC=`which chibi-doc` \
     SNOW_CHIBI=`which snow-chibi` \
     SO=".${dlext}" \
+    EXE="${exeext}" \
     CLIBFLAGS="-fPIC" \
     CLINKFLAGS="-shared" \
     STATICFLAGS="-static -DSEXP_USE_DL=0" \
-    LIBCHIBI_FLAGS="-Wl,-soname,libchibi-scheme.${dlext}.0" \
+    LIBCHIBI_FLAGS=" " \
     install
 """
 
