@@ -26,6 +26,11 @@ make -j${nproc} \
     CHIBI_FFI=`which chibi-ffi` \
     CHIBI_DOC=`which chibi-doc` \
     SNOW_CHIBI=`which snow-chibi` \
+    SO=".${dlext}" \
+    CLIBFLAGS="-fPIC" \
+    CLINKFLAGS="-shared" \
+    STATICFLAGS="-static -DSEXP_USE_DL=0" \
+    LIBCHIBI_FLAGS="-Wl,-soname,libchibi-scheme.${dlext}.0" \
     install
 """
 
