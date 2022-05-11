@@ -28,7 +28,7 @@ platforms = supported_platforms(; experimental=true)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libchibi-scheme", :libchibischeme),
-    FileProduct("share/chibi/init-7.scm, :init_7_scm),
+    FileProduct("share/chibi/init-7.scm", :init_7_scm),
 ]
 
 # Dependencies that must be installed before this package can be built
