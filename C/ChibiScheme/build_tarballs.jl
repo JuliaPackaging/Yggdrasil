@@ -17,6 +17,7 @@ apk add chibi-scheme
 
 
 make -j${nproc} \
+    PREFIX="${prefix}" \
     CC="${CC_BUILD}" \
     AR="${AR_BUILD}" \
     LD="${LD_BUILD}" \
