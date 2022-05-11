@@ -15,8 +15,7 @@ cd $WORKSPACE/srcdir/chibi-scheme
 
 apk add chibi-scheme
 
-
-make -j${nproc} \
+make \
     PREFIX="${prefix}" \
     CC="${CC_BUILD}" \
     AR="${AR_BUILD}" \
