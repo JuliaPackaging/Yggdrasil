@@ -33,7 +33,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -Dbootstrap=`which chibi-scheme`
+    -Dbootstrap=`which chibi-scheme` \
     ..
 make -j${nproc}
 make install
