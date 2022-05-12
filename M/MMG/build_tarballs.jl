@@ -68,7 +68,7 @@ products = [
 ]
 
 # SCOTCH is only available on non-Windows platforms
-scotch_platforms = filter(p -> !Sys.iswindows(p), platforms)
+scotch_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
