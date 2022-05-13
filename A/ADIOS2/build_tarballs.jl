@@ -1,13 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 version = v"2.8.0"
-
-# Newest version (2022-03-08):
-# commit: e2e94f2943e79df6c69239b6aa4cdee62bb6c0f9
-# sha256: 00dd6243dc9b445b5e33fb044f592f2b6f6d99bd04ec7963782dd323d2684a02
 
 # Collection of sources required to complete build
 sources = [
@@ -31,13 +30,19 @@ mkdir build
 cd build
 archopts=
 if [[ "$target" == *-apple-* ]]; then
-    # MPICH's pkgconfig file "mpich.pc" lists these options:
-    #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-    #     Cflags:   -I${includedir}
-    # cmake doesn't know how to handle the "-framework OpenCL" option
-    # and wants to use "-framework" as a stand-alone option. This fails
-    # gloriously, and cmake concludes that MPI is not available.
-    archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+    if grep -q MPICH_NAME $prefix/include.mpi.h; then
+        # MPICH's pkgconfig file "mpich.pc" lists these options:
+        #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
+        #     Cflags:   -I${includedir}
+        # cmake doesn't know how to handle the "-framework OpenCL" option
+        # and wants to use "-framework" as a stand-alone option. This fails
+        # gloriously, and cmake concludes that MPI is not available.
+        archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
+    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
+    fi
+elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    archopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
@@ -58,15 +63,16 @@ fi
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DBUILD_TESTING=OFF \
+    -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DADIOS2_BUILD_EXAMPLES=OFF \
-    -DBUILD_TESTING=OFF \
     -DMPI_HOME=$prefix \
     ${archopts} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
@@ -75,6 +81,14 @@ cmake \
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license ../Copyright.txt ../LICENSE
+"""
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+    end
 """
 
 # These are the platforms we will build for by default, unless further
@@ -121,15 +135,20 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="MPICH_jll"); platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
 ]
 
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# With MPItrampoline, select only those platforms where MPItrampoline is actually built
+platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
+platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && libgfortran_version(p) == v"3"), platforms)
+append!(dependencies, platform_dependencies)
+
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
