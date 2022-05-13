@@ -23,6 +23,7 @@ elif [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch"
 elif [[ ${target} == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_CString.cxx.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_StackTrace.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/STEPConstruct_AP203Context.cxx.patch"
 fi
 mkdir build
