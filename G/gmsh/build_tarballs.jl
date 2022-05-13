@@ -16,10 +16,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
-elif [[ "${target}" == *mingw* ]]; then
-    # Built-in FindHDF5.cmake has issues on Windows
-    sed -i'.bak' 's/^  find_package(HDF5)/  # find_package(HDF5)/' CMakeLists.txt
-    HDF5_FLAGS="-DHDF5_FOUND=true -DHDF5_INCLUDE_DIRS=${includedir} -DHDF5_C_LIBRARIES=$(ls ${libdir}/libhdf5*.${dlext})"
 fi
 mkdir build
 cd build
@@ -29,7 +25,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
     -DDEFAULT=1 \
-    ${OPENGL_FLAGS} ${HDF5_FLAGS}
+    ${OPENGL_FLAGS}
 make -j${nproc}
 make install
 mv ${prefix}/lib/gmsh.jl ${prefix}/lib/gmsh.jl.bak
@@ -44,7 +40,6 @@ install_license ../LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> !(Sys.iswindows(p) && cxxstring_abi(p) == "cxx03"), platforms) # Restriction from OCCT builds
 
 # The products that we will ensure are always built
 products = [
@@ -52,23 +47,31 @@ products = [
     FileProduct("lib/gmsh.jl", :gmsh_api)
 ]
 
-# Some dependencies are needed only on Linux and FreeBSD
+# Some dependencies are needed or available only on certain platforms
 x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+hdf5_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows")
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     Dependency("Cairo_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
     Dependency("FreeType2_jll"),
     Dependency("GLU_jll"; platforms=x11_platforms),
-    Dependency("GMP_jll"),
-    Dependency("HDF5_jll"),
+    Dependency("GMP_jll"; compat="6.2"),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="1.12"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isapple, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("METIS_jll"),
     Dependency("MMG_jll"),
     Dependency("OCCT_jll"),
