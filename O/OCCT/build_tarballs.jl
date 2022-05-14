@@ -44,7 +44,6 @@ install_license ../LICENSE_LGPL_21.txt ../OCCT_LGPL_EXCEPTION.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(filter!(p -> arch(p) != "armv6l", supported_platforms()))
-filter!(p -> !(Sys.iswindows(p) && cxxstring_abi(p) == "cxx03"), platforms) # std::swap from mingw requires c++11
 
 # The products that we will ensure are always built
 products = [
