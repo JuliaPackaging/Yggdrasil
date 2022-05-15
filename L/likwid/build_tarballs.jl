@@ -7,16 +7,17 @@ version = v"5.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://ftp.fau.de/pub/likwid/likwid-$(version).tar.gz", "1b8e668da117f24302a344596336eca2c69d2bc2f49fa228ca41ea0688f6cbc2")
+    ArchiveSource("https://github.com/RRZE-HPC/likwid/archive/refs/tags/v$(version).tar.gz", "1b8e668da117f24302a344596336eca2c69d2bc2f49fa228ca41ea0688f6cbc2"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 cd likwid-5.2.1/
-sed -i 's/PREFIX ?= .*/PREFIX ?= \/workspace\/destdir/' config.mk
-sed -i 's/ACCESSMODE = .*/ACCESSMODE = perf_event/' config.mk
-sed -i 's/BUILDFREQ = .*/BUILDFREQ = false/' config.mk
 make
 make install
 exit
