@@ -13,11 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd likwid-5.2.1/
+cd $WORKSPACE/srcdir/likwid*
+atomic_patch -p2 ../patches/perfevents_hasschedaffinity_exthwlocfix.patch
 make PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
 make install PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
 exit
