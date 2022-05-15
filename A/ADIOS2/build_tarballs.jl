@@ -30,7 +30,7 @@ mkdir build
 cd build
 archopts=
 if [[ "$target" == *-apple-* ]]; then
-    if grep -q MPICH_NAME $prefix/include.mpi.h; then
+    if grep -q MPICH_NAME $prefix/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
         #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
         #     Cflags:   -I${includedir}
@@ -58,6 +58,7 @@ elif [[ "$target" == x86_64-w64-mingw32 ]]; then
 elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
+
 # Fortran is not supported with Clang
 # DataMan has linker error on Windows
 cmake \
