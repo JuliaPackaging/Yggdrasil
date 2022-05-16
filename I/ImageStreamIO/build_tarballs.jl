@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "ImageStreamIO"
-version = v"1.0.3-beta"
+version = v"1.0.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -29,8 +29,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
-    Dependency(PackageSpec(name="CUDA_jll", uuid="e9e359dc-d701-5aa8-82ae-09bbf812ea83"))
+    BuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", uuid="4f82f1eb-248c-5f56-a42e-99106d144614"))
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"))
 ]
 
