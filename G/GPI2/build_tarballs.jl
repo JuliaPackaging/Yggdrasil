@@ -35,6 +35,8 @@ products = [
     LibraryProduct("libGPI2-dbg", :libGPI2_dbg),
     LibraryProduct("libGPI2", :libGPI2),
     ExecutableProduct("gaspi_logger", :gaspi_logger),
+    # The following are shell scripts that are required for GPI-2 to work,
+    # thus they are added as `FileProduct`s
     FileProduct("bin/gaspi_run", :gaspi_run),
     FileProduct("bin/gaspi_cleanup", :gaspi_cleanup),
     FileProduct("bin/ssh.spawner", :ssh_spawner),
