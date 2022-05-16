@@ -17,13 +17,6 @@ apk add chibi-scheme
 
 make \
     PREFIX="${prefix}" \
-    CC="${CC_BUILD}" \
-    AR="${AR_BUILD}" \
-    LD="${LD_BUILD}" \
-    CFLAGS="${CFLAGS}" \
-    CPPFLAGS="${CPPFLAGS}" \
-    LDFLAGS="${LDFLAGS}" \
-    RANLIB="${RANLIB_BUILD}" \
     CHIBI=`which chibi-scheme` \
     CHIBI_FFI=`which chibi-ffi` \
     CHIBI_DOC=`which chibi-doc` \
