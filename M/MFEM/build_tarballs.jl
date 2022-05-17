@@ -7,12 +7,18 @@ version = v"4.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mfem/mfem.git", "a1f6902ed72552f3e680d1489f1aa6ade2e0d3b2")
+    GitSource("https://github.com/mfem/mfem.git",
+              "a1f6902ed72552f3e680d1489f1aa6ade2e0d3b2"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mfem*
+
+# Backport https://github.com/mfem/mfem/pull/2995 to be able to compile with Musl
+atomic_patch -p1 ../patches/0001-use_overloaded_function_definitions_instead_of_unreliable_macros.diff
+
 mkdir build; cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
