@@ -10,13 +10,20 @@ sources = [
     GitSource("https://github.com/YosysHQ/yosys.git", "b63e0a0caeb74f7323130fd36ee77b738cf8461b")
 ]
 
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = expand_cxxstring_abis(platforms)
+# For some reasons, building for CXX03 string ABI doesn't actually work, skip it
+filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
+
 dependencies = [
     Dependency("boost_jll"; compat="=1.76.0"), # max gcc7
     Dependency("Readline_jll"; compat="8.1.1"),
     Dependency("Tcl_jll"; compat="8.6.11"),
     Dependency("Zlib_jll"; compat="1.2.11"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
-    Dependency(PackageSpec(;name="dlfcn_win32_jll", uuid = "c4b69c83-5512-53e3-94e6-de98773c479f", path="/home/sjkelly/.julia/dev/dlfcn_win32_jll"); compat="1.3.1"),
+    Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms))
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +46,9 @@ fi
 
 # TODO: ABC does not build on windows
 if [[ "${target}" == *x86_64-w64-mingw32* ]] || [[ "${target}" == *i686-w64-mingw32* ]]; then
-    make install ENABLE_LIBYOSYS=1 ENABLE_ABC=0 ENABLE_TCL=0 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} LIBDIR=${libdir} -j${nproc}
+    make install ENABLE_LIBYOSYS=1 ENABLE_ABC=0 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} LIBDIR=${libdir} -j${nproc}
 else
-    make install ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} LIBDIR=${libdir} -j${nproc}
+    make install ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} LIBDIR=${libdir} -j${nproc}
 fi
 
 if [[ "${target}" == *-apple-* ]]; then
@@ -49,20 +56,12 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
-platforms = expand_cxxstring_abis(platforms)
-# For some reasons, building for CXX03 string ABI doesn't actually work, skip it
-filter!(x -> cxxstring_abi(x) != "cxx03", platforms)
-
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("yosys", :yosys),
     ExecutableProduct("yosys-config", :yosys_config),
     ExecutableProduct("yosys-filterlib", :yosys_filterlib),
     ExecutableProduct("yosys-smtbmc", :yosys_smtbmc),
-    ExecutableProduct("yosys-abc", :yosys_abc),
     LibraryProduct("libyosys", :libyosys)
 ]
 
