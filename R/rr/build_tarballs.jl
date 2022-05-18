@@ -41,6 +41,7 @@ products = [
 # This is really a build dependency
 dependencies = [
     BuildDependency("capnproto_jll"),
+    Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
