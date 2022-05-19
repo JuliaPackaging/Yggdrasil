@@ -40,7 +40,7 @@ install_license ../LICENSE
 # - windows compile fails, can't find syslog.h
 # - compile fails on powerpc64le:
 #   "HMMER3 Altivec/VMX only supports bigendian platforms: e.g. ppc64 not ppc64le"
-platforms = supported_platforms(; exclude=p -> Sys.iswindows(p) || proc_family(p) != "intel")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || proc_family(p) != "intel")
 
 # The products that we will ensure are always built
 products = [
