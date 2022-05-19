@@ -19,6 +19,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/hmmer-*/
 
 export CPPFLAGS="-I${includedir}"
+update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-gsl --enable-threads --enable-sse
 make -j${nproc}
