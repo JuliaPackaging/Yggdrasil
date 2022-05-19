@@ -27,6 +27,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcmark-gfm", :libcmark_gfm),
+    LibraryProduct("libcmark-gfm-extensions", :libcmark_gfm_extensions),
     ExecutableProduct("cmark-gfm", :cmark_gfm)
 ]
 
