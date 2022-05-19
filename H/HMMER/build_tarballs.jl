@@ -3,12 +3,15 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HMMER"
-version = v"3.3.2"
-
+version_string = "3.1b2"
+#version = v"3.1.0"
+version = let ver = VersionNumber(version_string)
+    VersionNumber(ver.major, ver.minor, ver.patch)
+end
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://eddylab.org/software/hmmer/hmmer-$(version).tar.gz",
-                  "92fee9b5efe37a5276352d3502775e7c46e9f7a0ee45a331eacb2a0cac713c69")
+    ArchiveSource("http://eddylab.org/software/hmmer/hmmer-$(version_string).tar.gz",
+        "dd16edf4385c1df072c9e2f58c16ee1872d855a018a2ee6894205277017b5536")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +40,7 @@ install_license ../LICENSE
 # - windows compile fails, can't find syslog.h
 # - compile fails on powerpc64le:
 #   "HMMER3 Altivec/VMX only supports bigendian platforms: e.g. ppc64 not ppc64le"
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || proc_family(p) != "intel")
+platforms = supported_platforms(; exclude=p -> Sys.iswindows(p) || proc_family(p) != "intel")
 
 # The products that we will ensure are always built
 products = [
