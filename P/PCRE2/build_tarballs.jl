@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "PCRE2"
-version = v"10.36"
+version = v"10.40"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PhilipHazel/pcre2/archive/refs/tags/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "4975181fa486a595fc2de1ebce85793412d631e0ac006a7906f854caf62c9745"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.gz",
+                  "ded42661cab30ada2e72ebff9e725e745b4b16ce831993635136f2ef86177724"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,15 +18,8 @@ cd $WORKSPACE/srcdir/pcre2-*/
 # Update configure scripts
 update_configure_scripts
 
-# NOTE: this step may be removed if we switch to release tarballs in the future.
-./autogen.sh
-
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
-
-# Apply patches
-atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-apple-silicon-support.patch
-atomic_patch -d src/sljit -p2 ${WORKSPACE}/srcdir/patches/sljit-nomprotect.patch
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-static \
@@ -61,4 +53,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
