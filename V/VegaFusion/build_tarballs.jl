@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "VegaFusion"
-version = v"0.4.0"
+version = v"0.4.1"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-              "d54d11d3713042a00ddc0f051f1d5816f2afc7c9"),
+              "26267a7bea486d1a0effc576246d9f0b89066c66"),
 ]
 
 # Bash recipe for building across all platforms
