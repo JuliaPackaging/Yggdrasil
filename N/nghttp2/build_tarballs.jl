@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "nghttp2"
-version = v"1.41.0"
+version = v"1.47.0"
 
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://github.com/nghttp2/nghttp2/releases/download/v$(version)/nghttp2-$(version).tar.xz",
-                  "abc25b8dc601f5b3fefe084ce50fcbdc63e3385621bee0cbfa7b57f9ec3e67c2"),
+                  "68271951324554c34501b85190f22f2221056db69f493afc3bbac8e7be21e7cc"),
 ]
 
 # Bash recipe for building across all platforms
