@@ -23,13 +23,23 @@ if [[ "${target}" == *-freebsd* ]]; then
     CFLAGS="${CFLAGS} -D__BSD_VISIBLE"
 fi
 CFLAGS="${CFLAGS} -DSUPPORT_EVENTS_AUTOMATION -DSUPPORT_FILEFORMAT_BMP -DSUPPORT_FILEFORMAT_JPG"
-make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE
+
+if [[ "${target}" == *-mingw* ]]; then
+    # raylib.rc.data is broken for x64, remove it from compilation
+    sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
+    # we need to specify the OS in the flags to make for Windows
+    make -j${nproc} USE_EXTERNAL_GFLW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE OS=Windows_NT 
+    # the .dll produced is called raylib.dll not libraylib.dll, products looks for "libraylib"
+    mv raylib.dll libraylib.dll
+else
+    make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE
+fi
 make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${libdir}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude=p->arch(p)=="armv6l" || Sys.iswindows(p))
+platforms = supported_platforms(; experimental=true, exclude=p->arch(p)=="armv6l")
 
 
 # The products that we will ensure are always built
@@ -52,3 +62,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+Gg
