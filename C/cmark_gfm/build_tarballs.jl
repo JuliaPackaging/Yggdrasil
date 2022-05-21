@@ -7,12 +7,14 @@ version = v"0.29.0" # 0.29.0.gfm.3
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/github/cmark-gfm.git", "cf7577d2f74289cb83de0a652afc1a8b08a37036")
+    GitSource("https://github.com/github/cmark-gfm.git", "cf7577d2f74289cb83de0a652afc1a8b08a37036"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cmark-gfm/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/extension_type_exports.patch
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
