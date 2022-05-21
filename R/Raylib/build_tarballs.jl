@@ -39,7 +39,7 @@ make install RAYLIB_LIBTYPE=SHARED DESTDIR="${prefix}" RAYLIB_INSTALL_PATH="${li
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude=p->arch(p)=="armv6l")
+platforms = supported_platforms(; exclude=p->arch(p)=="armv6l")
 
 
 # The products that we will ensure are always built
