@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.3.0"
+version = v"1.4.3"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "b7bad55e4bb0a285b073ba5e02b01d3f522fc95d"),
+              "465bbf88ea939a965fbcbade72870c61f815e457"),
     DirectorySource("./bundled"),
 ]
 
@@ -38,7 +38,6 @@ elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
-export CFLAGS="-I${prefix}/include"
 
 mkdir build && cd build
 
@@ -63,5 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
