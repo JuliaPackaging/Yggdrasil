@@ -38,7 +38,6 @@ elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
     BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
-export CFLAGS="-I${prefix}/include"
 
 mkdir build && cd build
 
