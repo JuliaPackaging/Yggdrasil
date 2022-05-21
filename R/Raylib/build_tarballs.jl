@@ -29,8 +29,6 @@ if [[ "${target}" == *-mingw* ]]; then
     sed -i 's+$(RAYLIB_RES_FILE)+ +g' Makefile
     # we need to specify the OS in the flags to make for Windows
     make -j${nproc} USE_EXTERNAL_GFLW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE OS=Windows_NT 
-    # the .dll produced is called raylib.dll not libraylib.dll, products looks for "libraylib"
-    mv raylib.dll libraylib.dll
 else
     make -j${nproc} USE_EXTERNAL_GLFW=TRUE PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED RAYLIB_MODULE_RAYGUI=TRUE RAYLIB_MODULE_PHYSAC=TRUE
 fi
@@ -44,7 +42,7 @@ platforms = supported_platforms(; exclude=p->arch(p)=="armv6l")
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libraylib", :libraylib)
+    LibraryProduct(["libraylib","raylib"], :libraylib)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -62,4 +60,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-Gg
