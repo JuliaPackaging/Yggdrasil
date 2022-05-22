@@ -19,8 +19,9 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
-    -DTHREADSAFE=ON
+    -DUSE_THREADS=ON
     -DUSE_BUNDLED_ZLIB=ON
+    -DUSE_SSH=ON
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
@@ -36,7 +37,7 @@ if [[ ${target} == *-mingw* ]]; then
     BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
 elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
-    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
+    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
 mkdir build && cd build
