@@ -1,0 +1,18 @@
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -157,11 +157,11 @@ endif()
+ 
+ # choose a variant of the layout of the install paths
+ if (NOT INSTALL_DIR_LAYOUT)
+-  if (WIN32)
+-    set (INSTALL_DIR_LAYOUT "Windows" CACHE STRING "${INSTALL_DIR_LAYOUT_DESCR}" FORCE)
+-  else()
++  #if (WIN32)
++  #  set (INSTALL_DIR_LAYOUT "Windows" CACHE STRING "${INSTALL_DIR_LAYOUT_DESCR}" FORCE)
++  #else()
+     set (INSTALL_DIR_LAYOUT "Unix" CACHE STRING "${INSTALL_DIR_LAYOUT_DESCR}" FORCE)
+-  endif()
++  #endif()
+   SET_PROPERTY(CACHE INSTALL_DIR_LAYOUT PROPERTY STRINGS Windows Unix)
+ endif()
+ 

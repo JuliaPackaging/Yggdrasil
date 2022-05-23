@@ -1,0 +1,21 @@
+--- /dev/null
++++ b/src/Standard/Standard_StackTrace.cxx
+@@ -30,7 +30,7 @@
+ #elif defined(__QNX__)
+   //#include <backtrace.h> // requires linking to libbacktrace
+ #elif !defined(_WIN32) && !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+-  #include <execinfo.h>
++  //#include <execinfo.h>
+ #elif defined(_WIN32) && !defined(OCCT_UWP)
+ 
+ #include <Standard_WarningsDisable.hxx>
+@@ -313,6 +313,9 @@
+   Message::SendTrace ("Standard::StackTrace() is not implemented for this CPU architecture");
+   return false;
+ #endif
++#elif 1
++  Message::SendTrace ("Standard::StackTrace() is not implemented for this platform");
++  return false;
+ #else
+   const int aTopSkip = theNbTopSkip + 1; // skip this function call and specified extra number
+   int aNbTraces = theNbTraces + aTopSkip;
