@@ -42,7 +42,7 @@ install_license $WORKSPACE/srcdir/ViZDoom-*/README.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = [Platform("x86_64", "linux")] #vcat(libjulia_platforms.(julia_versions)...)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Qt6Declarative_jll is not available for these architectures:
 filter!(p -> arch(p) != "armv6l", platforms)
