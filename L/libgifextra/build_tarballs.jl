@@ -12,10 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/GifLibExtra.git/lib
+cd $WORKSPACE/srcdir/GifLibExtra/lib
 make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
