@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "SuperLU_DIST"
-version = v"7.2.0"
+version = v"8.0.0"
 
 # Collection of sources required to complete build
 sources = [
     # We are using the most recent master as of this build rather than v7.2.0 release.
     # This commit contains important fixes for Windows building
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "f7bf3d9769b98d8206b69e0505648cf1c49a6f7e"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "4459a89719b982dd47af5bb2494a011bb267195f"),
 ]
 
 # Bash recipe for building across all platforms
