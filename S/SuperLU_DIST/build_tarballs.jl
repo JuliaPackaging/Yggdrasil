@@ -7,8 +7,6 @@ version = v"8.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    # We are using the most recent master as of this build rather than v7.2.0 release.
-    # This commit contains important fixes for Windows building
     GitSource("https://github.com/xiaoyeli/superlu_dist.git", "4459a89719b982dd47af5bb2494a011bb267195f"),
 ]
 
