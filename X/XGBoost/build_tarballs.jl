@@ -1,11 +1,14 @@
 using BinaryBuilder, Pkg
 
-# Collection of sources required to build XGBoost
 name = "XGBoost"
-version = v"1.5.2"
+version = v"1.6.1"
+
+# Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","742c19f3ecf2135b4e008a4f4a10b59add8b1045"), 
+    GitSource("https://github.com/dmlc/xgboost.git","5d92a7d936fc3fad4c7ecb6031c3c1c7da882a14"), 
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -14,28 +17,36 @@ cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
 # Patch dmlc-core to use case-sensitive windows.h includes
-(cd dmlc-core; atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dmlc_windows.patch")
+(cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
-# For Linux, build using CMake
-if [[ ${target} == *linux* ]] ||  [[ ${target} == *mingw* ]]; then
-    (mkdir build; cd build; cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
-    make -C build -j ${nproc}
-# For Mac and FreeBSD, build without openmp
-elif [[ ${target} == *darwin* ]] ||  [[ ${target} == *freebsd* ]]; then
-    (mkdir build; cd build; cmake .. -DUSE_OPENMP=OFF -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}")
-    make -C build -j ${nproc}
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    #install a newer SDK which supports `___cxa_deleted_virtual`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
 fi
 
-# Install
-mkdir -p ${prefix}/{bin,include,lib}
-cp -ra include/xgboost ${prefix}/include/
-cp -a xgboost${exeext} ${prefix}/bin/xgboost${exeext}
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+make -j${nproc}
+
+# Manual installation, to avoid installing dmlc
+cd ..
+for header in include/xgboost/*.h; do
+    install -Dv "${header}" "${includedir}/xgboost/$(basename ${header})"
+done
+install -Dvm 0755 xgboost${exeext} ${bindir}/xgboost${exeext}
 
 if [[ ${target} == *mingw* ]]; then
-    cp -a lib/xgboost.dll ${prefix}/bin
+    install -Dvm 0755 lib/xgboost.dll ${libdir}/xgboost.dll
 else
-    cp -a lib/libxgboost.${dlext} ${prefix}/lib
+    install -Dvm 0755 lib/libxgboost.${dlext} ${libdir}/libxgboost.${dlext}
 fi
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,7 +61,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
