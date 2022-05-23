@@ -298,8 +298,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
         .method("labels_buffer", [](GameState &gs) { return gs.labelsBuffer; })
         .method("automap_buffer", [](GameState &gs) { return gs.automapBuffer; });
         // TODO: figure out how to return this? The below code breaks
-        // .method("labels", [](GameState &gs) { 
-        //     return jlcxx::ArrayRef<Label, 1>(labels.data(), labels.size()); 
+        // .method("labels", [](GameState &gs) {
+        //     return jlcxx::ArrayRef<Label, 1>(labels.data(), labels.size());
         // });
 
     mod.add_type<ServerState>("ServerState")
@@ -327,7 +327,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
         .method("respawn_player", &DoomGame::respawnPlayer)
         .method("set_action", [](DoomGame &dg, jlcxx::ArrayRef<double, 1> actions) {
             std::vector<double> data(actions.begin(), actions.end());
-            dg.setAction(data); 
+            dg.setAction(data);
         })
         .method("make_action", [](DoomGame &dg, jlcxx::ArrayRef<double, 1> actions) {
             std::vector<double> data(actions.begin(), actions.end());
@@ -353,7 +353,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
         .method("get_last_action", &DoomGame::getLastAction)
         .method("get_available_game_variables", [](DoomGame &dg) {
             std::vector<GameVariable> gvs = dg.getAvailableGameVariables();
-            return jlcxx::ArrayRef<GameVariable, 1>(gvs.data(), gvs.size()); 
+            return jlcxx::ArrayRef<GameVariable, 1>(gvs.data(), gvs.size());
         })
         .method("set_available_game_variables", [](DoomGame &dg, jlcxx::ArrayRef<GameVariable, 1> gv) {
             std::vector<GameVariable> data(gv.begin(), gv.end());
@@ -364,7 +364,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
         .method("get_available_game_variables_size", &DoomGame::getAvailableGameVariablesSize)
         .method("get_available_buttons", [](DoomGame &dg) {
             std::vector<Button> buttons = dg.getAvailableButtons();
-            return jlcxx::ArrayRef<Button, 1>(buttons.data(), buttons.size()); 
+            return jlcxx::ArrayRef<Button, 1>(buttons.data(), buttons.size());
         })
         .method("set_available_buttons", [](DoomGame &dg, jlcxx::ArrayRef<Button, 1> buttons) {
             std::vector<Button> data(buttons.begin(), buttons.end());
@@ -451,7 +451,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
             }
             return jlcxx::ArrayRef<uint8_t, 1>(
                 state->depthBuffer->data(), state->depthBuffer->size()
-            ); 
+            );
         })
         .method("get_labels_buffer", [](DoomGame &dg) {
             GameStatePtr state = dg.getState();
@@ -463,7 +463,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
             }
             return jlcxx::ArrayRef<uint8_t, 1>(
                 state->labelsBuffer->data(), state->labelsBuffer->size()
-            ); 
+            );
         })
         .method("get_automap_buffer", [](DoomGame &dg) {
             GameStatePtr state = dg.getState();
@@ -475,7 +475,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
             }
             return jlcxx::ArrayRef<uint8_t, 1>(
                 state->automapBuffer->data(), state->automapBuffer->size()
-            ); 
+            );
         });
 
     mod.method("doom_tics_to_ms", doomTicsToMs);
@@ -486,3 +486,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
     mod.method("is_binary_button", isBinaryButton);
     mod.method("is_delta_button", isDeltaButton);
 }
+
