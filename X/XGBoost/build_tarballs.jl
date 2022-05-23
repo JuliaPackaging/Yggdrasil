@@ -45,6 +45,8 @@ if [[ ${target} == *mingw* ]]; then
 else
     install -Dvm 0755 lib/libxgboost.${dlext} ${libdir}/libxgboost.${dlext}
 fi
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
