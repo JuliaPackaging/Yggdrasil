@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -64,8 +64,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # CUDA Runtime
     mv lib/libcudart.*dylib lib/libcudadevrt.a ${libdir}
@@ -107,8 +108,9 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # NVIDIA Tools Extension Library
     mv lib/libnvToolsExt.*dylib ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -151,8 +153,12 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
+    mv bin/cuda-memcheck.exe ${bindir}
+
+    # Fix permissions
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
@@ -166,7 +172,7 @@ products = [
     LibraryProduct(["libcusparse", "cusparse64_92"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_92"], :libcusolver),
     LibraryProduct(["libcurand", "curand64_92"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_92"], :libcurand),
+    LibraryProduct(["libnvgraph", "nvgraph64_92"], :libnvgraph),
     LibraryProduct(["libnppc", "nppc64_92"], :libnppc),
     LibraryProduct(["libnppial", "nppial64_92"], :libnppial),
     LibraryProduct(["libnppicc", "nppicc64_92"], :libnppicc),
@@ -187,4 +193,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Linux(:x86_64), MacOS(:x86_64), Windows(:x86_64)], products, dependencies)
+               [Platform("x86_64", "linux"), Platform("x86_64", "macos"), Platform("x86_64", "windows")], products, dependencies)

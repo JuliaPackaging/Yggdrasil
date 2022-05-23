@@ -3,20 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version = v"0.87.0"
+version = v"21.09.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://poppler.freedesktop.org/poppler-0.87.0.tar.xz", "6f602b9c24c2d05780be93e7306201012e41459f289b8279a27a79431ad4150e")
+    ArchiveSource("https://poppler.freedesktop.org/poppler-21.09.0.tar.xz", "5a47fef738c2b99471f9b459a8bf8b40aefb7eed92caa4861c3798b2e126d05b")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/poppler-*/
 
-# Create link ${bindir} before starting.  `OpenJPEGTargets.cmake` will try to
-# look for some executables in `sys-root/usr/local/bin`
-ln -s ${bindir} /opt/${target}/${target}/sys-root/usr/local/bin
 export CXXFLAGS="-I${prefix}/include/openjpeg-2.3"
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
@@ -30,8 +27,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_GTK_TESTS=OFF \
     -DENABLE_CMS=lcms2 \
-    -DENABLE_GLIB=OFF \
+    -DENABLE_GLIB=ON \
     -DENABLE_QT5=OFF \
+    -DENABLE_BOOST=OFF \
     -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
     -DWITH_GObjectIntrospection=OFF \
     ..
@@ -41,11 +39,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpoppler-cpp", :libpoppler_cpp),
+    LibraryProduct("libpoppler-glib", :libpoppler_glib),
     LibraryProduct("libpoppler", :libpoppler),
     ExecutableProduct("pdfattach", :pdfattach),
     ExecutableProduct("pdfdetach", :pdfdetach),
@@ -64,15 +64,16 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Cairo_jll"),
-    #Dependency("gdk_pixbuf_jll"),
-    #Dependency("GTK3_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("libpng_jll"),
-    Dependency("OpenJpeg_jll"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("Fontconfig_jll"),
+    # Dependency("GTK3_jll"),
+    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("OpenJpeg_jll"),
+    # Dependency("gdk_pixbuf_jll"),
+    Dependency("libpng_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5", julia_compat="1.6")

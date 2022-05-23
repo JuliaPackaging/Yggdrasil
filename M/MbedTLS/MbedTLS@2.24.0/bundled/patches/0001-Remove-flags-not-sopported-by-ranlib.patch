@@ -1,0 +1,27 @@
+From 96df3f32baeb145cca19ba0a2f7e50880dc488f6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?=
+Date: Sun, 13 Dec 2020 00:02:29 +0000
+Subject: [PATCH] Remove flags not sopported by ranlib
+
+---
+ library/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index b309b6e65..73908e0ab 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -122,8 +122,8 @@ endif(WIN32)
+ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+     SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+     SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+-    SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+-    SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
++    SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> <TARGET>")
++    SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> <TARGET>")
+ endif()
+ 
+ if(HAIKU)
+-- 
+2.26.2
+

@@ -2,16 +2,17 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-version = v"2.9.2"
-pandoc_ver = "2.9.2.1"
+version = v"2.14"
+pandoc_ver = "2.14"
 
+url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("https://github.com/jgm/pandoc/releases/download/$pandoc_ver/pandoc-$pandoc_ver-linux-amd64.tar.gz", "5b61a981bd2b7d48c1b4ba5788f1386631f97e2b46d0d1f1a08787091b4b0cf8"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("https://github.com/jgm/pandoc/releases/download/$pandoc_ver/pandoc-$pandoc_ver-macOS.zip", "c4847f7a6e6a02a7d1b8dc17505896d8a6e4c2ee9e8b325e47a0468036675307"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("https://github.com/jgm/pandoc/releases/download/$pandoc_ver/pandoc-$pandoc_ver-windows-i386.zip", "db5a8533b7e2ef38114e9788e56530bb6be330c326731692f236218682017d4d"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/jgm/pandoc/releases/download/$pandoc_ver/pandoc-$pandoc_ver-windows-x86_64.zip", "223f7ef1dd926394ee57b6b5893484e51100be8527bd96eec26e284774863084"; unpack_target = "x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/16889a01b95a1b897abdfa2da191c1338f0333b2/COPYING.md", "2b0d4dda4bf8034e1506507a67f80f982131137afe62bf144d248f9faea31da4"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/16889a01b95a1b897abdfa2da191c1338f0333b2/COPYRIGHT", "39be98cc4d2906dd44abf8573ab91557e0b6d51f503d3a889dab0e8bcca1c43f"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "e24cca7d241d907d690428a296861cbcbdaf4686ef887ac65581a930b2e6038c"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS.zip", "630564487c30602ee299b463efc4fb48b418a6f254c123a11f3748426b2007b3"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "341935e8de2bc58153b6aabcced8bf73d753bc6b97efdf0128f52da82841b0c5"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "fd334f48c12b17ec264b2c49a554c584cdb29828c29fbbde7c1f57232a30975d"; unpack_target = "aarch64-linux-gnu"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "adcfa50add0dd23fda4937830ee6401a45638cffa15b9b33b1932f833f4fab75"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +23,6 @@ if [[ "${target}" != *-mingw* ]]; then
     subdir="bin/"
 fi
 cp ${target}/pandoc-*/${subdir}pandoc${exeext} ${bindir}
-cp ${target}/pandoc-*/${subdir}pandoc-citeproc${exeext} ${bindir}
 chmod +x ${bindir}/*
 install_license COPYRIGHT
 install_license COPYING.md
@@ -31,16 +31,15 @@ install_license COPYING.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64),
-    MacOS(),
-    Windows(:x86_64),
-    Windows(:i686),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("aarch64", "linux")
 ]
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pandoc", :pandoc),
-    ExecutableProduct("pandoc-citeproc", :pandoc_citeproc),
 ]
 
 # Dependencies that must be installed before this package can be built

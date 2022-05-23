@@ -3,39 +3,40 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.12.1"
+version = v"3.22.2"
 
 # Collection of sources required to build CMake
 sources = [
-    "https://cmake.org/files/$(splitext(string(version))[1])/cmake-$(version).tar.gz" =>
-    "c53d5c2ce81d7a957ee83e3e635c8cda5dfe20c9d501a4828ee28e1615e57ab2",
+    ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
+                  "3c1c478b9650b107d452c5bd545c72e2fad4e37c09b89a1984b9a2f46df6aced"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cmake-*/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE:STRING=Release \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
 
 make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Linux(:x86_64, :glibc)
-]
+# Build for all supported platforms.
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
-products(prefix) = [
-    ExecutableProduct(prefix, "cmake", :cmake),
+products = [
+    ExecutableProduct("cmake", :cmake),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("OpenSSL_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 

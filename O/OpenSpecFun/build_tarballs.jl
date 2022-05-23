@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "OpenSpecFun"
-version = v"0.5.3"
+version = v"0.5.5"
 
 # Collection of sources required to build openspecfun
 sources = [
-    ArchiveSource("https://github.com/JuliaMath/openspecfun/archive/v0.5.3.tar.gz",
-                  "1505c7a45f9f39ffe18be36f7a985cb427873948281dbcd376a11c2cd15e41e7"),
+    GitSource("https://github.com/JuliaMath/openspecfun.git",
+              "74f7e65abc76de7c4c72b1c77b31f3846565c498")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openspecfun-*/
+cd $WORKSPACE/srcdir/openspecfun*/
 
 # It needs to be told it's on Windows
 if [[ ${target} == *mingw* ]]; then
@@ -31,11 +31,11 @@ make install OS=${OS} prefix=$prefix
 # platforms are passed in on the command line. Since openspecfun uses
 # Fortran for AMOS, we need the combinatorial explosion of platforms
 # and GCC versions.
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libopenspecfun", :libopenspecfun)
+    LibraryProduct("libopenspecfun", :libopenspecfun),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -44,4 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

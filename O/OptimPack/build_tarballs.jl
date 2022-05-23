@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "OptimPack"
-version = v"3.1.0"
+version = v"3.2.0"
 
 # Collection of sources required to build OptimPAck
 sources = [
-    "https://github.com/emmt/OptimPack/releases/download/v$(version)/optimpack-$(version).tar.gz" =>
-    "fa1efdbebf6efa42a1d6b4f6223c7ca0b871fad5c0b53f7dc9be296e4c766190",
+    ArchiveSource("https://github.com/emmt/OptimPack/releases/download/v$(version)/optimpack-$(version).tar.gz",
+                  "3df032cde5ba6a3ffa04f0b0fd95d0694b75af82c8d2ddff0666c61e86c3ef5a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/optimpack-*
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared=yes --enable-static=no
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     # This is needed in order to build the shared library on Windows
@@ -37,8 +37,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

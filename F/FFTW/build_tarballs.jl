@@ -1,25 +1,25 @@
 using BinaryBuilder
 
-# Collection of sources required to build ZMQ
-sources = [
-    ArchiveSource("http://fftw.org/~stevenj/fftw-3.3.9.tar.gz",
-                  "33554751aae030b8adac2ae29384f5f4a103e02d71955aa45d613b3695eff042"),
-]
-
 name = "FFTW"
-version = v"3.3.9"
+version = v"3.3.10"
+
+# Collection of sources required to build FFTW
+sources = [
+   ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
+                  "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fftw-*
+cd $WORKSPACE/srcdir/fftw*
 
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
+    --build=${MACHTYPE}
     --host="${target}"
     --enable-shared
     --disable-static
-    --disable-fortran
     --disable-mpi
     --disable-doc
     --enable-threads
@@ -52,7 +52,7 @@ build_fftw()
     mkdir "${WORKSPACE}/srcdir/build_${1}"
     cd "${WORKSPACE}/srcdir/build_${1}"
 
-    ${WORKSPACE}/srcdir/fftw-*/configure "${FLAGS[@]}" $2
+    ${WORKSPACE}/srcdir/fftw*/configure "${FLAGS[@]}" $2
     perl -pi -e "s/tools m4/m4/" Makefile # work around FFTW/fftw3#146
     make -j${nproc}
     make install
@@ -64,13 +64,13 @@ build_fftw double
 build_fftw single --enable-single
 
 # Install both COPYING and COPYRIGHT in the license directory
-cd ${WORKSPACE}/srcdir/fftw-*
+cd ${WORKSPACE}/srcdir/fftw*
 install_license COPYING COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() # build on all supported platforms
+platforms = supported_platforms(; experimental=true) # build on all supported platforms
 
 # The products that we will ensure are always built
 products = [
@@ -79,8 +79,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+# Build the tarballs.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")

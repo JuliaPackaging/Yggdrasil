@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libevent"
-version = v"2.1.11"
+version = v"2.1.12"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/libevent/libevent/releases/download/release-2.1.11-stable/libevent-2.1.11-stable.tar.gz" =>
-    "a65bac6202ea8c5609fd5c7e480e6d25de467ea1917c08290c521752f147283d",
+    ArchiveSource("https://github.com/libevent/libevent/releases/download/release-$(version)-stable/libevent-$(version)-stable.tar.gz",
+                  "92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,29 +21,18 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Linux(:i686, libc=:glibc),
-    Linux(:x86_64, libc=:glibc),
-    Linux(:aarch64, libc=:glibc),
-    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
-    Linux(:powerpc64le, libc=:glibc),
-    Linux(:i686, libc=:musl),
-    Linux(:x86_64, libc=:musl),
-    Linux(:aarch64, libc=:musl),
-    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
-    MacOS(:x86_64),
-    FreeBSD(:x86_64)
-]
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
+# FIXME: Name is `libevent-2-1-7.dll` but `parse_dl_name_version` strips the trailing `-7`
 products = [
-    LibraryProduct("libevent", :libevent)
+    LibraryProduct(["libevent", "libevent-2-1"], :libevent)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
+    Dependency("OpenSSL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

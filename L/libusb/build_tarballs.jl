@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "libusb"
-version = v"1.0.23"
+version = v"1.0.24"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/libusb/libusb.git" =>
-    "e782eeb2514266f6738e242cdcb18e3ae1ed06fa",
-
+    GitSource("https://github.com/libusb/libusb.git",
+              "c6a35c56016ea2ab2f19115d2ea1e85e0edae155"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +24,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !isa(p, FreeBSD)]
+platforms = [p for p in supported_platforms(;experimental=true) if !Sys.isfreebsd(p)]
 
 # The products that we will ensure are always built
 products = [
@@ -38,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.3.1"
+version = v"5.5"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "e31f5f1f674e38093f83b6e7e176d48dbeb5a872"),
-    DirectorySource("./bundled"),
+              "c0aa7577800aa43333c4de05d7832f780511a467")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,12 +16,10 @@ script = raw"""
 pip3 install pexpect
 cd ${WORKSPACE}/srcdir/rr/
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/rr_cxx17_filesystem_gcc8.patch
-
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -Ddisable32bit=ON -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF ..
+      -Ddisable32bit=ON -DBUILD_TESTS=OFF -DWILL_RUN_TESTS=OFF -Dstaticlibs=ON ..
 make -j${nproc}
 make install
 """
@@ -31,7 +28,7 @@ make install
 # platforms are passed in on the command line
 # rr only supports Linux
 platforms = [
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -43,10 +40,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 # This is really a build dependency
 dependencies = [
-    Dependency("capnproto_jll"),
+    BuildDependency("capnproto_jll"),
+    Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"8") 
+               preferred_gcc_version=v"8")

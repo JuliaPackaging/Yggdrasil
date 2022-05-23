@@ -40,7 +40,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter!(p -> !isa(p, Windows), supported_platforms()))
+platforms = expand_cxxstring_abis(filter!(!Sys.iswindows, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [

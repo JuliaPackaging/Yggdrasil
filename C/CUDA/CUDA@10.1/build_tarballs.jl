@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -42,6 +42,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # CUDA Linear Solver Library
     mv lib64/libcusolver.so* ${libdir}
 
+    # CUDA Linear Solver Multi GPU Library
+    mv lib64/libcusolverMg.so* ${libdir}
+
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
 
@@ -64,8 +67,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # CUDA Runtime
     mv lib/libcudart.*dylib lib/libcudadevrt.a ${libdir}
@@ -84,6 +88,9 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
 
     # CUDA Linear Solver Library
     mv lib/libcusolver.*dylib ${libdir}
+
+    # CUDA Linear Solver Multi GPU Library
+    mv lib/libcusolverMg.*dylib ${libdir}
 
     # CUDA Random Number Generation Library
     mv lib/libcurand.*dylib ${libdir}
@@ -107,8 +114,9 @@ elif [[ ${target} == x86_64-apple-darwin* ]]; then
     # NVIDIA Tools Extension Library
     mv lib/libnvToolsExt.*dylib ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -128,6 +136,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # CUDA Linear Solver Library
     mv bin/cusolver64_*.dll ${bindir}
+
+    # CUDA Linear Solver Multi GPU Library
+    mv bin/cusolverMg64_*.dll ${bindir}
 
     # CUDA Random Number Generation Library
     mv bin/curand64_*.dll ${bindir}
@@ -151,8 +162,12 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
+    mv bin/cuda-memcheck.exe ${bindir}
+
+    # Fix permissions
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
@@ -166,8 +181,9 @@ products = [
     LibraryProduct(["libnvblas", "nvblas64_10"], :libnvblas),
     LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
+    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libcurand),
+    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libnvgraph),
     LibraryProduct(["libnppc", "nppc64_10"], :libnppc),
     LibraryProduct(["libnppial", "nppial64_10"], :libnppial),
     LibraryProduct(["libnppicc", "nppicc64_10"], :libnppicc),
@@ -188,4 +204,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Linux(:x86_64), MacOS(:x86_64), Windows(:x86_64)], products, dependencies)
+               [Platform("x86_64", "linux"), Platform("x86_64", "macos"), Platform("x86_64", "windows")], products, dependencies)

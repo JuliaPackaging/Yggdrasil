@@ -76,7 +76,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     find .
 
     # fixup
-    chmod +x ${prefix}/cuda/bin/*.exe
+    chmod +x ${prefix}/cuda/bin/*.{exe,dll}
 
     # clean-up
     rm ${prefix}/cuda/*.nvi
@@ -96,18 +96,18 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 if should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux, script,
-                   [Linux(:x86_64)], products, dependencies;
+                   [Platform("x86_64", "linux")], products, dependencies;
                    skip_audit=true)
 end
 
 if should_build_platform("x86_64-apple-darwin14")
     build_tarballs(non_reg_ARGS, name, version, sources_macos, script,
-                   [MacOS(:x86_64)], products, dependencies;
+                   [Platform("x86_64", "macos")], products, dependencies;
                    skip_audit=true)
 end
 
 if should_build_platform("x86_64-w64-mingw32")
     build_tarballs(ARGS, name, version, sources_windows, script,
-                   [Windows(:x86_64)], products, dependencies;
+                   [Platform("x86_64", "windows")], products, dependencies;
                    skip_audit=true)
 end

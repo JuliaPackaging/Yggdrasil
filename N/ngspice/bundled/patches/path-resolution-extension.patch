@@ -1,0 +1,118 @@
+From f147af56def0a0fddb8eb368c1d76872adb86f9b Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@juliacomputing.com>
+Date: Sun, 9 May 2021 02:47:00 -0400
+Subject: [PATCH 1/2] Add path resolution extension
+
+---
+ src/frontend/inpcom.c              | 10 ++++++++++
+ src/include/ngspice/jlextensions.h |  5 +++++
+ src/include/ngspice/sharedspice.h  | 10 ++++++++++
+ src/sharedspice.c                  | 13 +++++++++++++
+ 4 files changed, 38 insertions(+)
+ create mode 100644 src/include/ngspice/jlextensions.h
+
+diff --git a/src/frontend/inpcom.c b/src/frontend/inpcom.c
+index 6a4192909..12ebfdb2d 100644
+--- a/src/frontend/inpcom.c
++++ b/src/frontend/inpcom.c
+@@ -25,6 +25,7 @@ Author: 1985 Wayne A. Christopher
+ #include "ngspice/ftedefs.h"
+ #include "ngspice/fteext.h"
+ #include "ngspice/fteinp.h"
++#include "ngspice/jlextensions.h"
+ #include "numparam/general.h"
+ 
+ #include <limits.h>
+@@ -1833,9 +1834,18 @@ static char *inp_pathresolve(const char *name)
+ } /* end of function inp_pathresolve */
+ 
+ 
++ResolvePathAt *jl_pathresolve = NULL;
+ 
+ static char *inp_pathresolve_at(const char *name, const char *dir)
+ {
++    if (jl_pathresolve) {
++        char *resolved_path = jl_pathresolve(name, dir);
++        if (resolved_path == (char*)-1)
++            return NULL;
++        else if (resolved_path != NULL)
++            return resolved_path;
++    }
++
+     /* if name is an absolute path name,
+      *   or if we haven't anything to prepend anyway
+      */
+diff --git a/src/include/ngspice/jlextensions.h b/src/include/ngspice/jlextensions.h
+new file mode 100644
+index 000000000..181e49e38
+--- /dev/null
++++ b/src/include/ngspice/jlextensions.h
+@@ -0,0 +1,5 @@
++/* NGSpice extensions for use by julia */
++
++#include "sharedspice.h"
++
++extern ResolvePathAt *jl_pathresolve;
+\ No newline at end of file
+diff --git a/src/include/ngspice/sharedspice.h b/src/include/ngspice/sharedspice.h
+index 074716da1..2ea3f56c4 100644
+--- a/src/include/ngspice/sharedspice.h
++++ b/src/include/ngspice/sharedspice.h
+@@ -334,6 +334,13 @@ typedef int (SendInitEvtData)(int, int, char*, char*, int, void*);
+ */
+ #endif
+ 
++/*
++  Path resolution hook.
++  char *name - file being searched for
++  char *dir - directory where the file is being searched
++*/
++typedef char * (ResolvePathAt)(char *, char*);
++
+ /* ngspice initialization,
+ printfcn: pointer to callback function for reading printf, fprintf
+ statfcn: pointer to callback function for the status string and percent value
+@@ -347,6 +354,9 @@ IMPEXP
+ int  ngSpice_Init(SendChar* printfcn, SendStat* statfcn, ControlledExit* ngexit,
+                   SendData* sdata, SendInitData* sinitdata, BGThreadRunning* bgtrun, void* userData);
+ 
++IMPEXP
++int ngSpice_Init_JLExtensions(int version, ResolvePathAt *pathresolve);
++
+ /* initialization of synchronizing functions
+ vsrcdat: pointer to callback function for retrieving a voltage source value from caller
+ isrcdat: pointer to callback function for retrieving a current source value from caller
+diff --git a/src/sharedspice.c b/src/sharedspice.c
+index bdf293362..0802f2691 100644
+--- a/src/sharedspice.c
++++ b/src/sharedspice.c
+@@ -80,6 +80,7 @@ myfputc(int inp, FILE* f)
+ #include "ngspice/ngspice.h"
+ #include "misc/misc_time.h"
+ #include "ngspice/randnumb.h"
++#include "ngspice/jlextensions.h"
+ 
+ /*Use Windows threads if on W32 without pthreads*/
+ #ifndef HAVE_LIBPTHREAD
+@@ -1024,6 +1025,18 @@ ngSpice_Init(SendChar* printfcn, SendStat* statusfcn, ControlledExit* ngspiceexi
+     return 0;
+ }
+ 
++IMPEXP
++int
++ngSpice_Init_JLExtensions(int version, ResolvePathAt *pathresolve)
++{
++    if (version != 1)
++        return 1;
++
++    jl_pathresolve = pathresolve;
++
++    return 0;
++}
++
+ 
+ /* to be called upon 'quit' */
+ void
+-- 
+2.25.1
+

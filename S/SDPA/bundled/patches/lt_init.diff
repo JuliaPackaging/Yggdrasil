@@ -1,0 +1,12 @@
+diff --git a/configure.ac b/configure.ac
+index b9a3b19..19ef6d8 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -9,6 +9,7 @@ AC_PROG_RANLIB
+ AC_PROG_CC
+ AC_PROG_CXX
+ AC_PROG_FC
++LT_INIT
+ AC_FC_LIBRARY_LDFLAGS
+ AC_FC_WRAPPERS
+ AC_CANONICAL_HOST

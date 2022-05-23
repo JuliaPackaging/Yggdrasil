@@ -55,11 +55,11 @@ PROJECT_BUILD := $(BUILD_ROOT)/$(target)/$(PROJECT_REL_DIR)
 
 # Define some compiler defaults (they are typically overridden by `export`'ed
 # variables in the BB shell)
-CC := $(target)-cc
-CXX := $(target)-c++
-FC := $(target)-f77
-GO := $(target)-go
-RUSTC := $(target)-rustc
+CC ?= $(target)-cc
+CXX ?= $(target)-c++
+FC ?= $(target)-f77
+GO ?= $(target)-go
+RUSTC ?= $(target)-rustc
 
 # Create default rule for that directory so it can be created, if need be:
 $(PROJECT_BUILD):

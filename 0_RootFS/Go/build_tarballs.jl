@@ -1,13 +1,27 @@
+### Instructions for adding a new version of the Go toolchain
+#
+# * find the latest stable releases at https://go.dev/dl/, update the `version`
+#   variable and the SHA256 hash of the release tarball in the sources, the
+#   expected checksum is provided in the download page.
+# * To deploy the shard and automatically update your BinaryBuilderBase's
+#   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
+#   You can build & deploy by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy
+#
+
 using BinaryBuilder
 
 include("../common.jl")
 
 name = "Go"
-version = v"1.13"
+version = v"1.17.7"
 
 sources = [
-    "https://dl.google.com/go/go1.13.linux-amd64.tar.gz" =>
-    "68a2297eb099d1a76097905a2ce334e3155004ec08cdea85f24527be3c48e856",
+    ArchiveSource(
+        "https://go.dev/dl/go$(version).linux-amd64.tar.gz",
+        "02b111284bedbfa35a7e5b74a06082d18632eff824fd144312f6063943d49259",
+    )
 ]
 
 # Bash recipe for building across all platforms
@@ -15,10 +29,9 @@ script = raw"""
 mv ${WORKSPACE}/srcdir/go ${prefix}/
 """
 
-# We only build for Linux x86_64
+# We only build for host platform: x86_64-linux-musl
 platforms = [
-    # TODO: Switch to musl once https://github.com/rust-lang/rustup.rs/pull/1882 is released
-    Linux(:x86_64; libc=:musl),
+    host_platform,
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -27,9 +40,13 @@ dependencies = []
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("go", :go, "go/bin"),
+    ExecutableProduct("gofmt", :gofmt, "go/bin"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_info = build_tarballs(ARGS, "$(name)", version, sources, script, platforms, products, dependencies; skip_audit=true)
+ndARGS, deploy_target = find_deploy_arg(ARGS)
+build_info = build_tarballs(ndARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
 
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", name, version, build_info)
+if deploy_target !== nothing
+    upload_and_insert_shards(deploy_target, name, version, build_info)
+end

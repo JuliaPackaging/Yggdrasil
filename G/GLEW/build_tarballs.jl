@@ -19,7 +19,7 @@ if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # On Linux and FreeBSD this variable by default does `-L/usr/lib`
     EXTRA_VARS+=(LDFLAGS.EXTRA="")
 fi
-make INCLUDE="-Iinclude -I${prefix}/include" \
+make INCLUDE="-Iinclude -I${includedir}" \
     GLEW_DEST="${prefix}" \
     "${EXTRA_VARS[@]}" \
     install
@@ -36,8 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Libglvnd_jll",
-    "Xorg_libXi_jll",
+    Dependency("Libglvnd_jll"),
+    Dependency("Xorg_libXi_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

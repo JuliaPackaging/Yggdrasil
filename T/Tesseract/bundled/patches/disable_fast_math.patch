@@ -1,11 +1,11 @@
---- a/src/arch/Makefile.am	2019-12-26 09:21:51.000000000 -0500
-+++ b/src/arch/Makefile.am	2020-05-11 07:44:13.297714783 -0400
-@@ -46,7 +46,7 @@
- libtesseract_sse_la_CXXFLAGS = -msse4.1
- endif
-
+--- a/Makefile.am	2022-03-01 11:25:45.000000000 -0500
++++ b/Makefile.am	2022-04-08 16:48:32.093454641 -0400
+@@ -137,7 +137,7 @@
+ 
+ noinst_LTLIBRARIES += libtesseract_native.la
+ 
 -libtesseract_native_la_CXXFLAGS = -O3 -ffast-math
 +libtesseract_native_la_CXXFLAGS = -O3
- if MARCH_NATIVE_OPT
- libtesseract_native_la_CXXFLAGS += -march=native -mtune=native
+ if OPENMP_SIMD
+ libtesseract_native_la_CXXFLAGS += -fopenmp-simd -DOPENMP_SIMD
  endif

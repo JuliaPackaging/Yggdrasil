@@ -3,12 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "libsodium"
-version = v"1.0.18"
-
+# Note: upstream stopped giving version numbers to new releases.  "Releases" are
+# commits to the "stable" branch.  Here we just invent new versions numbers
+# because we need having different versions.
+version = v"1.0.20"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jedisct1/libsodium.git", "5b2ea7d73d3ffef2fb93b82b9f112f009d54c6e6"),
+    GitSource("https://github.com/jedisct1/libsodium.git", "d3f4804f4d4e6b5b4610fe377f6ff24e4368ae09"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

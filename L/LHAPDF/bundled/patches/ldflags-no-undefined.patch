@@ -1,0 +1,10 @@
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -26,6 +26,7 @@
+ libLHAPDFPaths_la_CPPFLAGS = $(AM_CPPFLAGS) -DLHAPDF_INSTALL_PREFIX=\"$(prefix)\" -DLHAPDF_DATA_PREFIX=\"$(datadir)\"
+ 
+ libLHAPDF_la_LIBADD = libLHAPDFInfo.la libLHAPDFPaths.la
++libLHAPDF_la_LDFLAGS = -no-undefined
+ 
+ if ENABLE_LHAGLUE
+   noinst_LTLIBRARIES += libLHAPDFGlue.la

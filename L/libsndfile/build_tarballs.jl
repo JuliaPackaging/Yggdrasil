@@ -3,18 +3,24 @@
 using BinaryBuilder
 
 name = "libsndfile"
-version = v"1.0.28"
+version = v"1.1.0"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("http://www.mega-nerd.com/libsndfile/files/libsndfile-$(version).tar.gz",
-                  "1ff33929f042fa333aed1e8923aa628c3ee9e1eb85512686c55092d1e5a9dfa9")
+    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.xz",
+                  "0f98e101c0f7c850a71225fb5feaf33b106227b3d331333ddc9bacee190bcf41")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-CFLAGS="-I${prefix}/include" ./configure --prefix=$prefix --host=$target --disable-static
+export CFLAGS="-I${includedir}"
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    ..
 make -j${nproc}
 make install
 """
@@ -35,15 +41,17 @@ products = [
     ExecutableProduct("sndfile-metadata-get", :sndfile_metadata_get),
     ExecutableProduct("sndfile-metadata-set", :sndfile_metadata_set),
     ExecutableProduct("sndfile-play", :sndfile_play),
-    ExecutableProduct("sndfile-salvage", :sndfile_salvage)
+    ExecutableProduct("sndfile-salvage", :sndfile_salvage),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "FLAC_jll",
-    "Ogg_jll",
-    "libvorbis_jll"
+    Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("FLAC_jll"),
+    Dependency("libvorbis_jll"),
+    Dependency("Ogg_jll"),
+    Dependency("Opus_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

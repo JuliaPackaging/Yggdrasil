@@ -3,25 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"20.22.16952"
+version = v"22.17.23034"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "515b3787f560f969a48e4848ca66bff8a4ab6bf7"),
-    # vendored dependencies
-    GitSource("https://github.com/oneapi-src/level-zero.git",
-              "ebb363e938a279cf866cb93d28e31aaf0791ea19"),  # v0.91.10
+              "e4437fcf54dac9e9c38c7e6ecc4ef4676a634ca2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# NEO builds against a very specific version of the oneL0 specification headers,
-# so we can't use regular (Build)Dependencies.
-mv level-zero level_zero
-
 cd compute-runtime
-install_license LICENSE
+install_license LICENSE.md
 
 # work around compilation failures
 ## already defined in gmmlib
@@ -29,6 +22,8 @@ sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
 ## extend LD_LIBRARY_PATH, don't overwrite it
 find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
     sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
+## NO
+sed -i '/-Werror/d' CMakeLists.txt
 
 CMAKE_FLAGS=()
 
@@ -47,6 +42,12 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 # Don't run tests
 CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 
+# we don't care about cl_intel_va_api_media_sharing
+CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
+
+# enable support for the DG1
+CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+
 # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
 # FIXME: shouldn't BinaryBuilder do this?
 export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
@@ -60,7 +61,7 @@ ninja -C build -j ${nproc} install
 platforms = [
     # NEO is 64-bit only: https://github.com/intel/compute-runtime/issues/179
     # and does not support musl: https://github.com/intel/compute-runtime/issues/265
-    Linux(:x86_64, libc=:glibc),
+    Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -73,10 +74,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="gmmlib_jll", version=v"20.1.1")),
-    Dependency(PackageSpec(name="libigc_jll", version=v"1.0.4062")),
-    # TODO: reverse compatibility bounds, where NEO (providing a oneL0 impl of, e.g., v0.91)
-    #       restricts oneAPI_Level_Zero_jll to be below that version too.
+    Dependency("gmmlib_jll"; compat="=22.1.2"),
+    Dependency("libigc_jll"; compat="=1.0.11061"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.3.7"; compat="~1.3"),  # XXX: don't specify patch version
 ]
 
 # GCC 4 has constexpr incompatibilities

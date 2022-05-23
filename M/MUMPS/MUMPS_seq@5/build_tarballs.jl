@@ -1,20 +1,28 @@
 using BinaryBuilder
 
 name = "MUMPS_seq"
-version = v"5.2.1"
+version = v"5.4.1"
 
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_5.2.1.tar.gz",
-                "d988fc34dfc8f5eee0533e361052a972aa69cc39ab193e7f987178d24981744a"),
+  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$version.tar.gz",
+                "93034a1a9fe0876307136dcde7e98e9086e199de76f1c47da822e7d4de987fa8"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/MUMPS_5.2.1
+cd $WORKSPACE/srcdir/MUMPS*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mumps_int32.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # Fix the error:
+    #     Type mismatch in argument ‘s’ at (1); passed INTEGER(4) to LOGICAL(4)
+    FFLAGS=("-fallow-argument-mismatch")
+fi
 
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
@@ -25,14 +33,15 @@ make_args+=(OPTF=-O3
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
-            LIBBLAS="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lopenblas"
+            LAPACK="-L${libdir} -lopenblas")
 
 if [[ "${target}" == *-apple* ]]; then
   make_args+=(RANLIB=echo)
 fi
 
 # NB: parallel build fails
-make alllib "${make_args[@]}"
+make all "${make_args[@]}"
 
 # build shared libs
 all_load="--whole-archive"
@@ -70,7 +79,7 @@ cp include/* ${prefix}/include/mumps_seq
 cp libseq/*.h ${prefix}/include/mumps_seq
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -87,5 +96,5 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
 ]
 
-# Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Build the tarballs
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"5")

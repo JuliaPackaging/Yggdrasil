@@ -1,0 +1,20 @@
+--- a/agent/Makefile.in
++++ b/agent/Makefile.in
+@@ -574,7 +574,7 @@
+ 	$(INCICONV)
+ 
+ gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
+-         $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
++         $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) -lrt
+ 
+ gpg_preset_passphrase_SOURCES = \
+ 	preset-passphrase.c
+@@ -586,7 +586,7 @@
+ 	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
+ 
+ t_common_ldadd = $(common_libs)  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+-	          $(LIBINTL) $(LIBICONV) $(NETLIBS)
++	          $(LIBINTL) $(LIBICONV) $(NETLIBS) -lrt
+ 
+ t_protect_SOURCES = t-protect.c protect.c
+ t_protect_LDADD = $(t_common_ldadd)

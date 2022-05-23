@@ -1,0 +1,15 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -219,6 +219,12 @@
+         LINK_DYNAMIC="-Wl,-bshared"
+         LINK_SHLIBS="../libmpdec/$LIBIMPORT"
+         ;;
++    MSYS_NT*)
++        LIBNAME="libmpdec.dll"
++        LIBSONAME="libmpdec-3.dll"
++        LIBSHARED="libmpdec-2.5.1.dll"
++        CONFIGURE_LDFLAGS="-shared"
++        ;;
+     *)
+         LIBNAME="libmpdec.so"
+         LIBSONAME="libmpdec.so.3"

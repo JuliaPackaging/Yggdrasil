@@ -3,29 +3,35 @@
 using BinaryBuilder, Pkg
 
 name = "glmnet"
-version = v"5.0.0"
+version = v"4.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaStats/GLMNet.jl.git", "d8cab55556a8c184a879446476efcc35e68a3eee"),
+    GitSource("https://github.com/cran/glmnet.git", "b1a4b50de01e0cd24343959d7cf86452bac17b26")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/GLMNet.jl/deps/
+cd $WORKSPACE/srcdir/glmnet/src
+
+# Add stub for `setpb`, which normally comes from `pb.c` to connect the 
+# progress meter to R, but we don't need that
+echo "
+      subroutine setpb(val)
+      return
+      end
+" > pb.f
 
 flags="-fdefault-real-8 -ffixed-form -shared -O3"
 if [[ ${target} != *mingw* ]]; then
-    flags="${flags} -fPIC"
+    flags="${flags} -fPIC";
 fi
 if [[ ${target} != aarch64* ]] && [[ ${target} != arm* ]]; then
-    flags="${flags} -m${nbits}"
+    flags="${flags} -m${nbits}";
 fi
-
-${FC} ${LDFLAGS} ${flags} glmnet5.f90 -o libglmnet.${dlext}
-
-mkdir -p $libdir
-mv libglmnet.${dlext} $libdir/
+mkdir -p ${libdir}
+${FC} ${LDFLAGS} ${flags} glmnet5dpclean.f wls.f pb.f -o ${libdir}/libglmnet.${dlext}
+install_license ../DESCRIPTION
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,6 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

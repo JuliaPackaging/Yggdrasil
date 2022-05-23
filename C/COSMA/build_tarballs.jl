@@ -59,7 +59,7 @@ cmake ../cosma \
     -DOPENBLAS_INCLUDE_DIR=$includedir \
     $OPENMP_CMAKE_FLAGS
 
-make -j$(nproc)
+make -j${nproc}
 make install
 
 install_license ../cosma/LICENCE
@@ -69,7 +69,7 @@ install_license ../cosma/LICENCE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> !(p isa Windows), platforms)
+filter!(!Sys.iswindows, platforms)
 
 
 # The products that we will ensure are always built

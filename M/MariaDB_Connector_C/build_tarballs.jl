@@ -3,13 +3,14 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_C"
-version = v"3.1.6"
+version = v"3.1.12"
+julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
-    "https://github.com/mariadb-corporation/mariadb-connector-c.git" =>
-    "63df45ce3df3fbc04d8fab9bceb77f9d1cccd4aa",
-    "./bundled"
+    GitSource("https://github.com/mariadb-corporation/mariadb-connector-c.git",
+              "7d304d26c787a3f0430624db977b615aba56e4bb"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,22 +49,19 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_MYSQLCOMPAT=OFF \
     -DWITH_EXTERNAL_ZLIB=ON \
     -DZLIB_FOUND=ON \
-    -DZLIB_INCLUDE_DIR=${prefix}/include \
+    -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DOPENSSL_FOUND=ON \
     -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
     -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
     -DICONV_LIBRARIES=${libdir}/libiconv.${dlext} \
-    -DICONV_INCLUDE_DIR=${prefix}/include
+    -DICONV_INCLUDE_DIR=${includedir}
 make -j${nproc}
 make install
 install_license ../COPYING.LIB
 """
 
-# MariaDB doesn't support non *86 platforms with Musl, see
-# https://gitlab.alpinelinux.org/alpine/aports/commit/ad7c54bd9b6d8e60e88a313a92c83d083f196db8
-platforms = supported_platforms(; exclude = [Linux(:aarch64, libc=:musl),
-                                             Linux(:armv7l, libc=:musl, call_abi=:eabihf)])
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -72,11 +70,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "LibCURL_jll",
-    "Libiconv_jll",
-    "OpenSSL_jll",
-    "Zlib_jll",
+    Dependency("LibCURL_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("OpenSSL_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat)

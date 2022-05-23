@@ -11,7 +11,7 @@ CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext}
 cd ${CUDA_ARTIFACT_DIR}
 
 # Clear out our prefix
-rm -rf ${prefix}
+rm -rf ${prefix}/*
 
 # license
 install_license EULA.txt
@@ -23,7 +23,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -41,6 +41,11 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
 
     # CUDA Linear Solver Library
     mv lib64/libcusolver.so* ${libdir}
+
+    # CUDA Linear Solver Multi GPU Library
+    if [[ $target != aarch64-linux-gnu ]]; then
+        mv lib64/libcusolverMg.so* ${libdir}
+    fi
 
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
@@ -64,8 +69,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
     # NVIDIA Tools Extension Library
     mv lib64/libnvToolsExt.so* ${libdir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm ${bindir}
+    mv bin/cuda-memcheck ${bindir}
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -85,6 +91,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # CUDA Linear Solver Library
     mv bin/cusolver64_*.dll ${bindir}
+
+    # CUDA Linear Solver Nulti GPU Library
+    mv bin/cusolverMg64_*.dll ${bindir}
 
     # CUDA Random Number Generation Library
     mv bin/curand64_*.dll ${bindir}
@@ -108,10 +117,20 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # NVIDIA Tools Extension Library
     mv bin/nvToolsExt64_1.dll ${bindir}
 
-    # CUDA Disassembler
+    # Additional binaries
     mv bin/nvdisasm.exe ${bindir}
+    mv bin/cuda-memcheck.exe ${bindir}
+
+    # Fix permissions
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
+
+platforms = [
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "linux"),
+    Platform("x86_64", "windows")
+]
 
 products = [
     LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
@@ -124,7 +143,7 @@ products = [
     LibraryProduct(["libcusparse", "cusparse64_10"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libcurand),
+    LibraryProduct(["libnvgraph", "nvgraph64_10"], :libnvgraph),
     LibraryProduct(["libnppc", "nppc64_10"], :libnppc),
     LibraryProduct(["libnppial", "nppial64_10"], :libnppial),
     LibraryProduct(["libnppicc", "nppicc64_10"], :libnppicc),
@@ -145,4 +164,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, [], script,
-               [Linux(:x86_64), Windows(:x86_64)], products, dependencies)
+               platforms, products, dependencies)

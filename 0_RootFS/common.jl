@@ -1,11 +1,8 @@
-using SHA, BinaryBuilder, Pkg, Pkg.BinaryPlatforms, Pkg.Artifacts
-using BinaryBuilder: TarballDependency, CompilerShard
+using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
+using BinaryBuilder: CompilerShard, BinaryBuilderBase
+using BinaryBuilderBase: archive_artifact
 
-host_platform = Linux(:x86_64; libc=:musl)
-
-if !haskey(ENV, "GITHUB_TOKEN")
-    error("export GITHUB_TOKEN you dolt!")
-end
+host_platform = Platform("x86_64", "linux"; libc="musl")
 
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
@@ -18,7 +15,7 @@ end
 function unpacked_to_squashfs(unpacked_hash::Base.SHA1, name, version; platform=host_platform, target=nothing)
     path = artifact_path(unpacked_hash)
     squashfs_cs = CompilerShard(name, version, platform, :squashfs; target=target)
-    art_name = BinaryBuilder.artifact_name(squashfs_cs)
+    art_name = BinaryBuilderBase.artifact_name(squashfs_cs)
     squash_hash = create_artifact() do target_dir
         target_squashfs = joinpath(target_dir, art_name)
         success(`mksquashfs $(path) $(target_squashfs) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
@@ -35,7 +32,7 @@ function generate_artifacts(path::AbstractString, name, version; platform=host_p
 
     # First, the unpacked version
     squashfs_cs = CompilerShard(name, version, platform, :unpacked; target=target)
-    art_name = BinaryBuilder.artifact_name(squashfs_cs)
+    art_name = BinaryBuilderBase.artifact_name(squashfs_cs)
     unpacked_hash = create_artifact() do target
         rm(target; force=true, recursive=true)
         cp(path, target)
@@ -50,14 +47,18 @@ end
 function publish_artifact(repo::AbstractString, tag::AbstractString, hash::Base.SHA1, filename::AbstractString)
     mktempdir() do dir
         tarball_hash = archive_artifact(hash, joinpath(dir, "$(filename).tar.gz"))
-        BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        if repo == "local"
+            @info "Skipping upload to GitHub because local build was requested!"
+        else
+            BinaryBuilder.upload_to_github_releases(repo, tag, dir)
+        end
         return tarball_hash
     end
 end
 
 function get_next_shard_tag(cs)
-    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
-    meta = artifact_meta(BinaryBuilder.artifact_name(cs), artifacts_toml; platform=cs.host)
+    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilderBase))), "Artifacts.toml")
+    meta = artifact_meta(BinaryBuilderBase.artifact_name(cs), artifacts_toml; platform=cs.host)
     if meta === nothing || !haskey(meta, "download")
         return "$(cs.name)-v$(cs.version)"
     end
@@ -86,7 +87,7 @@ end
 function upload_compiler_shard(repo, name, version, hash, archive_type; platform=host_platform, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
     tag = get_next_shard_tag(cs)
-    filename = BinaryBuilder.artifact_name(cs)
+    filename = BinaryBuilderBase.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
     return [
@@ -98,14 +99,18 @@ end
 # the Artifacts.toml that belongs to BB
 function insert_compiler_shard(name, version, hash, archive_type; platform=host_platform, download_info = nothing, target=nothing)
     cs = CompilerShard(name, version, platform, archive_type; target=target)
-    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilder))), "Artifacts.toml")
-    bind_artifact!(artifacts_toml, BinaryBuilder.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
+    artifacts_toml = joinpath(dirname(dirname(pathof(BinaryBuilderBase))), "Artifacts.toml")
+    bind_artifact!(artifacts_toml, BinaryBuilderBase.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
 function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
     # Upload them both to GH releases on Yggdrasil
-    unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
-    squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    unpacked_dl_info = nothing
+    squashfs_dl_info = nothing
+    if repo != "local"
+        unpacked_dl_info = upload_compiler_shard(repo, name, version, unpacked_hash, :unpacked; platform=platform, target=target)
+        squashfs_dl_info = upload_compiler_shard(repo, name, version, squashfs_hash, :squashfs; platform=platform, target=target)
+    end
 
     # Insert these final versions into BB
     insert_compiler_shard(name, version, unpacked_hash, :unpacked; download_info=unpacked_dl_info, platform=platform, target=target)
@@ -145,4 +150,23 @@ function build_tarballs(project_path::String, args::String...; deploy=false, reg
     end
 end
 
+function find_deploy_arg(ARGS)
+    dargs = ARGS[findall(arg->startswith(arg, "--deploy"), ARGS)]
+    if length(dargs) > 1
+        error("More than one deploy argument. Usage: --deploy|--deploy=local")
+    end
 
+    # No deployment
+    if length(dargs) == 0
+        return (ARGS, nothing)
+    end
+
+    ndARGS = filter(arg->!startswith(arg, "--deploy"), ARGS)
+    if dargs[] == "--deploy"
+        return (ndARGS, "JuliaPackaging/Yggdrasil")
+    elseif dargs[] == "--deploy=local"
+        return (ndARGS, "local")
+    else
+        error("--deploy argument must be --deploy or --deploy=local")
+    end
+end

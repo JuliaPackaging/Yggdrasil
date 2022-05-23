@@ -1,7 +1,6 @@
 include("../coin-or-common.jl")
 
-name = "CSDP"
-version = v"6.2.0"
+version = offset_version(v"6.2.0", v"0.0.1")
 
 # Collection of sources required to build Clp
 sources = [
@@ -45,7 +44,7 @@ ${CC} -fopenmp -fPIC -shared -Wl,${all_load} libsdp.a -Wl,${noall_load} -o ${lib
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -58,6 +57,16 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=gcc_version)
+# Build the tarballs, and possibly a `build.jl` as well
+build_tarballs(
+    ARGS,
+    "CSDP",
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = gcc_version,
+    julia_compat = "1.6",
+)

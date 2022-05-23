@@ -2,18 +2,17 @@ using BinaryBuilder
 
 name = "pprof"
 
-# PProf doesn't have proper versions yet
-# so we use Go's pseudo version
-# `TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd" $hash`
+# Note that google/pprof doesn't have proper release versions. We are
+# identifying a version by a specific commit hash, off of `pprof`'s
+# main branch.
 
-hash = "f9b734f9ee64d0f5b63636a45cc77ed2744997ab"
-timestamp = "20191205061153"
-version = Base.VersionNumber("0.0.0-$timestamp")
+hash = "b5a4dc8f4f2afdee77047b6aae3834140efc83ed"
+version = v"1.0.0"
 
 # Collection of sources required to build pprof
 sources = [
-    "https://github.com/google/pprof.git" =>
-    hash,
+    GitSource("https://github.com/google/pprof.git",
+              hash),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +24,7 @@ go build -o ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -33,8 +32,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat="1.6")

@@ -1,38 +1,95 @@
 using BinaryBuilder
 
 name = "OpenMPI"
-version = v"4.0.2"
+version = v"4.1.3"
 sources = [
-    "https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-$(version).tar.gz" =>
-    "662805870e86a1471e59739b0c34c6f9004e0c7a22db068562d5388ec4421904",
+    ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
+                  "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
+                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
+################################################################################
+# Install OpenMPI
+################################################################################
+
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-./configure --prefix=$prefix --host=$target --enable-shared=yes --enable-static=no --disable-mpi-fortran --without-cs-fs
+atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
+
+if [[ "${target}" == *-freebsd* ]]; then
+    # Help compiler find `complib/cl_types.h`.
+    export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
+fi
+
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-shared=yes \
+    --enable-static=no \
+    --without-cs-fs \
+    --enable-mpi-fortran=usempif08 \
+    --with-cross=${WORKSPACE}/srcdir/${target}
 
 # Build the library
-make "${flags[@]}" -j${nproc}
+make -j${nproc}
 
 # Install the library
-make "${flags[@]}" install
+make install
 
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
+    -DMPI_C_COMPILER=cc \
+    -DMPI_C_LIB_NAMES='mpi' \
+    -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
+    ..
+
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
+# Install licenses
+################################################################################
+
+install_license $WORKSPACE/srcdir/openmpi*/LICENSE $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-#platforms = supported_platforms()
-platforms = filter(p -> !isa(p, Windows), supported_platforms())
-
+platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
+platforms = expand_gfortran_versions(platforms)
+    
 products = [
-    LibraryProduct("libmpi", :libmpi)
-    ExecutableProduct("mpiexec", :mpiexec)
+    # OpenMPI
+    LibraryProduct("libmpi", :libmpi),
+    ExecutableProduct("mpiexec", :mpiexec),
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
+init_block = raw"""
+ENV["OPAL_PREFIX"] = artifact_dir
+"""
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5", init_block=init_block, lazy_artifacts=true)

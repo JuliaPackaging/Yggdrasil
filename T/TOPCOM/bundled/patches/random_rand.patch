@@ -1,0 +1,31 @@
+diff --git before/lib-src/PlainHashTable.hh after/lib-src/PlainHashTable.hh
+index a1718e0..5e915ba 100644
+--- before/lib-src/PlainHashTable.hh
++++ after/lib-src/PlainHashTable.hh
+@@ -279,7 +279,7 @@ void PlainHashTable<HashData>::_init_randvec(size_type* init_randvec, const size
+     std::cerr << "_init_randvec:" << std::endl;
+ #endif
+   for (size_type i = 0; i < init_maxkey; ++i) {
+-    while ((init_randvec[i] = random()) == 0UL);
++    while ((init_randvec[i] = rand()) == 0UL);
+ #ifdef CHECK_RANDVEC
+     std::cerr << init_randvec[i] << std::endl;
+ #endif
+@@ -369,7 +369,7 @@ void PlainHashTable<HashData>::_extend_randvec(const size_type new_maxkey) {
+     _copy_randvec(rp, _randvec, _maxkey);
+   }
+   for (size_type i = _maxkey; i < new_maxkey; ++i) {
+-    while ((rp[i] = random()) == 0UL);
++    while ((rp[i] = rand()) == 0UL);
+   }
+   if (_randvec) {
+     size_type_allocator.deallocate(_randvec, _maxkey);
+@@ -796,7 +796,7 @@ void PlainHashTable<HashData>::erase(const key_type& key) {
+ template<class HashData>
+ void PlainHashTable<HashData>::erase_random() {
+   entry* eptr;
+-  size_type random_index(random() % _size);
++  size_type random_index(rand() % _size);
+   eptr = _data[random_index];
+   while (!eptr) {
+     random_index = (random_index + 1) % _size;

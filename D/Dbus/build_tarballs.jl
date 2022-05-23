@@ -7,14 +7,14 @@ version = v"1.12.16"
 
 # Collection of sources required to build Dbus
 sources = [
-    "https://dbus.freedesktop.org/releases/dbus/dbus-$(version).tar.gz" =>
-    "54a22d2fa42f2eb2a871f32811c6005b531b9613b1b93a0d269b05e7549fec80",
+    ArchiveSource("https://dbus.freedesktop.org/releases/dbus/dbus-$(version).tar.gz",
+                  "54a22d2fa42f2eb2a871f32811c6005b531b9613b1b93a0d269b05e7549fec80"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dbus-*
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-xml=expat \
     --with-dbus-user=messagebus \
     --with-system-pid-file=/var/run/dbus.pid \
@@ -32,7 +32,9 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p isa Union{Linux,FreeBSD}]
+platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
+# TODO: Remove this restriction for the next build
+filter!(p -> arch(p) != "armv6l", platforms)
 
 products = [
     LibraryProduct("libdbus-1", :libdbus),
@@ -41,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
+    Dependency("Expat_jll"; compat="2.2.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

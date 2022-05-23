@@ -1,14 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "PCRE2"
-version = v"10.34.0"
+version = v"10.40"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "da6aba7ba2509e918e41f4f744a59fa41a2425c59a298a232e7fe85691e00379")
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.gz",
+                  "ded42661cab30ada2e72ebff9e725e745b4b16ce831993635136f2ef86177724"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ update_configure_scripts
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
 
-./configure --prefix=${prefix} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-static \
     --enable-jit \
     --enable-pcre2-16 \
@@ -53,5 +53,4 @@ products = [
 dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")

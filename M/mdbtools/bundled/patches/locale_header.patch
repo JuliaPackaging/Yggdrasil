@@ -1,0 +1,15 @@
+diff --git a/src/sql/mdbsql.c b/src/sql/mdbsql.c
+index 6fb792d..da3de6a 100644
+--- a/src/sql/mdbsql.c
++++ b/src/sql/mdbsql.c
+@@ -32,8 +32,9 @@
+ #ifdef HAVE_STRPTIME
+ #include <time.h>
+ #include <stdio.h>
++#endif
++
+ #include <locale.h>
+-#endif
+ 
+ char *g_input_ptr;
+ 

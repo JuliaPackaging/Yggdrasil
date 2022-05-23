@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "hidapi"
-version = v"0.9.0"
+version = v"0.11.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libusb/hidapi.git", "7da5cc91fc0d2dbe4df4f08cd31f6ca1a262418f")
+    GitSource("https://github.com/libusb/hidapi.git", "31bde69a1f08c880ef1622f2586eea0daf3b0857")
 ]
 
 # Script template (structure is the same for all platforms, directory for make differs)
@@ -48,6 +48,6 @@ dependencies = [
     Dependency("libusb_jll")
 ]
 
-platforms = [p for p in supported_platforms() if !isa(p, FreeBSD)]
+platforms = supported_platforms(;exclude=Sys.isfreebsd)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2.0")

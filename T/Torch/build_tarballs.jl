@@ -43,7 +43,7 @@ install_license ${WORKSPACE}/srcdir/Torch.jl/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:x86_64, libc=:glibc, compiler_abi = CompilerABI(cxxstring_abi = :cxx11)),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi = "cxx11"),
 ]
 
 # The products that we will ensure are always built

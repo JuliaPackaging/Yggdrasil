@@ -3,14 +3,12 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"2019.1"
+version = v"8.0.1000" # alpha release of 8.1, but Julia Pkg doesn't support prerelease versions
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource(
-        "https://github.com/qhull/qhull/archive/$(version.major).$(version.minor).tar.gz", # URL
-        "cf7235b76244595a86b9407b906e3259502b744528318f2178155e5899d6cf9f"                 # sha256 hash
-    ),
+    GitSource("https://github.com/qhull/qhull.git",
+              "42b11489c2f93d4648b2e839acf80be11178bbfd"), # v8.1-alpha1 + patches
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +32,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -55,6 +53,8 @@ products = [
     # Libraries
     # reentrant Qhull
     LibraryProduct(["libqhull_r", "qhull_r"], :libqhull_r),
+    # non-reentrant Qhull is not supported any more
+    # LibraryProduct(["libqhull", "qhull"], :libqhull),
     
     # Files
     # Reentrant Qhull header files
@@ -75,4 +75,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -2,60 +2,51 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-const name    = "CGAL"
-const version = v"5.0.2"
-
+name     = "CGAL"
+rversion = "5.3"
+version  = VersionNumber(rversion)
 
 # Collection of sources required to build CGAL
-const sources = [
-    ArchiveSource("https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz",
-                  "bb3594ba390735404f0972ece301f369b1ff12646ad25e48056b4d49c976e1fa"),
-]
-
-# Dependencies that must be installed before this package can be built
-const dependencies = [
-    Dependency("boost_jll"),
-    Dependency("GMP_jll"),
-    Dependency("MPFR_jll"),
-    Dependency("Zlib_jll"),
+sources = [
+    ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion.tar.xz",
+                  "2c242e3f27655bc80b34e2fa5e32187a46003d2d9cd7dbec8fbcbc342cea2fb6"),
 ]
 
 # Bash recipe for building across all platforms
-const script = raw"""
+script = raw"""
 ## pre-build setup
 # exit on error
 set -eu
 
-## configure build
-cd "$WORKSPACE/srcdir"/CGAL-*/
-mkdir build && cd build
-
-cmake .. \
+cmake -B build \
   `# cmake specific` \
-  -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN"\
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX="$prefix" \
-  -DCMAKE_FIND_ROOT_PATH="$prefix" \
-  `# cgal specific` \
-  -DCGAL_HEADER_ONLY=OFF \
-  -DWITH_CGAL_Core=ON \
-  -DWITH_CGAL_ImageIO=ON \
-  -DWITH_CGAL_Qt5=OFF
+  -DCMAKE_FIND_ROOT_PATH=$prefix \
+  -DCMAKE_INSTALL_PREFIX=$prefix \
+  -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+  CGAL-*/
 
 ## and away we go..
-cmake --build . --config Release --target install -- -j$nproc
-install_license ../LICENSE*
+cmake --build build --config Release --target install -- -j$nproc
+install_license CGAL-*/LICENSE*
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-const platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [AnyPlatform()]
+
 # The products that we will ensure are always built
-const products = [
-    LibraryProduct("libCGAL", :libCGAL),
-    LibraryProduct("libCGAL_Core", :libCGAL_Core),
-    LibraryProduct("libCGAL_ImageIO", :libCGAL_ImageIO),
+# CGAL is, as of 5.0, a header-only library, removing support for lib
+# compilation in 5.3
+products = Product[]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    # Essential dependencies
+    Dependency("boost_jll"; compat="=1.71.0"),
+    Dependency("GMP_jll"; compat="6.1.2"),
+    Dependency("MPFR_jll"; compat="4.0.2"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")

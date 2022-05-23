@@ -4,11 +4,12 @@ using BinaryBuilder
 using Pkg
 
 name = "LCIO_Julia_Wrapper"
-version = v"0.9.0"
+version = v"0.13.2"
+julia_versions = [v"1.6", v"1.7", v"1.8"]
 
 # Collection of sources required to build LCIOWrapBuilder
 sources = [
-	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "a1c201bd7a15c236f221f4f343dd795874794379")
+	GitSource("https://github.com/jstrube/LCIO_Julia_Wrapper.git", "e28132bfdc0664faf9724a74b2ae33803c26dc5a")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,11 +24,13 @@ install_license $WORKSPACE/srcdir/LCIO_Julia_Wrapper/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = Platform[
-    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
-    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11))
-]
+include("../../L/libjulia/common.jl")
 
+platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
+filter!(!Sys.isfreebsd, platforms)
+filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l") , platforms)
+	
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblciowrap", :lciowrap)
@@ -35,9 +38,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-        Dependency(PackageSpec(name="libcxxwrap_julia_jll",version=v"0.8")),
-        Dependency("LCIO_jll"),
-        BuildDependency(PackageSpec(name="Julia_jll",version=v"1.4.1"))
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
+    Dependency(PackageSpec(name="LCIO_jll")),
+    BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+    preferred_gcc_version=v"8", julia_compat="1.6")

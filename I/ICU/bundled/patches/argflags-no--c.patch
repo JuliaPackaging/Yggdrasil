@@ -1,0 +1,12 @@
+--- a/config/mh-darwin
++++ b/config/mh-darwin
+@@ -18,9 +18,6 @@
+ # Pad out the paths to the maximum possible length
+ LD_FLAGS += -headerpad_max_install_names
+ 
+-# We do not need to see the stderr message that the archive was made.
+-ARFLAGS += -c
+-
+ ## Commands to compile
+ COMPILE.c=	$(CC) $(DEFS) $(CPPFLAGS) $(CFLAGS) -fno-common -c
+ COMPILE.cc=	$(CXX) $(DEFS) $(CPPFLAGS) $(CXXFLAGS) -fno-common -c

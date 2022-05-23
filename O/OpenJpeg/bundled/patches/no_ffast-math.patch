@@ -1,7 +1,5 @@
-diff --git before/openjpeg-2.3.1/CMakeLists.txt after/openjpeg-2.3.1/CMakeLists.txt
-index 3ea2424..9dedd3d 100644
---- before/openjpeg-2.3.1/CMakeLists.txt
-+++ after/openjpeg-2.3.1/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
 @@ -195,9 +195,8 @@ endif()
  if(CMAKE_COMPILER_IS_GNUCC)
    # For all builds, make sure openjpeg is std99 compliant:

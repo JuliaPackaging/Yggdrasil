@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "zrl"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/StefanKarpinski/zrl.git", "b4d4db4d3ecd866929e3312d29ac4760d0c7d84a"),
+    GitSource("https://github.com/StefanKarpinski/zrl.git", "2ae37960f4c96b61ebb6f217bde1a3ddbe48f8d1"),
 ]
 
 # Bash recipe for building across all platforms

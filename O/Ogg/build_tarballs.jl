@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Ogg"
-version = v"1.3.4"
+version = v"1.3.5"
 
 sources = [
-    ArchiveSource("https://downloads.xiph.org/releases/ogg/libogg-$(version).tar.xz",
-                  "c163bc12bc300c401b6aa35907ac682671ea376f13ae0969a220f7ddf71893fe"),
+    ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-$(version).tar.xz",
+                  "c4d91be36fc8e54deae7575241e03f4211eb102afb3fc0775fbbc1b740016705"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,8 +29,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

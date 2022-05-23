@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "gdk_pixbuf"
-version = v"2.38.2" # we are actually on master
+version = v"2.42.6"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
-    "https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/3c7740498fd31b6746dd7e04601886766a6644b7/gdk-pixbuf-3c7740498fd31b6746dd7e04601886766a6644b7.tar.bz2" =>
-    "9fad057e8c51bc4373948a02c8ee7d8afe254b361fb4abc43767fce43982dd25"
+    ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
+                  "8a76cffe6a85f2602cf246c1c974eb475aea41c363a932f0c34695fa968f01fd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdk-pixbuf-*/
 mkdir build && cd build
-
-# Get a local gettext for msgfmt cross-building
-apk add gettext
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
@@ -35,12 +32,12 @@ ninja -j${nproc}
 ninja install
 
 # Cleanup `loaders.cache` file, we're going to generate a new one on the user's machine
-rm -f ${prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders/loaders.cache
+find ${prefix}/lib -name loaders.cache -delete
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -49,14 +46,23 @@ products = [
     FileProduct("lib/gdk-pixbuf-2.0/2.10.0/loaders", :gdk_pixbuf_loaders_dir),
 ]
 
+# Some dependencies are needed only on Linux and FreeBSD
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Glib_jll",
-    "JpegTurbo_jll",
-    "libpng_jll",
-    "Libtiff_jll",
-    "Xorg_libX11_jll",
+    # Need a host gettext for msgfmt
+    HostBuildDependency("Gettext_jll"),
+    # Need a host glib for glib-compile-resources
+    HostBuildDependency("Glib_jll"),
+    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
+    BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
+    BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,0 +1,37 @@
+From 77270e138cc6061199c9363705ac49ac974b7beb Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Fri, 16 Jul 2021 20:03:45 +0200
+Subject: [PATCH] [MLIR][CAPI] On MINGW don't link against libMLIR
+
+---
+ mlir/lib/CAPI/CMakeLists.txt | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/mlir/lib/CAPI/CMakeLists.txt b/mlir/lib/CAPI/CMakeLists.txt
+index db77cc1f6925..cd119554f3dc 100644
+--- a/mlir/lib/CAPI/CMakeLists.txt
++++ b/mlir/lib/CAPI/CMakeLists.txt
+@@ -25,13 +25,19 @@ foreach(lib ${public_api_libs})
+   list(APPEND _DEPS  $<TARGET_PROPERTY:${lib},LINK_LIBRARIES>)
+ endforeach()
+ 
++if(MINGW)
++    set(MLIR_LINK_MLIR_DYLIB 0)
++else()
++    set(MLIR_LINK_MLIR_DYLIB ${LLVM_BUILD_LLVM_DYLIB})
++endif()
++
+ add_mlir_library(MLIRPublicAPI
+   SHARED
+   ${_OBJECTS}
+   EXCLUDE_FROM_LIBMLIR
+   LINK_LIBS
+   # Dependency on the implementation shared library.
+-  $<$<BOOL:${LLVM_BUILD_LLVM_DYLIB}>:MLIR>
++  $<$<BOOL:${MLIR_LINK_MLIR_DYLIB}>:MLIR>
+   ${_DEPS}
+ )
+ 
+-- 
+2.32.0
+
