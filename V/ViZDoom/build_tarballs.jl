@@ -34,8 +34,7 @@ cmake \
     -DBUILD_JULIA=ON \
     ..
 cmake --build . --parallel ${nproc}
-cp -r bin/* ${libdir}
-mv ../src/freedoom2.wad ${libdir}
+cp bin/libvizdoomjl.so bin/vizdoom bin/vizdoom.pk3 ../src/freedoom2.wad ${libdir}
 mv ../scenarios $prefix/
 install_license $WORKSPACE/srcdir/ViZDoom-*/README.md
 """
@@ -43,7 +42,7 @@ install_license $WORKSPACE/srcdir/ViZDoom-*/README.md
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = [Platform("x86_64", "linux")] #vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Qt6Declarative_jll is not available for these architectures:
 filter!(p -> arch(p) != "armv6l", platforms)
@@ -56,7 +55,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll", compat = "^1.76"),
     Dependency("SDL2_jll"),
     Dependency("libcxxwrap_julia_jll"),
     BuildDependency("libjulia_jll"),
