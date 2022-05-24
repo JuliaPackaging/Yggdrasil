@@ -10,7 +10,7 @@ diff -u a/file1.h b/file2.h
 -#    ifdef XXH_EXPORT
 -#      define XXH_PUBLIC_API __declspec(dllexport)
 -#    elif XXH_IMPORT
- #      define XXH_PUBLIC_API __declspec(dllimport)
+ #      define XXH_PUBLIC_API __declspec(dllimport) __declspec(dllexport)
 -#    endif
 -#  else
 -#    define XXH_PUBLIC_API   /* do nothing */
