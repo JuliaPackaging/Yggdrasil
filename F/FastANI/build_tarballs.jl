@@ -15,6 +15,7 @@ c++ -O3 -DNDEBUG -std=c++11 -Isrc -fopenmp   src/cgi/core_genome_identity.cpp -o
 
 
 platforms = supported_platforms()
+platforms = filter(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
