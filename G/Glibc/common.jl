@@ -55,11 +55,11 @@ function glibc_script()
         echo "libdir = /usr/lib/${target}" >> $WORKSPACE/srcdir/glibc_build/configparms
         echo "slibdir = /lib/${target}" >> $WORKSPACE/srcdir/glibc_build/configparms
         echo "rtlddir = /lib" >> $WORKSPACE/srcdir/glibc_build/configparms
-        if [[ ${COMPILER_TARGET} == aarc64-linux-gnu ]]; then
+        if [[ ${target} == aarch64-linux-gnu ]]; then
             # At the moment -moutline-atomics (as used in the official debian binaries)
             # intermittently causes binaries that are incompatible with rr. Forcing ARM
             # 8.3 will result in inlined LSE atomics, working around the issue.
-            GLIBC_CONFIGURE_OVERRIDES += CFLAGS="-march=armv8.3-a -mno-outline-atomics -O2"
+            GLIBC_CONFIGURE_OVERRIDES+=( CFLAGS="-march=armv8.3-a -mno-outline-atomics -O2")
         fi
     fi
 
@@ -75,7 +75,7 @@ function glibc_script()
         --host=${target} \
         --disable-multilib \
         --disable-werror \
-        ${GLIBC_CONFIGURE_OVERRIDES[@]}
+        "${GLIBC_CONFIGURE_OVERRIDES[@]}"
 
     make -j${nproc}
 
