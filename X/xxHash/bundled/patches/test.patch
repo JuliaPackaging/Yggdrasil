@@ -1,0 +1,22 @@
+diff -u a/file1.h b/file2.h
+--- a/xxhash.h     2022-05-24 14:43:40.632328800 -0400
++++ b/xxhash.h     2022-05-24 14:44:30.468301000 -0400
+@@ -228,17 +228,7 @@
+  * @{
+  */
+ /* specific declaration modes for Windows */
+-#if !defined(XXH_INLINE_ALL) && !defined(XXH_PRIVATE_API)
+-#  if defined(WIN32) && defined(_MSC_VER) && (defined(XXH_IMPORT) || defined(XXH_EXPORT))
+-#    ifdef XXH_EXPORT
+ #      define XXH_PUBLIC_API __declspec(dllexport)
+-#    elif XXH_IMPORT
+-#      define XXH_PUBLIC_API __declspec(dllimport)
+-#    endif
+-#  else
+-#    define XXH_PUBLIC_API   /* do nothing */
+-#  endif
+-#endif
+
+ #ifdef XXH_DOXYGEN
+ /*!
+ 
