@@ -15,7 +15,7 @@ push!(sources,
     "c4dd741a08918861796cf62a8d3209a56d41d807344a7db481b73a4d17f726bc"),)
 script = glibc_script()
 platforms =  filter(p -> libc(p) == "glibc" && arch(p) == "aarch64",
-    supported_platforms(;experimental=true))
+    supported_platforms())
 products = Product[] # glibc_products()
 dependencies = glibc_dependencies()
 
