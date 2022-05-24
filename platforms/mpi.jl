@@ -14,7 +14,13 @@ const augment = raw"""
         binary = get(preferences, "binary", Sys.iswindows() ? "MicrosoftMPI_jll" : "MPICH_jll")
 
         abi = if binary == "system"
-            get(preferences, "abi")
+            let abi = get(preferences, "abi", nothing)
+                if abi === nothing
+                    error("MPIPreferences: Inconsistent state detected, binary set to system, but no ABI set.")
+                else
+                    abi
+                end
+            end
         elseif binary == "MicrosoftMPI_jll"
             "MicrosoftMPI"
         elseif binary == "MPICH_jll"
