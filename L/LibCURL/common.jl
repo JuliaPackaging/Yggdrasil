@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 function build_libcurl(ARGS, name::String)
-    version = v"7.81.0"
-    hash = "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98"
+    version = v"7.83.1"
+    hash = "93fb2cd4b880656b4e8589c912a9fd092750166d555166370247f09d18f5d0c0"
 
     if name == "CURL"
         this_is_curl_jll = true
@@ -28,9 +28,9 @@ function build_libcurl(ARGS, name::String)
     FLAGS=(
         # Disable....almost everything
         --without-ssl --without-gnutls
-        --without-libidn --without-libidn2 --without-librtmp
-        --without-nss --without-polarssl
-        --without-spnego --without-libpsl --disable-ares --disable-manual
+        --without-libidn2 --without-librtmp
+        --without-nss --without-libpsl
+	--disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
 
@@ -38,7 +38,6 @@ function build_libcurl(ARGS, name::String)
         --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
         --enable-versioned-symbols
     )
-
 
     if [[ ${target} == *mingw* ]]; then
         # We need to tell it where to find libssh2 on windows
