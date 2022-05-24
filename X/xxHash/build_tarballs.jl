@@ -18,7 +18,7 @@ atomic_patch -p1 ../patches/0001-fix-cmake-install.patch
 atomic_patch -p1 ../patches/0001-Fix-compilation-on-RHEL-7-ppc64le-gcc-4.8.patch
 mkdir build && cd build
 cmake ../cmake_unofficial -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-CPPFLAGS=-DXXH_EXPORT make -j${nproc}
+CPPFLAGS=-DXXH_IMPORT make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw* ]]; then
