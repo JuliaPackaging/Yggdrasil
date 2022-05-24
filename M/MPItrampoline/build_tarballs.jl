@@ -6,7 +6,7 @@ name = "MPItrampoline"
 version = v"4.0.2"
 
 mpich_version_str = "4.0.2"
-mpiconstants_version = v"1.4.1"
+mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
@@ -14,7 +14,7 @@ sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
                   "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
-                  "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
+                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
