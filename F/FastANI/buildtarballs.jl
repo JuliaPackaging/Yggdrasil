@@ -23,9 +23,9 @@ autoupdate
     --libdir=${libdir}
     
 if [[ $target == *-apple-* ]]; then
-    MACFLAGS="-mmacosx-version-min=10.7 -stdlib=libc++ -Xpreprocessor -lomp"
+    MACFLAGS="-stdlib=libc++"
 fi
-CXXFLAGS="-O3 -DNDEBUG -std=c++11 -Isrc -I /usr/local/include -fopenmp ${MACFLAGS}" 
+CXXFLAGS="-O3 -DNDEBUG -std=c++11 -Isrc -fopenmp ${MACFLAGS}" 
 make CXXFLAGS="${CXXFLAGS}"
 make install
 """
