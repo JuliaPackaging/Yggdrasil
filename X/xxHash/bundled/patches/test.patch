@@ -20,3 +20,25 @@ diff -u a/xxhash.h b/xxhash.h
  #ifdef XXH_DOXYGEN
  /*!
  
+@@ -325,6 +315,21 @@
+ #define XXH_VERSION_RELEASE  1
+ #define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR *100*100 + XXH_VERSION_MINOR *100 + XXH_VERSION_RELEASE)
+
++#ifdef XXH_INLINE_ALL
++#error "XXH_INLINE_ALL is not compatible with dynamic linking"
++#endif
++
++#ifdef XXH_PRIVATE_API
++#error "XXH_PRIVATE_API is not compatible with dynamic linking"
++#endif
++
++#ifdef XXH_IMPORT
++#error "XXH_IMPORT is not compatible with dynamic linking"
++#endif
++
++#ifdef XXH_EXPORT
++#error "XXH_EXPORT is good"
++#endif
+ /*!
+  * @brief Obtains the xxHash version.
+  *
