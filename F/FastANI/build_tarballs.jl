@@ -9,21 +9,8 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/FastANI
-
-update_configure_scripts --reconf
-autoupdate
-
-./bootstrap.sh
-./configure \
-    --prefix=$prefix \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --with-gsl=${destdir} \
-    --includedir=${includedir} \
-    --libdir=${libdir}
-CXXFLAGS="-O3 -DNDEBUG -std=c++11 -Isrc -fopenmp" 
-make CXXFLAGS="${CXXFLAGS}"
-make install
+mkdir -p "${bindir}"
+c++ -O3 -DNDEBUG -std=c++11 -Isrc -fopenmp   src/cgi/core_genome_identity.cpp -o "${bindir}/fastANI${exeext}" -lgsl -lgslcblas -lz -lm  
 """
 
 
