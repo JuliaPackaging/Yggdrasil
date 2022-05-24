@@ -21,11 +21,7 @@ autoupdate
     --with-gsl=${destdir} \
     --includedir=${includedir} \
     --libdir=${libdir}
-    
-if [[ $target == *-apple-* ]]; then
-    MACFLAGS="-stdlib=libc++"
-fi
-CXXFLAGS="-O3 -DNDEBUG -std=c++11 -Isrc -fopenmp ${MACFLAGS}" 
+CXXFLAGS="-O3 -DNDEBUG -std=c++11 -Isrc -fopenmp" 
 make CXXFLAGS="${CXXFLAGS}"
 make install
 """
