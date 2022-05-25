@@ -56,16 +56,13 @@ sources = [
 
 # Bash recipe for installing on Windows
 script = raw"""
-ls
 cd ${target}
-ls
 if [[ $target == *"apple-darwin"* ]]; then
     install -Dvm 0755 Electron.app/Contents/MacOS/Electron "${bindir}/electron"
 else
     install -Dvm 0755 "electron${exeext}" "${bindir}/electron${exeext}"
 fi
 install_license LICENSE
-ls ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
