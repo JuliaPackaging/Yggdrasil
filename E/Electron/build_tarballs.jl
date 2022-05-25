@@ -62,7 +62,7 @@ mkdir -p ${bindir}
 if [[ $target == *"apple-darwin"* ]]; then
     mv Electron.app/Contents/MacOS/Electron ${bindir}/electron
 else
-    mv electron${exeext} ${bindir}/electron${exeext}
+    mv electron${exeext} ${bindir}/electron
 fi
 install_license LICENSE
 """
