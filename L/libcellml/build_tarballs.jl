@@ -29,7 +29,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("XML2_jll")
+    Dependency("XML2_jll"),
+    Dependency("Zlib_jll")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
