@@ -22,7 +22,8 @@ diff -u a/xxhash.h b/xxhash.h
 +#    define XXH_PUBLIC_API __declspec(dllexport)
 
     /*
-@@ -228,17 +217,7 @@
+     * This part deals with the special case where a unit wants to inline xxHash,
+@@ -228,17 +216,7 @@
   * @{
   */
  /* specific declaration modes for Windows */
@@ -40,3 +41,4 @@ diff -u a/xxhash.h b/xxhash.h
 
  #ifdef XXH_DOXYGEN
  /*!
+ 
