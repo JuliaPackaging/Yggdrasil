@@ -24,7 +24,6 @@ make install
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${prefix}/lib"
-    ar x libxxhash.dll.a
     cc -shared -o "${libdir}/libxxhash.dll" *.o
     rm *.o
 fi
