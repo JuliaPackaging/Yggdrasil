@@ -59,16 +59,13 @@ script = raw"""
 ls
 cd ${target}
 ls
-mkdir -p ${bindir}
 if [[ $target == *"apple-darwin"* ]]; then
-    mv Electron.app/Contents/MacOS/Electron ${bindir}/electron
+    install -Dvm 0755 Electron.app/Contents/MacOS/Electron "${bindir}/electron"
 else
-    mv electron${exeext} ${bindir}
+    install -Dvm 0755 "electron${exeext}" "${bindir}/electron${exeext}"
 fi
-cd ${bindir}
-ls
-cd ${target}
 install_license LICENSE
+ls ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -91,7 +88,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
