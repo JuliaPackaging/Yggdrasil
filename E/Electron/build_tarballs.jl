@@ -58,6 +58,7 @@ sources = [
 script = raw"""
 ls
 cd ${target}
+ls
 mkdir -p ${bindir}
 if [[ $target == *"apple-darwin"* ]]; then
     mv Electron.app/Contents/MacOS/Electron ${bindir}/electron
