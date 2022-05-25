@@ -1,3 +1,5 @@
+--- a/xxhash.h	2022-05-24 14:43:40.632328800 -0400
++++ b/xxhash.h	2022-05-24 20:08:50.241236300 -0400
 @@ -104,20 +104,8 @@
     /* this section should be traversed only once */
  #  define XXH_INLINE_ALL_31684351384
@@ -17,7 +19,7 @@
 -#    define XXH_PUBLIC_API static
 -#  endif
 +#    define XXH_PUBLIC_API __declspec(dllexport)
-
+ 
     /*
      * This part deals with the special case where a unit wants to inline xxHash,
 @@ -228,17 +216,7 @@
@@ -35,6 +37,6 @@
 -#    define XXH_PUBLIC_API   /* do nothing */
 -#  endif
 -#endif
-
+ 
  #ifdef XXH_DOXYGEN
  /*!
