@@ -1,7 +1,28 @@
 diff -u a/xxhash.h b/xxhash.h
 --- a/xxhash.h     2022-05-24 14:43:40.632328800 -0400
 +++ b/xxhash.h     2022-05-24 14:44:30.468301000 -0400
-@@ -228,17 +228,7 @@
+@@ -104,19 +104,8 @@
+    /* this section should be traversed only once */
+ #  define XXH_INLINE_ALL_31684351384
+    /* give access to the advanced API, required to compile implementations */
+-#  undef XXH_STATIC_LINKING_ONLY   /* avoid macro redef */
+-#  define XXH_STATIC_LINKING_ONLY
+    /* make all functions private */
+-#  undef XXH_PUBLIC_API
+-#  if defined(__GNUC__)
+-#    define XXH_PUBLIC_API static __inline __attribute__((unused))
+-#  elif defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
+-#    define XXH_PUBLIC_API static inline
+-#  elif defined(_MSC_VER)
+-#    define XXH_PUBLIC_API static __inline
+-#  else
+-     /* note: this version may generate warnings for unused static functions */
+-#    define XXH_PUBLIC_API static
++#    define XXH_PUBLIC_API __declspec(dllexport)
+ #  endif
+
+    /*
+@@ -228,17 +217,7 @@
   * @{
   */
  /* specific declaration modes for Windows */
@@ -19,35 +40,3 @@ diff -u a/xxhash.h b/xxhash.h
 
  #ifdef XXH_DOXYGEN
  /*!
- 
-@@ -325,6 +315,30 @@
- #define XXH_VERSION_RELEASE  1
- #define XXH_VERSION_NUMBER  (XXH_VERSION_MAJOR *100*100 + XXH_VERSION_MINOR *100 + XXH_VERSION_RELEASE)
-
-+#pragma message("XXH_PUBLIC_API = " XXH_PUBLIC_API)
-+
-+#if defined(XXH_INLINE_ALL)
-+#error "XXH_INLINE_ALL is not compatible with dynamic linking"
-+#endif
-+
-+#if defined(XXH_PRIVATE_API)
-+#error "XXH_PRIVATE_API is not compatible with dynamic linking"
-+#endif
-+
-+#if defined(XXH_IMPORT)
-+#error "XXH_IMPORT is not compatible with dynamic linking"
-+#endif
-+
-+#if defined(XXH_STATIC_LINKING_ONLY)
-+#error "XXH_STATIC_LINKING_ONLY is not compatible with dynamic linking"
-+#endif
-+
-+#if defined(XXH_EXPORT)
-+#error "XXH_EXPORT is good"
-+#endif
-+
-+#error "does this even work?"
-+
- /*!
-  * @brief Obtains the xxHash version.
-  *
