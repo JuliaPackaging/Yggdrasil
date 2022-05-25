@@ -9,9 +9,8 @@ sources = [
         "9948e5fb6159bbe50bbe0f4bec883ed7190a51f7"),
 ]
 
+# https://libcellml.org/documentation/guides/latest/installation/build_from_source
 script = raw"""
-cd ${WORKSPACE}/srcdir/libcellml
-
 mv libcellml source
 mkdir build
 mkdir install
