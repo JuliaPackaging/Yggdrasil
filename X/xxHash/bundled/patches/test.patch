@@ -1,7 +1,7 @@
 diff -u a/xxhash.h b/xxhash.h
 --- a/xxhash.h     2022-05-24 14:43:40.632328800 -0400
 +++ b/xxhash.h     2022-05-24 14:44:30.468301000 -0400
-@@ -104,19 +104,8 @@
+@@ -104,20 +104,8 @@
     /* this section should be traversed only once */
  #  define XXH_INLINE_ALL_31684351384
     /* give access to the advanced API, required to compile implementations */
@@ -18,8 +18,8 @@ diff -u a/xxhash.h b/xxhash.h
 -#  else
 -     /* note: this version may generate warnings for unused static functions */
 -#    define XXH_PUBLIC_API static
+-#  endif
 +#    define XXH_PUBLIC_API __declspec(dllexport)
- #  endif
 
     /*
 @@ -228,17 +217,7 @@
