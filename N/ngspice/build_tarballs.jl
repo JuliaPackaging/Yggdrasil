@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ngspice"
-version = v"36"
+version = v"37"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/imr/ngspice.git", "1a6a9e6bb60ad8d07ecbfb3f35dea22379fb73e9"), #ngspice git mirror
+    GitSource("https://github.com/imr/ngspice.git", "c4efe2e3ac264b6889e844f935410f9a795f1a68"), #ngspice git mirror
     DirectorySource("./bundled")
 ]
 
