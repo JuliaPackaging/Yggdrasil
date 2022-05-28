@@ -1,0 +1,13 @@
+diff --git a/cmake/environmentchecks.cmake b/cmake/environmentchecks.cmake
+index cd859e14..a76df9fd 100644
+--- a/cmake/environmentchecks.cmake
++++ b/cmake/environmentchecks.cmake
+@@ -128,6 +128,8 @@ if(LibXml2_FOUND)
+     set(LIBXML2_TARGET_NAME xml2)
+   elseif(TARGET LibXml2)
+     set(LIBXML2_TARGET_NAME LibXml2)
++  elseif(TARGET LibXml2::LibXml2)
++    set(LIBXML2_TARGET_NAME LibXml2::LibXml2)
+   else()
+     message(FATAL_ERROR "FindLibXml2: Found configuration file for LibXml2 but could not determine a target name from it.")
+   endif()

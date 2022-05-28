@@ -7,11 +7,13 @@ sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
         "9948e5fb6159bbe50bbe0f4bec883ed7190a51f7"),
+    DirectorySource("./bundled"),
 ]
 
 # https://libcellml.org/documentation/guides/latest/installation/build_from_source
 script = raw"""
 cd libcellml
+atomic_patch -p1 ../patches/libxml2_target_cmake.diff
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
