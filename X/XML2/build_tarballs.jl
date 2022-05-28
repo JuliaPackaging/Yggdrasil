@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.9.12"
+version = v"2.9.14"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "8a4ddd706419c210b30b8978a51388937fd9362c34fc9a3d69e4fcc6f8055ee0"),
+                  "77e7c7240ce447582d2c3471f050423c01ec0e201c3bf2fd6731064d1891f362"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,7 @@ rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
