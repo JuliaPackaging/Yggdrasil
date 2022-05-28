@@ -76,7 +76,7 @@ cd ../build/
 # Above on the fly added CMake code builds shared library with specified LAPACK/BLAS
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DLAPACK_blas_LIBRARIES="-L/workspace/destdir/lib -lblastrampoline" \
+    -DLAPACK_blas_LIBRARIES="-L${libdir} -lblastrampoline" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}" \
     ..
