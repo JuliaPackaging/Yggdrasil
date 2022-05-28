@@ -27,7 +27,7 @@ mv project_acpc_server-0.1.0 open_spiel/open_spiel/games/universal_poker/acpc
 
 mkdir open_spiel/build
 cd open_spiel/build
-export BUILD_WITH_PYTHON=OFF BUILD_WITH_JULIA=ON BUILD_WITH_HANABI=ON BUILD_WITH_ACPC=OFF
+export OPEN_SPIEL_BUILD_WITH_JULIA=ON OPEN_SPIEL_BUILD_WITH_PYTHON=OFF OPEN_SPIEL_BUILD_WITH_HANABI=ON OPEN_SPIEL_BUILD_WITH_ACPC=OFF
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=$prefix \
