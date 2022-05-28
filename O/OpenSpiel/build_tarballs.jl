@@ -55,7 +55,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+    BuildDependency(get_addable_spec("libjulia_jll", julia_version)),
     Dependency("libcxxwrap_julia_jll")
 ]
 
