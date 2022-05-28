@@ -8,7 +8,7 @@ sources = [
     ArchiveSource("$(url_prefix)_linux_x64.zip", "3eaa3efd41a00db05dd71add7f54ad4e9d4259552e3f7470ac4c1a8594cea214"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)_linux_arm64.zip", "a6040fa4d95692b7047d3880391f539ea7af9353b0c7b0558ea7b8e280013703"; unpack_target = "aarch64-linux-gnu"),
     ArchiveSource("$(url_prefix)_mac_x64.zip", "57e3e1a1d98f1c25f565a1d37cbc2baf0509c13e37e6b92f7d3cb89c53b28f27"; unpack_target = "x86_64-apple-darwin14"),
-	ArchiveSource("$(url_prefix)_mac_arm64.zip", "e5cc7bceb096db135384928d1f11b115c5697dcd1f66e7064ddb91562a61d55f"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)_mac_arm64.zip", "e5cc7bceb096db135384928d1f11b115c5697dcd1f66e7064ddb91562a61d55f"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)_win_x64.zip", "22857d6696fe348fea166b2950263e8c2fa41e465a1a354f2e09a6f90dfe6df3"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)_win_x86.zip", "771d0372e003393a313adb38a6a3fed3eaf9a9ad46b1453f92cb5489efcee376"; unpack_target = "i686-w64-mingw32"),
 ]
