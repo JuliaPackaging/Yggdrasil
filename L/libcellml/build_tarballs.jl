@@ -23,7 +23,8 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+# It doesn't look like this works with 32-bit systems
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->nbits(p)==32))
 
 products = [
     LibraryProduct("libcellml", :libcellml)
