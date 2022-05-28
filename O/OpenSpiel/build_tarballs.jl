@@ -44,6 +44,7 @@ install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 include("../../L/libjulia/common.jl")
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"; libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
