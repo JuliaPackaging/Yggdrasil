@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_version = v"1.6.3"
 
 name = "OpenSpiel"
 version = v"1.1.0"
@@ -42,7 +42,9 @@ install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+]
 platforms = expand_cxxstring_abis(platforms)
 
 
