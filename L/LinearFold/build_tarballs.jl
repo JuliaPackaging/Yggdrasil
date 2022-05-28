@@ -16,9 +16,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/LinearFold-*/
 
 make -j${nproc}
-mkdir -p ${bindir}
 for prg in linearfold_c linearfold_v; do
-    cp bin/$prg ${bindir}/${prg}${exeext}
+    install -Dvm 755 "bin/${prg}" "${bindir}/${prg}${exeext}"
 done
 
 install_license LICENSE
