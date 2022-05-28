@@ -3,12 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SLICOT"
-version = v"5.7.0"
+version = v"5.8.0"
 
 # Collection of sources required to complete build
+# Note to maintainers: extracts from LAPACK are deprecated routines, so probably don't want
+# to update the LAPACK version used here.
 sources = [
     GitSource("https://github.com//SLICOT/SLICOT-Reference.git",
-              "7b96b6470ee0eaf75519a612d15d5e3e2857407d"),
+              "d8e12fe9787f9e7d32df992cc32840e01944abd6"),
     ArchiveSource("https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.8.0.tar.gz",
               "deb22cc4a6120bff72621155a9917f485f96ef8319ac074a7afbc68aab88bcf6"),
 ]
@@ -74,7 +76,7 @@ cd ../build/
 # Above on the fly added CMake code builds shared library with specified LAPACK/BLAS
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DLAPACK_blas_LIBRARIES="-L/workspace/destdir/lib -lblastrampoline" \
+    -DLAPACK_blas_LIBRARIES="-L${libdir} -lblastrampoline" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}" \
     ..
