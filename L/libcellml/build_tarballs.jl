@@ -1,8 +1,8 @@
-#!/usr/bin/env julia
 using BinaryBuilder, Pkg
 
 name = "libcellml"
 version = v"0.2.0"
+
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
@@ -11,15 +11,14 @@ sources = [
 
 # https://libcellml.org/documentation/guides/latest/installation/build_from_source
 script = raw"""
-mv libcellml source
-mkdir build
-mkdir install
-cd build
-cmake -DINSTALL_PREFIX=../install -S "../source" -B=.
-
+cd libcellml
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
 make -j${nproc}
 make install
-
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
