@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Graphviz"
-version = v"2.49.3"
+version = v"2.50.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$(version)/graphviz-$(version).tar.gz",
-                  "f79b203ddc98e0f994d218acd6cb490b962003be7145f7e31de05b6ab0e2ccbf"),
+                  "e17021a510bbd2770d4ca4b4eb841138122aaa5948f9e617e6bc12b4bac62e8d"),
 
     DirectorySource("./bundled"),
 ]
@@ -32,13 +32,9 @@ fi
 # Do not build with -ffast-math
 atomic_patch -p1 ../patches/1001-no-ffast-math.patch
 atomic_patch -p1 ../patches/0001-windows-exports.patch
-atomic_patch -p1 ../patches/0003-gvc-def.patch
 
 # Rebuild the configure script
 autoreconf -fiv
-
-# This patch disable generation of dot's configuration
-atomic_patch -p1 ../patches/0002-do-not-build-dot-config.patch
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared
 
@@ -51,11 +47,11 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
-    cp ../config6-linux ${prefix}/lib/graphviz/config6
+    install -Dvm 755 ../config6-linux ${prefix}/lib/graphviz/config6
 elif [[ "${target}" == *-mingw* ]]; then
-    cp ../config6-mingw ${prefix}/bin/config6
+    install -Dvm 755 ../config6-mingw ${prefix}/bin/config6
 elif [[ "${target}" == *-darwin* ]]; then
-    cp ../config6-darwin ${prefix}/lib/graphviz/config6
+    install -Dvm 755 ../config6-darwin ${prefix}/lib/graphviz/config6
 fi
 
 install_license COPYING
@@ -64,8 +60,7 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-# TODO: remove this restriction in the next build
-filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -125,4 +120,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
