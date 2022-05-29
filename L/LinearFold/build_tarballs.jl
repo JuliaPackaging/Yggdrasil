@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/LinearFold-*/
 
-make -j${nproc}
+make -j${nproc} CC=${CXX}
 for prg in linearfold_c linearfold_v; do
     install -Dvm 755 "bin/${prg}" "${bindir}/${prg}${exeext}"
 done
