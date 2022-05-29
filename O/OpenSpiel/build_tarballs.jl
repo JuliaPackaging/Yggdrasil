@@ -19,11 +19,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-mv open_spiel-1.1.0 open_spiel
-mv abseil-cpp-20211102.0 open_spiel/open_spiel/abseil-cpp
-mv dds-0.1.1 open_spiel/open_spiel/games/bridge/double_dummy_solver
-mv hanabi-learning-environment-0.1.0 open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
-mv project_acpc_server-0.1.0 open_spiel/open_spiel/games/universal_poker/acpc
+mv open_spiel-* open_spiel
+mv abseil-cpp-* open_spiel/open_spiel/abseil-cpp
+mv dds-* open_spiel/open_spiel/games/bridge/double_dummy_solver
+mv hanabi-learning-environment-* open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
+mv project_acpc_server-* open_spiel/open_spiel/games/universal_poker/acpc
 
 mkdir open_spiel/build
 cd open_spiel/build
