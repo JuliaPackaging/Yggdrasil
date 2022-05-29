@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 julia_version = v"1.6.3"
 
 name = "OpenSpiel"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/deepmind/open_spiel/archive/v1.1.0.tar.gz", "6aecf251d13b03355f5dac8fe8bf95da16b71b5c961b366affd456dcd691a2eb"),
+    ArchiveSource("https://github.com/deepmind/open_spiel/archive/v1.1.1.tar.gz", "73d46e2d9ce7a86a420aad141b789e98237463b5c98608401faf86b15ec5eaf9"),
     ArchiveSource("https://github.com/findmyway/dds/archive/v0.1.1.tar.gz", "fd13ee77feb5b5c3dfcc3333a0523266beb2a3d27715703cf508313af25306e5"),
     ArchiveSource("https://github.com/abseil/abseil-cpp/archive/20211102.0.tar.gz", "dcf71b9cba8dc0ca9940c4b316a0c796be8fab42b070bb6b7cab62b48f0e66c4"),
     ArchiveSource("https://github.com/findmyway/hanabi-learning-environment/archive/v0.1.0.tar.gz", "6126936fd13a95f8cadeacaa69dfb38a960eaf3bd588aacc8893a6e07e4791a3"),
