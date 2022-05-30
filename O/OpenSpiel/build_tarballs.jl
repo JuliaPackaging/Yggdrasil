@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.6.3"
+julia_version = v"1.7.3"
 
 name = "OpenSpiel"
 version = v"1.1.1"
@@ -55,8 +55,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll")
+    Dependency("libcxxwrap_julia_jll"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version=julia_version))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
