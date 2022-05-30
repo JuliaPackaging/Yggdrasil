@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.7.3"
+julia_version = v"1.7.0"
 
 name = "OpenSpiel"
 version = v"1.1.1"
