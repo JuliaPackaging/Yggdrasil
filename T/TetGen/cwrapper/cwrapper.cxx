@@ -182,8 +182,8 @@ extern "C"
     return jl_out;
   }
   
-
-
+  
+  
   // Unsuitable function type for cwrapper
   typedef int (*unsuitable_func)(double*pa, double*pb, double*pc, double*pd);
   
@@ -263,6 +263,54 @@ extern "C"
     
     return jl_out;
   }
+
+  // Tetrahedralize from stl file
+  TetGenIOf64 tetrahedralize2_stl_f64(char *stlbasename, char* command, int *rc)
+  {
+    tetgenio in, out, addin, bgmin;
+    tetgenbehavior b;
+    TetGenIOf64 jl_out;
+    
+    if (!b.parse_commandline(command))
+    {
+      *rc=10;
+      return jl_out;
+    }
+    
+    if (in.load_stl(stlbasename))
+    {
+      try
+      {
+        if (jl_tetunsuitable!=trivial_jl_tetunsuitable)
+        {
+          in.tetunsuitable=[](double*pa, double*pb, double*pc, double*pd, double*elen,double vol)
+                           { return (bool)jl_tetunsuitable(pa,pb,pc,pd);};
+        }
+        tetrahedralize(&b, &in,&out, &addin, &bgmin);
+      }
+      catch(int errorcode)
+      {
+        *rc=errorcode;
+      }
+    }
+    else
+    {
+      *rc=101; //unable to load stl file
+    }
+    
+    jl_tetunsuitable=trivial_jl_tetunsuitable;
+    
+    in.initialize();
+    
+    
+    // Copy to output only on TetGen success
+    if ((*rc)==0)
+    {
+      copy_tetio(&out, &jl_out);
+      out.initialize();
+    }
+    
+    return jl_out;
+  }
   
 }
-

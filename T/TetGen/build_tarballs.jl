@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "TetGen"
-version = v"1.5.2"
+version = v"1.5.3"
 
 #
 # Artifact builder for TetGen (c) Hang Si, see project home page https://tetgen.org
@@ -9,6 +9,9 @@ version = v"1.5.2"
 #
 # TetGen source is C++ code, interfacing to Julia works via C wrapper by Simon Danisch
 # in the cwrapper subdirectory.
+#
+# For the 1.5.x series, the patch version of the build script is increased along with the
+# improvements in the wrapper API.
 #
 
 #
@@ -41,7 +44,7 @@ sed -e "s/class tetgenio {/class tetgenio { void * operator new(size_t n) {  ret
 
 #
 # Fix crash of README example (see TetGen.jl#26)
-# There seems to be a on-off error or something like this in the routine writing the result. In 1.6.0 and also in
+# There seems to be a one-off error or something like this in the routine writing the result. In 1.6.0 and also in
 # the previous 1.5 version this does not happen.
 # 
 mv tetgen.cxx tmp.cxx
@@ -57,7 +60,7 @@ install_license LICENSE
 """
 
 platforms = supported_platforms(; experimental=true)
-# platforms=[Platform("x86_64", "linux"; libc="glibc")]
+#platforms=[Platform("x86_64", "linux"; libc="glibc")]
 
 products = [
     LibraryProduct("libtet", :libtet)
