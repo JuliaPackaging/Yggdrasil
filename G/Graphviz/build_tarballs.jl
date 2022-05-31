@@ -111,8 +111,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
-    Dependency("Expat_jll"; compat="2.2.7"),
-    Dependency("Pango_jll"; compat="1.42.4"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Pango_jll"; compat="1.47.0"),
     # PCRE is needed only for Windows.  Maybe it's only a build dependency?
     # Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")),
     # Indirect dependency from pango, but without this, pkg-config doesn't pick up pango
