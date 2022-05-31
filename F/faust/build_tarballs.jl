@@ -22,7 +22,6 @@ CMAKE_FLAGS=()
 CMAKE_TARGET=${target}
 
 if [[ "${target}" == *musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/execinfo.patch
     export CXXFLAGS="-DALPINE"
 fi
 
@@ -30,7 +29,7 @@ if [[ "${target}" == *apple* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.9
     export LDFLAGS="${LDFLAGS} -mmacosx-version-min=10.9"
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
-    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
+    # `omf64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
     fi
