@@ -37,7 +37,6 @@ fi
 
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-microhttpd.patch
     export LDFLAGS="${LDFLAGS} -lws2_32 -lmicrohttpd"
 fi
 
@@ -55,14 +54,10 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 
-if [[ "${bb_full_target}" == x86_64-linux-musl-*-cxx11 ]]; then
-    CMAKE_FLAGS+=(-D_GLIBCXX_USE_CXX11_ABI=0)
-fi
-
-if [[ "${bb_full_target}" == x86_64-linux-musl-*-cxx03 ]]; then
-    # For some reason this target requires "-lLLVM-11jl"
-    # while others require "-lLLVM" to build.
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl_cxx03.patch
+if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
+    # These targets require "-lLLVM-11jl" to avoid clashing
+    # with system LLVM, while others require "-lLLVM" to build.
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl.patch
 else
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs.patch
 fi
