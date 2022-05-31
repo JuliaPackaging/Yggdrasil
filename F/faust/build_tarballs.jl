@@ -29,7 +29,7 @@ if [[ "${target}" == *apple* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.9
     export LDFLAGS="${LDFLAGS} -mmacosx-version-min=10.9"
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
-    # `omf64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
+    # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
     fi
@@ -54,6 +54,10 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
+
+if [[ "${bb_full_target}" == x86_64-linux-musl-*-cxx11 ]]; then
+    CMAKE_FLAGS+=(-D_GLIBCXX_USE_CXX11_ABI=0)
+fi
 
 if [[ "${bb_full_target}" == x86_64-linux-musl-*-cxx03 ]]; then
     # For some reason this target requires "-lLLVM-11jl"
