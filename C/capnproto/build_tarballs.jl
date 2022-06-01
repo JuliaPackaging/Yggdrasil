@@ -26,6 +26,9 @@ cd $WORKSPACE/srcdir/capnproto-*/
     make -j${nproc}
 )
 export CAPNP=build_native/capnp
+if [[ ${target} == *linux* ]]; then
+    export LDFLAGS="-lrt"
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-external-capnp
 make -j${nproc}
 make install
