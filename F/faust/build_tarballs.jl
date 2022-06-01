@@ -38,6 +38,9 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
     export LDFLAGS="${LDFLAGS} -lws2_32 -lmicrohttpd"
+    # Remove check for LLVMIntelJIT as it is not available.
+    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/missing_intel_jit.patch)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
