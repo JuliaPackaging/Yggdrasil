@@ -1,0 +1,13 @@
+diff --git a/architecture/httpdlib/src/Makefile b/architecture/httpdlib/src/Makefile
+index 08ce10f1a..9ba57916f 100644
+--- a/architecture/httpdlib/src/Makefile
++++ b/architecture/httpdlib/src/Makefile
+@@ -71,7 +71,7 @@ sourcefetcher.o: $(http_fetcher)
+ 	$(CXX) -shared -fPIC $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd`
+ 
+ ../libHTTPDFaust.dll  :  $(objects)
+-	$(CXX) -shared $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd` -lwsock32
++	$(CXX) -shared $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd` -lws2_32
+ 	
+ depend :
+ 	makedepend -fMakefile -w120 -Y -- $(CXXFLAGS) -- $(sources)
