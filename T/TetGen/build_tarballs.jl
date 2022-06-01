@@ -59,7 +59,7 @@ ${CXX} $LDFLAGS -shared -fPIC tetgen.o predicates.o  cwrapper.o -o ${libdir}/lib
 install_license LICENSE
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 #platforms=[Platform("x86_64", "linux"; libc="glibc")]
 
 products = [
