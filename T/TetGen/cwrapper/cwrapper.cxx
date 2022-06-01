@@ -182,8 +182,8 @@ extern "C"
     return jl_out;
   }
   
-  
-  
+
+
   // Unsuitable function type for cwrapper
   typedef int (*unsuitable_func)(double*pa, double*pb, double*pc, double*pd);
   
