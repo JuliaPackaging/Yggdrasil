@@ -17,7 +17,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/faust
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_interp.patch
+if [[ "${target}" == *mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_http_and_interp.patch
+else
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_interp.patch
+fi
+
 CMAKE_FLAGS=()
 CMAKE_TARGET=${target}
 
@@ -37,7 +42,6 @@ fi
 
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/httpd_ws2.patch
     export LDFLAGS="${LDFLAGS} -lws2_32 -lmicrohttpd"
     # Remove check for LLVMIntelJIT as it is not available.
     (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
