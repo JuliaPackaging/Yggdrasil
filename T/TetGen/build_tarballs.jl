@@ -60,7 +60,6 @@ install_license LICENSE
 """
 
 platforms = supported_platforms()
-#platforms=[Platform("x86_64", "linux"; libc="glibc")]
 
 products = [
     LibraryProduct("libtet", :libtet)
