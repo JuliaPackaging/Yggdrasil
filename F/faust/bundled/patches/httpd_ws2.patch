@@ -7,7 +7,7 @@ index 08ce10f1a..9ba57916f 100644
  
  ../libHTTPDFaust.dll  :  $(objects)
 -	$(CXX) -shared $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd` -lwsock32
-+	$(CXX) -shared $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd` -lws2_32
++	$(CXX) -shared $(LDFLAGS) -o $@ $(objects) `pkg-config --libs libmicrohttpd` -lwsock32 -lws2_32
  	
  depend :
  	makedepend -fMakefile -w120 -Y -- $(CXXFLAGS) -- $(sources)
