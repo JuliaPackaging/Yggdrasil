@@ -14,6 +14,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/inetutils-*
+# Remove OpenSSL from the sysroot to avoid confusion
+rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
+rm -f /opt/${target}/${target}/sys-root/usr/lib/libssl.*
+rm -f /lib/libcrypto.so*
+rm -f /usr/lib/libcrypto.so*
 
 conf_args=()
 if [[ "${target}" == *-linux-gnu* ]]; then
