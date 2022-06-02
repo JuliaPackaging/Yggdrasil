@@ -14,6 +14,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/inetutils-*
+
+conf_args=()
+if [[ "${target}" == *-linux-gnu* ]]; then
+    # We use very old versions of glibc which used to have `libcrypt.so.1`, but modern
+    # glibcs have `libcrypt.so.2`, so if we link to `libcrypt.so.1` most users would
+    # have troubles running the programs at runtime.
+    conf_args+=(ac_cv_lib_crypt_crypt=no)
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -29,7 +38,8 @@ cd $WORKSPACE/srcdir/inetutils-*
     --disable-inetd \
     --disable-rexecd \
     --disable-syslogd \
-    --disable-tftpd
+    --disable-tftpd \
+    "${conf_args[@]}"
 make -j${nproc}
 make install
 """
