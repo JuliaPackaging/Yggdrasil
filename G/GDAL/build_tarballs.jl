@@ -121,7 +121,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
     Dependency("Libtiff_jll"; compat="4.3"),
-    Dependency("libgeotiff_jll"; compat="1.7"),
+    Dependency("libgeotiff_jll"; compat="1.7.1"),
     Dependency("LibCURL_jll"),
 ]
 
