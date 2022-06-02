@@ -308,6 +308,8 @@ function gcc_script(compiler_target::Platform)
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
 
+    # Update list of packages before installing new packages
+    apk update
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
     apk add build-base gettext-dev gcc-objc clang texinfo
 
