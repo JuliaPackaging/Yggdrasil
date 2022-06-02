@@ -7,34 +7,36 @@ version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/inetutils/inetutils-2.2.tar.xz", "d547f69172df73afef691a0f7886280fd781acea28def4ff4b4b212086a89d80")
+    ArchiveSource("https://ftp.gnu.org/gnu/inetutils/inetutils-$(version.major).$(version.minor).tar.xz",
+                  "d547f69172df73afef691a0f7886280fd781acea28def4ff4b4b212086a89d80")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd inetutils-2.2/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} -disable-ifconfig     --disable-hostname --disable-logger --disable-rcp     --disable-rexec --disable-rlogin --disable-rsh     --disable-tftp --disable-traceroute --disable-inetd     --disable-rexecd --disable-syslogd --disable-tftpd
-make -j
+cd $WORKSPACE/srcdir/inetutils-*
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-ifconfig \
+    --disable-hostname \
+    --disable-logger \
+    --disable-rcp \
+    --disable-rexec \
+    --disable-rlogin \
+    --disable-rsh \
+    --disable-tftp \
+    --disable-traceroute \
+    --disable-inetd \
+    --disable-rexecd \
+    --disable-syslogd \
+    --disable-tftpd
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-]
-
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
