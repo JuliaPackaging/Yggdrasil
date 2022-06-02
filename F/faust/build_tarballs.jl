@@ -16,10 +16,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/faust
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_interp.patch
 
 CMAKE_FLAGS=()
 CMAKE_TARGET=${target}
+
+CMAKE_FLAGS+=(-DITPDYNAMIC=OFF)
+CMAKE_FLAGS+=(-DINCLUDE_ITP=OFF)
 
 if [[ "${target}" == *musl* ]]; then
     export CXXFLAGS="-DALPINE"
