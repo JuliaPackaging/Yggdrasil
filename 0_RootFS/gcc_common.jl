@@ -244,17 +244,25 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
 
     if Sys.islinux(compiler_target) && libc(compiler_target) == "glibc"
         # Depending on our architecture, we choose different versions of glibc
-        if arch(compiler_target) in ["x86_64", "i686"]
+        if arch(compiler_target) in ("x86_64", "i686") && gcc_version < v"12"
+            # We can't bootstrap GCC 12 with Glibc 2.12.2.
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
                               "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
             ]
-        elseif arch(compiler_target) in ["armv7l", "aarch64"]
+        elseif arch(compiler_target) in ("x86_64", "i686") && gcc_version >= v"12"
+            # For bootstrapping GCC 12 on Intel platforms we use a newer Glibc,
+            # but at the end we'll replace it with a pre-built Glibc 2.12.2.
+            libc_sources = [
+                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.22.tar.xz",
+                              "eb731406903befef1d8f878a46be75ef862b9056ab0cde1626d08a7a05328948"),
+            ]
+        elseif arch(compiler_target) in ("armv7l", "aarch64")
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
                               "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
             ]
-        elseif arch(compiler_target) in ["powerpc64le"]
+        elseif arch(compiler_target) in ("powerpc64le",)
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
                               "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
@@ -294,16 +302,34 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     end
 
     # We bundle together GCC, Binutils and libc.
-    return [
+    sources = [
         gcc_version_sources[gcc_version]...,
         binutils_sources...,
         libc_sources...,
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
+
+    # Use pre-built binaries of Glibc 2.12.2 for Intel architectures when
+    # building recent GCC.
+    if gcc_version >= v"12"
+        if arch(compiler_target) == "x86_64"
+            push!(sources,
+                  ArchiveSource("https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases/download/Glibc-v2.12.2%2B6/Glibc.v2.12.2.x86_64-linux-gnu.tar.gz",
+                                "d0ff71f1aece594453a7cfd0c582e09ab350da7650bfc96faae07ec263b5aca1"; unpack_target="built_glibc_x86_64-linux-gnu"))
+        else
+            push!(sources,
+                  ArchiveSource("https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases/download/Glibc-v2.12.2%2B6/Glibc.v2.12.2.i686-linux-gnu.tar.gz",
+                                "27fab89da38a9b90ecd2ebee073c0577c18e81eebeb41d65a77e7e64e5524e43"; unpack_target="built_glibc_i686-linux-gnu"))
+        end
+    end
+
+    return sources
 end
 
-function gcc_script(compiler_target::Platform)
-    script = raw"""
+function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
+    script = """
+    GCC_MAJOR_VERSION=$(gcc_version.major)
+    """ * raw"""
     cd ${WORKSPACE}/srcdir
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
@@ -820,6 +846,16 @@ function gcc_script(compiler_target::Platform)
 
     # Remove heavy doc directories
     rm -rf ${sysroot}/usr/share/man
+
+    # When building a recent GCC for Intel Linux with Glibc we're actually
+    # bootstrapping with a more recent Glibc, but in the final tarball we want
+    # to provide Glibc 2.12.2: let's remove the Glibc we built above and replace
+    # it with one provided by JLL packages.
+    if [[ "${GCC_MAJOR_VERSION}" -ge 12 ]] && [[ "${COMPILER_TARGET}" == *86*-linux-gnu ]]; then
+        rm -rf ${sysroot}/*
+        cp -rv ../built_glibc_${target}/* ${sysroot}/.
+        rm -rf ${sysroot}/logs
+    fi
     """
 
     return script
@@ -847,7 +883,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     deleteat!(ARGS, length(ARGS))
 
     sources = gcc_sources(version, compiler_target)
-    script = gcc_script(compiler_target)
+    script = gcc_script(version, compiler_target)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.
