@@ -58,6 +58,7 @@ dependencies = [
     Dependency(PackageSpec(name="Ncurses_jll", uuid="68e3532b-a499-55ff-9963-d1c0c0748b3a"))
     Dependency(PackageSpec(name="Libgcrypt_jll", uuid="d4300ac3-e22c-5743-9152-c294e39db1e4"))
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95")) 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
