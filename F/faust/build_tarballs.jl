@@ -16,12 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/faust
-
-if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_http_and_interp.patch
-else
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_interp.patch
-fi
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable_interp.patch
 
 CMAKE_FLAGS=()
 CMAKE_TARGET=${target}
@@ -42,7 +37,7 @@ fi
 
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
-    export LDFLAGS="${LDFLAGS} -lws2_32 -lmicrohttpd"
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2_libraries.patch
     # Remove check for LLVMIntelJIT as it is not available.
     (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
         atomic_patch -p1 ${WORKSPACE}/srcdir/patches/missing_intel_jit.patch)
