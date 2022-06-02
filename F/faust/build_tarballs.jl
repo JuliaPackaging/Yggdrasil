@@ -58,7 +58,7 @@ CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 
 if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
-    # These targets require "-lLLVM-11jl" to avoid clashing
+    # These targets require "-lLLVM-12jl" to avoid clashing
     # with system LLVM, while others require "-lLLVM" to build.
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl.patch
 else
@@ -177,7 +177,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LLVM_jll", v"11.0.1"),
+    Dependency("LLVM_jll", v"12.0.1"),
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
     BuildDependency("Ncurses_jll"),
