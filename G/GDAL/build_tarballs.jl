@@ -122,7 +122,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("Libtiff_jll"; compat="4.3"),
     Dependency("libgeotiff_jll"; compat="1.7.1"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
