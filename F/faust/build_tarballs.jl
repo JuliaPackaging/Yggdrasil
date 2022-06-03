@@ -1,7 +1,7 @@
 
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "faust"
 version = v"2.40.10"
@@ -186,7 +186,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVM_jll", v"12.0.1"),
+    BuildDependency(PackageSpec(name = "LLVM_jll", version = "12.0.1")),
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
     BuildDependency("Ncurses_jll"),
