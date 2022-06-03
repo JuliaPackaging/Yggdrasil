@@ -2,14 +2,6 @@ diff --git a/LLVMExports-release.cmake b/LLVMExports-release.cmake
 index cbcda57a..9e7ec7f0 100644
 --- a/LLVMExports-release.cmake
 +++ b/LLVMExports-release.cmake
-@@ -592,7 +592,6 @@ set_target_properties(LLVMIntelJITEvents PROPERTIES
-   )
- 
- list(APPEND _IMPORT_CHECK_TARGETS LLVMIntelJITEvents )
--list(APPEND _IMPORT_CHECK_FILES_FOR_LLVMIntelJITEvents "${_IMPORT_PREFIX}/lib/libLLVMIntelJITEvents.a" )
- 
- # Import target "LLVMPerfJITEvents" for configuration "Release"
- set_property(TARGET LLVMPerfJITEvents APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 @@ -1053,7 +1052,6 @@ set_target_properties(mlir-tblgen PROPERTIES
    )
  

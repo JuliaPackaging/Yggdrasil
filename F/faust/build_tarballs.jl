@@ -26,8 +26,7 @@ CMAKE_FLAGS+=(-DITPDYNAMIC=OFF)
 
 CMAKE_TARGET=${target}
 
-
-# Remove checks for LLVMIntelJIT and missing tools.
+# Remove checks for missing tools.
 (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks.patch)
 
