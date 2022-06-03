@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/LinearTurboFold-*/
 
 make -j${nproc} CC=${CXX}
-mkdir -p ${bindir}
 for b in bin/*; do
     install -Dvm 755 "${b}" "${bindir}/$(basename "${b}")${exeext}"
 done
