@@ -186,7 +186,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name = "LLVM_jll", version = "12.0.1")),
+    BuildDependency(PackageSpec(name = "LLVM_jll", version = v"12.0.1")),
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
     BuildDependency("Ncurses_jll"),
