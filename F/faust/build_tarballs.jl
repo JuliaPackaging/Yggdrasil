@@ -26,6 +26,11 @@ CMAKE_FLAGS+=(-DITPDYNAMIC=OFF)
 
 CMAKE_TARGET=${target}
 
+
+# Remove checks for LLVMIntelJIT and missing tools.
+(cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks.patch)
+
 if [[ "${target}" == *musl* ]]; then
     export CXXFLAGS="-DALPINE"
 fi
@@ -43,9 +48,6 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2_libraries.patch
-    # Remove check for LLVMIntelJIT as it is not available.
-    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/missing_intel_jit.patch)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
@@ -63,8 +65,8 @@ CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 
 if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
-    # These targets require "-lLLVM-11jl" to avoid clashing
-    # with system LLVM, while others require "-lLLVM" to build.
+    # These targets require "-lLLVM-12jl" while others
+    # require "-lLLVM" to build.
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl.patch
 else
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs.patch
@@ -182,7 +184,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LLVM_jll", v"11.0.1"),
+    Dependency("LLVM_jll", v"12.0.1"),
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
     BuildDependency("Ncurses_jll"),
