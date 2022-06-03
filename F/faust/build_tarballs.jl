@@ -26,10 +26,6 @@ CMAKE_FLAGS+=(-DITPDYNAMIC=OFF)
 
 CMAKE_TARGET=${target}
 
-# Remove checks for missing tools.
-(cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks.patch)
-
 if [[ "${target}" == *musl* ]]; then
     export CXXFLAGS="-DALPINE"
 fi
@@ -47,6 +43,13 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2_libraries.patch
+
+    # Remove checks for missing tools.
+    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks_mingw32.patch)
+else
+    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks.patch)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then

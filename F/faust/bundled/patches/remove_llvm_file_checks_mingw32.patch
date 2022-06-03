@@ -1,0 +1,52 @@
+diff --git a/LLVMExports-release.cmake b/LLVMExports-release.cmake
+index 79ad198a..440ead0e 100644
+--- a/LLVMExports-release.cmake
++++ b/LLVMExports-release.cmake
+@@ -1033,7 +1033,6 @@ set_target_properties(mlir-tblgen PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-tblgen )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-tblgen "${_IMPORT_PREFIX}/tools/mlir-tblgen.exe" )
+ 
+ # Import target "mlir-linalg-ods-gen" for configuration "Release"
+ set_property(TARGET mlir-linalg-ods-gen APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+@@ -1042,7 +1041,6 @@ set_target_properties(mlir-linalg-ods-gen PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-linalg-ods-gen )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-linalg-ods-gen "${_IMPORT_PREFIX}/tools/mlir-linalg-ods-gen.exe" )
+ 
+ # Import target "MLIRSupportIndentedOstream" for configuration "Release"
+ set_property(TARGET MLIRSupportIndentedOstream APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+@@ -1083,7 +1081,6 @@ set_target_properties(mlir-cpu-runner PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-cpu-runner )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-cpu-runner "${_IMPORT_PREFIX}/tools/mlir-cpu-runner.exe" )
+ 
+ # Import target "mlir-opt" for configuration "Release"
+ set_property(TARGET mlir-opt APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+@@ -1092,7 +1089,6 @@ set_target_properties(mlir-opt PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-opt )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-opt "${_IMPORT_PREFIX}/tools/mlir-opt.exe" )
+ 
+ # Import target "mlir-reduce" for configuration "Release"
+ set_property(TARGET mlir-reduce APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+@@ -1101,7 +1097,6 @@ set_target_properties(mlir-reduce PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-reduce )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-reduce "${_IMPORT_PREFIX}/tools/mlir-reduce.exe" )
+ 
+ # Import target "mlir-translate" for configuration "Release"
+ set_property(TARGET mlir-translate APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+@@ -1110,7 +1105,6 @@ set_target_properties(mlir-translate PROPERTIES
+   )
+ 
+ list(APPEND _IMPORT_CHECK_TARGETS mlir-translate )
+-list(APPEND _IMPORT_CHECK_FILES_FOR_mlir-translate "${_IMPORT_PREFIX}/tools/mlir-translate.exe" )
+ 
+ # Import target "bugpoint" for configuration "Release"
+ set_property(TARGET bugpoint APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
