@@ -57,12 +57,16 @@ fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unset_llvm_libs.patch
 
 
-if [[ "${bb_full_target}" == x86_64-linux-musl-* ]] || [[ "${target}" == *mingw* ]]; then
+if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
     llvm_lib=$(basename /workspace/destdir/lib/libLLVM-??jl.so)
-    LLVM_LIBS="-l${llvm_lib:3:9} -lstdc++"
+    LLVM_LIB="-l${llvm_lib:3:9}"
+elif [[ "${target}" == *mingw* ]]; then
+    LLVM_LIB="-lLLVM.dll"
 else
-    LLVM_LIBS="-lLLVM -lstdc++"
+    LLVM_LIB="-lLLVM"
 fi
+
+LLVM_LIBS="${LLVM_LIB} -lstdc++"
 
 CMAKE_FLAGS+=(-DLLVM_LIBS=\'${LLVM_LIBS}\')
 
