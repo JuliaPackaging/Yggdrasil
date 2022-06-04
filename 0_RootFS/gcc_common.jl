@@ -289,7 +289,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         end
     elseif Sys.isfreebsd(compiler_target)
         libc_sources = [
-            ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/12.2-RELEASE/base.txz",
+            ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/12.2-RELEASE/base.txz",
                           "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
         ]
     elseif Sys.iswindows(compiler_target)
