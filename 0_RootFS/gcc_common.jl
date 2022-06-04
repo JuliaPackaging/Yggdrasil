@@ -704,7 +704,8 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
             --host=${COMPILER_TARGET} \
             --with-sysroot=${sysroot} \
             ${MINGW_CONF_ARGS}
-        make -j${nproc}
+        # Build serially, it sounds like there are some race conditions in the makefile
+        make
         make install DESTDIR=${sysroot}
 
     elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then
