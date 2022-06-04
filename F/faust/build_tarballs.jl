@@ -54,6 +54,10 @@ if [[ "${target}" == *freebsd* ]]; then
     export LDFLAGS="${LDFLAGS} -lexecinfo"
 fi
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unset_llvm_libs.patch
+
+CMAKE_FLAGS+=("-DLLVM_LIBS='-lLLVM -lstdc++'")
+
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 

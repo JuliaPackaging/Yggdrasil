@@ -1,14 +1,12 @@
 diff --git a/build/misc/llvm.cmake b/build/misc/llvm.cmake
-index a285f6249..a9e97c31e 100644
+index 97b409d46..88bd7630f 100644
 --- a/build/misc/llvm.cmake
 +++ b/build/misc/llvm.cmake
-@@ -101,6 +101,9 @@ macro (llvm_cmake)
+@@ -104,7 +104,6 @@ macro (llvm_cmake)
+ 		message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
  		message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
  		# Find the libraries that correspond to the LLVM components that we wish to use
- 		llvm_map_components_to_libnames(LLVM_LIBS all)
-+		set_target_properties(LLVMSupport PROPERTIES
-+			INTERFACE_LINK_LIBRARIES "dl;m;LLVMDemangle"
-+		)
+-		llvm_map_components_to_libnames(LLVM_LIBS all)
  #		list(REMOVE_ITEM LLVM_LIBS LTO)
  	else()
  		llvm_config()
