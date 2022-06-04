@@ -2,6 +2,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "faust"
 version = v"2.40.10"
@@ -43,13 +48,6 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ws2_libraries.patch
-
-    # Remove checks for missing tools.
-    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks_mingw32.patch)
-else
-    (cd $(dirname $(readlink -f /workspace/destdir/lib/cmake/llvm/LLVMExports-release.cmake)) && \
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_llvm_file_checks.patch)
 fi
 
 if [[ "${target}" == *freebsd* ]]; then
@@ -65,14 +63,6 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 CMAKE_FLAGS+=(-DUSE_LLVM_CONFIG=OFF)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
-
-if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
-    # These targets require "-lLLVM-12jl" while others
-    # require "-lLLVM" to build.
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs_musl.patch
-else
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set_llvm_libs.patch
-fi
 
 export CMAKEOPT="${CMAKE_FLAGS[@]}"
 export PREFIX=$prefix
@@ -184,9 +174,15 @@ products = [
     FileProduct(joinpath("share", "faust", "stdfaust.lib"), :stdfaust_lib),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency(PackageSpec(name = "LLVM_jll", version = v"12.0.1")),
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
+
+sources = Dict(
+    v"11.0.1" => [sources; ],
+    v"12.0.1" => [sources; ],
+    v"13.0.1" => [sources; ],
+)
+
+base_dependencies = [
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
     BuildDependency("Ncurses_jll"),
@@ -194,5 +190,48 @@ dependencies = [
     BuildDependency("Zlib_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"8", julia_compat="1.6")
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(LLVM.augment)
+    function augment_platform!(platform::Platform)
+        augment_llvm!(platform)
+    end
+"""
+
+# determine exactly which tarballs we should build
+builds = []
+for llvm_version in llvm_versions
+    # Dependencies that must be installed before this package can be built
+    llvm_name = "LLVM_full_jll"
+    dependencies = [
+	base_dependencies;
+        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+    ]
+
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, false)
+
+        should_build_platform(triplet(augmented_platform)) || continue
+        push!(builds, (;
+            dependencies,
+            sources=sources[llvm_version],
+            platforms=[augmented_platform],
+        ))
+    end
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script,
+                   build.platforms, products, build.dependencies;
+                   preferred_gcc_version=v"8", julia_compat="1.6",
+                   augment_platform_block, lazy_artifacts=true)
+end
