@@ -458,6 +458,12 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
     for p in ${WORKSPACE}/srcdir/patches/gcc*.patch; do
         atomic_patch -p1 "${p}" || true
     done
+    # Apply other gcc patches WITHOUT IGNORING FAILURES!!
+    if [[ -d "${WORKSPACE}/srcdir/patches/gcc" ]]; then
+        for p in ${WORKSPACE}/srcdir/patches/gcc/*.patch; do
+            atomic_patch -p1 "${p}"
+        done
+    fi
 
     # Disable any non-POSIX usage of TLS for musl
     if [[ "${COMPILER_TARGET}" == *musl* ]] && [[ -f "${WORKSPACE}/srcdir/patches/musl_disable_tls.patch" ]]; then
