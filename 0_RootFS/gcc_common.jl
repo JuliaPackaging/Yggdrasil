@@ -590,6 +590,11 @@ function gcc_script(compiler_target::Platform)
         # Patch for building glibc 2.25-2.30 on aarch64
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
 
+        # Patch for building glibc 2.12.2 on x86_64-linux-gnu with GCC 12+.
+        # Adapted from new definition of `_dl_setup_stack_chk_guard` from
+        # https://github.com/bminor/glibc/commit/4a103975c4c4929455d60224101013888640cd2f.
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc-remove-__ASSUME_AT_RANDOM-in-_dl_setup_stack_chk_guard.patch || true
+
         # Patches for building glibc 2.17 on ppc64le
         for p in ${WORKSPACE}/srcdir/patches/glibc-ppc64le-*.patch; do
             atomic_patch -p1 ${p} || true;
