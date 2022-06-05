@@ -60,6 +60,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/unset_llvm_libs.patch
 if [[ "${bb_full_target}" == x86_64-linux-musl-* ]]; then
     llvm_lib=$(basename /workspace/destdir/lib/libLLVM-??jl.so)
     LLVM_LIB="-l${llvm_lib:3:9}"
+elif [[ "${bb_full_target}" == *mingw*+13 ]]; then
+    LLVM_LIB="-lLLVM-13jl.dll"
 elif [[ "${target}" == *mingw* ]]; then
     LLVM_LIB="-lLLVM.dll"
 else
