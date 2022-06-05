@@ -28,6 +28,7 @@ fi
 cd $WORKSPACE/srcdir/git-*/
 
 # We need a native "tclsh" to cross-compile
+apk update
 apk add tcl
 
 CACHE_VALUES=()
@@ -83,11 +84,11 @@ products = [
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll", v"10.35.0"),
+    Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("Zlib_jll"),
 ]
 
