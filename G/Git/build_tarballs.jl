@@ -43,10 +43,6 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
-if [[ ${target} == *-freebsd* ]]; then
-    LDFLAGS="-L${prefix}/lib -lcharset"
-fi
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -54,8 +50,7 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
-    "${CACHE_VALUES[@]}" \
-    LDFLAGS="${LDFLAGS}"
+    "${CACHE_VALUES[@]}"
 make -j${nproc}
 make install INSTALL_SYMLINKS="yes, please"
 
