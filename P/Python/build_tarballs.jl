@@ -62,6 +62,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# TODO: remove this restriction in the next build
+filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
@@ -76,7 +78,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll", v"2.2.7"; compat="~2.2.7"),
+    Dependency("Expat_jll", v"2.2.7"; compat="2.2.7"),
     # Future versions of bzip2 should allow a more relaxed compat because the
     # soname of the macOS library shouldn't change at every patch release.
     Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),

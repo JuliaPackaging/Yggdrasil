@@ -2,7 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_version = v"1.5.3"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+# reminder: change the above version if restricting the supported julia versions
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
@@ -18,8 +25,11 @@ julia_version = v"1.5.3"
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-version = v"700.300.800"
 upstream_version = v"7.3.8"
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build SDPABuilder
 sources = [
@@ -28,14 +38,14 @@ sources = [
     DirectorySource("./bundled")
 ]
 
-MUMPS_seq_version = v"4.10.0"
+MUMPS_seq_version = v"400.1000.0"
 MUMPS_seq_packagespec = PackageSpec(; name = "MUMPS_seq_jll",
                                     uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
                                     version = MUMPS_seq_version)
 
-METIS_version = v"4.0.3"
-METIS_packagespec = PackageSpec(; name = "METIS_jll",
-                                uuid = "d00139f3-1899-568f-a2f0-47f597d42d70",
+METIS_version = v"400.000.300"
+METIS_packagespec = PackageSpec(; name = "METIS4_jll",
+                                uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
                                 version = METIS_version)
 
 # Bash recipe for building across all platforms
@@ -115,7 +125,7 @@ products = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"4", platforms)
@@ -125,12 +135,12 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+    BuildDependency("libjulia_jll"),
     BuildDependency(MUMPS_seq_packagespec),
     BuildDependency(METIS_packagespec),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version = v"8",
+    julia_compat)

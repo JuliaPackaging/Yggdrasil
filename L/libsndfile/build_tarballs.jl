@@ -3,26 +3,31 @@
 using BinaryBuilder
 
 name = "libsndfile"
-version = v"1.0.31"
+version = v"1.1.0"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.bz2",
-                  "a8cfb1c09ea6e90eff4ca87322d4168cdbe5035cb48717b40bf77e751cc02163")
+    ArchiveSource("https://github.com/libsndfile/libsndfile/releases/download/$(version)/libsndfile-$(version).tar.xz",
+                  "0f98e101c0f7c850a71225fb5feaf33b106227b3d331333ddc9bacee190bcf41")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsndfile-*/
-export CFLAGS="-I${includedir}" 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+export CFLAGS="-I${includedir}"
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -41,7 +46,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("alsa_jll"),
+    Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("FLAC_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),

@@ -13,9 +13,9 @@ platform_spec = [a for a in ARGS if !startswith(a, "-")]
 is_meta = any(a->startswith(a, "--meta-json"), ARGS)
 requested_platforms = map(p->parse(Platform, p; validate_strict=true), platform_spec)
 
-version = v"7.0-rc1"
+version = v"7.0-rc3"
 sources = Any[
-    GitSource("https://github.com/wine-mirror/wine.git", "533616d23f9832596e41f839356830c7679df930"),
+    GitSource("https://github.com/JuliaComputing/wine-staging.git", "10ff6d27133070cff6369c48d7ee4c56ee8da7aa"),
     DirectorySource("./bundled")
 ]
 
@@ -71,7 +71,7 @@ if !is_meta
         platform32 = platform_map[platform64]
 
         wine64_build_script = raw"""
-        cd $WORKSPACE/srcdir/wine
+        cd $WORKSPACE/srcdir/wine-staging
         atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
         # First, build wine64, making the actual build directory itself the thing we will install.
@@ -82,7 +82,7 @@ if !is_meta
         # build environment, everything goes through ok and doesn't
         # trigger wine's cross compile detection (which would require
         # a more complicated bootstrap process).
-        $WORKSPACE/srcdir/wine/configure --prefix=${prefix} --build=${target} --host=${target} --without-x --without-freetype --enable-win64
+        $WORKSPACE/srcdir/wine-staging/configure --prefix=${prefix} --build=${target} --host=${target} --without-x --without-freetype --enable-win64
         make -j${nproc}
         """
 
@@ -95,18 +95,18 @@ if !is_meta
 
         # Next, build wine32, without wine64, then use those tools to build wine32 WITH wine64
         wine32_script = raw"""
-        cd $WORKSPACE/srcdir/wine
+        cd $WORKSPACE/srcdir/wine-staging
         atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
         # Next, build wine32, linking against the previously included wine64 stuff:
         mkdir $WORKSPACE/srcdir/wine32_only
         cd $WORKSPACE/srcdir/wine32_only
-        $WORKSPACE/srcdir/wine/configure --host=${target} --without-x --without-freetype
+        $WORKSPACE/srcdir/wine-staging/configure --host=${target} --without-x --without-freetype
         make -j${nproc}
 
         mkdir $prefix/wine32
         cd $prefix/wine32
-        $WORKSPACE/srcdir/wine/configure --prefix=${prefix}/wine32 --host=${target} --without-x --without-freetype --with-wine64=$WORKSPACE/srcdir/wine64 --with-wine-tools=$WORKSPACE/srcdir/wine32_only
+        $WORKSPACE/srcdir/wine-staging/configure --prefix=${prefix}/wine32 --host=${target} --without-x --without-freetype --with-wine64=$WORKSPACE/srcdir/wine64 --with-wine-tools=$WORKSPACE/srcdir/wine32_only
         make -j${nproc}
         make -j${nproc} install
         """
@@ -125,7 +125,7 @@ end
 
 # Finally, install both:
 script = raw"""
-cd $WORKSPACE/srcdir/wine
+cd $WORKSPACE/srcdir/wine-staging
 atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/darwin.patch
 
@@ -149,12 +149,12 @@ if [[ "${target}" == *darwin* ]]; then
 	ln -s $(which x86_64-linux-musl-as) aliases/as
     export OLD_PATH=$PATH
     export PATH=$PWD/aliases:$PATH
-    ${WORKSPACE}/srcdir/wine/configure --build=x86_64-linux-musl --host=x86_64-linux-musl CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as --enable-win64 --without-x --without-freetype
+    ${WORKSPACE}/srcdir/wine-staging/configure --build=x86_64-linux-musl --host=x86_64-linux-musl CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as --enable-win64 --without-x --without-freetype
     make -j${nproc} CC=x86_64-linux-musl-gcc LD=x86_64-linux-musl-ld AS=x86_64-linux-musl-as
     export PATH=$OLD_PATH
 
     # Ok, now we can actually do the proper build of wine.
-    cd $WORKSPACE/srcdir/wine
+    cd $WORKSPACE/srcdir/wine-staging
     ./configure --build=${MACHTYPE} --prefix=${prefix} --host=${target} --without-x --without-freetype --with-wine-tools=$WORKSPACE/wine_tools --enable-win64
     make -j${nproc}
 else
@@ -163,8 +163,8 @@ else
 fi
 
 make -j${nproc} install
-install_license $WORKSPACE/srcdir/wine/LICENSE
-install_license $WORKSPACE/srcdir/wine/COPYING.LIB
+install_license $WORKSPACE/srcdir/wine-staging/LICENSE
+install_license $WORKSPACE/srcdir/wine-staging/COPYING.LIB
 """
 
 final_products = Product[

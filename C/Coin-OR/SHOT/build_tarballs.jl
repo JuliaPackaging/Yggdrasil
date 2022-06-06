@@ -23,16 +23,13 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
     #         constexpr value_type& value() &
     #                               ^
-    export CXXFLAGS="-mmacosx-version-min=10.15"
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # TODO: we need to fix this in the compiler wrappers
-    export CXXFLAGS="-mmacosx-version-min=11.0"
 elif [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi

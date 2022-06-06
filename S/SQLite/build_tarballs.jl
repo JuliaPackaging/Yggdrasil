@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.37.0"
+version = v"3.38.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.sqlite.org/2021/sqlite-autoconf-3370000.tar.gz", "731a4651d4d4b36fc7d21db586b2de4dd00af31fd54fb5a9a4b7f492057479f7"),
+    ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3380400.tar.gz", "1935751066c2fd447404caa78cfb8b2b701fad3f6b1cf40b3d658440f6cc7563"),
     FileSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"; filename="LICENSE"),
 ]
@@ -31,12 +31,10 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --build=${MACHTYPE} \
     --host=$target \
     --disable-static \
-    --disable-amalgamation \
     --enable-fts3 \
     --enable-fts4 \
     --enable-fts5 \
-    --enable-rtree \
-    --enable-json1
+    --enable-rtree
 make -j${nproc}
 make install
 install_license "${WORKSPACE}/srcdir/LICENSE"

@@ -1,0 +1,28 @@
+--- a/libmariadb/secure/schannel_certs.c
++++ b/libmariadb/secure/schannel_certs.c
+@@ -33,6 +33,25 @@
+ #define _WIN32_WINNT 0x0601
+ #endif
+ 
++#ifndef SEC_E_INVALID_PARAMETER
++#define SEC_E_INVALID_PARAMETER _HRESULT_TYPEDEF_(0x8009035D)
++#endif
++#ifndef SEC_E_DELEGATION_POLICY
++#define SEC_E_DELEGATION_POLICY _HRESULT_TYPEDEF_(0x8009035E)
++#endif
++#ifndef SEC_E_POLICY_NLTM_ONLY
++#define SEC_E_POLICY_NLTM_ONLY _HRESULT_TYPEDEF_(0x8009035F)
++#endif
++#ifndef SEC_E_NO_CONTEXT
++#define SEC_E_NO_CONTEXT _HRESULT_TYPEDEF_(0x80090361)
++#endif
++#ifndef SEC_E_PKU2U_CERT_FAILURE
++#define SEC_E_PKU2U_CERT_FAILURE _HRESULT_TYPEDEF_(0x80090362)
++#endif
++#ifndef SEC_E_MUTUAL_AUTH_FAILED
++#define SEC_E_MUTUAL_AUTH_FAILED _HRESULT_TYPEDEF_(0x80090363)
++#endif
++
+ #include "schannel_certs.h"
+ #include <malloc.h>
+ #include <stdio.h>

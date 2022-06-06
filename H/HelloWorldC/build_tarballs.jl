@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.1.2"
+version = v"1.1.3"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -23,7 +23,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

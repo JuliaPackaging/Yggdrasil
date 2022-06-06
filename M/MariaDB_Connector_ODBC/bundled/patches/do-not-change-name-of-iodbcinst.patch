@@ -1,0 +1,13 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -348,10 +348,6 @@
+ 
+   ADD_EXECUTABLE(dsn_test  dsn_test.c)
+   TARGET_LINK_LIBRARIES(dsn_test ${MARIADB_LIB})
+-ELSEIF(APPLE)
+-  ADD_CUSTOM_COMMAND(TARGET maodbc POST_BUILD
+-    COMMAND ${CMAKE_SOURCE_DIR}/osxpostbuild.sh ARGS $<TARGET_FILE:${LIBRARY_NAME}>
+-  )
+ ENDIF()
+ 
+ INCLUDE("${CMAKE_SOURCE_DIR}/cmake/install.cmake")

@@ -3,17 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.7"
+version = v"2.3.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.unixodbc.org/unixODBC-2.3.7.tar.gz", "45f169ba1f454a72b8fcbb82abd832630a3bf93baa84731cf2949f449e1e3e77")
+    ArchiveSource("http://www.unixodbc.org/unixODBC-$(version).tar.gz",
+                  "52833eac3d681c8b0c9a5a65f2ebd745b3a964f208fc748f977e44015a31b207"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unixODBC-2.3.7/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd $WORKSPACE/srcdir/unixODBC-*/
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-libiconv-prefix=${prefix}
 make -j${nproc}
 make install
 """
@@ -41,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

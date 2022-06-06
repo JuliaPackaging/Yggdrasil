@@ -27,7 +27,6 @@ make install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libLerc", :libLerc)

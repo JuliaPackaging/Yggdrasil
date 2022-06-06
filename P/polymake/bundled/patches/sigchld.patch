@@ -7,7 +7,7 @@ index 607d9fa57f..523bd679b3 100644
  
     # these redefinitions must happen before the whole slew of polymake perl code is loaded!
 -   if ($must_reset_SIGCHLD) {
--      *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe(@_) };
+-      *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe($_[0]) };
 -   }
 +   *CORE::GLOBAL::readpipe=sub { local $SIG{CHLD}='DEFAULT'; CORE::readpipe($_[0]) };
 +   *CORE::GLOBAL::system=sub { local $SIG{CHLD}='DEFAULT'; CORE::system(@_) };
