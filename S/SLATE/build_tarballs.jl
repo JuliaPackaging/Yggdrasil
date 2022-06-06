@@ -33,7 +33,7 @@ make install
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true, exclude=Sys.iswindows))
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
 
 products = [
     LibraryProduct("libslate", :libslate),
