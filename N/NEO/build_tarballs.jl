@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"21.44.21506"
+version = v"22.17.23034"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "586eaeaf2ebceeb9c0095ecd2f774a272038afbc"),
+              "e4437fcf54dac9e9c38c7e6ecc4ef4676a634ca2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,8 @@ sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
 ## extend LD_LIBRARY_PATH, don't overwrite it
 find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
     sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
+## NO
+sed -i '/-Werror/d' CMakeLists.txt
 
 CMAKE_FLAGS=()
 
@@ -72,9 +74,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=21.2.1"),
-    Dependency("libigc_jll"; compat="=1.0.8744"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.2.43"; compat="~1.2"),  # XXX: don't specify patch version
+    Dependency("gmmlib_jll"; compat="=22.1.2"),
+    Dependency("libigc_jll"; compat="=1.0.11061"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.3.7"; compat="~1.3"),  # XXX: don't specify patch version
 ]
 
 # GCC 4 has constexpr incompatibilities

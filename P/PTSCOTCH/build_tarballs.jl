@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PTSCOTCH"
-version = v"6.1.0"
+version = v"6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v6.1.0/scotch-v6.1.0.tar.gz","4fe537f608f0fe39ec78807f90203f9cca1181deb16bfa93b7d4cd440e01bbd1"),
+    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz","4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
     DirectorySource("./bundled")
 ]
 
@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/scotch*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/native_build.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Makefile.patch"
-if [[ "${target}" == *apple* || "${target}" == *freebsd* ]]; then
+if [[ "${target}" == *apple* || "${target}" == *freebsd* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSX_FreeBSD.patch"
 fi
 if [[ "${target}" == *mingw* ]]; then
@@ -24,6 +24,7 @@ if [[ "${target}" == *mingw* ]]; then
 fi
 cd src
 make ptscotch
+make ptesmumps
 cp ../lib/libpt* ${libdir}
 cp ../include/p* ${includedir}
 install_license ../LICENSE_en.txt
@@ -31,21 +32,22 @@ install_license ../LICENSE_en.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libptscotcherr", :libptscotcherr),
     LibraryProduct("libptscotcherrexit", :libptscotcherrexit),
     LibraryProduct("libptscotchparmetis", :libptscotchparmetis),
-    LibraryProduct("libptscotch", :libptscotch, dont_dlopen=true)
+    LibraryProduct("libptscotch", :libptscotch, dont_dlopen=true),
+    LibraryProduct("libptesmumps", :libptesmumps)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency("MPICH_jll"),
-    Dependency("SCOTCH_jll")
+    Dependency("SCOTCH_jll", v"6.1.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

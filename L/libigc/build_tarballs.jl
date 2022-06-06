@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.8744"
+version = v"1.0.11061"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -13,15 +13,14 @@ version = v"1.0.8744"
 # Collection of sources required to build IGC
 # NOTE: these hashes are taken from the release notes in GitHub,
 #       https://github.com/intel/intel-graphics-compiler/releases
-# NOTE: the SPIRV-LLVM-Translator doesn't match what's in the release notes,
-#       but gets checked out to $SPIRV_REV_PATCH in IGC/VectorCompiler/cmake/spirv.cmake,
-#       https://github.com/intel/intel-graphics-compiler/blob/master/IGC/VectorCompiler/cmake/spirv.cmake
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3ba8dde8c414a0e47df58b1bba12a64f8ba2089e"),
-    GitSource("https://github.com/intel/opencl-clang.git", "fd68f64b33e67d58f6c36b9e25c31c1178a1962a"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "d8d516efa27a8b3d9c40d8c78390c5c53c6e99d6"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "e5ad7e02aa4aa21a3cd7b3e5d1f3ec9b95f58872"),
-    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "62ab67c46dad5713d50702d3a5893e2398a99343"),
+    GitSource("https://github.com/intel/opencl-clang.git", "bbdd1587f577397a105c900be114b56755d1f7dc"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "99420daab98998a7e36858befac9c5ed109d4920"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "45dd184c790d6bfc78a5a74a10c37e888b1823fa" #= sdk-1.3.204.1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "b42ba6d92faf6b4938e6f22ddd186dbdacc98d78" #= sdk-1.3.204.1 =#),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "c97396d044a8b3eacf0fbad5395a4b7bbce583a8" #= v0.3.0 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312" #= llvmorg-11.1.0 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -40,6 +39,8 @@ mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 # Work around compilation failures
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
 atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+# https://reviews.llvm.org/D64388
+sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
 cd intel-graphics-compiler
 install_license LICENSE.md
@@ -70,7 +71,6 @@ ninja -C build -j ${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux", libc="glibc"),
     Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)

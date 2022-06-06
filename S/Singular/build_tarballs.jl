@@ -27,15 +27,15 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-upstream_version = v"4.2.1-2" # 4.2.1p2 exactly
-version_offset = v"0.1.1"
+upstream_version = v"4.3.0-3" # 4.3.0 plus some changes
+version_offset = v"0.1.0"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "a15b7fe3ec918262cec68ec40637e9f1c2a4b6cf"),
+    GitSource("https://github.com/Singular/Singular.git", "74622283ad46295f0602f84dc752ccf62f699461"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -62,7 +62,15 @@ export CPPFLAGS="-I${prefix}/include"
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
-    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra \
+    --disable-partialgb-module \
+    --disable-polymake-module \
+    --disable-pyobject-module \
+    --disable-singmathic-module \
+    --disable-systhreads-module \
+    --disable-cohomo-module \
+    --disable-machinelearning-module \
+    --disable-sispasm-module
 
 make -j${nproc}
 make install
@@ -70,7 +78,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 

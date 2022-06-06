@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2021.1.1"
+version = v"2022.0.0"
 
 # Bash recipes for building across all platforms
 script = read(joinpath(@__DIR__, "script.sh"), String)
@@ -13,8 +13,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "linux"; libc="glibc"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2021.1.1/download/linux-64/mkl-2021.1.1-intel_52.tar.bz2",
-            "bfb0fd056576cad99ae1d9c69ada2745420da9f9cf052551d5b91f797538bda2";
+            "https://anaconda.org/intel/mkl/2022.0.1/download/linux-64/mkl-2022.0.1-intel_117.tar.bz2",
+            "62a3567efd4fa413181753dfc36c15bdfc8ec500eae4e5dcb104ed0d24136cfa";
             unpack_target = "mkl-x86_64-linux-gnu"
         ),
         # We need to run autofix on Linux, because here libmkl_rt doesn't
@@ -26,8 +26,8 @@ platform_sources = [
     (
         platform = Platform("i686", "linux"; libc="glibc"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2021.1.1/download/linux-32/mkl-2021.1.1-intel_52.tar.bz2",
-            "7b6f55a30886154bd96d4b4c6b7428494a59397b87779b58e5b3de00250343f9";
+            "https://anaconda.org/intel/mkl/2022.0.1/download/linux-32/mkl-2022.0.1-intel_117.tar.bz2",
+            "fd800f09432a214dfffe9b973f24fdfd374aa013d6b92fbd570c744aa7eef5b2";
             unpack_target = "mkl-i686-linux-gnu"
         ),
         autofix = true,
@@ -36,8 +36,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "macos"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2021.1.1/download/osx-64/mkl-2021.1.1-intel_50.tar.bz2",
-            "819fb8875909d4d024e2a936c54b561aebd1e3aebe58fc605c70aa1ad9a66b70";
+            "https://anaconda.org/intel/mkl/2022.0.0/download/osx-64/mkl-2022.0.0-intel_105.tar.bz2",
+            "fc026812458fd2053a6327bb5a42f47f97258147c39111bd6376dfabe51d05f5";
             unpack_target = "mkl-x86_64-apple-darwin14"
         ),
         # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
@@ -49,8 +49,8 @@ platform_sources = [
     (
         platform = Platform("i686", "windows"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2021.1.1/download/win-32/mkl-2021.1.1-intel_52.tar.bz2",
-            "dba6a12a481407ec55fba9895b68afacb15f044905dcb5e185db341b688e6177";
+            "https://anaconda.org/intel/mkl/2022.0.0/download/win-32/mkl-2022.0.0-intel_115.tar.bz2",
+            "045c6f3ca31eca1e07785980152ad6a74513bead1f20beab440eded9596452a9";
             unpack_target = "mkl-i686-w64-mingw32"
         ),
         autofix = false,
@@ -59,8 +59,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "windows"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2021.1.1/download/win-64/mkl-2021.1.1-intel_52.tar.bz2",
-            "4024391b8a45836d5a7ee92405b7767874b3c3bbf2f490349fda042db3b60dfd";
+            "https://anaconda.org/intel/mkl/2022.0.0/download/win-64/mkl-2022.0.0-intel_115.tar.bz2",
+            "ba5a1f936b4e9fec0e3b5ae3ce44b56d06a6645a7c9456aa298c7d7373fd34c2";
             unpack_target = "mkl-x86_64-w64-mingw32"
         ),
         autofix = false,
@@ -70,8 +70,8 @@ platform_sources = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libmkl_core", "mkl_core", "mkl_core.1"], :libmkl_core),
-    LibraryProduct(["libmkl_rt", "mkl_rt", "mkl_rt.1"], :libmkl_rt),
+    LibraryProduct(["libmkl_core", "mkl_core", "mkl_core.2"], :libmkl_core),
+    LibraryProduct(["libmkl_rt", "mkl_rt", "mkl_rt.2"], :libmkl_rt),
 ]
 
 # Dependencies that must be installed before this package can be built

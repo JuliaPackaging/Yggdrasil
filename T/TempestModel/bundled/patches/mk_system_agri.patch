@@ -1,0 +1,33 @@
+diff --git a/mk/system/agri.make b/mk/system/agri.make
+index 0d3cf21..dc810b9 100644
+--- a/mk/system/agri.make
++++ b/mk/system/agri.make
+@@ -8,7 +8,7 @@
+ 
+ CXX=               g++
+ F90=               gfortran
+-MPICXX=            mpiCC
++MPICXX=            mpic++
+ MPIF90=            mpif90
+ 
+ CXXFLAGS+=         -fPIC -Wno-literal-suffix
+@@ -19,7 +19,7 @@ F90_RUNTIME=       -lgfortran
+ # NetCDF
+ NETCDF_ROOT=       /opt/local
+ NETCDF_CXXFLAGS=   -I$(NETCDF_ROOT)/include
+-NETCDF_LIBRARIES=  -lnetcdf -lnetcdf_c++
++NETCDF_LIBRARIES=  -lnetcdf
+ NETCDF_LDFLAGS=    -L$(NETCDF_ROOT)/lib
+ 
+ # PetSc
+@@ -32,7 +32,7 @@ PETSC_LDFLAGS=     -L$(PETSC_ROOT)/lib -L$(X11_ROOT)/lib
+ # LAPACK (Mac OS X Accelerate Framework)
+ LAPACK_INTERFACE=  FORTRAN
+ LAPACK_CXXFLAGS=
+-LAPACK_LIBRARIES=  -llapack -lblas
+-LAPACK_LDFLAGS=    
++LAPACK_LIBRARIES= -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread
++LAPACK_LDFLAGS= -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm -ldl
+ 
+ # DO NOT DELETE
+

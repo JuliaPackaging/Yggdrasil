@@ -1,0 +1,1216 @@
+From 80b1a61f2b2d46d4a9d2d69e7d942b6969caa1cc Mon Sep 17 00:00:00 2001
+From: Ansgar Burchardt <burchardt@igpm.rwth-aachen.de>
+Date: Fri, 17 Jul 2015 15:01:55 +0200
+Subject: [PATCH] Use std::array instead of std::tr1::array.
+
+---
+ AmiraMeshIO.cpp            |  2 +-
+ Box.h                      | 38 ++++++++++++-------------------
+ CircularPatch.h            | 10 ++++-----
+ ContactMapping.cpp         | 22 +++++++++---------
+ ContactMapping.h           | 30 +++++++++----------------
+ DomainPolygon.cpp          |  6 ++---
+ DomainPolygon.h            |  6 ++---
+ Domains.h                  |  2 +-
+ EdgeIntersectionFunctor.h  | 20 ++++-------------
+ GmshIO.cpp                 |  2 +-
+ Hdf5IO.cpp                 |  2 +-
+ HxParamToolBox.cpp         |  8 +++----
+ IntersectionPrimitive.h    | 20 ++++-------------
+ MultiDimOctree.h           | 22 +++++++++---------
+ NormalProjector.cpp        |  6 ++---
+ NormalProjector.h          |  4 ++--
+ PSurface.cpp               | 46 +++++++++++++++-----------------------
+ PSurface.h                 | 14 ++++++------
+ PSurfaceFactory.cpp        |  4 ++--
+ PSurfaceFactory.h          | 18 +++------------
+ PSurfaceSmoother.cpp       |  2 +-
+ PlaneParam.cpp             |  2 +-
+ PlaneParam.h               |  6 ++---
+ PointIntersectionFunctor.h |  4 ++--
+ StaticMatrix.h             |  2 +-
+ StaticVector.h             | 21 ++++-------------
+ SurfaceBase.cpp            | 16 +++----------
+ SurfaceBase.h              | 12 +---------
+ SurfaceParts.h             |  4 ++--
+ TargetSurface.h            |  2 +-
+ 30 files changed, 127 insertions(+), 226 deletions(-)
+
+diff --git a/AmiraMeshIO.cpp b/AmiraMeshIO.cpp
+index 85d6121..8815b71 100644
+--- a/AmiraMeshIO.cpp
++++ b/AmiraMeshIO.cpp
+@@ -412,7 +412,7 @@ bool psurface::AmiraMeshIO<ctype>::initFromAmiraMesh(psurface::PSurface<2,ctype>
+     for (int i=0; i<numTriangles; i++){
+ 
+         //int newTriIdx = psurface->createSpaceForTriangle(triIdx[i][0], triIdx[i][1], triIdx[i][2]);
+-        std::tr1::array<unsigned int, 3> triangleVertices = {((unsigned int*)AMtriangles->dataPtr())[3*i+0],
++        std::array<unsigned int, 3> triangleVertices = {((unsigned int*)AMtriangles->dataPtr())[3*i+0],
+                                                              ((unsigned int*)AMtriangles->dataPtr())[3*i+1],
+                                                              ((unsigned int*)AMtriangles->dataPtr())[3*i+2]};
+         int newTriIdx = factory.insertSimplex(triangleVertices);
+diff --git a/Box.h b/Box.h
+index e743517..a3ba05c 100644
+--- a/Box.h
++++ b/Box.h
+@@ -7,17 +7,7 @@
+ #define BOX_H
+ 
+ #include <algorithm>
+-
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
++#include <array>
+ 
+ #ifndef PSURFACE_STANDALONE
+ #include <mclib/McVec3f.h>
+@@ -39,7 +29,7 @@ class Box
+     {}
+ 
+     /** \brief Set box from two points */
+-    Box(const std::tr1::array<C,dim>& lower, const std::tr1::array<C,dim>& upper) 
++    Box(const std::array<C,dim>& lower, const std::array<C,dim>& upper) 
+         : _lower(lower), _upper(upper)
+     {
+         for (int i=0; i<dim; i++) {
+@@ -64,7 +54,7 @@ class Box
+     {}
+ 
+     /** \brief Set up box from to diagonal corners */
+-    void set(const std::tr1::array<C,dim>& lower, const std::tr1::array<C,dim>& upper)
++    void set(const std::array<C,dim>& lower, const std::array<C,dim>& upper)
+     {
+         for (int i=0; i<dim; i++) {
+             _lower[i] = std::min(lower[i],upper[i]);
+@@ -73,7 +63,7 @@ class Box
+     }
+ 
+     /** \brief Test whether box contains a given point */
+-    bool contains(const std::tr1::array<C,dim>& c) const
++    bool contains(const std::array<C,dim>& c) const
+     {
+         for (int i = 0; i < dim; ++i)
+             if (c[i] < this->_lower[i] || c[i] >= this->_upper[i])
+@@ -103,7 +93,7 @@ class Box
+     /// Returns intersection of two boxes.
+     Box<C,dim> intersectWith(const Box<C,dim> &other) const {
+ 
+-        std::tr1::array<C,dim> zero;
++        std::array<C,dim> zero;
+         zero.assign(0);
+ 
+         Box<C,dim> innerBox(zero,zero);
+@@ -120,9 +110,9 @@ class Box
+         return innerBox;
+     }
+ 
+-    std::tr1::array<C,dim> center() const
++    std::array<C,dim> center() const
+     {
+-            std::tr1::array<C,dim> center;
++            std::array<C,dim> center;
+             for (int i = 0; i < dim; ++i)
+                 center[i] = 0.5*(_upper[i]+_lower[i]);
+             return center;
+@@ -134,28 +124,28 @@ class Box
+         return _upper[i]-_lower[i];
+     }
+ 
+-        std::tr1::array<C,dim>& lower()
++        std::array<C,dim>& lower()
+     {
+         return _lower;
+     }
+ 
+-    std::tr1::array<C,dim>& upper()
++    std::array<C,dim>& upper()
+     {
+         return _upper;
+     }
+ 
+-    const std::tr1::array<C,dim>& lower() const
++    const std::array<C,dim>& lower() const
+     {
+         return _lower;
+     }
+ 
+-    const std::tr1::array<C,dim>& upper() const
++    const std::array<C,dim>& upper() const
+     {
+         return _upper;
+     }
+ 
+         /// Extends the box to contain given point.
+-    void extendBy(const std::tr1::array<C,dim>& point){
++    void extendBy(const std::array<C,dim>& point){
+         for (int i=0; i<dim; i++) {
+             _lower[i] = std::min(_lower[i], point[i]);
+             _upper[i] = std::max(_upper[i], point[i]);
+@@ -182,8 +172,8 @@ class Box
+ 
+ private:
+ 
+-    std::tr1::array<C,dim> _lower;
+-    std::tr1::array<C,dim> _upper;
++    std::array<C,dim> _lower;
++    std::array<C,dim> _upper;
+ };
+ 
+ } // namespace psurface
+diff --git a/CircularPatch.h b/CircularPatch.h
+index b1a15c2..66e25d8 100644
+--- a/CircularPatch.h
++++ b/CircularPatch.h
+@@ -42,8 +42,8 @@ class PSURFACE_API CircularPatch {
+         triangles.assign(size,-1U);
+ 
+         innerEdges.resize(size-1);
+-        std::tr1::array<int, 2> emptyArray;
+-        emptyArray.assign(-1U);
++        std::array<int, 2> emptyArray;
++        emptyArray.fill(-1U);
+         innerEdges.assign(innerEdges.size(),emptyArray);
+ 
+         par = param;
+@@ -66,8 +66,8 @@ class PSURFACE_API CircularPatch {
+         triangles.assign(size,-1);
+         
+         innerEdges.resize(size-1);
+-        std::tr1::array<int, 2> emptyArray;
+-        emptyArray.assign(-1);
++        std::array<int, 2> emptyArray;
++        emptyArray.fill(-1);
+         innerEdges.assign(innerEdges.size(), emptyArray);
+     }
+ 
+@@ -143,7 +143,7 @@ class PSURFACE_API CircularPatch {
+ 
+     ctype distanceTo(const class StaticVector<ctype,3> &) const ;
+ 
+-    std::vector<std::tr1::array<int, 2> > innerEdges;
++    std::vector<std::array<int, 2> > innerEdges;
+ 
+ private:
+ 
+diff --git a/ContactMapping.cpp b/ContactMapping.cpp
+index 4e06e74..cdf847d 100644
+--- a/ContactMapping.cpp
++++ b/ContactMapping.cpp
+@@ -17,10 +17,10 @@
+ using namespace psurface;
+ 
+ template <class ctype>
+-void ContactMapping<2,ctype>::build(const std::vector<std::tr1::array<ctype,2> >& coords1,  ///< The vertex coordinates of the first surface
+-               const std::vector<std::tr1::array<int,2> >& tri1,       ///< The triangles of the first surface
+-               const std::vector<std::tr1::array<ctype,2> >& coords2,  ///< The vertices of the second surface
+-               const std::vector<std::tr1::array<int,2> >& tri2,
++void ContactMapping<2,ctype>::build(const std::vector<std::array<ctype,2> >& coords1,  ///< The vertex coordinates of the first surface
++               const std::vector<std::array<int,2> >& tri1,       ///< The triangles of the first surface
++               const std::vector<std::array<ctype,2> >& coords2,  ///< The vertices of the second surface
++               const std::vector<std::array<int,2> >& tri2,
+                                     const DirectionFunction<2,ctype>* domainDirection,
+                                     const DirectionFunction<2,ctype>* targetDirection
+                )
+@@ -81,7 +81,7 @@ void ContactMapping<2,ctype>::build(const std::vector<std::tr1::array<ctype,2> >
+     //   Build the segments-per-vertex arrays
+     // /////////////////////////////////////////////////////
+ 
+-    std::vector<std::tr1::array<int, 2> > segPerVertex1(psurface_.domainVertices.size());
++    std::vector<std::array<int, 2> > segPerVertex1(psurface_.domainVertices.size());
+     for (size_t i=0; i<segPerVertex1.size(); i++)
+         segPerVertex1[i][0] = segPerVertex1[i][1] = -1;
+ 
+@@ -117,7 +117,7 @@ void ContactMapping<2,ctype>::build(const std::vector<std::tr1::array<ctype,2> >
+ 
+ 
+     // Build the segments-per-vertex arrays for the target vertices
+-    std::vector<std::tr1::array<int, 2> > segPerVertex2(psurface_.targetVertices.size());
++    std::vector<std::array<int, 2> > segPerVertex2(psurface_.targetVertices.size());
+     for (size_t i=0; i<segPerVertex2.size(); i++)
+         segPerVertex2[i][0] = segPerVertex2[i][1] = -1;
+ 
+@@ -407,7 +407,7 @@ void ContactMapping<2,ctype>::computeDiscreteDomainDirections(const DirectionFun
+ }
+ 
+ template <class ctype>
+-void ContactMapping<2,ctype>::computeDiscreteTargetDirections(const std::vector<std::tr1::array<int,2> >& elements,
++void ContactMapping<2,ctype>::computeDiscreteTargetDirections(const std::vector<std::array<int,2> >& elements,
+                                                               const DirectionFunction<2,ctype>* direction,
+                                                               std::vector<StaticVector<ctype,2> >& normals)
+ {
+@@ -461,10 +461,10 @@ void ContactMapping<2,ctype>::computeDiscreteTargetDirections(const std::vector<
+ }
+ 
+ template <class ctype>
+-void ContactMapping<3,ctype>::build(const std::vector<std::tr1::array<ctype,3> >& coords1,  ///< The vertices of the first surface
+-                         const std::vector<std::tr1::array<int,3> >& tri1,       ///< The triangles of the first surface
+-                         const std::vector<std::tr1::array<ctype,3> >& coords2,  ///< The vertices of the second surface
+-                         const std::vector<std::tr1::array<int,3> >& tri2,
++void ContactMapping<3,ctype>::build(const std::vector<std::array<ctype,3> >& coords1,  ///< The vertices of the first surface
++                         const std::vector<std::array<int,3> >& tri1,       ///< The triangles of the first surface
++                         const std::vector<std::array<ctype,3> >& coords2,  ///< The vertices of the second surface
++                         const std::vector<std::array<int,3> >& tri2,
+                                     const DirectionFunction<3,ctype>* domainDirection,
+                                     const DirectionFunction<3,ctype>* targetDirection)
+ {
+diff --git a/ContactMapping.h b/ContactMapping.h
+index 2e179c4..1384ca1 100644
+--- a/ContactMapping.h
++++ b/ContactMapping.h
+@@ -1,20 +1,10 @@
+ #ifndef CONTACT_MAPPING_HH
+ #define CONTACT_MAPPING_HH
+ 
++#include <array>
+ #include <vector>
+ #include <iostream>
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
+-
+ #include "StaticVector.h"
+ #include "PSurface.h"
+ #include "IntersectionPrimitive.h"
+@@ -32,10 +22,10 @@ template <class ctype>
+ class ContactMapping<2,ctype>
+ {
+ public:
+-    void build(const std::vector<std::tr1::array<ctype,2> >& coords1,  ///< The vertices of the first surface as \f$x_0 ,y_0 ,z_0, x_1, y_1, z_1 ...\f$
+-               const std::vector<std::tr1::array<int,2> >& tri1,       ///< The triangles of the first surface
+-               const std::vector<std::tr1::array<ctype,2> >& coords2,  ///< The vertices of the second surface
+-               const std::vector<std::tr1::array<int,2> >& tri2,
++    void build(const std::vector<std::array<ctype,2> >& coords1,  ///< The vertices of the first surface as \f$x_0 ,y_0 ,z_0, x_1, y_1, z_1 ...\f$
++               const std::vector<std::array<int,2> >& tri1,       ///< The triangles of the first surface
++               const std::vector<std::array<ctype,2> >& coords2,  ///< The vertices of the second surface
++               const std::vector<std::array<int,2> >& tri2,
+                const DirectionFunction<2,ctype>* domainDirection = NULL,
+                const DirectionFunction<2,ctype>* targetDirection = NULL
+                );
+@@ -52,7 +42,7 @@ class ContactMapping<2,ctype>
+     void computeDiscreteDomainDirections(const DirectionFunction<2,ctype>* direction,
+                                          std::vector<StaticVector<ctype,2> >& normals);
+ 
+-    void computeDiscreteTargetDirections(const std::vector<std::tr1::array<int,2> >& elements,
++    void computeDiscreteTargetDirections(const std::vector<std::array<int,2> >& elements,
+                                          const DirectionFunction<2,ctype>* direction,
+                                          std::vector<StaticVector<ctype,2> >& normals);
+ 
+@@ -66,10 +56,10 @@ class ContactMapping<3,ctype>
+ {
+ public: 
+ 
+-    void build(const std::vector<std::tr1::array<ctype,3> >& coords1,  ///< The vertices of the first surface as \f$x_0 ,y_0 ,z_0, x_1, y_1, z_1 ...\f$
+-               const std::vector<std::tr1::array<int,3> >& tri1,       ///< The triangles of the first surface
+-               const std::vector<std::tr1::array<ctype,3> >& coords2,  ///< The vertices of the second surface
+-               const std::vector<std::tr1::array<int,3> >& tri2,       ///< The triangles of the second surface
++    void build(const std::vector<std::array<ctype,3> >& coords1,  ///< The vertices of the first surface as \f$x_0 ,y_0 ,z_0, x_1, y_1, z_1 ...\f$
++               const std::vector<std::array<int,3> >& tri1,       ///< The triangles of the first surface
++               const std::vector<std::array<ctype,3> >& coords2,  ///< The vertices of the second surface
++               const std::vector<std::array<int,3> >& tri2,       ///< The triangles of the second surface
+                const DirectionFunction<3,ctype>* domainDirection = NULL,
+                const DirectionFunction<3,ctype>* targetDirection = NULL
+                );
+diff --git a/DomainPolygon.cpp b/DomainPolygon.cpp
+index a2e5322..a7aa878 100644
+--- a/DomainPolygon.cpp
++++ b/DomainPolygon.cpp
+@@ -113,7 +113,7 @@ void DomainPolygon::mergeTriangle(int tri, StaticVector<float,2> coords[3], int&
+ 
+     installWorldCoordinates(newNodeIdx, coords[0], coords[1], coords[2]);
+ 
+-    std::tr1::array<std::vector<int>, 3> tmpEdgePoints = cT.edgePoints;
++    std::array<std::vector<int>, 3> tmpEdgePoints = cT.edgePoints;
+ 
+     //checkConsistency("Poly merge before augmentNeighborIdx\n");
+ 
+@@ -391,7 +391,7 @@ bool DomainPolygon::triangulate(CircularPatch<float>& fillIn, std::vector<unsign
+         //////////////////////////////////////////////////////////////////////////
+ 
+         // determine the planar world coordinates of the triangle about to be separated
+-        std::tr1::array<StaticVector<float,2>, 3> newTriangleCoords;
++        std::array<StaticVector<float,2>, 3> newTriangleCoords;
+         int boundaryIdx;
+         for (j=0; j<boundaryPoints.size(); j++)
+             if (boundaryPoints[j] == par->triangles(fillIn[i]).vertices[0])
+@@ -603,7 +603,7 @@ bool DomainPolygon::triangulate(CircularPatch<float>& fillIn, std::vector<unsign
+ void DomainPolygon::cutParameterEdges(int boundaryIdx, NodeIdx startNode, NodeIdx lastNode,
+                                       std::vector<int>& nodeLocs,
+                                       DomainTriangle<float>& cT,
+-                                      const std::tr1::array<StaticVector<float,2>, 3>& newTriangleCoords,
++                                      const std::array<StaticVector<float,2>, 3>& newTriangleCoords,
+                                       std::vector<int>& triNewEdgePoints,
+                                       std::vector<int>& polyNewEdgePoints,
+                                       std::vector<unsigned int>& nodeStack)
+diff --git a/DomainPolygon.h b/DomainPolygon.h
+index 7dd4244..5e0b587 100644
+--- a/DomainPolygon.h
++++ b/DomainPolygon.h
+@@ -111,7 +111,7 @@ class PSURFACE_API DomainPolygon : public PlaneParam<float> {
+     void cutParameterEdges(int boundaryIdx, NodeIdx startNode, NodeIdx lastNode,
+                            std::vector<int>& nodeLocs,
+                            DomainTriangle<float>& cT,
+-                           const std::tr1::array<StaticVector<float,2>, 3>& newTriangleCoords,
++                           const std::array<StaticVector<float,2>, 3>& newTriangleCoords,
+                            std::vector<int>& triNewEdgePoints,
+                            std::vector<int>& polyNewEdgePoints,
+                            std::vector<unsigned int>& nodeStack);
+@@ -157,7 +157,7 @@ class PSURFACE_API DomainPolygon : public PlaneParam<float> {
+                 c*(1-nodes[i].domainPos()[0]-nodes[i].domainPos()[1]));
+     }
+ 
+-    void augmentNeighborIdx(int newNodeIdx, std::tr1::array<std::vector<int>, 3>& edgePoints) {
++    void augmentNeighborIdx(int newNodeIdx, std::array<std::vector<int>, 3>& edgePoints) {
+         int i,d = newNodeIdx;
+ 
+         for (i=newNodeIdx; i<nodes.size(); i++)
+@@ -169,7 +169,7 @@ class PSURFACE_API DomainPolygon : public PlaneParam<float> {
+                 edgePoints[i][j] += d;
+     }
+ 
+-    void updateEdgePoints(std::tr1::array<std::vector<int>,3>& edgePoints, int oldNode, int newNode) {
++    void updateEdgePoints(std::array<std::vector<int>,3>& edgePoints, int oldNode, int newNode) {
+         int i;
+         for (i=0; i<3; i++){
+             if (edgePoints[i][0]==oldNode)
+diff --git a/Domains.h b/Domains.h
+index 690ace2..b59cecd 100644
+--- a/Domains.h
++++ b/Domains.h
+@@ -157,7 +157,7 @@ class PSURFACE_API DomainTriangle : public Triangle,
+ 
+ 
+     /// a list of all nodes that are located exactly on the boundary of the triangle
+-    std::tr1::array<std::vector<NodeIdx>, 3> edgePoints;
++    std::array<std::vector<NodeIdx>, 3> edgePoints;
+ 
+     /// the patch number
+     int patch;
+diff --git a/EdgeIntersectionFunctor.h b/EdgeIntersectionFunctor.h
+index 7d6949b..2d227e4 100644
+--- a/EdgeIntersectionFunctor.h
++++ b/EdgeIntersectionFunctor.h
+@@ -1,19 +1,7 @@
+ #ifndef POINT_INTERSECTION_FUNCTOR_H
+ #define POINT_INTERSECTION_FUNCTOR_H
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    // Dummy-include to define _CPPLIB_VER.
+-    #include <vector>
+-
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
++#include <array>
+ 
+ #include "SurfaceParts.h"
+ 
+@@ -24,7 +12,7 @@ namespace psurface {
+ struct EdgeIntersectionFunctor
+ {
+     class MyMcBox2f 
+-        : std::tr1::array<float,4>
++        : std::array<float,4>
+     {
+     public:
+         MyMcBox2f(float a, float b, float c, float d)
+@@ -48,8 +36,8 @@ struct EdgeIntersectionFunctor
+         : vertices_(vertices)
+     {}
+ 
+-    bool operator()(const std::tr1::array<float,3>& lower,
+-                    const std::tr1::array<float,3>& upper, const Edge& item) const {
++    bool operator()(const std::array<float,3>& lower,
++                    const std::array<float,3>& upper, const Edge& item) const {
+ 
+         // The edge intersects the box if one of the endpoints is within the box
+         if (Box<float,3>(lower,upper).contains(vertices_[item.from]) 
+diff --git a/GmshIO.cpp b/GmshIO.cpp
+index 287c0c2..b012d17 100644
+--- a/GmshIO.cpp
++++ b/GmshIO.cpp
+@@ -174,7 +174,7 @@
+       ///insert triangles and the plane graph on them
+       for (size_t i=0; i<triArray.size(); i++){
+ 
+-          std::tr1::array<int, 3> vertexIdx;
++          std::array<int, 3> vertexIdx;
+ 
+           for (int j=0; j<3; j++)
+               vertexIdx[j] = newNodeIndex[triArray[i][j]-1];
+diff --git a/Hdf5IO.cpp b/Hdf5IO.cpp
+index 30392b8..bb0c446 100644
+--- a/Hdf5IO.cpp
++++ b/Hdf5IO.cpp
+@@ -827,7 +827,7 @@ void writeFloatDataToFile(hid_t* file_id, hid_t* dataset_id, hid_t* dataspace_id
+       int nodeArrayIdx = 0;
+ 
+       for (i = 0; i< numTriangles; i++){
+-          std::tr1::array<unsigned int, 3> triangleVertices = {static_cast<unsigned int>(baseGridTriArray[4*i + 1]),
++          std::array<unsigned int, 3> triangleVertices = {static_cast<unsigned int>(baseGridTriArray[4*i + 1]),
+                                                                static_cast<unsigned int>(baseGridTriArray[4*i + 2]),
+                                                                static_cast<unsigned int>(baseGridTriArray[4*i + 3])};
+ 
+diff --git a/HxParamToolBox.cpp b/HxParamToolBox.cpp
+index 327ad7d..072bccf 100644
+--- a/HxParamToolBox.cpp
++++ b/HxParamToolBox.cpp
+@@ -454,7 +454,7 @@ bool ParamToolBox::mergeStarIntoPolygon(int centerIdx, DomainPolygon& fullStar,
+ 
+     for (i=1; i<fullStarTris.size(); i++){
+ 
+-        const std::tr1::array<int, 3>& currentTriPoints = par->triangles(fullStarTris[i]).vertices;
++        const std::array<int, 3>& currentTriPoints = par->triangles(fullStarTris[i]).vertices;
+ 
+         for (j=0; j<3; j++)
+             if (currentTriPoints[j] == centerIdx){
+@@ -832,7 +832,7 @@ bool ParamToolBox::removeRegularPoint(PSurface<2,float>* par, int centerPoint, c
+ 
+     for (i=1; i<fullStarTris.size(); i++){
+ 
+-        const std::tr1::array<int, 3>& currentTriPoints = par->triangles(fullStarTris[i]).vertices;
++        const std::array<int, 3>& currentTriPoints = par->triangles(fullStarTris[i]).vertices;
+ 
+         for (j=0; j<3; j++)
+             if (currentTriPoints[j] == centerPoint){
+@@ -1155,7 +1155,7 @@ bool ParamToolBox::removeFeatureLinePoint(PSurface<2,float>* par,
+                 firstTri.flip();
+             }
+ 
+-            const std::tr1::array<int, 3>& firstTriPoints = par->triangles(halfStarTris[i][0]).vertices;
++            const std::array<int, 3>& firstTriPoints = par->triangles(halfStarTris[i][0]).vertices;
+ 
+             StaticVector<float,2> triCoords[3];
+ 
+@@ -1175,7 +1175,7 @@ bool ParamToolBox::removeFeatureLinePoint(PSurface<2,float>* par,
+ 
+             for (int k=1; k<halfStarTris[i].size(); k++){
+ 
+-                const std::tr1::array<int, 3>& currentTriPoints = par->triangles(halfStarTris[i][k]).vertices;
++                const std::array<int, 3>& currentTriPoints = par->triangles(halfStarTris[i][k]).vertices;
+ 
+                 for (j=0; j<3; j++)
+                     if (currentTriPoints[j] == centerPoint){
+diff --git a/IntersectionPrimitive.h b/IntersectionPrimitive.h
+index c9068c3..b9f4338 100644
+--- a/IntersectionPrimitive.h
++++ b/IntersectionPrimitive.h
+@@ -1,19 +1,7 @@
+ #ifndef INTERSECTIONPRIMITIVE_H
+ #define INTERSECTIONPRIMITIVE_H
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    // Dummy-include to define _CPPLIB_VER.
+-    #include <vector>
+-
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
++#include <array>
+ 
+ #include "StaticVector.h"
+ 
+@@ -49,13 +37,13 @@ class IntersectionPrimitive {
+      * Therefore, its shape can be described as three vectors
+      * from \f$ R^3\f$ each.
+      */
+-    std::tr1::array<StaticVector<ctype,dimworld>, nPoints> points;
++    std::array<StaticVector<ctype,dimworld>, nPoints> points;
+ 
+     /** An IntersectionPrimitive always represents the overlap of two basis functions
+      * restricted to the image of one mortar and one nonmortar triangle.
+      * The indices of those two triangles are given in this array.
+      */
+-    std::tr1::array<int, 2> tris;
++    std::array<int, 2> tris;
+ 
+     /** This array marks the exact parts of the mortar and the nonmortar
+      * triangles whose overlap is represented by a given IntersectionPrimitive.
+@@ -66,7 +54,7 @@ class IntersectionPrimitive {
+      * mortar side.  The second index tells which of the simplex points
+      * of the IntersectionPrimitive is to be considered.  
+      */
+-    std::tr1::array<std::tr1::array<StaticVector<ctype,dim>, nPoints> , 2> localCoords;
++    std::array<std::array<StaticVector<ctype,dim>, nPoints> , 2> localCoords;
+ 
+ };
+ 
+diff --git a/MultiDimOctree.h b/MultiDimOctree.h
+index e81ed11..ab25ba4 100644
+--- a/MultiDimOctree.h
++++ b/MultiDimOctree.h
+@@ -119,11 +119,11 @@ class MultiDimOctree
+     /** This method appends all elements which potentially may contain
+         point @c pos to the dynamic array @c result. The array is not cleared
+         in advance allowing you to collect results for multiple points. */
+-    int lookup(const std::tr1::array<C,dim>& pos, ResultContainer& result);
++    int lookup(const std::array<C,dim>& pos, ResultContainer& result);
+ 
+     /** Same as lookup except that indices instead of pointers are
+         returned. Requires prior call to enableUniqueLookup. */
+-    int lookupIndex(const std::tr1::array<C,dim>& pos, std::vector<int>& result);
++    int lookupIndex(const std::array<C,dim>& pos, std::vector<int>& result);
+ 
+     /** This methods appends all elements that intersect a given box. */
+     int lookup(const BoxType &queryBox, ResultContainer& result);
+@@ -258,7 +258,7 @@ class MultiDimOctree
+ 
+     bool remove(int elem, const BoxType &elemBox, const T* toBeDeleted);
+ 
+-    void lookup(int elem, BoxType &elemBox, const std::tr1::array<C,dim>& pos, ResultContainer& result);
++    void lookup(int elem, BoxType &elemBox, const std::array<C,dim>& pos, ResultContainer& result);
+ 
+     void lookup(int elem, const BoxType &elemBox, const BoxType& queryBox, ResultContainer& result);
+ 
+@@ -411,7 +411,7 @@ bool MultiDimOctree<T, F, C, dim>::insert(int elem, int depth, const BoxType &el
+     bool inserted = false;
+ 
+     // helpful points that describe box corners
+-        std::tr1::array<C,dim> upper, lower;
++        std::array<C,dim> upper, lower;
+     // iterate over all subcells and check for intersections between
+     // item and subcells
+     for (int j = 0; j < SUBCELLS; ++j)
+@@ -465,7 +465,7 @@ int MultiDimOctree<T, F, C, dim>::iterateCells(int elem, int depth, const BoxTyp
+ 
+     int firstChild = element.n;
+ 
+-    std::tr1::array<C,dim> lower, upper, center = elemBox.center();
++    std::array<C,dim> lower, upper, center = elemBox.center();
+ 
+     // prepare all indices for the next stage
+     depth++;
+@@ -590,7 +590,7 @@ void MultiDimOctree<T, F, C, dim>::info()
+ 
+ 
+ template <class T, typename F, typename C, int dim>
+-int MultiDimOctree<T, F, C, dim>::lookup(const std::tr1::array<C,dim>& pos, ResultContainer& result)
++int MultiDimOctree<T, F, C, dim>::lookup(const std::array<C,dim>& pos, ResultContainer& result)
+ {
+     BoxType b(box);
+ 
+@@ -679,7 +679,7 @@ void MultiDimOctree<T, F, C, dim>::lookup(int elem, const BoxType &elemBox, cons
+         // since we do not have to check lower and upper coordinates of both boxes
+ 
+         // the boundary of the next subcell is stored in here
+-                std::tr1::array<C,dim> lower, upper;
++                std::array<C,dim> lower, upper;
+         for (int j = 0; j < SUBCELLS; ++j)
+         {
+             bool intersects_subcell = true;
+@@ -711,7 +711,7 @@ void MultiDimOctree<T, F, C, dim>::lookup(int elem, const BoxType &elemBox, cons
+ 
+ 
+ template <class T, typename F, typename C, int dim>
+-int MultiDimOctree<T, F, C, dim>::lookupIndex(const std::tr1::array<C,dim>& pos, std::vector<int>& result)
++int MultiDimOctree<T, F, C, dim>::lookupIndex(const std::array<C,dim>& pos, std::vector<int>& result)
+ {
+     ResultContainer tmpResult;
+     lookup(pos, tmpResult);
+@@ -724,7 +724,7 @@ int MultiDimOctree<T, F, C, dim>::lookupIndex(const std::tr1::array<C,dim>& pos,
+ 
+ 
+ template <class T, typename F, typename C, int dim>
+-void MultiDimOctree<T, F, C, dim>::lookup(int elem, BoxType &elemBox, const std::tr1::array<C,dim>& pos, ResultContainer& result)
++void MultiDimOctree<T, F, C, dim>::lookup(int elem, BoxType &elemBox, const std::array<C,dim>& pos, ResultContainer& result)
+ {
+     Element& element = allElements[elem];
+ 
+@@ -750,7 +750,7 @@ void MultiDimOctree<T, F, C, dim>::lookup(int elem, BoxType &elemBox, const std:
+     {
+         int firstChild = element.n;
+ 
+-        std::tr1::array<C,dim> lower, upper;
++        std::array<C,dim> lower, upper;
+ 
+         int config = 0;
+         // compute the subcell in which the point is located
+@@ -808,7 +808,7 @@ bool MultiDimOctree<T, F, C, dim>::remove(int elem, const BoxType &elemBox, cons
+         bool removed = false;
+ 
+         // helpful points that describe box corners
+-        std::tr1::array<C,dim> upper, lower;
++        std::array<C,dim> upper, lower;
+         // iterate over all subcells and check for intersections between
+         // item and subcells
+         for (int j = 0; j < SUBCELLS; ++j)
+diff --git a/NormalProjector.cpp b/NormalProjector.cpp
+index 1a9d267..074d828 100644
+--- a/NormalProjector.cpp
++++ b/NormalProjector.cpp
+@@ -1371,7 +1371,7 @@ bool NormalProjector<ctype>::computeInverseNormalProjection(const StaticVector<c
+ 
+     // Fix some initial value
+     // Some problems have two solutions and the Newton converges to the wrong one
+-    x.assign(0.5);
++    x.fill(0.5);
+ 
+     for (int i=0; i<30; i++) {
+ 
+@@ -1754,8 +1754,8 @@ bool NormalProjector<ctype>::normalProjection(const StaticVector<ctype,2>& base,
+                                               const StaticVector<ctype,2>& direction,
+                                               int& bestSegment,
+                                               ctype& rangeLocalPosition,
+-                                              const std::vector<std::tr1::array<int,2> >& targetSegments,
+-                                              const std::vector<std::tr1::array<ctype, 2> >& coords)
++                                              const std::vector<std::array<int,2> >& targetSegments,
++                                              const std::vector<std::array<ctype, 2> >& coords)
+ {
+     bestSegment = -1;
+     int nTargetSegments = targetSegments.size();
+diff --git a/NormalProjector.h b/NormalProjector.h
+index 0e1fe09..476bf1f 100644
+--- a/NormalProjector.h
++++ b/NormalProjector.h
+@@ -159,8 +159,8 @@ class PSURFACE_API NormalProjector {
+                                  const StaticVector<ctype,2>& direction,
+                                  int& bestSegment,
+                                  ctype& rangeLocalPosition,
+-                                 const std::vector<std::tr1::array<int,2> >& targetSegments,
+-                                 const std::vector<std::tr1::array<ctype, 2> >& coords);
++                                 const std::vector<std::array<int,2> >& targetSegments,
++                                 const std::vector<std::array<ctype, 2> >& coords);
+     
+     static bool rayIntersectsLine(const StaticVector<ctype, 2>& basePoint, 
+                                   const StaticVector<ctype, 2>& direction,
+diff --git a/PSurface.cpp b/PSurface.cpp
+index 554e16c..1a864bd 100644
+--- a/PSurface.cpp
++++ b/PSurface.cpp
+@@ -1,18 +1,8 @@
+ #include "config.h"
+ 
++#include <array>
+ #include <vector>
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
+-
+ #ifdef _MSC_VER
+     // Required to make cmath define M_PI etc.
+     #define _USE_MATH_DEFINES
+@@ -94,7 +84,7 @@ StaticVector<ctype,2> PSurface<dim,ctype>::getLocalTargetCoords(const GlobalNode
+         StaticVector<ctype,3> iPos = imagePos(n.tri, n.idx);
+ 
+         // Convert from McVec3f to StaticVector
+-        std::tr1::array<StaticVector<ctype,3>, 3> p;
++        std::array<StaticVector<ctype,3>, 3> p;
+ 
+         for (int i=0; i<3; i++)
+             for (int j=0; j<3; j++)
+@@ -324,7 +314,7 @@ void PSurface<dim,ctype>::setupOriginalSurface()
+         for (i=0; i<numNodes; i++) {
+ 
+             Node<ctype>& cN = cT.nodes[i];
+-            std::tr1::array<int,3> v;
++            std::array<int,3> v;
+ 
+             v[0] = cN.nodeNumber;
+ 
+@@ -441,7 +431,7 @@ void PSurface<dim,ctype>::setupOriginalSurface()
+ }
+ 
+ template <int dim, class ctype>
+-void PSurface<dim,ctype>::appendTriangleToOriginalSurface(const std::tr1::array<int,3>& v, int patch)
++void PSurface<dim,ctype>::appendTriangleToOriginalSurface(const std::array<int,3>& v, int patch)
+ {
+     surface->triangles.push_back(Surface::Triangle());
+ 
+@@ -458,7 +448,7 @@ void PSurface<dim,ctype>::appendTriangleToOriginalSurface(const std::tr1::array<
+ 
+ 
+ template <int dim, class ctype>
+-bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::tr1::array<int,3>& vertices,
++bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::array<int,3>& vertices,
+                          StaticVector<ctype,2>& coords, int seed) const
+ {
+     int i;
+@@ -474,7 +464,7 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ 
+             if (a[1]+1e-5 > p[1] && p[1] > b[1]-1e-5) {
+ 
+-                std::tr1::array<GlobalNodeIdx, 3> targetNodes;
++                std::array<GlobalNodeIdx, 3> targetNodes;
+                 handleMapOnEdge(triIdx, p, a, b, 1, i, targetNodes, coords);
+                 vertices[0] = nodes(targetNodes[0]).getNodeNumber();
+                 vertices[1] = nodes(targetNodes[1]).getNodeNumber();
+@@ -492,7 +482,7 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ 
+             if (b[0]+1e-5 > p[0] && p[0] > a[0]-1e-5) {
+ 
+-                std::tr1::array<GlobalNodeIdx, 3> targetNodes;
++                std::array<GlobalNodeIdx, 3> targetNodes;
+                 handleMapOnEdge(triIdx, p, a, b, 2, i, targetNodes, coords);
+                 vertices[0] = nodes(targetNodes[0]).getNodeNumber();
+                 vertices[1] = nodes(targetNodes[1]).getNodeNumber();
+@@ -509,7 +499,7 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ 
+             if (a[0]+1e-5>p[0] && p[0]>b[0]-1e-5) {
+ 
+-                std::tr1::array<GlobalNodeIdx, 3> targetNodes;
++                std::array<GlobalNodeIdx, 3> targetNodes;
+                 handleMapOnEdge(triIdx, p, a, b, 0, i, targetNodes, coords);
+                 vertices[0] = nodes(targetNodes[0]).getNodeNumber();
+                 vertices[1] = nodes(targetNodes[1]).getNodeNumber();
+@@ -523,7 +513,7 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ 
+     }
+ 
+-    std::tr1::array<NodeIdx, 3> v;
++    std::array<NodeIdx, 3> v;
+     int status = tri.map(p, v, coords, seed);
+ 
+     if (!status)
+@@ -535,7 +525,7 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ 
+     // ///////////////////////////////////////////////////////
+     // make sure we don't return intersection nodes
+-    std::tr1::array<GlobalNodeIdx, 3> resultNodes;
++    std::array<GlobalNodeIdx, 3> resultNodes;
+     getActualVertices(triIdx, v, resultNodes);
+     vertices[0] = nodes(resultNodes[0]).getNodeNumber();
+     vertices[1] = nodes(resultNodes[1]).getNodeNumber();
+@@ -547,8 +537,8 @@ bool PSurface<dim,ctype>::map(int triIdx, const StaticVector<ctype,2>& p, std::t
+ }
+ 
+ template <int dim, class ctype>
+-void PSurface<dim,ctype>::getActualVertices(int tri, const std::tr1::array<NodeIdx, 3>& nds,
+-                                        std::tr1::array<GlobalNodeIdx, 3>& vertices) const
++void PSurface<dim,ctype>::getActualVertices(int tri, const std::array<NodeIdx, 3>& nds,
++                                        std::array<GlobalNodeIdx, 3>& vertices) const
+ {
+     const DomainTriangle<ctype>& cT = this->triangles(tri);
+     //cT.print(true, true, true);
+@@ -681,13 +671,13 @@ void PSurface<dim,ctype>::getActualVertices(int tri, const std::tr1::array<NodeI
+ 
+ template <int dim, class ctype>
+ int PSurface<dim,ctype>::getImageSurfaceTriangle(int tri,
+-                                             const std::tr1::array<NodeIdx, 3>& nds
++                                             const std::array<NodeIdx, 3>& nds
+                                              ) const
+ {
+     int i;
+ 
+-    std::tr1::array<GlobalNodeIdx, 3> actualVertices;
+-    std::tr1::array<std::vector<int>, 3> trianglesPerNode;
++    std::array<GlobalNodeIdx, 3> actualVertices;
++    std::array<std::vector<int>, 3> trianglesPerNode;
+ 
+     getActualVertices(tri, nds, actualVertices);
+ 
+@@ -802,7 +792,7 @@ void PSurface<dim,ctype>::getTrianglesPerEdge(int from, int to, std::vector<int>
+ 
+ template <int dim, class ctype>
+ void PSurface<dim,ctype>::handleMapOnEdge(int triIdx, const StaticVector<ctype,2>& p, const StaticVector<ctype,2>& a, const StaticVector<ctype,2>& b,
+-                                      int edge, int edgePos, std::tr1::array<GlobalNodeIdx, 3>& vertices, StaticVector<ctype,2>& coords) const
++                                      int edge, int edgePos, std::array<GlobalNodeIdx, 3>& vertices, StaticVector<ctype,2>& coords) const
+ {
+     const DomainTriangle<ctype>& tri = this->triangles(triIdx);
+     ctype lambda = (p-a).length() / (a-b).length();
+@@ -868,7 +858,7 @@ template <int dim, class ctype>
+ bool PSurface<dim,ctype>::positionMap(int triIdx, const StaticVector<ctype,2>& p, StaticVector<ctype,3>& result) const
+ {
+     StaticVector<ctype,2> localCoords;
+-    std::tr1::array<int,3> tri;
++    std::array<int,3> tri;
+ 
+     int status = map(triIdx, p, tri, localCoords);
+ 
+@@ -890,7 +880,7 @@ template <int dim, class ctype>
+ bool PSurface<dim,ctype>::directNormalMap(int triIdx, const StaticVector<ctype,2>& p, StaticVector<ctype,3>& result) const
+ {
+     StaticVector<ctype,2> localCoords;
+-    std::tr1::array<int,3> tri;
++    std::array<int,3> tri;
+ 
+     int status = map(triIdx, p, tri, localCoords);
+ 
+diff --git a/PSurface.h b/PSurface.h
+index 74b0b84..2f600c2 100644
+--- a/PSurface.h
++++ b/PSurface.h
+@@ -150,7 +150,7 @@ class PSURFACE_API PSurface
+      */
+     bool map(int tri,                ///< The triangle of the input point \f$x\f$
+             const StaticVector<ctype,2>& p,                      ///< The barycentric coordinates of \f$x\f$ with respect to tri
+-            std::tr1::array<int,3>& vertices,               ///< Return value: The three vertices of the triangle that \f$\phi(x)\f$ is on
++            std::array<int,3>& vertices,               ///< Return value: The three vertices of the triangle that \f$\phi(x)\f$ is on
+             StaticVector<ctype,2>& coords,                 ///< The barycentric coordinates of \f$\phi(x)\f$ wrt <tt>vertices</tt>
+             int seed=-1
+             ) const;
+@@ -190,8 +190,8 @@ class PSURFACE_API PSurface
+      * \f$t\f$ is part of.
+      */
+     void getActualVertices(int tri,
+-                           const std::tr1::array<NodeIdx, 3>& nds,
+-                           std::tr1::array<GlobalNodeIdx, 3>& vertices   ///< The result nodes are returned here
++                           const std::array<NodeIdx, 3>& nds,
++                           std::array<GlobalNodeIdx, 3>& vertices   ///< The result nodes are returned here
+                            ) const;
+ 
+     /** \brief Given three nodes that form a triangle \f$t\f$ on a base grid triangle,
+@@ -201,7 +201,7 @@ class PSURFACE_API PSurface
+      * \return A triangle index, -1 if the input data was invalid.
+      */
+     int getImageSurfaceTriangle(int tri,
+-                                const std::tr1::array<NodeIdx, 3>& nds
++                                const std::array<NodeIdx, 3>& nds
+                                 ) const;
+ 
+     /** \brief Returns the set of all target triangles that contain the image of a node.
+@@ -266,10 +266,10 @@ class PSURFACE_API PSurface
+     /** \brief Internal routine used by map()
+      */
+     void handleMapOnEdge(int tri, const StaticVector<ctype,2>& p, const StaticVector<ctype,2>& a, const StaticVector<ctype,2>& b,
+-                         int edge, int edgePos, std::tr1::array<GlobalNodeIdx, 3>& vertices, StaticVector<ctype,2>& coords) const;
++                         int edge, int edgePos, std::array<GlobalNodeIdx, 3>& vertices, StaticVector<ctype,2>& coords) const;
+ 
+     /** \brief Internal routine used by setupOriginalSurface() */
+-    void appendTriangleToOriginalSurface(const std::tr1::array<int,3>& v, int patch);
++    void appendTriangleToOriginalSurface(const std::array<int,3>& v, int patch);
+ 
+ 
+     /////////////////////////////////////////////////////
+@@ -370,7 +370,7 @@ class PSURFACE_API PSurface<1,ctype>
+ 
+     std::vector<StaticVector<ctype, 2> > targetVertices;
+ 
+-    std::vector<std::tr1::array<int, 2> > targetSegments;
++    std::vector<std::array<int, 2> > targetSegments;
+ };
+ 
+ } // namespace psurface
+diff --git a/PSurfaceFactory.cpp b/PSurfaceFactory.cpp
+index 87bc2cd..0d99cd0 100644
+--- a/PSurfaceFactory.cpp
++++ b/PSurfaceFactory.cpp
+@@ -20,7 +20,7 @@ void PSurfaceFactory<dim,ctype>::insertVertex(const StaticVector<ctype,dim+1>& p
+ }
+ 
+ template <int dim, class ctype>
+-unsigned int  PSurfaceFactory<dim,ctype>::insertSimplex(const std::tr1::array<unsigned int, dim+1>& v)
++unsigned int  PSurfaceFactory<dim,ctype>::insertSimplex(const std::array<unsigned int, dim+1>& v)
+ {
+     unsigned int idx = psurface_->createSpaceForTriangle(v[0], v[1], v[2]);
+     psurface_->integrateTriangle(idx);
+@@ -281,7 +281,7 @@ NodeBundle PSurfaceFactory<dim,ctype>::addTouchingNodePair(int tri1, int tri2,
+ }
+ 
+ template <int dim, class ctype>
+-void PSurfaceFactory<dim,ctype>::addParTriangle(int tri, const std::tr1::array<int,3>& p)
++void PSurfaceFactory<dim,ctype>::addParTriangle(int tri, const std::array<int,3>& p)
+ {
+     DomainTriangle<ctype>& cT = psurface_->triangles(tri);
+ 
+diff --git a/PSurfaceFactory.h b/PSurfaceFactory.h
+index 2aaa06c..cfc9093 100644
+--- a/PSurfaceFactory.h
++++ b/PSurfaceFactory.h
+@@ -1,19 +1,7 @@
+ #ifndef PSURFACE_FACTORY_H
+ #define PSURFACE_FACTORY_H
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    // Dummy-include to define _CPPLIB_VER.
+-    #include <vector>
+-
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
++#include <array>
+ 
+ #ifdef PSURFACE_STANDALONE
+ namespace psurface { class Surface; }
+@@ -43,7 +31,7 @@ class PSurfaceFactory
+ 
+     \return The index of the newly inserted triangle
+     */
+-    unsigned int insertSimplex(const std::tr1::array<unsigned int, dim+1>& v);
++    unsigned int insertSimplex(const std::array<unsigned int, dim+1>& v);
+ 
+     /**
+        \param domainVertex if the normal projection hits a base grid vertex, this is the vertex
+@@ -79,7 +67,7 @@ class PSurfaceFactory
+                                 const StaticVector<ctype,2>& dP1, const StaticVector<ctype,2>& dP2, 
+                                 int edge1, int edge2, int nodeNumber);
+ 
+-    void addParTriangle(int tri, const std::tr1::array<int,3>& p);
++    void addParTriangle(int tri, const std::array<int,3>& p);
+     
+ 
+ 
+diff --git a/PSurfaceSmoother.cpp b/PSurfaceSmoother.cpp
+index 207c593..2404b0b 100644
+--- a/PSurfaceSmoother.cpp
++++ b/PSurfaceSmoother.cpp
+@@ -41,7 +41,7 @@ void PSurfaceSmoother<ctype>::applyEdgeRelaxation(PSurface<2,ctype>* psurface, i
+     CircularPatch<float> cutter(2, psurface);
+ 
+     // all this true copying is rather inefficient...
+-    std::tr1::array<DomainTriangle<float>, 2> backupTriangles;
++    std::array<DomainTriangle<float>, 2> backupTriangles;
+     backupTriangles[0] = psurface->triangles(cE.triangles[0]);
+     backupTriangles[1] = psurface->triangles(cE.triangles[1]);
+ 
+diff --git a/PlaneParam.cpp b/PlaneParam.cpp
+index 915f784..eef60b7 100644
+--- a/PlaneParam.cpp
++++ b/PlaneParam.cpp
+@@ -341,7 +341,7 @@ StaticVector<ctype,2> PlaneParam<ctype>::computeBarycentricCoords(const StaticVe
+ }
+ 
+ template <class ctype>
+-int PlaneParam<ctype>::map(const StaticVector<ctype,2> &domainCoord, std::tr1::array<NodeIdx, 3>& tri, StaticVector<ctype,2>& localBarycentricCoords,
++int PlaneParam<ctype>::map(const StaticVector<ctype,2> &domainCoord, std::array<NodeIdx, 3>& tri, StaticVector<ctype,2>& localBarycentricCoords,
+                     int seed) const
+ {
+     DirectedEdgeIterator e = BFLocate(domainCoord);
+diff --git a/PlaneParam.h b/PlaneParam.h
+index 575e92b..c2f025a 100644
+--- a/PlaneParam.h
++++ b/PlaneParam.h
+@@ -133,8 +133,8 @@ class PSURFACE_API PlaneParam{
+         }
+ 
+         /** \brief Make a copy of the three vertex indices  */
+-        std::tr1::array<NodeIdx, 3> vertices() const {
+-            std::tr1::array<NodeIdx, 3> result;
++        std::array<NodeIdx, 3> vertices() const {
++            std::array<NodeIdx, 3> result;
+             result[0] = vertices(0);
+             result[1] = vertices(1);
+             result[2] = vertices(2);
+@@ -379,7 +379,7 @@ class PSURFACE_API PlaneParam{
+     /**@name access methods */
+     //@{
+     ///
+-    int map(const StaticVector<ctype,2>& domainCoord, std::tr1::array<NodeIdx, 3>& vertices, StaticVector<ctype,2>& coords,
++    int map(const StaticVector<ctype,2>& domainCoord, std::array<NodeIdx, 3>& vertices, StaticVector<ctype,2>& coords,
+             int seed=-1) const;
+     //@}
+ 
+diff --git a/PointIntersectionFunctor.h b/PointIntersectionFunctor.h
+index 51a326b..04adff0 100644
+--- a/PointIntersectionFunctor.h
++++ b/PointIntersectionFunctor.h
+@@ -9,8 +9,8 @@ template <class ctype>
+ struct PointIntersectionFunctor
+ {
+ 
+-    bool operator()(const std::tr1::array<ctype,3>& lower, 
+-                    const std::tr1::array<ctype,3>& upper, const StaticVector<ctype,3>& item) const {
++    bool operator()(const std::array<ctype,3>& lower, 
++                    const std::array<ctype,3>& upper, const StaticVector<ctype,3>& item) const {
+         return (lower[0] <= item[0]) && (item[0] <= upper[0])
+             && (lower[1] <= item[1]) && (item[1] <= upper[1])
+             && (lower[2] <= item[2]) && (item[2] <= upper[2]);
+diff --git a/StaticMatrix.h b/StaticMatrix.h
+index eeb6b7c..54f75e0 100644
+--- a/StaticMatrix.h
++++ b/StaticMatrix.h
+@@ -8,7 +8,7 @@ namespace psurface {
+ 
+ template <class T, int N>
+ class StaticMatrix
+-    : public std::tr1::array<StaticVector<T,N>, N>
++    : public std::array<StaticVector<T,N>, N>
+ {
+ public:
+ 
+diff --git a/StaticVector.h b/StaticVector.h
+index 9381149..212c27e 100644
+--- a/StaticVector.h
++++ b/StaticVector.h
+@@ -1,20 +1,6 @@
+ #ifndef STATIC_VECTOR_H
+ #define STATIC_VECTOR_H
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    // Dummy-include to define _CPPLIB_VER.
+-    #include <vector>
+-
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
+-
+ #ifdef _MSC_VER
+     // Required to make cmath define M_PI etc.
+     #define _USE_MATH_DEFINES
+@@ -22,6 +8,7 @@
+ #include <cmath>
+ #include <cstring>  // for size_t
+ 
++#include <array>
+ #include <iostream>
+ #include <assert.h>
+ 
+@@ -29,18 +16,18 @@ namespace psurface {
+ 
+ template <class T, int N>
+ class StaticVector
+-    : public std::tr1::array<T,N>
++    : public std::array<T,N>
+ {
+ public:
+ 
+     /** \brief Default constructor.  Leaves the vector uninitialized. */
+     StaticVector()
+-        : std::tr1::array<T,N>()
++        : std::array<T,N>()
+     {}
+ 
+     /** \brief Construction from a single scalar */
+     explicit StaticVector(const T& s) {
+-        this->assign(s);
++        this->fill(s);
+     }
+ 
+     /** \brief Construction from a two scalars */
+diff --git a/SurfaceBase.cpp b/SurfaceBase.cpp
+index ade82e4..805cacc 100644
+--- a/SurfaceBase.cpp
++++ b/SurfaceBase.cpp
+@@ -1,5 +1,6 @@
+ #include "config.h"
+ 
++#include <array>
+ #include <vector>
+ #include <set>
+ 
+@@ -12,17 +13,6 @@
+ #include <algorithm>
+ #include <iostream>
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
+-
+ #include "StaticVector.h"
+ #include "StaticMatrix.h"
+ #include "SurfaceParts.h"
+@@ -257,7 +247,7 @@ template <class VertexType, class EdgeType, class TriangleType>
+ typename SurfaceBase<VertexType,EdgeType,TriangleType>::ctype SurfaceBase<VertexType,EdgeType,TriangleType>::minInteriorAngle(int n) const
+ {
+     ctype minAngle = 2*M_PI;
+-    const std::tr1::array<int, 3>& p = triangles(n).vertices;
++    const std::array<int, 3>& p = triangles(n).vertices;
+ 
+     for (int i=0; i<3; i++){
+         StaticVector<ctype,3> a = vertices(p[(i+1)%3]) - vertices(p[i]);
+@@ -276,7 +266,7 @@ template <class VertexType, class EdgeType, class TriangleType>
+ typename SurfaceBase<VertexType,EdgeType,TriangleType>::ctype SurfaceBase<VertexType,EdgeType,TriangleType>::aspectRatio(int n) const
+ {
+ 
+-    const std::tr1::array<int, 3>& p = triangles(n).vertices;
++    const std::array<int, 3>& p = triangles(n).vertices;
+ 
+     const ctype a = (vertices(p[1]) - vertices(p[0])).length();
+     const ctype b = (vertices(p[2]) - vertices(p[1])).length();
+diff --git a/SurfaceBase.h b/SurfaceBase.h
+index c5f6da5..be307c9 100644
+--- a/SurfaceBase.h
++++ b/SurfaceBase.h
+@@ -1,19 +1,9 @@
+ #ifndef SURFACE_BASE_H
+ #define SURFACE_BASE_H
+ 
++#include <array>
+ #include <vector>
+ 
+-// Check for VC9 / VS2008 with installed feature pack.
+-#if defined(_MSC_VER) && (_MSC_VER>=1500)
+-    #if defined(_CPPLIB_VER) && _CPPLIB_VER>=505
+-        #include <array>
+-    #else
+-        #error Please install the Visual Studio 2008 SP1 for TR1 support.
+-    #endif
+-#else
+-    #include <tr1/array>
+-#endif
+-
+ #include <limits>
+ 
+ #include "StaticVector.h"
+diff --git a/SurfaceParts.h b/SurfaceParts.h
+index fb58407..42d1a05 100644
+--- a/SurfaceParts.h
++++ b/SurfaceParts.h
+@@ -271,9 +271,9 @@ class Triangle
+     //////////////////////////////////////////////////////////////
+ public:
+ 
+-    std::tr1::array<int, 3> vertices;
++    std::array<int, 3> vertices;
+ 
+-    std::tr1::array<int, 3> edges;
++    std::array<int, 3> edges;
+ 
+ };
+ 
+diff --git a/TargetSurface.h b/TargetSurface.h
+index fae786a..5cea650 100644
+--- a/TargetSurface.h
++++ b/TargetSurface.h
+@@ -45,7 +45,7 @@ class Surface {
+             file format, the first point in the surface's point array is 1.
+             In this data structure, the first point has the index 0.
+             Conversion is done when writing and reading. */
+-        std::tr1::array<int,3> points;
++        std::array<int,3> points;
+ 
+     };
+     

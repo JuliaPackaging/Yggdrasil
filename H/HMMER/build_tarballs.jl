@@ -3,12 +3,15 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HMMER"
-version = v"3.3.2"
-
+version_string = "3.1b2"
+#version = v"3.1.0"
+version = let ver = VersionNumber(version_string)
+    VersionNumber(ver.major, ver.minor, ver.patch)
+end
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://eddylab.org/software/hmmer/hmmer-$(version).tar.gz",
-                  "92fee9b5efe37a5276352d3502775e7c46e9f7a0ee45a331eacb2a0cac713c69")
+    ArchiveSource("http://eddylab.org/software/hmmer/hmmer-$(version_string).tar.gz",
+        "dd16edf4385c1df072c9e2f58c16ee1872d855a018a2ee6894205277017b5536")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,12 +19,17 @@ script = raw"""
 cd $WORKSPACE/srcdir/hmmer-*/
 
 export CPPFLAGS="-I${includedir}"
+update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-gsl --enable-threads --enable-sse
 make -j${nproc}
 make install
 
-install_license LICENSE
+cd easel && make install
+mv LICENSE LICENSE.easel
+
+install_license LICENSE.easel
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,6 +46,30 @@ platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || proc_family
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("alimask", :alimask),
+    #ExecutableProduct("easel", :easel),
+    ExecutableProduct("esl-afetch", :esl_afetch),
+    ExecutableProduct("esl-alimanip", :esl_alimanip),
+    ExecutableProduct("esl-alimap", :esl_alimap),
+    ExecutableProduct("esl-alimask", :esl_alimask),
+    ExecutableProduct("esl-alimerge", :esl_alimerge),
+    ExecutableProduct("esl-alipid", :esl_alipid),
+    #ExecutableProduct("esl-alirev", :esl_alirev),
+    ExecutableProduct("esl-alistat", :esl_alistat),
+    ExecutableProduct("esl-compalign", :esl_compalign),
+    ExecutableProduct("esl-compstruct", :esl_compstruct),
+    ExecutableProduct("esl-construct", :esl_construct),
+    ExecutableProduct("esl-histplot", :esl_histplot),
+    ExecutableProduct("esl-mask", :esl_mask),
+    #ExecutableProduct("esl-mixdchlet", :esl_mixdchlet),
+    ExecutableProduct("esl-reformat", :esl_reformat),
+    ExecutableProduct("esl-selectn", :esl_selectn),
+    ExecutableProduct("esl-seqrange", :esl_seqrange),
+    ExecutableProduct("esl-seqstat", :esl_seqstat),
+    ExecutableProduct("esl-sfetch", :esl_sfetch),
+    ExecutableProduct("esl-shuffle", :esl_shuffle),
+    ExecutableProduct("esl-ssdraw", :esl_ssdraw),
+    #ExecutableProduct("esl-translate", :esl_translate),
+    ExecutableProduct("esl-weight", :esl_weight),
     ExecutableProduct("hmmalign", :hmmalign),
     ExecutableProduct("hmmbuild", :hmmbuild),
     ExecutableProduct("hmmconvert", :hmmconvert),
@@ -45,7 +77,7 @@ products = [
     ExecutableProduct("hmmfetch", :hmmfetch),
     ExecutableProduct("hmmlogo", :hmmlogo),
     ExecutableProduct("hmmpgmd", :hmmpgmd),
-    ExecutableProduct("hmmpgmd_shard", :hmmpgmd_shard),
+    #ExecutableProduct("hmmpgmd_shard", :hmmpgmd_shard),
     ExecutableProduct("hmmpress", :hmmpress),
     ExecutableProduct("hmmscan", :hmmscan),
     ExecutableProduct("hmmsearch", :hmmsearch),

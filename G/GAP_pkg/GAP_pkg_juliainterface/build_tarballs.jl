@@ -3,25 +3,31 @@
 using Base.BinaryPlatforms
 include("../common.jl")
 
-gap_version = v"400.1191.001"
-gap_lib_version = v"400.1191.000"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+using Pkg
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+gap_version = v"400.1192.001"
+gap_lib_version = v"400.1192.001"
 name = "JuliaInterface"
-upstream_version = v"0.7.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = v"0.8.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "ce9df14f7af1d0c9d9ce0ce1e588f9b5ed1845ed"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "576b5eaaefc4fa6b0b7b48f977dd4395f65e0ab7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd GAP.jl/pkg/JuliaInterface
 ./configure --with-gaproot=${prefix}/share/gap
-make -j${nproc} CFLAGS="-I${includedir}"
+make -j${nproc} CFLAGS="-I${includedir} -I${includedir}/julia" LDFLAGS="-ljulia"
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
@@ -59,3 +65,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

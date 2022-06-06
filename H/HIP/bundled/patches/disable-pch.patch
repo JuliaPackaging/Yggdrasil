@@ -1,8 +1,17 @@
+From b5e42eeb39cabb0819654b1f5b9bb197e62780fc Mon Sep 17 00:00:00 2001
+From: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Wed, 14 Jul 2021 14:56:47 -0500
+Subject: [PATCH] Disable PCH
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7831bb4d..2198b6de 100755
+index f97fb839..f6f93330 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -12,7 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+@@ -41,7 +41,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
  # Options
  #############################
  option(BUILD_HIPIFY_CLANG "Enable building the CUDA->HIP converter" OFF)
@@ -11,3 +20,6 @@ index 7831bb4d..2198b6de 100755
  
  if(__HIP_ENABLE_PCH)
    set(_pchStatus 1)
+-- 
+2.33.1
+

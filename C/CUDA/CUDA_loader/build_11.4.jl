@@ -1,4 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.4.2"))]
+dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.4.4"))]
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere

@@ -1,0 +1,40 @@
+diff --git a/fortran/CMakeLists.txt b/fortran/CMakeLists.txt
+index 650296c0..5ba26708 100644
+--- a/fortran/CMakeLists.txt
++++ b/fortran/CMakeLists.txt
+@@ -7,14 +7,10 @@ if( HAVE_FORTRAN )
+ 
+     include_directories( ${srcdir} ${bindir} )
+ 
+-    ecbuild_add_executable( TARGET  grib_types
+-                            NOINSTALL
+-                            SOURCES grib_types.f90 grib_fortran_kinds.c )
+-
+-    add_custom_command( OUTPUT  grib_kinds.h
+-                        COMMAND grib_types > grib_kinds.h
+-                        DEPENDS grib_types )
+-
++    check_type_size(long longsize LANGUAGE C)
++    check_type_size(size_t size_t_size LANGUAGE C)
++    configure_file(grib_kinds.h.in grib_kinds.h)
++    
+     if( ${ECCODES_SIZEOF_INT} EQUAL ${ECCODES_SIZEOF_LONG} )
+         set( _long_int_interface    grib_f90_int.f90 )
+         set( _long_int_interface_ec eccodes_f90_int.f90 )
+diff --git a/fortran/grib_kinds.h.in b/fortran/grib_kinds.h.in
+new file mode 100644
+index 00000000..a490f87d
+--- /dev/null
++++ b/fortran/grib_kinds.h.in
+@@ -0,0 +1,11 @@
++ integer,public,parameter :: kindOfInt=           4
++ integer,public,parameter :: kindOfLong=          ${longsize}
++ integer,public,parameter :: kindOfSize_t=        ${size_t_size}
++ integer,public,parameter :: kindOfSize=          ${size_t_size}
++ integer,public,parameter :: kindOfDouble=        8
++ integer,public,parameter :: kindOfFloat=         4
++ integer,public,parameter :: sizeOfInteger=       4
++ integer,public,parameter :: sizeOfInteger2=      2
++ integer,public,parameter :: sizeOfInteger4=      4
++ integer,public,parameter :: sizeOfReal4=         4
++ integer,public,parameter :: sizeOfReal8=         8

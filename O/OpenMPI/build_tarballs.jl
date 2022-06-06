@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenMPI"
-version = v"4.1.2"
+version = v"4.1.3"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "a400719b04375cd704d2ed063a50e42d268497a3dfede342986ab7a8d7e8dcf0"),
+                  "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
                   "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
     DirectorySource("./bundled"),
@@ -17,6 +17,8 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
+
+atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Help compiler find `complib/cl_types.h`.
@@ -68,8 +70,7 @@ install_license $WORKSPACE/srcdir/openmpi*/LICENSE $WORKSPACE/srcdir/MPIconstant
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-#platforms = supported_platforms()
-platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms(; experimental=true))
+platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
     
 products = [

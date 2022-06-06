@@ -3,23 +3,29 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# copied from libsingular_julia:
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libpolymake_julia"
-version = v"0.6.0"
+version = v"0.8.0"
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+# reminder: change the above version if restricting the supported julia versions
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "de2180654322b2e68e47dd59bb842ccb7956e81bafa618dafef0320c35189968"),
+                  "da459c1fc819a446cfa683cc8e6e890a54194b7a943ac8d62c4c71061512dbee"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# change default perl which interferes with the hostbuild perl
+# remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
-ln -s $host_bindir/perl /usr/bin/perl
 
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
@@ -47,7 +53,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("polymake_run_script", :polymake_run_script),
     LibraryProduct("libpolymake_julia", :libpolymake_julia),
     FileProduct("share/libpolymake_julia/type_translator.jl",:type_translator),
     FileProduct("share/libpolymake_julia/appsjson",:appsjson),
@@ -63,10 +68,10 @@ dependencies = [
     Dependency("TOPCOM_jll"),
     Dependency("lib4ti2_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("polymake_jll"; compat = "~400.501.0"),
+    Dependency("polymake_jll"; compat = "~400.600.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.501.0")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.600.0")),
     HostBuildDependency("lib4ti2_jll"),
     HostBuildDependency("TOPCOM_jll"),
 ]
@@ -74,4 +79,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "1.6")
+    julia_compat = julia_compat)
