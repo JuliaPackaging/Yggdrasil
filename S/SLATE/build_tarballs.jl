@@ -34,7 +34,7 @@ make install
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; exclude=!Sys.islinux)))
-
+platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 products = [
     LibraryProduct("libslate", :libslate),
     LibraryProduct("libslate_lapack_api", :libslate_lapack_api)
