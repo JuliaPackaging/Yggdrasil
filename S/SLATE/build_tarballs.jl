@@ -33,7 +33,7 @@ make install
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
+platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; exclude=!Sys.islinux)))
 
 products = [
     LibraryProduct("libslate", :libslate),
