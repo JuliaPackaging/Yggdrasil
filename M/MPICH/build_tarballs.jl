@@ -128,6 +128,12 @@ install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstant
 
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
+function augment_platform!(p, tag, value)
+    @assert !haskey(p, value)
+    p[tag] = value
+end
+augment_platform!.(platforms, "mpi", "MPICH")
+
 products = [
     # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
@@ -140,7 +146,9 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
+                           uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"),
+               v"0.5.2"),
 ]
 
 # Build the tarballs.
