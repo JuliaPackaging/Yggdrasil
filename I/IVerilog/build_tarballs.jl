@@ -27,7 +27,6 @@ sh ./autoconf.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
 make -j${nproc}
 make install
-"""
 
 # build is generating Windows binaries without extension, hack them back
 if [[ "${target}" == *-mingw* ]]; then
@@ -35,6 +34,7 @@ if [[ "${target}" == *-mingw* ]]; then
     mv "${bindir}/iverilog-vpi" "${bindir}/iverilog-vpi${exeext}"
     mv "${bindir}/vvp" "${bindir}/vvp${exeext}"
 fi
+"""
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
