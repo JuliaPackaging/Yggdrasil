@@ -20,6 +20,8 @@ dependencies = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
+export CFLAGS="-O2"
+export CXXFLAGS="-O2"
 sh ./autoconf.sh
 # The generated configure script is replacing a variable incorrectly
 sed -i 's/EXEEXT=$ac_cv_build_exeext/BUILD_EXEEXT=$ac_cv_build_exeext/' configure
