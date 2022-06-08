@@ -14,6 +14,7 @@ dependencies = [
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("gperf_jll"),
     Dependency("Readline_jll"; compat="8.1.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Bash recipe for building across all platforms
