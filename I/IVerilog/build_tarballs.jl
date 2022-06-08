@@ -6,34 +6,25 @@ name = "IVerilog"
 version = v"12.0.0"
 
 # Collection of sources required to complete build
-# TODO stable once available, this is "12.0 (devel)"
 sources = [
    GitSource("https://github.com/steveicarus/iverilog.git", "2693dd32b075243cca20400cf3a808cef119477e")
 ]
 
 dependencies = [
     HostBuildDependency("Bison_jll"),
-    Dependency("Readline_jll"; compat="8.1.1"),
     HostBuildDependency("gperf_jll"),
-    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Readline_jll"; compat="8.1.1"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
-export CFLAGS="-O2"
-export CXXFLAGS="-O2"
 sh ./autoconf.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
+# The generated configure script is replacing a variable incorrectly
+sed -i 's/EXEEXT=$ac_cv_build_exeext/BUILD_EXEEXT=$ac_cv_build_exeext/' configure
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
-# build is generating Windows binaries without extension, hack them back
-if [[ "${target}" == *-mingw* ]]; then
-    mv "${bindir}/iverilog" "${bindir}/iverilog${exeext}"
-    mv "${bindir}/iverilog-vpi" "${bindir}/iverilog-vpi${exeext}"
-    mv "${bindir}/vvp" "${bindir}/vvp${exeext}"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
