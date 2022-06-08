@@ -15,6 +15,7 @@ cp ../make.inc .
 
 make -j${nproc} sparse-lib
 make install prefix=${prefix}
+install_license COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -23,7 +24,8 @@ platforms = supported_platforms(exclude=Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libMAGMA", :libMAGMA),
+    LibraryProduct("libmagma", :libmagma),
+    LibraryProduct("libmagma_sparse", :libmagma_sparse)
 ]
 
 # Dependencies that must be installed before this package can be built
