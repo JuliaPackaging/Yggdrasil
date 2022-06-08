@@ -15,13 +15,12 @@ dependencies = [
     HostBuildDependency("Bison_jll"),
     Dependency("Readline_jll"; compat="8.1.1"),
     HostBuildDependency("gperf_jll"),
-    Dependency("Zlib_jll"; compat="~1.2.11"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
-export CPPFLAGS="-I${includedir}"
 sh ./autoconf.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
 make -j${nproc}
