@@ -6,11 +6,9 @@ name = "IVerilog"
 version = v"12.0.0"
 
 # Collection of sources required to complete build
-# This is a patched master including https://github.com/steveicarus/iverilog/pull/511/
-# to allow for cross compilation 
-# TODO use upstream + stable once available
+# TODO stable once available, this is "12.0 (devel)"
 sources = [
-   GitSource("https://github.com/sjkelly/iverilog.git", "1f09b041f1060116840b901c21938ad31d79bb98")
+   GitSource("https://github.com/steveicarus/iverilog.git", "2693dd32b075243cca20400cf3a808cef119477e")
 ]
 
 dependencies = [
@@ -39,6 +37,7 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     ExecutableProduct("iverilog", :iverilog),
     ExecutableProduct("iverilog-vpi", :iverilog_vpi)
+    ExecutableProduct("iverilog-vpi", :vvp)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
