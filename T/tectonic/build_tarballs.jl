@@ -52,4 +52,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    compilers=[:c, :rust], preferred_gcc_version=v"7", lazy_artifacts=true, lock_microarchitecture=false, julia_compat="1.6")
