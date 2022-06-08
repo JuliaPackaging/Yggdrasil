@@ -21,6 +21,8 @@ dependencies = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
+export CFLAGS="-O2"
+export CXXFLAGS="-O2"
 sh ./autoconf.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
 make -j${nproc}
