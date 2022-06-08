@@ -37,7 +37,7 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     ExecutableProduct("iverilog", :iverilog),
     ExecutableProduct("iverilog-vpi", :iverilog_vpi)
-    ExecutableProduct("iverilog-vpi", :vvp)
+    ExecutableProduct(":vvp", :vvp)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
