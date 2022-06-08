@@ -104,7 +104,7 @@ ifeq ($(BACKEND),cuda)
     DEVCCFLAGS += -Xcompiler "$(FPIC)" -std=c++11
 
     # link with cuda specific libraries
-    LIB += -lcublas -lcusparse -lcudart -lcudadevrt
+    LIB += -L$(CUDADIR)/lib64 -lcublas -lcusparse -lcudart -lcudadevrt
     INC += -I$(CUDADIR)/include
 
 endif
