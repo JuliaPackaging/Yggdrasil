@@ -31,7 +31,7 @@ CC          ?= gcc
 CXX         ?= g++
 FORT        ?= gfortran
 HIPCC       ?= hipcc
-NVCC        ?= $(CUDADIR)/bin/nvcc
+NVCC        ?= $(CUDADIR)/bin/nvcc$(exeext)
 DEVCC       ?= NONE
 
 # set from 'BACKEND'
