@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libcups"
-version = v"2.3.3"
+version = v"2.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/michaelrsweet/libcups.git", "1fbe09e7a69774b2be4e10e12f13f8f3bf751f59")
+    GitSource("https://github.com/openprinting/cups.git", "12ff481989924fc82ffdf1b8699753a486a33547")
 ]
 
 # Bash recipe for building across all platforms
