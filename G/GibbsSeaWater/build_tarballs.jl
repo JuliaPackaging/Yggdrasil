@@ -14,15 +14,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CC="cc"
-if [[ "${target}" == aarch64-apple-* ]]; then
-    export CC="clang"
-    echo $CFLAGS
-    echo $LDFLAGS
-fi
 cd $WORKSPACE/srcdir/GSW-C-*
+CC=cc
+if [[ "${target}" == aarch64-apple-* ]]; then
+    CC="gcc"
+fi
 $CC $CFLAGS -fPIC -c -O3 -Wall gsw_oceanographic_toolbox.c gsw_saar.c
-$CC -L${libdir} $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
+$CC $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm 
 mkdir -p ${libdir}
 cp libgswteos.$dlext ${libdir}
 """
