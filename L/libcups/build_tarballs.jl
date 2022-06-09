@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/libcups.git
+cd ${WORKSPACE}/srcdir/cups.git
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
