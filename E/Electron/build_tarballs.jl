@@ -86,7 +86,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("Glib_jll"; compat="2"),
+    Dependency("Glib_jll"),
     # libcups
     Dependency("GTK3_jll"),
     Dependency("ATK_jll"),
