@@ -86,6 +86,31 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("Glib_jll"; compat="2"),
+    # libcups
+    Dependency("GTK3_jll"),
+    Dependency("ATK_jll"),
+    Dependency("FFMPEG_jll"),
+    # libnssutil3
+    Dependency("alsa_jll"),
+    # libnspr4
+    Dependency("gdk_pixbuf_jll"),
+    Dependency("Xorg_libXfixes_jll"),
+    Dependency("Xorg_libXdamage_jll"),
+    Dependency("Cairo_jll"),
+    # libgbm
+    # libsmime3
+    Dependency("Dbus_jll"),
+    Dependency("xkbcommon_jll"),
+    Dependency("at_spi2_core_jll"),
+    Dependency("Xorg_libXcomposite_jll"),
+    Dependency("Pango_jll"),
+    Dependency("Expat_jll"),
+    # libgio
+    # libxcb
+    Dependency("Xorg_libXrandr_jll"),
+    # libnss3
+    Dependency("Xorg_libXext_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
