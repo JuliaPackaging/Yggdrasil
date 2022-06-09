@@ -137,6 +137,9 @@ augment_platform_block = """
 
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
+# Add `mpi+mpich` platform tag
+foreach(p -> (p["mpi"] = "MPICH"), platforms)
+
 products = [
     # MPICH
     LibraryProduct("libmpicxx", :libmpicxx),
@@ -153,8 +156,6 @@ dependencies = [
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
 ]
 
-# # Add `mpi+mpich` platform tag
-foreach(p -> (p["mpi"] = "MPICH"), platforms)
-
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")
