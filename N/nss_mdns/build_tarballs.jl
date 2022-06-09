@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd nss-mdns.git
+cd nss-mdns
 ./bootstrap.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
