@@ -1,12 +1,15 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 version = v"4.1.3"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
-                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.5.0.tar.gz",
+                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     DirectorySource("./bundled"),
 ]
 
@@ -68,11 +71,20 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license $WORKSPACE/srcdir/openmpi*/LICENSE $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
-    
+
+# Add `mpi+openmpi` platform tag
+foreach(p -> (p["mpi"] = "OpenMPI"), platforms)
+
 products = [
     # OpenMPI
     LibraryProduct("libmpi", :libmpi),
@@ -84,6 +96,7 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
 ]
 
 init_block = raw"""
