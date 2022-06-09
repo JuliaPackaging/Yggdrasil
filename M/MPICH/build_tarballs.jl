@@ -1,4 +1,7 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
 version_str = "4.0.2"
@@ -126,13 +129,13 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
 
-function augment_platform!(p, tag, value)
-    @assert !haskey(p, value)
-    p[tag] = value
-end
-augment_platform!.(platforms, "mpi", "MPICH")
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
 
 products = [
     # MPICH
@@ -146,10 +149,12 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
-                           uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"),
-               v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
 ]
+
+# # Add `mpi+mpich` platform tag
+foreach(p -> (p["mpi"] = "MPICH"), platforms)
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
