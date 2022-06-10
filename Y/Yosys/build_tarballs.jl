@@ -49,7 +49,7 @@ fi
 
 # TODO: ABC does not build on windows
 if [[ "${target}" == *x86_64-w64-mingw32* ]] || [[ "${target}" == *i686-w64-mingw32* ]]; then
-    make install ENABLE_LIBYOSYS=1 ENABLE_ABC=0 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} LIBDIR=${libdir} -j${nproc}
+    make install ENABLE_LIBYOSYS=1 ENABLE_ABC=0 ENABLE_TCL=0 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} TCL_VERSION=tcl86 LIBDIR=${libdir} -j${nproc}
 else
     make install ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} LIBDIR=${libdir} -j${nproc}
 fi
@@ -62,7 +62,6 @@ fi
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct("yosys", :yosys),
-    ExecutableProduct("yosys-config", :yosys_config),
     ExecutableProduct("yosys-filterlib", :yosys_filterlib),
     ExecutableProduct("yosys-smtbmc", :yosys_smtbmc),
     LibraryProduct("libyosys", :libyosys)
