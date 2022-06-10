@@ -22,8 +22,8 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
 fi
 cd $WORKSPACE/srcdir/GSW-C-*
-cc $CFLAGS -fPIC -c -O3 -Wall gsw_oceanographic_toolbox.c gsw_saar.c
-cc $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm 
+cc -fPIC -c -O3 -Wall gsw_oceanographic_toolbox.c gsw_saar.c
+cc $LDFLAGS -fPIC -shared -o libgswteos.$dlext gsw_oceanographic_toolbox.o gsw_saar.o -lm
 mkdir -p ${libdir}
 cp libgswteos.$dlext ${libdir}
 """
@@ -40,7 +40,7 @@ products = [
 llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # We need libclang_rt.osx.a for linking libomp, because this library provides the
+    # We need libclang_rt.osx.a, because this library provides the
     # implementation of `__divdc3`.
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=[Platform("aarch64", "macos")]),
 ]
