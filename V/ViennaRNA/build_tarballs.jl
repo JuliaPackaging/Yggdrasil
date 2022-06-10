@@ -38,6 +38,9 @@ if [[ $target == *-w64-mingw32* ]]; then
 
     # needed for compilation of dlib on windows
     export LIBS="-lwinmm"
+
+    # fix for missing nonstandard strcasestr function on windows
+    atomic_patch -p1 ../patches/windows-strcasestr-fix.patch
 fi
 
 # configure script fails (only in sandbox) without
