@@ -8,8 +8,6 @@ version = v"4.1.3"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.5.0.tar.gz",
-                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     DirectorySource("./bundled"),
 ]
 
@@ -44,31 +42,10 @@ make -j${nproc}
 make install
 
 ################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-
-cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBUILD_SHARED_LIBS=ON \
-    -DMPI_C_COMPILER=cc \
-    -DMPI_C_LIB_NAMES='mpi' \
-    -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-    ..
-
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-
-################################################################################
 # Install licenses
 ################################################################################
 
-install_license $WORKSPACE/srcdir/openmpi*/LICENSE $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
+install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 """
 
 augment_platform_block = """
@@ -89,9 +66,6 @@ products = [
     # OpenMPI
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
-    # MPIconstants
-    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
-    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
