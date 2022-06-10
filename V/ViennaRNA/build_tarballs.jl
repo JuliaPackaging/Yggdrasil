@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.5.0"
+version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ViennaRNA/ViennaRNA/releases/download/v$(version)/ViennaRNA-$(version).tar.gz",
-                  "feb2af9457a1818e71d8610608edf2382b4bbb71c0f9109812ea144ca6d8e9ca"),
+                  "be4414d574825ef7236533e2885b2bd795f6e833487236ad1ff45cdd4b7e44b7"),
     DirectorySource("./bundled")
 ]
 
