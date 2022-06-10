@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMReX"
-version = v"22.6.0"
+version_string = "22.06"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/22.06/amrex-22.06.tar.gz",
+    ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
                   "d8aa58e72c86a3da9a7be5a5947294fd3eaac6b233f563366f9e000d833726db"),
 ]
 
