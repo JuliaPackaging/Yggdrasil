@@ -56,6 +56,8 @@ fi
 
 if [[ "${target}" == *-apple-* ]]; then
     mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dylib
+elif [[ "${target}" == *-w64-* ]]; then
+    mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dll
 fi
 """
 
@@ -63,7 +65,6 @@ fi
 products = Product[
     ExecutableProduct("yosys", :yosys),
     ExecutableProduct("yosys-filterlib", :yosys_filterlib),
-    ExecutableProduct("yosys-smtbmc", :yosys_smtbmc),
     LibraryProduct("libyosys", :libyosys)
 ]
 
