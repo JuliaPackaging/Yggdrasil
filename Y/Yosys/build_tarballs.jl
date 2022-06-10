@@ -30,9 +30,12 @@ dependencies = [
 script = raw"""
 cd yosys
 
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
     CONFIG=clang
     OS=Darwin
+elif [[ "${target}" == *-freebsd* ]]; then
+    CONFIG=clang
+    OS=FreeBSD
 elif [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
