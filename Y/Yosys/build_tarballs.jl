@@ -54,11 +54,8 @@ else
     make install ENABLE_LIBYOSYS=1 OS=${OS} CONFIG=${CONFIG} PREFIX=${prefix} TCL_INCLUDE=${libdir} LIBDIR=${libdir} -j${nproc}
 fi
 
-if [[ "${target}" == *-apple-* ]]; then
-    mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dylib
-elif [[ "${target}" == *-w64-* ]]; then
-    mv ${libdir}/libyosys.so  ${libdir}/libyosys.dll
-fi
+# everything is a .so even if it is not... so fixup
+mv ${libdir}/libyosys.so  ${libdir}/libyosys.${dlext}
 """
 
 # The products that we will ensure are always built
