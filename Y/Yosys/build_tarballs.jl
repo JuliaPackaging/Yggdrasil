@@ -57,7 +57,7 @@ fi
 if [[ "${target}" == *-apple-* ]]; then
     mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dylib
 elif [[ "${target}" == *-w64-* ]]; then
-    mv ${prefix}/lib/libyosys.so  ${prefix}/lib/libyosys.dll
+    mv ${libdir}/libyosys.so  ${libdir}/libyosys.dll
 fi
 """
 
