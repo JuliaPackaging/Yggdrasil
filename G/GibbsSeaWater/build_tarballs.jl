@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "GibbsSeaWater"
-version = v"3.5.0"
+version = v"3.5.1"
 
 # Collection of sources required to build GibbsSeaWater
 # note 3.05.0-4 is too old to be cross-compiled on FreeBSD
