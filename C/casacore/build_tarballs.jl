@@ -1,3 +1,4 @@
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
@@ -15,17 +16,14 @@ script = raw"""
 OPENBLAS=(-lopenblas64_)
 
 cd $WORKSPACE/srcdir/casacore
-mkdir build
-cd build
+
+mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_PYTHON=OFF \
-      -DBUILD_SHARED_LIBS=ON \
-      -DUSE_READLINE=OFF \
-      -DUSE_HDF5=ON \
-      -DFFTW3_DISABLE_THREADS=ON \
+      -DBUILD_PYTHON=no \
       -DBLAS_LIBRARIES="${OPENBLAS[*]}" \
+      -DFFTW3_DISABLE_THREADS=yes \
       ..
 make -j${nproc}
 make install
@@ -35,10 +33,11 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
+# expand gfortran versions as well
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
-products = [
+products = Product[
     LibraryProduct("libcasa_casa", :libcasa_casa),
     LibraryProduct("libcasa_coordinates", :libcasa_coordinates),
     LibraryProduct("libcasa_derivedmscal", :libcasa_derivedmscal),
@@ -53,7 +52,6 @@ products = [
     LibraryProduct("libcasa_scimath_f", :libcasa_scimath_f),
     LibraryProduct("libcasa_scimath", :libcasa_scimath),
     LibraryProduct("libcasa_tables", :libcasa_tables),
-    ExecutableProduct("casahdf5support", :casahdf5support),
     ExecutableProduct("findmeastable", :findmeastable),
     ExecutableProduct("fits2table", :fits2table),
     ExecutableProduct("image2fits", :image2fits),
@@ -78,11 +76,11 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
-    Dependency(PackageSpec(name="Bison_jll", uuid="0f48145f-aea8-549d-8864-7f251ac1e6d0"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
-    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"))
     Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"))
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
