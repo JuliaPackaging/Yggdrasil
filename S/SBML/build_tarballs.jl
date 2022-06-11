@@ -14,6 +14,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
 
 atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
+atomic_patch -p1 ../patches/0002-Add-SBMLNamespaces_addPackageNamespace-s-functions-t.patch
 
 mkdir build
 cd build
