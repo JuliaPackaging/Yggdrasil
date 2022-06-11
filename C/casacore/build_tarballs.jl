@@ -50,6 +50,8 @@ exit
 
 # Exclude windows, casacore needs pread and pwrite, which are POSIX-only
 platforms = supported_platforms(exclude=Sys.iswindows)
+# Deal with the fact that we have std::string values, which causes issues across the gcc 4/5 boundary
+platforms = expand_cxxstring_abis(platforms)
 # expand gfortran versions as well
 platforms = expand_gfortran_versions(platforms)
 
