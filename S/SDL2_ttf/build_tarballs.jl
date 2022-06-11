@@ -12,6 +12,8 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
+version = v"2.0.16" # <-- this version number is a lie to build for Julia v1.6
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_ttf-*/
@@ -51,16 +53,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("SDL2_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("FreeType2_jll"),
+    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Graphite2_jll"),
     # The following libraries aren't needed for the build, but libSDL2_ttf is
     # dynamically linked to them regardless.
     Dependency("libpng_jll"),
-    Dependency("HarfBuzz_jll"),
-    Dependency("Graphite2_jll"),
-    Dependency("Glib_jll"),
     Dependency("PCRE_jll"),
+    Dependency("SDL2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.31.0"
+version = v"2.34.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "e8f162cbdb3283e13cd7388d864ed23485f1b046a19e969f12ed2685fb789a40"),
+                  "3a0755dd1cfab71a24dd96df3498c29cd0acd13b04f3d08bf933e81286db802c"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "faff066b2bb4d7640c6a873c87208514218741c201b67b96eacf11be59d9ae1c"; unpack_target = "i686-w64-mingw32"),
+                  "109d69b92e5383d40765064bcd25183af05b12c64a95597419a703004a7c8521"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "a5723d9307e044ab9f20f3d43fd014bc6506378da869c98370d3a98b3de7017f"; unpack_target = "x86_64-w64-mingw32"),
+                  "0d962f5894b94b93a966a2c12f77330e5f68aacae775059fb30dd61f2c08ef00"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,12 +27,21 @@ fi
 
 cd $WORKSPACE/srcdir/git-*/
 
-# We need a native "msgfmt" to cross-compile
-apk add tcl gettext
+# We need a native "tclsh" to cross-compile
+apk add tcl
 
-# Git doesn't want to be cross-compiled, but we swear that we're not going to
-# cross-compile
-sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
+CACHE_VALUES=()
+if [[ "${target}" != *86*-linux-* ]]; then
+    # Cache values of some tests, let's hope to have got them right
+    CACHE_VALUES+=(
+        ac_cv_iconv_omits_bom=no
+        ac_cv_fread_reads_directories=yes
+        ac_cv_snprintf_returns_bogus=no
+    )
+else
+    # Explain Git that we aren't cross-compiling on these platforms
+    sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
+fi
 
 if [[ "${target}" == *-apple-* ]]; then
     LDFLAGS="-lgettextlib"
@@ -47,6 +56,7 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
+    "${CACHE_VALUES[@]}" \
     CPPFLAGS="-I${prefix}/include" \
     LDFLAGS="${LDFLAGS}"
 make -j${nproc}
@@ -62,10 +72,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Need a host gettext for msgfmt
+    HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"),
-    Dependency("Expat_jll"),
-    Dependency("OpenSSL_jll"),
-    Dependency("Gettext_jll"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    # I believe Gettext is needed for macOS (and probably only here)
+    Dependency("Gettext_jll"; compat="=0.21.0"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll", v"10.35.0"),
     Dependency("Zlib_jll"),

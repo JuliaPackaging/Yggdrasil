@@ -3,40 +3,29 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.42.4"
+version = v"1.50.3"
 
 # Collection of sources required to build Pango
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "1d2b74cd63e8bd41961f2f8d952355aa0f9be6002b52c8aa7699d9f5da597c9d"),
+                  "4add05edf51c1fb375a1ccde7498914120e23cb280dd7395b1aeb441f1838a4c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/pango-*/
-
-# Remove misleading libtool files
-rm -f ${prefix}/lib/*.la
-
-# Be able to find libffi on ppc64le
-if [[ ${target} == powerpc64le* ]]; then
-    export LDFLAGS="${LDFLAGS} -Wl,-rpath-link,${prefix}/lib64"
-fi
-
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-introspection \
-    --disable-gtk-doc-html
-
-# The generated Makefile tries to build some examples in the "tests" directory,
-# but this would fail for some unknown reasons.  Let's skip it.
-sed -i 's/^\(SUBDIRS = .*\) tests/\1/' Makefile
-make -j${nproc}
-make install
+pip3 install gi-docgen
+mkdir build && cd build
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Dintrospection=disabled \
+    ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -47,14 +36,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
-    Dependency("Glib_jll"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("Fontconfig_jll"),
-    Dependency("HarfBuzz_jll"),
-    Dependency("Cairo_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("FriBidi_jll"),
+    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

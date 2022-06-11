@@ -1,0 +1,56 @@
+commit f8cabb0212d052cd8409ab18fcd1861465ba84c5
+Author: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date:   Mon Jan 4 14:17:32 2021 -0600
+
+    Fixes for musl support
+
+diff --git a/os/os.hpp b/os/os.hpp
+index 82879dee..1bc01309 100755
+--- a/os/os.hpp
++++ b/os/os.hpp
+@@ -29,12 +29,17 @@
+ 
+ #if defined(__linux__)
+ #include <sched.h>
++#include <libgen.h>
+ #endif
+ 
+ #ifdef _WIN32
+ #include <Basetsd.h>  // For KAFFINITY
+ #endif                // _WIN32
+ 
++#ifndef __cpu_mask
++typedef unsigned long __cpu_mask;
++#endif
++
+ // Smallest supported VM page size.
+ #define MIN_PAGE_SHIFT 12
+ #define MIN_PAGE_SIZE (1UL << MIN_PAGE_SHIFT)
+
+diff --git a/os/os_posix.cpp b/os/os_posix.cpp
+index 91d08bc3..5527ee79 100755
+--- a/os/os_posix.cpp
++++ b/os/os_posix.cpp
+@@ -374,15 +374,22 @@ const void* Os::createOsThread(amd::Thread* thread) {
+     for (int i = 0; i < processorCount_; i++) {
+       CPU_SET(i, &cpuset);
+     }
++#ifdef pthread_attr_setaffinity_np
+     if (0 != pthread_attr_setaffinity_np(&threadAttr, sizeof(cpu_set_t), &cpuset)) {
+       fatal("pthread_attr_setaffinity_np failed to set affinity");
+     }
++#endif
+   }
+ 
+   pthread_t handle = 0;
+   if (0 != ::pthread_create(&handle, &threadAttr, (void* (*)(void*)) & Thread::entry, thread)) {
+     thread->setState(Thread::FAILED);
+   }
++#ifndef pthread_attr_setaffinity_np
++  if (0 != pthread_setaffinity_np(handle, sizeof(cpu_set_t), &cpuset)) {
++    fatal("pthread_attr_setaffinity_np failed to set affinity");
++  }
++#endif
+ 
+   ::pthread_attr_destroy(&threadAttr);
+   return reinterpret_cast<const void*>(handle);

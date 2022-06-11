@@ -1,9 +1,9 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.2.0"
+version = v"2.2.1" # <-- Fake version number to build for more platforms
 
-# Collection of sources required to build LibSSH2
+# Collection of sources required to build libplist
 sources = [
     GitSource("https://github.com/libimobiledevice/libplist.git",
               "c5a30e9267068436a75b5d00fcbf95cb9c1f4dcd"),
@@ -27,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -36,6 +36,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

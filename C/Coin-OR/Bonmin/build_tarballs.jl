@@ -1,8 +1,5 @@
 include("../coin-or-common.jl")
 
-name = "Bonmin"
-version = Bonmin_version
-
 sources = [
     GitSource("https://github.com/coin-or/Bonmin.git", Bonmin_gitsha),
     DirectorySource("./bundled")
@@ -62,14 +59,24 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("ASL_jll", ASL_version),
-    Dependency("Cbc_jll", Cbc_version, compat="=$(Cbc_version)"),
-    Dependency("Cgl_jll", Cgl_version),
-    Dependency("Clp_jll", Clp_version),
-    Dependency("Osi_jll", Osi_version),
-    Dependency("CoinUtils_jll", CoinUtils_version),
-    Dependency("Ipopt_jll", Ipopt_version, compat="=$(Ipopt_version)"),
+    Dependency("Cbc_jll", compat="$(Cbc_version)"),
+    Dependency("Cgl_jll", compat="$(Cgl_version)"),
+    Dependency("Clp_jll", compat="$(Clp_version)"),
+    Dependency("Osi_jll", compat="$(Osi_version)"),
+    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
+    Dependency("Ipopt_jll", compat="$(Ipopt_version)"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(
+    ARGS,
+    "Bonmin",
+    Bonmin_version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies,
+    julia_compat = "1.6",
+)

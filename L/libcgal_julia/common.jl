@@ -4,7 +4,7 @@ using BinaryBuilder
 import Pkg: PackageSpec
 
 name = "libcgal_julia"
-rversion = v"0.16.1"
+rversion = v"0.17.0"
 version = VersionNumber(rversion.major,
                         rversion.minor,
                         100rversion.patch + julia_version.minor)
@@ -16,7 +16,7 @@ rname = "libcgal-julia"
 sources = [
     isyggdrasil ?
         GitSource("https://github.com/rgcv/$rname.git",
-                  "b13c777227527d794e3fb0b1caaff202a25921a8") :
+                  "91ab24f45b689a5fcd760db068f0c8fd06539744") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
@@ -58,6 +58,16 @@ install_license $jlcgaldir/LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
+# generates an abundance of linker errors and notes about using older versions
+# of GCC.  Among many things, this could be related to boost as well.  However,
+# requiring newer versions would, much like libsingular_julia, require the
+# dropping of older julia versions <1.6.  CGAL also contains several deprecation
+# notices when configured against newer versions of boost, so it's probably best
+# to avoid it for now as well.
+filter!(p -> arch(p) ≠ "armv7l", platforms)
+# filter experimental platforms
+filter!(p -> arch(p) ≠ "armv6l", platforms)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -72,8 +82,8 @@ dependencies = [
     BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
     BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
 
-    Dependency("CGAL_jll", compat="5.2"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("CGAL_jll", compat="~5.3"),
+    Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

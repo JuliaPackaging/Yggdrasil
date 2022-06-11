@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"5.2.0"
+version = v"5.2.1" # <-- There is no version 5.2.1, but we need to change version to build for Julia v1.7
 
 # Collection of sources required to build Sundials
 sources = [
@@ -18,14 +18,19 @@ cd $WORKSPACE/srcdir/sundials*
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
-    export CFLAGS="${CFLAGS} -DBUILD_SUNDIALS_LIBRARY"
+    export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
+    # See https://github.com/LLNL/sundials/issues/35
+    atomic_patch -p1 ../patches/Sundials_lapackband.patch
+    # When looking for KLU libraries, CMake searches only for import libraries,
+    # this patch ensures we look also for shared libraries.
+    atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
 elif [[ "${target}" == powerpc64le-* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
 # Set up LAPACK
 LAPACK_LIBRARIES="-lgfortran"
-if [[ ${nbits} == 64 ]] && [[ ${target} != aarch64* ]]; then
+if [[ ${nbits} == 64 ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
     LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas64_.${dlext}"
 else
@@ -43,8 +48,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DEXAMPLES_ENABLE_C=OFF \
-    -DKLU_ENABLE=ON -DKLU_INCLUDE_DIR="$prefix/include" -DKLU_LIBRARY_DIR="$libdir" \
-    -DLAPACK_ENABLE=ON -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DKLU_ENABLE=ON \
+    -DKLU_INCLUDE_DIR="${includedir}" \
+    -DKLU_LIBRARY_DIR="${libdir}" \
+    -DLAPACK_ENABLE=ON \
+    -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
     ..
 make -j${nproc}
 make install
@@ -56,9 +64,8 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
 platforms = expand_gfortran_versions(platforms)
-platforms = [p for p in platforms if !(arch(p) == :powerpc64le)]
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
@@ -89,8 +96,8 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS_jll"),
-    Dependency("SuiteSparse_jll"),
+    Dependency("SuiteSparse_jll"; compat="~5.10.1"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.7")

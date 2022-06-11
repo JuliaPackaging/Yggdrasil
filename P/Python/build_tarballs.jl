@@ -22,7 +22,11 @@ apk add zlib-dev libffi-dev
 
 # Create fake `arch` command:
 echo '#!/bin/bash' >> /usr/bin/arch
-echo 'echo i386'   >> /usr/bin/arch
+if [[ "${target}" == *-apple-* ]]; then
+    echo 'echo i386'  >> /usr/bin/arch
+else
+    echo 'echo `echo $target | cut -d - -f 1`'  >> /usr/bin/arch
+fi
 chmod +x /usr/bin/arch
 
 # Patch out cross compile limitations
@@ -58,6 +62,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# TODO: remove this restriction in the next build
+filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
@@ -72,12 +78,14 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Expat_jll",
-    "Bzip2_jll",
-    "Libffi_jll",
-    "Zlib_jll",
-    "XZ_jll",
-    "OpenSSL_jll",
+    Dependency("Expat_jll", v"2.2.7"; compat="2.2.7"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
+    Dependency("Zlib_jll"),
+    Dependency("XZ_jll"),
+    Dependency("OpenSSL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

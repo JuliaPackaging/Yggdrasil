@@ -43,7 +43,7 @@ make
 make install
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(;experimental=true)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
@@ -57,11 +57,21 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("ASL_jll", ASL_version),
-    Dependency("MUMPS_seq_jll", MUMPS_seq_version, compat="=$(MUMPS_seq_version)"),
+    Dependency("MUMPS_seq_jll", compat="=$(MUMPS_seq_version)"),
     Dependency("OpenBLAS32_jll", OpenBLAS32_version),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=gcc_version)
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    preferred_gcc_version = gcc_version,
+    julia_compat = "1.6"
+)

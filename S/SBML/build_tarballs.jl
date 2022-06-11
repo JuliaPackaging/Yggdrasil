@@ -2,15 +2,20 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.0"
+version = v"5.19.5"
 sources = [
     ArchiveSource(
-        "https://github.com/sbmlteam/libsbml/archive/v5.19.0.tar.gz",
-        "127a44cc8352f998943bb0b91aaf4961604662541b701c993e0efd9bece5dfa8"),
+        "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
+        "6c0ec766e76bc6ad0c8626f3d208b4d9e826b36c816dff0c55e228206c82cb36"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
+
+atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
+atomic_patch -p1 ../patches/0002-Add-SBMLNamespaces_addPackageNamespace-s-functions-t.patch
+
 mkdir build
 cd build
 cmake \
@@ -51,4 +56,4 @@ dependencies = [
 ]
 
 # GCC 6 is necessary to work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67557
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")

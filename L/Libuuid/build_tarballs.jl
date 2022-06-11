@@ -2,14 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-
 name = "Libuuid"
-version = v"2.34"
+version = v"2.36"
 
 # Collection of sources required to build FriBidi
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.xz",
-                  "743f9d0c7252b6db246b659c1e1ce0bd45d8d4508b4dfa427bbb4a3e9b9f62b5"),
+                  "9e4b1c67eb13b9b67feb32ae1dc0d50e08ce9e5d82e1cccd0ee771ad2fa9e0b1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !(Sys.iswindows(p) || Sys.isapple(p))]
+platforms = filter!(p -> !(Sys.iswindows(p) || Sys.isapple(p)), supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -30,8 +29,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

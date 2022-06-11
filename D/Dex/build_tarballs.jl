@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Dex"
-version = v"2.28.1"
+version = v"2.30.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dexidp/dex.git", "510ee05334923aab2bb598f97c7a6d8eb53d53c6"),
+    GitSource("https://github.com/dexidp/dex.git", "6e30b362b7238d5de80b8277bb47ece3994fec95"),
     DirectorySource("bundled"),
 ]
 
@@ -20,7 +20,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 install_license LICENSE 
-make
+make build
 mkdir -p $bindir
 mv bin/dex "$bindir/dex${exeext}"
 tar -czvf $prefix/share/webtemplates.tar.gz -C ./web static templates themes

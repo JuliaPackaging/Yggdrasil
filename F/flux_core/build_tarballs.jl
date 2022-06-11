@@ -71,7 +71,7 @@ dependencies = [
     Dependency("Lz4_jll"),
     Dependency("Hwloc_jll"),
     Dependency("SQLite_jll"),
-    Dependency("Lua_jll"),
+    Dependency("Lua_jll"; compat="~5.3.6"),
     HostBuildDependency("Lua_jll"),
 ]
 

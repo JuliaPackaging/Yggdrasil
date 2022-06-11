@@ -1,0 +1,25 @@
+From d450b3fb02b6db81b922c42d26c11ec9b228b108 Mon Sep 17 00:00:00 2001
+From: Pepijn de Vos <pepijndevos@gmail.com>
+Date: Fri, 27 Aug 2021 12:10:56 +0200
+Subject: [PATCH] avx2+fma on llvm
+
+---
+ scopehal/Oscilloscope.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scopehal/Oscilloscope.cpp b/scopehal/Oscilloscope.cpp
+index a784a4d..4f93027 100644
+--- a/scopehal/Oscilloscope.cpp
++++ b/scopehal/Oscilloscope.cpp
+@@ -1111,7 +1111,7 @@ void Oscilloscope::Convert16BitSamplesAVX2(
+ 	}
+ }
+ 
+-__attribute__((target("avx2","fma")))
++__attribute__((target("avx2,fma")))
+ void Oscilloscope::Convert16BitSamplesFMA(
+ 		int64_t* offs, int64_t* durs, float* pout, int16_t* pin, float gain, float offset, size_t count, int64_t ibase)
+ {
+-- 
+2.33.0
+

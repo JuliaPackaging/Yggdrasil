@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "cddlib"
-# upstream 0.94j mapped to semantic versioning
-version = v"0.94.10"
+# upstream 0.94m mapped to semantic versioning
+version = v"0.94.13"
 
 # Collection of sources required to build cddlib
 sources = [
-    GitSource("https://github.com/cddlib/cddlib","6d980f2258052f6cf47acca611d6a268d657dfc7")
+    GitSource("https://github.com/cddlib/cddlib","87220b4001ff88bb408bee0ab69cd19806abd9e9")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -34,9 +34,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 

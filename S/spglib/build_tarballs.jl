@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "spglib"
-version = v"1.16.1"
+version = v"1.16.5"
 
 # Collection of sources required to build spglib
 sources = [
     ArchiveSource("https://github.com/atztogo/spglib/archive/v$(version).tar.gz",
-                  "e90682239e4ef63b492fa4e44f7dbcde2e2fe2e688579d96b01f2730dfdf5b2e"),
+                  "1bbde03b6b78da756c07f458bd90d84f3c253841b9b0632db5b72c5961e87aef"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,8 +19,9 @@ if [[ ${target} == *-mingw32 ]]; then
 fi
 mkdir _build
 cd _build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
       ..
 make -j${nproc}
 make install VERBOSE=1
@@ -37,7 +38,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

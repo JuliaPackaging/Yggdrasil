@@ -1,0 +1,54 @@
+diff --git a/build/CMakeLists.txt b/build/CMakeLists.txt
+index 1e92a698e..c01fbbf3f 100644
+--- a/build/CMakeLists.txt
++++ b/build/CMakeLists.txt
+@@ -142,7 +142,7 @@ elseif(WIN32 OR MSYS)
+ 		set (FAUST_DEFINITIONS ${FAUST_DEFINITIONS} -DWIN32 -D__MINGW32__)
+ 	endif()
+ 	set (FAUST_DEFINITIONS ${FAUST_DEFINITIONS} -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES)
+-	set (FAUST_LIBS ${FAUST_LIBS} Ws2_32) #.lib)
++	set (FAUST_LIBS ${FAUST_LIBS} ws2_32) #.lib)
+ elseif(NOT ANDROID)
+ 	set (FAUST_LIBS -lpthread ${FAUST_LIBS})
+ endif()
+@@ -194,17 +194,6 @@ if (INCLUDE_STATIC)
+ 		POSITION_INDEPENDENT_CODE ON)
+ 	set (INSTALL_TARGETS ${INSTALL_TARGETS} staticlib)
+ 	scan_backends (staticlib STATIC)
+-	if (INCLUDE_LLVM)
+-		if (WIN32)
+-			set (MAKELIBCMD Make.llvm.static.bat) 
+-		else()
+-			set (MAKELIBCMD make -f Make.llvm.static || true) 
+-		endif()
+-		add_custom_command(TARGET staticlib POST_BUILD
+-                   COMMAND ${MAKELIBCMD}
+-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-                   COMMENT "Embed LLVM static libraries with libfaust" )
+-    endif()
+ 
+ endif()
+ 
+@@ -304,22 +293,6 @@ install ( TARGETS dynamiclib
+ endif()
+ 
+ 
+-####################################
+-# install the faust with llvm library
+-if (INCLUDE_STATIC AND INCLUDE_LLVM)
+-if (WIN32)
+-	set (LFWITHLLVM  ${LIBDIR}/libfaustwithllvm.lib)
+-else()
+-	set (LFWITHLLVM  ${LIBDIR}/libfaustwithllvm.a)
+-endif()
+-install (
+-    FILES  ${LFWITHLLVM} DESTINATION ${CMAKE_INSTALL_PREFIX}/${LIBSDIR}
+-    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+-    OPTIONAL
+-)
+-endif()
+-
+-
+ 
+ ####################################
+ # install headers

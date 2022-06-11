@@ -21,14 +21,18 @@
 include("./common.jl")
 
 using BinaryBuilder
-Core.eval(BinaryBuilder, :(bootstrap_list = [:rootfs, :platform_support]))
+@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
+@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 llvm_tags = Dict(
     v"6.0.1" => "d359f2096850c68b708bc25a7baca4282945949f",
     v"7.1.0" => "4856a9330ee01d30e9e11b6c2f991662b4c04b07",
     v"8.0.1" => "19a71f6bdf2dddb10764939e7f0ec2b98dba76c9",
     v"9.0.1" => "c1a0a213378a458fbea1a5c77b315c7dce08fd05",
+    v"10.0.1" => "ef32c611aa214dea855364efd7ba451ec5ec3f74",
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
+    v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
+    v"13.0.1" => "75e33f71c2dae584b13a7d1186ae0a038ba98838",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -66,7 +70,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
-    export LDFLAGS="${LDFLAGS} -L${prefix}/${target}/lib64"
+    export LDFLAGS="-L${prefix}/${target}/lib64 -Wl,-rpath-link,${prefix}/${target}/lib64"
+    # We will also need to run programs which require these libraries, so let them available to the dynamic loader
+    export LD_LIBRARY_PATH="${prefix}/${target}/lib64"
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches
@@ -125,6 +131,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCOMPILER_RT_SANITIZERS_TO_BUILD=none)
     CMAKE_FLAGS+=(-DCOMPILER_RT_INCLUDE_TESTS=OFF)
 
+    # Hint to find Zlib
+    CMAKE_FLAGS+=(-DZLIB_ROOT="${prefix}")
+
     # Build!
     cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
     cmake -LA || true
@@ -150,8 +159,8 @@ end
 # Dependencies that must be installed before this package can be built
 function llvm_dependencies(; kwargs...)
     return [
-        "Zlib_jll",
-        "XML2_jll",
+        Dependency("Zlib_jll"),
+        Dependency("XML2_jll"),
 	# transitive dependency libiconv
     ]
 end

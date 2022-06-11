@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "OpenSpecFun"
-version = v"0.5.4"
+version = v"0.5.5"
 
 # Collection of sources required to build openspecfun
 sources = [
     GitSource("https://github.com/JuliaMath/openspecfun.git",
-              "d22094a030caf4042701d9c8eebd7c5236d3b3c9")
+              "74f7e65abc76de7c4c72b1c77b31f3846565c498")
 ]
 
 # Bash recipe for building across all platforms

@@ -31,10 +31,10 @@ tutorials) - nevertheless the official headers are all lower case.
  7 files changed, 91 insertions(+), 97 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 7c8e1803d..945b7d4b9 100644
+index 4180bfe53..e4a26aeb8 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -642,8 +642,8 @@ case $with_wingui in
+@@ -727,8 +727,8 @@ case $with_wingui in
          ;;
      * )
  
@@ -45,7 +45,7 @@ index 7c8e1803d..945b7d4b9 100644
  
  # Checks for X11 header files and libraries - X11 support can be disabled
  # by passing the '--without-x' option to configure:
-@@ -1358,8 +1358,6 @@ AC_CONFIG_FILES([Makefile
+@@ -1464,8 +1464,6 @@ AC_CONFIG_FILES([Makefile
                   tests/resistance/Makefile
                   tests/vbic/Makefile])
  
@@ -68,7 +68,7 @@ index 7e92a6cd0..6412472ba 100644
  /* Get memory information */
  static int get_sysmem(struct sys_memory *memall)
 diff --git a/src/frontend/get_avail_mem_size.c b/src/frontend/get_avail_mem_size.c
-index 3d468b659..e77168c36 100644
+index ebec4fd89..913612ed7 100644
 --- a/src/frontend/get_avail_mem_size.c
 +++ b/src/frontend/get_avail_mem_size.c
 @@ -1,7 +1,7 @@
@@ -125,7 +125,7 @@ index 3d468b659..e77168c36 100644
 -    /* Linux/UNIX variants. ------------------------------------------- */
 -    /* Prefer sysctl() over sysconf() except sysctl() HW_REALMEM and HW_PHYSMEM */
 -
--#if defined(CTL_HW) && (defined(HW_MEMSIZE) || defined(HW_PHYSMEM64))
+-#if defined(CTL_HW) && (defined(HW_MEMSIZE) || defined(HW_PHYSMEM64)) && defined(HAVE_SYS_SYSCTL_H)
 -    int mib[2];
 -    mib[0] = CTL_HW;
 -#if defined(HW_MEMSIZE)
@@ -153,7 +153,7 @@ index 3d468b659..e77168c36 100644
 -    return (size_t)sysconf( _SC_PHYS_PAGES ) *
 -        (size_t)sysconf( _SC_PAGE_SIZE );
 -
--#elif defined(CTL_HW) && (defined(HW_PHYSMEM) || defined(HW_REALMEM))
+-#elif defined(CTL_HW) && (defined(HW_PHYSMEM) || defined(HW_REALMEM)) && defined(HAVE_SYS_SYSCTL_H)
 -    /* DragonFly BSD, FreeBSD, NetBSD, OpenBSD, and OSX. -------- */
 -    int mib[2];
 -    mib[0] = CTL_HW;
@@ -188,7 +188,7 @@ index 3d468b659..e77168c36 100644
 +#endif
  }
 diff --git a/src/frontend/get_phys_mem_size.c b/src/frontend/get_phys_mem_size.c
-index 3ebb92407..59797cd8a 100644
+index c40e5a327..04867726f 100644
 --- a/src/frontend/get_phys_mem_size.c
 +++ b/src/frontend/get_phys_mem_size.c
 @@ -26,13 +26,9 @@
@@ -370,7 +370,7 @@ index b8013eec9..c328564c9 100644
  static int get_procm(struct proc_mem *memall) {
  
 diff --git a/visualc/src/include/ngspice/config.h b/visualc/src/include/ngspice/config.h
-index ceb6d2212..146ef61b1 100644
+index 47e7c9383..8d6e387da 100644
 --- a/visualc/src/include/ngspice/config.h
 +++ b/visualc/src/include/ngspice/config.h
 @@ -416,9 +416,6 @@

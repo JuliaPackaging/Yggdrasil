@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.9.10"
-bb_version = v"2.9.11"
+version = v"2.9.14"
 
-# Collection of sources required to build XML2Builder
+# Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "3bdffb4d728e4dc135b3210bf2a2cebb76548b820a5617c68abb7b83654066dd"),
+                  "77e7c7240ce447582d2c3471f050423c01ec0e201c3bf2fd6731064d1891f362"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +28,7 @@ rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -45,5 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, bb_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -18,7 +18,17 @@ sources_by_version = Dict(
         GitSource("https://github.com/ARMmbed/mbedtls.git",
                   "e483a77c85e1f9c1dd2eb1c5a8f552d2617fe400"),
         DirectorySource("./bundled"; follow_symlinks=true),
-    ]
+    ],
+    v"2.27.0" => [
+        GitSource("https://github.com/ARMmbed/mbedtls.git",
+                  "f71e2878084126737cc39083e1e15afc459bd93d"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.28.0" => [
+        GitSource("https://github.com/ARMmbed/mbedtls.git",
+                  "8b3f26a5ac38d4fdccbc5c5366229f3e01dafcc0"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
 )
 sources = sources_by_version[version]
 
@@ -35,6 +45,12 @@ fi
 
 # MbedTLS 2.24.0 needs a patch for platforms where `char` is unsigned
 P=${WORKSPACE}/srcdir/patches/0002-fix-incorrect-eof-check.patch
+if [[ -f ${P} ]]; then
+    atomic_patch -p1 ${P}
+fi
+
+# MbedTLS 2.24.0 also needs a patch for platforms that build with Clang 12
+P=${WORKSPACE}/srcdir/patches/0003-Prevent-triggering-Clang-12--Wstring-concatenation.patch
 if [[ -f ${P} ]]; then
     atomic_patch -p1 ${P}
 fi

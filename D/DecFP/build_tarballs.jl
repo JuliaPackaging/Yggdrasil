@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "DecFP"
-version = v"2.0.2" # 2.0 Update 2
+version = v"2.0.3" # --> This is a lie to build for experimental platforms, upstream version is 2.0 Update 2
 
 # Collection of sources required to build DecFP
 sources = [
@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/IntelRDFPMathLib20U2
+patch --binary -p1 < $WORKSPACE/srcdir/patches/string.patch
 patch --binary -p1 < $WORKSPACE/srcdir/patches/decfp.patch
 cd LIBRARY
 if [[ $nbits == 64 ]]; then
@@ -38,15 +39,14 @@ elif [[ $target == *"freebsd"* ]]; then
     CFLAGS_OPT+=" -D__linux"
 fi
 make CC_NAME=cc CFLAGS_OPT="$CFLAGS_OPT" CFLAGS="$CFLAGS_OPT" _HOST_OS="$_HOST_OS" AR_CMD="ar rv" _HOST_ARCH=$_HOST_ARCH CALL_BY_REF=0 GLOBAL_RND=0 GLOBAL_FLAGS=0 UNCHANGED_BINARY_FLAGS=0
-$CC $LDFLAGS -shared -o libbid.$dlext *.$objext
-mkdir -p ${libdir}
-cp libbid.$dlext ${libdir}
+mkdir -p "${libdir}"
+$CC $LDFLAGS -shared -o "${libdir}/libbid.${dlext}" *.${objext}
 install_license ../eula.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() # build on all supported platforms
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -58,4 +58,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

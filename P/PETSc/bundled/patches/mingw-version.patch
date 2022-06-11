@@ -1,0 +1,33 @@
+From 8bc89024f9012ed5dfb1862c305866cfef6f8f6f Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Sun, 10 Apr 2022 04:58:42 -0400
+Subject: [PATCH] When cross-compiling with MingW32 we shouldn't set the
+ dllversion as a suffix
+
+---
+ config/PETSc/options/sharedLibraries.py | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/config/PETSc/options/sharedLibraries.py b/config/PETSc/options/sharedLibraries.py
+index a84083ee67..e9d814633d 100755
+--- a/config/PETSc/options/sharedLibraries.py
++++ b/config/PETSc/options/sharedLibraries.py
+@@ -76,10 +76,13 @@ class Configure(config.base.Configure):
+         # TODO: check that -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} can be passed (might fail on Intel)
+         # TODO: check whether we need to specify dependent libraries on the link line (long test)
+         self.addMakeRule('shared_arch','shared_linux')
+-        self.addMakeMacro('SONAME_FUNCTION', '$(1).$(SL_LINKER_SUFFIX).$(2)')
+-        self.addMakeMacro('SL_LINKER_FUNCTION', self.framework.getSharedLinkerFlags() + ' -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
+         if config.setCompilers.Configure.isMINGW(self.framework.getCompiler(),self.log):
+           self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
++          self.addMakeMacro('SONAME_FUNCTION', '$(1)-$(2).$(SL_LINKER_SUFFIX)')
++        else:
++          self.addMakeMacro('SONAME_FUNCTION', '$(1).$(SL_LINKER_SUFFIX).$(2)')
++
++        self.addMakeMacro('SL_LINKER_FUNCTION', self.framework.getSharedLinkerFlags() + ' -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
+       self.addMakeMacro('BUILDSHAREDLIB','yes')
+     else:
+       self.addMakeRule('shared_arch','')
+-- 
+2.35.1
+

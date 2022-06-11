@@ -1,0 +1,39 @@
+# -*- makefile -*-
+
+CXXFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC
+LDFLAGS = -shared -fopenmp
+
+LSM_DIR = .
+
+# CHANGE TO the directory where you want your .o files stored
+OBJ_DIR := $(LSM_DIR)
+
+# Include directories
+INCLUDES := -I$(includedir) -I$(includedir)/eigen3 -I$(LSM_DIR)
+
+SRC_FILES := $(wildcard $(LSM_DIR)/*.cpp)
+
+OBJ_FILES := $(patsubst $(LSM_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
+
+# Make commands for each individual object file
+###############################################################################
+# Add your own makes here
+###############################################################################
+# List of targets for executables you write
+
+m2do_3d_lsm.$(dlext): $(OBJ_FILES)
+	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
+
+$(OBJ_DIR)/%.o: $(LSM_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+
+.PHONY: clean install all
+
+install: m2do_3d_lsm.$(dlext)
+	install -d $(libdir)
+	install -m 644 m2do_3d_lsm.$(dlext) $(libdir)
+	install -m 644 *.h $(includedir)
+clean:
+	rm -f m2do_3d_lsm.$(dlext) $(OBJ_FILES)
+	
+all: m2do_3d_lsm.$(dlext)

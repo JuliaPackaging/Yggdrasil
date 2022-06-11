@@ -26,6 +26,7 @@ make CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 # Build dynamic library
 if [[ "${target}" == *-darwin* ]]; then
     cc -shared -current_version "${VERSION}" -compatibility_version 1.0 -o "libbz2.${VERSION}.dylib" ${OBJS}
+    install_name_tool -id libbz2.1.0.dylib "libbz2.${VERSION}.dylib"
     ln -s libbz2.${VERSION}.dylib libbz2.1.0.dylib
     ln -s libbz2.${VERSION}.dylib libbz2.1.dylib
     ln -s libbz2.${VERSION}.dylib libbz2.dylib

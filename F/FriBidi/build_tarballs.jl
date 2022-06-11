@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FriBidi"
-version = v"1.0.5"
+version = v"1.0.10"
 
 # Collection of sources required to build FriBidi
 sources = [
     GitSource("https://github.com/fribidi/fribidi.git",
-              "0f849e344d446934b4ecdbe9edc32abd29029731"),
+              "5464c284034da9c058269377b7f5013bb089f553"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +36,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -69,12 +69,16 @@ dependencies = [
     Dependency("GnuTLS_jll"),
     Dependency("Libksba_jll"),
     Dependency("Libgcrypt_jll"),
-    Dependency("Libgpg_error_jll"),
+    # Future versions of `Libgpg_error_jll` maybe can have a more lax compat,
+    # but the move 1.36 -> 1.42 changed the soname for FreeBSD and Windows.
+    Dependency("Libgpg_error_jll", v"1.36.0"; compat="=1.36.0"),
     Dependency("nPth_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"),
     Dependency("OpenLDAPClient_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
     Dependency("SQLite_jll"),
     Dependency("libusb_jll"),
     Dependency("Nettle_jll", v"3.4.1", compat="~3.4.1"),

@@ -3,20 +3,18 @@
 using BinaryBuilder
 
 name = "alsa"
-version = v"1.2.4"
+# It's actually v1.2.5.1
+version = v"1.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$version.tar.bz2",
-                  "f7554be1a56cdff468b58fc1c29b95b64864c590038dd309c7a978c7116908f7"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.5.1.tar.bz2",
+                  "628421d950cecaf234de3f899d520c0a6923313c964ad751ffac081df331438e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/alsa-lib*/
-# TODO: remove for version >= 1.2.5
-atomic_patch -p1 $WORKSPACE/srcdir/patches/plugin_dir_no_DL.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
@@ -24,7 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms())
+platforms = filter(Sys.islinux, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -37,5 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 

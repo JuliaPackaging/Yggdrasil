@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "FFTW"
-version = v"3.3.9"
+version = v"3.3.10"
 
 # Collection of sources required to build FFTW
 sources = [
    ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
-                  "bf2c7ce40b04ae811af714deb512510cc2c17b9ab9d6ddcf49fe4487eea7af3d"),
+                  "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,6 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --disable-fortran
     --disable-mpi
     --disable-doc
     --enable-threads
@@ -71,7 +70,7 @@ install_license COPYING COPYRIGHT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms() # build on all supported platforms
+platforms = supported_platforms(; experimental=true) # build on all supported platforms
 
 # The products that we will ensure are always built
 products = [
@@ -84,4 +83,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")

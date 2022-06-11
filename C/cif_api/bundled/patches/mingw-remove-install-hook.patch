@@ -1,0 +1,26 @@
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 3f9794b..9ffde74 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -57,17 +57,10 @@ LIB_CURRENT = 2
+ LIB_REVISION = 0
+ LIB_AGE = 1
+ 
+-if win32
+-  LIB_VERSION_FLAGS = -avoid-version
+-  INSTALL_HOOKS = install_import_lib
+-  UNINSTALL_HOOKS = uninstall_import_lib
+-  CLEANFILES = libcif.def
+-else
+-  LIB_VERSION_FLAGS = -version-info $(LIB_CURRENT):$(LIB_REVISION):$(LIB_AGE)
+-  INSTALL_HOOKS = 
+-  UNINSTALL_HOOKS = 
+-  CLEANFILES =
+-endif
++LIB_VERSION_FLAGS = -version-info $(LIB_CURRENT):$(LIB_REVISION):$(LIB_AGE)
++INSTALL_HOOKS = 
++UNINSTALL_HOOKS = 
++CLEANFILES =
+ 
+ BUILT_SOURCES = internal/schema.h internal/version.h
+ EXTRA_DIST = notes.txt style.txt

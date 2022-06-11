@@ -3,9 +3,9 @@
 using BinaryBuilder
 
 name = "ldid"
-version = v"2.1.2"
+version = v"2.1.3" # <-- Fake version to build for new platforms
 
-# Collection of sources required to build Lz4
+# Collection of sources required to build ldid
 sources = [
     GitSource("https://github.com/staticfloat/ldid.git",
               "da986b68406ca82b82245b2ffe7a25412fa93575")
@@ -30,8 +30,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libplist_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.13"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

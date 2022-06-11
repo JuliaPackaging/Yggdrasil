@@ -1,52 +1,47 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.59.0"
+version = v"2.68.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "664a5dee7307384bb074955f8e5891c7cecece349bbcc8a8311890dc185b428e"),
+                  "e7e1a3c20c026109c45c9ec4a31d8dcebc22e86c69486993e565817d64be3138"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
 
-# Get a local gettext for msgfmt cross-building
-apk add gettext
+if [[ "${target}" == *-freebsd* ]]; then
+    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
+    # complain if this symbol is used in the built library, even if this won't
+    # be a problem at runtim.  This flag allows having undefined symbols.
+    MESON_FLAGS=(-Db_lundef=false)
 
-# Provide answers to a few configure questions automatically
-cat > glib.cache <<END
-glib_cv_stack_grows=no
-glib_cv_uscore=no
-END
-
-export NOCONFIGURE=true
-export LDFLAGS="${LDFLAGS} -L${libdir}"
-export CPPFLAGS="-I${prefix}/include"
-
-./autogen.sh
-
-if [[ "${target}" == i686-linux-musl ]]; then
-    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
-    # bugged and it can run only a few programs, with the result that the
-    # configure test to check whether we're cross-compiling returns that we're
-    # doing a native build, but then it fails to run a bunch of programs during
-    # other tests.
-    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+    # Adapt patch relative to `xattr` from
+    # http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/glib2/patches/patch-meson.build?rev=1.2&content-type=text/x-cvsweb-markup.
+    # Quoting the comment:
+    #     Don't fail if getxattr is not available. The code is already ready
+    #     for this case with some small configure changes.
+    atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
 
-./configure --cache-file=glib.cache --with-libiconv=gnu --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-find -name Makefile -exec sed -i 's?/workspace/destdir/bin/msgfmt?/usr/bin/msgfmt?g' '{}' \;
-
-make -j${nproc}
-make install
+mkdir build_glib && cd build_glib
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
+    -Dman=false \
+    -Diconv=external \
+    "${MESON_FLAGS[@]}" \
+    ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
@@ -59,13 +54,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Host gettext needed for "msgfmt"
+    HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll"),
-    Dependency("Gettext_jll"),
+    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
+    # Gettext is only needed on macOS, as far as I could see
+    Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE_jll"),
     Dependency("Zlib_jll"),
-    Dependency("Libmount_jll"),
+    Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

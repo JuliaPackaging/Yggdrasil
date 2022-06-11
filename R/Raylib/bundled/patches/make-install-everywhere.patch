@@ -1,0 +1,45 @@
+--- a/Makefile
++++ b/Makefile
+@@ -619,21 +619,20 @@
+ RAYLIB_H_INSTALL_PATH ?= $(DESTDIR)/include
+ 
+ install :
+-ifeq ($(ROOT),root)
+-    ifeq ($(PLATFORM_OS),LINUX)
+         # Attention! You are root, writing files to $(RAYLIB_INSTALL_PATH)
+         # and $(RAYLIB_H_INSTALL_PATH). Consult this Makefile for more information.
+         # Prepare the environment as needed.
+-		mkdir --parents --verbose $(RAYLIB_INSTALL_PATH)
+-		mkdir --parents --verbose $(RAYLIB_H_INSTALL_PATH)
+-        ifeq ($(RAYLIB_LIBTYPE),SHARED)
+-            # Installing raylib to $(RAYLIB_INSTALL_PATH).
++	mkdir --parents --verbose $(RAYLIB_INSTALL_PATH)
++	mkdir --parents --verbose $(RAYLIB_H_INSTALL_PATH)
++ifeq ($(RAYLIB_LIBTYPE),SHARED)
++                # Installing raylib to $(RAYLIB_INSTALL_PATH).
++ifeq ($(PLATFORM_OS),LINUX)
+ 			cp --update --verbose $(RAYLIB_RELEASE_PATH)/libraylib.so.$(RAYLIB_VERSION) $(RAYLIB_INSTALL_PATH)/lib$(RAYLIB_LIB_NAME).so.$(RAYLIB_VERSION)
+ 			cd $(RAYLIB_INSTALL_PATH); ln -fsv lib$(RAYLIB_LIB_NAME).so.$(RAYLIB_VERSION) lib$(RAYLIB_LIB_NAME).so.$(RAYLIB_API_VERSION)
+ 			cd $(RAYLIB_INSTALL_PATH); ln -fsv lib$(RAYLIB_LIB_NAME).so.$(RAYLIB_API_VERSION) lib$(RAYLIB_LIB_NAME).so
+-            # Uncomment to update the runtime linker cache with RAYLIB_INSTALL_PATH.
+-            # Not necessary if later embedding RPATH in your executable. See examples/Makefile.
+-			ldconfig $(RAYLIB_INSTALL_PATH)
++else
++			cp --update --verbose $(RAYLIB_RELEASE_PATH)/*$(RAYLIB_LIB_NAME)*.$(dlext)* $(RAYLIB_INSTALL_PATH)/.
++endif
+         else
+             # Installing raylib to $(RAYLIB_INSTALL_PATH).
+ 			cp --update --verbose $(RAYLIB_RELEASE_PATH)/lib$(RAYLIB_LIB_NAME).a $(RAYLIB_INSTALL_PATH)/lib$(RAYLIB_LIB_NAME).a
+@@ -644,12 +643,6 @@
+ 		cp --update rlgl.h $(RAYLIB_H_INSTALL_PATH)/rlgl.h
+ 		cp --update extras/physac.h $(RAYLIB_H_INSTALL_PATH)/physac.h
+ 		@echo "raylib development files installed/updated!"
+-    else
+-		@echo "This function currently works on GNU/Linux systems. Add yours today (^;"
+-    endif
+-else
+-	@echo "Error: Root permissions needed for installation. Try sudo make install"
+-endif
+ 
+ # Remove raylib dev files installed on the system
+ # NOTE: see 'install' target.

@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.17.0"
+version = v"1.19.0"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://wayland.freedesktop.org/releases/wayland-$(version).tar.xz",
-                  "72aa11b8ac6e22f4777302c9251e8fec7655dc22f9d94ee676c6b276f95f91a4"),
-    DirectorySource("./bundled"),
+                  "baccd902300d354581cd5ad3cc49daa4921d55fb416a5883e218750fef166d15"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +18,6 @@ cd $WORKSPACE/srcdir/wayland-*/
 # We need to run `wayland-scanner` on the host system
 apk add wayland-dev
 
-atomic_patch -p1 ../patches/Makefile_in.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-documentation --with-host-scanner
 make -j${nproc}
 make install
@@ -27,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -40,10 +38,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"),
-    Dependency("Libffi_jll"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")

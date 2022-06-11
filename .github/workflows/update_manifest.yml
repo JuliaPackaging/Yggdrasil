@@ -1,0 +1,45 @@
+name: Update Manifest
+
+on:
+  workflow_dispatch:
+
+# Do not use PkgServer to make sure we have the latest registry
+env:
+  JULIA_PKG_SERVER: ""
+
+jobs:
+  update_manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+      - uses: julia-actions/setup-julia@ee66464cb7897ffcc5322800f4b18d449794af30 # v1.6.1
+        with:
+          version: '1.7.1' # Use the version of Julia used on the build machine
+          arch: x64
+      - uses: julia-actions/cache@745127cf80d5fa1a9953e0107e8ecd9b336022b7 # v1.1.0
+        with:
+          cache-registries: "true"
+      - name: Instantiate the manifest
+        shell: julia --project=.ci --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.instantiate()
+          Pkg.precompile()
+      - name: Generate commit message
+        run: julia --project=.ci --color=yes .ci/update_manifest.jl
+        id: commit_message
+      - name: Show git status
+        run: git status
+      - uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 # v3.8.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
+          branch: 'gha/update-manifest'
+          commit-message: ${{ env.commit_message }}
+          title: ${{ env.commit_title }}
+          body: ${{ env.commit_body }}
+          labels: |
+            meta :deciduous_tree:

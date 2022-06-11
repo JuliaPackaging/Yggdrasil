@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "LibVPX"
-version = v"1.9.0"
+version = v"1.10.0"
 
 # Collection of sources required to build LibVPX
 sources = [
     ArchiveSource("https://github.com/webmproject/libvpx/archive/v$(version).tar.gz",
-                  "d279c10e4b9316bf11a570ba16c3d55791e1ad6faa4404c67422eb631782c80a"),
+                  "85803ccbdbdd7a3b03d930187cb055f1353596969c1f92ebec2db839fa4f834a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,26 +19,39 @@ sed -i 's/cp -p/cp/' build/make/Makefile
 mkdir vpx_build && cd vpx_build
 apk add diffutils yasm
 
-if [[ "${target}" == i686-linux-* ]]; then
+if [[ "${bb_full_target}" == i686-linux-* ]]; then
     export TARGET=x86-linux-gcc
-elif [[ "${target}" == x86_64-linux-* ]]; then
+elif [[ "${bb_full_target}" == x86_64-linux-* ]]; then
     export TARGET=x86_64-linux-gcc
-elif [[ "${target}" == arm-linux-* ]]; then
+elif [[ "${bb_full_target}" == armv7l-linux-* ]]; then
     export TARGET=armv7-linux-gcc
-elif [[ "${target}" == aarch64-linux-* ]]; then
+elif [[ "${bb_full_target}" == aarch64-linux-* ]]; then
     export TARGET=arm64-linux-gcc
-elif [[ "${target}" == powerpc64le-linux-* ]]; then
+elif [[ "${bb_full_target}" == powerpc64le-linux-* ]]; then
     export TARGET=ppc64le-linux-gcc
-elif [[ "${target}" == x86_64-apple-* ]]; then
+elif [[ "${bb_full_target}" == x86_64-apple-* ]]; then
     export TARGET=x86_64-darwin14-gcc
-elif [[ "${target}" == i686-w64-mingw32 ]]; then
+elif [[ "${bb_full_target}" == aarch64-apple-* ]]; then
+    export TARGET=arm64-darwin20-gcc
+elif [[ "${bb_full_target}" == i686-w64-mingw32* ]]; then
     export TARGET=x86-win32-gcc
-elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
+elif [[ "${bb_full_target}" == x86_64-w64-mingw32* ]]; then
     export TARGET=x86_64-win64-gcc
     export CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
-elif [[ "${target}" == *freebsd* ]]; then
+elif [[ "${bb_full_target}" == *-freebsd* ]]; then
     export TARGET=generic-gnu
-    export CONFIG_OPTS="--disable-multithread"
+fi
+
+CONFIG_OPTS=()
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # This feature isn't currently available for this platforms
+    # check again in the future.
+    CONFIG_OPTS+=(--disable-runtime-cpu-detect)
+else
+    CONFIG_OPTS+=(--enable-runtime-cpu-detect)
+    if [[ "${target}" == *-freebsd* ]]; then
+        CONFIG_OPTS+=(--disable-multithread)
+    fi
 fi
 
 ../configure --prefix=$prefix --target=${TARGET} \
@@ -48,8 +61,7 @@ fi
     --enable-vp8 \
     --enable-vp9 \
     --enable-vp9-highbitdepth \
-    --enable-runtime-cpu-detect \
-    ${CONFIG_OPTS}
+    ${CONFIG_OPTS[@]}
 echo "SRC_PATH_BARE=.." >> config.mk
 echo "target=libs" >> config.mk
 make -j${nproc}
@@ -65,7 +77,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -75,8 +87,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", lock_microarchitecture=false)

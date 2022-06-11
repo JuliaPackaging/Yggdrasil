@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.5.1"
+version = v"3.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz", "0e17d3a8d0b206018693b27f08029b598f6ef03600c2b5d10c94ce58692e299b")
+    ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
+                  "f0b19ff39c3c9a5898a219497ababbadab99d8178acc980155c7e1271089b5a0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,10 +41,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("acl_jll"),
-    Dependency("Attr_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("Expat_jll"),
+    Dependency("acl_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("Attr_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Libiconv_jll"),
     Dependency("Lz4_jll"),
     Dependency("OpenSSL_jll"),
@@ -53,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

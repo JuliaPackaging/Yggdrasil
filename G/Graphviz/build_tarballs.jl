@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Graphviz"
-version = v"2.42.3"
+version = v"2.50.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www2.graphviz.org/Packages/stable/portable_source/graphviz-$(version).tar.gz",
-                  "8faf3fc25317b1d15166205bf64c1b4aed55a8a6959dcabaa64dbad197e47add"),
+    ArchiveSource("https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases/$(version)/graphviz-$(version).tar.gz",
+                  "e17021a510bbd2770d4ca4b4eb841138122aaa5948f9e617e6bc12b4bac62e8d"),
 
     DirectorySource("./bundled"),
 ]
@@ -22,35 +22,22 @@ if [[ "${target}" == *-mingw* ]]; then
     # let's use `pcreposix.h` instead.
     cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
 
-    # Apply some fun patches
-    atomic_patch -p1 ../patches/0003-sfsetbuf_c_Stat_t_no_st_blksize.patch
-    atomic_patch -p1 ../patches/0004-win32_dllexport_dllimport.patch
-    atomic_patch -p1 ../patches/0005-missing_libs.patch
-    atomic_patch -p1 ../patches/0006-export_neatogen.patch
-    atomic_patch -p1 ../patches/0007-remove_missing_def.patch
-    atomic_patch -p1 ../patches/0008-export_gvc.patch
-
     export LDFLAGS="-lpcreposix -lexpat"
     export EXTRA_LDFLAGS="-no-undefined"
 
     # Remove wrong libtool archives
-    rm ${prefix}/lib/libharfbuzz*.la
+    #rm ${prefix}/lib/libharfbuzz*.la
 fi
 
 # Do not build with -ffast-math
 atomic_patch -p1 ../patches/1001-no-ffast-math.patch
+atomic_patch -p1 ../patches/0001-windows-exports.patch
 
 # Rebuild the configure script
 autoreconf -fiv
 
-# Apply patch to build a native `mkdefs` utility that can be run within the
-# build environment.
-atomic_patch -p1 ../patches/0001-gvpr-build-native-mkdefs.patch
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared
 
-# This patch disable generation of dot's configuration
-atomic_patch -p1 ../patches/0002-do-not-build-dot-config.patch
-
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc} LDFLAGS="${LDFLAGS} ${EXTRA_LDFLAGS}"
 make install
 
@@ -58,11 +45,22 @@ if [[ "${target}" == *-mingw* ]]; then
     # Cover up the traces of the hack
     rm ${prefix}/include/regex.h
 fi
+
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
+    install -Dvm 755 ../config6-linux ${prefix}/lib/graphviz/config6
+elif [[ "${target}" == *-mingw* ]]; then
+    install -Dvm 755 ../config6-mingw ${prefix}/bin/config6
+elif [[ "${target}" == *-darwin* ]]; then
+    install -Dvm 755 ../config6-darwin ${prefix}/lib/graphviz/config6
+fi
+
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter!(p -> !Sys.isfreebsd(p) & !Sys.iswindows(p), supported_platforms()))
+platforms = expand_cxxstring_abis(supported_platforms())
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -92,7 +90,7 @@ products = [
     ExecutableProduct("gvcolor", :gvcolor),
     ExecutableProduct("gvgen", :gvgen),
     ExecutableProduct("gvmap", :gvmap),
-    ExecutableProduct("gvmap.sh", :gvmap_sh),
+    #ExecutableProduct("gvmap.sh", :gvmap_sh),
     ExecutableProduct("gvpack", :gvpack),
     ExecutableProduct("gvpr", :gvpr),
     ExecutableProduct("gxl2dot", :gxl2dot),
@@ -113,11 +111,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
-    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201")),
-    Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3")),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Pango_jll"; compat="1.47.0"),
     # PCRE is needed only for Windows.  Maybe it's only a build dependency?
     # Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc")),
+    # Indirect dependency from pango, but without this, pkg-config doesn't pick up pango
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

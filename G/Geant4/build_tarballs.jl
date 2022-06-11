@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"0.1.1"
+version = v"10.7.2"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("https://github.com/Geant4/geant4/archive/v10.5.1.tar.gz",
-                  "443efb0d16e8a5fd195176573d21d2e12415ae7853dd39cc0517171aea243227"),
+    ArchiveSource("https://github.com/Geant4/geant4/archive/v$(version).tar.gz",
+                  "43a11da475e4b9fd3719a5e589003c1f79c0c6f2cd78bcfe3cea2fe6cd12823b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter(!Sys.iswindows, supported_platforms()))
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -68,11 +69,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

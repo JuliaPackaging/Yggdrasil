@@ -1,0 +1,18 @@
+diff --git a/Makefile b/Makefile
+index 1b462a6..24757f2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -5,9 +5,11 @@
+ #########################################################################
+ 
+ # compilers & flags
+-CC        := g++
++CC        := cc
++CXX       := c++
+ CFLAGS    := -O3
+-LD        := g++
++CXXFLAGS    := -O3 -std=c++11
++LD        := c++
+ # Note: (1) If you want to enforce 32-bit or 64-bit compilation, 
+ #           add "-m32" or "-m64" to both CFLAGS and LDFLAGS.
+ #       (2) If you want to enforce a static linking of all libraries 

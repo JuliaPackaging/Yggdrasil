@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PCL"
-version = v"1.11.1"
+version = v"1.12.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/PointCloudLibrary/pcl/releases/download/pcl-$version/source.tar.gz",
-                  "19d1a0bee2bc153de47c05da54fc6feb23393f306ab2dea2e25419654000336e"),
+                  "606a2d5c7af304791731d6b8ea79365bc8f2cd75908006484d71ecee01d9b51c"),
     DirectorySource("./bundled")
 ]
 
@@ -18,12 +18,6 @@ cd $WORKSPACE/srcdir/pcl*
 
 # Patch to simplify CMake checks
 atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
-
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/windows-cases.patch
-    atomic_patch -p1 ../patches/pcl_io-link-ws2_32.patch
-    atomic_patch -p1 ../patches/ssize_t-mingw.patch
-fi
 
 mkdir build && cd build
 
@@ -135,7 +129,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="FLANN_jll", uuid="48b6455b-4cf5-590d-a543-2d733c79e793"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.71.0")
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
 ]
 

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.179"
+version = v"0.182"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "25a545566cbacaa37ae6222e58f1c48ea4570f53ba991886e2f5ce96e22a23a2"),
+                  "ecc406914edf335f0b7fc084ebe6c460c4d6d5175bfdd6688c1c78d9146b8858"),
     DirectorySource("./bundled"),
 ]
 
@@ -35,7 +35,8 @@ CFLAGS="-Wno-error=unused-result" CPPFLAGS="-I${prefix}/include" ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-debuginfod
+    --disable-debuginfod \
+    --disable-libdebuginfod
 make -j${nproc}
 make install
 rm -f "${includedir}/sys/cdefs.h"
@@ -43,7 +44,7 @@ install_license COPYING*
 """
 
 # Only build for Linux
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -55,12 +56,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Bzip2_jll"),
+    # Future versions of bzip2 should allow a more relaxed compat because the
+    # soname of the macOS library shouldn't change at every patch release.
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
-    Dependency("obstack_jll"),
+    Dependency("obstack_jll"; compat="~1.2.2"),
 ]
 
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
