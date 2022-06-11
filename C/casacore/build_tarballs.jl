@@ -61,6 +61,8 @@ platforms = supported_platforms(exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 # expand gfortran versions as well
 platforms = expand_gfortran_versions(platforms)
+# Exclude all musl builds, upstream doesn't care and they use a few glibc-specific features
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = Product[
