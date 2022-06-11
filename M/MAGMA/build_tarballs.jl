@@ -24,8 +24,8 @@ platforms = [Platform("x86_64", "linux"; libc="glibc")]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmagma", :libmagma),
-    LibraryProduct("libmagma_sparse", :libmagma_sparse)
+    LibraryProduct("libmagma", :libmagma; dont_dlopen=true),
+    LibraryProduct("libmagma_sparse", :libmagma_sparse; dont_dlopen=true)
 ]
 
 # Dependencies that must be installed before this package can be built
