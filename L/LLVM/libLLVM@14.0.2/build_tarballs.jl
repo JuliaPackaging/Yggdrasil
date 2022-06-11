@@ -21,9 +21,9 @@ augment_platform_block = """
 builds = []
 for llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
+    llvm_name, uuid = llvm_assertions ? ("LLVM_full_assert_jll", "6ec703ca-3f29-566b-9bb1-b5c9e844abaf"): ("LLVM_full_jll", "a3ccf953-465e-511d-b87f-60a6490c289d")
     dependencies = [
-        BuildDependency(PackageSpec(;name=llvm_name, version))
+        BuildDependency(PackageSpec(;name=llvm_name, uuid, version))
     ]
     push!(builds, configure_extraction(ARGS, version, name; assert=llvm_assertions, augmentation=true))
 end
