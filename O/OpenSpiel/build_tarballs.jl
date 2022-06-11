@@ -41,9 +41,8 @@ install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
 platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc", julia_version=julia_version)
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -55,8 +54,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
-    BuildDependency(PackageSpec(; name="libjulia_jll", version=julia_version))
+    Dependency("libcxxwrap_julia_jll"; platforms=platforms),
+    BuildDependency("libjulia_jll"; platforms=platforms)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
