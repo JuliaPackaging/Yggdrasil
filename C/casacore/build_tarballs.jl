@@ -13,18 +13,25 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-OPENBLAS=(-lopenblas64_)
-
 cd $WORKSPACE/srcdir/casacore
+
+if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+    OPENBLAS="${libdir}/libopenblas64_.${dlext}"
+else
+    OPENBLAS="${libdir}/libopenblas.${dlext}"
+fi
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_PYTHON=no \
-      -DBLAS_LIBRARIES="${OPENBLAS[*]}" \
       -DFFTW3_DISABLE_THREADS=yes \
+      -DBLAS_LIBRARIES=${OPENBLAS} \
+      -DLAPACK_LIBRARIES=${OPENBLAS} \
+      -DCASACORE_ARCH_LIBS="-lrt" \
       ..
+
 make -j${nproc}
 make install
 exit
@@ -75,7 +82,6 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"))
     Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"))
