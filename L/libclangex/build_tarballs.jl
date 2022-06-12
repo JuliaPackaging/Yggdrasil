@@ -40,13 +40,11 @@ function configure(julia_version, llvm_version)
 
     # The products that we will ensure are always built
     products = Product[
-        # Life is horrible and we can't add Clang_jll as a dependency, thus
-        # loading the library will always fail. We can fix this in the consumer
-        # so don't dlopen
-        LibraryProduct("libclangex", :libclangex, dont_dlopen=true),
+        LibraryProduct("libclangex", :libclangex),
     ]
     # ver = "$(llvm_version.major).$(llvm_version.minor).$(llvm_version.patch)"
     dependencies = [
+        RuntimeDependency("Clang_jll"),
         BuildDependency(get_addable_spec("LLVM_full_jll", llvm_version))
         # Dependency("LLVM_full_jll", llvm_version, compat=ver),
         # ^ is given through julia_version tag
