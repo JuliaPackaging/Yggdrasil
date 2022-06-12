@@ -9,7 +9,7 @@ name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/maleadt/SPIRV-LLVM-Translator.git"
 version = v"0.1"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
