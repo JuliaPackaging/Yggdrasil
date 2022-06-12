@@ -137,10 +137,18 @@ dependencies = [
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-# With MPItrampoline, select only those platforms where MPItrampoline is actually built
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# TODO: Do this automatically
+
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
+
 append!(dependencies, platform_dependencies)
 
 # See <https://github.com/JuliaPackaging/Yggdrasil/blob/master/Q/Qt5Base/build_tarballs.jl> for building on macOS 10.14
