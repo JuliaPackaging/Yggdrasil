@@ -35,6 +35,9 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
+# Disable OpenMP, it'll probably interfere with Julia's threads
+CMAKE_FLAGS+=(-DUSE_OPENMP=OFF)
+
 # Don't build python hooks
 CMAKE_FLAGS+=(-DBUILD_PYTHON=no)
 
@@ -64,6 +67,9 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 # Exclude all musl builds, upstream doesn't care and they use a few glibc-specific features
 filter!(p -> libc(p) != "musl", platforms)
+# Exclude powerpc64le-linux-gnu-libgfortran3, something is very wonky with that particular combination
+# Is it worth fixing?
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
