@@ -33,7 +33,6 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
 # Disable OpenMP, it'll probably interfere with Julia's threads
 CMAKE_FLAGS+=(-DUSE_OPENMP=OFF)
