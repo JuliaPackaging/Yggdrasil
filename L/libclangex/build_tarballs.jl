@@ -6,7 +6,7 @@ using Base.BinaryPlatforms
 include("../../fancy_toys.jl")
 
 name = "libclangex"
-version = v"0.1.5"
+version = v"0.1.6"
 
 # Collection of sources required to complete build
 sources = [
