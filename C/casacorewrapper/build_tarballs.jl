@@ -24,7 +24,6 @@ exit
 # Use the same platforms from casacore
 platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
 platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms)
 filter!(p -> libc(p) != "musl", platforms)
 filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) == v"3"), platforms)
 
