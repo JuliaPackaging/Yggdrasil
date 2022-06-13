@@ -14,7 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/casascorewrapper/
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCASACORE_ROOT_DIR=${prefix} \
+    ..
 make -j${nproc}
 make install
 """
@@ -22,6 +27,8 @@ make install
 # Use the same platforms from casacore
 platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
 platforms = expand_cxxstring_abis(platforms)
+# Expand libgfortran versions because we need to exclude some specific combinations
+platforms = expand_gfortran_versions(platforms)
 filter!(p -> libc(p) != "musl", platforms)
 filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) == v"3"), platforms)
 
