@@ -23,8 +23,10 @@ exit
 
 # Use the same platforms from casacore
 platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
-# Deal with the fact that we have std::string values, which causes issues across the gcc 4/5 boundary
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> libc(p) != "musl", platforms)
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
