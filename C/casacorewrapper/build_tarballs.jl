@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kiranshila/casascorewrapper.git", "3be29194e567baae4ad4f83704d8fa33e11836d3")
+    GitSource("https://github.com/kiranshila/casascorewrapper.git", "f7fe573901bb8d651c60fd3f3c23527232de6d57")
 ]
 
 # Bash recipe for building across all platforms
