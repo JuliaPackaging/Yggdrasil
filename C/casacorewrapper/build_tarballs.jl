@@ -30,7 +30,6 @@ platforms = expand_cxxstring_abis(platforms)
 # Expand libgfortran versions because we need to exclude some specific combinations
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libc(p) != "musl", platforms)
-filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
