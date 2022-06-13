@@ -28,7 +28,6 @@ make install
 platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
 platforms = expand_cxxstring_abis(platforms)
 # Expand libgfortran versions because we need to exclude some specific combinations
-platforms = expand_gfortran_versions(platforms)
 filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
