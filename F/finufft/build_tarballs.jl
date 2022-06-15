@@ -6,7 +6,7 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.0.4"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
