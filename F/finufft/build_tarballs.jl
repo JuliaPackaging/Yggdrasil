@@ -6,11 +6,11 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.0.4"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "2434f694b4fbdbeb65c77f65d784a1712852130b9c61e15999555a2e2cf1a9fa")
+    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "042a96cab8a3c17a544125b7890616b1dd5eacd1b50ce0464617903b01bddd54")
 ]
 
 # Bash recipe for building across all platforms
