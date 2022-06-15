@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
-./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}" --debug-configuration
+./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}" --verbose
 
 # Patch adapted from
 # https://svnweb.freebsd.org/ports/head/devel/boost-libs/files/patch-boost_math_tools_config.hpp?revision=439932&view=markup
