@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "Metal_LLVM_Tools"
 repo = "https://github.com/JuliaGPU/llvm-metal"
-version = v"0.2"
+version = v"0.3"
 
 llvm_versions = [v"13.0.1"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "aff6fc4f74785554643ae123a4df7c81074a6cbc")],
+    v"13.0.1" => [GitSource(repo, "355123f9415581fa1f5fabb0f7e7227bfbc9f43d")],
 )
 
 # These are the platforms we will build for by default, unless further
