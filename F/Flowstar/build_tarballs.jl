@@ -30,7 +30,7 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     Dependency("MPFR_jll"),
-    Dependency("GSL_jll"),
+    Dependency("GSL_jll"; compat="~2.7.2"),
     Dependency("GLPK_jll"),
     Dependency("GMP_jll")
 ]
