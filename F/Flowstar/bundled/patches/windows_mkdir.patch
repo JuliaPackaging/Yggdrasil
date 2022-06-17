@@ -7,7 +7,7 @@ index e246927..ff3e8ad 100644
  #include <glpk.h>
  
 +#ifdef _WIN32
-#include <direct.h>
++#include <direct.h>
 +#define mkdir(path,mode) _mkdir(path)
 +#endif
 +
