@@ -18,6 +18,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/flowstar-2.1.0
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows_mkdir.patch"
 make -j${nproc}
 install -Dvm 0755 flowstar "${bindir}/flowstar${exeext}"
 install_license /usr/share/licenses/GPL-3.0+
