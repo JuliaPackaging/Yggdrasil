@@ -2,11 +2,12 @@ diff --git a/include.h b/include.h
 index e246927..ff3e8ad 100644
 --- a/include.h
 +++ b/include.h
-@@ -31,6 +31,10 @@
+@@ -31,6 +31,11 @@
  #include <gsl/gsl_linalg.h>
  #include <glpk.h>
  
 +#ifdef _WIN32
+#include <direct.h>
 +#define mkdir(path,mode) _mkdir(path)
 +#endif
 +
