@@ -15,15 +15,12 @@ sources = [
     ArchiveSource("https://www.cs.colorado.edu/~xich8622/src/flowstar-$version.tar.gz", "642b17a55c6725d4bfc5b98900802e3b82f37fbbe9fb9028f1110c669a5afc86")
 ]
 
-begin
-    script = raw"""
-    cd ${WORKSPACE}/srcdir/flowstar-VERSION
-    make -j${nproc}
-    chmod +x flowstar
-    cp flowstar ${bindir}
-    """
-    script = replace(script,"VERSION"=>"$version")
-end
+script = raw"""
+cd ${WORKSPACE}/srcdir/flowstar*
+make -j${nproc}
+install -Dvm 0755 flowstar "${bindir}/flowstar${exeext}"
+install_license /usr/share/licenses/GPL-3.0+
+"""
 
 products = [
     ExecutableProduct("flowstar", :flowstar)
