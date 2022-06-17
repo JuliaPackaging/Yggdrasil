@@ -6,17 +6,19 @@
 
 using BinaryBuilder
 
-platforms = supported_platforms(exclude=Sys.iswindows)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 name = "Flowstar"
 version = v"2.1.0"
 sources = [
     ArchiveSource("https://www.cs.colorado.edu/~xich8622/src/flowstar-$version.tar.gz", "642b17a55c6725d4bfc5b98900802e3b82f37fbbe9fb9028f1110c669a5afc86")
+    DirectorySource("./bundled")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/flowstar*
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows_mkdir.patch
 make -j${nproc}
 install -Dvm 0755 flowstar "${bindir}/flowstar${exeext}"
 install_license /usr/share/licenses/GPL-3.0+
