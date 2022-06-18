@@ -12,10 +12,10 @@ this behavior.
  tests/libgit2/repo/open.c | 5 +++--
  2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/src/libgit2/repository.c b/src/libgit2/repository.c
+diff --git a/src/repository.c b/src/repository.c
 index 48a0b70f519..d2484318f10 100644
---- a/src/libgit2/repository.c
-+++ b/src/libgit2/repository.c
+--- a/src/repository.c
++++ b/src/repository.c
 @@ -512,7 +512,7 @@ static int validate_ownership(const char *repo_path)
  	bool is_safe;
  	int error;
@@ -25,20 +25,3 @@ index 48a0b70f519..d2484318f10 100644
  		if (error == GIT_ENOTFOUND)
  			error = 0;
  
-diff --git a/tests/libgit2/repo/open.c b/tests/libgit2/repo/open.c
-index 4b6609a81e1..5c66eca4be9 100644
---- a/tests/libgit2/repo/open.c
-+++ b/tests/libgit2/repo/open.c
-@@ -484,9 +484,10 @@ void test_repo_open__validates_dir_ownership(void)
- 	cl_git_pass(git_repository_open(&repo, "empty_standard_repo"));
- 	git_repository_free(repo);
- 
--	/* When the system user owns the repo config, fail */
-+	/* When the system user owns the repo config, also acceptable */
- 	git_fs_path__set_owner(GIT_FS_PATH_MOCK_OWNER_SYSTEM);
--	cl_git_fail(git_repository_open(&repo, "empty_standard_repo"));
-+	cl_git_pass(git_repository_open(&repo, "empty_standard_repo"));
-+	git_repository_free(repo);
- 
- 	/* When an unknown user owns the repo config, fail */
- 	git_fs_path__set_owner(GIT_FS_PATH_MOCK_OWNER_OTHER);
