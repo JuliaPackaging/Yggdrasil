@@ -370,7 +370,28 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const llvmscript = raw"""
+const llvmscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${libdir}/*MLIR*.${dlext}*
+rm -vrf ${prefix}/lib/*LLVM*.a
+rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${prefix}/lib/clang
+rm -vrf ${prefix}/lib/mlir
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+"""
+
+const llvmscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -502,7 +523,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         ]
         
     elseif name == "LLVM"
-        script = llvmscript
+        script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
             LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
             ExecutableProduct("opt", :opt, "tools"),
