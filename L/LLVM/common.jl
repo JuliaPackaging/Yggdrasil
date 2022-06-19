@@ -331,7 +331,21 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const mlirscript = raw"""
+const mlirscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -505,7 +519,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
-        script = mlirscript
+        script = version < v"14" ? mlirscript_v13 : mlirscript_v14
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
         ]
