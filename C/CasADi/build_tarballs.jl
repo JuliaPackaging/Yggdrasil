@@ -19,7 +19,7 @@ install_license LICENSE.txt
 mkdir -p build
 cd build
 
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
+export CXXFLAGS="-fPIC -std=c++11"
 export CFLAGS="${CFLAGS} -fPIC"
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -32,11 +32,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
 else
-    if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
-    else
-        cmake --build . --config Release --parallel
-    fi
+    cmake --build . --config Release --parallel
 fi
 make install
 
@@ -56,10 +52,10 @@ products = [
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(platforms) do p
-    return libc(p) != "musl" &&
-        arch(p) != "powerpc64le" &&
-        arch(p) != "armv7l" &&
-        os(p) != "windows"
+    return !Sys.iswindows(p)
+        # libc(p) != "musl" &&
+        # arch(p) != "powerpc64le" &&
+        
 end
 
 dependencies = [
