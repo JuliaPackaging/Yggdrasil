@@ -14,6 +14,7 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/casadi
+install_license LICENSE.txt
 
 mkdir -p build
 cd build
@@ -54,6 +55,7 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> libc(p) != "musl" && arch(p) != "powerpc64le", platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
