@@ -26,7 +26,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_IPOPT=ON \
-    -DWITH_PYTHON=OFF \
     -DWITH_EXAMPLES=OFF \
     ..
 
@@ -41,22 +40,13 @@ else
 fi
 make install
 
-# Windows installs to a non-standard location
-if [[ "${target}" == *-mingw* ]]; then
-    mkdir -p ${libdir}
-    cp -r ${prefix}/casadi/* ${prefix}/.
-    rm -r ${prefix}/casadi
-    mv ${prefix}/libcasadi* ${libdir}/.
-    mv ${prefix}/cmake ${libdir}/cmake
-    mv ${prefix}/pkgconfig ${libdir}/pkgconfig
-fi
-
 cd $WORKSPACE/srcdir
-${CXX} main.cpp -o ${bindir}/casadi_ipopt -I${includedir} -L${libdir} -lcasadi -std=c++11
+
+${CXX} main.cpp -o ${bindir}/amplexe -I${includedir} -L${libdir} -lcasadi -std=c++11
 """
 
 products = [
-    ExecutableProduct("casadi_ipopt", :casadi_ipopt),
+    ExecutableProduct("amplexe", :amplexe),
     LibraryProduct("libcasadi", :libcasadi),
     LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
 ]
@@ -66,7 +56,10 @@ products = [
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(platforms) do p
-    return libc(p) != "musl" && arch(p) != "powerpc64le" && arch(p) != "armv7l"
+    return libc(p) != "musl" &&
+        arch(p) != "powerpc64le" &&
+        arch(p) != "armv7l" &&
+        os(p) != "windows"
 end
 
 dependencies = [
