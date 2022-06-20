@@ -4,9 +4,6 @@
 using namespace casadi;
 
 int main(int argc, char **argv){
-  // No options yet
-  assert(argc == 3);
-  assert(std::string(argv[2]) == "-AMPL");
   std::string nl_filename = argv[1];
   NlpBuilder model;
   model.import_nl(nl_filename);
