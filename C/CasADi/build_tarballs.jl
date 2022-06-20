@@ -62,7 +62,9 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> libc(p) != "musl" && arch(p) != "powerpc64le", platforms)
+filter!(platforms) do p
+    return libc(p) != "musl" && arch(p) != "powerpc64le" && arch(p) != "armv7l"
+end
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
