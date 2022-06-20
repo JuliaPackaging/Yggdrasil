@@ -9,6 +9,7 @@ sources = [
         "https://github.com/casadi/casadi.git",
         "fadc86444f3c7ab824dc3f2d91d4c0cfe7f9dad5",
     ),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -16,6 +17,9 @@ cd $WORKSPACE/srcdir/casadi
 
 mkdir -p build
 cd build
+
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
+export CFLAGS="${CFLAGS} -fPIC"
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -35,9 +39,13 @@ else
     fi
 fi
 make install
+
+cd $WORKSPACE/srcdir
+${CXX} main.cpp -o ${bindir}/casadi_ipopt -I${includedir} -L${libdir} -lcasadi -std=c++11
 """
 
 products = [
+    ExecutableProduct("casadi_ipopt", :casadi_ipopt),
     LibraryProduct("libcasadi", :libcasadi),
     LibraryProduct("libcasadi_nlpsol_ipopt", :libcasadi_nlpsol_ipopt),
 ]
