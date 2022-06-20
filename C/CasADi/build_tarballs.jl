@@ -44,6 +44,7 @@ make install
 # Windows installs to a non-standard location
 if [[ "${target}" == *-mingw* ]]; then
     mkdir -p ${libdir}
+    mv ${prefix}/casadi/* ${prefix}/.
     mv ${prefix}/libcasadi* ${libdir}/.
 fi
 
