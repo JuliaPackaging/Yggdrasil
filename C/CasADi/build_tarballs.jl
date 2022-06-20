@@ -41,6 +41,12 @@ else
 fi
 make install
 
+# Windows installs to a non-standard location
+if [[ "${target}" == *-mingw* ]]; then
+    mkdir -p ${libdir}
+    mv ${prefix}/libcasadi* ${libdir}/.
+fi
+
 cd $WORKSPACE/srcdir
 ${CXX} main.cpp -o ${bindir}/casadi_ipopt -I${includedir} -L${libdir} -lcasadi -std=c++11
 """
