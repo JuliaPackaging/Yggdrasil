@@ -16,19 +16,18 @@ script = raw"""
 cd $WORKSPACE/srcdir/casadi
 install_license LICENSE.txt
 
+if [[ "$target" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
+fi
+
 mkdir -p build
 cd build
 
 export CXXFLAGS="-fPIC -std=c++11"
 export CFLAGS="${CFLAGS} -fPIC"
 
-if [[ "$target" == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
-    export CXX=clang++
-fi
-
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_IPOPT=ON \
     -DWITH_EXAMPLES=OFF \
