@@ -13,8 +13,8 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
-    v"14.0.2" => "465c166c5422079185c3289cdc2613420d8d6c51", # julia-14.0.2-1
+    v"13.0.1" => "2f4460bd46aa80d4fe0d80c3dabcb10379e8d61b", # julia-13.0.1-1
+    v"14.0.5" => "3c1151c0f6c5b265ec2b3a176fe12be4b23252bf", # julia-14.0.5-0
 )
 
 const buildscript = raw"""
@@ -187,6 +187,11 @@ if [[ ${target} == *linux* ]]; then # TODO only LLVM12
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
+
+if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_WINDOWS_PREFER_FORWARD_SLASH=False)
+fi
+
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
@@ -326,7 +331,21 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const mlirscript = raw"""
+const mlirscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -365,7 +384,28 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const llvmscript = raw"""
+const llvmscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${libdir}/*MLIR*.${dlext}*
+rm -vrf ${prefix}/lib/*LLVM*.a
+rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${prefix}/lib/clang
+rm -vrf ${prefix}/lib/mlir
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+"""
+
+const llvmscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -479,7 +519,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
-        script = mlirscript
+        script = version < v"14" ? mlirscript_v13 : mlirscript_v14
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
         ]
@@ -497,7 +537,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         ]
         
     elseif name == "LLVM"
-        script = llvmscript
+        script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
             LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
             ExecutableProduct("opt", :opt, "tools"),

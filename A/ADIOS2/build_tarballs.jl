@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.0"
+version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.8.0.tar.gz",
-                  "5af3d950e616989133955c2430bd09bcf6bad3a04cf62317b401eaf6e7c2d479"),
+    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(version).tar.gz",
+                  "3f515b442bbd52e3189866b121613fe3b59edb8845692ea86fad83d1eba35d93"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,9 +22,6 @@ cd ADIOS2-*
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
-# Don't use `ERROR` as identifier; it is reserved on Windows.
-# Already implemented on master.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fatalerror.patch
 
 mkdir build
 cd build
@@ -133,7 +130,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Blosc_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
@@ -143,9 +140,9 @@ dependencies = [
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
-platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] ∈ ("mpitrampoline", "mpiwrapper") && libgfortran_version(p) == v"3"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
