@@ -30,16 +30,12 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_DEEPBIND=OFF \
     ..
 
-if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
-else
-    cmake --build . --config Release --parallel
-fi
+make -j ${nproc}
 make install
 
 cd $WORKSPACE/srcdir
 
-${CXX} main.cpp -o ${bindir}/amplexe -I${includedir} -L${libdir} -lcasadi -std=c++11
+c++ main.cpp -o "${bindir}/amplexe${exeext}" -I"${includedir}" -L"${libdir}" -lcasadi -std=c++11
 """
 
 products = [
@@ -62,7 +58,7 @@ end
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Ipopt_jll"),
+    Dependency("Ipopt_jll"; compat="300.1400.400"),
 ]
 
 build_tarballs(
