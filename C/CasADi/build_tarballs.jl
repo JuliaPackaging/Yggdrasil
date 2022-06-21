@@ -27,6 +27,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_IPOPT=ON \
     -DWITH_EXAMPLES=OFF \
+    -DWITH_DEEPBIND=OFF \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
