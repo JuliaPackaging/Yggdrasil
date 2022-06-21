@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "catch22"
-version = v"0.3.1"
+version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/chlubba/catch22.git", "854d7a022f4aeefbebd771d70cd03bcc020e5312")
+    GitSource("https://github.com/chlubba/catch22.git", "2e1a271c6a7437b6a4a754e1adc7e34d7a224c01")
 ]
 
 # Bash recipe for building across all platforms
