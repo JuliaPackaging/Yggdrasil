@@ -23,8 +23,8 @@ fi
 mkdir -p build
 cd build
 
-export CXXFLAGS="-fPIC -std=c++11"
-export CFLAGS="${CFLAGS} -fPIC"
+export CXXFLAGS="-std=c++11"
+export CFLAGS="${CFLAGS}"
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
