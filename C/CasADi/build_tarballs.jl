@@ -1,3 +1,9 @@
+import Pkg
+Pkg.add(Pkg.PackageSpec(
+    url = "https://github.com/giordano/BinaryBuilderBase.jl",
+    rev = "mg/gcctoolchain-clang-windows",
+))
+
 using BinaryBuilder, Pkg
 
 name = "CasADi"
