@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 19e4d02c9..e7a1b43bf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -314,7 +314,7 @@ option(WITH_COPYSIGN_UNDEF "On Windows, in Python.h #defines copysign to be _cop
+ ############################################################
+ # Flat hierarchy if self-contained and on Windows
+ option(WITH_SELFCONTAINED "Make the install directory self-contained" OFF)
+-if(WITH_SELFCONTAINED OR (WIN32 AND NOT CYGWIN))
++if(WITH_SELFCONTAINED)
+   set(DEF_LIB_PREFIX casadi)
+   set(DEF_BIN_PREFIX casadi)
+   set(DEF_CMAKE_PREFIX casadi/cmake)

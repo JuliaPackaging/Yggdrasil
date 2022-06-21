@@ -22,6 +22,11 @@ cd build
 export CXXFLAGS="-fPIC -std=c++11"
 export CFLAGS="${CFLAGS} -fPIC"
 
+if [[ "$target" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
+    export CXX=clang++
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -48,12 +53,15 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+# TODO(odow): restrict to just Windows while we experiment with things to reduce
+# the load on the server.
 filter!(platforms) do p
     # Windows export bug is:
     #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=50044
     # because of
     #   https://github.com/casadi/casadi/blob/402fe583f0d3cf1fc77d1e1ac933f75d86083124/casadi/core/dm_instantiator.cpp#L373-L374
-    return !Sys.iswindows(p)
+    return Sys.iswindows(p)
 end
 
 dependencies = [
