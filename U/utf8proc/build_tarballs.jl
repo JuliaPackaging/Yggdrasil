@@ -18,7 +18,7 @@ if [[ "${target}" == *-mingw* ]]; then
     mkdir -p ${libdir} ${prefix}/lib ${includedir}
     cp utf8proc.h ${includedir}
     ar x libutf8proc.a
-    cc -shared -o "${libdir}/libutf8proc.${dlext}" *.o
+    $CC -shared -o "${libdir}/libutf8proc.${dlext}" *.o
     cp libutf8proc.a ${prefix}/lib
 else
     make -j${nproc}
