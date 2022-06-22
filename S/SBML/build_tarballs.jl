@@ -15,6 +15,7 @@ cd ${WORKSPACE}/srcdir/libsbml-*
 
 atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
 atomic_patch -p1 ../patches/0002-Add-SBMLNamespaces_addPackageNamespace-s-functions-t.patch
+atomic_patch -p1 ../patches/0003-Fix-signature-of-SBase_getNumPlugins-in-prototype.patch
 
 mkdir build
 cd build
