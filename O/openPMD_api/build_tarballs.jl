@@ -28,7 +28,7 @@ script = raw"""
 # Log which MPI implementation is actually used
 grep -iq MPICH $prefix/include/mpi.h && echo 'MPI: MPICH'
 grep -iq MPItrampoline $prefix/include/mpi.h && echo 'MPI: MPItrampoline'
-grep -iq OpenMPI $prefix/include/mpi.h && echo 'MPI: MPICH'
+grep -iq OpenMPI $prefix/include/mpi.h && echo 'MPI: OpenMPI'
 
 cd $WORKSPACE/srcdir
 cd openPMD-api-*
