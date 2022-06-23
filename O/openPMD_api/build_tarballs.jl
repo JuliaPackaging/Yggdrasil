@@ -66,7 +66,7 @@ if [[ "$target" == *-apple-* ]]; then
         mpiopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     fi
 elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    mpiopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
+    mpiopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
