@@ -9,7 +9,7 @@ name = "openPMD_api"
 version = v"0.15.0"
 
 # `v"1.6.3"` fails to build
-julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.7.0"]
 
 # Collection of sources required to complete build
 sources = [
@@ -118,6 +118,7 @@ augment_platform_block = """
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> Sys.islinux(p) && arch(p) == "x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
