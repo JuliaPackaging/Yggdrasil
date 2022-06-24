@@ -131,7 +131,7 @@ dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll")),
     # `ADIOS2_jll` is available only for 64-bit platforms
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We would need a parallel version of HDF5
     # Dependency(PackageSpec(name="HDF5_jll")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
