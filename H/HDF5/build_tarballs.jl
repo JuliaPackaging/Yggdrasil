@@ -33,7 +33,6 @@ mkdir -p ${libdir} ${includedir}
 if [[ ${target} == *mingw* ]]; then
     cd ${target}/mingw${nbits}
 
-    rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
     mv -v bin/*.dll ${libdir}
     mv -v include/* ${includedir}
 
@@ -41,7 +40,6 @@ if [[ ${target} == *mingw* ]]; then
 else
     cd ${target}
 
-    rm -f lib/{*_cpp*,*_fortran*} # we do not need these
     mv -v lib/* ${libdir}
     mv -v include/* ${includedir}
 
