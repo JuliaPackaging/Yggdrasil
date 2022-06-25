@@ -103,6 +103,8 @@ cmake \
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license ../COPYING*
+
+ls -lhrt ${libdir}
 """
 
 augment_platform_block = """
