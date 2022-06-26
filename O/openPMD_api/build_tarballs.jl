@@ -159,5 +159,6 @@ append!(dependencies, platform_dependencies)
 # GCC 5 reports incompatible signatures for `posix_memalign` on linux/musl, fixed on GCC 6
 # GCC 5 has a bug regarding `std::to_string` on freebsd, fixed on GCC 6
 # macOS encounters an ICE in GCC 6; switching to GCC 7 instead
+# Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"7")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
