@@ -160,4 +160,4 @@ append!(dependencies, platform_dependencies)
 # macOS encounters an ICE in GCC 6; switching to GCC 7 instead
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"8")
