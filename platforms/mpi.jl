@@ -47,7 +47,7 @@ mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
     ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(; name="MPItrampoline_jll", uuid="f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748", repo=Pkg.Types.GitRepo(; rev="845eb82e7842fb482802f0730a8f39a30288375d", source="https://github.com/giordano/MPItrampoline_jll.jl")), "", !Sys.iswindows)
+    ("MPItrampoline", PackageSpec(; name="MPItrampoline_jll", uuid="f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748", repo=Pkg.Types.GitRepo(; rev="188ba16d85ae74f7a17c25aaf3e8625bb872d01b", source="https://github.com/giordano/MPItrampoline_jll.jl")), "", !Sys.iswindows)
 )
 
 function augment_platforms(platforms)
