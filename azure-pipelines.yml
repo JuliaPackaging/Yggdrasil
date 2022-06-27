@@ -149,6 +149,7 @@ jobs:
               pushd ${PROJECT} >/dev/null
               echo "Generating meta.json..."
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
+              $(JULIA) --compile=min -E 'import Pkg; Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())'
               $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
 
               echo "Downloading sources..."
