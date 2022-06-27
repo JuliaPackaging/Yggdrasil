@@ -592,7 +592,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             end
         end
     else
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", LLVM_full_version)))
+        push!(dependencies, BuildDependency(PackageSpec(;name="LLVM_full_jll", uuid="a3ccf953-465e-511d-b87f-60a6490c289d", version=LLVM_full_version))
         if name in ("Clang", "LLVM", "MLIR", "LLD")
             push!(dependencies, Dependency("libLLVM_jll", libLLVM_version, compat=compat_version))
         end
