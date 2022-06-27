@@ -50,6 +50,8 @@ jobs:
 
       $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
           versioninfo()
+          # Force registry update before going on
+          Pkg.Registry.update()
           if !isnothing(Pkg.pkg_server())
               resp = try
                   headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
@@ -149,7 +151,6 @@ jobs:
               pushd ${PROJECT} >/dev/null
               echo "Generating meta.json..."
               JSON_PATH="$(Agent.TempDirectory)/${NAME}.meta.json"
-              $(JULIA) --compile=min -E 'import Pkg; Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())'
               $(JULIA) --compile=min ./build_tarballs.jl --meta-json="${JSON_PATH}"
 
               echo "Downloading sources..."
