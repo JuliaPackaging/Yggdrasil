@@ -14,6 +14,8 @@ variables:
     # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
     BINARYBUILDER_NPROC: 16
     JULIA_PKG_SERVER: us-east.pkg.julialang.org
+    # Use eager registry to not have to wait for updates of the conservative registry
+    JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
 
 jobs:
 - job: generator
