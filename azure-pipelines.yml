@@ -50,8 +50,6 @@ jobs:
 
       $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
           versioninfo()
-          # Temporary hack: force registry update before going on
-          Pkg.Registry.update()
           if !isnothing(Pkg.pkg_server())
               resp = try
                   headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
@@ -288,9 +286,6 @@ jobs:
       # Cleanup temporary things that might have been left-over
       ./clean_builds.sh
       ./clean_products.sh
-
-      # Temporary hack: force registry update before going on
-      $(JULIA) --compile=min -O0 -e 'using Pkg; Pkg.Registry.update()'
 
       cd $(PROJECT)
       $(JULIA) ./build_tarballs.jl --verbose $(PLATFORM)
