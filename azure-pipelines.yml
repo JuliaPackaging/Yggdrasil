@@ -50,7 +50,8 @@ jobs:
           versioninfo()
           if !isnothing(Pkg.pkg_server())
               resp = try
-                  Downloads.request("$(Pkg.pkg_server())/registries")
+                  headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
+                  Downloads.request("$(Pkg.pkg_server())/registries"; headers)
               catch e
                   # Let us know the download of the registry went wrong, but do not hard fail
                   @error "Could not download the registry" exception=(e, catch_backtrace())
