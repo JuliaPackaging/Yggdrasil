@@ -16,11 +16,11 @@
 using BinaryBuilder, Pkg
 
 name = "FMM3D"
-version = v"0.1.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flatironinstitute/FMM3D.git", "e42473a8091d33a83cbdb631cff4660ce7f94a96")
+    GitSource("https://github.com/flatironinstitute/FMM3D.git", "9228240c090d1b8386617728ffa14372fe967b1a")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,6 +34,8 @@ touch make.inc
 # force gcc
 if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
   export CC="gcc"
+  export CXX="g++"
+  export FC="gfortran"
 fi
 
 echo "CC=${CC}" >> make.inc;
@@ -44,6 +46,12 @@ if [[ ${target} = *mingw* ]]; then
     echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -funroll-loops" >> make.inc;
 else
     echo "FFLAGS= -fPIC -O3 -funroll-loops" >> make.inc;
+fi
+
+if [[ ${target} = *aarch64*apple* ]]; then
+    export CC="gcc-11"
+    export CXX="g++-11"
+    export FC="gfortran-11"
 fi
 
 export OMPFLAGS="-fopenmp"
@@ -76,7 +84,7 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+# filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
