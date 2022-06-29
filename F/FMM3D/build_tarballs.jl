@@ -48,12 +48,6 @@ else
     echo "FFLAGS= -fPIC -O3 -funroll-loops -std=legacy" >> make.inc;
 fi
 
-if [[ ${target} = *aarch64*apple* ]]; then
-    export CC="gcc-11"
-    export CXX="g++-11"
-    export FC="gfortran-11"
-fi
-
 export OMPFLAGS="-fopenmp"
 export OMPLIBS="-lgomp"
 echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
