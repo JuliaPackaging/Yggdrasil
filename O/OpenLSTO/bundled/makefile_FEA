@@ -1,0 +1,49 @@
+# -*- makefile -*-
+
+CXXFLAGS = -std=c++14 -Wall -fopenmp -w -O3 -fPIC -fopenmp
+LDFLAGS = -shared -fopenmp
+# CHANGE TO directory where FEA and LSM include folders are
+# parent directory for FEA files
+# parent directory for FEA files
+
+FEA_DIR = .
+#LSM_DIR = ./M2DO_LSM/
+
+# CHANGE TO the directory where you want your .o files stored
+OBJ_DIR := $(FEA_DIR)/bin
+
+# Include directories
+FEA_INCL = $(FEA_DIR)/include
+#LSM_INCL = $(LSM_DIR)/include
+INCLUDES = -I$(FEA_INCL) -I$(includedir)/eigen3 #-I$(LSM_INCL)
+
+SRC_DIR := $(FEA_DIR)/src
+# List of .o files
+# Comment out uncessary object files (if needed)
+SRC_FILES := $(filter-out $(SRC_DIR)/utility_functions.cpp, $(wildcard $(SRC_DIR)/*.cpp))
+
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
+# Compile all the M2DO FEA object files
+
+# Make commands for each individual object file
+###############################################################################
+# Add your own makes here
+###############################################################################
+# List of targets for executables you write
+
+all: m2do_fea.$(dlext)
+
+m2do_fea.$(dlext): $(OBJ_FILES)
+	$(CXX) $(LDFLAGS) $(INCLUDES) -o $@ $(OBJ_FILES)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+
+install: m2do_fea.$(dlext)
+	install -d $(libdir)
+	install -m 644 m2do_fea.$(dlext) $(libdir)
+	install -m 644 include/*.h $(includedir)
+clean:
+	rm -f m2do_fea.$(dlext) $(OBJ_FILES)
+
+.PHONY: clean install all

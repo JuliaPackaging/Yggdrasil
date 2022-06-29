@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "ntl"
-version = v"11.4.3"
+version = v"11.5.1"
 sources = [
     ArchiveSource("https://www.shoup.net/ntl/ntl-$(version).tar.gz",
-                  "b7c1ccdc64840e6a24351eb4a1e68887d29974f03073a1941c906562c0b83ad2"),
+                  "210d06c31306cbc6eaf6814453c56c776d9d8e8df36d74eb306f6a523d1c6a8a"),
 ]
 
 # Bash recipe for building across all platforms

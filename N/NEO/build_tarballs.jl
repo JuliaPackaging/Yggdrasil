@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"21.22.19967"
+version = v"22.25.23529"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "67aa1ad7ec8e3a552883bcb033645a4805cd8e86"),
+              "9c18c0247e51b5f2b37ab24bee9ccb3c8eada86a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd compute-runtime
-install_license LICENSE
+install_license LICENSE.md
 
 # work around compilation failures
 ## already defined in gmmlib
@@ -22,6 +22,8 @@ sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
 ## extend LD_LIBRARY_PATH, don't overwrite it
 find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
     sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
+## NO
+sed -i '/-Werror/d' CMakeLists.txt
 
 CMAKE_FLAGS=()
 
@@ -72,9 +74,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=21.1.3"),
-    Dependency("libigc_jll"; compat="=1.0.7423"),
-    Dependency("oneAPI_Level_Zero_Headers_jll"; compat="=1.1.2"),
+    Dependency("gmmlib_jll"; compat="=22.1.3"),
+    Dependency("libigc_jll"; compat="=1.0.11378"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.4.0"; compat="1.3.7"),
 ]
 
 # GCC 4 has constexpr incompatibilities

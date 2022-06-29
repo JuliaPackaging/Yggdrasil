@@ -3,25 +3,33 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.2.1"
+version = v"2021.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/oneTBB.git",
-              # Note: this isn't actually 2021.2.1 (there is no such versions at
-              # the moment), this seems to be the revision where most platforms
-              # are successful
-              "9e15720bc7744f85dff611d34d65e9099e077da4"),
+    ArchiveSource("https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.5.0.tar.gz", "e5b57537c741400cf6134b428fc1689a649d7d38d9bb9c1b6d64f092ea28178a"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oneTBB/
+cd $WORKSPACE/srcdir/oneTBB*
 
-# Adapt patch from
-# https://github.com/oneapi-src/oneTBB/pull/203
-atomic_patch -p1 ../patches/musl.patch
+# We can't do Link-Time-Optimization with Clang, disable it.
+atomic_patch -p1 ../patches/clang-no-lto.patch
+
+if [[ ${target} == *-linux-musl* ]]; then
+    # Adapt patch from https://github.com/oneapi-src/oneTBB/pull/203
+    atomic_patch -p1 ../patches/musl.patch
+
+elif [[ ${target} == *-mingw* ]]; then
+    #derived from https://github.com/oneapi-src/oneTBB/commit/ce476173772f289c66ba98089618c1ff767ecea4, can hopefully be removed next release
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/lowercase-windows-include.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/NOMINMAX-defines.patch
+    # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
+    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+fi
 
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -36,19 +44,19 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-# Windows with MinGW at the moment doesn't work, but it may change in the near
-# future, watch out <https://github.com/oneapi-src/oneTBB/pull/351>. See also
-# <https://stackoverflow.com/q/67572880/2442087>.
-filter!(!Sys.iswindows, platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
+
 # Disable platforms unlikely to work
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
+#i686 mingw fails with errors about _control87
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libtbbmalloc", :libtbbmalloc),
     LibraryProduct("libtbbmalloc_proxy", :libtbbmalloc_proxy),
-    LibraryProduct("libtbb", :libtbb),
+    LibraryProduct(["libtbb", "libtbb12"], :libtbb),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -56,4 +64,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

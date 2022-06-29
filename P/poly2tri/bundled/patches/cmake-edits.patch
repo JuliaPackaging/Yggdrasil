@@ -1,0 +1,20 @@
+diff --git before/CMakeLists.txt after/CMakeLists.txt
+index 50d6e31..0961a45 100644
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
+@@ -8,7 +8,7 @@ option(P2T_BUILD_TESTBED "Build the testbed application" OFF)
+ 
+ file(GLOB SOURCES poly2tri/common/*.cc poly2tri/sweep/*.cc)
+ file(GLOB HEADERS poly2tri/*.h poly2tri/common/*.h poly2tri/sweep/*.h)
+-add_library(poly2tri ${SOURCES} ${HEADERS})
++add_library(poly2tri SHARED ${SOURCES} ${HEADERS})
+ target_include_directories(poly2tri INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+ 
+ if(P2T_BUILD_TESTS)
+@@ -19,3 +19,6 @@ endif()
+ if(P2T_BUILD_TESTBED)
+     add_subdirectory(testbed)
+ endif()
++
++install(FILES ${HEADERS} DESTINATION include)
++install(TARGETS poly2tri DESTINATION ${CMAKE_INSTALL_LIBDIR})

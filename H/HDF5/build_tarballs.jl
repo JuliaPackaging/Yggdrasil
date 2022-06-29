@@ -2,25 +2,27 @@ using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
-version = v"1.12.0"
+version = v"1.12.1"
 
 sources = [
-    FileSource("https://files.pythonhosted.org/packages/d5/f9/676c6a5c13806289da6177c538ce772e3e5b04ea10d76e6e72e9f0d042de/h5py-3.1.0-cp39-cp39-macosx_10_9_x86_64.whl", "cb74df83709d6d03d11e60b9480812f58da34f194beafa8c8314dbbeeedfe0a6"),
+    # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.12.1-2-any.pkg.tar.zst", "ab7e4568c99e2a7a9b96ad06867ef9e829d286539e0735a93b9295ad8778a818"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-1-any.pkg.tar.zst", "43ef1aee2be7cc192d14c6641627ed0a1eca50c21234eba3405fce77302517a8"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.11-9-any.pkg.tar.zst", "8d594fc14497d41a66415bfdd200d7d1d56a6ecd3fe81b9190bec0c4841a5eff"; unpack_target="i686-w64-mingw32"),
+    # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-11.2.0-6-any.pkg.tar.zst", "bdc359047f61c8e96401ba25b17c80f5f8039c25a063c622e3680123bb0de9d1"; unpack_target="i686-w64-mingw32"),
 
-    FileSource("https://files.pythonhosted.org/packages/40/1b/dd36e8aa1b7c9d82a1f0aaabece4393797ded0ff613437dfb8c0780b33a9/h5py-3.1.0-cp39-cp39-manylinux1_x86_64.whl", "80c623be10479e81b64fa713b7ed4c0bbe9f02e8e7d2a2e5382336087b615ce4"),
+    # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.12.1-2-any.pkg.tar.zst", "540d8b9fd71d0d848e28723f531948dea497c7cb8f95c53e1a3b06f750f12c40"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libaec-1.0.6-1-any.pkg.tar.zst", "839b271b1313f013227c13944876651429b8e0edb40760d64f817a36c8b9435c"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.11-9-any.pkg.tar.zst", "9da9ebafaef832dba2f442ad44d9ae8759784b86478dcbe326500195f8ea6339"; unpack_target="x86_64-w64-mingw32"),
 
-    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-hdf5-1.12.0-2-any.pkg.tar.zst", "d9ade0d0fddfdeca3ea9de00b066e330e1573c547609a12b81c6a080b2c19f3e", unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-szip-2.1.1-2-any.pkg.tar.xz", "58b5efe1420a2bfd6e92cf94112d29b03ec588f54f4a995a1b26034076f0d369", unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-zlib-1.2.11-7-any.pkg.tar.xz", "addf6c52134027407640f1cbdf4efc5b64430f3a286cb4e4c4f5dbb44ce55a42", unpack_target = "i686-w64-mingw32"),
-    # We need some special compiler support libraries from mingw for i686
-    ArchiveSource("http://repo.msys2.org/mingw/i686/mingw-w64-i686-gcc-libs-10.2.0-5-any.pkg.tar.zst", "e03a63b24695951a1e80def754d6bd128744eaf1e562308ded31e989636e7651", unpack_target = "i686-w64-mingw32"),
-
-    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-hdf5-1.12.0-2-any.pkg.tar.zst", "549462ad99a079ff725ac4bd1f662d3594515320ea324a7263a647578b258d86", unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-szip-2.1.1-2-any.pkg.tar.xz", "ec8fe26370b0673c4b91f5ccf3404907dc7c24cb9d75c7b8830aa93a7c13ace7", unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-zlib-1.2.11-7-any.pkg.tar.xz", "1decf05b8ae6ab10ddc9035929014837c18dd76da825329023da835aec53cec2", unpack_target = "x86_64-w64-mingw32"),
-
-    # Can't use conda-forge on other platforms since it links too many libraries, but apparently on aarch64 is fine
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.0/download/linux-aarch64/hdf5-1.12.0-nompi_h1022a3e_102.tar.bz2", "605aff906fd0fca9a52da6ad9b48607fab5cb26e2615d3827a1f318d6e103c4a", unpack_target = "aarch64-linux-gnu"),
+    # x86_64 and aarch64 for Linux and macOS from https://anaconda.org/conda-forge/hdf5/files
+    # NOTE: make sure to select those compatible with OpenSSL 1.1.1
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-64/hdf5-1.12.1-nompi_h2750804_103.tar.bz2", "bd7bb0657d63acf52c9d30d1b89276356c6da4ff8a90dd5fcbd0cfde6578f317"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-aarch64/hdf5-1.12.1-nompi_h774d4d8_103.tar.bz2", "8688cfc983962bf7a59a97becb0d67ee64eb4a7dd5793b915cf50dccd90bfa2d"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-64/hdf5-1.12.1-nompi_h2f0ef1a_102.tar.bz2", "4a4640e44adea33833e7efb6ac3070dd4c80a8a156c2fd3aa7cfcac8865f5a26"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-arm64/hdf5-1.12.1-nompi_had0e5e0_103.tar.bz2", "ef48b684b22c6b0077bc9836e0cc6d15abb88868d7a6c842226666ebb8bbd449"; unpack_target="aarch64-apple-darwin20"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,59 +34,24 @@ if [[ ${target} == *mingw* ]]; then
     cd ${target}/mingw${nbits}
 
     rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
-    mv bin/*.dll ${libdir}
-    mv include/* ${includedir}
+    mv -v bin/*.dll ${libdir}
+    mv -v include/* ${includedir}
 
     install_license share/doc/hdf5/COPYING
-elif [[ ${target} == aarch64-* ]]; then
+else
     cd ${target}
 
-    rm -f lib/{*_cpp*,*_fortran*} # we do not need these
-    mv lib/* ${libdir}
-    mv include/* ${includedir}
+    # Delete the C++ and Fortran libraries, we can't use them because they'd restrict the
+    # ABIs we can use this package for (e.g., *only* libgfortran5 and C++11 string ABI),
+    # which would be overly restrictive, as Julia on Linux comes with libgfortran4, thus
+    # making this package completely unusable there.  The only way to use the C++ and
+    # Fortran libraries is for BinaryBuilder to be able to actually build them:
+    # <https://github.com/JuliaPackaging/Yggdrasil/issues/4760>.
+    rm -f lib/{*_cpp*,*_fortran*}
+    mv -v lib/* ${libdir}
+    mv -v include/* ${includedir}
 
     install_license info/licenses/COPYING
-else
-    if [[ ${target} == x86_64-linux-gnu ]]; then
-        WHL_FILE="*h5py-*manylinux1_x86_64*.whl"
-        LIBSDIR=h5py.libs
-    elif [[ ${target} == x86_64-apple-darwin* ]]; then
-        WHL_FILE="*h5py-*macosx*.whl"
-        LIBSDIR=h5py/.dylibs
-    else
-        echo "ERROR: Unsupported platform ${target}" >&2
-        exit 1
-    fi
-
-    unzip ${WHL_FILE}
-    mv ${LIBSDIR}/* ${libdir}
-
-    # Use headers and license from aarch64-linux-gnu with the hope that they'll be fine
-    mv aarch64-*/include/* ${includedir}
-    install_license aarch64-*/info/licenses/COPYING
-fi
-
-# We want to have the files with the simple name lib.extension, without
-# soversion, to make linking to these libraries easier
-if [[ ! ${target} == *-mingw* ]]; then
-    for lib in libhdf5 libhdf5_hl; do
-        # We also need to be able to access `libhdf5` and `libhdf5_hl` directly,
-        # so symlink it from the hashed filename from manylinux pypi
-        if [[ ${target} == *86*linux* ]]; then
-            name=$(basename ${libdir}/${lib}-*.${dlext}*)
-            base="${name%%.*}"
-            ext="${name#$base}"
-            ln -s "${name}" "${libdir}/${lib}${ext}"
-        fi
-
-        dest="${libdir}/${lib}.${dlext}"
-        if [[ ! -f "${dest}" ]]; then
-            link_target=$(find ${libdir} -name "${lib}.*.${dlext}" -or -name "${lib}.${dlext}.*")
-            ln -s $(basename "${link_target}") "${dest}"
-        fi
-        # Double check that the file links to an existing file
-        [ -f $(realpath "${dest}") ]
-    done
 fi
 """
 
@@ -96,6 +63,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
@@ -107,9 +75,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("LibCURL_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

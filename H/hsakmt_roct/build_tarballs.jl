@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsakmt_roct"
-version = v"4.0.0"
+version = v"4.5.2"
 
 # Collection of sources required to build ROCT-Thunk-Interface
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/archive/rocm-$(version).tar.gz",
-                  "a6960fffc8388731ee18953faae12d1449c582e3b3594418845a544455895f42"),
+                  "fb8e44226b9e393baf51bfcb9873f63ce7e4fcf7ee7f530979cf51857ea4d24b"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,6 +24,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_C_FLAGS="-Dstatic_assert=_Static_assert" \
+      -DBUILD_SHARED_LIBS=ON \
       ..
 make -j${nproc}
 make install
@@ -45,8 +46,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("NUMA_jll"),
+    Dependency("libdrm_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-               preferred_gcc_version=v"8") 
+               preferred_gcc_version=v"8")

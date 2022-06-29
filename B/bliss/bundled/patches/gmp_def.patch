@@ -1,0 +1,15 @@
+diff --git a/src/defs.hh b/src/defs.hh
+index f86b5b3..edf9d87 100644
+--- a/src/defs.hh
++++ b/src/defs.hh
+@@ -30,6 +30,10 @@
+ #define BLISS_VERSION_MAJOR 0
+ #define BLISS_VERSION_MINOR 77
+ 
++#ifndef BLISS_USE_GMP
++#define BLISS_USE_GMP 1
++#endif
++
+ namespace bliss {
+ 
+ /** \brief The version number of bliss. */

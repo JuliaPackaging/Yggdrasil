@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/src/OSD/OSD_signal.cxx
+@@ -761,9 +761,9 @@
+ 
+ #include <signal.h>
+ 
+-#if !defined(__ANDROID__) && !defined(__QNX__) && !defined(__EMSCRIPTEN__)
+-  #include <sys/signal.h>
+-#endif
++//#if !defined(__ANDROID__) && !defined(__QNX__) && !defined(__EMSCRIPTEN__)
++//  #include <sys/signal.h>
++//#endif
+ 
+ # define _OSD_FPX (FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW)
+ 
+@@ -977,17 +977,17 @@
+ //=======================================================================
+ void OSD::SetFloatingSignal (Standard_Boolean theFloatingSignal)
+ {
+-#if defined (__linux__)
+-  feclearexcept (FE_ALL_EXCEPT);
+-  if (theFloatingSignal)
+-  {
+-    feenableexcept (_OSD_FPX);
+-  }
+-  else
+-  {
+-    fedisableexcept (_OSD_FPX);
+-  }
+-#elif defined (__sun) || defined (SOLARIS)
++//#if defined (__linux__)
++//  feclearexcept (FE_ALL_EXCEPT);
++//  if (theFloatingSignal)
++//  {
++//    feenableexcept (_OSD_FPX);
++//  }
++//  else
++//  {
++//    fedisableexcept (_OSD_FPX);
++//  }
++#if defined (__sun) || defined (SOLARIS)
+   int aSunStat = 0;
+   sigfpe_handler_type anFpeHandler = (theFloatingSignal ? (sigfpe_handler_type)Handler : NULL);
+   aSunStat = ieee_handler ("set", "invalid",  anFpeHandler);
+@@ -1010,11 +1010,11 @@
+ //=======================================================================
+ Standard_Boolean OSD::ToCatchFloatingSignals()
+ {
+-#if defined (__linux__)
+-  return (fegetexcept() & _OSD_FPX) != 0;
+-#else
++//#if defined (__linux__)
++//  return (fegetexcept() & _OSD_FPX) != 0;
++//#else
+   return Standard_False;
+-#endif
++//#endif
+ }
+ 
+ //=======================================================================

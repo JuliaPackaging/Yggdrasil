@@ -15,8 +15,8 @@
 
 using BinaryBuilder
 
-HELICS_VERSION = v"2.7.1"
-HELICS_SHA = "872d415959e9d97069b06327410af00e7daae8dbeb9f050b26632eca924ea23c"
+HELICS_VERSION = v"2.8.1"
+HELICS_SHA = "9485091fb1bf5d0dd3b21a2641dd78051bbf5374cd823425e458053abafdfa1f"
 
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
@@ -61,4 +61,5 @@ build_tarballs(
     products,
     dependencies,
     ; preferred_gcc_version=v"7",
+    julia_compat="1.6",
 )

@@ -1,6 +1,6 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1392,15 +1392,18 @@ if test "x$with_proj" = "xno" ; then
+@@ -1454,15 +1454,18 @@ if test "x$with_proj" = "xno" ; then
  
  else
  
@@ -22,7 +22,7 @@
          AC_LANG_POP([C++])
          if test "$PROJ_FOUND" = "yes"; then
              PROJ_INCLUDE="-DPROJ_RENAME_SYMBOLS"
-@@ -1426,34 +1429,34 @@ else
+@@ -1488,34 +1491,34 @@ else
      fi
    else
      ORIG_LIBS="$LIBS"

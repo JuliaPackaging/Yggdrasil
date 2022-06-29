@@ -1,0 +1,28 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -264,12 +264,12 @@ if(FMILIB_BUILD_STATIC_LIB)
+ 	include(mergestaticlibs)
+ 	if(WIN32)
+ 		merge_static_libs(fmilib ${FMILIB_SUBLIBS})
+-        target_link_libraries(fmilib Shlwapi)
++        target_link_libraries(fmilib shlwapi)
+         foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
+ 			set(flags "")
+ 			string(TOUPPER "STATIC_LIBRARY_FLAGS_${CONFIG_TYPE}" PROPNAME)
+ 			get_target_property(flags fmilib ${PROPNAME})
+-			set_target_properties(fmilib PROPERTIES ${PROPNAME} "${flags} Shlwapi.lib")
++			set_target_properties(fmilib PROPERTIES ${PROPNAME} "${flags} shlwapi.lib")
+ 		endforeach()
+ 	else()
+ 		merge_static_libs(fmilib ${FMILIB_SUBLIBS} )
+--- a/Config.cmake/jmutil.cmake
++++ b/Config.cmake/jmutil.cmake
+@@ -67,7 +67,7 @@ if(UNIX)
+ 	target_link_libraries(jmutils dl)
+ endif(UNIX)
+ if(WIN32)
+-	target_link_libraries(jmutils Shlwapi)
++	target_link_libraries(jmutils shlwapi)
+ endif(WIN32)
+ 
+ endif(NOT JMUTILDIR)

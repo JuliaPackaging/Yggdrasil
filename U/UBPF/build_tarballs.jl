@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "UBPF"
-version = v"0.0.1" # Temporary fake version, until ubpf provides releases
+version = v"0.0.2" # Temporary fake version, until ubpf provides releases
 
 # Collection of sources required to complete build
 sources = [
     # Use jpsamaroo's repo until upstream (iovisor/ubpf) becomes active
-    GitSource("https://github.com/jpsamaroo/ubpf.git", "173a58790af1fdefc67aea6e22aaec0d6d8b4d67")
+    GitSource("https://github.com/jpsamaroo/ubpf.git", "aa2df039885a098925d5579366eda0f980d35caf")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ sed -i 's/-fPIC//g' Makefile
 elif [[ "${target}" == *bsd* ]]; then
 sed -i 's#endian.h#sys/endian.h#g' *.c *.h
 fi
-make -j $(nproc)
+make -j ${nproc}
 make PREFIX=${prefix} install
 cd ..
 install_license LICENSE-APACHE

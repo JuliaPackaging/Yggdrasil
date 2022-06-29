@@ -1,0 +1,26 @@
+diff --git a/entwine/third/arbiter/arbiter.cpp b/entwine/third/arbiter/arbiter.cpp
+index 5637ce2..2153795 100644
+--- a/entwine/third/arbiter/arbiter.cpp
++++ b/entwine/third/arbiter/arbiter.cpp
+@@ -4827,21 +4827,7 @@ std::unique_ptr<std::string> env(const std::string& var)
+ {
+     std::unique_ptr<std::string> result;
+ 
+-#ifndef ARBITER_WINDOWS
+     if (const char* c = getenv(var.c_str())) result.reset(new std::string(c));
+-#else
+-    char* c(nullptr);
+-    std::size_t size(0);
+-
+-    if (!_dupenv_s(&c, &size, var.c_str()))
+-    {
+-        if (c)
+-        {
+-            result.reset(new std::string(c));
+-            free(c);
+-        }
+-    }
+-#endif
+ 
+     return result;
+ }

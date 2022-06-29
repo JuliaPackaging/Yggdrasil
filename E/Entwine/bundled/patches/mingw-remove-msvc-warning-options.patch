@@ -1,0 +1,18 @@
+diff --git a/cmake/windows_compiler_options.cmake b/cmake/windows_compiler_options.cmake
+index cc3f8e3..12bcf6f 100644
+--- a/cmake/windows_compiler_options.cmake
++++ b/cmake/windows_compiler_options.cmake
+@@ -8,13 +8,4 @@ function(system_compiler_options target)
+             NOMINMAX
+             JSON_DLL
+     )
+-    target_compile_options(${target}
+-        PRIVATE
+-            /wd4267
+-            /wd4244
+-            /wd4275
+-            /wd4251
+-            /wd4250
+-            /wd4800
+-    )
+ endfunction()

@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 apk add texinfo
 cd $WORKSPACE/srcdir/gdb-10.1/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-expat
 make -j${nproc} all
 make install
 """
@@ -40,7 +40,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2")
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
+    Dependency("Expat_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

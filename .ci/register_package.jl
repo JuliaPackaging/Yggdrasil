@@ -1,5 +1,8 @@
 using BinaryBuilder, BinaryBuilderBase, Downloads, Pkg
 
+# FIXME: Golang auto-upgrades to HTTP2, this can cause issue like https://github.com/google/go-github/issues/2113
+ENV["GODEBUG"] = "http2client=0"
+
 verbose = "--verbose" in ARGS
 
 # Read in input `.json` file
@@ -25,6 +28,7 @@ version = merged["version"]
 # the JLL packages.
 dependencies = Dependency[dep for dep in merged["dependencies"] if !(isa(dep, BuildDependency) || isa(dep, HostBuildDependency))]
 lazy_artifacts = merged["lazy_artifacts"]
+augment_platform_block = merged["augment_platform_block"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 repo = "JuliaBinaryWrappers/$(name)_jll.jl"
 code_dir = joinpath(Pkg.devdir(), "$(name)_jll")
@@ -32,7 +36,6 @@ julia_compat = merged["julia_compat"]
 
 # Register JLL package using given metadata
 BinaryBuilder.init_jll_package(
-    name,
     code_dir,
     repo,
 )
@@ -112,7 +115,7 @@ mktempdir() do download_dir
     # This loop over the unmerged objects necessary in the event that we have multiple packages being built by a single build_tarballs.jl
     for (i,json_obj) in enumerate(objs_unmerged)
         from_scratch = (i == 1)
-        BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
+        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, upload_prefix, verbose, from_scratch)
     end
 
     # Restore Artifacts.toml
@@ -129,5 +132,6 @@ mktempdir() do download_dir
     end
 end
 
-# Sub off to Registrator to create a PR to General
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; lazy_artifacts=lazy_artifacts)
+# Sub off to Registrator to create a PR to General.  Note: it's important to pass both
+# `augment_platform_block` and `lazy_artifacts` to build the right Project dictionary
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; augment_platform_block, lazy_artifacts)

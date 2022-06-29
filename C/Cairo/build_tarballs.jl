@@ -64,17 +64,20 @@ products = [
     LibraryProduct("libcairo", :libcairo),
 ]
 
+# Some dependencies are needed only on Linux and FreeBSD
+linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_xorgproto_jll"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"),
     Dependency("Pixman_jll"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"),
     Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libXrender_jll"),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("LZO_jll"),
     Dependency("Zlib_jll"),
 ]

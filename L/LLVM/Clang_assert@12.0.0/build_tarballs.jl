@@ -1,6 +1,6 @@
 name = "Clang"
-llvm_full_version = v"12.0.0+0"
-libllvm_version = v"12.0.0+0"
+llvm_full_version = v"12.0.0+1"
+libllvm_version = v"12.0.0+1"
 
 # Include common LLVM stuff
 include("../common.jl")

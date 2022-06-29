@@ -1,0 +1,25 @@
+diff --git a/extensions/strikethrough.h b/extensions/strikethrough.h
+index a52a2b4..cddb1cc 100644
+--- a/extensions/strikethrough.h
++++ b/extensions/strikethrough.h
+@@ -3,6 +3,7 @@
+ 
+ #include "cmark-gfm-core-extensions.h"
+ 
++CMARK_GFM_EXTENSIONS_EXPORT
+ extern cmark_node_type CMARK_NODE_STRIKETHROUGH;
+ cmark_syntax_extension *create_strikethrough_extension(void);
+ 
+diff --git a/extensions/table.h b/extensions/table.h
+index f6a0634..d5d248f 100644
+--- a/extensions/table.h
++++ b/extensions/table.h
+@@ -3,7 +3,7 @@
+ 
+ #include "cmark-gfm-core-extensions.h"
+ 
+-
++CMARK_GFM_EXTENSIONS_EXPORT
+ extern cmark_node_type CMARK_NODE_TABLE, CMARK_NODE_TABLE_ROW,
+     CMARK_NODE_TABLE_CELL;
+ 

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libCEED"
-version = v"0.8.0"
+version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/CEED/libCEED.git", "e8f234590eddcce2220edb1d6e979af7a3c35f82")
+    GitSource("https://github.com/CEED/libCEED.git", "d086b42987308d3f7585a8cbf1070065d766cfaa")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,4 +30,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

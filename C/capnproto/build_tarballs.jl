@@ -3,19 +3,17 @@
 using BinaryBuilder
 
 name = "capnproto"
-version = v"0.7.0"
+version = v"0.8.0"
 
 # Collection of sources required to build capnproto
 sources = [
     ArchiveSource("https://capnproto.org/capnproto-c++-$(version).tar.gz",
-                  "c9a4c0bd88123064d483ab46ecee777f14d933359e23bff6fb4f4dbd28b4cd41"),
-    DirectorySource("./bundled")
+                  "d1f40e47574c65700f0ec98bf66729378efabe3c72bc0cda795037498541c10d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/capnproto-*/
-atomic_patch -p2 ${WORKSPACE}/srcdir/patches/aligned-alloc.patch
 (
     # Do native build to get a capnp that we can run
     mkdir build_native && cd build_native
@@ -28,6 +26,9 @@ atomic_patch -p2 ${WORKSPACE}/srcdir/patches/aligned-alloc.patch
     make -j${nproc}
 )
 export CAPNP=build_native/capnp
+if [[ ${target} == *linux* ]]; then
+    export LDFLAGS="-lrt"
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-external-capnp
 make -j${nproc}
 make install
@@ -55,4 +56,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
-              preferred_gcc_version=v"5")
+              preferred_gcc_version=v"5", julia_compat="1.6")

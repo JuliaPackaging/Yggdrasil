@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"3.0.4"
+version = v"5.1.1"
 
-# Collection of sources required to build Libtiff
+# Collection of sources required to build libblastrampoline
 sources = [
-    GitSource("https://github.com/staticfloat/libblastrampoline",
-              "23de7a09bf354fe6f655c457bab5bf47fdd2486d")
+    GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
+              "ab5a1248f59e2be69856a7dcffb4406ff6ec6f04")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -33,4 +33,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.8",
+)

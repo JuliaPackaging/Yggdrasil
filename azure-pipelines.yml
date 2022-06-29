@@ -12,7 +12,10 @@ pool: Native
 variables:
     JULIA: unbuffer julia --project=$(Build.SourcesDirectory)/.ci --color=yes
     # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
-    BINARYBUILDER_NPROC: 64
+    BINARYBUILDER_NPROC: 16
+    JULIA_PKG_SERVER: us-east.pkg.julialang.org
+    # Use eager registry to not have to wait for updates of the conservative registry
+    JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
 
 jobs:
 - job: generator
@@ -45,7 +48,35 @@ jobs:
           fi
       fi
 
-      $(JULIA) -e "using InteractiveUtils; versioninfo()"
+      $(JULIA) --compile=min -O0 -e 'using InteractiveUtils, Pkg, Downloads, Dates
+          versioninfo()
+          if !isnothing(Pkg.pkg_server())
+              resp = try
+                  headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
+                  Downloads.request("$(Pkg.pkg_server())/registries"; headers)
+              catch e
+                  # Let us know the download of the registry went wrong, but do not hard fail
+                  @error "Could not download the registry" exception=(e, catch_backtrace())
+                  exit(0)
+              end
+              last_mod_idx = findfirst(h -> first(h) == "last-modified", resp.headers)
+              msg = "PkgServer: " * resp.url
+              delay = if !isnothing(last_mod_idx)
+                  last_mod = last(resp.headers[last_mod_idx])
+                  msg *= " -- last updated: " * last_mod
+                  # Manually strip the "GMT" timezone and hope it never changes.
+                  # Do not error out if parsing fails.
+                  dt = tryparse(DateTime, replace(last_mod, " GMT"=>""), dateformat"e, d u y H:M:S")
+                  # If parsing did fail, set the delay to 0.
+                  isnothing(dt) ? Second(0) : now(UTC) - dt
+              else
+                  Second(0)
+              end
+              delay > Second(0) && (msg *= " (" * string(Dates.canonicalize(round(delay, Second))) * " ago)")
+              @info(msg)
+              tolerance = Hour(1)
+              delay > tolerance && @warn "The PkgServer registry is older than $(tolerance)"
+          end'
 
       # Get the directories holding changed files
       # 1. All changed files
@@ -142,14 +173,19 @@ jobs:
               # "project source hash" is a combination of meta.json (to absorb
               # changes from include()'ing a `common.jl`) as well as the entire
               # tree the project lives in (to absorb changes from patches)
-              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${PROJECT}\")))")
+              # In order to support symlinked directories as dependencies we calculate
+              # the tree hash on a TMP_PROJECT using `cp -RL` to resolve the symlink and
+              # hash the actual content.
+              TMP_PROJECT=$(mktemp -d)
+              cp -RL ${PROJECT} ${TMP_PROJECT}
+              TREE_HASH=$($(JULIA) -e "using Pkg; print(bytes2hex(Pkg.GitTools.tree_hash(\"${TMP_PROJECT}\")))")
               META_HASH=$(shasum -a 256 "$(Agent.TempDirectory)/${NAME}.meta.json" | cut -d' ' -f1)
               PROJ_HASH=$(echo -n ${TREE_HASH}${META_HASH} | shasum -a 256 | cut -d' ' -f1)
 
               # Load in the platforms
               PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
               if [[ -z "${PLATFORMS}" ]]; then
-                  echo "##vso[task.logissue]error Unable to determine the proper platforms for ${NAME}"
+                  echo "##vso[task.logissue type=error]Unable to determine the proper platforms for ${NAME}"
                   continue
               fi
 

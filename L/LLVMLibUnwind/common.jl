@@ -8,6 +8,7 @@ function configure(version; experimental::Bool=false)
     hash = Dict(
         v"11.0.0" => "8455011c33b14abfe57b2fd9803fb610316b16d4c9818bec552287e2ba68922f",
         v"11.0.1" => "6db3b173d872911c9ce1f2779ea4463b3b7e582b4e5fda9d3a005c1ed5ec517f",
+        v"12.0.1" => "0bea6089518395ca65cf58b0a450716c5c99ce1f041079d3aa42d280ace15ca4",
     )
 
     # Collection of sources required to complete build

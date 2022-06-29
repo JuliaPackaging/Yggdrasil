@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "sgtsnepi"
-version = v"1.0.2"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fcdimitr/sgtsnepi.git", "a35fb7da86e314f563d8b95c1325128ae2cb328b")
+    GitSource("https://github.com/fcdimitr/sgtsnepi.git", "40c6acfb736b02e7f1457a936ce16ab85964806b")
 ]
 
 # Bash recipe for building across all platforms

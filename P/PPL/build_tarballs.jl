@@ -8,7 +8,7 @@ sources = [
     DirectorySource("./bundled")
 ]
 name = "PPL"
-version = v"1.2"
+version = v"1.2.1" # <-- This is a lie, we're bumping from 1.2 to 1.2.1 to create a Julia v1.6+ release with experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -38,9 +38,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
 

@@ -1,14 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.71.0"
+version = v"1.76.0"
 
 # Collection of sources required to build boost
 sources = [
-    ArchiveSource("https://dl.bintray.com/boostorg/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "d73a8da01e8bf8c7eda40b4c84915071a8c8a0df4a6734537ddde4a8580524ee"),
+    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+                  "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
-CXX=$CXX_FOR_BUILD ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset=gcc
+./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
 # Patch adapted from
 # https://svnweb.freebsd.org/ports/head/devel/boost-libs/files/patch-boost_math_tools_config.hpp?revision=439932&view=markup
@@ -38,6 +38,13 @@ if [[ $target == *apple* ]]; then
     toolset=darwin-6.0
     extraargs="binary-format=mach-o link=shared"
     echo "using darwin : 6.0 : $CXX : <cxxflags>-stdlib=libc++ <linkflags>-stdlib=libc++ ;" > project-config.jam
+    if [[ "${target}" == aarch64-* ]]; then
+        # Fix error
+        #     Undefined symbols for architecture arm64:
+        #       "_jump_fcontext", referenced from:
+        # See https://github.com/boostorg/context/issues/170#issuecomment-863669877
+        extraargs="abi=aapcs ${extraargs}"
+    fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
     extraargs="address-model=64 binary-format=pe abi=ms link=shared"
@@ -50,14 +57,14 @@ elif [[ $target == *freebsd* ]]; then
     extraargs="address-model=64 link=shared"
     echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system install
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
 install_license LICENSE_1_0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -75,12 +82,6 @@ products = [
     #LibraryProduct("libboost_locale", :libboost_locale),
     LibraryProduct("libboost_log", :libboost_log),
     LibraryProduct("libboost_log_setup", :libboost_log_setup),
-    LibraryProduct("libboost_math_c99", :libboost_math_c99),
-    LibraryProduct("libboost_math_c99l", :libboost_math_c99l),
-    LibraryProduct("libboost_math_c99f", :libboost_math_c99f),
-    LibraryProduct("libboost_math_tr1", :libboost_math_tr1),
-    LibraryProduct("libboost_math_tr1f", :libboost_math_tr1f),
-    LibraryProduct("libboost_math_tr1l", :libboost_math_tr1l),
     LibraryProduct("libboost_prg_exec_monitor", :libboost_prg_exec_monitor),
     LibraryProduct("libboost_program_options", :libboost_program_options),
     LibraryProduct("libboost_random", :libboost_random),
@@ -98,8 +99,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

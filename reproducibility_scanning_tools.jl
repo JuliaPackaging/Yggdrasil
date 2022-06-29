@@ -54,7 +54,9 @@ function collect_platforms(project::AbstractString)
     cd(project) do
         mktempdir() do tmpdir
             meta_json = joinpath(tmpdir, "meta.json")
-            success(`$(Base.julia_cmd()) build_tarballs.jl --meta-json=$(meta_json)`)
+            if !success(`$(Base.julia_cmd()) build_tarballs.jl --meta-json=$(meta_json)`)
+                error("Collecting the platforms for $(project) failed")
+            end
 
             json = String(read(meta_json))
             buff = IOBuffer(strip(json)) 
@@ -72,7 +74,8 @@ function inlogdir(hdr)
     if startswith(path, "./")
         path = path[3:end]
     end
-    return dirname(path) == "logs"
+    # Log files can be either directly under `logs` or in its subdirectories
+    return dirname(path) == "logs" || occursin(r"^logs/", dirname(path))
 end
 
 function collect_tar_tree(io::IO;
