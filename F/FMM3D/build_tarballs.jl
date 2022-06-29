@@ -43,9 +43,9 @@ echo "CXX=${CXX}" >> make.inc;
 echo "FC=${FC}" >> make.inc;
 
 if [[ ${target} = *mingw* ]]; then
-    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -funroll-loops" >> make.inc;
+    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -funroll-loops -std=legacy" >> make.inc;
 else
-    echo "FFLAGS= -fPIC -O3 -funroll-loops" >> make.inc;
+    echo "FFLAGS= -fPIC -O3 -funroll-loops -std=legacy" >> make.inc;
 fi
 
 if [[ ${target} = *aarch64*apple* ]]; then
