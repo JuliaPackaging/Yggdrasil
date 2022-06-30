@@ -27,19 +27,25 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/FMM3D/
 
+OMPFLAGS="-fopenmp"
+OMPLIBS="-lgomp"
+# openmp library name is different on bsd systems
+if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
+  export OMPLIBS="-lomp"
+fi
 FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
 if [[ ${target} = *mingw* ]]; then
     FFLAGS="${FFLAGS} -fno-asynchronous-unwind-tables"
 fi
-OMPFLAGS="-fopenmp"
 LIBS="-lm"
 
-echo "CC=${CC}" >> make.inc;
-echo "CXX=${CXX}" >> make.inc;
-echo "FC=${FC}" >> make.inc;
-echo "FFLAGS= ${FFLAGS}" >> make.inc;
-echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
-echo "LIBS = ${LIBS}" >> make.inc;
+echo "CC=${CC}" >> make.inc
+echo "CXX=${CXX}" >> make.inc
+echo "FC=${FC}" >> make.inc
+echo "FFLAGS= ${FFLAGS}" >> make.inc
+echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc
+echo "OMPLIBS= ${OMPLIBS}" >> make.inc
+echo "LIBS = ${LIBS}" >> make.inc
 
 make -j${nproc} lib OMP=ON
 
@@ -49,7 +55,7 @@ SHAREFLAGS="-shared -fPIC"
 
 cd lib-static
 ar x libfmm3d.a
-${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS}
+${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
 """
