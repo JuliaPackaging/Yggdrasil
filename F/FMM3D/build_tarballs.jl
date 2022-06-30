@@ -30,11 +30,6 @@ cd FMM3D/
 
 touch make.inc
 
-# openmp doesn't work on certain compilers (including clang), force gcc
-if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
-  export CC="gcc"
-  export CXX="g++"
-fi
 
 echo "CC=${CC}" >> make.inc;
 echo "CXX=${CXX}" >> make.inc;
@@ -48,6 +43,12 @@ fi
 
 export OMPFLAGS="-fopenmp"
 export OMPLIBS="-lgomp"
+
+# openmp library name is different on bsd systems
+if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
+  export OMPLIBS="-lomp"
+fi
+
 
 echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
 echo "OMPLIBS= ${OMPLIBS}" >> make.inc;
@@ -84,7 +85,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+# Borrowed from recipe for libblis (B/blis)
+dependencies = [Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),                                     )
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
