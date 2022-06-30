@@ -37,7 +37,7 @@ FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
 if [[ ${target} = *mingw* ]]; then
     FFLAGS="${FFLAGS} -fno-asynchronous-unwind-tables"
 fi
-LIBS="-lm"
+LIBS="-lm -lgfortran"
 
 echo "CC=${CC}" >> make.inc
 echo "CXX=${CXX}" >> make.inc
