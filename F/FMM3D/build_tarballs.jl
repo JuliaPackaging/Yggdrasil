@@ -31,7 +31,6 @@ OMPFLAGS="-fopenmp"
 OMPLIBS="-lgomp"
 # openmp library name is different on bsd systems
 if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
-  OMPFLAGS="-fopenmp=libomp"
   export OMPLIBS="-lomp"
 fi
 FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
