@@ -25,7 +25,7 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.8.5"
+upstream_version = v"2.9.0"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -33,7 +33,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "25aad90b890e2cb4a3a949f6311f0713449bb125"), # git tag v2.8.5
+    GitSource("https://github.com/wbhart/flint2.git", "e143df4b0f19d2f841e36234a12b69f48c4359b9"), # git tag v2.9.0
     DirectorySource("./bundled"),
 ]
 
@@ -46,10 +46,6 @@ if [[ ${target} == *musl* ]]; then
 elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
-
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
