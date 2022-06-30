@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd ninja-*
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
-./configure.py --host=linux --platform=$shorttarget
+env CXXFLAGS=-std=c++11 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
 mkdir -p ${bindir}
 install ninja${exeext} ${bindir}
