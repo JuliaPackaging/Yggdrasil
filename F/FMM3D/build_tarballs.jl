@@ -67,7 +67,7 @@ export SHAREFLAGS="-shared -fPIC"
 
 cd lib-static
 ar x libfmm3d.a
-${CC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
+${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
 cd ..
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
