@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Ninja"
-version = v"1.10.3" # <-- This is a lie, we're bumping from 1.10.2 to 1.10.3 to create a Julia v1.6+ release with experimental platforms
+version = v"1.11.0"
 
 # Collection of sources required to build ninja
 sources = [
-    ArchiveSource("https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz",
-    "ce35865411f0490368a8fc383f29071de6690cbadc27704734978221f25e2bed")
+    ArchiveSource("https://github.com/ninja-build/ninja/archive/v1.11.0.tar.gz",
+    "3c6ba2e66400fe3f1ae83deb4b235faf3137ec20bd5b08c29bfc368db143e4c6")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ninja-*/
+cd ninja-*
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
