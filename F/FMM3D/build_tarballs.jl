@@ -3,6 +3,8 @@
 
 # author: Travis Askham (askhamwhat@gmail.com)
 #
+#TODO: there does not appear to be a way to use gfortran
+# with any openmp library other than libgomp.
 #TODO: there are a number of stumbling points for the
 # FAST_KER=ON option when cross-compiling. it is completely
 # disabled for now. Some issues:
@@ -29,15 +31,12 @@ cd $WORKSPACE/srcdir/FMM3D/
 
 OMPFLAGS="-fopenmp"
 OMPLIBS="-lgomp"
-# openmp library name is different on bsd systems
-if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
-  export OMPLIBS="-lomp"
-fi
+
 FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
 if [[ ${target} = *mingw* ]]; then
     FFLAGS="${FFLAGS} -fno-asynchronous-unwind-tables"
 fi
-LIBS="-lm -lgfortran"
+LIBS="-lm"
 
 echo "CC=${CC}" >> make.inc
 echo "CXX=${CXX}" >> make.inc
@@ -55,7 +54,7 @@ SHAREFLAGS="-shared -fPIC"
 
 cd lib-static
 ar x libfmm3d.a
-${CC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
+${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
 """
@@ -72,10 +71,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # Borrowed from recipe for libblis (B/blis)
 dependencies = [
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
