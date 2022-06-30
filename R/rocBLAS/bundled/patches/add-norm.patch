@@ -1,0 +1,17 @@
+diff --git a/library/src/blas1/fetch_template.hpp b/library/src/blas1/fetch_template.hpp
+index b0f3cc9a..60ec2ba1 100644
+--- a/library/src/blas1/fetch_template.hpp
++++ b/library/src/blas1/fetch_template.hpp
+@@ -31,6 +31,12 @@ __device__ __host__ inline auto fetch_asum(rocblas_double_complex A)
+ 
+ template <typename T>
+ __device__ __host__ inline auto fetch_abs2(T A)
++{
++    return sqrt(A*A);
++}
++
++template <typename T>
++__device__ __host__ inline auto fetch_abs2(rocblas_complex_num<T> A)
+ {
+     return std::norm(A);
+ }
