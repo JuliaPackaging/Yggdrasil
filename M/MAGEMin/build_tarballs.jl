@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MAGEMin"
-version = v"1.1.1"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "72198b66c94a7026497824b460096d7e034cecca")
+                    "d68cd2f80761cca10546b691f0ebc63a2a50be7c")
         ]
 
 # Bash recipe for building across all platforms
