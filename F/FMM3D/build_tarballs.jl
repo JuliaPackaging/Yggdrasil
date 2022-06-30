@@ -30,14 +30,6 @@ cd FMM3D/
 
 touch make.inc
 
-# clang has some issue with openmp (lomp not found)
-# force gcc
-if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
-  export CC="gcc"
-  export CXX="g++"
-  export FC="gfortran"
-fi
-
 echo "CC=${CC}" >> make.inc;
 echo "CXX=${CXX}" >> make.inc;
 echo "FC=${FC}" >> make.inc;
@@ -50,6 +42,13 @@ fi
 
 export OMPFLAGS="-fopenmp"
 export OMPLIBS="-lgomp"
+
+# clang has some issue with openmp (lomp not found)
+# force gcc
+if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
+  export OMPLIBS="-lomp"
+fi
+
 echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
 echo "OMPLIBS= ${OMPLIBS}" >> make.inc;
 
