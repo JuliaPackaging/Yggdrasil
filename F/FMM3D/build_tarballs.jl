@@ -31,6 +31,7 @@ OMPFLAGS="-fopenmp"
 OMPLIBS="-lgomp"
 # openmp library name is different on bsd systems
 if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
+  OMPFLAGS="-fopenmp=libomp"
   export OMPLIBS="-lomp"
 fi
 FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
@@ -55,7 +56,7 @@ SHAREFLAGS="-shared -fPIC"
 
 cd lib-static
 ar x libfmm3d.a
-${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
+${CC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
 """
