@@ -7,7 +7,7 @@ using BinaryBuilder
 name = "armadillo"
 version = v"11.2.1"
 sources = [
-    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-11.2.1.tar.xz",
+    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-$(version).tar.xz",
                   "2ed1139340e6c0896f490f0dbec73875b0222e0ed9f4971cf8c41342248b9ec2")
 ]
 
@@ -20,7 +20,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_BUILD_TYPE=Release
        -DBUILD_SHARED_LIBS=ON)
 
-if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+if [[ "${nbits}" == 64 ]]; then
     FLAGS+=(-Dopenblas_LIBRARY="${libdir}/libopenblas64_.${dlext}")
     # Force Armadillo's CMake configuration to accept OpenBLAS as a LAPACK
     # replacement.
