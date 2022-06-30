@@ -5,10 +5,10 @@ using BinaryBuilder
 
 
 name = "armadillo"
-version = v"9.850.1"
+version = v"11.2.1"
 sources = [
-    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-9.850.1.tar.xz",
-                  "d4c389b9597a5731500ad7a2656c11a6031757aaaadbcafdea5cc8ac0fd2c01f")
+    ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-11.2.1.tar.xz",
+                  "2ed1139340e6c0896f490f0dbec73875b0222e0ed9f4971cf8c41342248b9ec2")
 ]
 
 script = raw"""
@@ -78,4 +78,4 @@ dependencies = [
     Dependency("OpenBLAS_jll")
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
