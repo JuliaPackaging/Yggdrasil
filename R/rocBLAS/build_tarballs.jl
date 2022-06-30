@@ -43,7 +43,7 @@ ln -s ${prefix}/bin/lld ${prefix}/tools/lld
 atomic_patch -p1 $WORKSPACE/srcdir/patches/add-norm.patch
 
 # NOTE
-# Looking at hcc-cmd, it is clear that it is omitting 'hip/include' directory.
+# Looking at hipcc-cmd, it is clear that it is omitting 'hip/include' directory.
 # Therefore we symlink to other directory that it looks at.
 # TODO is there a better fix?
 mkdir ${prefix}/lib/include
