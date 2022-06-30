@@ -69,7 +69,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# Borrowed from recipe for libblis (B/blis)
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
