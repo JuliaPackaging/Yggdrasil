@@ -57,7 +57,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libantic", :libantic)
+    LibraryProduct("libantic", :libantic),
 ]
 
 # Dependencies that must be installed before this package can be built
