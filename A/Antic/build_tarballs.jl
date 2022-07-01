@@ -44,6 +44,7 @@ if [[ ${target} == *musl* ]]; then
 elif [[ ${target} == *mingw* ]]; then
    sed -i -e "s#/lib\>#/$(basename ${libdir})#g" configure
    extraflags=--build=MINGW${nbits};
+   export CFLAGS=-DANTIC_BUILD_DLL
 fi
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-flint=$prefix ${extraflags}
 make -j${nproc}
