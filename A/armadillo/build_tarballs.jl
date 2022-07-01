@@ -33,7 +33,7 @@ if [[ "${nbits}" == 64 ]]; then
     if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
         FLAGS+=(-DALLOW_OPENBLAS_MACOS=ON)
     fi
-    if [[ "${target}" == *-powerpc64le-* ]]; then
+    if [[ "${target}" == powerpc64le-* ]]; then
         FLAGS+=(-DCMAKE_CXX_FLAGS="-fopenmp")
     fi
 
