@@ -39,10 +39,10 @@ if [[ "${nbits}" == 64 ]]; then
     done
 
     if [[ "${target}" == powerpc64le-* ]]; then
-        CXXFLAGS+=(-fopenmp)
+        export CXXFLAGS="${SYMB_DEFS[@]} -fopenmp"
+    else
+        export CXXFLAGS="${SYMB_DEFS[@]}"
     fi
-    export CXXFLAGS="${SYMB_DEFS[@]}"
-    
 
     # Force the configuration parameter ARMA_BLAS_LONG to be true, as in our
     # setting 64-bit systems are going to need a 64-bit integer to be used for
