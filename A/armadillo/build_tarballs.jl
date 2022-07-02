@@ -39,7 +39,7 @@ if [[ "${nbits}" == 64 ]]; then
     done
 
     if [[ "${target}" == powerpc64le-* ]]; then
-        export CXXFLAGS="${SYMB_DEFS[@]} -fopenmp"
+        export CXXFLAGS="${SYMB_DEFS[@]} -lgomp"
     else
         export CXXFLAGS="${SYMB_DEFS[@]}"
     fi
