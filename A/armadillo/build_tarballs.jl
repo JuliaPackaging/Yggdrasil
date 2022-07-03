@@ -41,7 +41,7 @@ if [[ "${nbits}" == 64 ]]; then
     export CXXFLAGS="${SYMB_DEFS[@]}"
 
     if [[ $target == *powerpc* ]]; then
-        FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L/opt/${target}/${target}/lib${arch_ext}/ -lgomp -pthread -ldl")
+        FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-L/opt/${target}/${target}/lib${arch_ext}/ -fopenmp -pthread -ldl")
     fi
 
     # Force the configuration parameter ARMA_BLAS_LONG to be true, as in our
