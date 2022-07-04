@@ -40,7 +40,10 @@ function configure(julia_version, llvm_version)
 
     # The products that we will ensure are always built
     products = Product[
-        LibraryProduct("libclangex", :libclangex),
+        # Clang_jll doesn't dlopen the library we depend on:
+        # https://github.com/JuliaPackaging/Yggdrasil/blob/7e15aedbaca12e9c79cd1415fd03129665bcfeff/L/LLVM/common.jl#L517-L518
+        # so loading the library will always fail. We fix this in ClangCompiler.jl
+        LibraryProduct("libclangex", :libclangex, dont_dlopen=true),
     ]
     # ver = "$(llvm_version.major).$(llvm_version.minor).$(llvm_version.patch)"
     dependencies = [
