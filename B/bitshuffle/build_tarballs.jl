@@ -12,12 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-
-cd bitshuffle/src
-$CC -O3 -std=c99 -fPIC --shared -o bitshuffle.${dlext} iochain.c bitshuffle_core.c
-install -D -t ${libdir} bitshuffle.${dlext}
-exit
+cd $WORKSPACE/srcdir/bitshuffle/src
+mkdir -p "${libdir}"
+cc -O3 -std=c99 -fPIC --shared -o "${libdir}/bitshuffle.${dlext}" iochain.c bitshuffle_core.c
 """
 
 # These are the platforms we will build for by default, unless further
