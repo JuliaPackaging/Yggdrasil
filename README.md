@@ -2,7 +2,7 @@
 
 Build Status: [![Build Status](https://dev.azure.com/JuliaPackaging/Yggdrasil/_apis/build/status/JuliaPackaging.Yggdrasil?branchName=master)](https://dev.azure.com/JuliaPackaging/Yggdrasil/_build/latest?definitionId=1&branchName=master)
 
-![Yggdrasil](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Yggdrasil.jpg/430px-Yggdrasil.jpg)
+![Yggdrasil](https://user-images.githubusercontent.com/1282691/177151117-1cfa1004-5bff-49ac-9921-59208c73bfc9.png)
 
 This repository contains recipes for building binaries for Julia packages using [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
 
