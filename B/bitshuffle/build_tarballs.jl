@@ -15,8 +15,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 cd bitshuffle/src
-$CC -O3 -std=c99 -fPIC --shared -o bitshuffle.so iochain.c bitshuffle_core.c
-install -D -t $libdir bitshuffle.so
+$CC -O3 -std=c99 -fPIC --shared -o bitshuffle.${dlext} iochain.c bitshuffle_core.c
+install -D -t ${libdir} bitshuffle.${dlext}
 exit
 """
 
