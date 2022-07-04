@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/bitshuffle/src
 mkdir -p "${libdir}"
-cc -O3 -std=c99 -fPIC --shared -o "${libdir}/bitshuffle.${dlext}" iochain.c bitshuffle_core.c
+cc -O3 -std=c99 -fPIC --shared -o "${libdir}/libbitshuffle.${dlext}" iochain.c bitshuffle_core.c
 """
 
 # These are the platforms we will build for by default, unless further
@@ -23,7 +23,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("bitshuffle", :bitshuffle_lib)
+    LibraryProduct("libbitshuffle", :libbitshuffle)
 ]
 
 # Dependencies that must be installed before this package can be built
