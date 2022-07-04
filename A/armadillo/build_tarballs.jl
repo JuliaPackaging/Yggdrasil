@@ -40,10 +40,6 @@ if [[ "${nbits}" == 64 ]]; then
 
     export CXXFLAGS="${SYMB_DEFS[@]}"
 
-    if [[ $target == *powerpc* ]]; then
-        FLAGS=(LDFLAGS="-fopenmp -lm")
-    fi
-
     # Force the configuration parameter ARMA_BLAS_LONG to be true, as in our
     # setting 64-bit systems are going to need a 64-bit integer to be used for
     # Armadillo's `blas_int` type.
@@ -82,4 +78,4 @@ dependencies = [
     Dependency("OpenBLAS_jll")
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
