@@ -15,13 +15,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/bitshuffle
 mkdir -p "${libdir}"
-zstd_srcs="../zstd/lib/common/*.c ../zstd/lib/compress/*.c ../zstd/lib/decompress/*.c ../zstd/lib/decompress/*.S"
-cc -O3 -std=c99 -Ilz4 -Isrc -I../zstd/lib -fPIC --shared -o "${libdir}/libbitshuffle.${dlext}" src/bitshuffle.c src/iochain.c src/bitshuffle_core.c lz4/lz4.c ${zstd_srcs}
+cc -O3 -std=c99 -DZSTD_SUPPORT -Ilz4 -Isrc -I../zstd/lib -lzstd -llz4 -fPIC --shared -o "${libdir}/libbitshuffle.${dlext}" src/bitshuffle.c src/iochain.c src/bitshuffle_core.c
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(exclude=[Platform("i686","windows"),
+					  Platform("x86_64","windows")
+					  ])
 
 # The products that we will ensure are always built
 products = [
@@ -30,6 +31,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+			  Dependency("Lz4_jll"),
+			  Dependency("Zstd_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
