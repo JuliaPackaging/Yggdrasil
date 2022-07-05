@@ -187,7 +187,7 @@ products = [
 dependencies = [
     Dependency("boost_jll"; compat="=1.71.0"),
     Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.10")
+    Dependency("OpenBLAS_jll", v"0.3.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
