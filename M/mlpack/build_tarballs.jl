@@ -7,8 +7,9 @@ using BinaryBuilder
 # Set sources and other environment variables.
 name = "mlpack"
 version = v"3.4.3"
+source_version = v"3.4.2"
 sources = [
-    ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
+    ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
                   "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
     DirectorySource("./bundled"),
 ]
