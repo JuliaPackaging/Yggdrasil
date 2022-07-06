@@ -14,14 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/bitshuffle
 mkdir -p "${libdir}"
-cc -O3 -std=c99 -DZSTD_SUPPORT -I${includedir} -Isrc -lzstd -llz4 -fPIC --shared -o "${libdir}/libbitshuffle.${dlext}" src/bitshuffle.c src/iochain.c src/bitshuffle_core.c
+cc -O3 -std=c99 -DZSTD_SUPPORT -I${includedir} -Isrc -fPIC --shared -o "${libdir}/libbitshuffle.${dlext}" src/bitshuffle.c src/iochain.c src/bitshuffle_core.c -lzstd -llz4
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=[Platform("i686","windows"),
-					  Platform("x86_64","windows")
-					  ])
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
