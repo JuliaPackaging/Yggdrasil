@@ -4,23 +4,17 @@
 using BinaryBuilder, Pkg
 
 name = "casacore"
-version = v"3.4.0"
+version = v"3.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/casacore/casacore.git", "a735bf5f31ea012ac4f7f7378a1f89c1fc136a06"),
+    GitSource("https://github.com/casacore/casacore.git", "ff766c49fdfddd34715fd017a08aaedcc01736e0"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/casacore
-
-# Apply upstream patch that fixes i386 builds
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Fix-compilation-of-RefTable-on-i386-platform-1129.patch
-
-# Apply strerror patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Use-overloading-to-detect-strerror-variant.patch
 
 mkdir build && cd build
 CMAKE_FLAGS=()
