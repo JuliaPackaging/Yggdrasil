@@ -17,13 +17,6 @@ cd $WORKSPACE/srcdir/SDL2_mixer*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
 make -j${nproc}
 make install
-if [[ "${target}" == *-freebsd* ]]; then
-    # We need to manually build the shared library for FreeBSD
-    cd "${libdir}"
-    ar x libSDL2_mixer.a
-    cc -shared -o libSDL2_mixer.${dlext} *.o
-    rm *.o libSDL2_mixer.a
-fi
 """
 
 # These are the platforms we will build for by default, unless further
