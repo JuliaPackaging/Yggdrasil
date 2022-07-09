@@ -9,7 +9,6 @@ version = v"3.5.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/casacore/casacore.git", "ff766c49fdfddd34715fd017a08aaedcc01736e0"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
