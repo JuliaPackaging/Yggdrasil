@@ -3,18 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_mixer"
-version = v"2.0.4"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://libsdl.org/projects/SDL_mixer/release/SDL2_mixer-$(version).tar.gz",
-                  "b4cf5a382c061cd75081cf246c2aa2f9df8db04bdda8dcdc6b6cca55bede2419"),
+    ArchiveSource("https://github.com/libsdl-org/SDL_mixer/releases/download/release-$(version)/SDL2_mixer-$(version).tar.gz",
+                  "f94a4d3e878cb191c386a714be561838240012250fe17d496f4ff4341d59a391"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_mixer*/
-export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
 make -j${nproc}
 make install
