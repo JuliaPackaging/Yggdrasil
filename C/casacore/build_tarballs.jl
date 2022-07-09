@@ -31,7 +31,10 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DUSE_OPENMP=OFF)
 
 # Don't build python hooks
-CMAKE_FLAGS+=(-DBUILD_PYTHON=no)
+CMAKE_FLAGS+=(-DBUILD_PYTHON3=OFF)
+
+# Build "portable" code
+CMAKE_FLAGS+=(-DPORTABLE=ON)
 
 # Stock FFTW3 has threads already baked in
 CMAKE_FLAGS+=(-DFFTW3_DISABLE_THREADS=yes)
@@ -105,6 +108,8 @@ dependencies = [
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat = "4.0.0")
     Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"); compat = "7.7.0")
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"); compat = "8.1.1")
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat = "1.76.0")
+    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat = "2.7.2")
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
