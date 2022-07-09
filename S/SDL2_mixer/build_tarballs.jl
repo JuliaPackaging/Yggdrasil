@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_mixer*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic --disable-static
 make -j${nproc}
 make install
 """
@@ -31,9 +31,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="SDL2_jll", uuid="ab825dc5-c88e-5901-9575-1e5e20358fcf")),
-    Dependency(PackageSpec(name="libvorbis_jll", uuid="f27f6e37-5d2b-51aa-960f-b287f2bc3b7a")),
-    Dependency(PackageSpec(name="FLAC_jll", uuid="1d38b3a6-207b-531b-80e8-c83f48dafa73")),
-    Dependency(PackageSpec(name="mpg123_jll", uuid="3205ef68-7822-558b-ad0d-1b4740f12437")),
 ]
 
 # Build the tarballs.
