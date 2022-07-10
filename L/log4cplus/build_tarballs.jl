@@ -7,7 +7,7 @@ version = v"2.0.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/log4cplus/log4cplus/releases/download/REL_$(version.major)_$(version.minor)_$(version.patch)/log4cplus-$version.tar.gz", "e24f451cc1daf059501b65dfc4491604e397dca313c1a6151b1350d130c8e58a")
+    ArchiveSource("https://github.com/log4cplus/log4cplus/releases/download/REL_$(version.major)_$(version.minor)_$(version.patch)/log4cplus-$version.tar.gz", "cdc3c738e00be84d8d03b580816b9f12628ecc1d71e1395080c802615d2d9ced")
 ]
 
 # Bash recipe for building across all platforms
