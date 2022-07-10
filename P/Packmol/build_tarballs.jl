@@ -7,7 +7,7 @@ version = v"20.3.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/m3g/packmol/archive/refs/tags/v20.3.5.tar.gz", "cde64dbe212ea6569d656f4800af7cba3e40f1492b5e51195b4ce9fc7040c0c0")
+    ArchiveSource("https://github.com/m3g/packmol/archive/refs/tags/v$(version).tar.gz", "cde64dbe212ea6569d656f4800af7cba3e40f1492b5e51195b4ce9fc7040c0c0")
 ]
 
 # Bash recipe for building across all platforms
