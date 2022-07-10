@@ -25,7 +25,7 @@ make install
 """
 
 # Use the same platforms from casacore
-platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
+platforms = supported_platforms(exclude=(platform) -> Sys.iswindows(platform) || Sys.isfreebsd(platform))
 platforms = expand_cxxstring_abis(platforms)
 # Expand libgfortran versions because we need to exclude some specific combinations
 filter!(p -> libc(p) != "musl", platforms)
@@ -37,8 +37,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="casacore_jll", uuid="72fd12c2-f19b-5d3c-931a-6bbe5223e3ce"))
+    Dependency(PackageSpec(name="casacore_jll", uuid="72fd12c2-f19b-5d3c-931a-6bbe5223e3ce"); compat="=3.5.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
