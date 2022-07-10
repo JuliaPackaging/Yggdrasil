@@ -7,7 +7,8 @@ version = v"2.0.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/log4cplus/log4cplus/releases/download/REL_$(version.major)_$(version.minor)_$(version.patch)/log4cplus-$version.tar.gz", "cdc3c738e00be84d8d03b580816b9f12628ecc1d71e1395080c802615d2d9ced")
+    ArchiveSource("https://github.com/log4cplus/log4cplus/releases/download/REL_$(version.major)_$(version.minor)_$(version.patch)/log4cplus-$version.tar.gz",
+                  "cdc3c738e00be84d8d03b580816b9f12628ecc1d71e1395080c802615d2d9ced")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,10 +16,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/log4cplus-*
 
 ./configure \
---prefix=${prefix} \
---build=${MACHTYPE} \
---host=${target} \
---enable-tests=no
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --enable-tests=no
 
 make -j${nproc}
 make install
@@ -40,4 +41,4 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 #use v7 to avoid posix_memalign errors on `linux-musl` platforms
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
