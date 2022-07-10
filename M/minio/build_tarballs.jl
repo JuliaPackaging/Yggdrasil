@@ -12,13 +12,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/minio
-mkdir -p ${bindir}
+install_license LICENSE
 if [[ "${target}" == aarch64-apple-* ]]; then
-    cp ${WORKSPACE}/srcdir/miniobin ${bindir}/minio
-    chmod +x ${bindir}/minio
-else
-    GO111MODULE=on CGO_ENABLED=1 go build -o ${bindir}
+    install -Dvm 755 ${WORKSPACE}/srcdir/miniobin ${bindir}/minio
+    exit
 fi
+mkdir -p ${bindir}
+GO111MODULE=on CGO_ENABLED=1 go build -o ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
