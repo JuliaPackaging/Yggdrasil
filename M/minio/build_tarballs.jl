@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "minio"
 version = v"1.0.0"
 
-# Collection of sources required to build ghr
+# Collection of sources
 sources = [
     GitSource("https://github.com/minio/minio", "ed0cbfb31e00644013e6c2073310a2268c04a381"),
     FileSource("https://dl.min.io/server/minio/release/darwin-arm64/minio", "6a6710fa637aa4bd95a83ad43dd0e5a2ed223adeb18e45148d339aa8ca59cddc"; filename="miniobin")
