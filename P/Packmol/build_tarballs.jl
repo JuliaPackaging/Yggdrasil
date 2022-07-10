@@ -12,16 +12,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd packmol/
-mkdir -p $prefix/shared/licenses
-cp LICENSE $prefix/shared/licenses
+cd $WORKSPACE/srcdir/packmol/
+install_license LICENSE
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
