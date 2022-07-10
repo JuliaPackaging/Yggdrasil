@@ -5,12 +5,12 @@ version = v"1.0.0"
 
 # Collection of sources required to build ghr
 sources = [
-    GitSource("https://github.com/minio/minio", "aa540e5be8de3bd83449b7a099341109e9ac1153"),
+    GitSource("https://github.com/minio/minio", "ed0cbfb31e00644013e6c2073310a2268c04a381"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/battery/cmd/battery
+cd $WORKSPACE/srcdir/minio
 mkdir -p ${bindir}
 go build -o ${bindir}
 """
@@ -21,7 +21,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("battery", :battery),
+    ExecutableProduct("minio", :minio),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -29,4 +29,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go],)
