@@ -12,7 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/minio
 mkdir -p ${bindir}
-GO111MODULEgo build -o ${bindir}
+GO111MODULE=on go build -o ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
