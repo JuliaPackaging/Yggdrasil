@@ -14,7 +14,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/minio
 mkdir -p ${bindir}
 if [[ "${target}" == aarch64-apple-* ]]; then
-    cp ${WORKSPACE}/srcdir/minio/miniobin ${bindir}/minio
+    cp ${WORKSPACE}/srcdir/miniobin ${bindir}/minio
+    chmod +x ${bindir}/minio
 else
     GO111MODULE=on CGO_ENABLED=1 go build -o ${bindir}
 fi
