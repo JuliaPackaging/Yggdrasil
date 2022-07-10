@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/packmol-20.3.5/
+cd $WORKSPACE/srcdir/packmol*
 install_license LICENSE
 mkdir build
 cd build
