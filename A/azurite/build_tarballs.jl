@@ -10,7 +10,7 @@ sources = [
 script = raw"""
 apk add --update nodejs npm
 cd ${prefix}
-npm install azurite
+npm install azurite@$version
 """
 
 # These are the platforms we will build for by default, unless further
