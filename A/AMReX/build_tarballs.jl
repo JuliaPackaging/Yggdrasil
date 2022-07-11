@@ -97,4 +97,4 @@ append!(dependencies, platform_dependencies)
 #   How can we require this for Windows only?
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
