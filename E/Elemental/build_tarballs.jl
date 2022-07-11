@@ -25,7 +25,7 @@ else
   INT64="OFF"
 fi
 
-if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
+if [[ "$nbits" == "64" ]]; then
   BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
   BLAS_LAPACK_SUFFIX="_64_"
   BLAS_INT64="ON"
