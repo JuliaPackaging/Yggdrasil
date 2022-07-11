@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version = v"3.5.0"
+version = v"3.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.5.00.tar.gz", "748f06aed63b1e77e3653cd2f896ef0d2c64cb2e2d896d9e5a57fec3ff0244ff"),
+    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.6.00.tar.gz", "b52f8c835f4df003954dad66d9761094f8baa66c"),
     DirectorySource("./bundled")
 ]
 
@@ -39,6 +39,7 @@ cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DCMAKE_BUILD_TYPE=Release \
 -DBUILD_SHARED_LIBS=ON \
+-DKokkos_CXX_STANDARD=17 \
 "${OPENMP_FLAG[@]}"
 
 make -j${nproc}
@@ -66,4 +67,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 #minimum supported gcc on x86_64 is 5.3.0, BB only has 5.2.0 so we bump up to 6
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
