@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ashwani-rathee/GifLibExtra.git", "a5c74d671dbede5f4be5448f80a1fd6950ae38b7")
+    GitSource("https://github.com/ashwani-rathee/GifLibExtra.git", "b95be88d5d351d543e82ed884ccbd53bcbca58d0")
 ]
 
 # Bash recipe for building across all platforms
