@@ -99,8 +99,9 @@ filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgrid2grid", :grid2grid),
-    LibraryProduct("libcosma", :cosma)
+    # `libgrid2grid` existed in v2.2.0, but not any more in v2.5.1
+    # LibraryProduct("libgrid2grid", :grid2grid),
+    LibraryProduct("libcosma", :cosma),
 ]
 
 # Dependencies that must be installed before this package can be built
