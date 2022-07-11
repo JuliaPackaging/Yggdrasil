@@ -72,6 +72,10 @@ platforms = expand_cxxstring_abis(platforms)
 # since no MPI implementation is available.
 platforms = expand_gfortran_versions(platforms)
 
+# `libgfortran5` comes with a C++ compiler that is too new for
+# libelemental
+filter!(p -> libgfortran_version(p) ≤ v"4", platforms)
+
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
