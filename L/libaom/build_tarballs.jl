@@ -38,9 +38,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+#
+# YASM is recommended in the build instructions, but errors on apple platforms.
+# Assembly only exists for x86 targets.
 dependencies = [
-                BuildDependency("YASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && !occursin("apple", triplet(p)), platforms)),
-                BuildDependency("NASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && occursin("apple", triplet(p)), platforms)),
+                HostBuildDependency("YASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && !occursin("apple", triplet(p)), platforms)),
+                HostBuildDependency("NASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && occursin("apple", triplet(p)), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
