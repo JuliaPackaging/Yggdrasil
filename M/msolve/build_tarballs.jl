@@ -30,7 +30,7 @@ products = [
     LibraryProduct("libmsolve", :libmsolve),
     LibraryProduct("libneogb", :libneogb),
 ]
-K
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
