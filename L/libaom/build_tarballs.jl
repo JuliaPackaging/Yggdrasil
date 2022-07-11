@@ -42,8 +42,8 @@ products = [
 # YASM is recommended in the build instructions, but errors on apple platforms.
 # Assembly only exists for x86 targets.
 dependencies = [
-                HostBuildDependency("YASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && !occursin("apple", triplet(p)), platforms)),
-                HostBuildDependency("NASM_jll"; platforms=filter(p->occursin("86", triplet(p)) && occursin("apple", triplet(p)), platforms)),
+    HostBuildDependency("YASM_jll"; platforms=filter(p->proc_family(p) == "intel" && !Sys.isapple(p), platforms)),
+    HostBuildDependency("NASM_jll"; platforms=filter(p->proc_family(p) == "intel" && Sys.isapple(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
