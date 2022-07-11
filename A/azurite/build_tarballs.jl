@@ -15,23 +15,7 @@ npm install azurite@$version
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# NOTE: we match platforms supported by NodeJS_16_jll
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("aarch64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("powerpc64le", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("armv7l", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("aarch64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-    Platform("armv7l", "linux"; libc="musl", cxxstring_abi="cxx11"),
-
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-]
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built.
 products = [
