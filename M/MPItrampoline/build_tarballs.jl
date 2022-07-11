@@ -13,10 +13,8 @@ mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    # ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-    #               "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/7e7df657b42ac890cae89a06fa284160402517df.tar.gz",
-                  "510aa283fa681fa220b8852bc7d932ec3666020f1886c290d3d78167d4e43f7d"),
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
+                  "9aba72eceb0a0fd6f7617b5fa86fe35c813a131aec9732304925893f419ea902"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
@@ -40,7 +38,6 @@ cmake \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
     ..
-gfortran --version
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
