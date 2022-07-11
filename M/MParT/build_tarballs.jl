@@ -14,7 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir MParT/build && cd MParT/build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DMPART_BUILD_TESTS=OFF -DMPART_PYTHON=OFF ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DMPART_BUILD_TESTS=OFF \
+  -DMPART_PYTHON=OFF ..
 make -j${nprocs} install
 """
 
