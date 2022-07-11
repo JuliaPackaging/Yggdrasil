@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"4.0.2"
+version = v"4.1.1"
 
 mpich_version_str = "4.0.2"
 mpiwrapper_version = v"2.8.1"
@@ -14,7 +14,7 @@ mpiwrapper_version = v"2.8.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
+                  "64e90e4a6b83269ff82787f7aeffe87a5c50702366cee8c48d222b475cd6864b"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
@@ -210,12 +210,9 @@ platforms = supported_platforms(; experimental=true)
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(!Sys.isfreebsd, platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
