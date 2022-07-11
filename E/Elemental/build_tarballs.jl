@@ -65,6 +65,13 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+# MPItrampoline is not supported on `libgfortran3`. We need to expand
+# the gfortran versions here so that we can exclude it. Otherwise,
+# BinaryBuilder might choose `libgfortran3`, and the build will fail
+# since no MPI implementation is available.
+platforms = expand_gfortran_versions(platforms)
+
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
