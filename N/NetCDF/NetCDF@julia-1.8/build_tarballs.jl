@@ -2,7 +2,7 @@ include("../common.jl")
 
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.2"
+version_offset = v"0.2.3"
 
 # Minimum Julia version supported: this is important to decide which versions of
 # the dependencies to use, in particular the JLL stdlibs.

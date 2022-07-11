@@ -1,20 +1,20 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 version = v"4.0.2"
 
 mpich_version_str = "4.0.2"
-mpiconstants_version = v"1.4.1"
 mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
                   "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
-                  "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
@@ -37,22 +37,6 @@ cmake \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-
-################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
@@ -213,6 +197,12 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
@@ -227,6 +217,9 @@ platforms = expand_gfortran_versions(platforms)
 # could in principle build without Fortran support there.)
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
+# Add `mpi+mpitrampoline` platform tag
+foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mpicc", :mpicc),
@@ -238,10 +231,6 @@ products = [
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
     LibraryProduct("libmpitrampoline", :libmpi),
-
-    # MPIconstants
-    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
-    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
@@ -255,8 +244,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")

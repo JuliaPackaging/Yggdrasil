@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.10.0"
+version = v"3.10.2"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "097d70e3c8f688e59633ceb8d38ad5c9b0d7ead5729adeb925dbc489437abe13")
+                  "50bbc599ac386b4c2b3962dcc411f0040a61f204aaef4eba7225ecdd0cf45715")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,8 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgeos_c", :libgeos),
-    LibraryProduct(["libgeos", "libgeos-$(version.major)-$(version.minor)"], :libgeos_cpp)
+    LibraryProduct(["libgeos", "libgeos-$(version.major)-$(version.minor)"], :libgeos_cpp),
+    ExecutableProduct("geosop", :geosop),
 ]
 
 # Dependencies that must be installed before this package can be built
