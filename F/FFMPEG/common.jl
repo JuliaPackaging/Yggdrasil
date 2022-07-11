@@ -3,12 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version = v"4.4"
+version = v"4.4.2"
+
+source_url = if version.patch > 0
+    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).$(version.patch).tar.xz"
+else
+    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.xz"
+end
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.xz",
-                  "06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909"),
+    ArchiveSource(source_url,
+                  "af419a7f88adbc56c758ab19b4c708afbcae15ef09606b82b855291f6a6faa93"),
 ]
 
 # Bash recipe for building across all platforms
