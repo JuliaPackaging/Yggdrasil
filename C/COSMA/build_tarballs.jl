@@ -41,6 +41,13 @@ else
     OPENMP_CMAKE_FLAGS=
 fi
 
+MPI_CMAKE_FLAGS=
+if [[ "$target" == *-apple-* ]]; then
+    if grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        MPI_CMAKE_FLAGS="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
+    fi
+fi
+
 mkdir build
 cd build
 
@@ -60,7 +67,8 @@ cmake ../cosma \
     -DMPI_C_COMPILER=$bindir/mpicc \
     -DOPENBLAS_LIBRARIES=$BLAS_LAPACK_LIB \
     -DOPENBLAS_INCLUDE_DIR=$includedir \
-    $OPENMP_CMAKE_FLAGS
+    $OPENMP_CMAKE_FLAGS \
+    $MPI_CMAKE_FLAGS
 
 make -j${nproc}
 make install
