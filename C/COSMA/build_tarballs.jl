@@ -75,7 +75,7 @@ cmake ../COSMA-* \
 make -j${nproc}
 make install
 
-install_license ../cosma/LICENCE
+install_license ../COSMA-*/LICENCE
 """
 
 augment_platform_block = """
