@@ -22,6 +22,7 @@ products = [
 # Dependencies that must be installed before this package can be built.
 # TODO: Theora once it's available
 dependencies = [
+    HostBuildDependency("YASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"; compat="0.15.1"),
     Dependency("libfdk_aac_jll"),
@@ -41,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies; preferred_gcc_version=preferred_gcc_version, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies; preferred_gcc_version, julia_compat="1.6")

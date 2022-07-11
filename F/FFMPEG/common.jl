@@ -3,17 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version = v"4.4.2"
-
-source_url = if version.patch > 0
-    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).$(version.patch).tar.xz"
-else
-    "https://ffmpeg.org/releases/ffmpeg-$(version.major).$(version.minor).tar.xz"
-end
+version_string = "4.4.2" # when patch number is zero, they use X.Y format
+version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource(source_url,
+    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
                   "af419a7f88adbc56c758ab19b4c708afbcae15ef09606b82b855291f6a6faa93"),
 ]
 
@@ -24,7 +19,6 @@ function script(; ffplay=false)
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
 sed -i 's/-lflite"/-lflite -lasound"/' configure
-apk add coreutils yasm
 
 if [[ "${target}" == *-linux-* ]]; then
     export ccOS="linux"
@@ -134,6 +128,6 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 preferred_gcc_version = v"8"
