@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "casacorewrapper"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kiranshila/casascorewrapper.git", "d7574e8639c8ac55a360652e4e799a4686bec93c")
+    GitSource("https://github.com/kiranshila/casascorewrapper.git", "f2a4d72a98e28534e36093f3c6e68ab41c96b1d4")
 ]
 
 # Bash recipe for building across all platforms
