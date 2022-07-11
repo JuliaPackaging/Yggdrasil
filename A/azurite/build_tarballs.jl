@@ -9,9 +9,8 @@ sources = [
 
 script = raw"""
 apk add --update nodejs npm
-cd ${WORKSPACE}/srcdir/Azurite
-npm ci --force
-cp -R ${WORKSPACE}/srcdir/Azurite ${prefix}/azurite
+cd ${prefix}
+npm install azurite
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,7 +35,7 @@ platforms = [
 
 # The products that we will ensure are always built.
 products = [
-    FileProduct("azurite/dist/src/azurite.js", :azurite),
+    FileProduct("node_modules/azurite/dist/src/azurite.js", :azurite),
 ]
 
 # Dependencies that must be installed before this package can be built
