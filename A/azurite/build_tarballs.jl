@@ -9,9 +9,9 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/Azurite
-npm ci --force
-npm run build
-npm install --prefix ${prefix}
+${host_bindir}/npm ci --force
+${host_bindir}/npm run build
+${host_bindir}/npm install --prefix ${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,7 +42,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("NodeJS_16_jll"),
-    "NodeJS_16_jll",
+    Dependency("NodeJS_16_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
