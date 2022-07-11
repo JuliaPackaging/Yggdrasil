@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.3.0"
+version = v"0.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "6ada6eb5829722a89d6142ef99e5843cac62291e")
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "8d55764f9d0038313144f73b1b403ce9ebcd41c3")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,7 @@ products = [
     LibraryProduct("libmsolve", :libmsolve),
     LibraryProduct("libneogb", :libneogb),
 ]
-
+K
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
