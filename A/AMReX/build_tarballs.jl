@@ -88,7 +88,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi"), platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
