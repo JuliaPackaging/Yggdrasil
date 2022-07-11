@@ -29,7 +29,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-bb-paths.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/disable-tests.patch"
 
 # disable abort when failing to find code objects
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+atomic_patch -p1 --ignore-whitespace "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
 
 apk add coreutils dateutils
 
