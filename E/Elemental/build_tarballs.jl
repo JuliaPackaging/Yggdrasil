@@ -6,12 +6,15 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Elemental"
-version = v"0.87.7"
+# This is not really version 0.87.8, but taken from the master branch
+# after 0.87.7. This is necessary to prevent C++ template
+# instantiation errors with newer GCC versions.
+version = v"0.87.8"
 
 # Collection of sources required to build Elemental
 sources = [
     GitSource("https://github.com/elemental/Elemental.git",
-              "477e503a7a840cc1a75173552711b980505a0b06"),
+              "6eb15a0da2a4998bf1cf971ae231b78e06d989d9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -71,10 +74,6 @@ platforms = expand_cxxstring_abis(platforms)
 # BinaryBuilder might choose `libgfortran3`, and the build will fail
 # since no MPI implementation is available.
 platforms = expand_gfortran_versions(platforms)
-
-# `libgfortran5` comes with a C++ compiler that is too new for
-# libelemental
-filter!(p -> libgfortran_version(p) ≤ v"4", platforms)
 
 filter!(!Sys.iswindows, platforms)
 
