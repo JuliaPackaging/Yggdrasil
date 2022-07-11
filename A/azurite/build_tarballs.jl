@@ -11,8 +11,7 @@ script = raw"""
 apk add --update nodejs npm
 cd ${WORKSPACE}/srcdir/Azurite
 npm ci --force
-npm run build
-npm install --prefix ${prefix}
+cp -R ${WORKSPACE}/srcdir/Azurite ${prefix}/azurite
 """
 
 # These are the platforms we will build for by default, unless further
