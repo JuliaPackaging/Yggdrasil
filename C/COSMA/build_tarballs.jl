@@ -6,18 +6,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "COSMA"
-version = v"2.2.0"
+version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v2.2.0/cosma.tar.gz", "1eb92a98110df595070a12193b9221eecf9d103ced8836c960f6c79a2bd553ca")
+    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v$(version)/COSMA-v$(version).tar.gz",
+                  "085b7787597374244bbb1eb89bc69bf58c35f6c85be805e881e1c0b25166c3ce")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-if [[ "$nbits" == "64" ]] && [[ "$target" != aarch64-* ]]; then
+if [[ "$nbits" == "64" ]]; then
     BLAS_LAPACK_LIB="$libdir/libopenblas64_.$dlext"
 
     # Fix suffixes for 64-bit OpenBLAS
@@ -30,13 +31,14 @@ else
     BLAS_LAPACK_LIB="$libdir/libopenblas.$dlext"
 fi
 
+# We should probably check the compiler instead
 if [[ "$target" == x86_64-apple-darwin14 ]] || [[ "$target" == x86_64-unknown-freebsd11.1 ]]; then
-    OMP_LIB=`find $libdir -iname 'libgomp*'`
+    OMP_LIB=`find $libdir -iname 'libgomp.[^0-9]*'`
     OPENMP_CMAKE_FLAGS="-DOpenMP_CXX_FLAGS=-fopenmp=libgomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_gomp_LIBRARY=$OMP_LIB"
-    OMP_HEADER=`find / -name omp.h 2>/dev/null  | head -n1`
+    OMP_HEADER=`find / -name omp.h 2>/dev/null | head -n1`
     mkdir include
-    cp $OMP_HEADER include/
-    export CPATH=$PWD/include
+    cp $OMP_HEADER include
+    export CPATH="$CPATH:$PWD/include"
 else
     OPENMP_CMAKE_FLAGS=
 fi
@@ -44,14 +46,14 @@ fi
 MPI_CMAKE_FLAGS=
 if [[ "$target" == *-apple-* ]]; then
     if grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        MPI_CMAKE_FLAGS="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
+        MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_C_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.dylib -DMPI_open-rte_LIBRARY=$prefix/lib/libopen-rte.dylib -DMPI_open-pal_LIBRARY=$prefix/lib/libopen-pal.dylib"
     fi
 fi
 
 mkdir build
 cd build
 
-cmake ../cosma \
+cmake ../COSMA-* \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -63,8 +65,8 @@ cmake ../cosma \
     -DBUILD_SHARED_LIBS=ON \
     -DCOSMA_BLAS=OPENBLAS \
     -DCOSMA_SCALAPACK=OFF \
-    -DMPI_CXX_COMPILER=$bindir/mpicxx \
     -DMPI_C_COMPILER=$bindir/mpicc \
+    -DMPI_CXX_COMPILER=$bindir/mpicxx \
     -DOPENBLAS_LIBRARIES=$BLAS_LAPACK_LIB \
     -DOPENBLAS_INCLUDE_DIR=$includedir \
     $OPENMP_CMAKE_FLAGS \
@@ -114,7 +116,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
