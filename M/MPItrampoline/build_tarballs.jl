@@ -6,15 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"4.0.2"
+version = v"4.1.0"
 
 mpich_version_str = "4.0.2"
 mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
+    # ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
+    #               "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/7e7df657b42ac890cae89a06fa284160402517df.tar.gz",
+                  "510aa283fa681fa220b8852bc7d932ec3666020f1886c290d3d78167d4e43f7d"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
@@ -38,6 +40,7 @@ cmake \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
     ..
+gfortran --version
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
@@ -210,12 +213,9 @@ platforms = supported_platforms(; experimental=true)
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(!Sys.isfreebsd, platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
