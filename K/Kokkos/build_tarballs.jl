@@ -7,7 +7,7 @@ version = v"3.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.6.00.tar.gz", "b52f8c835f4df003954dad66d9761094f8baa66c"),
+    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.6.00.tar.gz", "53b11fffb53c5d48da5418893ac7bc814ca2fde9c86074bdfeaa967598c918f4"),
     DirectorySource("./bundled")
 ]
 
