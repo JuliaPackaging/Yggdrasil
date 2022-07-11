@@ -3,14 +3,12 @@ using BinaryBuilder
 # Set sources and other environment variables.
 name = "azurite"
 version = v"3.18.0"
-sources = [
-    GitSource("https://github.com/Azure/Azurite", "dcf4bc444f2be8f95f0dfcde091ef22c68b4f4d8")
-]
+sources = GitSource[]
 
-script = raw"""
+script = "version=$(version)\n" * raw"""
 apk add --update nodejs npm
 cd ${prefix}
-npm install azurite@$version
+npm install azurite@${version}
 """
 
 # These are the platforms we will build for by default, unless further
