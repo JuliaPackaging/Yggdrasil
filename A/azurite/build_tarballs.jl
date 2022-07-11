@@ -8,10 +8,11 @@ sources = [
 ]
 
 script = raw"""
+apk add --update nodejs npm
 cd ${WORKSPACE}/srcdir/Azurite
-${host_bindir}/npm ci --force
-${host_bindir}/npm run build
-${host_bindir}/npm install --prefix ${prefix}
+npm ci --force
+npm run build
+npm install --prefix ${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,7 +42,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("NodeJS_16_jll"),
     Dependency("NodeJS_16_jll"),
 ]
 
