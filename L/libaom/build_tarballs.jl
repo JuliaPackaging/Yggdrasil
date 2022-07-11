@@ -20,7 +20,7 @@ if [[ "${target}" != "*86*" ]]; then
     CMAKE_ARGS="${CMAKE_ARGS} -DAOM_TARGET_CPU=generic"
 fi
 cmake ${CMAKE_ARGS} ..
-make
+make -j${nproc}
 make install
 install_license ../LICENSE
 """
