@@ -29,6 +29,7 @@ dependencies = [
     Dependency("FreeType2_jll"),
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
+    Dependency("libaom_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("x264_jll"; compat="~2021.05.05"),

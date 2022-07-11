@@ -94,6 +94,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --disable-debug      \
   --disable-doc        \
   --enable-avresample  \
+  --enable-libaom      \
   --enable-libass      \
   --enable-libfdk-aac  \
   --enable-libfreetype \
