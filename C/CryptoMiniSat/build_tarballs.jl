@@ -47,6 +47,10 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # depends on Fortran.
 platforms = expand_gfortran_versions(platforms)
 
+# Avoid platforms where Boost is not available
+# (Why is Boost not available there? Its build script doesn't mention any excluded platforms.)
+filter!(p -> !(arch(p) == "armv6l" || (arch(p) == "aarch64" && Sys.isapple(p))), platforms)
+
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["cryptominisat5", "cryptominisat5win"], :cryptominisat5),
