@@ -28,6 +28,9 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/hipcc-bb-paths.patch"
 # disable tests
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/disable-tests.patch"
 
+# disable abort when failing to find code objects
+atomic_patch -p1 --binary "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+
 apk add coreutils dateutils
 
 mkdir build && cd build
