@@ -36,8 +36,10 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     fi
 fi
 
-# MPItrampoline requires C99
-export CFLAGS="${CFLAGS} -std=c99"
+# MPItrampoline requires C99 (but this doesn't work on Windows)
+if [[ "$target" != *-mingw32* ]]; then
+    export CFLAGS="${CFLAGS} -std=c99"
+fi
 
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=$prefix \
