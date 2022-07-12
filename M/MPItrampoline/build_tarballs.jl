@@ -6,15 +6,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"4.1.1"
+version = v"4.1.2"
 
+mpitrampoline_version = v"4.1.1"
 mpich_version_str = "4.0.2"
+mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(mpitrampoline_version).tar.gz",
                   "64e90e4a6b83269ff82787f7aeffe87a5c50702366cee8c48d222b475cd6864b"),
+    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
+                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
@@ -42,47 +46,61 @@ cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
 ################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
+    ..
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+################################################################################
 # Install MPICH
 ################################################################################
 
 cd ${WORKSPACE}/srcdir/mpich*
 
 EXTRA_FLAGS=()
-if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
-    # Define some obscure undocumented variables needed for cross compilation of
-    # the Fortran bindings.  See for example
-    # * https://stackoverflow.com/q/56759636/2442087
-    # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
-    export CROSS_F77_SIZEOF_INTEGER=4
-    export CROSS_F77_SIZEOF_REAL=4
-    export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
-    export CROSS_F77_FALSE_VALUE=0
-    export CROSS_F77_TRUE_VALUE=1
+# Define some obscure undocumented variables needed for cross compilation of
+# the Fortran bindings.  See for example
+# * https://stackoverflow.com/q/56759636/2442087
+# * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+export CROSS_F77_SIZEOF_INTEGER=4
+export CROSS_F77_SIZEOF_REAL=4
+export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_FALSE_VALUE=0
+export CROSS_F77_TRUE_VALUE=1
 
-    if [[ ${nbits} == 32 ]]; then
-        export CROSS_F90_ADDRESS_KIND=4
-    else
-        export CROSS_F90_ADDRESS_KIND=8
-    fi
-    export CROSS_F90_OFFSET_KIND=8
-    export CROSS_F90_INTEGER_KIND=4
-    export CROSS_F90_INTEGER_MODEL=9
-    export CROSS_F90_REAL_MODEL=6,37
-    export CROSS_F90_DOUBLE_MODEL=15,307
-    export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
-    export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
+export CROSS_F90_OFFSET_KIND=8
+export CROSS_F90_INTEGER_KIND=4
+export CROSS_F90_INTEGER_MODEL=9
+export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-    if [[ "${target}" == i686-linux-musl ]]; then
-        # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
-        # but not C++ or Fortran.  `configure` runs a C program to determine
-        # whether it's cross-compiling or not, but when it comes to running
-        # Fortran programs, it fails.  In addition, `configure` ignores the
-        # above exported variables if it believes it's doing a native build.
-        # Small hack: edit `configure` script to force `cross_compiling` to be
-        # always "yes".
-        sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-        EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-    fi
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
+    # but not C++ or Fortran.  `configure` runs a C program to determine
+    # whether it's cross-compiling or not, but when it comes to running
+    # Fortran programs, it fails.  In addition, `configure` ignores the
+    # above exported variables if it believes it's doing a native build.
+    # Small hack: edit `configure` script to force `cross_compiling` to be
+    # always "yes".
+    sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
+    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
 # Building with an external hwloc leads to problems loading the
@@ -228,6 +246,10 @@ products = [
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
     LibraryProduct("libmpitrampoline", :libmpi),
+
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
