@@ -43,6 +43,10 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# We need to expand the gfortran versions because MPItrampoline
+# depends on Fortran.
+platforms = expand_gfortran_versions(platforms)
+
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["cryptominisat5", "cryptominisat5win"], :cryptominisat5),
