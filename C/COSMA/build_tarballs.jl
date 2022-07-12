@@ -44,9 +44,14 @@ else
 fi
 
 MPI_CMAKE_FLAGS=
-if [[ "$target" == *-apple-* ]]; then
-    if grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_C_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.dylib -DMPI_open-rte_LIBRARY=$prefix/lib/libopen-rte.dylib -DMPI_open-pal_LIBRARY=$prefix/lib/libopen-pal.dylib"
+if grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    if [[ "$target" == *-apple-* ]]; then
+        # MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_C_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.dylib -DMPI_open-rte_LIBRARY=$prefix/lib/libopen-rte.dylib -DMPI_open-pal_LIBRARY=$prefix/lib/libopen-pal.dylib"
+        MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs' -DMPI_C_LIB_NAMES='mpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs' -DMPI_CXX_LIB_NAMES='mpi' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.dylib"
+    # elif [[ "$target" == powerpc64le-* ]]; then
+    else
+        # MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,--enable-new-dtags;-lmpi;-lopen-rte;-lopen-pal;-lm;-ldl;-lutil,-lrt' -DMPI_C_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,--enable-new-dtags;-lmpi;-lopen-rte;-lopen-pal;-lm;-ldl;-lutil,-lrt' -DMPI_CXX_LIB_NAMES='mpi;open-rte;open-pal' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.so -DMPI_open-rte_LIBRARY=$prefix/lib/libopen-rte.so -DMPI_open-pal_LIBRARY=$prefix/lib/libopen-pal.so"
+        MPI_CMAKE_FLAGS="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,--enable-new-dtags' -DMPI_C_LIB_NAMES='mpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,--enable-new-dtags' -DMPI_CXX_LIB_NAMES='mpi' -DMPI_mpi_LIBRARY=$prefix/lib/libmpi.so"
     fi
 fi
 
@@ -96,6 +101,9 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 filter!(!Sys.iswindows, platforms)
+
+# OpenMP is not supported. The work-around for `apple` above does not work for `aarch64`.
+filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
