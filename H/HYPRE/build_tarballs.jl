@@ -67,9 +67,6 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
-# MPItrampoline requires Fortran
-platforms = expand_gfortran_versions(platforms)
-
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Disable OpenMPI; its configuration is not auto-detected by cmake
