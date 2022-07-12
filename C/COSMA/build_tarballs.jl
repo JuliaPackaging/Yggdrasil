@@ -7,10 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "COSMA"
 version = v"2.5.1"
+cosma_version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v$(version)/COSMA-v$(version).tar.gz",
+    ArchiveSource("https://github.com/eth-cscs/COSMA/releases/download/v$(cosma_version)/COSMA-v$(cosma_version).tar.gz",
                   "085b7787597374244bbb1eb89bc69bf58c35f6c85be805e881e1c0b25166c3ce")
 ]
 
@@ -94,10 +95,8 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# MPItrampoline is not supported on `libgfortran3`. We need to expand
-# the gfortran versions here so that we can exclude it. Otherwise,
-# BinaryBuilder might choose `libgfortran3`, and the build will fail
-# since no MPI implementation is available.
+# We need to expand the gfortran versions because MPItrampoline
+# depends on Fortran.
 platforms = expand_gfortran_versions(platforms)
 
 filter!(!Sys.iswindows, platforms)
@@ -129,4 +128,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+               augment_platform_block, julia_compat="1.7", preferred_gcc_version = v"7.1.0")
