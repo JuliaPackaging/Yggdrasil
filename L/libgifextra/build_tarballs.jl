@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "GifLibExtra"
+name = "libgifextra"
 version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ashwani-rathee/GifLibExtra.git", "b95be88d5d351d543e82ed884ccbd53bcbca58d0")
+    GitSource("https://github.com/ashwani-rathee/libgifextra.git", "f0eb483f67d53ee0dd4d78581623c158677aed88")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/GifLibExtra
+cd $WORKSPACE/srcdir/libgifextra
 make -j${nproc}
 make install
 """
