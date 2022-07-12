@@ -36,6 +36,9 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     fi
 fi
 
+# MPItrampoline requires C99
+export CFLAGS="${CFLAGS} -std=c99"
+
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=$prefix \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
