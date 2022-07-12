@@ -147,7 +147,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 
 append!(dependencies, platform_dependencies)
 
