@@ -26,17 +26,22 @@ if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
+        MPI_FFLAGS=
         MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
     elif grep -q MPItrampoline $prefix/include/mpi.h; then
+        MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS="[${libdir}/libmpitrampoline.${dlext}]"
     elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        MPI_LIBS="[${libdir}/libmpi.${dlext}]"
+        MPI_FFLAGS=
+        MPI_LIBS="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
     else
+        MPI_FFLAGS=
         MPI_LIBS=
     fi
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
@@ -57,6 +62,7 @@ build_petsc()
         COPTFLAGS='-O3' \
         CXXOPTFLAGS='-O3' \
         CFLAGS='-fno-stack-protector' \
+        FFLAGS="${MPI_FFLAGS}" \
         LDFLAGS="-L${libdir}" \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
@@ -97,13 +103,13 @@ build_petsc()
 }
 
 build_petsc double real Int32
-build_petsc single real Int32
-build_petsc double complex Int32
-build_petsc single complex Int32
-build_petsc double real Int64
-build_petsc single real Int64
-build_petsc double complex Int64
-build_petsc single complex Int64
+#TODO build_petsc single real Int32
+#TODO build_petsc double complex Int32
+#TODO build_petsc single complex Int32
+#TODO build_petsc double real Int64
+#TODO build_petsc single real Int64
+#TODO build_petsc double complex Int64
+#TODO build_petsc single complex Int64
 """
 
 augment_platform_block = """
@@ -127,14 +133,14 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    #TODO LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #TODO LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
+    #TODO LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #TODO LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #TODO LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    #TODO LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #TODO LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #TODO LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
 ]
 
 dependencies = [
@@ -142,10 +148,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
 append!(dependencies, platform_dependencies)
-
-# TODO
-# Speed up debugging
-platforms = filter(p -> (arch(p) == "x86_64" && Sys.isapple(p) && libgfortran_version(p).major == 5), platforms)
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
