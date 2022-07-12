@@ -1,4 +1,7 @@
 using BinaryBuilder
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
 version = v"3.16.5"
@@ -22,7 +25,15 @@ if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 else
-    MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+    if grep -q MPICH_NAME $prefix/include/mpi.h; then
+        MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+    elif grep -q MPItrampoline $prefix/include/mpi.h; then
+        MPI_LIBS="[${libdir}/libmpitrampoline.${dlext}]"
+    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        MPI_LIBS="[${libdir}/libmpi.${dlext}]"
+    else
+        MPI_LIBS=
+    fi
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
@@ -93,11 +104,25 @@ build_petsc double real Int64
 build_petsc single real Int64
 build_petsc double complex Int64
 build_petsc single complex Int64
+"""
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
@@ -114,10 +139,14 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
 ]
+append!(dependencies, platform_dependencies)
+
+# TODO
+# Speed up debugging
+platforms = filter(p -> (arch(p) == "x86_64" && Sys.isapple(p) && libgfortran_version(p).major == 5), platforms)
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
