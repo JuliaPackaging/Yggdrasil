@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CryptoMiniSat"
-version = v"5.8.0"
+version = v"5.8.1"
+cryptominisat_version = v"5.8.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -47,10 +48,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # depends on Fortran.
 platforms = expand_gfortran_versions(platforms)
 
-# Avoid platforms where Boost is not available
-# (Why is Boost not available there? Its build script doesn't mention any excluded platforms.)
-filter!(p -> !(arch(p) == "armv6l" || (arch(p) == "aarch64" && Sys.isapple(p))), platforms)
-
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["cryptominisat5", "cryptominisat5win"], :cryptominisat5),
@@ -61,7 +58,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.71.0"),
+    Dependency("boost_jll"; compat="=1.76.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
 ]
