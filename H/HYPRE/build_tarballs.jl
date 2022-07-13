@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HYPRE"
 version = v"2.23.0"
@@ -33,6 +36,11 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
     fi
 fi
 
+# MPItrampoline requires C99 (but this doesn't work on Windows)
+if [[ "$target" != *-mingw32* ]]; then
+    export CFLAGS="${CFLAGS} -std=c99"
+fi
+
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=$prefix \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -47,12 +55,30 @@ cmake .. \
 
 make -j${nproc}
 make install
+"""
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Disable OpenMPI; its configuration is not auto-detected by cmake
+# (We could probably make this work by passing explicit cmake options.)
+platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -61,11 +87,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
-    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"))
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8")
