@@ -155,8 +155,8 @@ append!(dependencies, platform_dependencies)
 filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p).major == 5 && p["mpi"] == "mpitrampoline", platforms)
 
 # Debug MPItrampoline
-env["MPITRAMPOLINE_VERBOSE"] = "1"
-env["MPITRAMPOLINE_DELAY_INIT"] = "1"
+ENV["MPITRAMPOLINE_VERBOSE"] = "1"
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
