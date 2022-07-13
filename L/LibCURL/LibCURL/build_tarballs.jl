@@ -2,4 +2,4 @@ include("../common.jl")
 
 build_libcurl(ARGS, "LibCURL")
 
-# Build trigger: 0
+# Build trigger: 1

@@ -41,7 +41,13 @@ if [[ ${target} == *mingw* ]]; then
 else
     cd ${target}
 
-    rm -f lib/{*_cpp*,*_fortran*} # we do not need these
+    # Delete the C++ and Fortran libraries, we can't use them because they'd restrict the
+    # ABIs we can use this package for (e.g., *only* libgfortran5 and C++11 string ABI),
+    # which would be overly restrictive, as Julia on Linux comes with libgfortran4, thus
+    # making this package completely unusable there.  The only way to use the C++ and
+    # Fortran libraries is for BinaryBuilder to be able to actually build them:
+    # <https://github.com/JuliaPackaging/Yggdrasil/issues/4760>.
+    rm -f lib/{*_cpp*,*_fortran*}
     mv -v lib/* ${libdir}
     mv -v include/* ${includedir}
 
