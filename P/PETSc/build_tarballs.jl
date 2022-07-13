@@ -149,6 +149,11 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
+# TODO
+# Speed up building
+# Only build x86_64-linux-gnu-libgfortran5-mpi+mpitrampoline
+filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p).major == 5 && p["mpi"] == "mpitrampoline", platforms)
+
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
