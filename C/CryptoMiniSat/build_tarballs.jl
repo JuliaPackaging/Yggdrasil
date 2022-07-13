@@ -44,10 +44,6 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# We need to expand the gfortran versions because MPItrampoline
-# depends on Fortran.
-platforms = expand_gfortran_versions(platforms)
-
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["cryptominisat5", "cryptominisat5win"], :cryptominisat5),
@@ -74,4 +70,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"7")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
