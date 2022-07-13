@@ -103,13 +103,13 @@ build_petsc()
 }
 
 build_petsc double real Int32
-#TODO build_petsc single real Int32
-#TODO build_petsc double complex Int32
-#TODO build_petsc single complex Int32
+build_petsc single real Int32
+build_petsc double complex Int32
+build_petsc single complex Int32
 build_petsc double real Int64
-#TODO build_petsc single real Int64
-#TODO build_petsc double complex Int64
-#TODO build_petsc single complex Int64
+build_petsc single real Int64
+build_petsc double complex Int64
+build_petsc single complex Int64
 """
 
 augment_platform_block = """
@@ -132,15 +132,15 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 products = [
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct(["libpetsc_double_real_Int32"], :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    #TODO LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    #TODO LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    #TODO LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
-    #TODO LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    #TODO LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    #TODO LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
@@ -148,11 +148,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 ]
 append!(dependencies, platform_dependencies)
-
-# TODO
-# Speed up building
-# Only build x86_64-linux-gnu-libgfortran5-mpi+mpitrampoline
-filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p).major == 5 && p["mpi"] == "mpitrampoline", platforms)
 
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and
 # `dlopen`s the shared libraries. (MPItrampoline will skip its
