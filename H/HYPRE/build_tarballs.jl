@@ -70,7 +70,7 @@ platforms = supported_platforms(; experimental=true)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Disable OpenMPI; its configuration is not auto-detected by cmake
-# (We could probably make this work by looking at other packages.)
+# (We could probably make this work by passing explicit cmake options.)
 platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -94,4 +94,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8)
