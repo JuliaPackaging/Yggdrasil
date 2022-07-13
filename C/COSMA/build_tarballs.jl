@@ -95,10 +95,6 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# We need to expand the gfortran versions because MPItrampoline
-# depends on Fortran.
-platforms = expand_gfortran_versions(platforms)
-
 filter!(!Sys.iswindows, platforms)
 
 # OpenMP is not supported. The work-around for `apple` above does not work for `aarch64`.
@@ -128,4 +124,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.7", preferred_gcc_version = v"7.1.0")
+               augment_platform_block, julia_compat="1.7", preferred_gcc_version = v"8")
