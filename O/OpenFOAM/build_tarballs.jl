@@ -397,7 +397,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MPICH_jll"),
     Dependency("flex_jll"),
     Dependency("SCOTCH_jll"; compat=SCOTCH_VERSION),
     Dependency("PTSCOTCH_jll"),
