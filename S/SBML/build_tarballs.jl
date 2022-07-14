@@ -13,9 +13,14 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
 
+# https://github.com/sbmlteam/libsbml/pull/225
 atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
+# https://github.com/sbmlteam/libsbml/pull/235
 atomic_patch -p1 ../patches/0002-Add-SBMLNamespaces_addPackageNamespace-s-functions-t.patch
+# https://github.com/sbmlteam/libsbml/pull/237
 atomic_patch -p1 ../patches/0003-Fix-signature-of-SBase_getNumPlugins-in-prototype.patch
+# https://github.com/sbmlteam/libsbml/pull/247
+atomic_patch -p1 ../patches/0004-add-FbcReactionPlugin_createGeneProductAssociation-to-C-API.patch
 
 mkdir build
 cd build
