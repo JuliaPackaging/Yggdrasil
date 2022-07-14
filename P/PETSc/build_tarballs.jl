@@ -4,13 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.16.5"
+version = v"3.16.6"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
     ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(version).tar.gz",
-    "7de8570eeb94062752d82a83208fc2bafc77b3f515023a4c14d8ff9440e66cac"),
+    "bfc836b52f57686b583c16ab7fae0c318a7b28141ca01656ad673c8ca23037fa"),
     DirectorySource("./bundled"),
 ]
 
@@ -47,7 +47,6 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 mkdir $libdir/petsc
 build_petsc()
 {
-
     PETSC_CONFIG="${1}_${2}_${3}"
     if [[ "${3}" == "Int64" ]]; then
         USE_INT64=1
