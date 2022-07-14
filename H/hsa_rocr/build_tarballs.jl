@@ -19,6 +19,9 @@ cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
 # Do not install legacy symlinks which only creates confusion with RUNPATHs
 atomic_patch -p1 ../patches/no-symlinks.patch
 
+# Fix use of pthread_attr_setaffinity_np
+atomic_patch -p1 ../patches/musl-affinity.patch
+
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
