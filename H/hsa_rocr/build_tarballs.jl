@@ -52,7 +52,7 @@ dependencies = [
     Dependency("hsakmt_roct_jll"),
     Dependency("NUMA_jll"),
     Dependency("Zlib_jll"),
-    Dependency("Elfutils_jll"),
+    Dependency("Elfutils_jll", compat="0.182"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
