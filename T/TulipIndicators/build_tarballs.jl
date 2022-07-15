@@ -25,7 +25,6 @@ cc -fPIC -shared -Wall -Wextra -Wshadow -Wconversion -std=c99 -pedantic -O2 -g t
 """
 
 platforms = supported_platforms()
-filter!(p -> !Sys.isapple(p), platforms) # TODO apple
 
 products = [
 	LibraryProduct("libindicators", :libindicators)
