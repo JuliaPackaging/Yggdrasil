@@ -20,9 +20,8 @@ then
 fi
 cd $WORKSPACE/srcdir/tulipindicators
 make tiamalgamation.c
-gcc -fPIC -shared -Wall -Wextra -Wshadow -Wconversion -std=c99 -pedantic -O2 -g tiamalgamation.c -o libindicators.so
-mkdir -p ${prefix}/include ${libdir}
-mv -t ${libdir} libindicators.so
+mkdir -p ${libdir}
+cc -fPIC -shared -Wall -Wextra -Wshadow -Wconversion -std=c99 -pedantic -O2 -g tiamalgamation.c -o ${libdir}/libindicators.${dlext}
 """
 
 platforms = supported_platforms()
