@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.6"
+upstream_version = v"4.7"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "f88341465f412e1fed459313a7dc5fa3ddbc56807ecc7246e836ae25e54585a8")
+                  "08465f61bc03a13fc18704ede488b09eea2911812cd88efb392b3bc2f299058b")
     DirectorySource("./bundled")
 ]
 
@@ -125,8 +125,8 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p -> !Sys.iswindows(p) &&
-                         arch(p) != "armv6l",
-                    supported_platforms(;experimental=true))
+                         nbits(p) > 32,
+                    supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -146,14 +146,14 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("FLINT_jll", compat = "~200.900.000"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.0"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
     Dependency("cddlib_jll", compat = "~0.94.13"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.900.100"),
+    Dependency("normaliz_jll", compat = "~300.900.300"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
