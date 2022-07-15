@@ -38,11 +38,6 @@ mkdir build && cd build
 cmake .. "${BUILD_FLAGS[@]}"
 make -j${nproc}
 make install
-
-# copy import lib `libssh2.dll.a` => `liblibssh2.dll.a` to maintain backwards compatibility
-if [[ ${target} == *-mingw* ]]; then
-    install -Dvm 0755 "src/libssh2.dll.a" "${prefix}/lib/liblibssh2.dll.a"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
