@@ -6,11 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"6.1.3"
+version = v"6.1.4"
+ptscotch_version = v"6.1.3"
+scotch_jll_version = v"6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz","4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
+    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(ptscotch_version)/scotch-v$(ptscotch_version).tar.gz",
+                  "4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
     DirectorySource("./bundled")
 ]
 
@@ -68,7 +71,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency("SCOTCH_jll", v"6.1.3")
+    Dependency("SCOTCH_jll", scotch_jll_version)
 ]
 append!(dependencies, platform_dependencies)
 
