@@ -30,4 +30,4 @@ products = [
 	LibraryProduct("libindicators", :libindicators)
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, deps; julia_compat="≥ 1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, deps; julia_compat="1.6")
