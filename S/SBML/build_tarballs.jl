@@ -2,25 +2,15 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.5"
+version = v"5.19.6"
 sources = [
     ArchiveSource(
         "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "6c0ec766e76bc6ad0c8626f3d208b4d9e826b36c816dff0c55e228206c82cb36"),
-    DirectorySource("./bundled"),
+        "77990b0f7b7419269061fbe671540c10f87f52bf8a8568953675ee615584efa6"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
-
-# https://github.com/sbmlteam/libsbml/pull/225
-atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
-# https://github.com/sbmlteam/libsbml/pull/235
-atomic_patch -p1 ../patches/0002-Add-SBMLNamespaces_addPackageNamespace-s-functions-t.patch
-# https://github.com/sbmlteam/libsbml/pull/237
-atomic_patch -p1 ../patches/0003-Fix-signature-of-SBase_getNumPlugins-in-prototype.patch
-# https://github.com/sbmlteam/libsbml/pull/247
-atomic_patch -p1 ../patches/0004-add-FbcReactionPlugin_createGeneProductAssociation-to-C-API.patch
 
 mkdir build
 cd build
