@@ -1,6 +1,6 @@
 name = "LLD"
-llvm_full_version = v"14.0.5+2"
-libllvm_version = v"14.0.5+2"
+llvm_full_version = v"14.0.5+3"
+libllvm_version = v"14.0.5+3"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
