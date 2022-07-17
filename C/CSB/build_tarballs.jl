@@ -13,7 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/csb/
-apk add meson --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson build
 cd build/
 ninja -j${nproc}
