@@ -73,5 +73,6 @@ dependencies = [
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need GCC 5 because we need `-fallow-argument-mismatch` for gfortran
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
