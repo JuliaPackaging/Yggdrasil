@@ -22,8 +22,7 @@ if [[ ${nbits} == 64 ]] ; then
     FFLAGS+=("-D${sym}=${sym}_64")
   done
 
-  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\" \
-                -DCMAKE_C_FLAGS=\"${FFLAGS[*]}\")
+  CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\")
 fi
 
 mkdir build && cd build
