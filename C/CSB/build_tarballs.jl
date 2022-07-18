@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/csb/
+cd $WORKSPACE/srcdir/CSB/
 meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson build
 cd build/
 ninja -j${nproc}
