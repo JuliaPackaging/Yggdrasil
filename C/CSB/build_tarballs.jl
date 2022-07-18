@@ -7,7 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fcdimitr/CSB.git", "7a03c8fb85a85759f69a782b07c99d13c0d80d5a")
+    GitSource("https://github.com/fcdimitr/CSB.git", "ccab7d424fd7e5bfee4ebdb750dfa219228c7a56")
 ]
 
 # Bash recipe for building across all platforms
