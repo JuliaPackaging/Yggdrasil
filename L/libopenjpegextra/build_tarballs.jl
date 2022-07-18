@@ -7,7 +7,7 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ashwani-rathee/libopenjpegextra.git", "b5321f5e96b00e50adad61eaf23561a8bd8e36ce")
+    GitSource("https://github.com/ashwani-rathee/libopenjpegextra.git", "5e5f3348687d268daff8c7145f7283df052f794c")
 ]
 
 # Bash recipe for building across all platforms
