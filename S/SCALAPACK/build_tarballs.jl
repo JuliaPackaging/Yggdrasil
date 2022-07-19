@@ -26,6 +26,8 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
+#TODO For BLAS and LAPACK, it would be great to start linking to -lblastrampoline.
+
 CPPFLAGS=()
 CFLAGS=()
 FFLAGS=(-cpp -ffixed-line-length-none)
