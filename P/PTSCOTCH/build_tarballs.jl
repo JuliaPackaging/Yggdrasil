@@ -49,9 +49,6 @@ platforms = supported_platforms(; exclude=Sys.iswindows)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# There is a build error with OpenMPI (this could probably be circumvented)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
-
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
