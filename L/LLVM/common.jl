@@ -379,6 +379,9 @@ else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
     mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
 fi
+if [ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]; then
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/lld* ${prefix}/tools/
+fi
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
