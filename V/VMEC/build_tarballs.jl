@@ -65,11 +65,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
-    BuildDependency(PackageSpec(name = "MbedTLS_jll", version = v"2.24.0")),
+    BuildDependency(PackageSpec(name = "MbedTLS_jll")),
     Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
     Dependency("OpenBLAS_jll"),
     Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MKL_jll", v"2020.1.216"),
+    Dependency("MKL_jll"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
