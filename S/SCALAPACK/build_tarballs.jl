@@ -31,6 +31,14 @@ done
 CPPFLAGS=()
 CFLAGS=()
 FFLAGS=(-cpp -ffixed-line-length-none)
+
+# Add `-fallow-argument-mismatch` if supported
+: >empty.f
+if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
+    FFLAGS+=(-fallow-argument-mismatch)
+fi
+rm -f empty.*
+
 OPENBLAS=(-lopenblas)
 if [[ ${nbits} == 64 ]]; then
     CPPFLAGS+=(-DInt=long)
@@ -46,8 +54,12 @@ fi
 
 # We need to specify the MPI libraries explicitly because the
 # CMakeLists.txt doesn't properly add them when linking
+MPI_SETTINGS=(-DMPI_BASE_DIR="${prefix}")
 MPILIBS=()
-if grep -q MPICH "${prefix}/include/mpi.h"; then
+if grep -q MSMPI_VER "${prefix}/include/mpi.h"; then
+    MPI_SETTINGS+=(-DMPI_GUESS_LIBRARY_NAME=MSMPI)
+    MPILIBS=(-lmsmpifec64 -lmsmpi64)
+elif grep -q MPICH "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpifort -lmpi)
 elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpitrampoline)
@@ -65,7 +77,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
              -DSCALAPACK_BUILD_TESTS=OFF
              -DBUILD_SHARED_LIBS=ON
-             -DMPI_BASE_DIR="${prefix}")
+             ${MPI_SETTINGS[*]})
 
 export CDEFS="Add_"
 
@@ -88,8 +100,13 @@ augment_platform_block = """
 # platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
 
 platforms = expand_gfortran_versions(supported_platforms())
+# Don't know how to configure MPI for Windows
+platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Internal compiler error for v2.2.0 for aarch64-linux-musl-libgfortran4-mpi+mpich
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
