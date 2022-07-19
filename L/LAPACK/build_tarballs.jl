@@ -294,11 +294,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
         Dependency("CompilerSupportLibraries_jll")
-        Dependency("libblastrampoline_jll")
+        Dependency("libblastrampoline_jll"; compat="5.1.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.7", preferred_gcc_version=v"6")
+               julia_compat="1.8", preferred_gcc_version=v"6")
