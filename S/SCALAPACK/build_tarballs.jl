@@ -95,18 +95,11 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-# # OpenMPI and MPICH are not precompiled for Windows
-# # Can't get the code to build for PowerPC with libgfortran3
-# platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p) && arch(p) != "powerpc64le", supported_platforms()))
-
 platforms = expand_gfortran_versions(supported_platforms())
 # Don't know how to configure MPI for Windows
 platforms = filter(p -> !Sys.iswindows(p), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# Internal compiler error for v2.2.0 for aarch64-linux-musl-libgfortran4-mpi+mpich
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -114,6 +107,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# Internal compiler error for v2.2.0 for aarch64-linux-musl-libgfortran4-mpi+mpich
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
 
 # The products that we will ensure are always built
 products = [
