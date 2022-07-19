@@ -41,7 +41,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p)) ≠ v"3", platforms)
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) != v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
