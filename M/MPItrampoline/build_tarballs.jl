@@ -6,9 +6,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"4.1.2"
+version = v"4.2.0"
 
-mpitrampoline_version = v"4.1.1"
+mpitrampoline_version = v"4.2.0"
 mpich_version_str = "4.0.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.8.1"
@@ -16,7 +16,7 @@ mpiwrapper_version = v"2.8.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(mpitrampoline_version).tar.gz",
-                  "64e90e4a6b83269ff82787f7aeffe87a5c50702366cee8c48d222b475cd6864b"),
+                  "92eaa864fb364752a89752d6962f2d20e248bdf69e433d76417a25cac9b8244b"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
                   "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
