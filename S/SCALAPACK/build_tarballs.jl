@@ -42,6 +42,8 @@ if [[ ${nbits} == 64 ]]; then
     OPENBLAS=(-lopenblas64_)
 fi
 
+# We need to specify the MPI libraries explicitly because the
+# CMakeLists.txt doesn't properly add them when linking
 MPILIBS=()
 if grep -q MPICH "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpifort -lmpi)
@@ -86,10 +88,6 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# Disable OpenMPI, it's not detected by CMakeLists.txt
-# (We could probably fix this.)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
