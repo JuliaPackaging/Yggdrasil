@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "VMEC"
 upstream_version = v"1.1.0"
-version_patch_offset = 0
+version_patch_offset = 1
 version = VersionNumber(upstream_version.major,
                         upstream_version.minor,
                         upstream_version.patch * 100 + version_patch_offset)
@@ -66,10 +66,9 @@ products = [
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
     BuildDependency(PackageSpec(name = "MbedTLS_jll")),
-    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("OpenBLAS_jll"),
+    Dependency("MPItrampoline_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("libblastrampoline_jll"),
     Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MKL_jll"),
     Dependency("CompilerSupportLibraries_jll")
 ]
 
