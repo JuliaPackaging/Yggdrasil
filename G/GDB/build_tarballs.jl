@@ -7,7 +7,8 @@ version = v"10.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz", "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0"),
+    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz",
+                  "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0"),
     DirectorySource("./bundled")
 ]
 
@@ -49,8 +50,9 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
     Dependency("Expat_jll"),
-    Dependency("Python_jll"),
+    Dependency("Python_jll"; compat="~3.8.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"8.1.0")
