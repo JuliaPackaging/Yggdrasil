@@ -116,6 +116,12 @@ sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/po
 sed -i -e "s|^#!.*perl|#!/usr/bin/env perl|g" ${bindir}/polymake*
 sed -i -e "s#^PERL = .*#PERL = /usr/bin/env perl#g" ${libdir}/polymake/config*
 
+# the real apple compilers don't support -fopenmp
+# so we need to remove this for compiling wrappers at runtime ...
+if [[ $target == *apple* ]]; then
+  sed -i -e "s#-fopenmp##g" ${libdir}/polymake/config-reloc.ninja
+fi
+
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
