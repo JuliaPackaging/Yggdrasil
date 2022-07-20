@@ -61,18 +61,23 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-# TODO: remove this restriction in the next build
-filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+platforms = supported_platforms(; experimental=true)
 
-# Disable windows for now, until we can sort through all of these patches
-# and choose the ones that we need:
-# https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
-filter!(!Sys.iswindows, platforms)
+filter!(platforms) do p
+    # Disable windows for now, until we can sort through all of these patches
+    # and choose the ones that we need:
+    # https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
+    Sys.iswindows(p) && return false
 
-# Disable macOS M1 for now, python 3.8.3 is not compatible with it (and upgrading to 3.8.3
-# involves configure-script changes that seem incompatible with out BB set-up)
-filter!(isequal(Platform("aarch64", "macos")), platforms)
+    # Disable macOS M1 for now, python 3.8.3 is not compatible with it (and upgrading to 3.8.13
+    # involves configure-script changes that seem incompatible with out BB set-up)
+    if Sys.isapple(p) && arch(p) == "aarch64"
+        return false
+    end
+
+    return true
+end
+
 
 # The products that we will ensure are always built
 products = Product[
@@ -98,4 +103,4 @@ ENV["PYTHONHOME"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               init_block)
+               init_block, julia_compat = "1.6")
