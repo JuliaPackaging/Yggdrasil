@@ -70,6 +70,10 @@ filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), p
 # https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
 filter!(!Sys.iswindows, platforms)
 
+# Disable macOS M1 for now, python 3.8.3 is not compatible with it (and upgrading to 3.8.3
+# involves configure-script changes that seem incompatible with out BB set-up)
+filter!(isequal(Platform("aarch64", "macos")), platforms)
+
 # The products that we will ensure are always built
 products = Product[
     ExecutableProduct(["python", "python3"], :python),
