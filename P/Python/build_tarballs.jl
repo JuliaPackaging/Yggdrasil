@@ -3,12 +3,15 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.8.1"
+version = v"3.8.8"
+
+# NOTE: Python 3.8.9+ contains configure changes that break our build.
+#       see https://github.com/python/cpython/issues/88201
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "75894117f6db7051c1b34f37410168844bbb357c139a8a10a352e9bf8be594e8"),
+                  "7c664249ff77e443d6ea0e4cf0e587eae918ca3c48d081d1915fe2a1f1bcc5cc"),
     DirectorySource("./bundled"),
 ]
 
