@@ -91,8 +91,8 @@ dependencies = [
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
-# AMReX's cmake stage fails with OpenMPI on almost all architectures
-platforms = filter(p -> !(p["mpi"] == "openmpi"), platforms)
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # With MPItrampoline, select only those platforms where MPItrampoline is actually built
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
