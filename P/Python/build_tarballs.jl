@@ -88,5 +88,10 @@ dependencies = [
     Dependency("OpenSSL_jll"),
 ]
 
+init_block = raw"""
+ENV["PYTHONHOME"] = artifact_dir
+"""
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               init_block)
