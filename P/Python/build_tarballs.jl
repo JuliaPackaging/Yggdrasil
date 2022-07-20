@@ -35,6 +35,12 @@ chmod +x /usr/bin/arch
 # Patch out cross compile limitations
 cd ${WORKSPACE}/srcdir/Python-*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross_compile_configure_ac.patch
+if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
+    # disable detection of multiarch as it breaks with clang >= 13, which adds a
+    # major.minor version number in -print-multiarch output, confusing Python.
+    # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
+    sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
+fi
 autoreconf -i
 
 # Next, build host version
@@ -66,21 +72,10 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
-filter!(platforms) do p
-    # Disable windows for now, until we can sort through all of these patches
-    # and choose the ones that we need:
-    # https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
-    Sys.iswindows(p) && return false
-
-    # Disable macOS M1 for now, python 3.8.3 is not compatible with it (and upgrading to 3.8.13
-    # involves configure-script changes that seem incompatible with out BB set-up)
-    if Sys.isapple(p) && arch(p) == "aarch64"
-        return false
-    end
-
-    return true
-end
-
+# Disable windows for now, until we can sort through all of these patches
+# and choose the ones that we need:
+# https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
