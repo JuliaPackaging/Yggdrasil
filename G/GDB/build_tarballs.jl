@@ -3,19 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "GDB"
-version = v"10.1.0"
+version = v"12.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz",
-                  "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0"),
+    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-$(version.major).$(version.minor).tar.xz",
+                  "0e1793bf8f2b54d53f46dea84ccfd446f48f81b297b28c4f7fc017b818d69fed"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 apk add texinfo
-cd $WORKSPACE/srcdir/gdb-10.1/
+cd $WORKSPACE/srcdir/gdb-*/
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 CONFIGURE_FLAGS+=(--with-expat)
 if [[ ${target} != *mingw* ]]; then
