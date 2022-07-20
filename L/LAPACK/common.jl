@@ -11,13 +11,14 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+
 function lapack_script(;lapack32::Bool=false)
     script = """
     LAPACK32=$(lapack32)
     """
+
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
-
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
         FFLAGS="${FFLAGS} -fdefault-integer-8"

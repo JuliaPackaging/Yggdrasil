@@ -1,6 +1,6 @@
 name = "LAPACK32"
 
-include "../common.jl"
+include("../common.jl")
 
 script = lapack_script(lapack32=true)
 
