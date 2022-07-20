@@ -8,7 +8,6 @@ version = v"0.4.4"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/dpiparo/vdt/archive/refs/tags/v$(version).zip", "c03d21bdaaa8a0e6e557a496be505581f23aba9854e6059794721994289e97e8"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
