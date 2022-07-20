@@ -7,14 +7,15 @@ version = v"10.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz", "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0")
+    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz", "f82f1eceeec14a3afa2de8d9b0d3c91d5a3820e23e0a01bbb70ef9f0276b62c0"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 apk add texinfo
 cd $WORKSPACE/srcdir/gdb-10.1/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-expat
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-expat --with-python=${WORKSPACE}/srcdir/python-cross-configure.sh
 make -j${nproc} all
 make install
 """
@@ -42,6 +43,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
     Dependency("Expat_jll"),
+    Dependency("Python_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
