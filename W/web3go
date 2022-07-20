@@ -20,7 +20,23 @@ mkdir -p $WORKSPACE/destdir/bin && mv web3* $WORKSPACE/destdir/bin
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "darwin"; ),
+    Platform("aarch64", "darwin"; ),
+    Platform("x86_64", "freebsd"; ),
+    Platform("x86_64", "windows"; ),
+    Platform("i686", "windows"; )
+]
 
 # The products that we will ensure are always built
 products = [
