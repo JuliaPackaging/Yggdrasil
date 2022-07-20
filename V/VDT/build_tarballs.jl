@@ -12,8 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/vdt-$(version)
-sed -i "s/-Ofast//" CMakeLists.txt
+cd $WORKSPACE/srcdir/vdt-" * "$(version)" *
+raw"""sed -i "s/-Ofast//" CMakeLists.txt
 mv Licence.txt LICENSE
 install_license LICENSE
 mkdir build && cd build
