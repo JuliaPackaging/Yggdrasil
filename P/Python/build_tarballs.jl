@@ -3,12 +3,15 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.8.1"
+version = v"3.8.8"
+
+# NOTE: Python 3.8.9+ contains configure changes that break our build.
+#       see https://github.com/python/cpython/issues/88201
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "75894117f6db7051c1b34f37410168844bbb357c139a8a10a352e9bf8be594e8"),
+                  "7c664249ff77e443d6ea0e4cf0e587eae918ca3c48d081d1915fe2a1f1bcc5cc"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,6 +35,12 @@ chmod +x /usr/bin/arch
 # Patch out cross compile limitations
 cd ${WORKSPACE}/srcdir/Python-*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross_compile_configure_ac.patch
+if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
+    # disable detection of multiarch as it breaks with clang >= 13, which adds a
+    # major.minor version number in -print-multiarch output, confusing Python.
+    # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
+    sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
+fi
 autoreconf -i
 
 # Next, build host version
@@ -61,18 +70,12 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-# TODO: remove this restriction in the next build
-filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+platforms = supported_platforms(; experimental=true)
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
 # https://github.com/msys2/MINGW-packages/tree/1e753359d9b55a46d9868c3e4a31ad674bf43596/mingw-w64-python3
 filter!(!Sys.iswindows, platforms)
-
-# Disable macOS M1 for now, python 3.8.3 is not compatible with it (and upgrading to 3.8.3
-# involves configure-script changes that seem incompatible with out BB set-up)
-filter!(isequal(Platform("aarch64", "macos")), platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -98,4 +101,4 @@ ENV["PYTHONHOME"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               init_block)
+               init_block, julia_compat = "1.6")
