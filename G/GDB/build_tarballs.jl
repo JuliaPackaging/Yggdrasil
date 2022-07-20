@@ -15,7 +15,13 @@ sources = [
 script = raw"""
 apk add texinfo
 cd $WORKSPACE/srcdir/gdb-10.1/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-expat --with-python=${WORKSPACE}/srcdir/python-cross-configure.sh
+CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
+CONFIGURE_FLAGS+=(--with-expat)
+if [[ ${target} != *mingw* ]]; then
+    # Python_jll is not yet available for Windows
+    CONFIGURE_FLAGS+=(--with-python=${WORKSPACE}/srcdir/python-cross-configure.sh)
+fi
+./configure ${CONFIGURE_FLAGS[@]}
 make -j${nproc} all
 make install
 """
