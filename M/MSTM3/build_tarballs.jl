@@ -12,6 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+sed -i "s/cnp_mie(:,:,n)=matmul(dmat,amatinv)/cnp_mie(:,:,:)=matmul(dmat,amatinv)/" ${WORKSPACE}/srcdir/mstm-modules-v3.0.f90
 if [[ "$target" == *-mingw* ]]; then
     cd ${includedir}
     cp ${prefix}/src/mpi.f90 .
