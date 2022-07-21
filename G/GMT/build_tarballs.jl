@@ -36,7 +36,6 @@ platforms = [
 products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
-    LibraryProduct("supplements", :supplements, "lib/gmt/plugins"),
     ExecutableProduct("gmt", :gmt)
 ]
 
