@@ -11,14 +11,12 @@ version = VersionNumber(upstream_version.major,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-#    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-#                  "3b7db01868204855506ca8c33394fc3f6dea73d9d2594bf047fefc46d87b294b"),
-#            GitSource("https://gitlab.com/wistell/VMEC2000", "5a194bc1ee698733dc68d4afbb5e257d288e3131"),     
-    DirectorySource("/home/bfaber/projects/VMEC2000"),
+    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
+cd ${WORKSPACE}/srcdir/VMEC*
 # From the SCALAPACK build_tarballs with MPItrampoline
 # We need to specify the MPI libraries explicitly because the
 # CMakeLists.txt doesn't properly add them when linking
@@ -83,7 +81,6 @@ filter!(p ->libgfortran_version(p) >= v"4", platforms)
 # Filter incompatible architectures and operating systems
 filter!(p -> arch(p) == "x86_64", platforms)
 filter!(!Sys.isfreebsd, platforms)
-filter!(!Sys.iswindows, platforms)
 
 # Right now VMEC only works with libc=glibc, filter out any musl dependencies
 filter!(p -> libc(p) != "musl", platforms)
