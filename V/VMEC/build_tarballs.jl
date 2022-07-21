@@ -11,15 +11,59 @@ version = VersionNumber(upstream_version.major,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-                  "3b7db01868204855506ca8c33394fc3f6dea73d9d2594bf047fefc46d87b294b"),
+#    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+#                  "3b7db01868204855506ca8c33394fc3f6dea73d9d2594bf047fefc46d87b294b"),
+#            GitSource("https://gitlab.com/wistell/VMEC2000", "5a194bc1ee698733dc68d4afbb5e257d288e3131"),     
+    DirectorySource("/home/bfaber/projects/VMEC2000"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/VMEC*
-./autogen.sh
-./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS=-O3 FCFLAGS=-O3 --build=${MACHTYPE}  --host=${target} --target=${target} --prefix=${prefix}
-make && make install && make clean
+cd ${WORKSPACE}/srcdir
+# From the SCALAPACK build_tarballs with MPItrampoline
+# We need to specify the MPI libraries explicitly because the
+# CMakeLists.txt doesn't properly add them when linking
+MPILIBS=()
+if grep -q MSMPI_VER "${prefix}/include/mpi.h"; then
+    MPILIBS=(-lmsmpifec64 -lmsmpi64)
+elif grep -q MPICH "${prefix}/include/mpi.h"; then
+    MPILIBS=(-lmpifort -lmpi)
+elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
+    MPILIBS=(-lmpitrampoline)
+elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
+fi
+F_FLAGS=(-O3)
+# Add `-fallow-argument-mismatch` if supported
+: >empty.f
+if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
+    F_FLAGS+=(-fallow-argument-mismatch)
+fi
+rm -f empty.*
+
+if [[ ${target} == *mingw* ]]; then
+     sed "s/LT_INIT/LT_INIT(win32-dll)/" configure.ac | cat > configure.ac.2
+     mv configure.ac.2 configure.ac
+     ./autogen.sh
+     ./configure CC=gcc FC=gfortran F77=gfortran --build=${MACHTYPE} --with-mkl --host=${target} --target=${target} --prefix=${prefix}
+     # Deal with the issue that gcc doesn't accept -no-undefined at configure step
+     sed "s/AM_LDFLAGS =/AM_LDFLAGS =-no-undefined/" Makefile | cat > Makefile.2
+     mv Makefile.2 Makefile
+     make && make install && make clean
+
+     ./configure CC=gcc FC=gfortran F77=gfortran --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+     # Deal with the issue that gcc doesn't accept -no-undefined at configure step
+     sed "s/AM_LDFLAGS =/AM_LDFLAGS =-no-undefined/" Makefile | cat > Makefile.2
+     mv Makefile.2 Makefile
+     make && make install && make clean
+
+else
+    ./autogen.sh
+    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS}" LIBS="${MPILIBS[*]}" --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+    make && make install && make clean
+
+    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS[*]}" LIBS="${MPILIBS[*]}" --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+    make && make install && make clean
+fi
 """
 
 # This is for MPItrampoline implementation
@@ -48,15 +92,17 @@ filter!(p -> libc(p) != "musl", platforms)
 # Don't automatically dl_open so that the appropriate 
 # library can be loaded on intiation of VMEC.jl
 products = [
-    LibraryProduct("libvmec", :libvmec),
+    LibraryProduct("libvmec_mkl", :libvmec_mkl, dont_dlopen=true),
+    LibraryProduct("libvmec_openblas", :libvmec_openblas, dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
     BuildDependency(PackageSpec(name = "MbedTLS_jll")),
-    Dependency("libblastrampoline_jll", compat = "3.0.4"),
     Dependency("SCALAPACK_jll"),
+    Dependency("OpenBLAS_jll"),
+    Dependency("MKL_jll"), 
     Dependency("CompilerSupportLibraries_jll")
 ]
 
@@ -65,4 +111,4 @@ all_platforms, platform_dependencies = MPI.augment_platforms(platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.7", augment_platform_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", augment_platform_block)
