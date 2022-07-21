@@ -178,14 +178,14 @@ CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 
 # Include perf/oprofile/vtune markers
-if [[ ${target} == *linux* ]]; then
-    CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
+# if [[ ${target} == *linux* ]]; then
+#     CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
-fi
+# fi
 # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-if [[ ${target} == *linux* ]]; then # TODO only LLVM12
-    CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
-fi
+# if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+#     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
+# fi
 
 
 if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
@@ -451,7 +451,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "bin"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
@@ -469,11 +469,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
-        push!(products, ExecutableProduct("lld", :lld, "tools"))
-        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
-        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
-        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        push!(products, ExecutableProduct("lld", :lld, "bin"))
     end
 
     name = "LLVM_full"
@@ -535,7 +531,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("lld-link", :lld_link, "tools"),
             ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
         ]
-        
+
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
