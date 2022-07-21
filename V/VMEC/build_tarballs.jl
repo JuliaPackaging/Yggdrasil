@@ -5,43 +5,23 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "VMEC"
 upstream_version = v"1.2.0"
-version_patch_offset = 1
+version_patch_offset = 0
 version = VersionNumber(upstream_version.major,
                         upstream_version.minor,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-    #ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-    #              "98a09a9436e98411960a34d642ea808f72d596e408004ea4c0ea475cc614f7f5"),
-    GitSource("https://gitlab.com/wistell/VMEC2000.git", "e91ff1515fc8360763913cd43ea49b4fc0af8484"),
+    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+                  "3b7db01868204855506ca8c33394fc3f6dea73d9d2594bf047fefc46d87b294b"),
 ]
-#=
-script = raw"""
-cd ${WORKSPACE}/srcdir/VMEC*
-if [[ ${target} == *mingw* ]]; then
-  sed "s/LT_INIT/LT_INIT(win32-dll)/" configure.ac | cat > configure.ac.2
-  mv configure.ac.2 configure.ac
-  ./autogen.sh
-  ./configure CC=gcc FC=gfortran F77=gfortran --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
-  # Deal with the issue that gcc doesn't accept -no-undefined at configure step
-  sed "s/AM_LDFLAGS =/AM_LDFLAGS =-no-undefined/" Makefile | cat > Makefile.2
-  mv Makefile.2 Makefile
-  make && make install && make clean
 
-else
-  ./autogen.sh
-  # Configure with OpenBLAS and ScaLAPACK from SCALAPACK_jll
-  ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS=-O3 FCFLAGS=-O3 --build=${MACHTYPE}  --host=${target} --target=${target} --prefix=${prefix}
-  make && make install && make clean
-fi
-"""
-=#
 script = raw"""
 cd ${WORKSPACE}/srcdir/VMEC*
 ./autogen.sh
 ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS=-O3 FCFLAGS=-O3 --build=${MACHTYPE}  --host=${target} --target=${target} --prefix=${prefix}
 make && make install && make clean
 """
+
 # This is for MPItrampoline implementation
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -69,15 +49,13 @@ filter!(p -> libc(p) != "musl", platforms)
 # library can be loaded on intiation of VMEC.jl
 products = [
     LibraryProduct("libvmec", :libvmec),
-    #LibraryProduct("libvmec_openblas", :libvmec_openblas, dont_dlopen = true),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # MbedTLS is an indirect dependency, fix the version for building 
     BuildDependency(PackageSpec(name = "MbedTLS_jll")),
-    Dependency("libblastrampoline_jll", compat = "3.1"),
-    #Dependency("SCALAPACK_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("libblastrampoline_jll", compat = "3.0.4"),
     Dependency("SCALAPACK_jll"),
     Dependency("CompilerSupportLibraries_jll")
 ]
