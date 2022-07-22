@@ -113,7 +113,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"; compat="~3.10"),
+    Dependency("GEOS_jll"; compat="~3.11"),
     Dependency("PROJ_jll"; compat="~900.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
