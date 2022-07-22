@@ -12,11 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir
 if [[ "$target" == *-mingw* ]]; then
-    cd ${includedir}
     cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -fno-range-check mpi.f90
-    cd ${WORKSPACE}/srcdir
     if [[ ${target} == x86_64-* ]]; then
         cfg_stub="void __guard_check_icall_fptr(unsigned long ptr) { }"
         msmpifec=msmpifec64
@@ -28,9 +27,7 @@ if [[ "$target" == *-mingw* ]]; then
     fi
     echo "${cfg_stub}" | gcc -x c -c -o cfg_stub.o -
     gfortran -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm3${exeext}"
-    rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
-    cd ${WORKSPACE}/srcdir
     mpifort -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3${exeext}"
 fi
 """
