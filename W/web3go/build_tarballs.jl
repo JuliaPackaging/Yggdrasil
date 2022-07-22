@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/web3-*/
 install_license LICENSE
 CGO_ENABLED=1 make
-install -Dvm "web3${exeext}" "${bindir}/web3${exeext}"
+install -Dvm 755 "web3${exeext}" "${bindir}/web3${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
