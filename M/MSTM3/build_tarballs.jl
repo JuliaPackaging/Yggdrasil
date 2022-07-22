@@ -15,7 +15,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 if [[ "$target" == *-mingw* ]]; then
     cp ${prefix}/src/mpi.f90 .
-    gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -fno-range-check mpi.f90
+    gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -I${includedir} -fno-range-check mpi.f90
     if [[ ${target} == x86_64-* ]]; then
         cfg_stub="void __guard_check_icall_fptr(unsigned long ptr) { }"
         msmpifec=msmpifec64
