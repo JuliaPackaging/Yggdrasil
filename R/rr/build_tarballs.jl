@@ -29,6 +29,7 @@ make install
 # rr only supports Linux
 platforms = [
     Platform("x86_64", "linux", libc="glibc"),
+    Platform("aarch64", "linux", libc="glibc")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
