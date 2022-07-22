@@ -8,7 +8,7 @@ version = v"5.5"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/Keno/rr.git",
-              "4e2522b5bb4a5d33158b1cbde596a7f9c790085a")
+              "fa6a8da4ecdb20909af13ac8380b7a1d804c71e2")
 ]
 
 # Bash recipe for building across all platforms
@@ -41,6 +41,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 # This is really a build dependency
 dependencies = [
+    # For the capnp generator executable
+    HostBuildDependency("capnproto_jll"),
+    # For the capnp static support library
     BuildDependency("capnproto_jll"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
