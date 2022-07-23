@@ -85,9 +85,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll", v"2.2.7"; compat="2.2.7"),
-    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
-    Dependency("Libffi_jll", v"3.2.1"; compat="~3.2.1"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"),
