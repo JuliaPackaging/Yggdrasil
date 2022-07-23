@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/src
 make ddscat
-install -Dvm 755 ddscat "${bindir}/ddscat"
+install -Dvm 755 "ddscat${exeext}" "${bindir}/ddscat${exeext}"
 install_license ../doc/UserGuide.pdf
 """
 
