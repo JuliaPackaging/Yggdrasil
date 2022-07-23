@@ -8,12 +8,19 @@ version = v"6.2.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/GenericMappingTools/gmt/releases/download/$(version)/gmt-$(version)-src.tar.gz",
-                  "ab7062912aeead1021770fad4756e0a99860fde8ea9b428fb00c22fa15a3bbfc")
+                  "ab7062912aeead1021770fad4756e0a99860fde8ea9b428fb00c22fa15a3bbfc"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gmt-*
+cd $WORKSPACE/srcdir
+if [[ "${target}" == *-mingw* ]]; then
+    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+        atomic_patch -p1 ${f}
+    done
+fi
+cd gmt-6.2.0
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -35,6 +42,8 @@ platforms = [
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "macos"; ),
+    Platform("x86_64", "windows"; ),
+    Platform("i686", "windows"; ),
 ]
 
 
@@ -48,7 +57,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
+    Dependency("NetCDF_jll", v"4.7.4")
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="PCRE_jll", uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
