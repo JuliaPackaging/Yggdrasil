@@ -7,7 +7,8 @@ version = v"6.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/GenericMappingTools/gmt/releases/download/$(version)/gmt-$(version)-src.tar.gz", "ab7062912aeead1021770fad4756e0a99860fde8ea9b428fb00c22fa15a3bbfc")
+    ArchiveSource("https://github.com/GenericMappingTools/gmt/releases/download/$(version)/gmt-$(version)-src.tar.gz",
+                  "ab7062912aeead1021770fad4756e0a99860fde8ea9b428fb00c22fa15a3bbfc")
 ]
 
 # Bash recipe for building across all platforms
