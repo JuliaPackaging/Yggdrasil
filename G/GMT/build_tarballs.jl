@@ -12,14 +12,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gmt-6.2.0/
+cd $WORKSPACE/srcdir/gmt-*
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DHAVE_QSORT_R_GLIBC=False -DHAVE___BUILTIN_BSWAP16=False -DHAVE___BUILTIN_BSWAP32=False -DHAVE___BUILTIN_BSWAP64=False   .. 
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DHAVE_QSORT_R_GLIBC=False \
+    -DHAVE___BUILTIN_BSWAP16=False \
+    -DHAVE___BUILTIN_BSWAP32=False \
+    -DHAVE___BUILTIN_BSWAP64=False \
+    .. 
 make -j${nproc} 
 make install 
-exit
 """
 
 # These are the platforms we will build for by default, unless further
