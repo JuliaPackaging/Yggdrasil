@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Elemental"
-# This is not really version 0.87.8, but taken from the master branch
+# This is not really version 0.87.9, but taken from the master branch
 # after 0.87.7. This is necessary to prevent C++ template
 # instantiation errors with newer GCC versions.
-version = v"0.87.8"
+version = v"0.87.9"
 
 # Collection of sources required to build Elemental
 sources = [
