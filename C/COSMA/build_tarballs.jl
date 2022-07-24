@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "COSMA"
-version = v"2.5.1"
+version = v"2.5.2"
 cosma_version = v"2.5.1"
 
 # Collection of sources required to complete build
