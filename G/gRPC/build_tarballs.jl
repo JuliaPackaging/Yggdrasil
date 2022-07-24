@@ -12,29 +12,28 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/grpc && \
-git submodule update --init --recursive && \
-mkdir -p cmake/build && \
-pushd "cmake/build" && \
+cd $WORKSPACE/srcdir/grpc
+git submodule update --init --recursive
+mkdir -p cmake/build
+pushd "cmake/build"
 cmake \
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DgRPC_SSL_PROVIDER=package \
-    ../.. && \
-make && \
-make install && \
-popd && \
-mkdir -p cmake/build && \
-pushd "cmake/build" && \
+    ../..
+make
+make install
+popd
+mkdir -p cmake/build
+pushd "cmake/build"
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    ../.. && \
-make && \
-make install && \
+    ../..
+make
+make install
 popd
 """
 
@@ -44,12 +43,10 @@ platforms = [
     Platform(
       "x86_64", "linux";
       libc="glibc",
-      libgfortran_version=v"5.0.0",
-      libstdcxx_version = v"3.4.29",
-      cxxstring_abi = "cxx11"
+      libgfortran_version=v"5.0.0"
     )
 ]
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -68,4 +65,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
