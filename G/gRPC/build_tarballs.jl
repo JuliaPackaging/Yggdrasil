@@ -49,7 +49,6 @@ platforms = [
       cxxstring_abi = "cxx11"
     )
 ]
-#platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
