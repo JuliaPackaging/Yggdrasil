@@ -20,6 +20,7 @@ cmake \
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DgRPC_SSL_PROVIDER=package \
     ../..
 make
 make install
