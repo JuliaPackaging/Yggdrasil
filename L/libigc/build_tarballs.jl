@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.10395"
+version = v"1.0.11378"
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -14,13 +14,13 @@ version = v"1.0.10395"
 # NOTE: these hashes are taken from the release notes in GitHub,
 #       https://github.com/intel/intel-graphics-compiler/releases
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "775a850f9b0c2d7249503b47ad6bd39a4eb9b3d7"),
-    GitSource("https://github.com/intel/opencl-clang.git", "50bf6d7524bea3e3d595b7c252c9ad2f91340231"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "cf681c88ea3f0c40d1a85677232fe6102b7e084f"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "eeb973f5020a5f0e92ad6da879bc4df9f5985a1c"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "ae217c17809fadb232ec94b29304b4afcd417bb4"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "5066d947985dd0c5107765daec5f24f735f3259a"),
-    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "9a6528771ee9b41aa06bbaa0da90f50b94e170af"),
+    GitSource("https://github.com/intel/opencl-clang.git", "363a5262d8c7cff3fb28f3bdb5d85c8d7e91c1bb"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "a31ffaeef77e23d500b3ea3d35e0c42ff5648ad9"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "45dd184c790d6bfc78a5a74a10c37e888b1823fa" #= sdk-1.3.204.1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "b42ba6d92faf6b4938e6f22ddd186dbdacc98d78" #= sdk-1.3.204.1 =#),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "4ce354da51f219bbdfa9c4cd5d8f640e92e38511" #= v0.4.2 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312" #= llvmorg-11.1.0 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -71,7 +71,6 @@ ninja -C build -j ${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux", libc="glibc"),
     Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)

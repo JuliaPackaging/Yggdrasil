@@ -22,12 +22,12 @@ using BinaryBuilder, Pkg
 
 name = "GAP_lib"
 upstream_version = v"4.11.1"
-version = v"400.1192.000"
+version = v"400.1192.002"
 
 # Collection of sources required to complete build
 sources = [
     # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "c67fb7d89cafeb9231facd80f85426199e0d62db"),
+    GitSource("https://github.com/gap-system/gap.git", "977fb055cf3793aa4c329e3d6ea765774fecc8ac"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
@@ -63,7 +63,7 @@ rm -rf native-build
 install_license LICENSE
 
 # "install" most of the files
-rm -rf autom4te.cache dev etc extern hpcgap/extern pkg
+rm -rf autom4te.cache dev extern hpcgap/extern pkg
 mkdir -p ${prefix}/share/gap/
 mv * ${prefix}/share/gap/
 """

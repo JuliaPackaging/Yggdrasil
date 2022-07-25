@@ -3,23 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.2.3"
+version = v"0.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "723ee02db3bed1919209b0111a8c3ea83069494e")
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "91bd6734b6e4721fe0c4f18e9fef82ab50b4948c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd msolve/
+cd $WORKSPACE/srcdir/msolve/
 ./autogen.sh
-
-if [[ "${target}" == *-apple-* ]]; then
-    export CC=gcc
-fi
-export CPPFLAGS="-I${includedir}"
 
 ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nprocs}
@@ -40,9 +34,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.800.101"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("FLINT_jll", compat = "~200.900.000"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")

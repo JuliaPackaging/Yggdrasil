@@ -1,5 +1,5 @@
 diff --git a/src/common/arraymap.c b/src/common/arraymap.c
-index 43d4491..f47b932 100644
+index 98df30f..958cd78 100644
 --- a/src/common/arraymap.c
 +++ b/src/common/arraymap.c
 @@ -27,7 +27,7 @@ static void FTRUNCATE(FILE *fp, off_t z) {
@@ -8,6 +8,6 @@ index 43d4491..f47b932 100644
  #else
 -#include <Windows.h>
 +#include <windows.h>
+ #include <io.h>
  
  static void FLOCK(FILE *fp) { }
- static void FUNLOCK(FILE *fp) { }

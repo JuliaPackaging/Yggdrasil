@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.38.0"
+version = v"3.39.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3380000.tar.gz", "1c76e25dc63d9f3935e0f406aec520a33ee77cf54ea5147dffe1fae8369eff68"),
+    ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3390000.tar.gz",
+                  "e90bcaef6dd5813fcdee4e867f6b65f3c9bfd0aec0f1017f9f3bbce1e4ed09e2"),
     FileSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"; filename="LICENSE"),
 ]
@@ -25,7 +26,8 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_SECURE_DELETE \
                  -DSQLITE_ENABLE_STMTVTAB \
                  -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
-                 -DSQLITE_MAX_EXPR_DEPTH=10000"
+                 -DSQLITE_MAX_EXPR_DEPTH=10000 \
+                 -DSQLITE_ENABLE_MATH_FUNCTIONS"
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \

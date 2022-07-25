@@ -128,6 +128,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                           "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
         ],
+        v"12.1.0" => [
+            ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-12.1.0/gcc-12.1.0.tar.xz",
+                          "62fd634889f31c02b64af2c468f064b47ad1ca78411c45abe6ac4b5f8dd19c7b"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz",
+                          "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz",
+                          "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+            ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz",
+                          "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+            ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
+                          "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
+        ],
     )
 
     # Map from GCC version and platform -> binutils sources
@@ -179,6 +191,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"9.1.0" => v"2.33.1",
             v"10.2.0" => v"2.34",
             v"11.1.0" => v"2.36",
+            v"12.1.0" => v"2.38",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -218,6 +231,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.36" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.36.tar.xz",
                               "5788292cc5bbcca0848545af05986f6b17058b105be59e99ba7d0f9eb5336fb8"),
+            ],
+            v"2.38" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.38.tar.xz",
+                              "e316477a914f567eccc34d5d29785b8b0f5a10208d36bbacedcc39048ecfe024"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
@@ -264,7 +281,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         end
     elseif Sys.isfreebsd(compiler_target)
         libc_sources = [
-            ArchiveSource("https://download.freebsd.org/ftp/releases/amd64/12.2-RELEASE/base.txz",
+            ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/12.2-RELEASE/base.txz",
                           "8bd49ce35c340a04029266fbbe82b1fdfeb914263e39579eecafb2e67d00693a"),
         ]
     elseif Sys.iswindows(compiler_target)
@@ -291,6 +308,8 @@ function gcc_script(compiler_target::Platform)
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
 
+    # Update list of packages before installing new packages
+    apk update
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
     apk add build-base gettext-dev gcc-objc clang texinfo
 
@@ -413,6 +432,12 @@ function gcc_script(compiler_target::Platform)
     for p in ${WORKSPACE}/srcdir/patches/gcc*.patch; do
         atomic_patch -p1 "${p}" || true
     done
+    # Apply other gcc patches WITHOUT IGNORING FAILURES!!
+    if [[ -d "${WORKSPACE}/srcdir/patches/gcc" ]]; then
+        for p in ${WORKSPACE}/srcdir/patches/gcc/*.patch; do
+            atomic_patch -p1 "${p}"
+        done
+    fi
 
     # Disable any non-POSIX usage of TLS for musl
     if [[ "${COMPILER_TARGET}" == *musl* ]] && [[ -f "${WORKSPACE}/srcdir/patches/musl_disable_tls.patch" ]]; then
@@ -565,6 +590,11 @@ function gcc_script(compiler_target::Platform)
         # Patch for building glibc 2.25-2.30 on aarch64
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
 
+        # Patch for building glibc 2.12.2 on x86_64-linux-gnu with GCC 12+.
+        # Adapted from new definition of `_dl_setup_stack_chk_guard` from
+        # https://github.com/bminor/glibc/commit/4a103975c4c4929455d60224101013888640cd2f.
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc-remove-__ASSUME_AT_RANDOM-in-_dl_setup_stack_chk_guard.patch || true
+
         # Patches for building glibc 2.17 on ppc64le
         for p in ${WORKSPACE}/srcdir/patches/glibc-ppc64le-*.patch; do
             atomic_patch -p1 ${p} || true;
@@ -653,7 +683,8 @@ function gcc_script(compiler_target::Platform)
             --host=${COMPILER_TARGET} \
             --with-sysroot=${sysroot} \
             ${MINGW_CONF_ARGS}
-        make -j${nproc}
+        # Build serially, it sounds like there are some race conditions in the makefile
+        make
         make install DESTDIR=${sysroot}
 
     elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then

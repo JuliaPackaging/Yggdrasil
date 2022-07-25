@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "jemalloc"
-version = v"5.2.1"
+version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jemalloc/jemalloc.git", "886e40bb339ec1358a5ff2a52fdb782ca66461cb")
+    GitSource("https://github.com/jemalloc/jemalloc.git", "54eaed1d8b56b1aa528be3bdd1877e59c56fa90c")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,9 +18,6 @@ autoconf
 FLAGS=(--disable-initial-exec-tls)
 if [[ "${target}" == *-freebsd* ]]; then
      FLAGS+=(--with-jemalloc-prefix)
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-     # Use correct 'system page size' per https://uwekorn.com/2021/01/11/apache-arrow-on-the-apple-m1.html
-     FLAGS+=(--with-lg-page=14)
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 

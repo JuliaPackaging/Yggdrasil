@@ -58,8 +58,8 @@ func Size(_id *C.char) C.long {
 //export ReadAt
 func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.long, offset C.long) {
     file := _FILES[_id]
-    // data := unsafe.Slice((*byte)(res), int64(NBytes));
-    data := (*(*[2147483647]byte)(res))[:NBytes]
+    data := unsafe.Slice((*byte)(res), int64(NBytes));
+    // data := (*(*[2147483647]byte)(res))[:NBytes]
     _, err := file.ReadAt(data, int64(offset))
     if err != nil {
         log.Fatal(err)
