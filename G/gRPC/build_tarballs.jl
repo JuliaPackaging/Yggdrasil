@@ -36,6 +36,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DgRPC_PROTOBUF_PROVIDER=package \
     -DgRPC_ZLIB_PROVIDER=package \
+    -DABSL_PROPAGATE_CXX_STD=ON \
     ../..
 make
 make install
@@ -45,11 +46,8 @@ popd
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform(
-      "x86_64", "linux";
-      libc="glibc",
-      libgfortran_version=v"5.0.0"
-    )
+    Platform("x86_64", "linux"; libc="glibc", libgfortran_version=v"5.0.0"),
+    Platform("x86_64", "linux"; libc="musl", libgfortran_version=v"5.0.0")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
