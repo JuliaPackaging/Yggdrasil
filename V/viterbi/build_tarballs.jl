@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libviterbi"
+name = "viterbi"
 version = v"0.1.0"
 
 # Collection of sources required to complete build
@@ -12,11 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd viterbi
-mkdir $libdir
-make
-cp libviterbi.so $libdir/
+cd $WORKSPACE/srcdir/viterbi
+make TARGET="libviterbi.${dlext}"
+install -Dvm "libviterbi.${dlext}" "${libdir}/libviterbi.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
