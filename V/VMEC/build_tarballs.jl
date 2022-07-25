@@ -62,8 +62,8 @@ if [[ ${target} == *mingw* ]]; then
 
 else
     ./autogen.sh
-#    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS}" LIBS="${MPILIBS[*]}" --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
-#    make && make install && make clean
+    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS}" LIBS="${MPILIBS[*]}" --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+    make && make install && make clean
 
     ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS[*]}" LIBS="${MPILIBS[*]}" --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
     make && make install && make clean
