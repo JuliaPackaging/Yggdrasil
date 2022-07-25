@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/viterbi
 make TARGET="libviterbi.${dlext}"
-install -Dvm "libviterbi.${dlext}" "${libdir}/libviterbi.${dlext}"
+install -Dm "libviterbi.${dlext}" "${libdir}/libviterbi.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
