@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.1.0"
+version = v"1.1.1"
+lamem_version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
