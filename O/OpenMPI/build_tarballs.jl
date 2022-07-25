@@ -26,6 +26,12 @@ if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
 fi
 
+# We use `--enable-script-wrapper-compilers` to turn the compiler
+# wrappers (`mpicc` etc.) into scripts instead of binaries. As scripts,
+# they can be run in a cross-compiling environment, and cmake can
+# infer the MPI options. Otherwise, the MPI options need to be
+# specified manually for OpenMPI to work.
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -33,6 +39,7 @@ fi
     --enable-static=no \
     --without-cs-fs \
     --enable-mpi-fortran=usempif08 \
+    --enable-script-wrapper-compilers \
     --with-cross=${WORKSPACE}/srcdir/${target}
 
 # Build the library

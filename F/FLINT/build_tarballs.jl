@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -46,6 +46,10 @@ if [[ ${target} == *musl* ]]; then
 elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
