@@ -11,14 +11,13 @@ version = VersionNumber(upstream_version.major,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-#    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-#                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
-    DirectorySource("/home/bfaber/projects/VMEC2000"),
+    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir
+cd ${WORKSPACE}/srcdir/VMEC*
 # From the SCALAPACK build_tarballs with MPItrampoline
 # We need to specify the MPI libraries explicitly because the
 # CMakeLists.txt doesn't properly add them when linking
