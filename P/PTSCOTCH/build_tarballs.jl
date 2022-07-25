@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"6.1.4"
+version = v"6.1.5"
 ptscotch_version = v"6.1.3"
 scotch_jll_version = v"6.1.3"
 
@@ -49,9 +49,6 @@ platforms = supported_platforms(; exclude=Sys.iswindows)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# There is a build error with OpenMPI (this could probably be circumvented)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
-
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
@@ -77,4 +74,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"10")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9.1.0")

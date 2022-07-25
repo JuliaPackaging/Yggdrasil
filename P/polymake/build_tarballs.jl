@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.7"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -60,6 +60,9 @@ atomic_patch -p1 ../patches/sigchld.patch
 
 # patch for bliss compatibility
 atomic_patch -p1 ../patches/bliss.patch
+
+# patch for grass plucker on 32bit
+atomic_patch -p1 ../patches/plucker32bit.patch
 
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
   perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
@@ -113,6 +116,12 @@ sed -e "s#${prefix}#\${prefix}#g" ${libdir}/polymake/config.ninja > ${libdir}/po
 sed -i -e "s|^#!.*perl|#!/usr/bin/env perl|g" ${bindir}/polymake*
 sed -i -e "s#^PERL = .*#PERL = /usr/bin/env perl#g" ${libdir}/polymake/config*
 
+# the real apple compilers don't support -fopenmp
+# so we need to remove this for compiling wrappers at runtime ...
+if [[ $target == *apple* ]]; then
+  sed -i -e "s#-fopenmp##g" ${libdir}/polymake/config-reloc.ninja
+fi
+
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
@@ -125,7 +134,7 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p -> !Sys.iswindows(p) &&
-                         nbits(p) > 32,
+                         arch(p) != "armv6l",
                     supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
@@ -143,7 +152,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("FLINT_jll", compat = "~200.900.000"),
