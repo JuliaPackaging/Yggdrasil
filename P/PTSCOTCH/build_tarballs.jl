@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
-version = v"6.1.4"
+version = v"6.1.5"
 ptscotch_version = v"6.1.3"
 scotch_jll_version = v"6.1.3"
 
