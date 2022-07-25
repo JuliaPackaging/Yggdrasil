@@ -44,13 +44,32 @@ install_license COPYING*
 """
 
 # Only build for Linux
-platforms = filter!(Sys.islinux, supported_platforms())
+platforms = supported_platforms()
+filter!(Sys.islinux, platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libasm", :libasm),
     LibraryProduct("libdw", :libdw),
     LibraryProduct("libelf", :libelf),
+    ExecutableProduct("eu-addr2line", :eu_addr2line),
+    ExecutableProduct("eu-ar", :eu_ar),
+    ExecutableProduct("eu-elfclassify", :eu_elfclassify),
+    ExecutableProduct("eu-elfcmp", :eu_elfcmp),
+    ExecutableProduct("eu-elfcompress", :eu_elfcompress),
+    ExecutableProduct("eu-elflint", :eu_elflint),
+    ExecutableProduct("eu-findtextrel", :eu_findtextrel),
+    ExecutableProduct("eu-make-debug-archive", :eu_make_debug_archive),
+    ExecutableProduct("eu-nm", :eu_nm),
+    ExecutableProduct("eu-objdump", :eu_objdump),
+    ExecutableProduct("eu-ranlib", :eu_ranlib),
+    ExecutableProduct("eu-readelf", :eu_readelf),
+    ExecutableProduct("eu-size", :eu_size),
+    ExecutableProduct("eu-stack", :eu_stack),
+    ExecutableProduct("eu-strings", :eu_strings),
+    ExecutableProduct("eu-strip", :eu_strip),
+    ExecutableProduct("eu-unstrip", :eu_unstrip),
 ]
 
 # Dependencies that must be installed before this package can be built
