@@ -11,7 +11,7 @@ sources = [
 ]
 
 dependencies = [
-    Dependency("libusb_jll", compat="1.0.24"),
+    Dependency("libusb_jll", compat="~1.0.24"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,15 +28,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# TODO: Windows has several issues with boost threads. There is a WIP branch:
-# https://github.com/JuliaTelecom/uhd/tree/juliatelecom/patch-v4.1.0.1
-platforms = [HostPlatform()] #filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true))
+platforms = filter!(p -> !Sys.iswindows(p) && !in(arch(p),("armv7l","armv6l")), supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
-products = Product[
-
-]
+products = Product[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# gcc7 constraint from boost
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
