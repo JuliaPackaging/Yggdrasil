@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MSTM"
-version = v"4.0.2"
+version = v"4.0.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -48,11 +48,6 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-# Disable OpenMPI: `mpifort` is a binary and doesn't work when
-# cross-compiling. (We would have to extract and pass all MPI options
-# manually.)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
