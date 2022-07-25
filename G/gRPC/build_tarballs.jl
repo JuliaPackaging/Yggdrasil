@@ -21,6 +21,8 @@ cmake \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DgRPC_SSL_PROVIDER=package \
+    -DgRPC_PROTOBUF_PROVIDER=package \
+    -DgRPC_ZLIB_PROVIDER=package \
     ../..
 make
 make install
@@ -28,10 +30,12 @@ popd
 mkdir -p cmake/build
 pushd "cmake/build"
 cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DgRPC_PROTOBUF_PROVIDER=package \
+    -DgRPC_ZLIB_PROVIDER=package \
     ../..
 make
 make install
@@ -62,6 +66,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Zlib_jll"),
+    BuildDependency("protoc_jll"),
     BuildDependency("OpenSSL_jll")
 ]
 
