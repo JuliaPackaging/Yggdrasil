@@ -90,7 +90,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 # - aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
 # - aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
 # - aarch64-linux-musl-libgfortran4-cxx03-mpi+openmpi
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p).major ≤ v"4"), platforms)
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) ≤ v"4"), platforms)
 
 # The products that we will ensure are always built
 products = [
