@@ -11,12 +11,14 @@ version = VersionNumber(upstream_version.major,
                         upstream_version.patch * 100 + version_patch_offset)
 
 sources = [
-    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
+#    ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
+#                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
+    DirectorySource("/home/bfaber/projects/VMEC2000"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/VMEC*
+cd ${WORKSPACE}/srcdir
 # From the SCALAPACK build_tarballs with MPItrampoline
 # We need to specify the MPI libraries explicitly because the
 # CMakeLists.txt doesn't properly add them when linking
@@ -27,7 +29,12 @@ elif grep -q MPICH "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpifort -lmpi)
 elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpitrampoline)
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi_inc.patch
+    MPIF_PATH=$(find ${libdir} -name 'mpif.h')
+    MPIF_PATH=$(sed "s:\/:\\\/:g" <<< "$MPIF_PATH")
+    sed "s/INCLUDE \'mpif.h\'/INCLUDE \'${MPIF_PATH}\'/" Sources/LIBSTELL_minimal/mpi_inc.f | cat > Sources/LIBSTELL_minimal/mpi_inc.patched
+    mv Sources/LIBSTELL_minimal/mpi_inc.patched Sources/LIBSTELL_minimal/mpi_inc.f
+elif grep -q OMPI_MAJOR_VERSION "$prefix/include/mpi.h"; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 F_FLAGS=(-O3)
@@ -56,8 +63,8 @@ if [[ ${target} == *mingw* ]]; then
 
 else
     ./autogen.sh
-    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS}" LIBS="${MPILIBS[*]}" --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
-    make && make install && make clean
+#    ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS}" LIBS="${MPILIBS[*]}" --with-mkl --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
+#    make && make install && make clean
 
     ./configure CC=mpicc FC=mpifort F77=mpifort FFLAGS="${F_FLAGS[*]}" FCFLAGS="${F_FLAGS[*]}" LIBS="${MPILIBS[*]}" --build=${MACHTYPE} --host=${target} --target=${target} --prefix=${prefix}
     make && make install && make clean
