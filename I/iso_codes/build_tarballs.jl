@@ -3,17 +3,29 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.3"
+version = v"4.10.0"
+
+# the git tag used for versioning has changed format
+if version < v"4.8"
+    if version < v"4.5" && version.patch == 0
+        tag = "iso-codes-$(version.major).$(version.minor)"
+    else
+        tag = "iso-codes-$version"
+    end
+else
+    tag = "v$version"
+end
 
 # Collection of sources required to build iso-codes
 sources = [
-    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/iso-codes-$(version.major).$(version.minor)/iso-codes-iso-codes-$(version.major).$(version.minor).tar.bz2",
-                  "6b539f915d02c957c45fce8133670811f1c36a1f1535d5af3dd95dc519d3c386"),
+    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/$tag/iso-codes-$tag.tar.bz2",
+                  "a33140be9915330d8826783bcda8d4120f02c301c16af6df9a15a8bc657cfb3d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/iso-codes-*/
+apk update
 apk add gettext
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
