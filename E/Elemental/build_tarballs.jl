@@ -85,10 +85,12 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# ICE aarch64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline
-# ICE aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
-# ICE aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
-# ICE aarch64-linux-musl-libgfortran4-cxx03-mpi+openmpi
+# We encounter ICE on these architectures:
+# - aarch64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline
+# - aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
+# - aarch64-linux-musl-libgfortran3-cxx11-mpi+mpich
+# - aarch64-linux-musl-libgfortran4-cxx03-mpi+openmpi
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p).major ≤ ∈ v"4"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -107,6 +109,5 @@ append!(dependencies, platform_dependencies)
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 does not support -std=c++14
 # GCC 5 does not support the OpenMP function `omp_get_num_places`
-# GCC 6 reports ICEs on aarch64
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"7")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
