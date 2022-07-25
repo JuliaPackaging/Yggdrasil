@@ -27,6 +27,14 @@ done
 CPPFLAGS=()
 CFLAGS=()
 FFLAGS=(-cpp -ffixed-line-length-none)
+
+# Add `-fallow-argument-mismatch` if supported
+: >empty.f
+if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
+    FFLAGS+=(-fallow-argument-mismatch)
+fi
+rm -f empty.*
+
 OPENBLAS=(-lopenblas)
 
 MPILIBS=()
@@ -98,6 +106,12 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# Internal compiler error for v2.2.0 for:
+# - aarch64-linux-musl-libgfortran4-mpi+mpich
+# - aarch64-linux-musl-libgfortran4-mpi+openmpi
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "openmpi"), platforms)
 
 # The products that we will ensure are always built
 products = [
