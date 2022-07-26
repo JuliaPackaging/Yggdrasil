@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MSTM"
-version = v"4.0.3"
+version = v"4.0.2"
 
 # Collection of sources required to complete build
 sources = [
