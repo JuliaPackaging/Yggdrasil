@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM"
-version = v"8.0"
+version = v"8.0.1"
+openfoam_version = v"8.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -18,6 +19,7 @@ sources = [
 # In order to set up OpenFOAM, we need to know the version of some of the
 # dependencies.
 const SCOTCH_VERSION = "6.1.0"
+const SCOTCH_COMPAT_VERSION = "6.1.3"
 
 # Bash recipe for building across all platforms
 script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
@@ -398,7 +400,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("flex_jll"),
-    Dependency("SCOTCH_jll"; compat=SCOTCH_VERSION),
+    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
     Dependency("PTSCOTCH_jll"),
     Dependency("METIS_jll"),
     Dependency("Zlib_jll"),
