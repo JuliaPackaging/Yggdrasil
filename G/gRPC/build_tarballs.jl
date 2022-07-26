@@ -36,6 +36,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DgRPC_PROTOBUF_PROVIDER=package \
     -DgRPC_ZLIB_PROVIDER=package \
+    -DABSL_PROPAGATE_CXX_STD=ON \
     ../..
 make
 make install
