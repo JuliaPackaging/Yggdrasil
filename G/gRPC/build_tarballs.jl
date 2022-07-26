@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gRPC"
-version = v"1.48.0"
+version = v"1.36.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grpc/grpc.git", "d2054ec6c6e8abcecf0e24b0b4ee75035d80c3cc")
+    GitSource("https://github.com/grpc/grpc.git", "3e53dbe8213137d2c731ecd4d88ebd2948941d75")
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,6 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DgRPC_PROTOBUF_PROVIDER=package \
     -DgRPC_ZLIB_PROVIDER=package \
-    -DABSL_PROPAGATE_CXX_STD=ON \
     ../..
 make
 make install
