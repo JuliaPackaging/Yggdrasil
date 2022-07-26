@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.4.2"
+version = v"0.4.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "91bd6734b6e4721fe0c4f18e9fef82ab50b4948c")
+    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "36dccfe86eace35e74129c4c37a12b1cbe44e272")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
+platforms = expand_microarchitectures(platforms)
 
 # The products that we will ensure are always built
 products = [
