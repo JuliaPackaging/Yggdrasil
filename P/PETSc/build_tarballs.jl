@@ -22,7 +22,6 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
-
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
@@ -55,6 +54,21 @@ build_petsc()
     else
         USE_INT64=0
     fi
+
+    # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
+    USE_SUPERLU_DIST=0    
+    if [[ "${1}" == "double" ]]; then
+        USE_SUPERLU_DIST=1    
+    fi
+    if [[ ${USE_SUPERLU_DIST} == 1 ]]; then
+        SUPERLU_DIR="${libdir}/superlu_dist/${3}"
+        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${SUPERLU_DIR}/include"
+    else
+        SUPERLU_DIST_LIB=""
+        SUPERLU_DIST_INCLUDE=""
+    fi
+    
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -71,6 +85,9 @@ build_petsc()
         --with-batch \
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
+        --with-superlu_dist=${USE_SUPERLU_DIST} \
+        ${SUPERLU_DIST_LIB} \
+        ${SUPERLU_DIST_INCLUDE} \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -83,7 +100,6 @@ build_petsc()
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
-        CFLAGS=""
     elif [[ "${target}" == powerpc64le-* ]]; then
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
@@ -121,7 +137,7 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -141,7 +157,6 @@ products = [
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
@@ -149,6 +164,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("SuperLU_DIST_jll")
 ]
 append!(dependencies, platform_dependencies)
 
