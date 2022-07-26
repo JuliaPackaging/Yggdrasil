@@ -69,6 +69,11 @@ build_petsc()
         SUPERLU_DIST_INCLUDE=""
     fi
     
+    USE_SUITESPARSE=0
+    if [[ "${1}" == "double" ]]; then
+        USE_SUITESPARSE=1    
+    fi
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -88,6 +93,7 @@ build_petsc()
         --with-superlu_dist=${USE_SUPERLU_DIST} \
         ${SUPERLU_DIST_LIB} \
         ${SUPERLU_DIST_INCLUDE} \
+        --with-suitesparse=${USE_SUITESPARSE} \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -175,6 +181,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"),
+    Dependency("SuiteSparse_jll")
 ]
 append!(dependencies, platform_dependencies)
 
