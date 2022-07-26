@@ -143,12 +143,15 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)    
+platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)  
+platforms = filter(p -> !(p["mpi"] == "openmpi" &&  Sys.isfreebsd(p)), platforms)  
+
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "armv7l"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" &&   os(p) == "linux"), platforms)
 
 
 @show platforms
@@ -171,7 +174,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("SuperLU_DIST_jll")
+    Dependency("SuperLU_DIST_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
