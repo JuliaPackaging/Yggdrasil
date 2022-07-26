@@ -137,17 +137,26 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+#platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+platforms = supported_platforms(exclude=[Platform("i686", "windows")])
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux" && libc(p) == "glibc"), platforms)    
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "armv7l"), platforms)
 
+
+@show platforms
+
+
+# Not working @ the moment is linux + openmpmi
 products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
