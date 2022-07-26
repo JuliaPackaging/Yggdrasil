@@ -30,7 +30,6 @@ popd
 mkdir -p cmake/build
 pushd "cmake/build"
 cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DgRPC_BUILD_TESTS=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
