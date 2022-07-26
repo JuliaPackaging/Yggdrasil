@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/libssh2*/
 
 # Apply patch to fix v1.10.0 CVE (https://github.com/libssh2/libssh2/issues/649), drop with v1.11
 atomic_patch -p1 ../patches/0001-userauth-check-for-too-large-userauth_kybd_auth_name.patch
+# Fix import lib name on windows: `liblibssh2.dll.a` ==> `libssh2.dll.a`
+# Drop this when a new release contains: https://github.com/libssh2/libssh2/pull/711
+atomic_patch -p1 ../patches/0002-libssh2-fix-import-lib-name.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release

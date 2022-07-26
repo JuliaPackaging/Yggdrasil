@@ -6,12 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.1"
+version = v"2.8.3"
+adios_version = v"2.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(version).tar.gz",
-                  "3f515b442bbd52e3189866b121613fe3b59edb8845692ea86fad83d1eba35d93"),
+    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(adios_version).tar.gz",
+                  "9909f6409dc44b2c28c1fda0042dab4b711f25ec3277ef0cb6ffc40f5483910d"),
     DirectorySource("./bundled"),
 ]
 
@@ -35,11 +36,7 @@ if [[ "$target" == *-apple-* ]]; then
         # and wants to use "-framework" as a stand-alone option. This fails
         # gloriously, and cmake concludes that MPI is not available.
         archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     fi
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    archopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
@@ -84,9 +81,7 @@ install_license ../Copyright.txt ../LICENSE
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-    end
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
