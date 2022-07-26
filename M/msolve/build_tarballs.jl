@@ -24,7 +24,10 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
-platforms = expand_microarchitectures(platforms)
+# At the moment we cannot add optimized versions for specific architectures
+# since the logic of artifact selection when loading the package is not
+# working well.
+# platforms = expand_microarchitectures(platforms)
 
 # The products that we will ensure are always built
 products = [
