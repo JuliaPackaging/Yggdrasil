@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version_string = "3.6.00"
+version_string = "3.6.01"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/$(version_string).tar.gz", "53b11fffb53c5d48da5418893ac7bc814ca2fde9c86074bdfeaa967598c918f4"),
+    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/$(version_string).tar.gz",
+                  "1b80a70c5d641da9fefbbb652e857d7c7a76a0ebad1f477c253853e209deb8db"),
     DirectorySource("./bundled")
 ]
 
