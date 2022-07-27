@@ -30,8 +30,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lexecinfo"
 fi
 
-ls ${prefix}/include/eigen3 1>&2
-
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DCMAKE_CXX_FLAGS="-I${prefix}/include/eigen3 -fopenmp" \
@@ -60,6 +58,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="=3.6.0"),
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     BuildDependency("libjulia_jll"),
