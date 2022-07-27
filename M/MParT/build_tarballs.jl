@@ -13,7 +13,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MeasureTransport/MParT.git", "62dd75302c5c4700998fc918f122f66b9428a8e0")
+    GitSource("https://github.com/MeasureTransport/MParT.git", "7e138bc9981f4181db0388a2a481155a45f0eafe")
 ]
 
 # Bash recipe for building across all platforms
@@ -53,7 +53,7 @@ platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, supported_platform
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmpart", :libmpart)
+    LibraryProduct("libmpartjl", :libmpartjl),
 ]
 
 # Dependencies that must be installed before this package can be built
