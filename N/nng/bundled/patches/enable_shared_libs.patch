@@ -1,0 +1,13 @@
+diff --git before/nng/CMakeLists.txt after/nng/CMakeLists.txt
+index ef4c2bc..dca5169 100644
+--- before/nng/CMakeLists.txt
++++ after/nng/CMakeLists.txt
+@@ -72,7 +72,7 @@ set(NNG_TEST_PREFIX nng)
+ 
+ # Enable access to private APIs for our own use.
+ add_definitions(-DNNG_PRIVATE)
+-
++set(BUILD_SHARED_LIBS 1)
+ if (NOT (BUILD_SHARED_LIBS))
+     set(NNG_STATIC_LIB ON)
+     message(STATUS "Building static libs.")
