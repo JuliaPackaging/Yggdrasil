@@ -17,10 +17,9 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cd $WORKSPACE/srcdir/nng
+cd nng
 mkdir build
 cd build
-apk add ninja
 cmake -G Ninja ..
 ninja
 export DESTDIR=$prefix && ninja install
@@ -50,7 +49,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
