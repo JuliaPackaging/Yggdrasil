@@ -49,11 +49,11 @@ include("../../L/libjulia/common.jl")
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, supported_platforms())
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmpartjl", :libmpartjl),
+    LibraryProduct("libmpartjl", :libmpartjl, dir_paths=["julia/mpart"]),
 ]
 
 # Dependencies that must be installed before this package can be built
