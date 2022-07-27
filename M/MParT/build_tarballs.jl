@@ -42,7 +42,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DJulia_PREFIX=${prefix} \
   $macos_extra_flags \
   ..
-make install
+make -j${nprocs} install
 """
 include("../../L/libjulia/common.jl")
 
