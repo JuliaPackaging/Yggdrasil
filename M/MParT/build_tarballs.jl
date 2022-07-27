@@ -53,6 +53,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libmpart", :libmpart),
     LibraryProduct("libmpartjl", :libmpartjl, dir_paths=["julia/mpart"]),
 ]
 
