@@ -54,7 +54,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmpart", :libmpart),
-    LibraryProduct("libmpartjl", :libmpartjl, dir_paths=["julia/mpart"]),
+    LibraryProduct("libmpartjl", :libmpartjl, dir_paths=String["julia/mpart"]),
 ]
 
 # Dependencies that must be installed before this package can be built
