@@ -76,7 +76,7 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
