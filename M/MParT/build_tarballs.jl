@@ -32,7 +32,7 @@ fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-  -DCMAKE_CXX_FLAGS="-I${prefix}/include/eigen3 -fopenmp" \
+  -DCMAKE_CXX_FLAGS="-I${includedir}/eigen3 -fopenmp" \
   -DCMAKE_BUILD_TYPE=Release \
   -DMPART_BUILD_TESTS=OFF \
   -DMPART_PYTHON=OFF \
