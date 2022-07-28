@@ -32,6 +32,7 @@ if [[ "$target" == *-mingw* ]]; then
     rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
     cd ${WORKSPACE}/srcdir/MSTM/code
+    export MPITRAMPOLINE_FC=gfortran
     mpifort -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o "${bindir}/mstm${exeext}"
 fi
 install_license ${WORKSPACE}/srcdir/MSTM/LICENSE
