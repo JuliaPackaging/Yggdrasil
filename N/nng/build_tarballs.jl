@@ -7,8 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nanomsg/nng.git", "169221da8d53b2ca4fda76f894bee8505887a7c6"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/nanomsg/nng.git", "169221da8d53b2ca4fda76f894bee8505887a7c6")
 ]
 
 # Bash recipe for building across all platforms
