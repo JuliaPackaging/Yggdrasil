@@ -19,9 +19,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Override compiler ID to silence the horrible "No features found" cmake error
-if [[ $target == *"apple-darwin"* ]]; then
-  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-fi
 
 cd $WORKSPACE/srcdir
 mkdir MParT/build && cd MParT/build
@@ -38,8 +35,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DMPART_PYTHON=OFF \
   -DMPART_JULIA=ON \
   -DJulia_PREFIX=${prefix} \
-  $macos_extra_flags \
   ..
+
 make -j${nprocs} install
 """
 include("../../L/libjulia/common.jl")
