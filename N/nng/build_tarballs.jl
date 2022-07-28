@@ -13,45 +13,27 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd nng
+cd $WORKSPACE/srcdir/nng
 mkdir build
 cd build
-cmake -G Ninja ..
-ninja
-export DESTDIR=$prefix && ninja install
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnng", :libnng, "usr/local/lib")
+    LibraryProduct("libnng", :libnng)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    Dependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
