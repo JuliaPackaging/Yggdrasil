@@ -19,10 +19,14 @@ sources = [
 
     # x86_64 and aarch64 for Linux and macOS from https://anaconda.org/conda-forge/hdf5/files
     # NOTE: make sure to select those compatible with OpenSSL 1.1.1 (click info icon)
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.2/download/linux-64/hdf5-1.12.2-nompi_h2386368_100.tar.bz2", "6f0a1e7fe9c76fee4f490b33a91465a3a4690a5ccf1df21c7bde141ab320ea96"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.2/download/linux-aarch64/hdf5-1.12.2-nompi_h7bde11e_100.tar.bz2", "934324fea28f82ceb0f57c881bf49687154c17af8cc7a1a57753133e5224db2c"; unpack_target="aarch64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.2/download/osx-64/hdf5-1.12.2-nompi_hc782337_100.tar.bz2", "066c8feca3d77184e7cb38cd58d9918409f7395a66b16e7d330339225f9c0bea"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.2/download/osx-arm64/hdf5-1.12.2-nompi_h8968d4b_100.tar.bz2", "3efe747b24b173c6c3be71009c1831049032d81d0414d07d920b0650b8022a58"; unpack_target="aarch64-apple-darwin20"),
+    # Unfortunately we cannot use conda-forge HDF 1.12.2 binaries since their libcurl is too new for us.
+    # The MinGW 1.12.1 binaries work for HDF5.jl but not with libnetcdf. To have a HDF5_jll version
+    # that works on all platforms, we resort to mixing two different patch versions.
+    # See discussion following https://github.com/JuliaPackaging/Yggdrasil/issues/4511#issuecomment-1198134988
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-64/hdf5-1.12.1-nompi_h2750804_103.tar.bz2", "bd7bb0657d63acf52c9d30d1b89276356c6da4ff8a90dd5fcbd0cfde6578f317"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/linux-aarch64/hdf5-1.12.1-nompi_h774d4d8_103.tar.bz2", "8688cfc983962bf7a59a97becb0d67ee64eb4a7dd5793b915cf50dccd90bfa2d"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-64/hdf5-1.12.1-nompi_h2f0ef1a_102.tar.bz2", "4a4640e44adea33833e7efb6ac3070dd4c80a8a156c2fd3aa7cfcac8865f5a26"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.12.1/download/osx-arm64/hdf5-1.12.1-nompi_had0e5e0_103.tar.bz2", "ef48b684b22c6b0077bc9836e0cc6d15abb88868d7a6c842226666ebb8bbd449"; unpack_target="aarch64-apple-darwin20"),
 ]
 
 # Bash recipe for building across all platforms
