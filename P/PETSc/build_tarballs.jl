@@ -74,6 +74,18 @@ build_petsc()
         USE_SUITESPARSE=1    
     fi
 
+    Machine_name=$(uname -m)
+    if (("${3}" == "Int64" && Machine_name == "i686")); then        
+        USE_SUITESPARSE=0 
+    fi
+    echo "USE_SUITESPARSE="$USE_SUITESPARSE
+    echo "1="${1}
+    echo "2="${2}
+    echo "3="${3}
+    echo "USE_INT64"=$USE_INT64
+    echo "Machine_name="$Machine_name
+    
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
