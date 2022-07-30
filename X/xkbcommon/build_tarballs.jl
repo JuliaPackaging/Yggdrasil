@@ -15,6 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbcommon-*/
+apk add wayland-dev
 mkdir build && cd build
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Denable-docs=false
