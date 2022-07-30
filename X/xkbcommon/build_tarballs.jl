@@ -19,9 +19,6 @@ cd $WORKSPACE/srcdir/libxkbcommon-*/
 # We need to run `wayland-scanner` on the host system
 apk add wayland-dev
 
-atomic_patch -p1 ../patches/meson_build.patch
-atomic_patch -p1 ../patches/meson_options.patch
-
 mkdir build && cd build
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Denable-docs=false \
