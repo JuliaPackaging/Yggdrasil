@@ -9,7 +9,6 @@ version = v"1.4.1"
 sources = [
     ArchiveSource("https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz",
                   "943c07a1e2198026d8102b17270a1f406e4d3d6bbc4ae105b9e1b82d7d136b39"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
