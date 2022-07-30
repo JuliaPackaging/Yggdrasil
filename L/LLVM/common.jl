@@ -80,9 +80,8 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    # CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
+if [[ "${WANT_MLIR}" -eq "1" && "${LLVM_MAJ_VER}" -gt "11" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 fi
@@ -184,7 +183,7 @@ CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 if [[ "${WANT_PERF}" -eq "1" ]]; then
     if [[ ${target} == *linux* ]]; then
         CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
-        CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
+        # CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
     fi
     # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
     if [[ ${target} == *linux* ]]; then # TODO only LLVM12
