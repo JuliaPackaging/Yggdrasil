@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "xkbcommon"
-version = v"0.9.1"
+version = v"1.4.1"
 
 # Collection of sources required to build xkbcommon
 sources = [
     ArchiveSource("https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz",
-                  "d4c6aabf0a5c1fc616f8a6a65c8a818c03773b9a87da9fbc434da5acd1199be0"),
+                  "3b86670dd91441708dedc32bc7f684a034232fd4a9bb209f53276c9783e9d40e"),
     DirectorySource("./bundled"),
 ]
 
