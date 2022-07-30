@@ -19,8 +19,7 @@ cd $WORKSPACE/srcdir/libxkbcommon-*/
 apk add wayland-dev
 mkdir build && cd build
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Denable-docs=false \
-    -Dnative-wayland-scanner="/usr/bin/wayland-scanner"
+    -Denable-docs=false
 ninja -j${nproc}
 ninja install
 """
