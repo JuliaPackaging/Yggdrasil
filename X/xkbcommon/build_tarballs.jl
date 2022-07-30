@@ -8,7 +8,7 @@ version = v"1.4.1"
 # Collection of sources required to build xkbcommon
 sources = [
     ArchiveSource("https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz",
-                  "3b86670dd91441708dedc32bc7f684a034232fd4a9bb209f53276c9783e9d40e"),
+                  "943c07a1e2198026d8102b17270a1f406e4d3d6bbc4ae105b9e1b82d7d136b39"),
     DirectorySource("./bundled"),
 ]
 
