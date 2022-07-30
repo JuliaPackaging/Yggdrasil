@@ -9,7 +9,7 @@ rocm_config = configure_build(
     git_path="https://github.com/RadeonOpenCompute/llvm-project",
     git_ver="b204d7f0cae65b6cd4446eec50fc1fb675d582af",
     custom_name="ROCmLLVM", custom_version=rocm_version, static=true,
-    platform_filter=rocm_platform_filter)
+    platform_filter=rocm_platform_filter, rocm_llvm=true)
 
 build_tarballs(
     ARGS, rocm_config...;
