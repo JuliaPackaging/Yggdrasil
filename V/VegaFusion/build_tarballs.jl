@@ -33,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("protoc_jll")
+    BuildDependency("protoc_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
