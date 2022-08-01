@@ -6,7 +6,7 @@ version = v"2022.08.01"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/staticfloat/Sandbox.jl.git",
-              "550cf93f51fbeb04349cf0200b7e71b0dafe980f"),
+              "1770a67566e61590b6c8b907430f826ff077b19c"),
 ]
 
 # Bash recipe for building across all platforms
