@@ -13,7 +13,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Find MPI implementation
+grep -iq MPICH $prefix/include/mpi.h && mpi_impl=mpich
+grep -iq MPItrampoline $prefix/include/mpi.h && mpi_impl=mpitrampoline
+grep -iq OpenMPI $prefix/include/mpi.h && mpi_impl=openmpi
+
 if [[ "$target" == *-mingw* ]]; then
+    # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
     cd ${includedir}
     cp ${prefix}/src/mpi.f90 .
     gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -fno-range-check mpi.f90
@@ -31,6 +37,20 @@ if [[ "$target" == *-mingw* ]]; then
     gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm${exeext}"
     rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
+    # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
+    cd ${includedir}
+    case $mpi_impl in
+    mpich)
+        # TODO: Implement this. We need to store the mpi.f90 that is generated when MPICH is built.
+        ;;
+    mpitrampoline)
+        wget https://raw.githubusercontent.com/eschnett/MPItrampoline/v5.0.1/include/mpi.F90
+        # gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fallow-argument-mismatch -fcray-pointer -O2 -c mpi.F90
+        gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fcray-pointer -O2 -c mpi.F90
+        ;;
+    openmpi)
+        ;;
+    esac
     cd ${WORKSPACE}/srcdir/MSTM/code
     export MPITRAMPOLINE_FC=gfortran
     mpifort -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o "${bindir}/mstm${exeext}"
