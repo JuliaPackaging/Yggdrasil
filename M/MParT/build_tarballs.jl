@@ -13,7 +13,8 @@ version = v"0.2.0+1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MeasureTransport/MParT.git", "0522c6e8d3f37c811a344a56bee75473a9ddc309")
+    GitSource("https://github.com/MeasureTransport/MParT.git",
+    "0522c6e8d3f37c811a344a56bee75473a9ddc309")
 ]
 
 # Bash recipe for building across all platforms
