@@ -26,6 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHAVE_DNS_SD=OFF \
     -DENABLE_IPV6=OFF \
+    -DWITH_TESTS=OFF \
     -DOSX_FRAMEWORK=OFF \
     ..
 make -j${nproc}
