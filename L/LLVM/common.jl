@@ -80,7 +80,7 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-if [[ "${WANT_MLIR}" -eq "1" && "${LLVM_MAJ_VER}" -gt "11" ]]; then
+if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
@@ -89,18 +89,16 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ "${WANT_MLIR}" -eq "1" && (("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12") ]]; then
+if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
 fi
-if [[ "${WANT_MLIR}" -eq "1" ]]; then
-    if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
-        ninja -j${nproc} mlir-linalg-ods-gen
-    fi
-    if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
-        ninja -j${nproc} mlir-linalg-ods-yaml-gen
-    fi
+if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
+    ninja -j${nproc} mlir-linalg-ods-gen
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 popd
 
@@ -132,7 +130,7 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
-if [[ "${WANT_MLIR}" -eq "1" && (("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12") ]]; then
+if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
@@ -180,15 +178,13 @@ CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=True -DLLVM_INSTALL_UTILS=True)
 
 # Include perf/oprofile/vtune markers
-if [[ "${WANT_PERF}" -eq "1" ]]; then
-    if [[ ${target} == *linux* ]]; then
-        CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
-        # CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
-    fi
-    # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-    if [[ ${target} == *linux* ]]; then # TODO only LLVM12
-        CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
-    fi
+if [[ ${target} == *linux* ]]; then
+    CMAKE_FLAGS+=(-DLLVM_USE_PERF=1)
+#     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
+fi
+# if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
+if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+    CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
 
@@ -200,17 +196,14 @@ fi
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
-
-if [[ "${WANT_MLIR}" -eq "1" ]]; then
-    if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
-        CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
-    fi
-    if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
-        CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
-    fi
-    if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
-        CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
-    fi
+if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-tblgen)
+fi
+if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
+    CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-gen)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
 fi
 
 # Explicitly use our cmake toolchain file
@@ -436,16 +429,10 @@ rm -vrf ${prefix}/lib/lld
 rm -vrf {prefix}/lib/objects-Release
 """
 
-"""
-# Arguments:
-
-- `rocm_llvm`: If `true`, then disable MLIR and performance markers.
-"""
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
                          git_path="https://github.com/JuliaLang/llvm-project.git",
                          git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false, platform_filter=nothing,
-                         rocm_llvm=false)
+                         custom_version=version, static=false, platform_filter=nothing)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -464,7 +451,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         LibraryProduct("libclang", :libclang, dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
         ExecutableProduct("llvm-config", :llvm_config, "tools"),
-        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, rocm_llvm ? "bin" : "tools"),
+        ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ExecutableProduct("opt", :opt, "tools"),
         ExecutableProduct("llc", :llc, "tools"),
     ]
@@ -474,23 +461,19 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"8"
         push!(products, ExecutableProduct("llvm-mca", :llvm_mca, "tools"))
     end
-    if !rocm_llvm # Don't need MLIR in ROCmLLVM case.
-        if v"12" < version < v"13"
-            push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
-        end
-        if version >= v"12.0.1"
-            push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
-        end
+    if v"12" < version < v"13"
+        push!(products, LibraryProduct(["MLIRPublicAPI", "libMLIRPublicAPI"], :mlir_public, dont_dlopen=true))
+    end
+    if version >= v"12.0.1"
+        push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
     end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
-        push!(products, ExecutableProduct("lld", :lld, rocm_llvm ? "bin" : "tools"))
-        if !rocm_llvm
-            push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
-            push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-            push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
-            push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
-        end
+        push!(products, ExecutableProduct("lld", :lld, "tools"))
+        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
     end
 
     name = "LLVM_full"
@@ -502,7 +485,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         config *= "ASSERTS=1\n"
         name = "$(name)_assert"
     end
-    config *= rocm_llvm ? "WANT_MLIR=0\nWANT_PERF=0\n" : "WANT_MLIR=1\nWANT_PERF=1\n"
     if custom_name !== nothing
         name = custom_name
     end
@@ -553,7 +535,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("lld-link", :lld_link, "tools"),
             ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
         ]
-
+        
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
