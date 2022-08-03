@@ -27,6 +27,9 @@ function configure_build(rocm_version; assert::Bool = false)
     llib = "llvm/lib"
     lbin = "llvm/bin"
     products = [
+        FileProduct(joinpath(llib, "libLLVMCore.a"), :libllvmcore),
+        FileProduct(joinpath(llib, "liblldCore.a"), :liblldcore),
+        FileProduct(joinpath(llib, "libclangBasic.a"), :libclangbasic),
         LibraryProduct("libclang", :libclang, llib; dont_dlopen=true),
         LibraryProduct("libclang-cpp", :libclang_cpp, llib; dont_dlopen=true),
         LibraryProduct(["LTO", "libLTO"], :liblto, llib; dont_dlopen=true),
@@ -36,8 +39,6 @@ function configure_build(rocm_version; assert::Bool = false)
         ExecutableProduct("llc", :llc, lbin),
         ExecutableProduct("lld", :lld, lbin),
         ExecutableProduct("ld.lld", :ld_lld, lbin),
-        ExecutableProduct("ld64.lld", :ld64_lld, lbin),
-        ExecutableProduct("lld-link", :lld_link, lbin),
     ]
 
     name = "ROCmLLVM"
