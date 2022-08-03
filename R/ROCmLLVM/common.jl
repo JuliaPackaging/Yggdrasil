@@ -8,8 +8,7 @@ const LLVM_VERSIONS = Dict(
     v"4.5.2" => v"13.0.0",
 )
 const ROCM_PLATFORMS = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx03"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx03"),
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
 ]
 
 function configure_build(rocm_version; assert::Bool = false)
