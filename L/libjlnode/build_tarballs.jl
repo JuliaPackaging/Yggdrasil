@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libjlnode"
-version = v"14.17.3"
+version = v"16.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunoru/jlnode.git", "1bb0c23e7f0200fdb9dd5bcd82e153d353264e37"),
+    GitSource("https://github.com/sunoru/jlnode.git", "89c86e3a63b0882feed7f7bedec43f4e0d23e688"),
     ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/4.0.0.tar.gz", "a61019de219cfbb4943b109fd1c56466c48dedbfcce10567f8e7826992be9c0d")
 ]
 
@@ -57,7 +57,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("libnode_jll")
+    Dependency("libnode_jll", version)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
