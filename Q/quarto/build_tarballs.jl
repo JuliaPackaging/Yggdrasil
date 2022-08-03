@@ -17,7 +17,6 @@ source configuration
 export QUARTO_BIN_DIR=/workspace/destdir/bin
 export QUARTO_PACKAGE_DIR=/workspace/destdir/bin
 /workspace/destdir/bin/deno run --unstable --allow-env --allow-read --allow-write --allow-run --allow-net --allow-ffi --importmap=/workspace/srcdir/quarto-cli/src/dev_import_map.json /workspace/srcdir/quarto-cli/package/src/bld.ts $@
-install_license LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
