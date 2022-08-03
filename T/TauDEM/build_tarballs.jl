@@ -35,18 +35,27 @@ mkdir build && cd build
 # Adapted from Erik Schnetter's build for AMReX
 ARGS=()
 if [[ "$target" == *-apple-* ]]; then
-    # MPICH's pkgconfig file "mpich.pc" lists these options:
-    #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-    #     Cflags:   -I${includedir}
-    # cmake doesn't know how to handle the "-framework OpenCL" option
-    # and wants to use "-framework" as a stand-alone option. This fails,
-    # and cmake concludes that MPI is not available.
-    for lang in C CXX; do
-        ARGS+=(
-            -DMPI_${lang}_ADDITIONAL_INCLUDE_DIRS=''
-            -DMPI_${lang}_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'
-        )
-    done
+    if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
+        # MPICH's pkgconfig file "mpich.pc" lists these options:
+        #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
+        #     Cflags:   -I${includedir}
+        # cmake doesn't know how to handle the "-framework OpenCL" option
+        # and wants to use "-framework" as a stand-alone option. This fails,
+        # and cmake concludes that MPI is not available.
+        for lang in C CXX; do
+            ARGS+=(
+                -DMPI_${lang}_ADDITIONAL_INCLUDE_DIRS=''
+                -DMPI_${lang}_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'
+            )
+        done
+    elif grep -q MPItrampoline ${prefix}/include/mpi.h; then
+        for lang in C CXX; do
+            ARGS+=(
+                -DMPI_${lang}_ADDITIONAL_INCLUDE_DIRS=''
+                -DMPI_${lang}_LIBRARIES='-lmpitrampoline'
+            )
+        done
+    fi
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     ARGS+=(
         -DMPI_HOME=${prefix}
@@ -79,6 +88,9 @@ augment_platform_block = """
 platforms = expand_cxxstring_abis(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Disable OpenMPI since it doesn't build. (This could probably be fixed.)
+platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
