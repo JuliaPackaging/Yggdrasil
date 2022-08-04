@@ -25,6 +25,10 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
+grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
+grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
+grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
+
 cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -34,7 +38,7 @@ cmake .. \
     -DGKLIB_PATH=$(realpath ../metis/GKlib) \
     -DMETIS_PATH=$(realpath ../metis) \
     -DMPI_INCLUDE_PATH="${prefix}/include" \
-    -DMPI_LIBRARIES="mpi"
+    -DMPI_LIBRARIES="${mpi_libraries}"
 make -j${nproc}
 make install
 """
