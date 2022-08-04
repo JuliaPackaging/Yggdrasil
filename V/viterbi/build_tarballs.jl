@@ -2,35 +2,29 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "DAQP"
-version = v"0.2.0"
+name = "viterbi"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/darnstrom/daqp.git", "ff75b939c52eb9628f91e76ee3b92c8049a3115d")
+    GitSource("https://github.com/zsoerenm/viterbi.git", "5a9411d48708adcb84ff2250fd3fa7b1a2c131fe")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/daqp
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="-std=gnu99" \
-    ..
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/viterbi
+make TARGET="libviterbi.${dlext}"
+install -Dvm 755 "libviterbi.${dlext}" "${libdir}/libviterbi.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdaqp", :libdaqp)
+    LibraryProduct("libviterbi", :libviterbi)
 ]
 
 # Dependencies that must be installed before this package can be built
