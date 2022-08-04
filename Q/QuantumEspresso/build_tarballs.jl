@@ -76,6 +76,9 @@ filter!(!Sys.iswindows, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# MPItrampoline is not supported
+filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
