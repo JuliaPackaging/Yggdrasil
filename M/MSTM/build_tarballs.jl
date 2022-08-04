@@ -77,6 +77,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# Disable MPICH + libgfortran3 because `mpi.mod` is incompatible:
+platforms = filter(p -> !(p["mpi"] == "mpich" && libgfortran_version(p) == v"3"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mstm", :mstm)
