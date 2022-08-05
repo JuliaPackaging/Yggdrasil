@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libnode"
-version = v"16.14.0"
+version = v"16.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "29dfce13650f063ff009d18349636333fa4305468b6a8965d442c2e88b1dd60f"),
+    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "e07c30b0498f143c08793e34bda1adeaad32f485a4f79f4d67a82879f4c0bbe3"),
     DirectorySource("bundled")
 ]
 
@@ -24,12 +24,12 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/trap-handler.h.patch"
 # Build & install libnode
 if [[ $target == $MACHTYPE ]]
 then
-    ./configure --prefix=${prefix} --shared --without-inspector --no-cross-compiling
+    ./configure --prefix=${prefix} --shared --no-cross-compiling
 else
     DEST_CPU=x86_64
     if [[ $target == *aarch64* ]]; then DEST_CPU=arm64; fi
     DEST_OS=linux
-    ./configure --prefix=${prefix} --shared --without-inspector --without-intl --cross-compiling --dest-cpu=$DEST_CPU --dest-os=$DEST_OS
+    ./configure --prefix=${prefix} --shared --cross-compiling --dest-cpu=$DEST_CPU --dest-os=$DEST_OS
 fi
 
 export LDFLAGS=-lrt
