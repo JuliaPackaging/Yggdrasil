@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Spot_julia"
 version = v"2.9.7"
-julia_version = v"1.6.0"
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
 
 # Collection of sources required to complete build
 sources = [
@@ -88,7 +88,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency("libjulia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
