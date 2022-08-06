@@ -57,7 +57,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("libnode_jll", compat="16")
+    Dependency("libnode_jll", v"16.14.0", compat="16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
