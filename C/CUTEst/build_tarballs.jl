@@ -1,18 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.4"
+version = v"2.0.5" # <-- This is a lie, we're bumping to 2.0.5 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.4x.tar.gz",
-                  "c9465129952d10a4e6fd049c4741b6e968421c1825c8fc924c1402042e2edb50"),
-    ArchiveSource("https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz",
-                  "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2"),
-    ArchiveSource("https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz",
-                  "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55"),
+    GitSource("https://github.com/ralna/ARCHDefs.git","5ab94bbbe45e13c1d00acdc09b8b7df470b98c29"),
+    GitSource("https://github.com/ralna/SIFDecode.git","42d3241205dc56e1f943687293e95586755a3c10"),
+    GitSource("https://github.com/ralna/CUTEst.git","1d2954ef69cfd541d3ec2299d29da7302cb8b6a3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,19 +17,14 @@ script = raw"""
 echo "building for ${target}"
 
 # setup
-mkdir -p ${prefix}/libexec
 mkdir -p ${bindir}
 mkdir -p ${libdir}
-cp -r ARCHDefs-2.0.4x ${prefix}/libexec/
-cp -r SIFDecode-2.0.3 ${prefix}/libexec/
-cp -r CUTEst-2.0.3 ${prefix}/libexec/
-export ARCHDEFS=${prefix}/libexec/ARCHDefs-2.0.4x
-export SIFDECODE=${prefix}/libexec/SIFDecode-2.0.3
-export CUTEST=${prefix}/libexec/CUTEst-2.0.3
+export ARCHDEFS=${WORKSPACE}/srcdir/ARCHDefs
+export SIFDECODE=${WORKSPACE}/srcdir/SIFDecode
+export CUTEST=${WORKSPACE}/srcdir/CUTEst
 
 # build SIFDecode
 cd $SIFDECODE
-
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "6" > sifdecode.opts   # PC64
   echo "2" >> sifdecode.opts  # Linux
@@ -41,8 +33,6 @@ elif [[ "${target}" == *-apple* ]]; then
   echo "13" > sifdecode.opts  # macOS
   echo "2" >> sifdecode.opts  # gfortran
 elif [[ "${target}" == *-mingw* ]]; then
-  cd $ARCHDEFS
-  cd $SIFDECODE
   echo "6" > sifdecode.opts   # PC64
   echo "1" >> sifdecode.opts  # Windows
   echo "3" >> sifdecode.opts  # gfortran
@@ -77,18 +67,18 @@ echo "nnydy" >> cutest.opts
 ./install_cutest < cutest.opts
 
 # build shared libs
-all_load="--whole-archive"
-noall_load="--no-whole-archive"
-extra=""
-if [[ "${target}" == *-apple-* ]]; then
-    all_load="-all_load"
-    noall_load="-noall_load"
-    extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
-fi
-cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_double.${dlext}
-cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_single.${dlext}
+# all_load="--whole-archive"
+# noall_load="--no-whole-archive"
+# extra=""
+# if [[ "${target}" == *-apple-* ]]; then
+#     all_load="-all_load"
+#     noall_load="-noall_load"
+#     extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+# fi
+# cd $CUTEST/objects/$MYARCH/double
+# gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_double.${dlext}
+# cd $CUTEST/objects/$MYARCH/single
+# gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_single.${dlext}
 
 ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
 ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
@@ -97,21 +87,19 @@ ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
 install_license $CUTEST/lgpl-3.0.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-# can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("helper_functions", :helper_functions),
     ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
 ]
 
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
