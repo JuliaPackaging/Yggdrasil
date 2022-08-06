@@ -19,9 +19,14 @@ echo "building for ${target}"
 # setup
 mkdir -p ${bindir}
 mkdir -p ${libdir}
-export ARCHDEFS=${WORKSPACE}/srcdir/ARCHDefs
-export SIFDECODE=${WORKSPACE}/srcdir/SIFDecode
-export CUTEST=${WORKSPACE}/srcdir/CUTEst
+
+cp -r ARCHDefs ${prefix}
+cp -r SIFDecode ${prefix}
+cp -r CUTEst ${prefix}
+
+export ARCHDEFS=${prefix}/ARCHDefs
+export SIFDECODE=${prefix}/SIFDecode
+export CUTEST=${prefix}/CUTEst
 
 # build SIFDecode
 cd $SIFDECODE
@@ -91,7 +96,6 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("helper_functions", :helper_functions),
     ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
