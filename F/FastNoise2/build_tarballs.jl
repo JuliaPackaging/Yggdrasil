@@ -17,6 +17,7 @@ mv FastNoise2-* FastNoise2
 cd FastNoise2
 cmake -S . -B build -D FASTNOISE2_NOISETOOL=OFF -D FASTNOISE2_TESTS=OFF -D BUILD_SHARED_LIBS=ON -D CMAKE_FIND_ROOT_PATH=${prefix} -D CMAKE_INSTALL_PREFIX=${prefix} -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 
+cd build
 make -j ${nprocs}
 make install
 install_license ${WORKSPACE}/srcdir/FastNoise2/LICENSE
