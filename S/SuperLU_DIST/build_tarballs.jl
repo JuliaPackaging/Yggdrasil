@@ -20,7 +20,6 @@ cd $WORKSPACE/srcdir/superlu_dist*
 # allow us to set the name of the shared lib.
 sed -i -e 's!OUTPUT_NAME superlu_dist!OUTPUT_NAME "${SUPERLU_OUTPUT_NAME}"!g' SRC/CMakeLists.txt
 
-mkdir build && cd build
 if [[ "${target}" == *-mingw* ]]; then
     # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
@@ -28,8 +27,6 @@ if [[ "${target}" == *-mingw* ]]; then
 else
     PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
-
-mkdir ${libdir}/superlu_dist
 
 build_superlu_dist()
 {
@@ -39,28 +36,32 @@ build_superlu_dist()
         INT=32
     fi
     SUPERLU_PREFIX=${libdir}/superlu_dist/Int${INT}
-    mkdir ${SUPERLU_PREFIX}
-    cmake -DCMAKE_INSTALL_PREFIX=${SUPERLU_PREFIX} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_STATIC_LIBS=OFF \
-    -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
-    -Denable_tests=OFF \
-    -Denable_doc=OFF \
-    -Denable_single=ON \
-    -Denable_double=ON \
-    -Denable_complex16=ON \
-    -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-    ${PLATFLAGS} \
-    -DCMAKE_C_FLAGS="-std=c99" \
-    -DXSDK_INDEX_SIZE=${INT} \
-    -DXSDK_ENABLE_Fortran=OFF \
-    -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
-    -Denable_examples=OFF \
-    ..
+    mkdir -p ${SUPERLU_PREFIX}
+    mkdir build-${INT}
+    pushd build-${INT}
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=${SUPERLU_PREFIX} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
+        -Denable_tests=OFF \
+        -Denable_doc=OFF \
+        -Denable_single=ON \
+        -Denable_double=ON \
+        -Denable_complex16=ON \
+        -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+        ${PLATFLAGS} \
+        -DCMAKE_C_FLAGS="-std=c99" \
+        -DXSDK_INDEX_SIZE=${INT} \
+        -DXSDK_ENABLE_Fortran=OFF \
+        -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
+        -Denable_examples=OFF \
+        ..
     make -j${nproc}
     make install
+    popd
 }
 build_superlu_dist Int32
 build_superlu_dist Int64
