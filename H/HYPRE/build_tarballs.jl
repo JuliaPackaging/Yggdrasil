@@ -66,10 +66,6 @@ platforms = supported_platforms(; experimental=true)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Disable OpenMPI; its configuration is not auto-detected by cmake
-# (We could probably make this work by passing explicit cmake options.)
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
-
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)

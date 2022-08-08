@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.58.1"
+version = v"1.59.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "4d1d50a5b4888aa8eca10624073759ab8376c8b1acb38a238831d40074792524")
+                  "9061caad3082f4d275d90f2975ef120fb71f6537ed88d08db1a3b5404db5ae49")
 ]
 
 # Bash recipe for building across all platforms

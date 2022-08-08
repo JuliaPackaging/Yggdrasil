@@ -57,13 +57,20 @@ mkdir build_target && cd build_target
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
-../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" \
-    --enable-shared \
-    --disable-ipv6 \
-    --with-ensurepip=no \
-    ac_cv_file__dev_ptmx=no \
-    ac_cv_file__dev_ptc=no \
-    ac_cv_have_chflags=no
+conf_args=()
+conf_args+=(--enable-shared)
+conf_args+=(--disable-ipv6)
+conf_args+=(--with-ensurepip=no)
+conf_args+=(ac_cv_file__dev_ptmx=no)
+conf_args+=(ac_cv_file__dev_ptc=no)
+conf_args+=(ac_cv_have_chflags=no)
+if [[ "${target}" == *-linux-gnu* ]]; then
+    # We use very old versions of glibc which used to have `libcrypt.so.1`, but modern
+    # glibcs have `libcrypt.so.2`, so if we link to `libcrypt.so.1` most users would
+    # have troubles running the programs at runtime.
+    conf_args+=(ac_cv_lib_crypt_crypt=no)
+fi
+../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" "${conf_args[@]}"
 make -j${nproc}
 make install
 """
