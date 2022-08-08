@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Exodus"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gsjaardema/seacas.git", "1452c325ab5d507d000397c713a5b0c4dc57bf81")
+    GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74")
 ]
 
 # Bash recipe for building across all platforms
@@ -173,4 +173,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
