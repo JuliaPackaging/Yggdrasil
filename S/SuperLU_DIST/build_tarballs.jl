@@ -1,9 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.0.0"
+version = v"8.0.1"
+superlu_dist_version = v"8.0.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -60,8 +64,12 @@ build_superlu_dist()
 }
 build_superlu_dist Int32
 build_superlu_dist Int64
+"""
 
-
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -69,6 +77,15 @@ build_superlu_dist Int64
 # Excluding Windows due to use of `getline` function, which is non-standard and not provided by MinGW
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
@@ -79,14 +96,15 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MPICH_jll"; platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MicrosoftMPI_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("METIS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+# Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8")
