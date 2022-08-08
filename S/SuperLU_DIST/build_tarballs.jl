@@ -105,6 +105,11 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+# `dlopen`s the shared libraries. (MPItrampoline will skip its
+# automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 # Build the tarballs, and possibly a `build.jl` as well.
 # Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
