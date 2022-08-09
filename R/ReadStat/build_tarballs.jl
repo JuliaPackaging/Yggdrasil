@@ -23,9 +23,12 @@ fi
 # Windows doesn't search ${prefix}/include?
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 
+# Fix "Undefined symbols for architecture arm64: "_libiconv","
+export LDFLAGS="-L${libdir}"
+
 cd $WORKSPACE/srcdir/ReadStat/
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
