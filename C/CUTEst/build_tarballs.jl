@@ -7,9 +7,9 @@ version = v"2.0.5" # <-- This is a lie, we're bumping to 2.0.5 to create a Julia
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/ARCHDefs.git","5ab94bbbe45e13c1d00acdc09b8b7df470b98c29"),
-    GitSource("https://github.com/ralna/SIFDecode.git","42d3241205dc56e1f943687293e95586755a3c10"),
-    GitSource("https://github.com/ralna/CUTEst.git","1d2954ef69cfd541d3ec2299d29da7302cb8b6a3"),
+    GitSource("https://github.com/ralna/ARCHDefs.git" ,"d4aa50f72626130f0e4fb6c8d31c622889a0ebbb"),
+    GitSource("https://github.com/ralna/SIFDecode.git","affd441e93bd41f076239df2f4237fb13278f6a6"),
+    GitSource("https://github.com/ralna/CUTEst.git"   ,"e6aff163eafd9424c70dfaf64a287252221cf597"),
 ]
 
 # Bash recipe for building across all platforms
@@ -92,7 +92,10 @@ ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
 install_license $CUTEST/lgpl-3.0.txt
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+# can't build shared libs on Windows, which imposes all symbols to be defined
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
