@@ -28,6 +28,9 @@ export ARCHDEFS=${prefix}/ARCHDefs
 export SIFDECODE=${prefix}/SIFDecode
 export CUTEST=${prefix}/CUTEst
 
+# SIFDecode always looks for `ar` in `/usr/bin/ar`
+ln -sf /opt/bin/ar /usr/bin/ar
+
 # build SIFDecode
 cd $SIFDECODE
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
