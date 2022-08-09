@@ -12,6 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Add `gettext` for `autogen.sh`
+apk update
 apk add gettext-dev
 
 # GCC builds complain about string truncation, but we don't care
