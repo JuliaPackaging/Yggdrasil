@@ -7,7 +7,7 @@ version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jblindsay/whitebox-tools.git", "46229fd27a841e000c51b3b982b93e101a597ebe")
+    GitSource("https://github.com/jblindsay/whitebox-tools.git", "d4f252c84b37a6b70331c59fd930ffa9a574c5e1")
 ]
 
 # Bash recipe for building across all platforms
