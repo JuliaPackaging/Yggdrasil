@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libjlnode"
-version = v"16.0.0"
+version = v"16.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunoru/jlnode.git", "6f03cf76949a3cb0d755bf82999ab82aba8b3f20"),
+    ArchiveSource("https://github.com/sunoru/jlnode/archive/refs/tags/v$version.tar.gz", "b32dbc74b6055e28cc6dda05f26a9fe4e86796996be6785a3db84ec64ccc3dc7"),
     ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/4.0.0.tar.gz", "a61019de219cfbb4943b109fd1c56466c48dedbfcce10567f8e7826992be9c0d")
 ]
 
@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir
 cd node-addon-api-*
 export NAPI_INC=`pwd`
 
-cd ../jlnode
+cd ../jlnode-*
 mkdir build
 cd build
 cmake .. -G"Unix Makefiles" \
@@ -57,7 +57,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("libnode_jll", v"16.14.0", compat="16")
+    Dependency("libnode_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
