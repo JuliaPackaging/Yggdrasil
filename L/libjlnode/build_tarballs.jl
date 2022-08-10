@@ -8,7 +8,7 @@ version = v"16.1.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/sunoru/jlnode/archive/refs/tags/v$version.tar.gz", "b32dbc74b6055e28cc6dda05f26a9fe4e86796996be6785a3db84ec64ccc3dc7"),
-    ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/4.0.0.tar.gz", "a61019de219cfbb4943b109fd1c56466c48dedbfcce10567f8e7826992be9c0d")
+    ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/v5.0.0.tar.gz", "2bdf9c540f67c43036d58b3146e61b437148939efc8d4cde2d1314fdaeb39e9b")
 ]
 
 # Bash recipe for building across all platforms
