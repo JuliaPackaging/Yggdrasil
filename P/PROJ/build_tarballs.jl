@@ -89,7 +89,7 @@ products = [
 dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency(SQLite_jll")
+    Dependency("SQLite_jll")
     Dependency("Libtiff_jll")
     Dependency("LibCURL_jll"; compat="7.73")
 ]
