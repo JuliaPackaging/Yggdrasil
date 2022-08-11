@@ -28,8 +28,13 @@ export ARCHDEFS=${prefix}/ARCHDefs
 export SIFDECODE=${prefix}/SIFDecode
 export CUTEST=${prefix}/CUTEst
 
-# SIFDecode always looks for `ar` in `/usr/bin/ar`
-ln -sf /opt/bin/ar /usr/bin/ar
+# ARCHDefs requires tput
+apk update
+apk add ncurses
+
+# SIFDecode always looks for `ar` and `ranlib` in `/usr/bin/`
+ln -sf $(which ar) /usr/bin/ar
+ln -sf $(which ranlib) /usr/bin/ranlib
 
 # build SIFDecode
 cd $SIFDECODE
@@ -55,7 +60,7 @@ if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "2" >> cutest.opts  # Linux
   echo "6" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "8" >> cutest.opts  # gcc
+  echo "9" >> cutest.opts  # gcc
   export MYARCH=pc64.lnx.gfo
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
@@ -75,36 +80,35 @@ echo "nnydy" >> cutest.opts
 ./install_cutest < cutest.opts
 
 # build shared libs
-# all_load="--whole-archive"
-# noall_load="--no-whole-archive"
-# extra=""
-# if [[ "${target}" == *-apple-* ]]; then
-#     all_load="-all_load"
-#     noall_load="-noall_load"
-#     extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
-# fi
-# cd $CUTEST/objects/$MYARCH/double
-# gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_double.${dlext}
-# cd $CUTEST/objects/$MYARCH/single
-# gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_single.${dlext}
+cd $CUTEST/objects/$MYARCH/single
+gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libcutest.a -Wl,$(flagon --no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
+cd $CUTEST/objects/$MYARCH/double
+gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libcutest.a -Wl,$(flagon --no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
 
-ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
-ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
+cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
+cp $SIFDECODE/objects/$MYARCH/double/libsifdecode.a ${prefix}/lib/libsifdecode.a
+cp $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/slct
+cp $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/clsf
+cp $CUTEST/objects/$MYARCH/single/libcutest.a ${prefix}/lib/libcutest_single.a
+cp $CUTEST/objects/$MYARCH/double/libcutest.a ${prefix}/lib/libcutest_double.a
 install_license $CUTEST/lgpl-3.0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("lib/libsifdecode.a", :libsifdecode_a),
+    FileProduct("lib/libcutest_single.a", :libcutest_single_a),
+    FileProduct("lib/libcutest_double.a", :libcutest_double_a),
     ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
+    LibraryProduct("libcutest_single", :libcutest_single),
+    LibraryProduct("libcutest_double", :libcutest_double),
 ]
 
 dependencies = [
