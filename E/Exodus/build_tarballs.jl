@@ -19,6 +19,12 @@ cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
 
+INSTALL_PATH=${prefix}
+FORTRAN=NO
+NETCDF_PATH=${prefix}
+PNETCDF_PATH=${prefix}
+HDF5_PATH=${prefix}
+
 # CMake config file to build ONLY the exodus libraries (C, Fortran, Fortran-32, and Python interface)
 # By default, Will build both static and shared version of the C API.
 # If only want shared, then run with "sh STATIC=NO ../cmake-exodus"
@@ -50,16 +56,16 @@ function check_valid()
 }
 
 #FORTRAN=${FORTRAN:-YES}
-FORTRAN=${FORTRAN:-NO}
+#FORTRAN=${FORTRAN:-NO}
 #FORTRAN=$(check_valid FORTRAN)
 
 ### TPLs --
 ### Make sure these point to the locations to find the libraries and includes in lib and include
 ### subdirectories of the specified paths.
 ### For example, netcdf.h should be in ${NETCDF_PATH}/include
-NETCDF_PATH=${NETCDF_PATH:-${INSTALL_PATH}}
-PNETCDF_PATH=${PNETCDF_PATH:-${INSTALL_PATH}}
-HDF5_PATH=${HDF5_PATH:-${INSTALL_PATH}}
+#NETCDF_PATH=${NETCDF_PATH:-${INSTALL_PATH}}
+#PNETCDF_PATH=${PNETCDF_PATH:-${INSTALL_PATH}}
+#HDF5_PATH=${HDF5_PATH:-${INSTALL_PATH}}
 
 ### Set to ON for parallel compile; otherwise OFF for serial (default)
 if [ "${MPI}" = "" ]
