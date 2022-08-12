@@ -32,9 +32,16 @@ export CUTEST=${prefix}/CUTEst
 apk update
 apk add ncurses
 
-# SIFDecode always looks for `ar` and `ranlib` in `/usr/bin/`
+# SIFDecode always looks for `ar`, `ranlib`, `sed` and `grep` in `/usr/bin/`
 ln -sf $(which ar) /usr/bin/ar
 ln -sf $(which ranlib) /usr/bin/ranlib
+ln -sf $(which sed) /usr/bin/sed
+ln -sf $(which grep) /usr/bin/grep
+
+if [[ "${target}" == *-apple* ]]; then
+  mkdir -p /opt/homebrew/bin
+  ln -sf $(which gfortran) /opt/homebrew/bin/gfortran
+fi
 
 # build SIFDecode
 cd $SIFDECODE
@@ -66,7 +73,7 @@ elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
   echo "2" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
+  echo "2" >> cutest.opts  # gcc
   export MYARCH=mac64.osx.gfo
 elif [[ "${target}" == *-mingw* ]]; then
   echo "5" > cutest.opts   # PC64
@@ -80,15 +87,26 @@ echo "nnydy" >> cutest.opts
 ./install_cutest < cutest.opts
 
 # build shared libs
-cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libcutest.a -Wl,$(flagon --no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
+all_load="--whole-archive"
+noall_load="--no-whole-archive"
+extra=""
+if [[ "${target}" == *-apple-* ]]; then
+    all_load="-all_load"
+    noall_load="-noall_load"
+    extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+fi
+cd $SIFDECODE/objects/$MYARCH/double/
+gfortran -fPIC -shared ${extra} -Wl,${all_load} libsifdecode.a -Wl,${noall_load} -o ${libdir}/libsifdecode.${dlext}
 cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libcutest.a -Wl,$(flagon --no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
+gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_double.${dlext}
+cd $CUTEST/objects/$MYARCH/single
+gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_single.${dlext}
 
-cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
-cp $SIFDECODE/objects/$MYARCH/double/libsifdecode.a ${prefix}/lib/libsifdecode.a
 cp $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/slct
 cp $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/clsf
+cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
+cp $SIFDECODE/objects/$MYARCH/double/run_sifdecode ${bindir}/run_sifdecode
+cp $SIFDECODE/objects/$MYARCH/double/libsifdecode.a ${prefix}/lib/libsifdecode.a
 cp $CUTEST/objects/$MYARCH/single/libcutest.a ${prefix}/lib/libcutest_single.a
 cp $CUTEST/objects/$MYARCH/double/libcutest.a ${prefix}/lib/libcutest_double.a
 install_license $CUTEST/lgpl-3.0.txt
@@ -97,16 +115,18 @@ install_license $CUTEST/lgpl-3.0.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
 
 # The products that we will ensure are always built
 products = [
     FileProduct("lib/libsifdecode.a", :libsifdecode_a),
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
-    ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
+    ExecutableProduct("sifdecoder", :sifdecoder),
+    ExecutableProduct("run_sifdecode", :run_sifdecode),
+    LibraryProduct("libsifdecode", :libsifdecode),
     LibraryProduct("libcutest_single", :libcutest_single),
     LibraryProduct("libcutest_double", :libcutest_double),
 ]
@@ -116,4 +136,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5.2.0", julia_compat="1.6")
