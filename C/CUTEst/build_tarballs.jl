@@ -97,10 +97,10 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 cd $SIFDECODE/objects/$MYARCH/double/
 gfortran -fPIC -shared ${extra} -Wl,${all_load} libsifdecode.a -Wl,${noall_load} -o ${libdir}/libsifdecode.${dlext}
-cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_double.${dlext}
 cd $CUTEST/objects/$MYARCH/single
 gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_single.${dlext}
+cd $CUTEST/objects/$MYARCH/double
+gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_double.${dlext}
 
 cp $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/slct
 cp $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/clsf
@@ -136,4 +136,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5.2.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8.1.0", julia_compat="1.6")
