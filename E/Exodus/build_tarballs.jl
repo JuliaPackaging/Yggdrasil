@@ -79,7 +79,7 @@ then
   fi
 fi
 
-MPI=$(check_valid MPI)
+#MPI=$(check_valid MPI)
 echo "${txtgrn}MPI set to ${MPI}${txtrst}"
 
 if [ "${MPI}" == "NO" ]
