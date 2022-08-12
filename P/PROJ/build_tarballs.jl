@@ -89,9 +89,9 @@ products = [
 dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
-    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
+    Dependency("SQLite_jll")
+    Dependency("Libtiff_jll")
+    Dependency("LibCURL_jll"; compat="7.73")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
