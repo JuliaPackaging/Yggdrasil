@@ -174,7 +174,7 @@ fi
 GENERATOR=${GENERATOR:-"Unix Makefiles"}
 
 CRAY="${CRAY:-NO}"
-CRAY=$(check_valid CRAY)
+#CRAY=$(check_valid CRAY)
 
 if [ "${CRAY}" == "YES" ]
 then
@@ -182,7 +182,7 @@ then
 else
     SHARED="${SHARED:-YES}"
 fi
-SHARED=$(check_valid SHARED)
+#SHARED=$(check_valid SHARED)
 
 if [ "${CRAY}" == "YES" ] && [ "${SHARED}" == "NO" ]
 then
@@ -217,7 +217,7 @@ fi
 
 ### Set to YES to enable the building of a thread-safe version of the Exodus and IOSS libraries.
 THREADSAFE=${THREADSAFE:-NO}
-THREADSAFE=$(check_valid THREADSAFE)
+#THREADSAFE=$(check_valid THREADSAFE)
 
 if [ "$THREADSAFE" == "YES" ] ; then
   THREAD_SAFE_OPT="-DTPL_Pthread_LIBRARIES=-lpthread"
@@ -296,7 +296,7 @@ fi
 FC=${FC:-gfortran}
 
 EXTRA_WARNINGS=${EXTRA_WARNINGS:-NO}
-EXTRA_WARNINGS=$(check_valid EXTRA_WARNINGS)
+#EXTRA_WARNINGS=$(check_valid EXTRA_WARNINGS)
 
 SANITIZER=${SANITIZER:-NO}
 
