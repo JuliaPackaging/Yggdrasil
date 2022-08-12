@@ -12,6 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+#! /usr/bin/env bash
+
 cd $WORKSPACE/srcdir/seacas
 
 mkdir build
