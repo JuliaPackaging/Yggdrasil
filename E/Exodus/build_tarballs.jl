@@ -51,7 +51,7 @@ function check_valid()
 
 #FORTRAN=${FORTRAN:-YES}
 FORTRAN=${FORTRAN:-NO}
-FORTRAN=$(check_valid FORTRAN)
+#FORTRAN=$(check_valid FORTRAN)
 
 ### TPLs --
 ### Make sure these point to the locations to find the libraries and includes in lib and include
