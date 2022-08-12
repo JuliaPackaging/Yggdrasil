@@ -49,7 +49,8 @@ function check_valid()
     exit 1
 }
 
-FORTRAN=${FORTRAN:-YES}
+#FORTRAN=${FORTRAN:-YES}
+FORTRAN=${FORTRAN:-NO}
 FORTRAN=$(check_valid FORTRAN)
 
 ### TPLs --
