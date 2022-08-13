@@ -31,6 +31,7 @@ make_args+=(OPTF=-O3
             LMETIS='-L$(LMETISDIR) -lmetis'
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
+            RPATH_OPT="-Wl,-rpath,lib/"
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
