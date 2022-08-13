@@ -313,6 +313,7 @@ function gcc_script(compiler_target::Platform)
         BOOTSTRAP_CXX=${CXX}
         cp -rL $prefix/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
         atomic_patch -p0 $WORKSPACE/srcdir/patches/gcc-11-libstdcxx-sanitizers.patch
+	atomic_patch -p1 -d gcc-*/ $WORKSPACE/srcdir/patches/gcc-11-clang-bug-inline.patch
     fi
     unset CC
     unset CXX
