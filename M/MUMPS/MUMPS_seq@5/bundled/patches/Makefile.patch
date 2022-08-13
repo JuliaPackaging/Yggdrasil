@@ -1,0 +1,20 @@
+--- a/Makefile
++++ b/Makefile
+@@ -91,7 +91,7 @@
+ 	  $(MAKE) CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC="$(OUTC)" LIBEXT="$(LIBEXT)" LIBEXT_SHARED="$(LIBEXT_SHARED)" libpord$(LIBEXT); \
+ 	fi;
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+-	  cp $(LPORDDIR)/libpord$(LIBEXT) $@; \
++	  cp $(LPORDDIR)libpord$(LIBEXT) $@; \
+ 	fi;
+ 
+ $(libdir)/libpord$(PLAT)$(LIBEXT_SHARED):
+@@ -100,7 +100,7 @@
+ 	  $(MAKE) PLAT="$(PLAT)" FPIC="$(FPIC_OPT)" CC="$(CC)" CFLAGS="$(OPTC)" AR="$(AR)" RANLIB="$(RANLIB)" OUTC="$(OUTC)" LIBEXT="$(LIBEXT)" LIBEXT_SHARED="$(LIBEXT_SHARED)" libpord$(LIBEXT_SHARED); \
+ 	fi;
+ 	if [ "$(LPORDDIR)" != "" ] ; then \
+-	  cp $(LPORDDIR)/libpord$(LIBEXT_SHARED) $@; \
++	  cp $(LPORDDIR)libpord$(LIBEXT_SHARED) $@; \
+ 	fi;
+ 
+ 
