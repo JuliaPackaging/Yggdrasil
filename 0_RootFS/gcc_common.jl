@@ -27,8 +27,6 @@ include("./common.jl")
 
 using BinaryBuilder
 using BinaryBuilder: BinaryBuilderBase
-@eval BinaryBuilder.BinaryBuilderBase empty!(bootstrap_list)
-@eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwargs...)
     # Since we can build a variety of GCC versions, track them and their hashes here.
@@ -308,6 +306,17 @@ function gcc_script(compiler_target::Platform)
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
 
+    # If we're building for sanitizers, skip the stage1 bootstrap, since we'll
+    # need to be using the clang copy from a non-sanitizer build.
+    if [[ ${bb_full_target} == *-sanitize* ]]; then
+        BOOTSTRAP_CC=${CC}
+        BOOTSTRAP_CXX=${CXX}
+        cp -rL $prefix/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+        atomic_patch -p0 $WORKSPACE/srcdir/patches/gcc-11-libstdcxx-sanitizers.patch
+    fi
+    unset CC
+    unset CXX
+
     # Update list of packages before installing new packages
     apk update
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
@@ -513,266 +522,276 @@ function gcc_script(compiler_target::Platform)
     mkdir -p $WORKSPACE/srcdir/gcc_stage1
     cd $WORKSPACE/srcdir/gcc_stage1
 
-    # Since this stage1 compiler is just going to be used to
-    # bootstrap, compile without many optimizations, which reduces
-    # overall build time
-    $WORKSPACE/srcdir/gcc-*/configure \
-        --prefix="${prefix}" \
-        --target="${COMPILER_TARGET}" \
-        --host="${MACHTYPE}" \
-        --build="${MACHTYPE}" \
-        --disable-multilib \
-        --disable-werror \
-        --disable-decimal-float \
-        --disable-threads \
-        --disable-libatomic \
-        --disable-libffi \
-        --disable-libitm \
-        --disable-libmudflap \
-        --disable-libssp \
-        --disable-libsanitizer \
-        --disable-libgomp \
-        --disable-libquadmath \
-        --disable-libstdcxx \
-        --without-headers \
-        --disable-bootstrap \
-        --enable-host-shared \
-        --with-sysroot="${sysroot}" \
-        --program-prefix="${COMPILER_TARGET}-" \
-        --enable-languages="c" \
-        ${GCC_CONF_ARGS}
+    if [[ ${bb_full_target} != *-sanitize* ]]; then
+        # TODO: It might be nice to build glibc with sanitizer support, but
+        $ mostly, we can rely on the interceptors.
 
-    make -j${nproc} all-gcc
-    make -j${nproc} install-gcc
-
-    unset CFLAGS
-    unset CXXFLAGS
-
-    # This is needed for any glibc older than 2.14, which includes the following commit
-    # https://sourceware.org/git/?p=glibc.git;a=commit;h=95f5a9a866695da4e038aa4e6ccbbfd5d9cf63b7
-    ln -vs libgcc.a $(${COMPILER_TARGET}-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
-
-    # Build libc (stage 1)
-    if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
-        # patch glibc
-        cd ${WORKSPACE}/srcdir/glibc-*
-        # patch glibc to keep around libgcc_s_resume on arm
-        # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
-
-        # patch glibc's stupid gcc/make version checks (we don't require these,
-        # as if it doesn't apply cleanly, it's probably fine).  We also keep them
-        # separate, as some glibc versions require one or not the other.  BTW,
-        # the three versions of glibc we use require three different patches :(
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc217_gcc_version.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc219_gcc_version.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
-
-        # patch older glibc's 32-bit assembly to withstand __i686 definition of
-        # newer GCC's.  ref: http://comments.gmane.org/gmane.comp.lib.glibc.user/758
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_i686_asm.patch || true
-
-        # Patch glibc's sunrpc cross generator to work with musl
-        # See https://sourceware.org/bugzilla/show_bug.cgi?id=21604
-        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_sunrpc.patch || true
-
-        # patch for building old glibc on newer binutils
-        # These patches don't apply on those versions of glibc where they
-        # are not needed, but that's ok.
-        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_nocommon.patch || true
-        atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_regexp_nocommon.patch || true
-
-        # patch for avoiding linking in musl libs for a glibc-linked binary
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
-
-        # Patch for building glibc 2.25-2.30 on aarch64
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
-
-        # Patch for building glibc 2.12.2 on x86_64-linux-gnu with GCC 12+.
-        # Adapted from new definition of `_dl_setup_stack_chk_guard` from
-        # https://github.com/bminor/glibc/commit/4a103975c4c4929455d60224101013888640cd2f.
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc-remove-__ASSUME_AT_RANDOM-in-_dl_setup_stack_chk_guard.patch || true
-
-        # Patches for building glibc 2.17 on ppc64le
-        for p in ${WORKSPACE}/srcdir/patches/glibc-ppc64le-*.patch; do
-            atomic_patch -p1 ${p} || true;
-        done
-
-        # Various configure overrides
-        GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
-
-        # We have problems with libssp on ppc64le
-        if [[ ${COMPILER_TARGET} == powerpc64le-* ]]; then
-            GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
-        fi
-
-        # Configure glibc
-        mkdir ${WORKSPACE}/srcdir/glibc_build
-        cd ${WORKSPACE}/srcdir/glibc_build
-        ${WORKSPACE}/srcdir/glibc-*/configure \
-            --prefix=/usr \
-            --host=${COMPILER_TARGET} \
-            --build=${HOST_TARGET} \
-            --with-headers="${sysroot}/usr/include" \
+        # Since this stage1 compiler is just going to be used to
+        # bootstrap, compile without many optimizations, which reduces
+        # overall build time
+        $WORKSPACE/srcdir/gcc-*/configure \
+            --prefix="${prefix}" \
+            --target="${COMPILER_TARGET}" \
+            --host="${MACHTYPE}" \
+            --build="${MACHTYPE}" \
             --disable-multilib \
             --disable-werror \
-            ${GLIBC_CONFIGURE_OVERRIDES[@]}
+            --disable-decimal-float \
+            --disable-threads \
+            --disable-libatomic \
+            --disable-libffi \
+            --disable-libitm \
+            --disable-libmudflap \
+            --disable-libssp \
+            --disable-libsanitizer \
+            --disable-libgomp \
+            --disable-libquadmath \
+            --disable-libstdcxx \
+            --without-headers \
+            --disable-bootstrap \
+            --enable-host-shared \
+            --with-sysroot="${sysroot}" \
+            --program-prefix="${COMPILER_TARGET}-" \
+            --enable-languages="c" \
+            ${GCC_CONF_ARGS}
+
+        make -j${nproc} all-gcc
+        make -j${nproc} install-gcc
+
+        BOOTSTRAP_CC=${prefix}/bin/${COMPILER_TARGET}-gcc
+
+        unset CFLAGS
+        unset CXXFLAGS
+
+        # This is needed for any glibc older than 2.14, which includes the following commit
+        # https://sourceware.org/git/?p=glibc.git;a=commit;h=95f5a9a866695da4e038aa4e6ccbbfd5d9cf63b7
+        ln -vs libgcc.a $(${COMPILER_TARGET}-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
+
+        # Build libc (stage 1)
+        if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
+            # patch glibc
+            cd ${WORKSPACE}/srcdir/glibc-*
+            # patch glibc to keep around libgcc_s_resume on arm
+            # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
+
+            # patch glibc's stupid gcc/make version checks (we don't require these,
+            # as if it doesn't apply cleanly, it's probably fine).  We also keep them
+            # separate, as some glibc versions require one or not the other.  BTW,
+            # the three versions of glibc we use require three different patches :(
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_gcc_version.patch || true
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc217_gcc_version.patch || true
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc219_gcc_version.patch || true
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_make_version.patch || true
+
+            # patch older glibc's 32-bit assembly to withstand __i686 definition of
+            # newer GCC's.  ref: http://comments.gmane.org/gmane.comp.lib.glibc.user/758
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_i686_asm.patch || true
+
+            # Patch glibc's sunrpc cross generator to work with musl
+            # See https://sourceware.org/bugzilla/show_bug.cgi?id=21604
+            atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_sunrpc.patch || true
+
+            # patch for building old glibc on newer binutils
+            # These patches don't apply on those versions of glibc where they
+            # are not needed, but that's ok.
+            atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_nocommon.patch || true
+            atomic_patch -p0 $WORKSPACE/srcdir/patches/glibc_regexp_nocommon.patch || true
+
+            # patch for avoiding linking in musl libs for a glibc-linked binary
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
+
+            # Patch for building glibc 2.25-2.30 on aarch64
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
+
+            # Patch for building glibc 2.12.2 on x86_64-linux-gnu with GCC 12+.
+            # Adapted from new definition of `_dl_setup_stack_chk_guard` from
+            # https://github.com/bminor/glibc/commit/4a103975c4c4929455d60224101013888640cd2f.
+            atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc-remove-__ASSUME_AT_RANDOM-in-_dl_setup_stack_chk_guard.patch || true
+
+            # Patches for building glibc 2.17 on ppc64le
+            for p in ${WORKSPACE}/srcdir/patches/glibc-ppc64le-*.patch; do
+                atomic_patch -p1 ${p} || true;
+            done
+
+            # Various configure overrides
+            GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
+
+            # We have problems with libssp on ppc64le
+            if [[ ${COMPILER_TARGET} == powerpc64le-* ]]; then
+                GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
+            fi
+
+            if [[ ${bb_full_target} == *-sanitize* ]]; then
+                GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_z_relro=yes )
+            fi
+
+            # Configure glibc
+            mkdir ${WORKSPACE}/srcdir/glibc_build
+            cd ${WORKSPACE}/srcdir/glibc_build
+            ${WORKSPACE}/srcdir/glibc-*/configure \
+                --prefix=/usr \
+                --host=${COMPILER_TARGET} \
+                --build=${HOST_TARGET} \
+                --with-headers="${sysroot}/usr/include" \
+                --disable-multilib \
+                --disable-werror \
+                ${GLIBC_CONFIGURE_OVERRIDES[@]}
 
 
-        # Install headers
-        mkdir -p ${prefix}/${COMPILER_TARGET}/include/gnu
-        touch ${prefix}/${COMPILER_TARGET}/include/gnu/stubs.h
-        mkdir -p ${sysroot}/usr/include/bits
-        touch ${sysroot}/usr/include/bits/stdio_lim.h
-        make install_root=${sysroot} install-bootstrap-headers=yes install-headers
+            # Install headers
+            mkdir -p ${prefix}/${COMPILER_TARGET}/include/gnu
+            touch ${prefix}/${COMPILER_TARGET}/include/gnu/stubs.h
+            mkdir -p ${sysroot}/usr/include/bits
+            touch ${sysroot}/usr/include/bits/stdio_lim.h
+            make install_root=${sysroot} install-bootstrap-headers=yes install-headers
 
-        # Install CSU
-        make csu/subdir_lib -j${nproc}
-        mkdir -p ${sysroot}/usr/${LIB64}
-        install csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
-        ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/${LIB64}/libc.so
+            # Install CSU
+            make csu/subdir_lib -j${nproc}
+            mkdir -p ${sysroot}/usr/${LIB64}
+            install csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
+            ${BOOTSTRAP_CC} -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/${LIB64}/libc.so
 
-    elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
-        # Configure musl
-        mkdir -p ${WORKSPACE}/srcdir/musl_build
-        cd ${WORKSPACE}/srcdir/musl_build
-        LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
-            --prefix=/usr \
-            --host=${COMPILER_TARGET} \
-            --with-headers="${sysroot}/usr/include" \
-            --with-binutils=${prefix}/bin \
-            --disable-multilib \
-            --disable-werror \
-            --enable-optimize \
-            --enable-debug \
-            CROSS_COMPILE="${COMPILER_TARGET}-"
+        elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
+            # Configure musl
+            mkdir -p ${WORKSPACE}/srcdir/musl_build
+            cd ${WORKSPACE}/srcdir/musl_build
+            LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
+                --prefix=/usr \
+                --host=${COMPILER_TARGET} \
+                --with-headers="${sysroot}/usr/include" \
+                --with-binutils=${prefix}/bin \
+                --disable-multilib \
+                --disable-werror \
+                --enable-optimize \
+                --enable-debug \
+                CROSS_COMPILE="${COMPILER_TARGET}-"
 
-        # Install headers
-        make install-headers DESTDIR=${sysroot}
+            # Install headers
+            make install-headers DESTDIR=${sysroot}
 
-        # Make CRT
-        make lib/{crt1,crti,crtn}.o
-        mkdir -p ${sysroot}/usr/lib
-        install lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
-        ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
+            # Make CRT
+            make lib/{crt1,crti,crtn}.o
+            mkdir -p ${sysroot}/usr/lib
+            install lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
+            ${BOOTSTRAP_CC} -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
-    elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
-        # Build CRT
-        mkdir -p $WORKSPACE/srcdir/mingw_crt_build
-        cd $WORKSPACE/srcdir/mingw_crt_build
-        MINGW_CONF_ARGS=""
+        elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
+            # Build CRT
+            mkdir -p $WORKSPACE/srcdir/mingw_crt_build
+            cd $WORKSPACE/srcdir/mingw_crt_build
+            MINGW_CONF_ARGS=""
 
-        # If we're building a 32-bit build of mingw, add `--disable-lib64`
-        if [[ "${COMPILER_TARGET}" == i686-* ]]; then
-            MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib64"
-        else
-            MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib32"
-        fi
+            # If we're building a 32-bit build of mingw, add `--disable-lib64`
+            if [[ "${COMPILER_TARGET}" == i686-* ]]; then
+                MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib64"
+            else
+                MINGW_CONF_ARGS="${MINGW_CONF_ARGS} --disable-lib32"
+            fi
 
-        # Apply MinGW patches, if any
-        if [[ -d "${WORKSPACE}/srcdir/patches/mingw" ]]; then
-            for p in ${WORKSPACE}/srcdir/patches/mingw/*.patch; do
-                atomic_patch -p1 -d ${WORKSPACE}/srcdir/mingw-* "${p}"
+            # Apply MinGW patches, if any
+            if [[ -d "${WORKSPACE}/srcdir/patches/mingw" ]]; then
+                for p in ${WORKSPACE}/srcdir/patches/mingw/*.patch; do
+                    atomic_patch -p1 -d ${WORKSPACE}/srcdir/mingw-* "${p}"
+                done
+            fi
+
+            ${WORKSPACE}/srcdir/mingw-*/mingw-w64-crt/configure \
+                --prefix=/ \
+                --host=${COMPILER_TARGET} \
+                --with-sysroot=${sysroot} \
+                ${MINGW_CONF_ARGS}
+            # Build serially, it sounds like there are some race conditions in the makefile
+            make
+            make install DESTDIR=${sysroot}
+
+        elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then
+            # Install Darwin libc
+            cd ${WORKSPACE}/srcdir/MacOSX*.sdk
+            mkdir -p "${sysroot}"
+            rsync -a usr "${sysroot}/"
+            rsync -a SDKSettings.* "${sysroot}/"
+
+            # Clean out libssl and libcrypto, as we never want to link against those old versions included with MacOS
+            rm -rfv ${sysroot}/usr/lib/libssl.*
+            rm -rfv ${sysroot}/usr/lib/libcrypto.*
+
+        elif [[ ${COMPILER_TARGET} == *freebsd* ]]; then
+            cd ${WORKSPACE}/srcdir
+            # We're going to clean out vestiges of libgcc_s and friends,
+            # because we're going to compile our own from scratch
+            for lib in gcc_s ssp; do
+                find usr/ -name lib${lib}.\* -delete
+                find lib/ -name lib${lib}.\* -delete
+            done
+
+            mkdir -p "${sysroot}/usr/lib"
+            mv usr/lib/* "${sysroot}/usr/lib/"
+            mv lib/* "${sysroot}/lib/"
+
+            # Many symlinks exist that point to `../../lib/libfoo.so`.
+            # We need them to point to just `libfoo.so`. :P
+            for f in $(find "${prefix}/${COMPILER_TARGET}" -xtype l); do
+                link_target="$(readlink "$f")"
+                if [[ -n $(echo "${link_target}" | grep "^../../lib") ]]; then
+                    ln -vsf "${link_target#../../lib/}" "${f}"
+                fi
             done
         fi
 
-        ${WORKSPACE}/srcdir/mingw-*/mingw-w64-crt/configure \
-            --prefix=/ \
-            --host=${COMPILER_TARGET} \
-            --with-sysroot=${sysroot} \
-            ${MINGW_CONF_ARGS}
-        # Build serially, it sounds like there are some race conditions in the makefile
-        make
-        make install DESTDIR=${sysroot}
 
-    elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then
-        # Install Darwin libc
-        cd ${WORKSPACE}/srcdir/MacOSX*.sdk
-        mkdir -p "${sysroot}"
-        rsync -a usr "${sysroot}/"
-        rsync -a SDKSettings.* "${sysroot}/"
+        cd ${WORKSPACE}/srcdir/gcc_stage1
+        make all-target-libgcc -j ${nproc}
+        make install-target-libgcc
 
-        # Clean out libssl and libcrypto, as we never want to link against those old versions included with MacOS
-        rm -rfv ${sysroot}/usr/lib/libssl.*
-        rm -rfv ${sysroot}/usr/lib/libcrypto.*
+        # Finish off libc
+        if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
+            cd ${WORKSPACE}/srcdir/glibc_build
+            make -j${nproc}
+            make install install_root=${sysroot}
 
-    elif [[ ${COMPILER_TARGET} == *freebsd* ]]; then
-        cd ${WORKSPACE}/srcdir
-        # We're going to clean out vestiges of libgcc_s and friends,
-        # because we're going to compile our own from scratch
-        for lib in gcc_s ssp; do
-            find usr/ -name lib${lib}.\* -delete
-            find lib/ -name lib${lib}.\* -delete
-        done
+        elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
+            # Re-configure musl to pick up our newly-built libgcc
+            cd ${WORKSPACE}/srcdir/musl_build
+            rm -rf *
 
-        mkdir -p "${sysroot}/usr/lib"
-        mv usr/lib/* "${sysroot}/usr/lib/"
-        mv lib/* "${sysroot}/lib/"
+            LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
+                --prefix=/usr \
+                --host=${COMPILER_TARGET} \
+                --with-headers="${sysroot}/usr/include" \
+                --with-binutils=${prefix}/bin \
+                --disable-multilib \
+                --disable-werror \
+                --enable-optimize \
+                --enable-debug \
+                CROSS_COMPILE="${COMPILER_TARGET}-"
 
-        # Many symlinks exist that point to `../../lib/libfoo.so`.
-        # We need them to point to just `libfoo.so`. :P
-        for f in $(find "${prefix}/${COMPILER_TARGET}" -xtype l); do
-            link_target="$(readlink "$f")"
-            if [[ -n $(echo "${link_target}" | grep "^../../lib") ]]; then
-                ln -vsf "${link_target#../../lib/}" "${f}"
-            fi
-        done
-    fi
+            make -j${nproc} DESTDIR=${sysroot}
+            rm -f ${sysroot}/usr/lib/libc.so
+            make install DESTDIR=${sysroot}
 
+            # Fix broken symlink
+            ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
+            # `libc.so` has soname `libc.musl-$(musl_arch).so.1`, we need to have
+            # that file as well.
+            ln -fsv libc.so ${sysroot}/usr/lib/libc.musl-$(musl_arch).so.1
 
-    # Back to GCC-land, install libgcc
-    cd ${WORKSPACE}/srcdir/gcc_stage1
-    make all-target-libgcc -j ${nproc}
-    make install-target-libgcc
+        elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
+            cd $WORKSPACE/srcdir/mingw_crt_build
 
-    # Finish off libc
-    if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
-        cd ${WORKSPACE}/srcdir/glibc_build
-        make -j${nproc}
-        make install install_root=${sysroot}
+            # Build winpthreads
+            mkdir -p $WORKSPACE/srcdir/mingw_winpthreads_build
+            cd $WORKSPACE/srcdir/mingw_winpthreads_build
+            ${WORKSPACE}/srcdir/mingw-*/mingw-w64-libraries/winpthreads/configure \
+                --prefix=/ \
+                --host=${COMPILER_TARGET} \
+                --enable-static \
+                --enable-shared
 
-    elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
-        # Re-configure musl to pick up our newly-built libgcc
-        cd ${WORKSPACE}/srcdir/musl_build
-        rm -rf *
-
-        LDFLAGS="-Wl,-soname,libc.musl-$(musl_arch).so.1" ${WORKSPACE}/srcdir/musl-*/configure \
-            --prefix=/usr \
-            --host=${COMPILER_TARGET} \
-            --with-headers="${sysroot}/usr/include" \
-            --with-binutils=${prefix}/bin \
-            --disable-multilib \
-            --disable-werror \
-            --enable-optimize \
-            --enable-debug \
-            CROSS_COMPILE="${COMPILER_TARGET}-"
-
-        make -j${nproc} DESTDIR=${sysroot}
-        rm -f ${sysroot}/usr/lib/libc.so
-        make install DESTDIR=${sysroot}
-
-        # Fix broken symlink
-        ln -fsv ../usr/lib/libc.so ${sysroot}/lib/ld-musl-$(musl_arch).so.1
-        # `libc.so` has soname `libc.musl-$(musl_arch).so.1`, we need to have
-        # that file as well.
-        ln -fsv libc.so ${sysroot}/usr/lib/libc.musl-$(musl_arch).so.1
-
-    elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
-        cd $WORKSPACE/srcdir/mingw_crt_build
-
-        # Build winpthreads
-        mkdir -p $WORKSPACE/srcdir/mingw_winpthreads_build
-        cd $WORKSPACE/srcdir/mingw_winpthreads_build
-        ${WORKSPACE}/srcdir/mingw-*/mingw-w64-libraries/winpthreads/configure \
-            --prefix=/ \
-            --host=${COMPILER_TARGET} \
-            --enable-static \
-            --enable-shared
-
-        make -j${nproc}
-        make install DESTDIR=${sysroot}
+            make -j${nproc}
+            make install DESTDIR=${sysroot}
+        fi
     fi
 
     # Back to GCC-land, build brand new full compiler
@@ -805,23 +824,46 @@ function gcc_script(compiler_target::Platform)
     # They can be empty though.
     mkdir -p ${prefix}/${COMPILER_TARGET}/sys-root/{lib,usr/lib}
 
-    # We have to be really assertive with `CC`, `CC_FOR_BUILD` and `CC_FOR_TARGET`
-    # here, as if we don't, building for x86_64-linux-musl itself can fail, due to
-    # it getting confused between the compiler we just built and the host compiler.
-    CC=/usr/bin/gcc CC_FOR_BUILD=/usr/bin/gcc CC_FOR_TARGET=${prefix}/bin/${COMPILER_TARGET}-gcc $WORKSPACE/srcdir/gcc-*/configure \
-        --prefix="${prefix}" \
-        --target="${COMPILER_TARGET}" \
-        --host="${MACHTYPE}" \
-        --build="${MACHTYPE}" \
-        --disable-multilib \
-        --disable-werror \
-        --enable-shared \
-        --enable-host-shared \
-        --enable-threads=posix \
-        --with-sysroot="${sysroot}" \
-        --program-prefix="${COMPILER_TARGET}-" \
-        --disable-bootstrap \
-        ${GCC_CONF_ARGS}
+    if [[ ${bb_full_target} != *-sanitize* ]]; then
+        # We have to be really assertive with `CC`, `CC_FOR_BUILD` and `CC_FOR_TARGET`
+        # here, as if we don't, building for x86_64-linux-musl itself can fail, due to
+        # it getting confused between the compiler we just built and the host compiler.
+        CC=/usr/bin/gcc CXX=/usr/bin/g++ CC_FOR_BUILD=/usr/bin/gcc CC_FOR_TARGET=${BOOTSTRAP_CC} $WORKSPACE/srcdir/gcc-*/configure \
+            --prefix="${prefix}" \
+            --target="${COMPILER_TARGET}" \
+            --host="${MACHTYPE}" \
+            --build="${MACHTYPE}" \
+            --disable-multilib \
+            --disable-werror \
+            --enable-shared \
+            --enable-host-shared \
+            --enable-threads=posix \
+            --with-sysroot="${sysroot}" \
+            --program-prefix="${COMPILER_TARGET}-" \
+            --disable-bootstrap \
+            ${GCC_CONF_ARGS}
+    else
+        # TODO: What about libgfortrane
+        CC=${BOOTSTRAP_CC} CXX=${BOOTSTRAP_CXX} $WORKSPACE/srcdir/gcc-*/libstdc++-v3/configure \
+            --prefix="${prefix}" \
+            --target="${COMPILER_TARGET}" \
+            --host="${MACHTYPE}" \
+            --build="${MACHTYPE}" \
+            --disable-multilib \
+            --disable-werror \
+            --enable-shared \
+            --enable-threads=posix \
+            --with-sysroot="${sysroot}" \
+            --program-prefix="${COMPILER_TARGET}-"
+
+        cat <<-EOF >> config.h
+		#undef _GLIBCXX_USE_C99_FENV_TR1
+		#undef _GLIBCXX_X86_RDSEED
+		#undef _GLIBCXX_X86_RDRAND
+        #undef HAVE_ALIGNED_ALLOC
+		#define _GLIBCXX_HAS_GTHREADS 1
+		EOF
+    fi
 
     ## Build, build, build!
     make -j ${nproc}
@@ -861,10 +903,11 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     sources = gcc_sources(version, compiler_target)
     script = gcc_script(compiler_target)
     products = gcc_products()
+    dependencies = [BuildDependency("LLVMCompilerRT_jll")]
 
     # Build the tarballs, and possibly a `build.jl` as well.
     ndARGS, deploy_target = find_deploy_arg(ARGS)
-    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true, julia_compat="1.6")
+    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, dependencies; skip_audit=true, julia_compat="1.6")
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)
