@@ -164,7 +164,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)  
 platforms = filter(p -> !(p["mpi"] == "openmpi" &&  Sys.isfreebsd(p)), platforms)  
 
-
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
