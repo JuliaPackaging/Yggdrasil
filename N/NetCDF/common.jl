@@ -9,7 +9,7 @@ function configure(version_offset, min_julia_version)
     # So for example version 2.6.3 would become 200.600.300.
 
     name = "NetCDF"
-    upstream_version = v"4.8.1"
+    upstream_version = v"4.9.0"
     version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                             upstream_version.minor * 100 + version_offset.minor,
                             upstream_version.patch * 100 + version_offset.patch)
@@ -17,7 +17,7 @@ function configure(version_offset, min_julia_version)
     # Collection of sources required to build NetCDF
     sources = [
         ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(upstream_version).zip",
-                      "e4e75523466de4187cff29784ff12755925f17e753bff0c9c46cd670ca63c6b2"),
+                      "76fbe29d8baa37073a3e465f3a71bb063849906067f9867b24f6a6d67281281c"),
         DirectorySource("../bundled"),
     ]
 
@@ -42,10 +42,9 @@ if [[ ${target} == *-mingw* ]]; then
     # unless -no-undefined is added to LDFLAGS
     LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined -Wl,--export-all-symbols"
 
-    # testset fails on mingw (NetCDF 4.8.1)
-    # libtool: link: cc -fno-strict-aliasing -o .libs/pathcvt.exe pathcvt.o  -L/workspace/destdir/bin ../liblib/.libs/libnetcdf.dll.a -lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz -L/workspace/destdir/lib
-    # pathcvt.o:pathcvt.c:(.text+0x15c): undefined reference to `NCpathcvt'
-    CONFIGURE_OPTIONS="--disable-testsets"
+    # additional configure options from
+    # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
+    CONFIGURE_OPTIONS="--disable-plugins --disable-byterange"
 elif [[ "${target}" == *-apple-* ]]; then
     # this file is referenced by hdf.h by not installed
     touch ${includedir}/features.h
@@ -69,7 +68,9 @@ if [[ ${target} == x86_64-linux-gnu ]]; then
    make check
 fi
 
+
 make install
+
 nc-config --all
 """
 
@@ -84,9 +85,8 @@ nc-config --all
         # Platform("armv7l", "linux"; libc="glibc"),
         Platform("aarch64", "linux"; libc="glibc"),
         Platform("x86_64", "macos"),
-        # Windows build is known to fail with HDF5 1.12.1
-        #Platform("x86_64", "windows"),
-        #Platform("i686", "windows"),
+        Platform("x86_64", "windows"),
+        Platform("i686", "windows"),
     ]
     if min_julia_version ≥ v"1.6"
         push!(platforms, Platform("aarch64","macos"))
@@ -98,19 +98,20 @@ nc-config --all
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.1"),
+        Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
         Dependency("Zlib_jll"),
+        Dependency("XML2_jll"),
     ]
 
     jll_stdlibs = Dict(
         v"1.3" => [
-            Dependency("LibCURL_jll", v"7.71.1"),
+            Dependency("LibCURL_jll"; compat = "~7.71.1"),
         ],
         v"1.6" => [
-            Dependency("LibCURL_jll", v"7.73.0"),
+            Dependency("LibCURL_jll"; compat = "~7.73.0"),
         ],
         v"1.8" => [
-            Dependency("LibCURL_jll", v"7.81.0"),
+            Dependency("LibCURL_jll"; compat = "~7.84.0"),
         ]
     )
 
