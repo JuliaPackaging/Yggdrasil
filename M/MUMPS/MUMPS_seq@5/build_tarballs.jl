@@ -4,18 +4,19 @@ name = "MUMPS_seq"
 version = v"5.5.1"
 
 sources = [
-  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(version).tar.gz", 
-                "1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15")
+  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(version).tar.gz",
+                "1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 if [[ "${target}" == aarch64-apple-darwin* ]]; then
     # Fix the error:
