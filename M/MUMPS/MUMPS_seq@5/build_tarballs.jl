@@ -25,6 +25,12 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
     FFLAGS=("-fallow-argument-mismatch")
 fi
 
+if [[ "${target}" == *apple* ]]; then
+    SONAME="-install_name"
+else
+    SONAME="-soname"
+fi
+
 make_args+=(OPTF=-O3
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
@@ -32,6 +38,7 @@ make_args+=(OPTF=-O3
             LMETIS='-L$(LMETISDIR) -lmetis'
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
+            SONAME="${SONAME}"
             CC="$CC -fPIC ${CFLAGS[@]}"
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
