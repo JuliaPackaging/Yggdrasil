@@ -43,8 +43,8 @@ make_args+=(OPTF=-O3
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
             RANLIB="echo"
-            LIBBLAS="-L${libdir} -lopenblas"
-            LAPACK="-L${libdir} -lopenblas")
+            LIBBLAS="-L${libdir} -lblastrampoline"
+            LAPACK="-L${libdir} -lblastrampoline")
 
 make -j${nproc} allshared "${make_args[@]}"
 
@@ -70,8 +70,8 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("METIS_jll"),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("libblastrampoline_jll")
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.8", preferred_gcc_version=v"6")
