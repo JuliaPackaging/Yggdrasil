@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc

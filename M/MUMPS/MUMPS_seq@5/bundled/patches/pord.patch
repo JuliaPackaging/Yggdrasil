@@ -1,0 +1,11 @@
+--- a/PORD/lib/Makefile
++++ b/PORD/lib/Makefile
+@@ -29,7 +29,7 @@
+ 	$(RANLIB) $@
+ 
+ libpord$(PLAT)$(LIBEXT_SHARED):$(OBJS)
+-	$(CC) -shared $(OBJS) -o libpord.so
++	$(CC) -shared $(OBJS) -o libpord$(LIBEXT_SHARED)
+ 
+ clean:
+ 	rm -f *.o
