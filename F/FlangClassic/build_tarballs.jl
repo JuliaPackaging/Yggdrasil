@@ -22,6 +22,7 @@ cd llvm-build/
 
 ## Apply LLVM patches
 atomic_patch -p1 -d ../classic-flang-llvm-project ../patches/0010-add-musl-triples.patch
+atomic_patch -p1 -d ../classic-flang-llvm-project ../patches/nosincos.patch
 
 ## Configure & Build
 cmake -GNinja -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_CLASSIC_FLANG=ON -DLLVM_ENABLE_PROJECTS="clang;openmp" ../classic-flang-llvm-project/llvm/
