@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"2.2.15
+version = v"2.2.15"
 
 # Collection of sources required to complete build
 sources = [
