@@ -28,7 +28,7 @@ export LDFLAGS="-L${libdir}"
 
 cd $WORKSPACE/srcdir/ReadStat/
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
