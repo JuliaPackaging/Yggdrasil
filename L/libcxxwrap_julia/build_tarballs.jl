@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libcxxwrap_julia"
-version = v"0.9.1"
+version = v"0.9.2"
 
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
@@ -18,7 +18,7 @@ unpack_target = is_yggdrasil ? "" : "libcxxwrap-julia"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "e0770675bef3f807913b44564db6daa4a80d5d3b", unpack_target=unpack_target),
+    GitSource(git_repo, "ab9c3f11114d1715ae1780bd4d5e8d3df7f236fb", unpack_target=unpack_target),
 ]
 
 # Bash recipe for building across all platforms
