@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.15.0"
+version = v"0.15.1"
+openpmi_api_version = "v.0.14.5" # This is really the `dev` branch after version 0.14.5
 
 # `v"1.6.3"` fails to build
 julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
@@ -62,11 +63,7 @@ if [[ "$target" == *-apple-* ]]; then
         # and wants to use "-framework" as a stand-alone option. This fails
         # gloriously, and cmake concludes that MPI is not available.
         mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        mpiopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     fi
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    mpiopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
@@ -147,7 +144,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libgfortran_version(p) == v"3"), platforms)
 
 append!(dependencies, platform_dependencies)
 

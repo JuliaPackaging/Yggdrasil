@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.5.0"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -113,7 +113,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"; compat="~3.10"),
+    Dependency("GEOS_jll"; compat="~3.11"),
     Dependency("PROJ_jll"; compat="~900.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
