@@ -226,6 +226,6 @@ function openblas_dependencies(;kwargs...)
         Dependency("CompilerSupportLibraries_jll"),
         HostBuildDependency("FlangClassic_jll"),
         BuildDependency("LLVMCompilerRT_jll"),
-        BuildDependency("FlangClassic_RTLib_jll")
+        BuildDependency("FlangClassic_RTLib_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")])
     ]
 end
