@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libstemmer_c/
+cd $WORKSPACE/srcdir/libstemmer_c-2.2.0/
 cp ../CMakeLists.txt .
 rm Makefile
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
