@@ -7,20 +7,18 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.6.7", v"1.7.0", v"1.8.0", v"1.9.0"]
 name = "MParT"
-version = v"0.2.1"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "0522c6e8d3f37c811a344a56bee75473a9ddc309")
+    "75af24702a91ce7caae81550b7e7ed6f422c8ec2")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Override compiler ID to silence the horrible "No features found" cmake error
-
 cd $WORKSPACE/srcdir
 mkdir MParT/build && cd MParT/build
 
@@ -44,8 +42,8 @@ include("../../L/libjulia/common.jl")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, supported_platforms())
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
+platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
 
 # The products that we will ensure are always built
 products = [
