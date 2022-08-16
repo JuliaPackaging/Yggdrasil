@@ -28,7 +28,7 @@ atomic_patch -p1 -d ../classic-flang-llvm-project ../patches/nosincos.patch
 
 ## Configure & Build
 if [[ ${build_compiler} == 1 ]]; then
-    export LLVM_TARGET="-DLLVM_ENABLE_CLASSIC_FLANG=ON -DLLVM_ENABLE_PROJECTS="clang;openmp"  ../classic-flang-llvm-project/llvm/"
+    export LLVM_TARGET="-DLLVM_ENABLE_CLASSIC_FLANG=ON -DLLVM_ENABLE_PROJECTS=clang;openmp ../classic-flang-llvm-project/llvm/"
 else
     export LLVM_TARGET="-DOPENMP_ENABLE_LIBOMPTARGET=OFF ../classic-flang-llvm-project/openmp"
 fi
@@ -58,8 +58,8 @@ atomic_patch -p1 -d ../flang ../patches/flang2-install-dir.patch
 ## Create Compiler wrapper for flang
 if [[ ${build_compiler} == 1 ]]; then
     # For the just-built compiler
-    cat /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang | sed 's/clang/flang/g' > /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-flang
-    chmod +x /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-flang
+    cat /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang | sed 's/clang/flang/g' > /opt/bin/${bb_full_target}/${target}-flang
+    chmod +x /opt/bin/${bb_full_target}/${target}-flang
     ln -s ${WORKSPACE}/destdir/bin/flang /opt/x86_64-linux-musl/bin/flang
 else
     # For the host compiler
