@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "Snowball"
-version = v"2.0.0"
+version = v"2.2.0"
 
 # Collection of sources required to build SDL2
 sources = [
-    ArchiveSource("https://snowballstem.org/dist/libstemmer_c.tgz", "054e76f2a05478632f2185025bff0b98952a2b7aed7c4e0960d72ba565de5dfc"),
+    ArchiveSource("https://snowballstem.org/dist/libstemmer_c-2.2.0.tar.gz", "b941d9fe9cf36b4e2f8d3873cd4d8b8775bd94867a1df8d8c001bb8b688377c3"),
     DirectorySource("./bundled"),
 ]
 
@@ -36,4 +36,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
