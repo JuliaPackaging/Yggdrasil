@@ -16,7 +16,7 @@ script *= raw"""
 cd $WORKSPACE/srcdir
 
 # Clear clang leftovers
-rm /workspace/x86_64-linux-musl-cxx11/destdir/lib/libclang*
+rm /workspace/x86_64-linux-musl-cxx11/destdir/lib/libclang* || true
 
 # Begin (LLVM + flang driver) build
 mkdir llvm-build
