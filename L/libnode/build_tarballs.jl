@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libnode"
-version = v"16.16.0"
+version = v"16.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "e07c30b0498f143c08793e34bda1adeaad32f485a4f79f4d67a82879f4c0bbe3"),
+    ArchiveSource("https://nodejs.org/dist/v$(version)/node-v$(version).tar.gz", "2a2e6262739741f98ab81648a50891861dbf66f12413b93f1a97b4c71570611e"),
     DirectorySource("bundled")
 ]
 
