@@ -37,7 +37,7 @@ fi
 
 make_args+=(OPTF=-O \
             CDEFS=-DAdd_ \
-            LMETISDIR=${prefix} \
+            LMETISDIR="${libdir}" \
             IMETIS="-I${includedir}" \
             LMETIS="-L${libdir} -lparmetis -lmetis" \
             ORDERINGSF="-Dpord -Dparmetis" \
@@ -47,9 +47,10 @@ make_args+=(OPTF=-O \
             FC="mpif90 -fPIC ${FFLAGS[@]}" \
             FL="mpif90 -fPIC" \
             RANLIB="echo" \
-            SCALAP="${libdir}/scalapack32.${dlext} ${libdir}/libopenblas.${dlext}" \
-            INCPAR= \
-            LIBPAR="-L${libdir} -lscalapack32" \
+            LAPACK="-L${libdir} -lopenblas"
+            SCALAP="-L${libdir} -lscalapack32" \
+            INCPAR="-I${includedir}" \
+            LIBPAR="-L${libdir} -lscalapack32 -lopenblas -lmpi" \
             LIBBLAS="-L${libdir} -lopenblas")
 
 # Options for SCOTCH
