@@ -19,15 +19,12 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 makefile="Makefile.G95.PAR"
 cp Make.inc/${makefile} Makefile.inc
 
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # Fix the error:
-    #     Type mismatch in argument ‘s’ at (1); passed INTEGER(4) to LOGICAL(4)
+# Add `-fallow-argument-mismatch` if supported
+: >empty.f
+if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
     FFLAGS=("-fallow-argument-mismatch")
 fi
-
-if [[ "${target}" == *-apple* ]]; then
-  CFLAGS=("-fno-stack-check")
-fi
+rm -f empty.*
 
 if [[ "${target}" == *apple* ]]; then
     SONAME="-install_name"
@@ -66,8 +63,8 @@ cp lib/*.${dlext} ${libdir}
 """
 
 # OpenMPI and MPICH are not precompiled for Windows
-# MUMPS doesn't build on PowerPC
 platforms = expand_gfortran_versions(filter!(p -> !Sys.iswindows(p), supported_platforms()))
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4"), platforms)
 
 # The products that we will ensure are always built
 products = [
