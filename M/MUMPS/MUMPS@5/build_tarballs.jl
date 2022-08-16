@@ -49,8 +49,8 @@ make_args+=(OPTF=-O \
             RANLIB="echo" \
             SCALAP="${libdir}/scalapack32.${dlext} ${libdir}/libopenblas.${dlext}" \
             INCPAR= \
-            LIBPAR=-lscalapack32 \
-            LIBBLAS=-lopenblas)
+            LIBPAR="-L${libdir} -lscalapack32" \
+            LIBBLAS="-L${libdir} -lopenblas")
 
 # Options for SCOTCH
 # LSCOTCHDIR=${prefix}
