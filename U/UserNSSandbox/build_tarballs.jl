@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2022.03.30"
+version = v"2022.08.01"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/staticfloat/Sandbox.jl.git",
-              "4a82de7b33326acffc75336364c71f06ea84ec8c"),
+              "1770a67566e61590b6c8b907430f826ff077b19c"),
 ]
 
 # Bash recipe for building across all platforms

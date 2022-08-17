@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CryptoMiniSat"
-version = v"5.8.1"
+version = v"5.8.2"
 cryptominisat_version = v"5.8.0"
 
 # Collection of sources required to complete build
