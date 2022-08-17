@@ -30,6 +30,8 @@ exit
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 
+# Mimic LAPACK's platform filtering
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -43,4 +45,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
