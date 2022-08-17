@@ -96,8 +96,11 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# SCALAPACK32 isn't compiled for this platform
+# SCALAPACK32 is not compiled for:
+# - aarch64-linux-musl-libgfortran4-mpi+mpich
+# - aarch64-linux-musl-libgfortran4-mpi+openmpi
 platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "openmpi"), platforms)
 
 # The products that we will ensure are always built
 products = [
