@@ -7,14 +7,14 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.7", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 name = "MParT"
-version = v"0.3.1"
+version = v"0.3.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "75af24702a91ce7caae81550b7e7ed6f422c8ec2")
+    "3002a8fba22367126cf7fd494f902dfff7e9dc5b")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_BUILD_TYPE=Release \
   -DMPART_BUILD_TESTS=OFF \
   -DMPART_PYTHON=OFF \
+  -DMPART_MATLAB=OFF \
   -DMPART_JULIA=ON \
+  -DJULIA_INSTALL_PATH=${prefix}/lib \
   -DJulia_PREFIX=${prefix} \
   ..
 
@@ -48,7 +50,7 @@ platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmpart", :libmpart),
-    LibraryProduct("libmpartjl", :libmpartjl, String["julia/mpart"]),
+    LibraryProduct("libmpartjl", :libmpartjl),
 ]
 
 # Dependencies that must be installed before this package can be built
