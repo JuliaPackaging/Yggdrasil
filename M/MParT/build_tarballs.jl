@@ -34,7 +34,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DMPART_PYTHON=OFF \
   -DMPART_MATLAB=OFF \
   -DMPART_JULIA=ON \
-  -DJULIA_INSTALL_PATH=${prefix}/lib \
+  -DJULIA_INSTALL_PREFIX=${prefix}/lib \
   -DJulia_PREFIX=${prefix} \
   ..
 
