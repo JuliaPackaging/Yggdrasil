@@ -105,7 +105,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
     Dependency("XML2_jll"),
     Dependency("LibCURL_jll"; compat = "7.73.0"),
 ]
