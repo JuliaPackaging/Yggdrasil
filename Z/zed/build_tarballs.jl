@@ -19,7 +19,7 @@ cp -r dist/. ${bindir}/.
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter(p -> wordsize(p) > 32, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
