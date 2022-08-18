@@ -49,11 +49,10 @@ make install
 install_license /usr/share/licenses/GPL-3.0+
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms()
-filter!(p -> !(os(p) == "macos" && arch(p) == "aarch64"), platforms)
-push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+# Other platforms are being built in GCCBootstrap
+# platforms = supported_platforms()
+# filter!(p -> !(os(p) == "macos" && arch(p) == "aarch64"), platforms)
+platforms = Any[ Platform("x86_64", "linux"; sanitize="memory") ]
 
 # The products that we will ensure are always built
 products = LibraryProduct[
