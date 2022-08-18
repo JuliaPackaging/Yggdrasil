@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LibStdCxx"
-version = v"11.1.0"
+version = v"12.1.0"
 
 include("../../0_RootFS/gcc_sources.jl")
 
@@ -16,8 +16,8 @@ script = raw"""
 if [[ ${bb_full_target} == *-sanitize* ]]; then
     cp -rL $prefix/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
 fi
-atomic_patch -p0 $WORKSPACE/srcdir/patches/gcc-11-libstdcxx-sanitizers.patch
-atomic_patch -p1 -d gcc-*/ $WORKSPACE/srcdir/patches/gcc-11-clang-bug-inline.patch
+atomic_patch -p1 -d gcc-*/ $WORKSPACE/srcdir/patches/gcc-12-libstdcxx-sanitizers.patch
+atomic_patch -p1 -d gcc-*/ $WORKSPACE/srcdir/patches/gcc-12-clang-bug-inline.patch
 
 mkdir -p $WORKSPACE/srcdir/gcc_build
 cd $WORKSPACE/srcdir/gcc_build
