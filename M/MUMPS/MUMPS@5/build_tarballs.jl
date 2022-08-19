@@ -50,6 +50,11 @@ elif grep -q OMPI_MAJOR_VERSION "${includedir}/mpi.h"; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
+# Override MPItrampoline's built-in compiler paths
+export MPITRAMPOLINE_CC=cc
+export MPITRAMPOLINE_CXX=c++
+export MPITRAMPOLINE_FC=gfortran
+
 make_args+=(OPTF=-O \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
@@ -96,15 +101,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-# mpicc is not working for the following platforms:
-platforms = filter(p -> !(arch(p) == "i686"        && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "x86_64"      && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "aarch64"     && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "armv6l"      && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "armv7l"      && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "powerpc64le" && os(p) == "linux" && libc(p) == "glibc" && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
-platforms = filter(p -> !(arch(p) == "x86_64"      && os(p) == "macos"                       && libgfortran_version(p) == v"3" && p["mpi"] == "mpitrampoline"), platforms)
 
 # SCALAPACK32 is not compiled for:
 # - aarch64-linux-musl-libgfortran4-mpi+mpich
