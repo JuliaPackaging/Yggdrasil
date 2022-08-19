@@ -1,17 +1,36 @@
-using BinaryBuilder, SHA
+using BinaryBuilder, BinaryBuilderBase, SHA
 
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.6.1"
+version = v"0.5.2"
+
+csl_should_build_platform(p) = should_build_platform(p; matcher=BinaryBuilderBase.platforms_match_with_sanitize)
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
 extraction_script = raw"""
-mkdir -p ${libdir}
+mkdir -p ${libdir}/extract
+
+# For the sanitizers, extract from the jll
+if [[ ${bb_full_target} == *sanitize* ]]; then
+    cp -av ${libdir}/libstdc++*.${dlext}* ${libdir}/extract || true
+    cp -Lav ${libdir}/libstdc++*.${dlext}.6.0.* ${libdir}/extract || true
+fi
+
+# For the rest, extract directly into the `extract` directory to avoid
+# conflicting with the depedency jlls.
+export libdir=${libdir}/extract
+
+# Extract all the files
 for d in /opt/${target}/${target}/lib*; do
     # Copy all the libstdc++ and libgomp files:
-    cp -av ${d}/libstdc++*.${dlext}* ${libdir} || true
+
+    # Don't extract libstdc++ for the sanitizers, we'll get them from the jll instead
+    if [[ ${bb_full_target} != *sanitize* ]]; then
+        cp -av ${d}/libstdc++*.${dlext}* ${libdir} || true
+    fi
+
     cp -av ${d}/libgomp*.${dlext}* ${libdir} || true
     # `libgcc_s` changed ABI for darwin platforms in GCC 12, so we have `libgcc_s.1.dylib`
     # until GCC 11, and `libgcc_s.1.1.dylib` after that.  Since `libstdc++` links to
@@ -26,9 +45,15 @@ done
 """
 
 extraction_platforms = supported_platforms(;experimental=true)
+push!(extraction_platforms, Platform("x86_64", "linux"; sanitize="memory"))
+
 extraction_products = [
-    LibraryProduct("libstdc++", :libstdcxx),
-    LibraryProduct("libgomp", :libgomp),
+    LibraryProduct("libstdc++", :libstdcxx, ["lib/extract"]),
+    LibraryProduct("libgomp", :libgomp, ["lib/extract"]),
+]
+
+extraction_dependencies = [
+    BuildDependency("LibStdCxx_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")])
 ]
 
 # Don't actually run extraction if we're asking for a JSON, but don't print it either
@@ -36,7 +61,7 @@ if any(startswith(a, "--meta-json") for a in ARGS)
     # How delightfully meta, for when we're calculating the meta!  ;D
     self_url = @__FILE__
     self_hash = open(io -> bytes2hex(sha256(io)), self_url)
-    build_info = Dict(p => (self_url, self_hash) for p in BinaryBuilder.BinaryBuilderBase.abi_agnostic.(extraction_platforms))
+    build_info = Dict(p => (self_url, self_hash) for p in BinaryBuilder.BinaryBuilderBase.libabi_agnostic.(extraction_platforms))
 else
     build_info = autobuild(joinpath(@__DIR__, "build", "extraction"),
         "LatestLibraries",
@@ -44,9 +69,9 @@ else
         FileSource[],
         extraction_script,
         # Only extract for platforms we're actually going to use
-        filter(should_build_platform, extraction_platforms),
+        filter(csl_should_build_platform, extraction_platforms),
         extraction_products,
-        Dependency[];
+        extraction_dependencies;
         skip_audit=true,
         # Force latest compatible version.
         preferred_gcc_version=v"100",
@@ -60,6 +85,8 @@ end
 script = raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
+mv ${libdir}/extract/* ${libdir}
+rmdir ${libdir}/extract
 
 echo ***********************************************************
 echo LatestLibraries logs, reproduced here for debuggability:
@@ -116,7 +143,10 @@ install_license /usr/share/licenses/GPL-3.0+
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+# TODO: Does it really make sense to libgfortran expand this? For now, just do it for consistency.
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 common_products = [
@@ -127,14 +157,14 @@ common_products = [
 ]
 
 for platform in platforms
-    if should_build_platform(platform)
+    if csl_should_build_platform(platform)
         # Find the corresponding source for this platform
-        tarball_path, tarball_hash = build_info[BinaryBuilder.BinaryBuilderBase.abi_agnostic(platform)][1:2]
+        tarball_path, tarball_hash = build_info[BinaryBuilder.BinaryBuilderBase.libabi_agnostic(platform)][1:2]
         sources = [
             FileSource(tarball_path, tarball_hash),
         ]
         # Windows and aarch64 Linux don't have a libatomic on older GCC's
-        products = if libgfortran_version(platform).major != 3 || !(Sys.iswindows(platform) || arch(platform) == "aarch64")
+        products = if libgfortran_version(platform) !== nothing && libgfortran_version(platform).major != 3 || !(Sys.iswindows(platform) || arch(platform) == "aarch64")
             # Don't push to the common products, otherwise we'll keep
             # accumulating libatomic into it when looping over all platforms.
             vcat(common_products, LibraryProduct("libatomic", :libatomic))
