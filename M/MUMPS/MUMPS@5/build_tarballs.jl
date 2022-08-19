@@ -14,6 +14,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+echo $(which mpicc)
+echo $(which cc)
+
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
