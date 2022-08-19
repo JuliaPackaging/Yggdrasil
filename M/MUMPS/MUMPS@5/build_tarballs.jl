@@ -14,8 +14,33 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-echo $(which mpicc)
-echo $(which cc)
+mkdir -p /opt/bin/i686-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/i686-linux-gnu-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/i686-linux-gnu-libgfortran3-mpi+mpitrampoline/i686-linux-gnu-gcc /opt/bin/i686-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline/i686-linux-gnu-gcc
+
+mkdir -p /opt/bin/x86_64-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/x86_64-linux-gnu-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/x86_64-linux-gnu-libgfortran3-mpi+mpitrampoline/x86_64-linux-gnu-gcc /opt/bin/x86_64-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline/x86_64-linux-gnu-gcc
+
+mkdir -p /opt/bin/aarch64-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/aarch64-linux-gnu-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/aarch64-linux-gnu-libgfortran3-mpi+mpitrampoline/aarch64-linux-gnu-gcc /opt/bin/aarch64-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline/aarch64-linux-gnu-gcc
+
+mkdir -p /opt/bin/armv6l-linux-gnueabihf-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/armv6l-linux-gnueabihf-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/armv6l-linux-gnueabihf-libgfortran3-mpi+mpitrampoline/arm-linux-gnueabihf-gcc /opt/bin/armv6l-linux-gnueabihf-libgfortran3-cxx03-mpi+mpitrampoline/arm-linux-gnueabihf-gcc
+
+mkdir -p /opt/bin/armv7l-linux-gnueabihf-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/armv7l-linux-gnueabihf-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/armv7l-linux-gnueabihf-libgfortran3-mpi+mpitrampoline/arm-linux-gnueabihf-gcc /opt/bin/armv7l-linux-gnueabihf-libgfortran3-cxx03-mpi+mpitrampoline/arm-linux-gnueabihf-gcc
+
+mkdir -p /opt/bin/powerpc64le-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/powerpc64le-linux-gnu-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/powerpc64le-linux-gnu-libgfortran3-mpi+mpitrampoline/powerpc64le-linux-gnu-gcc /opt/bin/powerpc64le-linux-gnu-libgfortran3-cxx03-mpi+mpitrampoline/powerpc64le-linux-gnu-gcc
+
+mkdir -p /opt/bin/x86_64-apple-darwin14-libgfortran3-cxx03-mpi+mpitrampoline
+mkdir -p /opt/bin/x86_64-apple-darwin14-libgfortran3-mpi+mpitrampoline
+ln -sf /opt/bin/x86_64-apple-darwin14-libgfortran3-mpi+mpitrampoline/x86_64-apple-darwin14-clang /opt/bin/x86_64-apple-darwin14-libgfortran3-cxx03-mpi+mpitrampoline/x86_64-apple-darwin14-clang
 
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
