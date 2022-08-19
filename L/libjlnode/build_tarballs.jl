@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libjlnode"
-version = v"14.17.3"
+version = v"16.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunoru/jlnode.git", "1bb0c23e7f0200fdb9dd5bcd82e153d353264e37"),
-    ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/4.0.0.tar.gz", "a61019de219cfbb4943b109fd1c56466c48dedbfcce10567f8e7826992be9c0d")
+    ArchiveSource("https://github.com/sunoru/jlnode/archive/refs/tags/v$version.tar.gz", "18ae255bf47c21187ba882d80ac19909ab0fcb23fa587b5f4f1043d43208521c"),
+    ArchiveSource("https://github.com/nodejs/node-addon-api/archive/refs/tags/v5.0.0.tar.gz", "2bdf9c540f67c43036d58b3146e61b437148939efc8d4cde2d1314fdaeb39e9b")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir
 cd node-addon-api-*
 export NAPI_INC=`pwd`
 
-cd ../jlnode
+cd ../jlnode-*
 mkdir build
 cd build
 cmake .. -G"Unix Makefiles" \
@@ -57,7 +57,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("libnode_jll")
+    Dependency("libnode_jll", v"16.14.0", compat="16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
