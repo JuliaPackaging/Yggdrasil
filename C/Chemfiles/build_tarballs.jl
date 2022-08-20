@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Chemfiles"
-version = v"0.10.2"
+version = v"0.10.3"
 
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/chemfiles/chemfiles/archive/$version.tar.gz",
-                  "2e3b58167f25d561ab19ae06acdc02f26b5640bd6c85e0a5b10fedfec59f5285"),
+                  "5f53d87a668a85bebf04e0e8ace0f1db984573de1c54891ba7d37d31cced0408"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,8 +31,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
