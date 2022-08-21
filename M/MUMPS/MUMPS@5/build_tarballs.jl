@@ -55,7 +55,7 @@ export MPITRAMPOLINE_CC=cc
 export MPITRAMPOLINE_CXX=c++
 export MPITRAMPOLINE_FC=gfortran
 
-make_args+=(OPTF=-O \
+make_args+=(OPTF=-O3 \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
             IMETIS="-I${includedir}" \
