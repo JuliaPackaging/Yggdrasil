@@ -34,7 +34,7 @@ fi
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
     --with-lapack-lflags=-lblastrampoline \
-    --with-mumps-cflags="-I${includedir}/mumps_seq" \
+    --with-mumps-cflags="-I${includedir}" \
     --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lblastrampoline -lgfortran -lpthread" \
     --with-asl-lflags="${LIBASL}"
 
