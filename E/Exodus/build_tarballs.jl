@@ -18,7 +18,7 @@ mkdir build
 cd build
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
 uname -s
-if ["OS" == "MINGW64_NT] ; then
+if ["OS" == "MINGW64_NT"] ; then
     INSTALL_PATH=${prefix}
     FORTRAN=NO
     NETCDF_PATH=/mingw64
