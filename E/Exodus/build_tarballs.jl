@@ -21,6 +21,7 @@ cd build
 CFLAGS="-Wall -Wunused -pedantic -std=c11" \
 CXXFLAGS="-Wall -Wunused -pedantic" \
 INSTALL_PATH=${prefix} \
+HAVE_X11=NO \
 APPLICATIONS=NO \
 FORTRAN=NO \
 NETCDF_PATH=${prefix} \
