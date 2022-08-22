@@ -21,7 +21,12 @@ CFLAGS="-Wall -Wunused -pedantic -std=c11"
 CXXFLAGS="-Wall -Wunused -pedantic"
 
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
-INSTALL_PATH=${prefix} FORTRAN=NO NETCDF_PATH=${prefix} PNETCDF_PATH=${prefix} HDF5_PATH=${prefix} ../cmake-exodus
+INSTALL_PATH=${prefix} \
+FORTRAN=NO \
+NETCDF_PATH=${prefix} \
+PNETCDF_PATH=${prefix} \
+HDF5_PATH=${prefix} \
+../cmake-exodus
 
 make
 make install
@@ -34,6 +39,7 @@ platforms = [
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
+    Platform("x86_64", "windows")
 ]
 
 
@@ -44,9 +50,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    # Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
-    # Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
