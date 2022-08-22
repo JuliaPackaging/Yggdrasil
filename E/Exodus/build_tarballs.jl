@@ -12,8 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-#! /usr/bin/env bash
-
 cd $WORKSPACE/srcdir/seacas
 
 mkdir build
@@ -43,6 +41,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    # Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
+    # Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
