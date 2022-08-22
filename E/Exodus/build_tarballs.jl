@@ -17,10 +17,11 @@ cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
 
-CFLAGS="-Wall -Wunused -pedantic -std=c11"
-CXXFLAGS="-Wall -Wunused -pedantic"
+
 
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
+CFLAGS="-Wall -Wunused -pedantic -std=c11" \
+CXXFLAGS="-Wall -Wunused -pedantic" \
 INSTALL_PATH=${prefix} \
 FORTRAN=NO \
 NETCDF_PATH=${prefix} \
