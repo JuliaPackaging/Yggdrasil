@@ -23,6 +23,7 @@ CXXFLAGS="-Wall -Wunused -pedantic" \
 INSTALL_PATH=${prefix} \
 HAVE_X11=NO \
 APPLICATIONS=NO \
+LEGACY=NO \
 FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
