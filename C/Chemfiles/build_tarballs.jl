@@ -10,11 +10,14 @@ version = v"0.10.3"
 sources = [
     ArchiveSource("https://github.com/chemfiles/chemfiles/archive/$version.tar.gz",
                   "5f53d87a668a85bebf04e0e8ace0f1db984573de1c54891ba7d37d31cced0408"),
+    DirectorySource("./patches"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/chemfiles-*/
+atomic_patch -p1 ${WORKSPACE}/srcdir/arm-musl-endian-detect.patch
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
 make -j${nproc}
