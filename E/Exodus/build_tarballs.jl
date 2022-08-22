@@ -17,6 +17,9 @@ cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
 
+CFLAGS="-Wall -Wunused -pedantic -std=c11"
+CXXFLAGS="-Wall -Wunused -pedantic"
+
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
 INSTALL_PATH=${prefix} FORTRAN=NO NETCDF_PATH=${prefix} PNETCDF_PATH=${prefix} HDF5_PATH=${prefix} ../cmake-exodus
 
