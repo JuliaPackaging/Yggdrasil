@@ -18,21 +18,8 @@ mkdir build
 cd build
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
 uname -s
-if ["OS" == "Linux"] ; then
+if ["$OS" == "MSYS_NT-6.3"] ; then
     INSTALL_PATH=${prefix}
-    FORTRAN=NO
-    NETCDF_PATH=${prefix}
-    PNETCDF_PATH=${prefix}
-    HDF5_PATH=${prefix}
-    HAVE_X11=NO
-    
-elif ["OS" == "Darwin"] ; then
-    INSTALL_PATH=${prefix}
-    FORTRAN=NO
-    NETCDF_PATH=${prefix}
-    PNETCDF_PATH=${prefix}
-    HDF5_PATH=${prefix}
-    HAVE_X11=NOINSTALL_PATH=${prefix}
     FORTRAN=NO
     NETCDF_PATH=/mingw64
     PNETCDF_PATH=/mingw64
@@ -40,9 +27,10 @@ elif ["OS" == "Darwin"] ; then
 else
     INSTALL_PATH=${prefix}
     FORTRAN=NO
-    NETCDF_PATH=/mingw64
-    PNETCDF_PATH=/mingw64
-    HDF5_PATH=/mingw64
+    NETCDF_PATH=${prefix}
+    PNETCDF_PATH=${prefix}
+    HDF5_PATH=${prefix}
+    HAVE_X11=NO
 fi
 ### Set to ON for parallel compile; otherwise OFF for serial (default)
 if [ "${MPI}" = "" ]; then
