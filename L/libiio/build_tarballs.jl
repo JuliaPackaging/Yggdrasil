@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libiio"
-version = v"0.23.0"
+version = v"0.24.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/analogdevicesinc/libiio.git", "92d6a35f3d8d721cda7d6fe664b435311dd368b4")
+    GitSource("https://github.com/analogdevicesinc/libiio.git", "c4498c27761d04d4ac631ec59c1613bfed079da5")
 ]
 
 dependencies = [
@@ -26,35 +26,20 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHAVE_DNS_SD=OFF \
     -DENABLE_IPV6=OFF \
+    -DWITH_TESTS=OFF \
+    -DOSX_FRAMEWORK=OFF \
     ..
 make -j${nproc}
-if [[ "${target}" == *-apple-* ]]; then
-    cp -r iio.framework ${libdir}
-else
-    make install
-fi
+make install
 """
-
-include("../../fancy_toys.jl")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.isapple(p), supported_platforms(;experimental=true))
-platforms_macos = filter!(p -> Sys.isapple(p), supported_platforms(;experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libiio", :libiio)
 ]
 
-products_apple = [
-    FrameworkProduct("iio", :libiio)
-]
-
-# Build the tarballs, and possibly a `build.jl` as well.
-if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_apple, dependencies; julia_compat="1.6")
-end
-if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-end
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

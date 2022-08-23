@@ -7,6 +7,7 @@ name = "MPICH"
 version_str = "4.0.2"
 version = VersionNumber(version_str)
 
+# build trigger
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",

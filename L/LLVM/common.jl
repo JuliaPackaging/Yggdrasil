@@ -13,7 +13,7 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
+    v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "41ae790a2454766ac5e8933c04f2fe650f1f899d", # julia-14.0.6-0
 )
 
@@ -331,7 +331,21 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const mlirscript = raw"""
+const mlirscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -370,7 +384,28 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const llvmscript = raw"""
+const llvmscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${libdir}/*MLIR*.${dlext}*
+rm -vrf ${prefix}/lib/*LLVM*.a
+rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${prefix}/lib/clang
+rm -vrf ${prefix}/lib/mlir
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+"""
+
+const llvmscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -484,7 +519,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
-        script = mlirscript
+        script = version < v"14" ? mlirscript_v13 : mlirscript_v14
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
         ]
@@ -502,7 +537,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         ]
         
     elseif name == "LLVM"
-        script = llvmscript
+        script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
             LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
             ExecutableProduct("opt", :opt, "tools"),
