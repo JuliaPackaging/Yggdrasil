@@ -9,13 +9,31 @@ version = v"1.0.6"
 sources = [
     ArchiveSource("https://sourceforge.net/projects/weinberg-r2r/files/R2R-1.0.6.tgz",
                   "1ba8f51db92866ebe1aeb3c056f17489bceefe2f67c5c0bbdfbddc0eee17743d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/R2R-*/
 
-update_configure_scripts
+# convert files to be patched to LF line endings (from CRLF)
+for f in src/SymbolicMath.cpp \
+         src/SymbolicMath.h \
+         src/GSCConsensus.cpp \
+         src/ParseOneStockholm.cpp \
+         src/PositionBackbone_MultiStemCircularSolver.cpp \
+         src/RnaDrawer.cpp;
+do
+    cp "$f" "$f".bak
+    tr -d '\015' < "$f".bak > "$f"
+done
+
+atomic_patch -p1 ../patches/fix-ptr-to-int-on-windows-64bit.patch
+atomic_patch -p1 ../patches/isfinite.patch
+atomic_patch -p1 ../patches/fix-format-strings.patch
+
+update_configure_scripts --reconf
+export CXXFLAGS="-std=c++11"
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-nlopt
@@ -50,4 +68,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version = v"7")
