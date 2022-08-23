@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_C"
-version = v"3.3.1"
+version = v"3.3.2"
 julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
     GitSource("https://github.com/mariadb-corporation/mariadb-connector-c.git",
-              "5e94e7c27ffad7e76665b1333a67975316b9c3c2"),
+              "1bd8c8bf39c259a1b1713974684e24d168a09d13"),
     DirectorySource("./bundled"),
 ]
 
