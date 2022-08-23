@@ -1,0 +1,29 @@
+#!/bin/bash
+
+ARGS=( "$@" )
+PRE_FLAGS=()
+POST_FLAGS=()
+
+PRE_FLAGS+=( -target ${target} )
+PRE_FLAGS+=( --sysroot=/opt/${target}/${target}/sys-root )
+PRE_FLAGS+=( --gcc-toolchain=/opt/${target} )
+
+if [[ " ${ARGS[@]} " != *' -x assembler '* ]]; then
+    PRE_FLAGS+=( -march=x86-64 )
+    PRE_FLAGS+=( -mtune=generic )
+fi
+
+if [[ " ${ARGS[@]} " != *' -c '* ]] && [[ " ${ARGS[@]} " != *' -E '* ]] && [[ " ${ARGS[@]} " != *' -M '* ]] && [[ " ${ARGS[@]} " != *' -fsyntax-only '* ]]; then
+    POST_FLAGS+=( -fuse-ld=lld )
+fi
+
+if [[ " ${ARGS[@]} " == *"-march="* ]]; then
+    echo "BinaryBuilder: Cannot force an architecture via -march" >&2
+    exit 1
+fi
+
+if [ ${USE_CCACHE} == "true" ]; then
+    CCACHE="ccache"
+fi
+
+${CCACHE} ${prefix}/llvm/bin/clang++ "${PRE_FLAGS[@]}" "${ARGS[@]}" "${POST_FLAGS[@]}"
