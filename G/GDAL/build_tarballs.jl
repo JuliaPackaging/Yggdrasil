@@ -66,6 +66,7 @@ rm -f ${prefix}/lib/*.la
     --with-expat=$prefix \
     --with-zstd=$prefix \
     --with-sqlite3=$prefix \
+    --with-pg=$prefix \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
     --with-python=no \
@@ -75,6 +76,7 @@ rm -f ${prefix}/lib/*.la
 # Make sure that some important libraries are found
 grep "HAVE_GEOS='yes'" config.log
 grep "HAVE_SQLITE='yes'" config.log
+grep "HAVE_PG='yes'" config.log
 grep "CURL_SETTING='yes'" config.log
 grep "ZSTD_SETTING='yes'" config.log
 grep "HAVE_EXPAT='yes'" config.log
@@ -117,6 +119,7 @@ dependencies = [
     Dependency("PROJ_jll"; compat="~900.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
+    Dependency("LibPQ_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
