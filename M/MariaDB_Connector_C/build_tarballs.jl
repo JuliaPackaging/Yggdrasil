@@ -70,7 +70,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0"),
     Dependency("Libiconv_jll"),
     Dependency("OpenSSL_jll"),
     Dependency("Zlib_jll"),
