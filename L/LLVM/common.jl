@@ -519,7 +519,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+
+    platforms = supported_platforms(;experimental=experimental_platforms)
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
         augmented_platforms = Platform[]
