@@ -4,11 +4,10 @@ ARGS=( "$@" )
 PRE_FLAGS=()
 POST_FLAGS=()
 
-PRE_FLAGS+=( -target x86_64-linux-gnu )
-PRE_FLAGS+=( --sysroot=/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root )
-PRE_FLAGS+=( --gcc-toolchain=/opt/x86_64-linux-gnu )
-PRE_FLAGS+=( -rtlib=libgcc )
-PRE_FLAGS+=( -stdlib=libstdc++ )
+PRE_FLAGS+=( -target ${target} )
+PRE_FLAGS+=( --sysroot=/opt/${target}/${target}/sys-root )
+PRE_FLAGS+=( --gcc-toolchain=/opt/${target} )
+
 
 if [[ " ${ARGS[@]} " != *' -x assembler '* ]]; then
     PRE_FLAGS+=( -march=x86-64 )
@@ -16,7 +15,7 @@ if [[ " ${ARGS[@]} " != *' -x assembler '* ]]; then
 fi
 
 if [[ " ${ARGS[@]} " != *' -c '* ]] && [[ " ${ARGS[@]} " != *' -E '* ]] && [[ " ${ARGS[@]} " != *' -M '* ]] && [[ " ${ARGS[@]} " != *' -fsyntax-only '* ]]; then
-    POST_FLAGS+=( -fuse-ld=x86_64-linux-gnu )
+    POST_FLAGS+=( -fuse-ld=lld )
 fi
 
 if [[ " ${ARGS[@]} " == *"-march="* ]]; then
@@ -27,4 +26,5 @@ fi
 if [ ${USE_CCACHE} == "true" ]; then
     CCACHE="ccache"
 fi
+
 ${CCACHE} ${prefix}/llvm/bin/clang "${PRE_FLAGS[@]}" "${ARGS[@]}" "${POST_FLAGS[@]}"
