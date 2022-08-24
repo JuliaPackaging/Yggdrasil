@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_ODBC"
-version = v"3.1.9"
+version = v"3.1.16"
 
 # Collection of sources required to build MariaDB_Connector_ODBC
 sources = [
