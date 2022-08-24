@@ -43,6 +43,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
