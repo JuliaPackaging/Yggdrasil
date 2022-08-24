@@ -9,7 +9,7 @@ sources = [GitSource("https://github.com/madler/zipflow.git",
 
 script = raw"""
     cd ${WORKSPACE}/srcdir/zipflow/
-    atomic_patch -p0 ../patches/pr3.patch
+    atomic_patch -p1 ../patches/pr3.patch
     cc zipflow.c -shared -fPIC -o ${libdir}/libzipflow.${dlext} -I${includedir} -L${libdir} -lz
     install_license LICENSE
     """
