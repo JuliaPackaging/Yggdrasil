@@ -36,7 +36,7 @@ fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
-    cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 autoreconf
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
