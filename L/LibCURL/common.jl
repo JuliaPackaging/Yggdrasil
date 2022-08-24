@@ -88,7 +88,7 @@ function build_libcurl(ARGS, name::String)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
-
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     # The products that we will ensure are always built
     if this_is_curl_jll
         # CURL_jll only provides the executable
