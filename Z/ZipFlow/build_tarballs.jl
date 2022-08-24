@@ -8,12 +8,11 @@ sources = [GitSource("https://github.com/madler/zipflow.git",
 
 script = raw"""
     cd ${WORKSPACE}/srcdir/zipflow/
-    cc zipflow.c -shared -std=c99 -o libzipflow.${dlext} -I${includedir} -L${libdir} -lz
-    mv libzipflow.${dlext} ${libdir}/
+    cc zipflow.c -shared -std=c99 -o ${libdir}/libzipflow.${dlext} -I${includedir} -L${libdir} -lz
     install_license LICENSE
     """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 products = [LibraryProduct("libzipflow", :libzipflow)]
 
