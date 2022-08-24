@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LASzip"
-version = v"3.4.3-1.6"
+version = v"3.4.3000"
 
 # Collection of sources required to complete build
 sources = [
