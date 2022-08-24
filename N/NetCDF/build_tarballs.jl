@@ -30,7 +30,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/netcdf-c-*
 
 export CPPFLAGS="-I${includedir}"
-export CFLAGS="-std=c99"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
