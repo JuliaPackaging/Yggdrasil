@@ -16,6 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gloo
 atomic_patch -p1 ../patches/mingw32.patch
 atomic_patch -p1 ../patches/mingw-lowercase-include.patch
+atomic_patch -p1 ../patches/musl-caddr.patch
 mkdir build
 cd build
 if [[ $target != *w64-mingw32* ]]; then
