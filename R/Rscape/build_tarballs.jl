@@ -135,10 +135,9 @@ products = [
     ExecutableProduct("R-scape-sim-nobps", :R_scape_sim_nobps),
     ExecutableProduct("R-view", :R_view),
     # perl scripts
-    ExecutableProduct("MetamakeDemos.pl", :MetamakeDemos_pl),
-    ExecutableProduct("pdb_parse.pl", :pdb_parse_pl),
-    ExecutableProduct("r2r_msa_comply.pl", :r2r_msa_comply_pl),
-    ExecutableProduct("SelectSubFamilyFromStockholm.pl", :SelectSubFamilyFromStockholm_pl),
+    FileProduct("bin/pdb_parse.pl", :pdb_parse_pl),
+    FileProduct("bin/r2r_msa_comply.pl", :r2r_msa_comply_pl),
+    FileProduct("bin/SelectSubFamilyFromStockholm.pl", :SelectSubFamilyFromStockholm_pl),
 ]
 
 # Dependencies that must be installed before this package can be built
