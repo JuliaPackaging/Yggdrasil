@@ -66,7 +66,7 @@ rm -f ${prefix}/lib/*.la
     --with-expat=$prefix \
     --with-zstd=$prefix \
     --with-sqlite3=$prefix \
-    --with-pg=$prefix \
+    --with-pg=yes \
     --with-curl=${bindir}/curl-config \
     --with-openjpeg \
     --with-python=no \
