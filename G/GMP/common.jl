@@ -34,6 +34,10 @@ if [[ ${proc_family} == intel ]]; then
     flags+=(--enable-fat)
 fi
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+fi
 autoreconf
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
 
@@ -60,6 +64,7 @@ install_license COPYING*
 
     # Dependencies that must be installed before this package can be built
     dependencies = Dependency[
+        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")),
     ]
 
     return name, version, sources, script, platforms, products, dependencies
