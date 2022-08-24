@@ -4,11 +4,13 @@ name = "ZipFlow"
 version = v"1.0.0"
 
 sources = [GitSource("https://github.com/madler/zipflow.git",
-                     "d4d73304252504bbade9aa6f34332bbb00de6664")]
+                     "d4d73304252504bbade9aa6f34332bbb00de6664"),
+           DirectorySource("./bundled")]
 
 script = raw"""
     cd ${WORKSPACE}/srcdir/zipflow/
-    cc zipflow.c -shared -fPIC -std=gnu99 -o ${libdir}/libzipflow.${dlext} -I${includedir} -L${libdir} -lz
+    atomic_patch -p0 ../patches/pr3.patch
+    cc zipflow.c -shared -fPIC -o ${libdir}/libzipflow.${dlext} -I${includedir} -L${libdir} -lz
     install_license LICENSE
     """
 

@@ -1,0 +1,151 @@
+diff --git a/zipflow.c b/zipflow.c
+index e6aad82..30d4bd4 100644
+--- a/zipflow.c
++++ b/zipflow.c
+@@ -175,29 +175,29 @@ ZIP *zip_init(int level) {
+         PUT4((p) + 4, (uint64_t)(v) >> 32); \
+     } while (0)
+ 
+-// Convert the Unix time unix to DOS time in the four bytes at *dos. If there
++// Convert the Unix time unix_time to DOS time in the four bytes at *dos_time. If there
+ // is a conversion error for any reason, store the current time in DOS format
+-// at *dos. The Unix time in seconds is rounded up to an even number of
++// at *dos_time. The Unix time in seconds is rounded up to an even number of
+ // seconds, since the DOS time can only represent even seconds. If the Unix
+ // time is before 1980, the minimum DOS time of Jan 1, 1980 is used.
+-static void put_time(unsigned char *dos, time_t unix) {
+-    unix += unix & 1;
+-    struct tm *s = localtime(&unix);
++static void put_time(unsigned char *dos_time, time_t unix_time) {
++    unix_time += unix_time & 1;
++    struct tm *s = localtime(&unix_time);
+     if (s == NULL) {
+-        unix = time(NULL);              // on error, use current time
+-        unix += unix & 1;
+-        s = localtime(&unix);
++        unix_time = time(NULL);         // on error, use current time
++        unix_time += unix_time & 1;
++        s = localtime(&unix_time);
+         assert(s != NULL && "internal error");
+     }
+     if (s->tm_year < 80) {              // no DOS time before 1980
+-        dos[0] = 0;  dos[1] = 0;                // use midnight,
+-        dos[2] = (1 << 5) + 1;  dos[3] = 0;     // Jan 1, 1980
++        dos_time[0] = 0;  dos_time[1] = 0;                // use midnight,
++        dos_time[2] = (1 << 5) + 1;  dos_time[3] = 0;     // Jan 1, 1980
+     }
+     else {
+-        dos[0] = (s->tm_min << 5) + (s->tm_sec >> 1);
+-        dos[1] = (s->tm_hour << 3) + (s->tm_min >> 3);
+-        dos[2] = ((s->tm_mon + 1) << 5) + s->tm_mday;
+-        dos[3] = ((s->tm_year - 80) << 1) + ((s->tm_mon + 1) >> 3);
++        dos_time[0] = (s->tm_min << 5) + (s->tm_sec >> 1);
++        dos_time[1] = (s->tm_hour << 3) + (s->tm_min >> 3);
++        dos_time[2] = ((s->tm_mon + 1) << 5) + s->tm_mday;
++        dos_time[3] = ((s->tm_year - 80) << 1) + ((s->tm_mon + 1) >> 3);
+     }
+ }
+ 
+@@ -206,30 +206,30 @@ static void zip_local(zip_t *zip) {
+     head_t const *head = zip->head + zip->hnum;
+ 
+     // Unix timestamps extra field.
+-    unsigned char unix[12];
+-    PUT2(unix, 13);                 // PKWare id for Unix timestamps
+-    PUT2(unix + 2, 8);              // length of the remainder
+-    PUT4(unix + 4, head->atime);    // Unix accessed time
+-    PUT4(unix + 8, head->mtime);    // Unix modified time
++    unsigned char unix_timestamp[12];
++    PUT2(unix_timestamp, 13);                 // PKWare id for Unix timestamps
++    PUT2(unix_timestamp + 2, 8);              // length of the remainder
++    PUT4(unix_timestamp + 4, head->atime);    // Unix accessed time
++    PUT4(unix_timestamp + 8, head->mtime);    // Unix modified time
+ 
+     // Local header.
+     unsigned char local[30];
+-    PUT4(local, 0x04034b50);        // local file header signature
+-    PUT2(local + 4,                 // version needed to extract (2.0 or 4.5)
++    PUT4(local, 0x04034b50);                  // local file header signature
++    PUT2(local + 4,                           // version needed to extract (2.0 or 4.5)
+          head->off >= MAX32 ? 45 : 20);
+-    PUT2(local + 6, 0x80a);         // UTF-8 name, level 9, data descriptor
+-    PUT2(local + 8, 8);             // deflate compression method
+-    put_time(local + 10, head->mtime);  // modified time and date (4 bytes)
+-    PUT4(local + 14, 0);            // CRC-32 (in data descriptor)
+-    PUT4(local + 18, 0);            // compressed size (in data descriptor)
+-    PUT4(local + 22, 0);            // uncompressed size (in data descriptor)
+-    PUT2(local + 26, head->nlen);   // file name length (name follows header)
+-    PUT2(local + 28, sizeof(unix)); // extra field length (follows name)
++    PUT2(local + 6, 0x80a);                   // UTF-8 name, level 9, data descriptor
++    PUT2(local + 8, 8);                       // deflate compression method
++    put_time(local + 10, head->mtime);        // modified time and date (4 bytes)
++    PUT4(local + 14, 0);                      // CRC-32 (in data descriptor)
++    PUT4(local + 18, 0);                      // compressed size (in data descriptor)
++    PUT4(local + 22, 0);                      // uncompressed size (in data descriptor)
++    PUT2(local + 26, head->nlen);             // file name length (name follows header)
++    PUT2(local + 28, sizeof(unix_timestamp)); // extra field length (follows name)
+ 
+     // Write the local header.
+     zip_put(zip, local, sizeof(local));
+     zip_put(zip, head->name, head->nlen);
+-    zip_put(zip, unix, sizeof(unix));
++    zip_put(zip, unix_timestamp, sizeof(unix_timestamp));
+ }
+ 
+ // Compress the file in using deflate, writing the compressed data to zip->out.
+@@ -395,15 +395,17 @@ static void zip_path(zip_t *zip) {
+         zip_room(zip, len + 2);
+         zip->path[len++] = '/';     // slash works on Unix, macOS, and Windows
+         struct dirent *dp;
++        size_t dp_namlen;
+         while ((dp = readdir(dir)) != NULL) {
+             if (dp->d_name[0] == '.' && (dp->d_name[1] == 0 ||
+                 (dp->d_name[1] == '.' && dp->d_name[2] == 0)))
+                 continue;           // ignore . and .. directories
++            dp_namlen = strlen(dp->d_name);
+             // Append a slash and the name to zip->path. Recursively process
+             // the new zip->path.
+-            zip_room(zip, len + dp->d_namlen + 1);
+-            memcpy(zip->path + len, dp->d_name, dp->d_namlen + 1);
+-            zip->plen = len + dp->d_namlen;
++            zip_room(zip, len + dp_namlen + 1);
++            memcpy(zip->path + len, dp->d_name, dp_namlen + 1);
++            zip->plen = len + dp_namlen;
+             zip_path(zip);
+         }
+         closedir(dir);
+@@ -446,11 +448,11 @@ static void zip_central(zip_t *zip, head_t const *head) {
+     PUT2(zip64 + 2, len);
+ 
+     // Unix timestamps extra field.
+-    unsigned char unix[12];
+-    PUT2(unix, 13);                 // PKWare id for Unix timestamps
+-    PUT2(unix + 2, 8);              // length of the remainder
+-    PUT4(unix + 4, head->atime);    // Unix accessed time
+-    PUT4(unix + 8, head->mtime);    // Unix modified time
++    unsigned char unix_timestamp[12];
++    PUT2(unix_timestamp, 13);                 // PKWare id for Unix timestamps
++    PUT2(unix_timestamp + 2, 8);              // length of the remainder
++    PUT4(unix_timestamp + 4, head->atime);    // Unix accessed time
++    PUT4(unix_timestamp + 8, head->mtime);    // Unix modified time
+ 
+     // Central directory header. Any offset or lengths that don't fit here are
+     // replaced with the max value for the field, and appear instead in the
+@@ -469,7 +471,7 @@ static void zip_central(zip_t *zip, head_t const *head) {
+          head->ulen >= MAX32 ? MAX32 : head->ulen);
+     PUT2(central + 28, head->nlen); // file name length (name after header)
+     PUT2(central + 30,              // extra field length (after name)
+-         (len ? len + 4 : 0) + sizeof(unix));
++         (len ? len + 4 : 0) + sizeof(unix_timestamp));
+     PUT2(central + 32, 0);          // file comment length
+     PUT2(central + 34, 0);          // starting disk
+     PUT2(central + 36, 0);          // internal file attributes
+@@ -482,7 +484,7 @@ static void zip_central(zip_t *zip, head_t const *head) {
+     zip_put(zip, head->name, head->nlen);
+     if (len)
+         zip_put(zip, zip64, len + 4);
+-    zip_put(zip, unix, sizeof(unix));
++    zip_put(zip, unix_timestamp, sizeof(unix_timestamp));
+ }
+ 
+ // Write the zip file end records. The central directory is behind us now, and
