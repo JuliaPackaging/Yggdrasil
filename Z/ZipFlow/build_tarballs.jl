@@ -1,16 +1,13 @@
 using BinaryBuilder
 
 name = "ZipFlow"
-version = v"1.0.0"
+version = v"1.1.0"
 
 sources = [GitSource("https://github.com/madler/zipflow.git",
-                     "d4d73304252504bbade9aa6f34332bbb00de6664"),
-           DirectorySource("./bundled")]
+                     "913ef458c51504d1f461f6d3a24d4a1a9bdc2bcc")]
 
 script = raw"""
     cd ${WORKSPACE}/srcdir/zipflow/
-    atomic_patch -p1 ../patches/pr3.patch
-    atomic_patch -p1 ../patches/windows.patch
     cc zipflow.c -shared -fPIC -std=gnu99 -o ${libdir}/libzipflow.${dlext} -I${includedir} -L${libdir} -lz
     install_license LICENSE
     """
