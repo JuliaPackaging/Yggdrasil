@@ -57,7 +57,10 @@ rm -f ${prefix}/lib/*.la
 # Read the options in the log file
 ./configure --help
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+./configure \
+    PQ_CFLAGS="-I${prefix}/include" \
+    PQ_LIBS="-L${prefix}/lib -lpq" \
+    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
     --with-tiff=$prefix \
@@ -71,7 +74,8 @@ rm -f ${prefix}/lib/*.la
     --with-openjpeg \
     --with-python=no \
     --enable-shared \
-    --disable-static
+    --disable-static \
+    
 
 # Make sure that some important libraries are found
 grep "HAVE_GEOS='yes'" config.log
