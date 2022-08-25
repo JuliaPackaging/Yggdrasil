@@ -24,6 +24,11 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-dwarf-table.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-non-empty-structs.patch
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 export CFLAGS="-DPI -fPIC"
 ./configure \
     --prefix=${prefix} \
@@ -48,6 +53,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
 platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
