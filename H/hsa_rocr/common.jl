@@ -14,11 +14,10 @@ cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
 # Disable -Werror flag.
 atomic_patch -p1 ../patches/1-no-werror.patch
 
-mv ${WORKSPACE}/srcdir/scripts/* ${prefix}
 mkdir build && cd build
 
-CC=${prefix}/rocm-clang \
-CXX=${prefix}/rocm-clang++ \
+CC=${WORKSPACE}/srcdir/scripts/rocm-clang \
+CXX=${WORKSPACE}/srcdir/scripts/rocm-clang++ \
 cmake \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -44,7 +43,7 @@ function configure_build(version)
         Dependency("ROCmDeviceLibs_jll", version),
         Dependency("NUMA_jll"),
         Dependency("XML2_jll"),
-        Dependency("Zlib_jll"),
+        Dependency("Zlib_jll", v"1.2.11"), # 1.2.12 causes undefined variable errors: https://github.com/JuliaPackaging/Yggdrasil/pull/5367
         Dependency("Elfutils_jll"),
     ]
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies

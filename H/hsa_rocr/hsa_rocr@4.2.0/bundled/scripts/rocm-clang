@@ -8,7 +8,6 @@ PRE_FLAGS+=( -target ${target} )
 PRE_FLAGS+=( --sysroot=/opt/${target}/${target}/sys-root )
 PRE_FLAGS+=( --gcc-toolchain=/opt/${target} )
 
-
 if [[ " ${ARGS[@]} " != *' -x assembler '* ]]; then
     PRE_FLAGS+=( -march=x86-64 )
     PRE_FLAGS+=( -mtune=generic )
