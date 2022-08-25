@@ -22,6 +22,11 @@ atomic_patch -p1 ../patches/0001-userauth-check-for-too-large-userauth_kybd_auth
 # Drop this when a new release contains: https://github.com/libssh2/libssh2/pull/711
 atomic_patch -p1 ../patches/0002-libssh2-fix-import-lib-name.patch
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DCRYPTO_BACKEND=mbedTLS
@@ -43,6 +48,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -52,6 +58,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
