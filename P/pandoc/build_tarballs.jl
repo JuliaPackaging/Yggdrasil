@@ -9,7 +9,7 @@ url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pand
 sources = [
     ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "2afd7c0c385a5817003330a2359c2b6e04e0a7e167addd41dda51e523e807426"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)-macOS.zip", "eb41406967450fd08138cfa3e95d99fbed4552e08430093888517a267f531727"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "341935e8de2bc58153b6aabcced8bf73d753bc6b97efdf0128f52da82841b0c5"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "d5c51dd722ae4c562f9bff8148942630942490ef5bfe5695507c81c2c75a99de"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "fd334f48c12b17ec264b2c49a554c584cdb29828c29fbbde7c1f57232a30975d"; unpack_target = "aarch64-linux-gnu"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "adcfa50add0dd23fda4937830ee6401a45638cffa15b9b33b1932f833f4fab75"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
