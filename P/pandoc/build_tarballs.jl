@@ -7,7 +7,7 @@ pandoc_ver = version.patch == 0 ? "$(version.major).$(version.minor)" : string(v
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "2afd7c0c385a5817003330a2359c2b6e04e0a7e167addd41dda51e523e807426"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "9d55c7afb6a244e8a615451ed9cb02e6a6f187ad4d169c6d5a123fa74adb4830"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)-macOS.zip", "eb41406967450fd08138cfa3e95d99fbed4552e08430093888517a267f531727"; unpack_target = "x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "d5c51dd722ae4c562f9bff8148942630942490ef5bfe5695507c81c2c75a99de"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "6c2daebcab7f8d6e7c8b91682be047286d9518f2bcb32515aea5206557fb67d1"; unpack_target = "aarch64-linux-gnu"),
