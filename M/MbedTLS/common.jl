@@ -43,7 +43,10 @@ if [[ "${target}" == *apple* ]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"
 fi
-
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 # Apply patches that differ depending on the version of MbedTLS that we're building
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 "${f}"
@@ -75,6 +78,7 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -84,6 +88,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
