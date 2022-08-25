@@ -2,8 +2,8 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-version = v"2.14"
-pandoc_ver = "2.14"
+version = v"2.19"
+pandoc_ver = "2.19"
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
