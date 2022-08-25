@@ -54,16 +54,17 @@ fi
 # Clear out `.la` files since they're often wrong and screw us up
 rm -f ${prefix}/lib/*.la
 
+# export environment variables for PostgrSQL
+export PQ_CFLAGS="-I${prefix}/include"
+export PQ_LIBS="-L${prefix}/lib -lpq"
+
 # Read the options in the log file
 ./configure --help
 
-./configure \
-    PQ_CFLAGS="-I${prefix}/include" \
-    PQ_LIBS="-L${prefix}/lib -lpq" \
-    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-geos=${bindir}/geos-config \
     --with-proj=$prefix \
-    --with-tiff=$prefix \
+    --with-libtiff=$prefix \
     --with-geotiff=$prefix \
     --with-libz=$prefix \
     --with-expat=$prefix \
