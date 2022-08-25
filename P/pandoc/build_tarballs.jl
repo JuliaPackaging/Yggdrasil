@@ -7,7 +7,7 @@ pandoc_ver = "2.19"
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "e24cca7d241d907d690428a296861cbcbdaf4686ef887ac65581a930b2e6038c"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "2afd7c0c385a5817003330a2359c2b6e04e0a7e167addd41dda51e523e807426"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)-macOS.zip", "630564487c30602ee299b463efc4fb48b418a6f254c123a11f3748426b2007b3"; unpack_target = "x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "341935e8de2bc58153b6aabcced8bf73d753bc6b97efdf0128f52da82841b0c5"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "fd334f48c12b17ec264b2c49a554c584cdb29828c29fbbde7c1f57232a30975d"; unpack_target = "aarch64-linux-gnu"),
