@@ -64,6 +64,7 @@ products = [
 dependencies = [
     BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs.
