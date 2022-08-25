@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"0.0.20201220" # This is an unreleased version later than v3.5.1 (the currently latest released version).
+version = v"3.5.2" # This is an unreleased version later than v3.5.1 (the currently latest released version).
 
 # Collection of sources required to complete build
 sources = [
