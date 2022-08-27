@@ -24,6 +24,7 @@ HDF5_PATH=${prefix} \
 ../cmake-exodus
 
 ls -l
+ls -l ../
 
 make -j${nproc}
 make install
