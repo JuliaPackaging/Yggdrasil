@@ -21,7 +21,9 @@ FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
 HDF5_PATH=${prefix} \
-../cmake-exodus
+APPLICATIONS=NO \
+../cmake-config
+
 
 ls -l
 ls -l ../
