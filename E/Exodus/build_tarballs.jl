@@ -25,6 +25,7 @@ HDF5_PATH=${prefix} \
 
 ls -l
 ls -l ../
+ls -l ${prefix}
 
 make -j${nproc}
 make install
