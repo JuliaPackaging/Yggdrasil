@@ -154,7 +154,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("LibCurl_jll", compat="7.73.0"),
+    Dependency("LibCURL_jll", compat="7.73.0"),
     Dependency("NetCDF_jll", compat="400.902.5"),
     Dependency("HDF5_jll", compat="1.12.2")
 ]
