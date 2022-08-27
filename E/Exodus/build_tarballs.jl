@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/seacas && export ACCESS=`pwd`
-./install-tpl.sh
+BUILD=NO ./install-tpl.sh
 cd $ACCESS
 mkdir build
 cd build
