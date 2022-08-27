@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Exodus"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
