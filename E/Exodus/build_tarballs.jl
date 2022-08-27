@@ -140,6 +140,7 @@ platforms = [
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
+    Platform("x86_64", "windows")
 ]
 
 
@@ -150,6 +151,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="LibCurl_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
