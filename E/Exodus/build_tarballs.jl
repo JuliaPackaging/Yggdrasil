@@ -23,6 +23,7 @@ PNETCDF_PATH=${prefix} \
 HDF5_PATH=${prefix} \
 HAVE_X11=NO \
 APPLICATIONS=NO \
+LEGACY=NO \
 ../cmake-config
 
 
