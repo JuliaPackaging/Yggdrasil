@@ -31,13 +31,6 @@ cd $WORKSPACE/srcdir/rscape*/
 # variables to override default directories for finding data params at
 # runtime instead of a hardcoded path (which doesn't work because that
 # is set to the srcdir during build)
-#
-# first convert src/msatree.c to LF line endings (from CRLF),
-# otherwise the patch doesn't apply
-cp src/msatree.c src/msatree.c.bak
-tr -d '\015' < src/msatree.c.bak > src/msatree.c
-#
-# now apply the patch
 atomic_patch -p1 ../patches/allow-env-var-override-of-dirs.patch
 
 update_configure_scripts
