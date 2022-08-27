@@ -154,7 +154,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency(PackageSpec(name="NetCDF_jll"), compat="400.902.5")
+    Dependency(PackageSpec(name="NetCDF_jll"), compat="400.902.5"),
     Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2")
 ]
 
