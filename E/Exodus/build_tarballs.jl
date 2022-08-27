@@ -31,7 +31,7 @@ HDF5_PATH=${prefix}
 #     MPI=NO
 #   fi
 # fi
-MPI=NO 3 nc-config will break windows builds
+MPI=NO ### nc-config will break windows builds
 CFLAGS="-Wall -Wunused -pedantic -std=c11"
 CXXFLAGS="-Wall -Wunused -pedantic"
 GENERATOR="Unix Makefiles"
