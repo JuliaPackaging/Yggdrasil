@@ -7,14 +7,13 @@ version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74")
+    # GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74"),
+    GitSource("https://github.com/gsjaardema/seacas.git", "2f865eba1d377177509fe95794710691afd5e9e3")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/seacas && export ACCESS=`pwd`
-BUILD=NO ./install-tpl.sh
-cd $ACCESS
+cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
@@ -23,15 +22,7 @@ FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
 HDF5_PATH=${prefix} \
-HAVE_X11=NO \
-APPLICATIONS=NO \
-LEGACY=NO \
-../cmake-config
-
-
-ls -l
-ls -l ../
-ls -l ${prefix}
+../cmake-exodus
 
 make -j${nproc}
 make install
