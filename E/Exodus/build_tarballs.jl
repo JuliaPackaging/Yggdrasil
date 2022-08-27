@@ -21,6 +21,7 @@ FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
 HDF5_PATH=${prefix} \
+HAVE_X11=NO \
 APPLICATIONS=NO \
 ../cmake-config
 
