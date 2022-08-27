@@ -16,18 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/R2R-*/
 
-# convert files to be patched to LF line endings (from CRLF)
-for f in src/SymbolicMath.cpp \
-         src/SymbolicMath.h \
-         src/GSCConsensus.cpp \
-         src/ParseOneStockholm.cpp \
-         src/PositionBackbone_MultiStemCircularSolver.cpp \
-         src/RnaDrawer.cpp;
-do
-    cp "$f" "$f".bak
-    tr -d '\015' < "$f".bak > "$f"
-done
-
 atomic_patch -p1 ../patches/fix-ptr-to-int-on-windows-64bit.patch
 atomic_patch -p1 ../patches/isfinite.patch
 atomic_patch -p1 ../patches/fix-format-strings.patch
