@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.16.7"
+version = v"3.16.8"
 petsc_version = v"3.16.6"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
@@ -161,7 +161,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)  
+#platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)  
 platforms = filter(p -> !(p["mpi"] == "openmpi" &&  Sys.isfreebsd(p)), platforms)  
 
 # MPItrampoline
@@ -169,9 +169,6 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "armv7l"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" &&   os(p) == "linux"), platforms)
-
-
-@show platforms
 
 
 # Not working @ the moment is linux + openmpmi
