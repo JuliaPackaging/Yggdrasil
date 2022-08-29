@@ -57,9 +57,10 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    if [ -d "${libdir}/superlu_dist" ]; then
+    if [ -d "${libdir}/superlu_dist" && "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1    
     fi
+    
     if [[ ${USE_SUPERLU_DIST} == 1 ]]; then
         SUPERLU_DIR="${libdir}/superlu_dist/${3}"
         SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
