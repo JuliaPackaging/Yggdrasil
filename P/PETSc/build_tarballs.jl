@@ -57,7 +57,7 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    if [[ "${1}" == "double" ]]; then
+    if [ -d "${libdir}/superlu_dist" ]; then
         USE_SUPERLU_DIST=1    
     fi
     if [[ ${USE_SUPERLU_DIST} == 1 ]]; then
@@ -76,8 +76,9 @@ build_petsc()
 
     Machine_name=$(uname -m)
     if (("${3}" == "Int64" && Machine_name == "i686")); then        
-        USE_SUITESPARSE=0 
+        USE_SUITESPARSE=0
     fi
+    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
     echo "1="${1}
     echo "2="${2}
@@ -85,7 +86,6 @@ build_petsc()
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
     
-
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -161,8 +161,6 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && os(p) == "linux"), platforms)  
-#platforms = filter(p -> !(p["mpi"] == "openmpi" &&  Sys.isfreebsd(p)), platforms)  
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
@@ -170,8 +168,6 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "armv7l"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" &&   os(p) == "linux"), platforms)
 
-
-# Not working @ the moment is linux + openmpmi
 products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
