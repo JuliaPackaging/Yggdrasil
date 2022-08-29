@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "AlgRemez"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
