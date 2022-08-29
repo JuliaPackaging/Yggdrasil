@@ -59,9 +59,6 @@ build_petsc()
     USE_SUPERLU_DIST=0    
     if [ -d "${libdir}/superlu_dist" && "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1    
-    fi
-    
-    if [[ ${USE_SUPERLU_DIST} == 1 ]]; then
         SUPERLU_DIR="${libdir}/superlu_dist/${3}"
         SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
         SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${SUPERLU_DIR}/include"
