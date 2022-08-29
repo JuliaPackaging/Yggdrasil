@@ -33,9 +33,9 @@ fi
     --with-pic \
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
-    --with-lapack-lflags=-lopenblas \
-    --with-mumps-cflags="-I${includedir}/mumps_seq" \
-    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
+    --with-lapack-lflags=-lblastrampoline \
+    --with-mumps-cflags="-I${includedir}" \
+    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lblastrampoline -lgfortran -lpthread" \
     --with-asl-lflags="${LIBASL}"
 
 # parallel build fails
@@ -43,7 +43,7 @@ make
 make install
 """
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
@@ -58,7 +58,7 @@ products = [
 dependencies = [
     Dependency("ASL_jll", ASL_version),
     Dependency("MUMPS_seq_jll", compat="=$(MUMPS_seq_version)"),
-    Dependency("OpenBLAS32_jll", OpenBLAS32_version),
+    Dependency("libblastrampoline_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
@@ -73,5 +73,5 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
-    julia_compat = "1.6"
+    julia_compat = "1.8"
 )

@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.3"
-adios_version = v"2.8.2"
+version = v"2.8.4"
+adios_version = v"2.8.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(adios_version).tar.gz",
-                  "9909f6409dc44b2c28c1fda0042dab4b711f25ec3277ef0cb6ffc40f5483910d"),
+                  "4906ab1899721c41dd918dddb039ba2848a1fb0cf84f3a563a1179b9d6ee0d9f"),
     DirectorySource("./bundled"),
 ]
 
@@ -94,6 +94,15 @@ platforms = expand_cxxstring_abis(platforms)
 # Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
 # The products that we will ensure are always built
 products = [
     # ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
@@ -132,11 +141,6 @@ dependencies = [
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
 ]
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-# With MPItrampoline, select only those platforms where MPItrampoline is actually built
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
