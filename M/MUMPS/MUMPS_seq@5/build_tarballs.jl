@@ -74,7 +74,7 @@ gfortran -fPIC -shared -Wl,${all_load} libmpiseq.a ${libs[@]} -Wl,${noall_load} 
 cp libmpiseq.${dlext} ${libdir}
 
 cd ../lib
-libs=(-L${libdir} -lmetis -lopenblas -lmpiseq)
+libs=(-L${libdir} -lmetis -lblastrampoline -lmpiseq)
 gfortran -fPIC -shared -Wl,${all_load} libpord.a ${libs[@]} -Wl,${noall_load} ${extra[@]} -o libpord.${dlext}
 cp libpord.${dlext} ${libdir}
 
