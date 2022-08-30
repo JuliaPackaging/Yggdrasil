@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/objconv*/
 mkdir -p ${prefix}/bin
 ${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${exeext} src/*.cpp
 
-install_license /usr/share/licenses/GPL3
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further

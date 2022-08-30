@@ -18,7 +18,7 @@ rustup_name = "RustStage1"
 rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
-version = v"1.57.0"
+version = v"1.61.0"
 
 sources = [
     # We'll use rustup to install rust
@@ -85,7 +85,7 @@ mega_rust_path = artifact_path(first(values(build_info))[3])
 rust_host = Platform("x86_64", "linux"; libc="musl")
 rust_host_triplet = map_rust_target(rust_host)
 
-for target_platform in supported_platforms(; experimental=true)
+for target_platform in supported_platforms()
     rust_target_triplet = map_rust_target(target_platform)
     @info("Generating artifacts for $(rust_target_triplet)...")
     unpacked_hash = create_artifact() do dir
@@ -121,7 +121,7 @@ unpacked_hash = create_artifact() do dir
     cp(joinpath(mega_rust_path, "toolchains"), joinpath(dir, "toolchains"))
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "share"); recursive=true)
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "etc"); recursive=true)
-    for rust_target_triplet in map_rust_target.(supported_platforms(; experimental=true))
+    for rust_target_triplet in map_rust_target.(supported_platforms())
         rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
     end
 end

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "hsa_rocr"
-version = v"4.2.0"
+version = v"4.5.2"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://github.com/RadeonOpenCompute/ROCR-Runtime/archive/rocm-$(version).tar.gz",
-                  "fa0e7bcd64e97cbff7c39c9e87c84a49d2184dc977b341794770805ec3f896cc"),
+                  "d99eddedce0a97d9970932b64b0bb4743e47d2740e8db0288dbda7bec3cefa80"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,6 +18,9 @@ cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
 
 # Do not install legacy symlinks which only creates confusion with RUNPATHs
 atomic_patch -p1 ../patches/no-symlinks.patch
+
+# Fix use of pthread_attr_setaffinity_np
+atomic_patch -p1 ../patches/musl-affinity.patch
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -49,7 +52,7 @@ dependencies = [
     Dependency("hsakmt_roct_jll"),
     Dependency("NUMA_jll"),
     Dependency("Zlib_jll"),
-    Dependency("Elfutils_jll"),
+    Dependency("Elfutils_jll", compat="0.182"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

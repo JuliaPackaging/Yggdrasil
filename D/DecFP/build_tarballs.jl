@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/IntelRDFPMathLib20U2
+patch --binary -p1 < $WORKSPACE/srcdir/patches/string.patch
 patch --binary -p1 < $WORKSPACE/srcdir/patches/decfp.patch
 cd LIBRARY
 if [[ $nbits == 64 ]]; then

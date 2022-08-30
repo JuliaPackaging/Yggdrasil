@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "Conduit"
-version = v"0.8.0"
+version = v"0.8.1"
 sources = [
     ArchiveSource("https://github.com/LLNL/conduit/releases/download/v$(version)/conduit-v$(version)-src-with-blt.tar.gz",
-		  "0607dcf9ced44f95e0b9549f5bbf7a332afd84597c52e293d7ca8d83117b5119")
+		  "488f22135a35136de592173131d123f7813818b7336c3b18e04646318ad3cbee")
 ]
 
 # Note: we need to build the (optional) webserver by default until v0.8.1 is released
@@ -21,7 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DENABLE_EXAMPLES=OFF \
       -DENABLE_UTILS=OFF \
       -DENABLE_DOCS=OFF \
-      -DENABLE_RELAY_WEBSERVER=ON \
+      -DENABLE_RELAY_WEBSERVER=OFF \
       -DENABLE_COVERAGE=OFF \
       -DENABLE_PYTHON=OFF \
       -DENABLE_FORTRAN=OFF \

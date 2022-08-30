@@ -3,16 +3,17 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_ODBC"
-version = v"3.1.7"
+version = v"3.1.16"
 
 # Collection of sources required to build MariaDB_Connector_ODBC
 sources = [
-    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-ga-src.tar.gz",
-                  "699c575e169d770ccfae1c1e776aa7725d849046476bf6579d292c89e8c8593e"),
-    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-win64.msi",
-               "ef1ad796cc4aba67aa6606b35239302c579b7894604239d1caaa1f2d10623bd2"; filename = "x86_64-w64-mingw32.msi"),
-    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-win32.msi",
-               "a60b74dc3af0b450d892731c2973037beef6fc972e0813f3db9f28f083a63402"; filename = "i686-w64-mingw32.msi"),
+    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-src.tar.gz",
+                  "4fd0de9d0e9da883ac9801cbf97953be9cc9010830417c44e8b339deca48463d"),
+    DirectorySource("./bundled"),
+    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win64.msi",
+               "9d027383b88b7f82203081402242828cf3b54cdd9d1ea7a60be145e9a3dd750e"; filename = "x86_64-w64-mingw32.msi"),
+    FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win32.msi",
+               "341bb7126cc40314244dd62a5c77799d2f9429ac5142880320f3bbc3fd8dc4ee"; filename = "i686-w64-mingw32.msi"),
     ## Keep the patches just in case some day we decide to build for Windows
     ## from source
     # DirectorySource("./bundled"),
@@ -24,11 +25,10 @@ install_license $WORKSPACE/srcdir/mariadb-connector*/COPYING
 
 if [[ "${target}" == *-mingw* ]]; then
     # For Windows just use the prebuilt library
-    mkdir -p "${libdir}"
     cd $WORKSPACE/srcdir
     apk add p7zip
     7z x "${target}.msi"
-    cp mariadb_odbc_dll "${libdir}/mariadb_odbc.dll"
+    install -Dvm 755 mariadb_odbc_dll "${libdir}/mariadb/mariadb_odbc.dll"
     exit
 fi
 
@@ -36,6 +36,12 @@ cd $WORKSPACE/srcdir/mariadb-connector*/
 
 # Skip building of macOS package
 sed -i 's/ADD_SUBDIRECTORY(osxinstall)/# ADD_SUBDIRECTORY(osxinstall)/' CMakeLists.txt
+
+# They want to run a script which changes the name of the required library
+# `libiodbcinst` from `libiodbcinst.2.dylib` to `libiodbcinst.dylib` which has the only
+# effect of making `libmaodbc` not loadable, as `libiodbcinst` is dlopened as... guess
+# what... `libiodbcinst.2.dylib`.
+atomic_patch -p1 ../patches/do-not-change-name-of-iodbcinst.patch
 
 ## Keep this for reference in case we decide to build for Windows from source
 # if [[ "${target}" == *-mingw* ]]; then
@@ -80,6 +86,7 @@ platforms = [
     # Platform("aarch64", "linux"; libc="musl"),
     # Platform("armv7l", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     # Platform("x86_64", "freebsd"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
@@ -87,12 +94,13 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libmaodbc", "mariadb_odbc"], :libmaodbc),
+    LibraryProduct(["libmaodbc", "mariadb_odbc"], :libmaodbc,
+                   raw"${libdir}/mariadb"),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("MariaDB_Connector_C_jll"),
+    Dependency("MariaDB_Connector_C_jll"),
     Dependency("iODBC_jll"),
     Dependency("Libiconv_jll"),
     Dependency("unixODBC_jll"),
@@ -101,4 +109,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

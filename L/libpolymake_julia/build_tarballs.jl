@@ -3,23 +3,29 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# copied from libsingular_julia:
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libpolymake_julia"
-version = v"0.7.0"
+version = v"0.8.1"
 
-julia_versions = [v"1.6.0", v"1.7.0", v"1.8.0"]
+# reminder: change the above version if restricting the supported julia versions
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "ac13f05beb59e688d485a96759666d9d2a0bd026f6dfacdfd7d4e3e88abc4202"),
+                  "cd905d195a0e371408274462fef7e8c7e3351850155ae2976dd3e335e40baf5c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# change default perl which interferes with the hostbuild perl
+# remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
-ln -s $host_bindir/perl /usr/bin/perl
 
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
@@ -42,12 +48,11 @@ $host_bindir/perl $host_bindir/polymake --iscript libpolymake-j*/src/polymake/ap
 include("../../L/libjulia/common.jl")
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
+filter!(p -> !Sys.iswindows(p) && nbits(p) > 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("polymake_run_script", :polymake_run_script),
     LibraryProduct("libpolymake_julia", :libpolymake_julia),
     FileProduct("share/libpolymake_julia/type_translator.jl",:type_translator),
     FileProduct("share/libpolymake_julia/appsjson",:appsjson),
@@ -59,14 +64,14 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("FLINT_jll", compat = "~200.900.000"),
     Dependency("TOPCOM_jll"),
     Dependency("lib4ti2_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("polymake_jll"; compat = "~400.600.0"),
+    Dependency("polymake_jll"; compat = "~400.700.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.600.0")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.700.0")),
     HostBuildDependency("lib4ti2_jll"),
     HostBuildDependency("TOPCOM_jll"),
 ]
@@ -74,4 +79,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "1.6")
+    julia_compat = julia_compat)
