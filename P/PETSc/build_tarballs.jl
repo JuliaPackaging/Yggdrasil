@@ -59,13 +59,12 @@ build_petsc()
     USE_SUPERLU_DIST=0    
     SUPERLU_DIST_LIB=""
     SUPERLU_DIST_INCLUDE=""
-    if [ -d "${libdir}/superlu_dist" ]; then
-        if ["${1}" == "double" ]; then
-            USE_SUPERLU_DIST=1    
-            SUPERLU_DIR="${libdir}/superlu_dist/${3}"
-            SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
-            SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${SUPERLU_DIR}/include"
-        fi
+    if [ -d "${libdir}/superlu_dist" ] &&  [ "${1}" == "double" ]; 
+    then
+        USE_SUPERLU_DIST=1    
+        SUPERLU_DIR="${libdir}/superlu_dist/${3}"
+        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${SUPERLU_DIR}/include"
     fi
     
     USE_SUITESPARSE=0
@@ -74,13 +73,24 @@ build_petsc()
     fi
 
     Machine_name=$(uname -m)
-    if ["${3}" == "Int64"]; then
-        if [Machine_name == "i686"]; then        
-            USE_SUITESPARSE=0
-        fi
+    if [ "${3}" == "Int64" ] && [ "${Machine_name}" == "i686" ]; then
+        USE_SUITESPARSE=0
     fi
+
+    # See if we can install MUMPS
+    USE_MUMPS=0    
+    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ]; then
+        USE_MUMPS=1    
+        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumps.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
+        MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
+    else
+        MUMPS_LIB=""
+        MUMPS_INCLUDE=""
+    fi
+
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
+    echo "USE_MUMPS="$USE_MUMPS
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -106,6 +116,9 @@ build_petsc()
         --with-superlu_dist=${USE_SUPERLU_DIST} \
         ${SUPERLU_DIST_LIB} \
         ${SUPERLU_DIST_INCLUDE} \
+        --with-mumps=${USE_MUMPS} \
+        ${MUMPS_LIB} \
+        ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --known-64-bit-blas-indices=0 \
         --with-mpi-lib="${MPI_LIBS}" \
@@ -186,7 +199,12 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"),
-    Dependency("SuiteSparse_jll")
+    Dependency("SuiteSparse_jll"),
+    Dependency("MUMPS_jll"),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("METIS_jll"),
+    Dependency("SCOTCH_jll"),
+    Dependency("PARMETIS_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
