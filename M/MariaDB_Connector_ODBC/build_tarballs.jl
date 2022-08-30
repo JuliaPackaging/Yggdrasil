@@ -100,7 +100,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("MariaDB_Connector_C_jll"),
+    Dependency("MariaDB_Connector_C_jll"),
     Dependency("iODBC_jll"),
     Dependency("Libiconv_jll"),
     Dependency("unixODBC_jll"),
