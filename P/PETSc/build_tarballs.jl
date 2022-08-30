@@ -73,8 +73,18 @@ build_petsc()
     fi
 
     Machine_name=$(uname -m)
-    if [ "${3}" == "Int64" ] && [ "${Machine_name}" == "i686" ]; then
-        USE_SUITESPARSE=0
+    if [ "${3}" == "Int64" ]; then
+        case "${Machine_name}" in
+            "armv7l")
+                USE_SUITESPARSE=0
+            ;;
+            "armv6l")
+                USE_SUITESPARSE=0
+            ;;
+            "i686")
+                USE_SUITESPARSE=0
+            ;;
+        esac
     fi
 
     # See if we can install MUMPS
