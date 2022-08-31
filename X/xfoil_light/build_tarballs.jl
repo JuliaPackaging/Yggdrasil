@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "xfoil_light"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
