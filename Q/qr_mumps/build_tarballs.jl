@@ -18,7 +18,7 @@ mkdir build
 cd build
 cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON \
                            -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=OFF -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release \
-                           -DLAPACK_LIB="-lblastrampoline" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
+                           -DLAPACK_LIBRARIES="-L${libdir} -lblastrampoline" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
 make -j${nproc}
 make install
 exit
