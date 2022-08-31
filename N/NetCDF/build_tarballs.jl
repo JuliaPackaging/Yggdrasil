@@ -30,7 +30,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/netcdf-c-*
 
 export CPPFLAGS="-I${includedir}"
-export CFLAGS="-std=c99"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
@@ -47,7 +46,7 @@ if [[ ${target} == *-mingw* ]]; then
 
     # additional configure options from
     # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
-    CONFIGURE_OPTIONS="--disable-plugins --disable-byterange"
+    CONFIGURE_OPTIONS="--disable-byterange"
 elif [[ "${target}" == *-apple-* ]]; then
     # this file is referenced by hdf.h by not installed
     touch ${includedir}/features.h
@@ -67,6 +66,7 @@ rm /workspace/destdir/lib/*.la
     --enable-shared \
     --disable-static \
     --disable-dap-remote-tests \
+    --disable-plugins \
     $CONFIGURE_OPTIONS
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}

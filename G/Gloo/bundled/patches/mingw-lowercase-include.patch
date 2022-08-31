@@ -1,0 +1,13 @@
+diff --git a/gloo/types.h b/gloo/types.h
+index 4635f41..847e96d 100644
+--- a/gloo/types.h
++++ b/gloo/types.h
+@@ -26,7 +26,7 @@
+ #include "gloo/common/common.h"
+ 
+ #ifdef _WIN32
+-#include <BaseTsd.h>
++#include <basetsd.h>
+ typedef SSIZE_T ssize_t;
+ #endif
+ 
