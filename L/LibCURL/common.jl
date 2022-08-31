@@ -39,6 +39,11 @@ function build_libcurl(ARGS, name::String)
         --enable-versioned-symbols
     )
 
+    if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+        cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+    fi
+
     if [[ ${target} == *mingw* ]]; then
         # We need to tell it where to find libssh2 on windows
         FLAGS+=(LDFLAGS="${LDFLAGS} -L${prefix}/bin")
@@ -88,7 +93,7 @@ function build_libcurl(ARGS, name::String)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
-
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     # The products that we will ensure are always built
     if this_is_curl_jll
         # CURL_jll only provides the executable
@@ -111,6 +116,7 @@ function build_libcurl(ARGS, name::String)
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     ]
 
     if this_is_curl_jll

@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libclangex"
-version = v"0.1.7"
+version = v"0.1.8"
 
-llvm_versions = [#=v"11.0.1",=# v"12.0.1", v"13.0.1", #=v"14.0.2"=#]
+llvm_versions = [#=v"11.0.1",=# v"12.0.1", v"13.0.1", v"14.0.5"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/libclangex.git", "05c88ebf5519a51120652bacc5a8b05acca3ad43")
+    GitSource("https://github.com/Gnimuc/libclangex.git", "c22e5eadc5f05b2f174d49c8e2fc5fcb75c3fbdb")
 ]
 
 # Bash recipe for building across all platforms
