@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.3"
+version = v"2.1.4"
 sources = [
     ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
                   "f3925871b9bc19c39002665970283a6f70ec5e159f0c87c74d1ef4f7efa4c26a"),
@@ -40,7 +40,7 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
-] 
+]
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -72,11 +72,11 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("NetCDF_jll", compat="400.702.402 - 400.799"),
+    Dependency("NetCDF_jll", compat="400.702.402 - 400.902.5"),
     # The following is adapted from NetCDF_jll
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.7",
+    julia_compat="1.8",
 )
