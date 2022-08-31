@@ -4,7 +4,7 @@ name = "Ipopt"
 version = Ipopt_version
 
 sources = [
-    GitSource("https://github.com/coin-or/Ipopt.git", Ipopt_gitsha),
+    GitSource("https://github.com/coin-or/Ipopt.git", Ipopt_gitsha)
 ]
 
 # Bash recipe for building across all platforms
