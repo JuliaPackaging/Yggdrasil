@@ -7,8 +7,8 @@ version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    # GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74"),
-    GitSource("https://github.com/gsjaardema/seacas.git", "2f865eba1d377177509fe95794710691afd5e9e3")
+    GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74")
+    # GitSource("https://github.com/gsjaardema/seacas.git", "2f865eba1d377177509fe95794710691afd5e9e3")
 ]
 
 # Bash recipe for building across all platforms
@@ -47,10 +47,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("MbedTLS_jll", compat="2.28.0"),
+    Dependency("NetCDF_jll"),
+    Dependency("HDF5_jll")
+    # Dependency("MbedTLS_jll", compat="2.28.0"),
     # Dependency("LibCURL_jll", compat="7.73.0"),
-    Dependency("NetCDF_jll", compat="400.702.402"),
-    Dependency("HDF5_jll", compat="1.12.1")
+    # Dependency("NetCDF_jll", compat="400.702.402"),
+    # Dependency("HDF5_jll", compat="1.12.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
