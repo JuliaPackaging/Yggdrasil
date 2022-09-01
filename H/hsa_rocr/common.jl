@@ -38,6 +38,8 @@ function configure_build(version)
 
     make -j${nproc}
     make install
+
+    install_license ${WORKSPACE}/srcdir/ROCR-Runtime*/LICENSE.txt
     """
     sources = [
         ArchiveSource(
