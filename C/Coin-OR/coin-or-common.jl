@@ -58,7 +58,7 @@ CoinUtils_version =
 
 Ipopt_upstream_version = v"3.14.4"
 Ipopt_gitsha = "d872b3a3d17863c6a2a27475cc9af9e933cb7e92"
-Ipopt_verson_offset = v"0.0.1"
+Ipopt_verson_offset = v"0.0.2"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
 ALPS_upstream_version = v"1.5.7"
@@ -89,7 +89,7 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.1"
-MUMPS_seq_version = v"5.5.1"
+MUMPS_seq_version = v"500.400.100"
 OpenBLAS32_version = v"0.3.10"
 
 # These are the platforms we will build for by default, unless further
