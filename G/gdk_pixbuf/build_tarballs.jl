@@ -67,7 +67,7 @@ products = [
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
 # gobject_introspection is needed only on x86_64-linux-gnu
-introspect_platform = filter(p -> triplet(p) == "x86_64-linux-gnu", platforms)
+introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
