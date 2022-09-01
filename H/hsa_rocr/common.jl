@@ -7,35 +7,43 @@ const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
-
-const BUILDSCRIPT = raw"""
-cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
-
-# Disable -Werror flag.
-atomic_patch -p1 ../patches/1-no-werror.patch
-
-mkdir build && cd build
-
-CC=${WORKSPACE}/srcdir/scripts/rocm-clang \
-CXX=${WORKSPACE}/srcdir/scripts/rocm-clang++ \
-cmake \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DBITCODE_DIR=${prefix}/amdgcn/bitcode \
-    ../src
-
-make -j${nproc}
-make install
-"""
+const PATCHES = Dict(
+    v"4.2.0" => raw"""
+    atomic_patch -p1 ../patches/1-no-werror.patch
+    """,
+    v"4.5.2" => raw"""
+    atomic_patch -p1 ../patches/1-no-werror.patch
+    atomic_patch -p1 ../patches/musl-affinity.patch
+    """,
+)
 
 const PRODUCTS = [LibraryProduct(["libhsa-runtime64"], :libhsa_runtime64)]
 const NAME = "hsa_rocr"
 
 function configure_build(version)
+    buildscript = raw"""
+    cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
+    """ *
+    PATCHES[version] *
+    raw"""
+    mkdir build && cd build
+
+    CC=${WORKSPACE}/srcdir/rocm-clang \
+    CXX=${WORKSPACE}/srcdir/rocm-clang++ \
+    cmake \
+        -DCMAKE_PREFIX_PATH=${prefix} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DBITCODE_DIR=${prefix}/amdgcn/bitcode \
+        ../src
+
+    make -j${nproc}
+    make install
+    """
     sources = [
         ArchiveSource(
             ROCM_GIT * "archive/rocm-$(version).tar.gz", ROCM_TAGS[version]),
         DirectorySource("./bundled"),
+        DirectorySource("../scripts"),
     ]
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
@@ -46,5 +54,5 @@ function configure_build(version)
         Dependency("Zlib_jll", v"1.2.11"), # 1.2.12 causes undefined variable errors: https://github.com/JuliaPackaging/Yggdrasil/pull/5367
         Dependency("Elfutils_jll"),
     ]
-    NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
+    NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
