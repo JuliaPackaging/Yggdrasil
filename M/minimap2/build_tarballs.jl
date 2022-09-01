@@ -19,7 +19,7 @@ if [[ ${target} == x86_64* ]]; then
 else
     make arm_neon=1 aarch64=1
 fi
-cp minimap2 ../../destdir
+install -Dvm 755 minimap2 "${bindir}/minimap2${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
