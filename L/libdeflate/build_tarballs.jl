@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.13.0"
+version_string = "1.13"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v1.13.tar.gz", 
+    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v$(version_string).tar.gz", 
                   "0d81f197dc31dc4ef7b6198fde570f4e8653c77f4698fcb2163d820a9607c838"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libdeflate-*/
+cd $WORKSPACE/srcdir/libdeflate-*/
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 """
