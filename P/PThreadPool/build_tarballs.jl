@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PThreadPool"
-version = v"0.0.20200616"
+version = v"0.0.20210414"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "029c88620802e1361ccf41d1970bd5b07fd6b7bb"),
-    GitSource("https://github.com/Maratyszcza/FXdiv.git", "b408327ac2a15ec3e43352421954f5b1967701d1"),
+    GitSource("https://github.com/Maratyszcza/pthreadpool.git", "a134dd5d4cee80cce15db81a72e7f929d71dd413"),
+    GitSource("https://github.com/Maratyszcza/FXdiv.git", "63058eff77e11aa15bf531df5dd34395ec3017c8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,7 +50,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CPUInfo_jll", v"0.0.20200522"; compat="0.0.20200522, 0.0.20200612, 0.0.20201217"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
