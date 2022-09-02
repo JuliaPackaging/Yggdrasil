@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.5.0"
-version_offset = v"0.0.1"
+upstream_version = v"3.5.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "3affc513b8aa5a76b996eca55f45cb3e32acacf4a262ce4f686d4c8bba7ced40"),
+        "7c4406ca010dc8632703a0a326f39e9db25d9f1f6ebaaeca64a963e3fac123d1"),
     DirectorySource("./bundled"),
 ]
 
@@ -25,7 +25,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_9_0"
+    export PROJ_LIBS="proj_9_1"
 elif [[ "${target}" == *-linux-* ]]; then
     # Hint to find libstdc++, required to link against C++ libs when using C compiler
     if [[ "${nbits}" == 32 ]]; then
@@ -114,14 +114,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"; compat="~3.11"),
-    Dependency("PROJ_jll"; compat="~900.0"),
+    Dependency("PROJ_jll"; compat="~900.100"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
     Dependency("Libtiff_jll"; compat="4.3"),
-    Dependency("libgeotiff_jll"; compat="1.7.1"),
+    Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73"),
 ]
 
