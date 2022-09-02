@@ -37,7 +37,6 @@ install_license ../LICENSE
 
 # Note: We are restricted to the platforms that NetCDF supports
 platforms = [
-platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
