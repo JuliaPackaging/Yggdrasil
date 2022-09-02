@@ -21,7 +21,7 @@ INSTALL_PATH=${prefix} \
 FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
-HDF5_PATH=${prefix} \
+# HDF5_PATH=${prefix} \
 ../cmake-exodus
 
 make -j${nproc}
@@ -47,8 +47,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("NetCDF_jll"),
-    Dependency("HDF5_jll")
+    Dependency("NetCDF_jll")
+    # Dependency("HDF5_jll")
     # Dependency("MbedTLS_jll", compat="2.28.0"),
     # Dependency("LibCURL_jll", compat="7.73.0"),
     # Dependency("NetCDF_jll", compat="400.702.402"),
