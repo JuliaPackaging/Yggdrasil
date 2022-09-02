@@ -34,9 +34,10 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
-    echo "Disabling NetCDF support"
     CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
 else
+    echo "Disabling NetCDF support"
+    ls ${libdir}
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
 fi
 
