@@ -2,20 +2,19 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.2"
+version = v"5.19.6"
 sources = [
     ArchiveSource(
         "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "ac75218f6477945bd58ee0bf3c115ddec083d2d26c8df7b3fdf8caaf69a6b608"),
+        "77990b0f7b7419269061fbe671540c10f87f52bf8a8568953675ee615584efa6"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
 
-for p in ../patches/*.patch; do
-    atomic_patch -p1 "${p}"
-done
+# https://github.com/sbmlteam/libsbml/pull/252
+atomic_patch -p1 ../patches/0001-FbcModelPlugin-C-API-for-createObjective-and-createG.patch
 
 mkdir build
 cd build
@@ -45,7 +44,7 @@ make install
 rm ${prefix}/lib/libsbml-static.a
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libsbml", :libsbml),

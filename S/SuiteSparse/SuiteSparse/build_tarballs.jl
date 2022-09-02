@@ -17,6 +17,11 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 if [[ ${target} == *mingw32* ]]; then
     FLAGS+=(UNAME=Windows)
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")

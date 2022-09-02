@@ -2,10 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libcxxwrap_julia"
-version = v"0.9.0"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
+name = "libcxxwrap_julia"
+version = v"0.9.2"
+
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
 is_yggdrasil = haskey(ENV, "BUILD_BUILDNUMBER")
 git_repo = is_yggdrasil ? "https://github.com/JuliaInterop/libcxxwrap-julia.git" : joinpath(ENV["HOME"], "src/julia/libcxxwrap-julia/")
@@ -13,7 +18,7 @@ unpack_target = is_yggdrasil ? "" : "libcxxwrap-julia"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "3dd0d4a3b98616952a6da44680e83dfd1c92a1e2", unpack_target=unpack_target),
+    GitSource(git_repo, "ab9c3f11114d1715ae1780bd4d5e8d3df7f236fb", unpack_target=unpack_target),
 ]
 
 # Bash recipe for building across all platforms

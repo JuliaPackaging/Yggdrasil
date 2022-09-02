@@ -1,15 +1,27 @@
+### Instructions for adding a new version of the Go toolchain
+#
+# * find the latest stable releases at https://go.dev/dl/, update the `version`
+#   variable and the SHA256 hash of the release tarball in the sources, the
+#   expected checksum is provided in the download page.
+# * To deploy the shard and automatically update your BinaryBuilderBase's
+#   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
+#   You can build & deploy by running:
+#
+#      julia build_tarballs.jl --debug --verbose --deploy
+#
+
 using BinaryBuilder
 
 include("../common.jl")
 
 name = "Go"
-version = v"1.16.3"
+version = v"1.19"
+version_str = "1.19" # interpolating v1.19 results in "1.19.0"
 
-# https://golang.org/dl/
 sources = [
     ArchiveSource(
-        "https://golang.org/dl/go1.16.3.linux-amd64.tar.gz",
-        "951a3c7c6ce4e56ad883f97d9db74d3d6d80d5fec77455c6ada6c1f7ac4776d2",
+        "https://go.dev/dl/go$(version_str).linux-amd64.tar.gz",
+        "464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6",
     )
 ]
 

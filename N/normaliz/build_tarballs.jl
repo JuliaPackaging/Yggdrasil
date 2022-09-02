@@ -22,21 +22,27 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.900.100"
-upstream_version = v"3.9.1"
+version = v"300.900.301"
+upstream_version = v"3.9.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-                  "ad5dbecc3ca3991bcd7b18774ebe2b68dae12ccca33c813ab29891beb85daa20")
+                  "0288f410428a0eebe10d2ed6795c8906712848c7ae5966442ce164adc2429657")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd normaliz-*
-# avoid libtool problems
-rm "${prefix}/lib/libgmpxx.la"
-./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --with-flint=$prefix --with-nauty=$prefix --with-gmp=$prefix CPPFLAGS=-I$prefix/include LDFLAGS=-L${libdir}
+./configure --prefix=$prefix \
+            --host=$target \
+            --build=${MACHTYPE} \
+            --with-flint=$prefix \
+            --with-nauty=$prefix \
+            --with-gmp=$prefix \
+            --enable-openmp \
+            CPPFLAGS=-I$prefix/include \
+            LDFLAGS=-L${libdir}
 make -j${nproc}
 make install
 """
@@ -44,7 +50,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # windows build would require MPIR instead of GMP for 'long long'
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -59,9 +65,12 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll"; compat = "~200.800.101"),
+    Dependency("FLINT_jll"; compat = "~200.900.000"),
     Dependency("nauty_jll"; compat = "~2.6.13"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,23 +3,23 @@ using BinaryBuilder
 include("../../../fancy_toys.jl")
 
 name = "CUDA_full"
-version = v"11.6.0"
+version = v"11.6.2"
 
 sources_linux = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_510.39.01_linux.run",
-               "1783da6d63970786040980b57fa3cb6420142159fc7d0e66f8f05c4905d98c83", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run",
+               "99b7a73dcc52a52cef4c1fceb4a60c3015ac9b6404082c1677d9efdaba1d4593", "installer.run")
 ]
 sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_510.39.01_linux_ppc64le.run",
-               "c86b866a42baf59ddc6f1f4a79e6d77213c90749e77e574f0e0d796a749ab7d0", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux_ppc64le.run",
+               "869232ff8dbf295a71609738ac9e1b0079ca75597b427f1c026f42b36896afe8", "installer.run")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_510.39.01_linux_sbsa.run",
-               "5898579f5e59b708520883cb161089f5e4f3426158d1e9f973c49d224085d1d2", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux_sbsa.run",
+               "b20c014c6bba36b13c50da167ad42e9bd1cea24f3b6297b495ea129c0889f36e", "installer.run")
 ]
 sources_win10 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe",
-               "5cc73d14e9fb0134cfcab08cc9e43226051c70416cddb61a2c660194b61f71d6", "installer.exe")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_511.65_windows.exe",
+               "07209206d11cd5a2ad9227fe0be0f145113416db619fbddee1e76d2a388a56e9", "installer.exe")
 ]
 
 script = raw"""
@@ -39,7 +39,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp cuda_documentation/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
+    for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse \
@@ -61,7 +61,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     mv cuda_documentation/Doc/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti \
+    for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse  \
@@ -125,5 +125,3 @@ if should_build_platform("x86_64-w64-mingw32")
                    [Platform("x86_64", "windows")], products, dependencies;
                    skip_audit=true)
 end
-
-# bump

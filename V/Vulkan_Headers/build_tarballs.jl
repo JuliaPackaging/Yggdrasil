@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Vulkan_Headers"
-version = v"1.2.177"
+version = v"1.3.207"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "3f437c4a94ae35af1eb93700d073e9d0e7adab3d"
+commit = "2c45218b9008dd80f6004b419777758e6459ac16"
 
 sources = [
     GitSource(source, commit)
@@ -36,7 +36,6 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)

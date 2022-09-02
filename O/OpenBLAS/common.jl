@@ -3,6 +3,14 @@ using BinaryBuilder
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.20" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.20.tar.gz",
+                          "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
+        ],
+        v"0.3.19" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.19.tar.gz",
+                          "947f51bfe50c2a0749304fbe373e00e7637600b0a47b78a51382aeb30ca08562")
+        ],
         v"0.3.17" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
                           "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
@@ -50,6 +58,25 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     """
     # Bash recipe for building across all platforms
     script *= raw"""
+    if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+        # For msan, we need to use flang to compile.
+        ## Create flang compiler wrapper
+        cat /opt/bin/${bb_full_target}/${target}-clang | sed 's/clang/flang/g' > /opt/bin/${bb_full_target}/${target}-flang
+        chmod +x /opt/bin/${bb_full_target}/${target}-flang
+        ln -s ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/bin/flang /opt/x86_64-linux-musl/bin/flang
+        export FC=${target}-flang
+
+        # Install flang rt libraries to sysroot
+        cp ${prefix}/lib/lib{flang*,ompstub*,pgmath*,omp*} /opt/${target}/${target}/sys-root/usr/lib/
+
+        # Install msan runtime (for clang)
+        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+
+        # Install msan runtime (for flang)
+        mkdir -p $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux
+        cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
+    fi
+
     # We always want threading
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=50 NO_AFFINITY=1)
 
@@ -87,7 +114,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
     # On Intel and most aarch64 architectures, engage DYNAMIC_ARCH.
     # When using DYNAMIC_ARCH the TARGET specifies the minimum architecture requirement.
-    if [[ ${proc_family} == intel ]]; then
+    if [[ ${bb_full_target} == *-sanitize* ]]; then
+        # Currently, OpenBLAS has no sanitizer annotations around its assembly kernels, so build the
+        # C versions. Once we have those annotations, we can remove this branch.
+        flags+=(TARGET=GENERIC)
+    elif [[ ${proc_family} == intel ]]; then
         flags+=(DYNAMIC_ARCH=1)
         # Before OpenBLAS 0.3.13, there appears to be a miscompilation bug with `clang` on setting `TARGET=GENERIC`
         # As that is the case, we're just going to be safe and only use `TARGET=GENERIC` on 0.3.13+
@@ -192,6 +223,9 @@ end
 
 function openblas_dependencies(;kwargs...)
     return [
-        Dependency("CompilerSupportLibraries_jll")
+        Dependency("CompilerSupportLibraries_jll"),
+        HostBuildDependency("FlangClassic_jll"),
+        BuildDependency("LLVMCompilerRT_jll"),
+        BuildDependency("FlangClassic_RTLib_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")])
     ]
 end

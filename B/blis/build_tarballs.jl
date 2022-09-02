@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "blis"
-version = v"0.8.0"
+version = v"0.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "8a3066c315358d45d4f5b710c54594455f9e8fc6"),
+    GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
     DirectorySource("./bundled")
 ]
 
@@ -18,8 +18,9 @@ cd blis/
 
 for i in ./config/*/*.mk; do
 
-    # Building in container forbids -march options
-    sed -i "s/-march[^ ]*//g" $i
+    # Building in container forbids -march options <<< Settings overriden.
+    # sed -i "s/-march[^ ]*//g" $i
+
     # Building in container forbids unsafe optimization.
     sed -i "s/-ffast-math//g" $i
     sed -i "s/-funsafe-math-optimizations//g" $i
@@ -41,23 +42,23 @@ case ${target} in
     *"x86_64"*"apple"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
         ;;
     *"x86_64"*"freebsd"*) 
         export BLI_CONFIG=x86_64
         export BLI_THREAD=openmp
-        export CC=gcc
-        export CXX=g++
+        ;;
+    *"aarch64"*"apple"*)
+        # Metaconfig arm64 is not needed here.
+        # All Mac processors should have equal or higher specs then firestorm
+        export BLI_CONFIG=firestorm
+        export BLI_THREAD=openmp
         ;;
     *"aarch64"*"linux"*) 
-        # Aarch64 has no metaconfiguration support yet.
-        # Use Cortex-A57 for the moment.
-        export BLI_CONFIG=cortexa57
+        export BLI_CONFIG=arm64
         export BLI_THREAD=openmp
         ;;
     *"arm"*"linux"*) 
-        export BLI_CONFIG=cortexa9
+        export BLI_CONFIG=arm32
         export BLI_THREAD=none
         ;;
     *)
@@ -74,6 +75,27 @@ if [ ${nbits} = 64 ]; then
     patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
 fi
 
+# Include A64FX in Arm64 metaconfig.
+if [ ${BLI_CONFIG} = arm64 ]; then
+    # Add A64FX to the registry.
+    patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
+
+    # Unscreen Arm SVE code for metaconfig.
+    patch kernels/armsve/bli_kernels_armsve.h \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+    patch kernels/armsve/1m/old/bli_dpackm_armsve512_int_12xk.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+    patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
+        < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+
+    # Screen out A64FX sector cache.
+    patch config/a64fx/bli_cntx_init_a64fx.c \
+        < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+fi
+
+# Import libblastrampoline-style nthreads setter.
+cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
+
 export BLI_F77BITS=${nbits}
 ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
 make -j${nproc}
@@ -85,7 +107,7 @@ rm ${prefix}/lib/libblis.a
 # Rename .dll for Windows targets.
 if [[ "${target}" == *"x86_64"*"w64"* ]]; then
     mkdir -p ${libdir}
-    mv ${prefix}/lib/libblis.3.dll ${libdir}/libblis.dll
+    mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
 fi
 """
 
@@ -98,6 +120,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "freebsd")
 ]
 
@@ -109,8 +132,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"11", lock_microarchitecture=false, julia_compat="1.6")

@@ -1,0 +1,17 @@
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-CXX = g++
++CXX = c++
+ include makefile.local
+ LIBS = -lmpfr -lgmp -lgsl -lgslcblas -lm -lglpk
+ CFLAGS = -I . -I $(GMP_HOME) -g -O3 -std=c++11
+@@ -8,7 +8,7 @@
+ all: flowstar lib
+ 
+ flowstar: $(OBJS) lex.yy.o modelParser.tab.o modelParser.o
+-	g++ -O3 -w $(LINK_FLAGS) -o $@ $^ $(LIBS)
++	$(CXX) -O3 -w $(LINK_FLAGS) -o $@ $^ $(LIBS)
+ 
+ lib: $(OBJS) lex.yy.o modelParser.tab.o
+ 	ar rcs libflowstar.a $^

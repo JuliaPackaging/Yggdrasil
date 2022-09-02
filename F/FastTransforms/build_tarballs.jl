@@ -1,11 +1,11 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.5.4"
+version = v"0.6.0"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "3e9932215acc973a9e2f7379bf1424243effa9bdf0a6a26fd2c65b8fc7e916e6"),
+                  "ae2db2fa808ca17c5dc5ac25b079eba2dbe598d061b9b4e14c948680870abc3c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,8 +36,8 @@ if [[ ${nbits} == 64 ]]; then
 else
     BLAS=openblas
 fi
-make assembly CC=gcc
-make lib CC=gcc FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
+make assembly
+make lib FT_PREFIX=${prefix} FT_BLAS=${BLAS} FT_FFTW_WITH_COMBINED_THREADS=1
 mv -f libfasttransforms.${dlext} ${libdir}
 """
 
@@ -50,11 +50,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS_jll", v"0.3.17"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")
