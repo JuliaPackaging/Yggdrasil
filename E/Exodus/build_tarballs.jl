@@ -16,7 +16,7 @@ script = raw"""
 # install TPLs first
 #
 cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
-./install-tpl.sh
+NEEDS_ZLIB=YES ./install-tpl.sh
 
 # build exodus
 #
