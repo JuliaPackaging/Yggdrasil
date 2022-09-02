@@ -29,11 +29,12 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DWITH_SQLITE3=ON
 -DBUILD_STATIC=OFF
 -DBUILD_SHARED=ON
--DBUILD_TOOLS=OFF
+-DBUILD_TOOLS=ON
 -DBUILD_EXTERNAL_DRIVERS=OFF)
 
-#NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
+    echo "Disabling NetCDF support"
     CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
 else
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
@@ -64,5 +65,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#GDAL uses a preferred of 6 so match that
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+# GDAL uses a preferred of 6 so match that
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
