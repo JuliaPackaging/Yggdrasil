@@ -25,7 +25,7 @@ if [[ ${target} == *mingw* ]]; then
     # Apply patch to customise PROJ library
     atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
     autoreconf -vi
-    export PROJ_LIBS="proj_9_0"
+    export PROJ_LIBS="proj_9_1"
 elif [[ "${target}" == *-linux-* ]]; then
     # Hint to find libstdc++, required to link against C++ libs when using C compiler
     if [[ "${nbits}" == 32 ]]; then
