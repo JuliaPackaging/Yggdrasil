@@ -53,7 +53,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll", compat="1.12.0"),
+    Dependency("HDF5_jll", compat="1.12.2"),
     Dependency("NetCDF_jll", compat="400.902.5")
     # Dependency("HDF5_jll")
     # Dependency("MbedTLS_jll", compat="2.28.0"),
