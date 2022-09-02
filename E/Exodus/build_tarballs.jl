@@ -15,8 +15,8 @@ sources = [
 script = raw"""
 # install TPLs first
 #
-cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
-NEEDS_ZLIB=YES ./install-tpl.sh
+# cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
+# NEEDS_ZLIB=YES ./install-tpl.sh
 
 # build exodus
 #
@@ -47,16 +47,14 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libnetcdf", :libnetcdf),
-    # LibraryProduct("libhdf5", :libhdf5)
     LibraryProduct("libexodus", :libexodus)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll")
-    # Dependency("NetCDF_jll"),
+    Dependency("HDF5_jll"),
+    Dependency("NetCDF_jll"),
     # Dependency("HDF5_jll")
     # Dependency("MbedTLS_jll", compat="2.28.0"),
     # Dependency("LibCURL_jll", compat="7.73.0"),
@@ -65,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
