@@ -13,7 +13,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/seacas
+# install TPLs first
+#
+cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
+./install-tpl.sh
+
+# build exodus
+#
 mkdir build
 cd build
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
@@ -21,7 +27,7 @@ INSTALL_PATH=${prefix} \
 FORTRAN=NO \
 NETCDF_PATH=${prefix} \
 PNETCDF_PATH=${prefix} \
-# HDF5_PATH=${prefix} \
+HDF5_PATH=${prefix} \
 ../cmake-exodus
 
 make -j${nproc}
@@ -41,13 +47,16 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libnetcdf", :libnetcdf),
+    # LibraryProduct("libhdf5", :libhdf5)
     LibraryProduct("libexodus", :libexodus)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("NetCDF_jll")
+    Dependency("HDF5_jll")
+    # Dependency("NetCDF_jll"),
     # Dependency("HDF5_jll")
     # Dependency("MbedTLS_jll", compat="2.28.0"),
     # Dependency("LibCURL_jll", compat="7.73.0"),
