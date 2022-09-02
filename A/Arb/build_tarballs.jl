@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "Arb"
-upstream_version = v"2.22.0"
+upstream_version = v"2.23.0"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -30,7 +30,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fredrik-johansson/arb.git", "c2b7e36915a451455c1f115ce343dd85bdc30c59")
+    GitSource("https://github.com/fredrik-johansson/arb.git", "8109a22f1f2c1e9623f3660c5c2df278ceed95cb")
 ]
 
 # Bash recipe for building across all platforms
@@ -61,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FLINT_jll", compat = "~200.800.401"),
+    Dependency("FLINT_jll", compat = "~200.900.000"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]

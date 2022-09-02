@@ -27,7 +27,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-upstream_version = v"4.3.0-1" # 4.3.0 plus some changes
+upstream_version = v"4.3.1-1" # 4.3.1 plus some changes
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
@@ -35,7 +35,7 @@ version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + 
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "bbc293564bf76fcdfdc37354d406b7ca77bc780f"),
+    GitSource("https://github.com/Singular/Singular.git", "c894d1ba0b692e54f6dddf08d4b09e06c446a8dc"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -62,7 +62,15 @@ export CPPFLAGS="-I${prefix}/include"
     --with-gmp=$prefix \
     --with-flint=$prefix \
     --without-python \
-    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra
+    --with-builtinmodules=gfanlib,syzextra,customstd,interval,subsets,loctriv,gitfan,freealgebra \
+    --disable-partialgb-module \
+    --disable-polymake-module \
+    --disable-pyobject-module \
+    --disable-singmathic-module \
+    --disable-systhreads-module \
+    --disable-cohomo-module \
+    --disable-machinelearning-module \
+    --disable-sispasm-module
 
 make -j${nproc}
 make install
@@ -92,7 +100,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.800.401"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.900.000"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]

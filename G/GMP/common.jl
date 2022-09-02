@@ -34,6 +34,10 @@ if [[ ${proc_family} == intel ]]; then
     flags+=(--enable-fat)
 fi
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 autoreconf
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} ${flags[@]}
 
@@ -52,15 +56,15 @@ install_license COPYING*
 
     # We enable experimental platforms as this is a core Julia dependency
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
-
-    # The products that we will ensure are always built
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     products = [
         LibraryProduct("libgmp", :libgmp),
         LibraryProduct("libgmpxx", :libgmpxx),
     ]
 
     # Dependencies that must be installed before this package can be built
-    dependencies = Dependency[
+    dependencies = [
+        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     ]
 
     return name, version, sources, script, platforms, products, dependencies

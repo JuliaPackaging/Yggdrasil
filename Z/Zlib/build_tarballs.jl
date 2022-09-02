@@ -2,20 +2,23 @@ using BinaryBuilder
 
 # zlib version
 name = "Zlib"
-version = v"1.2.11"
+version = v"1.2.12"
 
 
 # Collection of sources required to build zlib
 sources = [
     ArchiveSource("https://zlib.net/zlib-$(version).tar.gz",
-                  "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"),
+                  "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/zlib-*
 mkdir build && cd build
-
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 # We use `-DUNIX=true` to ensure that it is always named `libz` instead of `libzlib` or something ridiculous like that.
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -29,6 +32,7 @@ install_license ../README
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -36,11 +40,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"1.2.12"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-

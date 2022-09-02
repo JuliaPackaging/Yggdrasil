@@ -2,13 +2,18 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include("../common.jl")
+include("../common.jl"); push!(sources, DirectorySource("./bundled"))
 name = "oneAPI_Level_Zero_Loader"
+
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd level-zero
 install_license LICENSE
+
+if [[ "${target}" == *musl* ]]; then
+atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-no-deepbind.patch
+fi
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -22,7 +27,9 @@ make install
 # platforms are passed in on the command line
 platforms = [
     Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc")
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="musl"),
+    Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -49,4 +56,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"5")
 
-# bump counter: 5
+# bump

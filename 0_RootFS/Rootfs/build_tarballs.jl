@@ -119,8 +119,8 @@ sources = [
     GitSource("https://github.com/NixOS/patchelf.git",
               "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.61.1/meson-0.61.1.tar.gz",
-                  "feb2cefb325b437dbf36146df7c6b87688ddff0b0205caa31dc64055c6da410c"),
+    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.61.2/meson-0.61.2.tar.gz",
+                  "0233a7f8d959079318f6052b0939c27f68a5de86ba601f25c9ee6869fb5f5889"),
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",

@@ -6,7 +6,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "3a63bf71de62c64097989254e4f03212e3bf5fc8"),
+              "3f7038d62e43c3682394a6ea7b4ccc46be0fa0bf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,11 @@ touch -c aclocal.m4
 touch -c Makefile.in
 touch -c configure
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 # `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
 # everywhere, especially on FreeBSD. In the end, isn't FreeBSD all that matters?
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC"
@@ -27,6 +32,7 @@ make install
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -35,6 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Note: we explicitly lie about this because we don't have the new

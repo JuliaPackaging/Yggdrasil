@@ -4,7 +4,7 @@ include("../common.jl")
 
 name = "nq"
 upstream_version = v"2.5.5" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
 # nq just produces a binary and does not need GAP for this at all.
@@ -40,7 +40,7 @@ filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
 filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
 dependencies = [
-    Dependency("GMP_jll", v"6.1.2"),
+    Dependency("GMP_jll", v"6.2.0"),
 ]
 
 # The products that we will ensure are always built

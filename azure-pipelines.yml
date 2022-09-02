@@ -14,6 +14,8 @@ variables:
     # We limit our parallelism somewhat in order to avoid strange OOM errors while building LLVM
     BINARYBUILDER_NPROC: 16
     JULIA_PKG_SERVER: us-east.pkg.julialang.org
+    # Use eager registry to not have to wait for updates of the conservative registry
+    JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
 
 jobs:
 - job: generator
@@ -50,7 +52,8 @@ jobs:
           versioninfo()
           if !isnothing(Pkg.pkg_server())
               resp = try
-                  Downloads.request("$(Pkg.pkg_server())/registries")
+                  headers = Pkg.PlatformEngines.get_metadata_headers(Pkg.pkg_server())
+                  Downloads.request("$(Pkg.pkg_server())/registries"; headers)
               catch e
                   # Let us know the download of the registry went wrong, but do not hard fail
                   @error "Could not download the registry" exception=(e, catch_backtrace())
@@ -182,7 +185,7 @@ jobs:
               # Load in the platforms
               PLATFORMS=$(cat $(Agent.TempDirectory)/${NAME}.platforms.list)
               if [[ -z "${PLATFORMS}" ]]; then
-                  echo "##vso[task.logissue]error Unable to determine the proper platforms for ${NAME}"
+                  echo "##vso[task.logissue type=error]Unable to determine the proper platforms for ${NAME}"
                   continue
               fi
 

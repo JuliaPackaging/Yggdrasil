@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA"
-version = v"11.4.2"
+version = v"11.4.4"
 
 dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=version))]
 

@@ -65,9 +65,6 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
     fi
     chmod a+x ${prefix}/share/gap/gac
     cp sysinfo.gap ${prefix}/share/gap/
-
-    # ensure #including src/compiled.h or src/profile.h from GAP_jll works
-    ln -s . ${prefix}/include/gap/src
     """ * script * raw"""
     rm -rf ${prefix}/include
     rm -rf ${prefix}/share/gap

@@ -1,0 +1,25 @@
+diff --git a/build/http/CMakeLists.txt b/build/http/CMakeLists.txt
+index 4862c8252..4bce1db2e 100644
+--- a/build/http/CMakeLists.txt
++++ b/build/http/CMakeLists.txt
+@@ -123,8 +123,6 @@ endif()
+ if ( WIN32 OR MSYS )
+ 	if (MSVC)
+ 		set (LIBMICROHTTPD__LDFLAGS "${LIBMICROHTTPD__LDFLAGS} ws2_32" )
+-	else()
+-		set (LIBMICROHTTPD__LDFLAGS "-lws2_32 ${LIBMICROHTTPD__LDFLAGS}" )
+ 	endif()
+ endif()
+ 
+@@ -162,10 +160,8 @@ if (HTTPDYNAMIC)
+ 	if (WIN32 AND MSVC) 
+ 		target_compile_definitions (httpdynamic PRIVATE -D_WIN32 -DMHD_W32LIB)
+ 		target_link_libraries(httpdynamic ws2_32 ${LMHLIB})
+-	elseif(MSYS)
+-		target_link_libraries (httpdynamic ${LIBMICROHTTPD__LDFLAGS})
+ 	else()
+-		target_link_libraries (httpdynamic microhttpd)
++		target_link_libraries (httpdynamic microhttpd ws2_32)
+ 		set_target_properties (httpdynamic PROPERTIES 
+ 			COMPILE_FLAGS  "${LIBMICROHTTPD__CFLAGS}"
+ 			LINK_FLAGS     "${LIBMICROHTTPD__LDFLAGS}")

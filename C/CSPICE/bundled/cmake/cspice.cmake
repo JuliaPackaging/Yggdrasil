@@ -2,6 +2,33 @@
 
 set(SRCS
     src/cspice/F77_aloc.c
+    src/cspice/SpiceCK.h
+    src/cspice/SpiceCel.h
+    src/cspice/SpiceDAS.h
+    src/cspice/SpiceDLA.h
+    src/cspice/SpiceDSK.h
+    src/cspice/SpiceDtl.h
+    src/cspice/SpiceEK.h
+    src/cspice/SpiceEll.h
+    src/cspice/SpiceErr.h
+    src/cspice/SpiceFrm.h
+    src/cspice/SpiceGF.h
+    src/cspice/SpiceOccult.h
+    src/cspice/SpiceOsc.h
+    src/cspice/SpicePln.h
+    src/cspice/SpiceSCLK.h
+    src/cspice/SpiceSPK.h
+    src/cspice/SpiceSrf.h
+    src/cspice/SpiceUsr.h
+    src/cspice/SpiceZad.h
+    src/cspice/SpiceZdf.h
+    src/cspice/SpiceZfc.h
+    src/cspice/SpiceZim.h
+    src/cspice/SpiceZmc.h
+    src/cspice/SpiceZpl.h
+    src/cspice/SpiceZpr.h
+    src/cspice/SpiceZrnm.h
+    src/cspice/SpiceZst.h
     src/cspice/abort_.c
     src/cspice/accept.c
     src/cspice/alltru.c
@@ -16,6 +43,10 @@ set(SRCS
     src/cspice/astrip.c
     src/cspice/axisar.c
     src/cspice/axisar_c.c
+    src/cspice/azlcpo.c
+    src/cspice/azlcpo_c.c
+    src/cspice/azlrec.c
+    src/cspice/azlrec_c.c
     src/cspice/b1900.c
     src/cspice/b1900_c.c
     src/cspice/b1950.c
@@ -83,8 +114,11 @@ set(SRCS
     src/cspice/chbder.c
     src/cspice/chbder_c.c
     src/cspice/chbigr.c
+    src/cspice/chbigr_c.c
     src/cspice/chbint.c
+    src/cspice/chbint_c.c
     src/cspice/chbval.c
+    src/cspice/chbval_c.c
     src/cspice/chckid.c
     src/cspice/chgirf.c
     src/cspice/chkin_c.c
@@ -102,24 +136,31 @@ set(SRCS
     src/cspice/cke05.c
     src/cspice/cke06.c
     src/cspice/ckfrot.c
+    src/cspice/ckfrot_c.c
     src/cspice/ckfxfm.c
+    src/cspice/ckfxfm_c.c
     src/cspice/ckgp.c
     src/cspice/ckgp_c.c
     src/cspice/ckgpav.c
     src/cspice/ckgpav_c.c
     src/cspice/ckgr01.c
     src/cspice/ckgr02.c
+    src/cspice/ckgr02_c.c
     src/cspice/ckgr03.c
+    src/cspice/ckgr03_c.c
     src/cspice/ckgr04.c
     src/cspice/ckgr05.c
     src/cspice/ckgr06.c
     src/cspice/cklpf_c.c
     src/cspice/ckmeta.c
+    src/cspice/ckmeta_c.c
     src/cspice/ckmp06.c
     src/cspice/cknm06.c
     src/cspice/cknr01.c
     src/cspice/cknr02.c
+    src/cspice/cknr02_c.c
     src/cspice/cknr03.c
+    src/cspice/cknr03_c.c
     src/cspice/cknr04.c
     src/cspice/cknr05.c
     src/cspice/ckobj.c
@@ -147,9 +188,11 @@ set(SRCS
     src/cspice/ckw05_c.c
     src/cspice/ckw06.c
     src/cspice/clearc.c
+    src/cspice/clearc_c.c
     src/cspice/cleard.c
     src/cspice/cleard_c.c
     src/cspice/cleari.c
+    src/cspice/cleari_c.c
     src/cspice/clight.c
     src/cspice/clight_c.c
     src/cspice/close.c
@@ -235,6 +278,7 @@ set(SRCS
     src/cspice/dafgn_c.c
     src/cspice/dafgs_c.c
     src/cspice/dafgsr_c.c
+    src/cspice/dafhsf_c.c
     src/cspice/dafopr_c.c
     src/cspice/dafopw_c.c
     src/cspice/dafps.c
@@ -261,8 +305,11 @@ set(SRCS
     src/cspice/dasacr.c
     src/cspice/dasacu.c
     src/cspice/dasadc.c
+    src/cspice/dasadc_c.c
     src/cspice/dasadd.c
+    src/cspice/dasadd_c.c
     src/cspice/dasadi.c
+    src/cspice/dasadi_c.c
     src/cspice/dasbt.c
     src/cspice/dascls.c
     src/cspice/dascls_c.c
@@ -274,27 +321,41 @@ set(SRCS
     src/cspice/dasecu.c
     src/cspice/dasfm.c
     src/cspice/dashfn_c.c
+    src/cspice/dashfs_c.c
     src/cspice/dasine.c
     src/cspice/dasioc.c
     src/cspice/dasiod.c
     src/cspice/dasioi.c
     src/cspice/daslla.c
+    src/cspice/daslla_c.c
+    src/cspice/dasllc_c.c
+    src/cspice/dasonw_c.c
     src/cspice/dasopr_c.c
+    src/cspice/dasops_c.c
     src/cspice/dasopw_c.c
     src/cspice/dasrcr.c
     src/cspice/dasrdc.c
+    src/cspice/dasrdc_c.c
     src/cspice/dasrdd.c
+    src/cspice/dasrdd_c.c
     src/cspice/dasrdi.c
+    src/cspice/dasrdi_c.c
     src/cspice/dasrfr.c
     src/cspice/dasrfr_c.c
     src/cspice/dasrwr.c
     src/cspice/dassdr.c
     src/cspice/dastb.c
     src/cspice/dasudc.c
+    src/cspice/dasudc_c.c
     src/cspice/dasudd.c
+    src/cspice/dasudd_c.c
     src/cspice/dasudi.c
+    src/cspice/dasudi_c.c
+    src/cspice/daswbr_c.c
     src/cspice/daswfr.c
     src/cspice/datanh.c
+    src/cspice/dazldr.c
+    src/cspice/dazldr_c.c
     src/cspice/dcbrt.c
     src/cspice/dcyldr.c
     src/cspice/dcyldr_c.c
@@ -320,16 +381,20 @@ set(SRCS
     src/cspice/dlabfs.c
     src/cspice/dlabfs_c.c
     src/cspice/dlabns.c
+    src/cspice/dlabns_c.c
     src/cspice/dlaens.c
+    src/cspice/dlaens_c.c
     src/cspice/dlafns.c
     src/cspice/dlafns_c.c
     src/cspice/dlafps.c
     src/cspice/dlafps_c.c
     src/cspice/dlaopn.c
+    src/cspice/dlaopn_c.c
     src/cspice/dlassg.c
     src/cspice/dlatdr.c
     src/cspice/dlatdr_c.c
     src/cspice/dnearp.c
+    src/cspice/dnearp_c.c
     src/cspice/dolio.c
     src/cspice/dp2hx.c
     src/cspice/dp2hx_c.c
@@ -345,6 +410,8 @@ set(SRCS
     src/cspice/dpspce.c
     src/cspice/dpstr.c
     src/cspice/dpstrf.c
+    src/cspice/drdazl.c
+    src/cspice/drdazl_c.c
     src/cspice/drdcyl.c
     src/cspice/drdcyl_c.c
     src/cspice/drdgeo.c
@@ -417,7 +484,9 @@ set(SRCS
     src/cspice/edlimb.c
     src/cspice/edlimb_c.c
     src/cspice/ednmpt.c
+    src/cspice/ednmpt_c.c
     src/cspice/edpnt.c
+    src/cspice/edpnt_c.c
     src/cspice/edterm.c
     src/cspice/edterm_c.c
     src/cspice/ef1asc_.c
@@ -535,6 +604,8 @@ set(SRCS
     src/cspice/eul2xf_c.c
     src/cspice/ev2lin.c
     src/cspice/even.c
+    src/cspice/evsgp4.c
+    src/cspice/evsgp4_c.c
     src/cspice/exact.c
     src/cspice/excess.c
     src/cspice/exists.c
@@ -542,14 +613,20 @@ set(SRCS
     src/cspice/exit_.c
     src/cspice/expln.c
     src/cspice/expool_c.c
+    src/cspice/f2c.h
+    src/cspice/f2cMang.h
     src/cspice/failed_c.c
     src/cspice/fetchc.c
     src/cspice/fetchd.c
     src/cspice/fetchi.c
     src/cspice/fillc.c
     src/cspice/filld.c
+    src/cspice/filld_c.c
     src/cspice/filli.c
+    src/cspice/filli_c.c
+    src/cspice/fio.h
     src/cspice/fmt.c
+    src/cspice/fmt.h
     src/cspice/fmtlib.c
     src/cspice/fn2lun.c
     src/cspice/fndlun.c
@@ -558,6 +635,7 @@ set(SRCS
     src/cspice/fovray_c.c
     src/cspice/fovtrg.c
     src/cspice/fovtrg_c.c
+    src/cspice/fp.h
     src/cspice/frame.c
     src/cspice/frame_c.c
     src/cspice/framex.c
@@ -584,6 +662,8 @@ set(SRCS
     src/cspice/getfat_c.c
     src/cspice/getfov.c
     src/cspice/getfov_c.c
+    src/cspice/getfvn.c
+    src/cspice/getfvn_c.c
     src/cspice/getlun.c
     src/cspice/getmsg.c
     src/cspice/getmsg_c.c
@@ -651,6 +731,7 @@ set(SRCS
     src/cspice/hl_le.c
     src/cspice/hl_lt.c
     src/cspice/hrmesp.c
+    src/cspice/hrmesp_c.c
     src/cspice/hrmint.c
     src/cspice/hrmint_c.c
     src/cspice/hx2dp.c
@@ -716,6 +797,7 @@ set(SRCS
     src/cspice/invort.c
     src/cspice/invort_c.c
     src/cspice/invstm.c
+    src/cspice/invstm_c.c
     src/cspice/ioerr.c
     src/cspice/irftrn.c
     src/cspice/iso2utc.c
@@ -775,12 +857,15 @@ set(SRCS
     src/cspice/lcase_c.c
     src/cspice/ldpool_c.c
     src/cspice/lgresp.c
+    src/cspice/lgresp_c.c
     src/cspice/lgrind.c
     src/cspice/lgrind_c.c
     src/cspice/lgrint.c
+    src/cspice/lgrint_c.c
     src/cspice/limb_pl02.c
     src/cspice/limbpt.c
     src/cspice/limbpt_c.c
+    src/cspice/lio.h
     src/cspice/ljucrs.c
     src/cspice/ljust.c
     src/cspice/llgrid_pl02.c
@@ -860,8 +945,10 @@ set(SRCS
     src/cspice/minai.c
     src/cspice/mind_c.c
     src/cspice/mini_c.c
+    src/cspice/mkprodct.csh
     src/cspice/movec.c
     src/cspice/moved.c
+    src/cspice/moved_c.c
     src/cspice/movei.c
     src/cspice/mtxm.c
     src/cspice/mtxm_c.c
@@ -893,6 +980,7 @@ set(SRCS
     src/cspice/nearpt.c
     src/cspice/nearpt_c.c
     src/cspice/nextwd.c
+    src/cspice/nextwd_c.c
     src/cspice/notru.c
     src/cspice/nparsd.c
     src/cspice/nparsi.c
@@ -904,6 +992,7 @@ set(SRCS
     src/cspice/nplnpt_c.c
     src/cspice/npsgpt.c
     src/cspice/nthwd.c
+    src/cspice/nthwd_c.c
     src/cspice/nvc2pl.c
     src/cspice/nvc2pl_c.c
     src/cspice/nvp2pl.c
@@ -1035,6 +1124,7 @@ set(SRCS
     src/cspice/q2m_c.c
     src/cspice/qcktrc_c.c
     src/cspice/qderiv.c
+    src/cspice/qderiv_c.c
     src/cspice/qdq2av.c
     src/cspice/qdq2av_c.c
     src/cspice/quote.c
@@ -1066,6 +1156,7 @@ set(SRCS
     src/cspice/radrec_c.c
     src/cspice/rav2xf.c
     src/cspice/rav2xf_c.c
+    src/cspice/rawio.h
     src/cspice/raxisa.c
     src/cspice/raxisa_c.c
     src/cspice/rdencc.c
@@ -1079,6 +1170,8 @@ set(SRCS
     src/cspice/rdtext_c.c
     src/cspice/readla.c
     src/cspice/readln.c
+    src/cspice/recazl.c
+    src/cspice/recazl_c.c
     src/cspice/reccyl.c
     src/cspice/reccyl_c.c
     src/cspice/recgeo.c
@@ -1122,6 +1215,8 @@ set(SRCS
     src/cspice/repmf_c.c
     src/cspice/repmi.c
     src/cspice/repmi_c.c
+    src/cspice/repml.c
+    src/cspice/repml_c.c
     src/cspice/repmot.c
     src/cspice/repmot_c.c
     src/cspice/repsub.c
@@ -1229,6 +1324,7 @@ set(SRCS
     src/cspice/sigdgt.c
     src/cspice/sigerr.c
     src/cspice/sigerr_c.c
+    src/cspice/signal1.h
     src/cspice/signal_.c
     src/cspice/sincpt.c
     src/cspice/sincpt_c.c
@@ -1420,6 +1516,7 @@ set(SRCS
     src/cspice/stelab.c
     src/cspice/stelab_c.c
     src/cspice/stlabx.c
+    src/cspice/stlabx_c.c
     src/cspice/stmp03.c
     src/cspice/stpool.c
     src/cspice/stpool_c.c
@@ -1503,6 +1600,8 @@ set(SRCS
     src/cspice/sytrnd.c
     src/cspice/sytrni.c
     src/cspice/szpool_c.c
+    src/cspice/tangpt.c
+    src/cspice/tangpt_c.c
     src/cspice/tcheck.c
     src/cspice/term_pl02.c
     src/cspice/termpt.c
@@ -1517,6 +1616,7 @@ set(SRCS
     src/cspice/tisbod.c
     src/cspice/tisbod_c.c
     src/cspice/tkfram.c
+    src/cspice/tkfram_c.c
     src/cspice/tkvrsn.c
     src/cspice/tkvrsn_c.c
     src/cspice/tostdo.c
@@ -1524,6 +1624,7 @@ set(SRCS
     src/cspice/touchd.c
     src/cspice/touchi.c
     src/cspice/touchl.c
+    src/cspice/tparch_c.c
     src/cspice/tparse.c
     src/cspice/tparse_c.c
     src/cspice/tpartv.c
@@ -1536,6 +1637,8 @@ set(SRCS
     src/cspice/trcnam_c.c
     src/cspice/trcoff_c.c
     src/cspice/trcpkg.c
+    src/cspice/trgsep.c
+    src/cspice/trgsep_c.c
     src/cspice/tsetyr_c.c
     src/cspice/ttrans.c
     src/cspice/twopi.c
@@ -1543,6 +1646,7 @@ set(SRCS
     src/cspice/twovec.c
     src/cspice/twovec_c.c
     src/cspice/twovxf.c
+    src/cspice/twovxf_c.c
     src/cspice/txtopn.c
     src/cspice/txtopr.c
     src/cspice/tyear.c
@@ -1625,6 +1729,7 @@ set(SRCS
     src/cspice/vproj.c
     src/cspice/vproj_c.c
     src/cspice/vprojg.c
+    src/cspice/vprojg_c.c
     src/cspice/vrel.c
     src/cspice/vrel_c.c
     src/cspice/vrelg.c
@@ -1735,6 +1840,7 @@ set(SRCS
     src/cspice/zzadsave_c.c
     src/cspice/zzadstep_c.c
     src/cspice/zzalloc.c
+    src/cspice/zzalloc.h
     src/cspice/zzascii.c
     src/cspice/zzasryel.c
     src/cspice/zzbodblt.c
@@ -1785,6 +1891,7 @@ set(SRCS
     src/cspice/zzddhrcm.c
     src/cspice/zzddhrmu.c
     src/cspice/zzdiv.c
+    src/cspice/zzdnpt.c
     src/cspice/zzdscm.c
     src/cspice/zzdsin.c
     src/cspice/zzdskbbl.c
@@ -1981,6 +2088,7 @@ set(SRCS
     src/cspice/zzeprc76.c
     src/cspice/zzeprcss.c
     src/cspice/zzerror.c
+    src/cspice/zzerror.h
     src/cspice/zzerrorinit.c
     src/cspice/zzfcstring.c
     src/cspice/zzfdat.c
@@ -2089,14 +2197,19 @@ set(SRCS
     src/cspice/zzrytpdt.c
     src/cspice/zzrytrec.c
     src/cspice/zzryxsph.c
+    src/cspice/zzscad01.c
+    src/cspice/zzscin01.c
     src/cspice/zzsclk.c
+    src/cspice/zzscup01.c
     src/cspice/zzsecprt.c
     src/cspice/zzsegbox.c
+    src/cspice/zzsepq.c
     src/cspice/zzsfxcor.c
     src/cspice/zzsglatx.c
     src/cspice/zzsgp4.c
     src/cspice/zzsinutl.c
     src/cspice/zzsizeok.c
+    src/cspice/zzspin.c
     src/cspice/zzspkac0.c
     src/cspice/zzspkac1.c
     src/cspice/zzspkap0.c
@@ -2127,6 +2240,10 @@ set(SRCS
     src/cspice/zzsrfker.c
     src/cspice/zzsrftrn.c
     src/cspice/zzstelab.c
+    src/cspice/zzswfcln.c
+    src/cspice/zzswffet.c
+    src/cspice/zzswfini.c
+    src/cspice/zzswfxfm.c
     src/cspice/zzsynccl_c.c
     src/cspice/zztangnt.c
     src/cspice/zztanslv.c
@@ -2155,6 +2272,7 @@ set(SRCS
 set(HEADERS
     include/SpiceCK.h
     include/SpiceCel.h
+    include/SpiceDAS.h
     include/SpiceDLA.h
     include/SpiceDSK.h
     include/SpiceDtl.h
@@ -2166,6 +2284,7 @@ set(HEADERS
     include/SpiceOccult.h
     include/SpiceOsc.h
     include/SpicePln.h
+    include/SpiceSCLK.h
     include/SpiceSPK.h
     include/SpiceSrf.h
     include/SpiceUsr.h
@@ -2192,12 +2311,12 @@ set(HEADERS
 add_library(cspice SHARED ${SRCS})
 set_target_properties(cspice PROPERTIES PUBLIC_HEADER "${HEADERS}")
 if(WIN32)
-  GENERATE_EXPORT_HEADER(
-    cspice
-    BASE_NAME cspice
-    EXPORT_MACRO_NAME cspice_EXPORT
-    EXPORT_FILE_NAME cspice_Export.h
-    STATIC_DEFINE cspice_BUILT_AS_STATIC)
+    GENERATE_EXPORT_HEADER(
+        cspice
+        BASE_NAME cspice
+        EXPORT_MACRO_NAME cspice_EXPORT
+        EXPORT_FILE_NAME cspice_Export.h
+        STATIC_DEFINE cspice_BUILT_AS_STATIC)
 endif()
 target_link_libraries(cspice m)
 
