@@ -6,13 +6,32 @@ version = v"5.2.1" # <-- There is no version 5.2.1, but we need to change versio
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "b16d3d3995668c9a13c9f4bee8b0113ff6a9cf6d"),
+              "8264ba5614fd9578786e5e8a3ba9f703ff795361"),
     DirectorySource("../bundled@5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
+
+    if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+        # For msan, we need to use flang to compile.
+        ## Create flang compiler wrapper
+        cat /opt/bin/${bb_full_target}/${target}-clang | sed 's/clang/flang/g' > /opt/bin/${bb_full_target}/${target}-flang
+        chmod +x /opt/bin/${bb_full_target}/${target}-flang
+        ln -s ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/bin/flang /opt/x86_64-linux-musl/bin/flang
+        export FC=${target}-flang
+        # Install flang rt libraries to sysroot
+        cp ${prefix}/lib/lib{flang*,ompstub*,pgmath*,omp*} /opt/${target}/${target}/sys-root/usr/lib/
+        # Install msan runtime (for clang)
+        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+        # Install msan runtime (for flang)
+        mkdir -p $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux
+        cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
+
+	# Override Fortran in CMake target toolchain
+	sed "s/${target}-gfortran/${target}-flang/g" -i ${CMAKE_TARGET_TOOLCHAIN}
+    fi
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
@@ -97,6 +116,9 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("SuiteSparse_jll"; compat="~5.10.1"),
+    HostBuildDependency("FlangClassic_jll"),
+    BuildDependency("LLVMCompilerRT_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("FlangClassic_RTLib_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")])
 ]
 
 # Build the tarballs.
