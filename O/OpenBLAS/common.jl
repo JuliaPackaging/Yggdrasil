@@ -1,8 +1,13 @@
 using BinaryBuilder
+using BinaryBuilderBase: sanitize
 
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.21" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.21.tar.gz",
+                          "f36ba3d7a60e7c8bcc54cd9aaa9b1223dd42eaf02c811791c37e8ca707c241ca")
+        ],
         v"0.3.20" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.20.tar.gz",
                           "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
@@ -221,11 +226,11 @@ function openblas_products(;kwargs...)
     ]
 end
 
-function openblas_dependencies(;kwargs...)
+function openblas_dependencies(platforms; kwargs...)
     return [
         Dependency("CompilerSupportLibraries_jll"),
         HostBuildDependency("FlangClassic_jll"),
-        BuildDependency("LLVMCompilerRT_jll"),
-        BuildDependency("FlangClassic_RTLib_jll", platforms=[Platform("x86_64", "linux"; sanitize="memory")])
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency("FlangClassic_RTLib_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms))
     ]
 end
