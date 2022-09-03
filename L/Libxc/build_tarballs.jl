@@ -8,7 +8,7 @@ version = v"5.2.3"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/$(version)/libxc-$(version).tar.gz",
-                  "7b7a96d8eeb472c7b8cca7ac38eae27e0a8113ef44dae5359b0eb12592b4bcf2"),
+                  "38b60ed552b46367175b370e1ad5409fcf45c49b71ed13706a65b485f06a5417"),
 ]
 
 # Bash recipe for building across all platforms
