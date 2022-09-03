@@ -48,6 +48,11 @@ else
     CMAKE_FLAGS+=(-DWITH_HDF5=OFF)
 fi
 
+# same fix as used for PROJ
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="$LDFLAGS -lcurl"
+fi
+
 cmake . ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
@@ -62,11 +67,14 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmdal", :libmdal)
+    ExecutableProduct("mdal_translate", :mdal_translate_path)
+    ExecutableProduct("mdalinfo", :mdalinfo_path)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
+    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
     Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.802.102 - 400.902")
