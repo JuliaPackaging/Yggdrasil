@@ -7,7 +7,7 @@ version = v"2022.09.03"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KxSystems/kdb.git", "01fb1243c6b32079938ef88a4434e46d2f3c00be")
+    GitSource("https://github.com/KxSystems/kdb.git", "f1b8e5e1dfaf86b1ccd3a2634d10e07718b71ece")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ mkdir ${libdir}
 if [[ ${target} == aarch64-linux-* ]]; then opath="kdb/l64arm/c.o"; fi
 if [[ ${target} == x86_64-linux-* ]]; then opath="kdb/l64/c.o"; fi
 if [[ ${target} == i686-linux-* ]]; then opath="kdb/l32/c.o"; fi
-if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64/c.o"; fi
+if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64arm/c.o"; fi
 if [[ ${target} == x86_64-apple-* ]]; then opath="kdb/m64/c.o"; CC="gcc"; fi
 if [[ ${target} == i686-apple-* ]]; then opath="kdb/m32/c.o"; fi
 if [[ ${target} == x86_64-w64-* ]]; then opath="kdb/w64/c.dll"; fi
