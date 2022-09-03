@@ -23,7 +23,6 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_BUILD_TYPE=Release
 -DENABLE_TESTS=OFF
 -DENABLE_COVERAGE=OFF
--DWITH_HDF5=OFF
 -DWITH_GDAL=ON
 -DWITH_XML=ON
 -DWITH_SQLITE3=ON
@@ -39,6 +38,14 @@ else
     echo "Disabling NetCDF support"
     ls ${libdir}
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
+fi
+
+# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DWITH_HDF5=ON)
+else
+    echo "Disabling HDF5 support"
+    CMAKE_FLAGS+=(-DWITH_HDF5=OFF)
 fi
 
 cmake . ${CMAKE_FLAGS[@]}
