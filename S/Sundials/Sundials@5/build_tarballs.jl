@@ -85,6 +85,7 @@ fi
 # We attempt to build for all defined platforms
 platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
 platforms = expand_gfortran_versions(platforms)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 products = [
     LibraryProduct("libsundials_arkode", :libsundials_arkode),
