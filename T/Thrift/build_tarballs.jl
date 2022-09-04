@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/thrift/
-
+cd $WORKSPACE/srcdir
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
@@ -27,7 +26,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DBUILD_NODEJS=OFF
 -DWITH_SHARED_LIB=ON)
 
-cmake .. "${CMAKE_FLAGS[@]}"
+cmake $WORKSPACE/srcdir/thrift "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
 make install
