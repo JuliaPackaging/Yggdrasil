@@ -42,6 +42,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DGDAL_USE_GEOS=ON \
     -DGDAL_USE_OPENJPEG=ON \
     -DGDAL_USE_POSTGRESQL=ON \
+    -DPostgreSQL_INCLUDE_DIR="${includedir}" \
     -DPostgreSQL_LIBRARY="${libdir}/libpq.${dlext}" \
     -DGDAL_USE_SQLITE3=ON \
     -DGDAL_USE_TIFF=ON \
