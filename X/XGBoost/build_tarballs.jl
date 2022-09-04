@@ -7,8 +7,6 @@ version = v"1.6.1"
 sources = [
     GitSource("https://github.com/dmlc/xgboost.git","5d92a7d936fc3fad4c7ecb6031c3c1c7da882a14"), 
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,18 +14,11 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
+# See https://github.com/dmlc/XGBoost.jl/issues/110#issuecomment-1236411155
+atomic_patch -p1 ../patches/remove-unused-operator.patch
+
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    #install a newer SDK which supports `___cxa_deleted_virtual`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
 
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
