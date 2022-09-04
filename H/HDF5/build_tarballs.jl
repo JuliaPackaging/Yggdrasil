@@ -40,7 +40,7 @@ if [[ ${target} == *mingw* ]]; then
     rm -f lib/{*_cpp*,*fortran*,*f90*} # we do not need these
     rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
     
-    mv -v lib/libhdf5*.dll.a ${libdir}
+    mv -v lib/libhdf5*.dll.a ${prefix}/lib
     mv -v bin/*.dll ${libdir}
     mv -v include/* ${includedir}
 
