@@ -106,6 +106,19 @@ index ac24124b3..d3696053b 100644
  #include <cstdint>
  #include <sstream>
  #include <thrift/transport/TTransportException.h>
+diff --git a/lib/cpp/src/thrift/windows/SocketPair.cpp b/lib/cpp/src/thrift/windows/SocketPair.cpp
+index 2650b37d4..9271b0294 100644
+--- a/lib/cpp/src/thrift/windows/SocketPair.cpp
++++ b/lib/cpp/src/thrift/windows/SocketPair.cpp
+@@ -34,7 +34,7 @@
+ #include <string.h>
+ 
+ // Win32
+-#include <WS2tcpip.h>
++#include <ws2tcpip.h>
+ 
+ int thrift_socketpair(int d, int type, int protocol, THRIFT_SOCKET sv[2]) {
+   THRIFT_UNUSED_VARIABLE(protocol);
 diff --git a/lib/cpp/src/thrift/windows/SocketPair.h b/lib/cpp/src/thrift/windows/SocketPair.h
 index 86bf43150..74b65dfaa 100644
 --- a/lib/cpp/src/thrift/windows/SocketPair.h
