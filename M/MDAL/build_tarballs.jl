@@ -48,9 +48,9 @@ else
     CMAKE_FLAGS+=(-DWITH_HDF5=OFF)
 fi
 
-# same fix as used for PROJ
 if [[ "${target}" == x86_64-linux-musl* ]]; then
-    export LDFLAGS="$LDFLAGS -lcurl"
+    export LDFLAGS="$LDFLAGS -lcurl"  # same fix as used for PROJ
+    rm /usr/lib/libexpat.so.1  # ugly, but can't figure out CMake behaviour here
 fi
 
 cmake . ${CMAKE_FLAGS[@]}
