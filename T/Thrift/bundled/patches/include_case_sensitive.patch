@@ -1,15 +1,18 @@
-From 353f62f7a56c9d7757a6da87e3657607e88d42db Mon Sep 17 00:00:00 2001
-From: Maarten Pronk <git@evetion.nl>
-Date: Sun, 4 Sep 2022 17:15:59 +0200
-Subject: [PATCH 1/2] Fix Shlwapi capitalization for Windows cross compile.
-
----
- lib/cpp/src/thrift/transport/THttpServer.cpp    | 2 +-
- lib/cpp/src/thrift/transport/TWebSocketServer.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
+diff --git a/lib/cpp/src/thrift/protocol/TProtocol.h b/lib/cpp/src/thrift/protocol/TProtocol.h
+index 867ceb079..b691c4169 100644
+--- a/lib/cpp/src/thrift/protocol/TProtocol.h
++++ b/lib/cpp/src/thrift/protocol/TProtocol.h
+@@ -22,7 +22,7 @@
+ 
+ #ifdef _WIN32
+ // Need to come before any Windows.h includes
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #endif
+ 
+ #include <thrift/transport/TTransport.h>
 diff --git a/lib/cpp/src/thrift/transport/THttpServer.cpp b/lib/cpp/src/thrift/transport/THttpServer.cpp
-index 91a1c39afc..6fc2816748 100644
+index 91a1c39af..6fc281674 100644
 --- a/lib/cpp/src/thrift/transport/THttpServer.cpp
 +++ b/lib/cpp/src/thrift/transport/THttpServer.cpp
 @@ -25,7 +25,7 @@
@@ -19,34 +22,10 @@ index 91a1c39afc..6fc2816748 100644
 -  #include <Shlwapi.h>
 +  #include <shlwapi.h>
  #endif
-
+ 
  using std::string;
-diff --git a/lib/cpp/src/thrift/transport/TWebSocketServer.h b/lib/cpp/src/thrift/transport/TWebSocketServer.h
-index 7f39f36b95..2a3e076cf0 100644
---- a/lib/cpp/src/thrift/transport/TWebSocketServer.h
-+++ b/lib/cpp/src/thrift/transport/TWebSocketServer.h
-@@ -31,7 +31,7 @@
- #include <thrift/transport/TSocket.h>
- #include <thrift/transport/THttpServer.h>
- #if defined(_MSC_VER) || defined(__MINGW32__)
--#include <Shlwapi.h>
-+#include <shlwapi.h>
- #define THRIFT_strncasecmp(str1, str2, len) _strnicmp(str1, str2, len)
- #define THRIFT_strcasestr(haystack, needle) StrStrIA(haystack, needle)
- #else
-
-From 99897acf280c21a61a2ef8242c743906a514ab9b Mon Sep 17 00:00:00 2001
-From: Maarten Pronk <git@evetion.nl>
-Date: Sun, 4 Sep 2022 17:34:50 +0200
-Subject: [PATCH 2/2] Also lowercase <windows.h>.
-
----
- lib/cpp/src/thrift/transport/TServerSocket.cpp | 2 +-
- lib/cpp/src/thrift/windows/Sync.h              | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
 diff --git a/lib/cpp/src/thrift/transport/TServerSocket.cpp b/lib/cpp/src/thrift/transport/TServerSocket.cpp
-index 25ec789e00..8dda1072b9 100644
+index 25ec789e0..8dda1072b 100644
 --- a/lib/cpp/src/thrift/transport/TServerSocket.cpp
 +++ b/lib/cpp/src/thrift/transport/TServerSocket.cpp
 @@ -70,7 +70,7 @@
@@ -58,16 +37,94 @@ index 25ec789e00..8dda1072b9 100644
  #undef NOMINMAX
  #undef WIN32_LEAN_AND_MEAN
  #endif
+diff --git a/lib/cpp/src/thrift/transport/TWebSocketServer.h b/lib/cpp/src/thrift/transport/TWebSocketServer.h
+index 7f39f36b9..2a3e076cf 100644
+--- a/lib/cpp/src/thrift/transport/TWebSocketServer.h
++++ b/lib/cpp/src/thrift/transport/TWebSocketServer.h
+@@ -31,7 +31,7 @@
+ #include <thrift/transport/TSocket.h>
+ #include <thrift/transport/THttpServer.h>
+ #if defined(_MSC_VER) || defined(__MINGW32__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #define THRIFT_strncasecmp(str1, str2, len) _strnicmp(str1, str2, len)
+ #define THRIFT_strcasestr(haystack, needle) StrStrIA(haystack, needle)
+ #else
+diff --git a/lib/cpp/src/thrift/windows/GetTimeOfDay.cpp b/lib/cpp/src/thrift/windows/GetTimeOfDay.cpp
+index ac24124b3..d3696053b 100644
+--- a/lib/cpp/src/thrift/windows/GetTimeOfDay.cpp
++++ b/lib/cpp/src/thrift/windows/GetTimeOfDay.cpp
+@@ -38,7 +38,7 @@ int thrift_gettimeofday(struct timeval* tv, struct timezone* tz) {
+ }
+ #else
+ #define WIN32_LEAN_AND_MEAN
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #include <cstdint>
+ #include <sstream>
+ #include <thrift/transport/TTransportException.h>
+diff --git a/lib/cpp/src/thrift/windows/SocketPair.h b/lib/cpp/src/thrift/windows/SocketPair.h
+index 86bf43150..74b65dfaa 100644
+--- a/lib/cpp/src/thrift/windows/SocketPair.h
++++ b/lib/cpp/src/thrift/windows/SocketPair.h
+@@ -29,7 +29,7 @@
+ #endif
+ 
+ // Win32
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #include <thrift/thrift-config.h>
+ 
+ int thrift_socketpair(int d, int type, int protocol, THRIFT_SOCKET sv[2]);
 diff --git a/lib/cpp/src/thrift/windows/Sync.h b/lib/cpp/src/thrift/windows/Sync.h
-index a5b2ac50f0..26c69c60f4 100644
+index f5b8a052d..df93e7436 100644
 --- a/lib/cpp/src/thrift/windows/Sync.h
 +++ b/lib/cpp/src/thrift/windows/Sync.h
-@@ -37,7 +37,7 @@
+@@ -31,7 +31,7 @@
+ // adds problematic macros like min() and max(). Try to work around:
+ #define NOMINMAX
  #define WIN32_LEAN_AND_MEAN
- #define _THRIFT_UNDEF_WIN32_LEAN_AND_MEAN
- #endif
 -#include <Windows.h>
 +#include <windows.h>
- #ifdef _THRIFT_UNDEF_NOMINMAX
  #undef NOMINMAX
- #undef _THRIFT_UNDEF_NOMINMAX
+ #undef WIN32_LEAN_AND_MEAN
+ 
+diff --git a/lib/cpp/src/thrift/windows/WinFcntl.h b/lib/cpp/src/thrift/windows/WinFcntl.h
+index 4816fc5ec..39e5efd13 100644
+--- a/lib/cpp/src/thrift/windows/WinFcntl.h
++++ b/lib/cpp/src/thrift/windows/WinFcntl.h
+@@ -33,7 +33,7 @@
+ #endif
+ 
+ // Win32
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #include <thrift/transport/PlatformSocket.h>
+ 
+ extern "C" {
+diff --git a/lib/cpp/src/thrift/windows/config.h b/lib/cpp/src/thrift/windows/config.h
+index ce10c5524..19296d63f 100644
+--- a/lib/cpp/src/thrift/windows/config.h
++++ b/lib/cpp/src/thrift/windows/config.h
+@@ -57,7 +57,7 @@
+ #include <thrift/windows/SocketPair.h>
+ 
+ // windows
+-#include <Winsock2.h>
++#include <winsock2.h>
+ #include <ws2tcpip.h>
+ 
+ #ifndef __MINGW32__
+diff --git a/lib/cpp/test/OpenSSLManualInitTest.cpp b/lib/cpp/test/OpenSSLManualInitTest.cpp
+index 935a20514..d0b571e90 100644
+--- a/lib/cpp/test/OpenSSLManualInitTest.cpp
++++ b/lib/cpp/test/OpenSSLManualInitTest.cpp
+@@ -21,7 +21,7 @@
+ // which will cause the test to fail
+ #define MANUAL_OPENSSL_INIT 1
+ #ifdef _WIN32
+-#include <WinSock2.h>
++#include <winSock2.h>
+ #endif
+ 
+ #include <boost/test/unit_test.hpp>
