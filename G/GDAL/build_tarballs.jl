@@ -21,6 +21,13 @@ cd $WORKSPACE/srcdir/gdal-*/
 mkdir build
 cd build
 
+if [[ "${target}" == *-freebsd* ]]; then
+    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
+    # complain if this symbol is used in the built library, even if this won't
+    # be a problem at runtime. This flag allows having undefined symbols.
+    export LDFLAGS="-undefined"
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_PREFIX_PATH=${prefix} \
