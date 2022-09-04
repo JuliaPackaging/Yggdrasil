@@ -8,12 +8,19 @@ version = v"0.16.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/thrift.git", "2a93df80f27739ccabb5b885cb12a8dc7595ecdf")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-mkdir build && cd build
+cd $WORKSPACE/srcdir/thrift
+
+# Needed as https://github.com/apache/thrift/pull/2518 isn't released yet
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
+mkdir ../build && cd ../build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
