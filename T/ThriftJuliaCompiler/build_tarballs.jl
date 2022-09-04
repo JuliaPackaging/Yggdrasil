@@ -3,36 +3,49 @@
 using BinaryBuilder, Pkg
 
 name = "ThriftJuliaCompiler"
-version = v"0.12.1"
+version = v"0.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tanmaykm/thrift.git", "3f8f69d9bb4f65e487a13e7bfd76ed88792ad36e")
+    GitSource("https://github.com/apache/thrift.git", "2a93df80f27739ccabb5b885cb12a8dc7595ecdf")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd thrift/
-./bootstrap.sh 
-if [ $target != "x86_64-apple-darwin14" ] && [ $target != "x86_64-unknown-freebsd11.1" ]; then LDFLAGS="-static-libgcc -static-libstdc++"; export LDFLAGS; fi
-./configure --prefix=$prefix --build=${MACHTYPE} --host=$target --enable-tutorial=no --enable-tests=no --enable-libs=no --disable-werror
+
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
+-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+-DCMAKE_BUILD_TYPE=Release
+-DBUILD_COMPILER=ON
+-DBUILD_CPP=ON
+-DBUILD_PYTHON=OFF
+-DBUILD_TESTING=OFF
+-DBUILD_JAVASCRIPT=OFF
+-DBUILD_NODEJS=OFF
+-DWITH_SHARED_LIB=ON)
+
+cmake . ${CMAKE_FLAGS[@]}
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("thrift", :thrift)
+    LibraryProduct("libthrift", :libthrift)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("boost_jll", compat="=1.76.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
