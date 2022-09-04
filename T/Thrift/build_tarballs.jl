@@ -20,7 +20,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-mkdir ../build && cd ../build
+mkdir build_dir && cd build_dir
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -34,7 +34,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DWITH_SHARED_LIB=ON
 -DBUILD_TUTORIALS=OFF)
 
-cmake $WORKSPACE/srcdir/thrift "${CMAKE_FLAGS[@]}"
+cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
 make install
