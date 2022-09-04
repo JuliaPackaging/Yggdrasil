@@ -26,6 +26,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_WITH_ZSTD=ON
 -DARROW_WITH_ZLIB=ON
 -DARROW_WITH_SNAPPY=ON
+-DARROW_JEMALLOC_USE_SHARED=ON
 -DARROW_PARQUET=ON)
 
 cmake . ${CMAKE_FLAGS[@]}
@@ -46,9 +47,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("boost_jll")
+    Dependency("boost_jll", compat="=1.76.0")
     Dependency("Zlib_jll")
-    Dependency("Bzip2_jll")
+    Dependency("Bzip2_jll", compat="1.0.7")
     Dependency("Zstd_jll")
     Dependency("Lz4_jll")
     Dependency("jemalloc_jll")
