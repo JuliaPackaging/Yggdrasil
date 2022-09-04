@@ -4,7 +4,7 @@ index 33d037e55..1744c742d 100644
 +++ b/compiler/cpp/tests/catch/catch.hpp
 @@ -6338,7 +6338,7 @@ namespace Catch {
  #endif
- 
+
  #ifdef __AFXDLL
 -#include <AfxWin.h>
 +#include <afxwin.h>
@@ -16,13 +16,13 @@ index 867ceb079..b691c4169 100644
 --- a/lib/cpp/src/thrift/protocol/TProtocol.h
 +++ b/lib/cpp/src/thrift/protocol/TProtocol.h
 @@ -22,7 +22,7 @@
- 
+
  #ifdef _WIN32
  // Need to come before any Windows.h includes
 -#include <Winsock2.h>
 +#include <winsock2.h>
  #endif
- 
+
  #include <thrift/transport/TTransport.h>
 diff --git a/lib/cpp/src/thrift/transport/THttpServer.cpp b/lib/cpp/src/thrift/transport/THttpServer.cpp
 index 91a1c39af..6fc281674 100644
@@ -35,7 +35,7 @@ index 91a1c39af..6fc281674 100644
 -  #include <Shlwapi.h>
 +  #include <shlwapi.h>
  #endif
- 
+
  using std::string;
 diff --git a/lib/cpp/src/thrift/transport/TPipeServer.cpp b/lib/cpp/src/thrift/transport/TPipeServer.cpp
 index e4234b180..fd1aeee95 100644
@@ -51,7 +51,7 @@ index e4234b180..fd1aeee95 100644
 +#include <aclapi.h>
  #include <sddl.h>
  #endif //_WIN32
- 
+
 diff --git a/lib/cpp/src/thrift/transport/TServerSocket.cpp b/lib/cpp/src/thrift/transport/TServerSocket.cpp
 index 25ec789e0..8dda1072b 100644
 --- a/lib/cpp/src/thrift/transport/TServerSocket.cpp
@@ -65,21 +65,6 @@ index 25ec789e0..8dda1072b 100644
  #undef NOMINMAX
  #undef WIN32_LEAN_AND_MEAN
  #endif
-diff --git a/lib/cpp/src/thrift/transport/TSocket.cpp b/lib/cpp/src/thrift/transport/TSocket.cpp
-index 9991fd6bd..e46daeba8 100644
---- a/lib/cpp/src/thrift/transport/TSocket.cpp
-+++ b/lib/cpp/src/thrift/transport/TSocket.cpp
-@@ -432,6 +432,10 @@ void TSocket::local_open() {
-   TWinsockSingleton::create();
- #endif // _WIN32
- 
-+#if __FreeBSD__
-+  #define EAI_NODATA	EAINONAME
-+#endif // __FreeBSD__
-+
-   if (isOpen()) {
-     return;
-   }
 diff --git a/lib/cpp/src/thrift/transport/TWebSocketServer.h b/lib/cpp/src/thrift/transport/TWebSocketServer.h
 index 7f39f36b9..2a3e076cf 100644
 --- a/lib/cpp/src/thrift/transport/TWebSocketServer.h
@@ -112,11 +97,11 @@ index 2650b37d4..9271b0294 100644
 +++ b/lib/cpp/src/thrift/windows/SocketPair.cpp
 @@ -34,7 +34,7 @@
  #include <string.h>
- 
+
  // Win32
 -#include <WS2tcpip.h>
 +#include <ws2tcpip.h>
- 
+
  int thrift_socketpair(int d, int type, int protocol, THRIFT_SOCKET sv[2]) {
    THRIFT_UNUSED_VARIABLE(protocol);
 diff --git a/lib/cpp/src/thrift/windows/SocketPair.h b/lib/cpp/src/thrift/windows/SocketPair.h
@@ -125,12 +110,12 @@ index 86bf43150..74b65dfaa 100644
 +++ b/lib/cpp/src/thrift/windows/SocketPair.h
 @@ -29,7 +29,7 @@
  #endif
- 
+
  // Win32
 -#include <Winsock2.h>
 +#include <winsock2.h>
  #include <thrift/thrift-config.h>
- 
+
  int thrift_socketpair(int d, int type, int protocol, THRIFT_SOCKET sv[2]);
 diff --git a/lib/cpp/src/thrift/windows/Sync.h b/lib/cpp/src/thrift/windows/Sync.h
 index f5b8a052d..df93e7436 100644
@@ -144,19 +129,19 @@ index f5b8a052d..df93e7436 100644
 +#include <windows.h>
  #undef NOMINMAX
  #undef WIN32_LEAN_AND_MEAN
- 
+
 diff --git a/lib/cpp/src/thrift/windows/WinFcntl.h b/lib/cpp/src/thrift/windows/WinFcntl.h
 index 4816fc5ec..39e5efd13 100644
 --- a/lib/cpp/src/thrift/windows/WinFcntl.h
 +++ b/lib/cpp/src/thrift/windows/WinFcntl.h
 @@ -33,7 +33,7 @@
  #endif
- 
+
  // Win32
 -#include <Winsock2.h>
 +#include <winsock2.h>
  #include <thrift/transport/PlatformSocket.h>
- 
+
  extern "C" {
 diff --git a/lib/cpp/src/thrift/windows/config.h b/lib/cpp/src/thrift/windows/config.h
 index ce10c5524..19296d63f 100644
@@ -164,12 +149,12 @@ index ce10c5524..19296d63f 100644
 +++ b/lib/cpp/src/thrift/windows/config.h
 @@ -57,7 +57,7 @@
  #include <thrift/windows/SocketPair.h>
- 
+
  // windows
 -#include <Winsock2.h>
 +#include <winsock2.h>
  #include <ws2tcpip.h>
- 
+
  #ifndef __MINGW32__
 diff --git a/lib/cpp/test/OpenSSLManualInitTest.cpp b/lib/cpp/test/OpenSSLManualInitTest.cpp
 index 935a20514..bf6c15369 100644
@@ -182,7 +167,7 @@ index 935a20514..bf6c15369 100644
 -#include <WinSock2.h>
 +#include <winsock2.h>
  #endif
- 
+
  #include <boost/test/unit_test.hpp>
 diff --git a/lib/py/src/ext/endian.h b/lib/py/src/ext/endian.h
 index 1660cbd98..a2cf594ed 100644
