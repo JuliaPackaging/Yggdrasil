@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
-version = v"1.12.2"
+version = v"1.12.2000"
 
 sources = [
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
@@ -37,7 +37,10 @@ mkdir -p ${libdir} ${includedir}
 if [[ ${target} == *mingw* ]]; then
     cd ${target}/mingw${nbits}
 
+    rm -f lib/{*_cpp*,*fortran*,*f90*} # we do not need these
     rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
+    
+    mv -v lib/libhdf5*.dll.a ${libdir}
     mv -v bin/*.dll ${libdir}
     mv -v include/* ${includedir}
 
