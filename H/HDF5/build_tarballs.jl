@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build HDF5
 name = "HDF5"
-version = v"1.12.2000"
+version = v"1.12.2"
 
 sources = [
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
