@@ -48,7 +48,9 @@ products = [
 dependencies = Dependency[
     Dependency("boost_jll")
     Dependency("Zlib_jll")
+    Dependency("Bzip2_jll")
     Dependency("Zstd_jll")
+    Dependency("Lz4_jll")
     Dependency("snappy_jll")
 ]
 
