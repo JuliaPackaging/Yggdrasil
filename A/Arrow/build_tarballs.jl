@@ -51,7 +51,7 @@ dependencies = Dependency[
     Dependency("Bzip2_jll")
     Dependency("Zstd_jll")
     Dependency("Lz4_jll")
-    Dependency("snappy_jll")
+    Dependency("jemalloc_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
