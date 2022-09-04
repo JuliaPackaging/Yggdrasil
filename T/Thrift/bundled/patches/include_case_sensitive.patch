@@ -1,3 +1,16 @@
+diff --git a/compiler/cpp/tests/catch/catch.hpp b/compiler/cpp/tests/catch/catch.hpp
+index 33d037e55..5eadad4f6 100644
+--- a/compiler/cpp/tests/catch/catch.hpp
++++ b/compiler/cpp/tests/catch/catch.hpp
+@@ -6338,7 +6338,7 @@ namespace Catch {
+ #endif
+ 
+ #ifdef __AFXDLL
+-#include <AfxWin.h>
++#include <afxWin.h>
+ #else
+ #include <windows.h>
+ #endif
 diff --git a/lib/cpp/src/thrift/protocol/TProtocol.h b/lib/cpp/src/thrift/protocol/TProtocol.h
 index 867ceb079..b691c4169 100644
 --- a/lib/cpp/src/thrift/protocol/TProtocol.h
@@ -24,6 +37,21 @@ index 91a1c39af..6fc281674 100644
  #endif
  
  using std::string;
+diff --git a/lib/cpp/src/thrift/transport/TPipeServer.cpp b/lib/cpp/src/thrift/transport/TPipeServer.cpp
+index e4234b180..58fe6189e 100644
+--- a/lib/cpp/src/thrift/transport/TPipeServer.cpp
++++ b/lib/cpp/src/thrift/transport/TPipeServer.cpp
+@@ -27,8 +27,8 @@
+ #ifdef _WIN32
+ #include <thrift/windows/OverlappedSubmissionThread.h>
+ #include <thrift/windows/Sync.h>
+-#include <AccCtrl.h>
+-#include <Aclapi.h>
++#include <accCtrl.h>
++#include <aclapi.h>
+ #include <sddl.h>
+ #endif //_WIN32
+ 
 diff --git a/lib/cpp/src/thrift/transport/TServerSocket.cpp b/lib/cpp/src/thrift/transport/TServerSocket.cpp
 index 25ec789e0..8dda1072b 100644
 --- a/lib/cpp/src/thrift/transport/TServerSocket.cpp
@@ -37,6 +65,21 @@ index 25ec789e0..8dda1072b 100644
  #undef NOMINMAX
  #undef WIN32_LEAN_AND_MEAN
  #endif
+diff --git a/lib/cpp/src/thrift/transport/TSocket.cpp b/lib/cpp/src/thrift/transport/TSocket.cpp
+index 9991fd6bd..e46daeba8 100644
+--- a/lib/cpp/src/thrift/transport/TSocket.cpp
++++ b/lib/cpp/src/thrift/transport/TSocket.cpp
+@@ -432,6 +432,10 @@ void TSocket::local_open() {
+   TWinsockSingleton::create();
+ #endif // _WIN32
+ 
++#if __FreeBSD__
++  #define EAI_NODATA	EAINONAME
++#endif // __FreeBSD__
++
+   if (isOpen()) {
+     return;
+   }
 diff --git a/lib/cpp/src/thrift/transport/TWebSocketServer.h b/lib/cpp/src/thrift/transport/TWebSocketServer.h
 index 7f39f36b9..2a3e076cf 100644
 --- a/lib/cpp/src/thrift/transport/TWebSocketServer.h
