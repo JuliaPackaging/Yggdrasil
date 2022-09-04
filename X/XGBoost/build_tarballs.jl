@@ -14,6 +14,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
+# See https://github.com/dmlc/XGBoost.jl/issues/110#issuecomment-1236411155
+atomic_patch -p1 ../patches/remove-unused-operator.patch
+
 # Patch dmlc-core to use case-sensitive windows.h includes
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
