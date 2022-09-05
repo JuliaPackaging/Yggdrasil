@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libsixel
 
-atomic_patch -p1 ../patches/01-select.h.patch
+atomic_patch -p1 ../patches/01-headers.patch
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" build
 cd build

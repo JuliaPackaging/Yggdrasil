@@ -1,18 +1,25 @@
-commit 4eb9627bb24850600fc85271d174cc659b20347d
-Author: t-bltg <tf.bltg@gmail.com>
-Date:   Mon Sep 5 15:43:14 2022 +0200
+From 1af197c691e3e93a2fff4901d3265a6003261a52 Mon Sep 17 00:00:00 2001
+From: t-bltg <tf.bltg@gmail.com>
+Date: Mon, 5 Sep 2022 15:43:14 +0200
+Subject: [PATCH] fix non-unix builds
 
-    conditional `select.h`
+---
+ converters/img2sixel.c |  9 ++++++++-
+ meson.build            | 11 ++++++-----
+ src/chunk.c            |  9 ++++++++-
+ src/decoder.c          | 12 +++++++++---
+ src/tty.c              | 13 ++++++++++++-
+ 5 files changed, 43 insertions(+), 11 deletions(-)
 
 diff --git a/converters/img2sixel.c b/converters/img2sixel.c
-index 5152fa9..c344e8f 100644
+index 5152fa97..708a6f16 100644
 --- a/converters/img2sixel.c
 +++ b/converters/img2sixel.c
 @@ -32,8 +32,9 @@
  # include <getopt.h>
  # include <inttypes.h>
  # include <signal.h>
-+#ifdef HAVE_SYS_SIGNAL_H
++#if HAVE_SYS_SIGNAL_H
  # include <sys/signal.h>
 -
 +#endif
@@ -23,7 +30,7 @@ index 5152fa9..c344e8f 100644
              );
  }
  
-+#ifdef HAVE_SYS_SIGNAL_H
++#if HAVE_SYS_SIGNAL_H
  
  static int signaled = 0;
  
@@ -39,7 +46,7 @@ index 5152fa9..c344e8f 100644
          }
      }
  
-+#ifdef HAVE_SYS_SIGNAL_H
++#if HAVE_SYS_SIGNAL_H
 +
      /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
      signal(SIGINT, signal_handler);
@@ -54,7 +61,7 @@ index 5152fa9..c344e8f 100644
          status = sixel_encoder_encode(encoder, NULL);
          if (SIXEL_FAILED(status)) {
 diff --git a/meson.build b/meson.build
-index 62bbfda..b26e933 100644
+index 62bbfda3..6e1db34a 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -1,4 +1,4 @@
@@ -63,39 +70,40 @@ index 62bbfda..b26e933 100644
  
  datadir = get_option('datadir')
  if (get_option('bashcompletiondir') == '')
-@@ -64,8 +64,6 @@ needed_headers = [
+@@ -64,10 +64,6 @@ needed_headers = [
    'sys/time.h',
    'time.h',
    'signal.h',
 -  'sys/select.h',
 -  'sys/signal.h',
-   'termios.h',
-   'sys/ioctl.h',
+-  'termios.h',
+-  'sys/ioctl.h',
    'inttypes.h'
-@@ -80,6 +78,14 @@ foreach a : needed_headers
+ ]
+ 
+@@ -80,6 +76,11 @@ foreach a : needed_headers
    assert(cc.has_header(a), 'Needed header not found')
  endforeach
  
-+# NOTE: these headers are `unix` specific
-+if cc.has_header('sys/select.h')
-+  conf_data.set('HAVE_SYS_SELECT_H', true)
-+endif
-+if cc.has_header('sys/signal.h')
-+  conf_data.set('HAVE_SYS_SIGNAL_H', true)
-+endif
++conf_data.set10('HAVE_SYS_SELECT_H', cc.has_header('sys/select.h'))
++conf_data.set10('HAVE_SYS_SIGNAL_H', cc.has_header('sys/signal.h'))
++conf_data.set10('HAVE_SYS_IOCTL_H', cc.has_header('sys/ioctl.h'))
++conf_data.set10('HAVE_TERMIOS_H', cc.has_header('termios.h'))
 +
  libm_dep = cc.find_library('m', required: false)
  
  gdkpixbuf2_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
 diff --git a/src/chunk.c b/src/chunk.c
-index 22f549c..1669036 100644
+index 22f549c6..25ba9476 100644
 --- a/src/chunk.c
 +++ b/src/chunk.c
-@@ -33,7 +33,9 @@
+@@ -32,8 +32,10 @@
+ # include <errno.h>
  #ifdef HAVE_LIBCURL
  # include <curl/curl.h>
- #endif  /* HAVE_LIBCURL */
-+#ifdef HAVE_SYS_SELECT_H
+-#endif  /* HAVE_LIBCURL */
++#endif
++#if HAVE_SYS_SELECT_H
  # include <sys/select.h>
 +#endif
  
@@ -105,7 +113,7 @@ index 22f549c..1669036 100644
  wait_file(int fd, int usec)
  {
      int ret = 1;
-+#ifdef HAVE_SYS_SELECT_H
++#if HAVE_SYS_SELECT_H
      fd_set rfds;
      struct timeval tv;
  
@@ -116,38 +124,83 @@ index 22f549c..1669036 100644
 +#else
 +    (void) fd;
 +    (void) usec;
-+#endif  /* HAVE_SYS_SELECT_H */
++#endif
      if (ret == 0) {
          return (1);
      }
 diff --git a/src/decoder.c b/src/decoder.c
-index 95803fa..05c57ae 100644
+index 95803fab..8d0833b3 100644
 --- a/src/decoder.c
 +++ b/src/decoder.c
-@@ -26,8 +26,10 @@
+@@ -26,17 +26,23 @@
  # include <stdarg.h>
  # include <string.h>
  # include <unistd.h>
 -#include <sys/types.h>
 -#include <sys/select.h>
 +# include <sys/types.h>
-+#ifdef HAVE_SYS_SELECT_H
++#if HAVE_SYS_SELECT_H
 +# include <sys/select.h>
 +#endif
  # include <time.h>
  # include <sys/time.h>
  # include <inttypes.h>
+ # include <errno.h>
++#if HAVE_TERMIOS_H
+ # include <termios.h>
++#endif
++#if HAVE_SYS_IOCTL_H
+ # include <sys/ioctl.h>
++#endif
+ #if HAVE_IO_H
+ # include <io.h>
+-#endif  /* HAVE_IO_H */
++#endif
+ 
+ #include "decoder.h"
+ 
 diff --git a/src/tty.c b/src/tty.c
-index d020543..dc3cfaa 100644
+index d020543c..d3d1fbc4 100644
 --- a/src/tty.c
 +++ b/src/tty.c
-@@ -28,7 +28,9 @@
+@@ -28,10 +28,16 @@
  # include <sys/time.h>
  # include <sys/types.h>
  # include <unistd.h>
-+#ifdef HAVE_SYS_SELECT_H
++#if HAVE_SYS_SELECT_H
  # include <sys/select.h>
 +#endif
  # include <errno.h>
++#if HAVE_TERMIOS_H
  # include <termios.h>
++#endif
++#if HAVE_SYS_IOCTL_H
  # include <sys/ioctl.h>
++#endif
+ 
+ #include <sixel.h>
+ 
+@@ -98,10 +104,11 @@ sixel_tty_restore(struct termios *old_termios)
+ SIXELSTATUS
+ sixel_tty_wait_stdin(int usec)
+ {
++    SIXELSTATUS status = SIXEL_FALSE;
++#if HAVE_SYS_SELECT_H
+     fd_set rfds;
+     struct timeval tv;
+     int ret = 0;
+-    SIXELSTATUS status = SIXEL_FALSE;
+ 
+     tv.tv_sec = usec / 1000000;
+     tv.tv_usec = usec % 1000000;
+@@ -117,6 +124,10 @@ sixel_tty_wait_stdin(int usec)
+ 
+     /* success */
+     status = SIXEL_OK;
++#else
++    (void) usec;
++    goto end;
++#endif
+ 
+ end:
+     return status;
