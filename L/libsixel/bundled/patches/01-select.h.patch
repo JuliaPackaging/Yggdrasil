@@ -1,0 +1,153 @@
+commit 4eb9627bb24850600fc85271d174cc659b20347d
+Author: t-bltg <tf.bltg@gmail.com>
+Date:   Mon Sep 5 15:43:14 2022 +0200
+
+    conditional `select.h`
+
+diff --git a/converters/img2sixel.c b/converters/img2sixel.c
+index 5152fa9..c344e8f 100644
+--- a/converters/img2sixel.c
++++ b/converters/img2sixel.c
+@@ -32,8 +32,9 @@
+ # include <getopt.h>
+ # include <inttypes.h>
+ # include <signal.h>
++#ifdef HAVE_SYS_SIGNAL_H
+ # include <sys/signal.h>
+-
++#endif
+ #include <sixel.h>
+ 
+ /* output version info to STDOUT */
+@@ -311,6 +312,7 @@ void show_help(void)
+             );
+ }
+ 
++#ifdef HAVE_SYS_SIGNAL_H
+ 
+ static int signaled = 0;
+ 
+@@ -320,6 +322,7 @@ signal_handler(int sig)
+     signaled = sig;
+ }
+ 
++#endif
+ 
+ int
+ main(int argc, char *argv[])
+@@ -413,6 +416,8 @@ main(int argc, char *argv[])
+         }
+     }
+ 
++#ifdef HAVE_SYS_SIGNAL_H
++
+     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
+     signal(SIGINT, signal_handler);
+     signal(SIGTERM, signal_handler);
+@@ -422,6 +427,8 @@ main(int argc, char *argv[])
+         goto error;
+     }
+ 
++#endif
++
+     if (optind == argc) {
+         status = sixel_encoder_encode(encoder, NULL);
+         if (SIXEL_FAILED(status)) {
+diff --git a/meson.build b/meson.build
+index 62bbfda..b26e933 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,4 +1,4 @@
+-project('libsixel', ['c'], version: '1.10.2', license: 'MIT', default_options: ['buildtype=release', 'c_std=c99', 'warning_level=3'])
++project('libsixel', ['c'], version: '1.10.3', license: 'MIT', default_options: ['buildtype=release', 'c_std=c99', 'warning_level=3'])
+ 
+ datadir = get_option('datadir')
+ if (get_option('bashcompletiondir') == '')
+@@ -64,8 +64,6 @@ needed_headers = [
+   'sys/time.h',
+   'time.h',
+   'signal.h',
+-  'sys/select.h',
+-  'sys/signal.h',
+   'termios.h',
+   'sys/ioctl.h',
+   'inttypes.h'
+@@ -80,6 +78,14 @@ foreach a : needed_headers
+   assert(cc.has_header(a), 'Needed header not found')
+ endforeach
+ 
++# NOTE: these headers are `unix` specific
++if cc.has_header('sys/select.h')
++  conf_data.set('HAVE_SYS_SELECT_H', true)
++endif
++if cc.has_header('sys/signal.h')
++  conf_data.set('HAVE_SYS_SIGNAL_H', true)
++endif
++
+ libm_dep = cc.find_library('m', required: false)
+ 
+ gdkpixbuf2_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
+diff --git a/src/chunk.c b/src/chunk.c
+index 22f549c..1669036 100644
+--- a/src/chunk.c
++++ b/src/chunk.c
+@@ -33,7 +33,9 @@
+ #ifdef HAVE_LIBCURL
+ # include <curl/curl.h>
+ #endif  /* HAVE_LIBCURL */
++#ifdef HAVE_SYS_SELECT_H
+ # include <sys/select.h>
++#endif
+ 
+ 
+ 
+@@ -141,6 +143,7 @@ static int
+ wait_file(int fd, int usec)
+ {
+     int ret = 1;
++#ifdef HAVE_SYS_SELECT_H
+     fd_set rfds;
+     struct timeval tv;
+ 
+@@ -149,6 +152,10 @@ wait_file(int fd, int usec)
+     FD_ZERO(&rfds);
+     FD_SET(fd, &rfds);
+     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
++#else
++    (void) fd;
++    (void) usec;
++#endif  /* HAVE_SYS_SELECT_H */
+     if (ret == 0) {
+         return (1);
+     }
+diff --git a/src/decoder.c b/src/decoder.c
+index 95803fa..05c57ae 100644
+--- a/src/decoder.c
++++ b/src/decoder.c
+@@ -26,8 +26,10 @@
+ # include <stdarg.h>
+ # include <string.h>
+ # include <unistd.h>
+-#include <sys/types.h>
+-#include <sys/select.h>
++# include <sys/types.h>
++#ifdef HAVE_SYS_SELECT_H
++# include <sys/select.h>
++#endif
+ # include <time.h>
+ # include <sys/time.h>
+ # include <inttypes.h>
+diff --git a/src/tty.c b/src/tty.c
+index d020543..dc3cfaa 100644
+--- a/src/tty.c
++++ b/src/tty.c
+@@ -28,7 +28,9 @@
+ # include <sys/time.h>
+ # include <sys/types.h>
+ # include <unistd.h>
++#ifdef HAVE_SYS_SELECT_H
+ # include <sys/select.h>
++#endif
+ # include <errno.h>
+ # include <termios.h>
+ # include <sys/ioctl.h>

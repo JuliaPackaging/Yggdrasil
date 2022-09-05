@@ -8,11 +8,14 @@ version = v"1.10.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libsixel/libsixel.git", "e2c493768ee0d48b38f7f9a6dde114215f1c3b8a"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsixel
+
+atomic_patch -p1 ../patches/01-select.h.patch
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" build
 cd build
