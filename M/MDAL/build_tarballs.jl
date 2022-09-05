@@ -36,7 +36,6 @@ if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
     CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
 else
     echo "Disabling NetCDF support"
-    ls ${libdir}
     CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
 fi
 
@@ -75,7 +74,7 @@ dependencies = [
     Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
     Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.802.102 - 400.902")
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.802.102 - 400.902.5")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
