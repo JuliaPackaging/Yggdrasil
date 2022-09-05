@@ -46,13 +46,14 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("boost_jll", compat="=1.76.0")
     Dependency("Zlib_jll")
     Dependency("Bzip2_jll", compat="1.0.7")
     Dependency("Zstd_jll")
     Dependency("Lz4_jll")
     Dependency("jemalloc_jll")
+    Dependency("Thrift_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
