@@ -19,6 +19,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
 -DARROW_BUILD_UTILITIES=ON
+-DARROW_DEPENDENCY_SOURCE=SYSTEM
 -DARROW_BUILD_STATIC=OFF
 -DARROW_DATASET=ON
 -DARROW_WITH_BZ2=ON
@@ -27,7 +28,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_WITH_ZLIB=ON
 -DARROW_WITH_SNAPPY=ON
 -DARROW_JEMALLOC_USE_SHARED=ON
--DARROW_PARQUET=ON)
+-DARROW_PARQUET=ON
+)
 
 cmake . ${CMAKE_FLAGS[@]}
 
@@ -54,7 +56,9 @@ dependencies = [
     Dependency("Lz4_jll")
     Dependency("jemalloc_jll")
     Dependency("Thrift_jll")
+    Dependency("snappy_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+b
