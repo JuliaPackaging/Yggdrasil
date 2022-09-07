@@ -86,7 +86,7 @@ cmake -S . -B build \
 
 make -j${nproc} -C build install
 
-install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENCE.md
+install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENSE.md
 """
 
 function configure_build(version)
