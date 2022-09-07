@@ -85,6 +85,8 @@ cmake -S . -B build \
     -DBUILD_TESTING=OFF
 
 make -j${nproc} -C build install
+
+install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENCE.md
 """
 
 function configure_build(version)
@@ -101,7 +103,6 @@ function configure_build(version)
         Dependency("rocminfo_jll", version),
         Dependency("hsa_rocr_jll", version),
         Dependency("HIP_jll", version),
-        Dependency("IntelOpenMP_jll"),
     ]
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
