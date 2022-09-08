@@ -32,8 +32,9 @@ const CLR_CMAKE = Dict(
     export ROCclr_DIR=$(realpath ${WORKSPACE}/srcdir/ROCclr-*)
     export OPENCL_SRC=$(realpath ${WORKSPACE}/srcdir/ROCm-OpenCL-Runtime-*)
 
-    # Build ROCclr
     cd ${ROCclr_DIR}
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
+
     mkdir build && cd build
     CC=${WORKSPACE}/srcdir/rocm-clang CXX=${WORKSPACE}/srcdir/rocm-clang++ \
     cmake \
