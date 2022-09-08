@@ -12,7 +12,7 @@ version = v"1.2.4"
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
                     "ac3786e88aeb190ad6388ffdf3552bfc7bbdcaf8")
         ]
-        
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd MAGEMin*
