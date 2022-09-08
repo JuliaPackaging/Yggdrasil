@@ -34,8 +34,13 @@ INC="-I${includedir}"
 # Compile library:
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
-# compile binary
+# Compile binary
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+
+# Windows sometimes adds an extension to the binary and sometimes not...
+if test -f "MAGEMin.exe"; then
+    mv MAGEMin.exe MAGEMin
+fi
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -Dvm 755 MAGEMin "${bindir}/MAGEMin${exeext}"
