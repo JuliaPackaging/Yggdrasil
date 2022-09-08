@@ -1,0 +1,38 @@
+diff --git a/os/os.hpp b/os/os.hpp
+index 923b0f45..621459eb 100644
+--- a/os/os.hpp
++++ b/os/os.hpp
+@@ -29,12 +29,17 @@
+ 
+ #if defined(__linux__)
+ #include <sched.h>
++#include <libgen.h>
+ #endif
+ 
+ #ifdef _WIN32
+ #include <Basetsd.h>  // For KAFFINITY
+ #endif                // _WIN32
+ 
++#ifndef __cpu_mask
++typedef unsigned long __cpu_mask;
++#endif
++
+ // Smallest supported VM page size.
+ #define MIN_PAGE_SHIFT 12
+ #define MIN_PAGE_SIZE (1UL << MIN_PAGE_SHIFT)
+diff --git a/os/os_posix.cpp b/os/os_posix.cpp
+index 04b2f71a..d5d97082 100644
+--- a/os/os_posix.cpp
++++ b/os/os_posix.cpp
+@@ -379,9 +379,11 @@ const void* Os::createOsThread(amd::Thread* thread) {
+       for (int i = 0; i < processorCount_; i++) {
+         CPU_SET(i, &cpuset);
+       }
++#ifdef pthread_attr_setaffinity_np
+       if (0 != pthread_attr_setaffinity_np(&threadAttr, sizeof(cpu_set_t), &cpuset)) {
+         fatal("pthread_attr_setaffinity_np failed to set affinity");
+       }
++#endif
+     }
+   }
+ 
