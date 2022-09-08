@@ -23,6 +23,11 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_SHARED_LIBS=ON)
 
+# To actually use shared_mutex
+if [[ ${target} == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-std=c++17")
+fi
+
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc}
 make install
@@ -30,7 +35,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built
@@ -44,4 +49,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 #GDAL uses a preferred of 6 so match that
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
