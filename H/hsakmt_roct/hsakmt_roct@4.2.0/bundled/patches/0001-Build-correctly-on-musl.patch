@@ -1,0 +1,76 @@
+From 63d5c7e25fe65d0c7d99350a14917dc42a1c865f Mon Sep 17 00:00:00 2001
+From: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Sat, 3 Oct 2020 15:27:40 -0500
+Subject: [PATCH] Build correctly on musl
+
+---
+ src/libhsakmt.h | 8 ++++++++
+ src/pci_ids.c   | 5 +++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/src/libhsakmt.h b/src/libhsakmt.h
+index 757ebeb..16d88ae 100644
+--- a/src/libhsakmt.h
++++ b/src/libhsakmt.h
+@@ -31,6 +31,7 @@
+ #include <pthread.h>
+ #include <stdint.h>
+ #include <limits.h>
++#include <sys/param.h>
+ 
+ extern int kfd_fd;
+ extern unsigned long kfd_open_count;
+@@ -54,6 +55,9 @@ extern struct hsa_gfxip_table force_asic_entry;
+ #define CHECK_KFD_OPEN() \
+ 	do { if (kfd_open_count == 0 || hsakmt_forked) return HSAKMT_STATUS_KERNEL_IO_CHANNEL_NOT_OPENED; } while (0)
+ 
++#ifdef PAGE_SIZE
++#undef PAGE_SIZE
++#endif
+ extern int PAGE_SIZE;
+ extern int PAGE_SHIFT;
+ 
+@@ -186,13 +190,17 @@ extern int kmtIoctl(int fd, unsigned long request, void *arg);
+ #define VOID_PTR_SUB(ptr,n) (void*)((uint8_t*)(ptr) - n)/*ptr - offset*/
+ #define VOID_PTRS_SUB(ptr1,ptr2) (uint64_t)((uint8_t*)(ptr1) - (uint8_t*)(ptr2)) /*ptr1 - ptr2*/
+ 
++#ifndef MIN
+ #define MIN(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 < tmp2 ? tmp1 : tmp2; })
++#endif
+ 
++#ifndef MIN
+ #define MAX(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 > tmp2 ? tmp1 : tmp2; })
++#endif
+ 
+ void clear_events_page(void);
+ void fmm_clear_all_mem(void);
+diff --git a/src/pci_ids.c b/src/pci_ids.c
+index 0c8df69..6571135 100644
+--- a/src/pci_ids.c
++++ b/src/pci_ids.c
+@@ -64,6 +64,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <unistd.h>
++#include <assert.h>
+ 
+ #include <stdio.h>
+ 
+@@ -269,7 +270,11 @@ static void write_fallback_to_buffer(char *buf, size_t size, uint16_t DeviceId)
+ {
+ 	char tmp[] = "Device xxxx";
+ 
++#ifdef _Static_assert
+ 	_Static_assert(sizeof(tmp) == 12, "");
++#else
++	assert(sizeof(tmp) == 12);
++#endif
+ 	write_as_hex(DeviceId, &tmp[7]);
+ 
+ 	size_t to_copy = (sizeof(tmp) <= size) ? sizeof(tmp) : size;
+-- 
+2.28.0
