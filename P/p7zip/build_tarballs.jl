@@ -1,42 +1,45 @@
 using BinaryBuilder
 
 name = "p7zip"
-version = v"16.02"
+version = v"17.04"
 
 # Collection of sources required to build p7zip
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2",
-                  "5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900.exe",
-               "759aa04d5b03ebeee13ba01df554e8c962ca339c74f56627c8bed6984bb7ef80"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/19.00/7z1900-x64.exe",
-               "0f5d4dbbe5e55b7aa31b91e5925ed901fdf46a367491d81381846f05ad54c45e"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/jinfeihan57/p7zip/archive/refs/tags/v17.04.tar.gz",
+                  "ea029a2e21d2d6ad0a156f6679bd66836204aa78148a4c5e498fe682e77127ef"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107.exe",
+               "71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107-x64.exe",
+               "0b461f0a0eccfc4f39733a80d70fd1210fdd69f600fb6b657e03940a734e5fc1"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/p7zip_*/
+cd $WORKSPACE/srcdir/p7zip-*/
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 
 if [[ ${target} == *mingw* ]]; then
     # It's incredibly frustrating to build p7zip on mingw, so instead we just redistribute 7z
     apk add p7zip
 
-    mkdir ${prefix}/bin
-    cd ${prefix}/bin
     if [[ ${target} == i686* ]]; then
-        7z x -y ${WORKSPACE}/srcdir/7z1900.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z2107.exe 7z.exe 7z.dll License.txt
     else
-        7z x -y ${WORKSPACE}/srcdir/7z1900-x64.exe 7z.exe 7z.dll
+        7z x -y ${WORKSPACE}/srcdir/7z2107-x64.exe 7z.exe 7z.dll License.txt
     fi
+
+    install_license License.txt
+
     chmod +x 7z.exe 7z.dll
+    mkdir ${prefix}/bin
+    cp -a 7z.exe 7z.dll ${prefix}/bin
 else
     # Build requirements
     apk add nasm yasm
-
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/12-CVE-2016-9296.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/13-CVE-2017-17969.patch
-    atomic_patch -p4 ${WORKSPACE}/srcdir/patches/15-Enhanced-encryption-strength.patch
 
     # Convert from target to makefile
     target_makefile()
@@ -69,6 +72,7 @@ fi
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -77,9 +81,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"16.02.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

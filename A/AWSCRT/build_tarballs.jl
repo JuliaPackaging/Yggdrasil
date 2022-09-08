@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "AWSCRT"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-	GitSource("https://github.com/awslabs/aws-c-mqtt.git", "6168e32bf9f745dec40df633b78baa03420b7f83"),
+	GitSource("https://github.com/awslabs/aws-c-mqtt.git", "dd09527354ea435812bf4be4bf9b32ba6a41c6a0"),
 	GitSource("https://github.com/awslabs/aws-lc.git", "11b50d39cf2378703a4ca6b6fee9d76a2e9852d1"),
 	GitSource("https://github.com/aws/s2n-tls.git", "0d41122bd2ca62a5de384b79c524dd48852b2071"),
 	GitSource("https://github.com/awslabs/aws-c-common.git", "68f28f8df258390744f3c5b460250f8809161041"),

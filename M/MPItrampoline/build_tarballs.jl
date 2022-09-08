@@ -1,24 +1,28 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"3.3.1"
+version = v"5.0.1"
 
-mpich_version_str = "4.0"
-mpiconstants_version = v"1.4.1"
-mpiwrapper_version = v"2.3.2"
+mpitrampoline_version = v"5.0.1"
+mpich_version_str = "4.0.2"
+mpiconstants_version = v"1.5.0"
+mpiwrapper_version = v"2.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "53ce6db1f6197330883243543401d85ebab25d204687ea699f4767f6bd9890aa"),
+    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(mpitrampoline_version).tar.gz",
+                  "84c275600010339eb8561aa7c27c20cefc8db78779dfb4572397bb0ffe87e75e"),
     ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
-                  "32e3708dd8fda6773e1a9a026555ae79c38c86fdb2d0610b7720cda651278c51"),
+                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "df7419c96e2a943959f7ff4dc87e606844e736e30135716971aba58524fbff64"),
+                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
     ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "eb1d63f691eebe87f81c6c5caad379e6baa5e851dd7565d9c62c23779ef48f06"),
+                  "e6fc1c08ad778675e5b58b91b4658b12e3f985c6d4c5c2c3e9ed35986146780e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -64,42 +68,39 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 cd ${WORKSPACE}/srcdir/mpich*
 
 EXTRA_FLAGS=()
-if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
-    # Define some obscure undocumented variables needed for cross compilation of
-    # the Fortran bindings.  See for example
-    # * https://stackoverflow.com/q/56759636/2442087
-    # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
-    export CROSS_F77_SIZEOF_INTEGER=4
-    export CROSS_F77_SIZEOF_REAL=4
-    export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
-    export CROSS_F77_FALSE_VALUE=0
-    export CROSS_F77_TRUE_VALUE=1
+# Define some obscure undocumented variables needed for cross compilation of
+# the Fortran bindings.  See for example
+# * https://stackoverflow.com/q/56759636/2442087
+# * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+export CROSS_F77_SIZEOF_INTEGER=4
+export CROSS_F77_SIZEOF_REAL=4
+export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_FALSE_VALUE=0
+export CROSS_F77_TRUE_VALUE=1
 
-    if [[ ${nbits} == 32 ]]; then
-        export CROSS_F90_ADDRESS_KIND=4
-        export CROSS_F90_OFFSET_KIND=4
-    else
-        export CROSS_F90_ADDRESS_KIND=8
-        export CROSS_F90_OFFSET_KIND=8
-    fi
-    export CROSS_F90_INTEGER_KIND=4
-    export CROSS_F90_INTEGER_MODEL=9
-    export CROSS_F90_REAL_MODEL=6,37
-    export CROSS_F90_DOUBLE_MODEL=15,307
-    export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
-    export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
+export CROSS_F90_OFFSET_KIND=8
+export CROSS_F90_INTEGER_KIND=4
+export CROSS_F90_INTEGER_MODEL=9
+export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-    if [[ "${target}" == i686-linux-musl ]]; then
-        # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
-        # but not C++ or Fortran.  `configure` runs a C program to determine
-        # whether it's cross-compiling or not, but when it comes to running
-        # Fortran programs, it fails.  In addition, `configure` ignores the
-        # above exported variables if it believes it's doing a native build.
-        # Small hack: edit `configure` script to force `cross_compiling` to be
-        # always "yes".
-        sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-        EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-    fi
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
+    # but not C++ or Fortran.  `configure` runs a C program to determine
+    # whether it's cross-compiling or not, but when it comes to running
+    # Fortran programs, it fails.  In addition, `configure` ignores the
+    # above exported variables if it believes it's doing a native build.
+    # Small hack: edit `configure` script to force `cross_compiling` to be
+    # always "yes".
+    sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
+    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
 # Building with an external hwloc leads to problems loading the
@@ -182,8 +183,10 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=cc \
         -DMPI_CXX_COMPILER=c++ \
         -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
         -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
@@ -212,6 +215,12 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
@@ -219,12 +228,12 @@ platforms = supported_platforms(; experimental=true)
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(!Sys.isfreebsd, platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
+
+# Add `mpi+mpitrampoline` platform tag
+foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -236,7 +245,7 @@ products = [
 
     # We need to call this library `:libmpi` in Julia so that Julia's
     # `MPI.jl` will find it
-    LibraryProduct("libmpi", :libmpi),
+    LibraryProduct("libmpitrampoline", :libmpi),
 
     # MPIconstants
     LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
@@ -254,8 +263,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")

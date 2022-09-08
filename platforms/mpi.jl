@@ -14,7 +14,13 @@ const augment = raw"""
         binary = get(preferences, "binary", Sys.iswindows() ? "MicrosoftMPI_jll" : "MPICH_jll")
 
         abi = if binary == "system"
-            get(preferences, "abi")
+            let abi = get(preferences, "abi", nothing)
+                if abi === nothing
+                    error("MPIPreferences: Inconsistent state detected, binary set to system, but no ABI set.")
+                else
+                    abi
+                end
+            end
         elseif binary == "MicrosoftMPI_jll"
             "MicrosoftMPI"
         elseif binary == "MPICH_jll"
@@ -41,7 +47,7 @@ mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
     ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "", !Sys.iswindows)
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "^5.0.1", !Sys.iswindows)
 )
 
 function augment_platforms(platforms)

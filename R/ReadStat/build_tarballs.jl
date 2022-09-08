@@ -2,16 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ReadStat"
-version = v"1.1.5"
+version = v"1.1.8"
 
 sources = [
     GitSource("https://github.com/WizardMac/ReadStat.git",
-              "69f55186ae615a14a3367ad5cd08b7829aa8f308"),
+              "f0b31497d69ec1b0585a73eeede3048a4ed15cbc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Add `gettext` for `autogen.sh`
+apk update
 apk add gettext-dev
 
 # GCC builds complain about string truncation, but we don't care
@@ -21,6 +22,9 @@ fi
 
 # Windows doesn't search ${prefix}/include?
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+
+# Fix "Undefined symbols for architecture arm64: "_libiconv","
+export LDFLAGS="-L${libdir}"
 
 cd $WORKSPACE/srcdir/ReadStat/
 ./autogen.sh
@@ -46,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
