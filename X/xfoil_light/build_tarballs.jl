@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "xfoil_light"
-version = v"0.2.0"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/byuflowlab/xfoil_light.git", "9064169e67d91dc6e8db5b068ca94dd88bd5ed3d")
+    GitSource("https://github.com/byuflowlab/xfoil_light.git", "03f182b13500ad1b5a88678d8e2ce4de7d155012")
 ]
 
 # Bash recipe for building across all platforms
