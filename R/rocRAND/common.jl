@@ -3,7 +3,6 @@ const NAME = "rocRAND"
 
 const GIT_TAGS = Dict(
     v"4.2.0" => "15725c89e9cc9cc76bd30415fd2c0c5b354078831394ab8b23fe6633497b92c8",
-    v"4.5.2" => "1523997a21437c3b74d47a319d81f8cc44b8e96ec5174004944f2fb4629900db",
 )
 
 const ROCM_PLATFORMS = [
@@ -26,7 +25,6 @@ export HIP_PLATFORM=amd
 export HIP_RUNTIME=rocclr
 export HIP_COMPILER=clang
 export HSA_PATH=${prefix}
-# export HIP_ROCCLR_HOME=${prefix}/lib
 export HIP_CLANG_PATH=${prefix}/llvm/bin
 
 # Other HIPCC env variables.
@@ -58,13 +56,7 @@ export LD_LIBRARY_PATH="${prefix}/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
 mkdir ${prefix}/lib/include
 ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 
-# NOTE
-# This is needed to avoid errors with zipping files older than 1980.
-# See: https://github.com/pypa/wheel/issues/418
-unset SOURCE_DATE_EPOCH
-pip install -U pip wheel setuptools
-
-amdgpu_targets="gfx900"
+amdgpu_targets="gfx900;gfx906;gfx908;gfx1010;gfx1011;gfx1012"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -73,7 +65,7 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=${prefix}/hip/bin/hipcc \
     -DCMAKE_CXX_FLAGS="-fuse-ld=lld" \
-    -DROCM_PATH={prefix} \
+    -DROCM_PATH=${prefix} \
     -DAMDGPU_TARGETS=${amdgpu_targets} \
     -DBUILD_VERBOSE=ON
 
