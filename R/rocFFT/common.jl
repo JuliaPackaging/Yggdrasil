@@ -1,19 +1,22 @@
-const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/rocBLAS/"
-const NAME = "rocBLAS"
+const NAME = "rocFFT"
 
+const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/rocFFT/"
 const GIT_TAGS = Dict(
-    v"4.2.0" => "547f6d5d38a41786839f01c5bfa46ffe9937b389193a8891f251e276a1a47fb0",
-    v"4.5.2" => "15d725e38f91d1ff7772c4204b97c1515af58fa7b8ec2a2014b99b6d337909c4",
+    v"4.2.0" => "db29c9067f0cfa98bddd3574f6aa7200cfc790cc6da352d19e4696c3f3982163",
+    v"4.5.2" => "15d725e38f91d1ff7772c4204b97c1515af58fa7b8ec2a2014b99b6d337909c2",
 )
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
-const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"])]
+const PRODUCTS = [
+    LibraryProduct(["librocfft", "librocfft.so.0"], :librocfft, ["rocfft/lib"]),
+    LibraryProduct(["librocfft-device", "librocfft-device.so.0"], :librocfft_device, ["rocfft/lib"]),
+]
 
 const BUILDSCRIPT = raw"""
-cd ${WORKSPACE}/srcdir/rocBLAS*/
+cd ${WORKSPACE}/srcdir/rocFFT*/
 mkdir build
 
 export ROCM_PATH=${prefix}
@@ -54,13 +57,8 @@ export LD_LIBRARY_PATH="${prefix}/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
 mkdir ${prefix}/lib/include
 ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 
-# NOTE
-# This is needed to avoid errors with zipping files older than 1980.
-# See: https://github.com/pypa/wheel/issues/418
-unset SOURCE_DATE_EPOCH
-pip install -U pip wheel setuptools
-
-export TENSILE_ARCHITECTURE="gfx900"
+export AMDGPU_TARGETS="gfx900"
+#export AMDGPU_TARGETS="gfx803;gfx900;gfx906;gfx908;gfx1010;gfx1011;gfx1012"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -69,23 +67,16 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=${prefix}/hip/bin/hipcc \
     -DCMAKE_CXX_FLAGS="-fuse-ld=lld" \
-    -DROCM_PATH=${prefix} \
     -DBUILD_VERBOSE=ON \
-    -DBUILD_WITH_TENSILE=ON \
-    -DBUILD_WITH_TENSILE_HOST=ON \
-    -DTensile_LIBRARY_FORMAT=yaml \
-    -DTensile_COMPILER=hipcc \
-    -DTensile_LOGIC=asm_full \
-    -DTensile_CODE_OBJECT_VERSION=V3 \
-    -DTensile_ARCHITECTURE=$TENSILE_ARCHITECTURE \
-    -DBUILD_CLIENTS_TESTS=OFF \
-    -DBUILD_CLIENTS_BENCHMARKS=OFF \
-    -DBUILD_CLIENTS_SAMPLES=OFF \
-    -DBUILD_TESTING=OFF
+    -DUSE_HIP_CLANG=ON \
+    -DHIP_COMPILER=clang \
+    -DROCM_PATH=${prefix} \
+    -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
+    -DBUILD_CLIENTS_TESTS=OFF
 
 make -j${nproc} -C build install
 
-install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENSE.md
+install_license ${WORKSPACE}/srcdir/rocFFT*/LICENSE.md
 """
 
 function configure_build(version)
@@ -100,6 +91,7 @@ function configure_build(version)
         Dependency("ROCmOpenCLRuntime_jll", version),
         Dependency("ROCmDeviceLibs_jll", version),
         Dependency("rocminfo_jll", version),
+        Dependency("hsakmt_roct_jll", version),
         Dependency("hsa_rocr_jll", version),
         Dependency("HIP_jll", version),
     ]
