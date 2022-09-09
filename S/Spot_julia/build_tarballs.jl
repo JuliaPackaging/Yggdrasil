@@ -12,7 +12,12 @@ sources = [
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128")
     ]
     
-    # Bash recipe for building across all platforms
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/spot-2.9.7/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
