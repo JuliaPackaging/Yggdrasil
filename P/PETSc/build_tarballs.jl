@@ -6,6 +6,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.16.8"
 petsc_version = v"3.16.6"
+PARMETIS_COMPAT_VERSION = "4.0.3"
+MUMPS_COMPAT_VERSION = "5.2.1"
+SUITESPARSE_COMPAT_VERSION = "5.10.1"
+SUPERLUDIST_COMPAT_VERSION = "8"
+METIS_COMPAT_VERSION = "5.1"
+SCOTCH_COMPAT_VERSION = "6.1"
+SCALAPACK_COMPAT_VERSION = "2.2"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
@@ -206,13 +213,13 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("SuperLU_DIST_jll"),
-    Dependency("SuiteSparse_jll"),
-    Dependency("MUMPS_jll"),
-    Dependency("SCALAPACK32_jll"),
-    Dependency("METIS_jll"),
-    Dependency("SCOTCH_jll"),
-    Dependency("PARMETIS_jll"),
+    Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
+    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
+    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
+    Dependency("SCALAPACK32_jll"; compat=SCALAPACK_COMPAT_VERSION),
+    Dependency("METIS_jll"; compat=METIS_COMPAT_VERSION),
+    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
+    Dependency("PARMETIS_jll"; compat=PARMETIS_COMPAT_VERSION),
 ]
 append!(dependencies, platform_dependencies)
 
