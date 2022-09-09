@@ -56,7 +56,7 @@ install_license COPYING*
 
     # We enable experimental platforms as this is a core Julia dependency
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
-    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory", cxxstring_abi="cxx11"))
     products = [
         LibraryProduct("libgmp", :libgmp),
         LibraryProduct("libgmpxx", :libgmpxx),
