@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "oneAPISupport"
+name = "oneAPI_Support"
 version = v"2022.1.0"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
