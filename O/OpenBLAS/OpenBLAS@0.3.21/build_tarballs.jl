@@ -9,7 +9,7 @@ version = v"0.3.21"
 sources = openblas_sources(version)
 script = openblas_script(;aarch64_ilp64=true, num_64bit_threads=512)
 platforms = openblas_platforms(;experimental=true)
-push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory", ibgfortran_version=v"5.0.0"))
 products = openblas_products()
 dependencies = openblas_dependencies(platforms)
 
