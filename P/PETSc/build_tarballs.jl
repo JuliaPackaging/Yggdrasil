@@ -6,13 +6,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.16.8"
 petsc_version = v"3.16.6"
-PARMETIS_COMPAT_VERSION = "4.0.3"
-MUMPS_COMPAT_VERSION = "5.2.1"
+PARMETIS_COMPAT_VERSION = "4.0.5"
+MUMPS_COMPAT_VERSION = "5.5.1"
 SUITESPARSE_COMPAT_VERSION = "5.10.1"
-SUPERLUDIST_COMPAT_VERSION = "8"
-METIS_COMPAT_VERSION = "5.1"
-SCOTCH_COMPAT_VERSION = "6.1"
-SCALAPACK_COMPAT_VERSION = "2.2"
+SUPERLUDIST_COMPAT_VERSION = "8.0.1"
+METIS_COMPAT_VERSION = "5.1.1"
+SCOTCH_COMPAT_VERSION = "6.1.3"
+SCALAPACK_COMPAT_VERSION = "2.2.1"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
