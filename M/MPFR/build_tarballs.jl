@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using BinaryBuilderBase: sanitize
 
 name = "MPFR"
 version = v"4.1.0"
@@ -13,6 +14,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 cd $WORKSPACE/srcdir/mpfr-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
 make -j${nproc}
@@ -26,6 +32,7 @@ fi
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -34,7 +41,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)), 
 ]
 
 # Note: we explicitly lie about this because we don't have the new
