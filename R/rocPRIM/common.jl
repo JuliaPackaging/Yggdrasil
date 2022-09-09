@@ -54,8 +54,7 @@ export LD_LIBRARY_PATH="${prefix}/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
 mkdir ${prefix}/lib/include
 ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 
-amdgpu_targets="gfx900"
-#amdgpu_targets="gfx900;gfx906;gfx908;gfx1010;gfx1011;gfx1012"
+amdgpu_targets="gfx900;gfx906;gfx908;gfx1010;gfx1011;gfx1012"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
