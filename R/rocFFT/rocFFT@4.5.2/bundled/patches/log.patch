@@ -1,0 +1,32 @@
+diff --git a/library/src/device/generator/generator.main.cpp b/library/src/device/generator/generator.main.cpp
+index dcdf7f9..49181a7 100644
+--- a/library/src/device/generator/generator.main.cpp
++++ b/library/src/device/generator/generator.main.cpp
+@@ -159,8 +159,8 @@ int main(int argc, char* argv[])
+       }
+       printf("Generating rad %d butterfly \n", (int)rad);
+       WriteButterflyToFile(str, rad);
+-      printf("===========================================================================\n");
+   */
++    printf("===========================================================================\n");
+ 
+     // collection of supported 1D large sizes
+     std::set<size_t> supported_large_set({50, 81, 100, 128, 200, 256});
+@@ -259,6 +259,8 @@ int main(int argc, char* argv[])
+         return 0;
+     }
+ 
++    printf("===========================================================================\n");
++
+     /*
+       for(size_t i=7;i<=2401;i*=7){
+           printf("Generating len %d FFT kernels\n", (int)i);
+@@ -302,7 +304,7 @@ int main(int argc, char* argv[])
+ 
+         for(size_t i = 0; i < support_size_list.size(); i++)
+         {
+-            // printf("Generating len %d FFT kernels\n", support_size_list[i]);
++            printf("Generating len %d FFT kernels\n", support_size_list[i]);
+             generate_kernel(support_size_list[i], CS_KERNEL_STOCKHAM);
+         }
+ 

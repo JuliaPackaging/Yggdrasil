@@ -1,0 +1,105 @@
+diff --git a/library/src/device/kernel-generator.py b/library/src/device/kernel-generator.py
+index 6c24fe4..4c63c3c 100644
+--- a/library/src/device/kernel-generator.py
++++ b/library/src/device/kernel-generator.py
+@@ -956,6 +956,8 @@ def generate_new_kernels(kernels, precisions):
+ 
+ def cli():
+     """Command line interface..."""
++
++    print("L: 1")
+     parser = argparse.ArgumentParser(prog='kernel-generator')
+     subparsers = parser.add_subparsers(dest='command')
+     parser.add_argument('--groups', type=int, help='Numer of small kernel groups.', default=150)
+@@ -971,6 +973,7 @@ def cli():
+     generate_parser.add_argument('generator', type=str, help='Kernel generator executable.')
+ 
+     args = parser.parse_args()
++    print("L: 2")
+ 
+     #
+     # which kernels to build? set the flags for generate before modifying patterns
+@@ -1005,6 +1008,7 @@ def cli():
+         patterns += ['large']
+         patterns += ['2D']
+     patterns = set(patterns)
++    print("L: 3")
+ 
+     #
+     # which precicions to build?
+@@ -1020,6 +1024,7 @@ def cli():
+     if 'all' in precisions:
+         precisions = ['sp', 'dp']
+     precisions = set(precisions)
++    print("L: 4")
+ 
+ 
+     #
+@@ -1053,6 +1058,7 @@ def cli():
+     if manual_large:
+         for p in precisions:
+             expand_sizes['large'][p] = merge(expand_sizes['large'][p], manual_large)
++    print("L: 5")
+ 
+     #
+     # which kernels by new-gen and which by old-gen? categorize input kernels
+@@ -1076,6 +1082,7 @@ def cli():
+                 del expand_sizes['small'][p][length]
+         new_small_kernels = merge_length(new_small_kernels, new_smalls)
+         new_large_kernels = merge_length(new_large_kernels, new_larges)
++    print("L: 6")
+ 
+     new_kernels = new_small_kernels + new_large_kernels
+     if dim2:
+@@ -1093,6 +1100,7 @@ def cli():
+         patterns.remove('small')
+     if 'large' in patterns and len(expand_sizes['large']['sp']) == 0 and len(expand_sizes['large']['dp']) == 0:
+         patterns.remove('large')
++    print("L: 7")
+ 
+     #
+     # return the necessary include files to cmake
+@@ -1106,6 +1114,7 @@ def cli():
+         return
+ 
+     if args.command == 'generate':
++        print("L: 8")
+ 
+         # collection of Functions to generate prototypes for
+         psmall, plarge, p2d = {}, {}, {}
+@@ -1119,6 +1128,7 @@ def cli():
+             for p in precisions:
+                 transform_2D = merge([], supported_2d_sizes(p))
+                 p2d = pmerge(p2d, generate_2d_prototypes(p, transform_2D))
++        print("L: 9")
+ 
+         # hijack a few new kernels...
+         pnew = pmerge({}, generate_new_kernels(new_kernels, precisions))
+@@ -1131,11 +1141,27 @@ def cli():
+         new_large_lengths = {k.length for k in new_large_kernels} # sbcc by new-gen
+ 
+         if old_small_lengths:
++            print("L: 10")
++            # os.execvp(args.generator, [
++            #     '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++            #     '--manual-small', cjoin(sorted(old_small_lengths)),
++            # ])
+             subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-small', cjoin(sorted(old_small_lengths))], check=True)
+         if old_large_lengths:
+             if new_large_lengths:
++                print("L: 11")
++                # os.execvp(args.generator, [
++                #     '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++                #     '--manual-large', cjoin(sorted(old_large_lengths)),
++                #     '--no-sbcc', cjoin(sorted(new_large_lengths)),
++                # ])
+                 subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths)), '--no-sbcc', cjoin(sorted(new_large_lengths))], check=True)
+             else:
++                print("L: 12")
++                # os.execvp(args.generator, [
++                #     '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++                #     '--manual-large', cjoin(sorted(old_large_lengths)),
++                # ])
+                 subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths))], check=True)
+ 
+ 

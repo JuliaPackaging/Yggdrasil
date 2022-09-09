@@ -1,0 +1,74 @@
+diff --git a/library/src/device/generator/generator.main.cpp b/library/src/device/generator/generator.main.cpp
+index dcdf7f9..49181a7 100644
+--- a/library/src/device/generator/generator.main.cpp
++++ b/library/src/device/generator/generator.main.cpp
+@@ -159,8 +159,8 @@ int main(int argc, char* argv[])
+       }
+       printf("Generating rad %d butterfly \n", (int)rad);
+       WriteButterflyToFile(str, rad);
+-      printf("===========================================================================\n");
+   */
++    printf("===========================================================================\n");
+ 
+     // collection of supported 1D large sizes
+     std::set<size_t> supported_large_set({50, 81, 100, 128, 200, 256});
+@@ -259,6 +259,8 @@ int main(int argc, char* argv[])
+         return 0;
+     }
+ 
++    printf("===========================================================================\n");
++
+     /*
+       for(size_t i=7;i<=2401;i*=7){
+           printf("Generating len %d FFT kernels\n", (int)i);
+@@ -302,7 +304,7 @@ int main(int argc, char* argv[])
+ 
+         for(size_t i = 0; i < support_size_list.size(); i++)
+         {
+-            // printf("Generating len %d FFT kernels\n", support_size_list[i]);
++            printf("Generating len %d FFT kernels\n", support_size_list[i]);
+             generate_kernel(support_size_list[i], CS_KERNEL_STOCKHAM);
+         }
+ 
+diff --git a/library/src/device/kernel-generator.py b/library/src/device/kernel-generator.py
+index 6c24fe4..5f622e8 100644
+--- a/library/src/device/kernel-generator.py
++++ b/library/src/device/kernel-generator.py
+@@ -17,7 +17,7 @@ import copy
+ import functools
+ import itertools
+ import os
+-import subprocess
++# import subprocess
+ import sys
+ 
+ from pathlib import Path
+@@ -1131,12 +1131,25 @@ def cli():
+         new_large_lengths = {k.length for k in new_large_kernels} # sbcc by new-gen
+ 
+         if old_small_lengths:
+-            subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-small', cjoin(sorted(old_small_lengths))], check=True)
++            os.execvp(args.generator, [
++                '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++                '--manual-small', cjoin(sorted(old_small_lengths)),
++            ])
++            # subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-small', cjoin(sorted(old_small_lengths))], check=True)
+         if old_large_lengths:
+             if new_large_lengths:
+-                subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths)), '--no-sbcc', cjoin(sorted(new_large_lengths))], check=True)
++                os.execvp(args.generator, [
++                    '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++                    '--manual-large', cjoin(sorted(old_large_lengths)),
++                    '--no-sbcc', cjoin(sorted(new_large_lengths)),
++                ])
++                # subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths)), '--no-sbcc', cjoin(sorted(new_large_lengths))], check=True)
+             else:
+-                subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths))], check=True)
++                os.execvp(args.generator, [
++                    '-g', str(args.groups), '-p', args.precision, '-t', 'none',
++                    '--manual-large', cjoin(sorted(old_large_lengths)),
++                ])
++                # subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths))], check=True)
+ 
+ 
+ if __name__ == '__main__':

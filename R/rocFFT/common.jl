@@ -3,7 +3,7 @@ const NAME = "rocFFT"
 const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/rocFFT/"
 const GIT_TAGS = Dict(
     v"4.2.0" => "db29c9067f0cfa98bddd3574f6aa7200cfc790cc6da352d19e4696c3f3982163",
-    v"4.5.2" => "15d725e38f91d1ff7772c4204b97c1515af58fa7b8ec2a2014b99b6d337909c2",
+    v"4.5.2" => "2724118ca00b9e97ac9578fe0b7e64a82d86c4fb0246d0da88d8ddd9c608b1e1",
 )
 
 const ROCM_PLATFORMS = [
