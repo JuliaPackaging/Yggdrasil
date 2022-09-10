@@ -13,18 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-SEARCH_PATH=$PATH  # or any colon-delimited list of paths
-IFS=':' read -r -a PathDirs <<< "$SEARCH_PATH"
-echo "##[debug] Found directories"
-for element in "${PathDirs[@]}"; do
-    echo "$element"
-done;
-echo;
-echo;  
-echo "##[debug] Found files"
-for element in "${PathDirs[@]}"; do
-    find "$element" -type f
-done
+
+tree build
 
 # install TPLs first
 #
