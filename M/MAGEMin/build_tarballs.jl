@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.2.3"
-magemin_version = v"1.2.3"
+version = v"1.2.4"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "ac3786e88aeb190ad6388ffdf3552bfc7bbdcaf8")
+                    "2bbe31fbc50827e4442ec971598ea627f3773e7b")
         ]
 
 # Bash recipe for building across all platforms
@@ -29,17 +28,18 @@ elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
 fi
 
 CCFLAGS="-O3 -g -fPIC -std=c99"
+
 LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
 INC="-I${includedir}"
 
 # Compile library:
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
-# compile binary
-make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+# Compile binary
+make -j${nproc} EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
-install -Dvm 755 MAGEMin* "${bindir}/MAGEMin${exeext}"
+install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
 
 # store files
 install -vm 644 src/*.h "${includedir}"

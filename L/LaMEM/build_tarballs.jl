@@ -6,13 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.1.1"
-lamem_version = v"1.1.0"
+version = v"1.2.0"
+
+PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "734724d6686c203f6e0012c1f087181de3da4f53")
+    "dd150e1a4110c3b1ab34e2f4769fc85a3165fe8c")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,7 +36,6 @@ make mode=opt dylib -j${nproc}
 cd $WORKSPACE/srcdir/lamem/bin/opt
 
 # On some windows versions it automatically puts the .exe extension; on others not. 
-# This deals with that
 if [[ -f LaMEM ]]
 then
     mv LaMEM LaMEM${exeext}
@@ -82,7 +82,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="PETSc_jll", uuid="8fa3689e-f0b9-5420-9873-adf6ccf46f2d")),
+    Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
     Dependency("CompilerSupportLibraries_jll")
 ]
 append!(dependencies, platform_dependencies)
