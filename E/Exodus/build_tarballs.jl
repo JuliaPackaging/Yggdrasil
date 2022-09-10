@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+ls -l /workspace/destdir/
+
 # install TPLs first
 #
 cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
