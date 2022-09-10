@@ -14,24 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
 # install TPLs first
 #
 cd $WORKSPACE/srcdir/seacas && ACCESS=`pwd`
-# NEEDS_ZLIB=YES ./install-tpl.sh
 
 # build exodus
 #
 mkdir build
 cd build
 ### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
-INSTALL_PATH=${prefix} \
-FORTRAN=NO \
-NETCDF_PATH=${prefix} \
-PNETCDF_PATH=${prefix} \
-HDF5_PATH=${prefix} \
-../cmake-exodus
+INSTALL_PATH=${prefix} FORTRAN=NO NETCDF_PATH=${prefix} PNETCDF_PATH=${prefix} HDF5_PATH=${prefix} ../cmake-exodus
 
 make -j${nproc}
 make install
