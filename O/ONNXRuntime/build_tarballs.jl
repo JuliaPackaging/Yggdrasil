@@ -7,7 +7,7 @@ version = v"1.10.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
-cuda_tag = "11.3" # No CUDA 10.2, since pre-built x86_64 ONNXRuntime-CUDA binaries are built for CUDA 11
+cuda_tag = "11.3" # No CUDA 10.2, since pre-built x86_64 CUDA binaries are built for CUDA 11
 cuda_aarch64_tag = "10.2"
 cudnn_version = v"8.2.4"
 tensorrt_version = v"8.0.1"
@@ -99,6 +99,8 @@ for p in [
 end
 push!(platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
 push!(cuda_platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
+
+# Not expanding cuda_platforms wrt. cxxstring ABIs, since pre-built x86_64 CUDA binaries are built for cxx03 (and the tensorrt provider for both x86_64 and aarch64 is built for cxx11)
 
 # The products that we will ensure are always built
 products = [
