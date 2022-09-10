@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 
 ls -l $WORKSPACE/destdir/
+ls -l $WORKSPACE/destdir/bin/
+ls -l $WORKSPACE/destdir/lib/
 
 # install TPLs first
 #
