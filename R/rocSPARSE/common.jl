@@ -3,6 +3,7 @@ const NAME = "rocSPARSE"
 const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/rocSPARSE/"
 const GIT_TAGS = Dict(
     v"4.2.0" => "8a86ed49d278e234c82e406a1430dc28f50d416f8f1065cf5bdf25cc5721129c",
+    v"4.5.2" => "e37af2cd097e239a55a278df534183b5591ef4d985fe1a268a229bd11ada6599",
 )
 
 const ROCM_PLATFORMS = [
@@ -52,8 +53,10 @@ export LD_LIBRARY_PATH="${prefix}/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
 # NOTE
 # Looking at hcc-cmd, it is clear that it is omitting 'hip/include' directory.
 # Therefore we symlink to other directory that it looks at.
-mkdir ${prefix}/lib/include
-ln -s ${prefix}/hip/include/* ${prefix}/lib/include
+if [ ! -d "${prefix}/lib/include" ]; then
+    mkdir ${prefix}/lib/include
+    ln -s ${prefix}/hip/include/* ${prefix}/lib/include
+fi
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
