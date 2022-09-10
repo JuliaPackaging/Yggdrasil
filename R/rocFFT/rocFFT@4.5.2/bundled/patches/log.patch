@@ -1,0 +1,322 @@
+diff --git a/library/src/device/CMakeLists.txt b/library/src/device/CMakeLists.txt
+index 274fb87..068214c 100644
+--- a/library/src/device/CMakeLists.txt
++++ b/library/src/device/CMakeLists.txt
+@@ -96,6 +96,7 @@ set( kgendeps ${CMAKE_SOURCE_DIR}/library/src/device/kernel-generator.py
+               ${CMAKE_SOURCE_DIR}/library/src/device/generator.py
+               ${CMAKE_SOURCE_DIR}/library/src/device/rtccache.py
+               ${CMAKE_SOURCE_DIR}/library/src/device/stockham.py )
++message("KGPY LISTING")
+ execute_process(COMMAND ${PYTHON3_EXE} ${kgen}
+   --pattern=${GENERATOR_PATTERN}
+   --precision=${GENERATOR_PRECISION}
+@@ -109,7 +110,9 @@ execute_process(COMMAND ${PYTHON3_EXE} ${kgen}
+ if( STATUS AND NOT STATUS EQUAL 0 )
+   message( FATAL_ERROR "Kernel generator failed (list): ${STATUS}")
+ endif()
++message("KGPY LISTING END")
+ 
++message("KGPY GEN")
+ add_custom_command(OUTPUT ${gen_headers}
+   COMMAND ${PYTHON3_EXE} ${kgen}
+   --pattern=${GENERATOR_PATTERN}
+@@ -122,6 +125,7 @@ add_custom_command(OUTPUT ${gen_headers}
+   DEPENDS rocfft-kernel-generator ${kgendeps}
+   COMMENT "Generator producing device kernels for rocfft-device"
+ )
++message("KGPY GEN END")
+ 
+ # add virtual build target for generated kernels
+ add_custom_target(gen_headers_target
+diff --git a/library/src/device/generator/generator.main.cpp b/library/src/device/generator/generator.main.cpp
+index dcdf7f9..6458298 100644
+--- a/library/src/device/generator/generator.main.cpp
++++ b/library/src/device/generator/generator.main.cpp
+@@ -142,9 +142,11 @@ std::set<size_t>
+     return dependent_1D_set;
+ }
+ 
+-int main(int argc, char* argv[])
+-{
+-    // std::cout << argc << std::endl;
++int main(int argc, char* argv[]) {
++    std::ofstream logs_file("rocfft-logs-cpp.txt");
++    logs_file << "IN CPP" << std::endl;
++    logs_file.flush();
++    /* std::cout << "IN CPP" << std::endl; */
+     // for (int i = 0; i < argc; ++i )
+     //     std::cout << "[" << i << "] " << argv[i] << std::endl;
+     /*
+@@ -201,11 +203,15 @@ int main(int argc, char* argv[])
+     store(parse_command_line(argc, argv, opdesc), vm);
+     notify(vm);
+ 
++    logs_file << "processed args" << std::endl;
++    logs_file.flush();
+     if(vm.count("manual-small"))
+     {
+         parse_arg_ints(manualSmallArgStr, argument.manualSize);
+         // need to check if the sizes are supported by generator (pow2,3,5,7...)
+         std::set<size_t> supported_small_set;
++        logs_file << "manual small generate_support_size_list" << std::endl;
++        logs_file.flush();
+         generate_support_size_list(
+             supported_small_set, 3125, 2187, Large1DThreshold(rocfft_precision_single), true);
+ 
+@@ -214,37 +220,50 @@ int main(int argc, char* argv[])
+             std::cerr << "No valid manual small sizes!" << std::endl;
+         }
+     }
++    logs_file << "passed manual small" << std::endl;
++    logs_file.flush();
+     if(vm.count("manual-large"))
+     {
+         parse_arg_ints(manualLargeArgStr, argument.manualSizeLarge);
++        logs_file << "manual large parsed args" << std::endl;
+         // need to check if the sizes are supported by generator
+         if(argument.filter_manual_large_size(supported_large_set) == 0)
+         {
+             std::cerr << "No valid manual large sizes!" << std::endl;
+         }
+     }
++    logs_file << "passed manual large" << std::endl;
++    logs_file.flush();
+     if(vm.count("manual-2d"))
+     {
+         // XXX just stick straight into valid...
+         parse_arg_pairs(manual2DArgStr, argument.validManual2D);
++        logs_file << "manual 2d parsed args" << std::endl;
+     }
++    logs_file << "passed manual 2d" << std::endl;
++    logs_file.flush();
+     // default type is ALL if not specified, else init_type from arg
+     if(vm.count("type"))
+     {
+         parse_arg_strings(typeArgStr, argStrList);
+         argument.init_type(argStrList);
+     }
++    logs_file << "passed type" << std::endl;
+     // default precision is ALL if not specified, else init_precision from arg
+     if(vm.count("precision"))
+     {
+         parse_arg_strings(precisionArgStr, argStrList);
+         argument.init_precision(argStrList);
+     }
++    logs_file << "passed precision" << std::endl;
++    logs_file.flush();
+     // default large sizes gen both sbcc and sbrc, except for those tagged with "no-sbcc"
+     if(vm.count("no-sbcc"))
+     {
+         parse_arg_ints(noSBCCArgStr, argument.largeSizesWithoutSBCC);
+     }
++    logs_file << "passed no sbcc" << std::endl;
++    logs_file.flush();
+ 
+     if(argument.group_num <= 0)
+     {
+@@ -252,12 +271,14 @@ int main(int argc, char* argv[])
+         argument.group_num = 150;
+     }
+ 
+-    std::cout << argument.str() << std::endl;
++    /* std::cout << argument.str() << std::endl; */
+ 
+     if(!argument.check_valid())
+     {
+         return 0;
+     }
++    logs_file << "valid args" << std::endl;
++    logs_file.flush();
+ 
+     /*
+       for(size_t i=7;i<=2401;i*=7){
+@@ -436,4 +457,5 @@ int main(int argc, char* argv[])
+     //                      support_size_list_2D_double,
+     //                      argument.has_precision(EPrecision::SINGLE),
+     //                      argument.has_precision(EPrecision::DOUBLE));
++    logs_file.close();
+ }
+diff --git a/library/src/device/kernel-generator.py b/library/src/device/kernel-generator.py
+index 6c24fe4..c6070e5 100644
+--- a/library/src/device/kernel-generator.py
++++ b/library/src/device/kernel-generator.py
+@@ -14,6 +14,7 @@ Note that 'small' kernels don't decompose their lengths.
+ import argparse
+ import collections
+ import copy
++import time
+ import functools
+ import itertools
+ import os
+@@ -955,6 +956,10 @@ def generate_new_kernels(kernels, precisions):
+ 
+ 
+ def cli():
++    logf = open(f"rocfft-logs-ju-{time.time()}.txt", "w")
++    logf.write("CLIU\n")
++    logf.flush()
++
+     """Command line interface..."""
+     parser = argparse.ArgumentParser(prog='kernel-generator')
+     subparsers = parser.add_subparsers(dest='command')
+@@ -966,11 +971,14 @@ def cli():
+     parser.add_argument('--runtime-compile', type=str, help='Allow runtime-compiled kernels.')
+ 
+     list_parser = subparsers.add_parser('list', help='List kernel files that will be generated.')
+-
+     generate_parser = subparsers.add_parser('generate', help='Generate kernels.')
+     generate_parser.add_argument('generator', type=str, help='Kernel generator executable.')
+ 
+     args = parser.parse_args()
++    logf.write("parsed args\n")
++    logf.write(str(args))
++    logf.write("\n")
++    logf.flush()
+ 
+     #
+     # which kernels to build? set the flags for generate before modifying patterns
+@@ -998,6 +1006,8 @@ def cli():
+         'pow5': 'small',
+         'pow7': 'small',
+     }
++    logf.write("replacements\n")
++    logf.flush()
+ 
+     patterns = [replacements.get(key, key) for key in patterns if key != 'none']
+     if 'all' in patterns:
+@@ -1005,6 +1015,8 @@ def cli():
+         patterns += ['large']
+         patterns += ['2D']
+     patterns = set(patterns)
++    logf.write("patterns\n")
++    logf.flush()
+ 
+     #
+     # which precicions to build?
+@@ -1020,6 +1032,8 @@ def cli():
+     if 'all' in precisions:
+         precisions = ['sp', 'dp']
+     precisions = set(precisions)
++    logf.write("precisions\n")
++    logf.flush()
+ 
+ 
+     #
+@@ -1041,6 +1055,7 @@ def cli():
+         'large': { 'sp': [], 'dp': [] },
+     }
+ 
++    logf.write("before sizes\n")
+     if small or pow2 or pow3 or pow5 or pow7:
+         for p in precisions:
+             expand_sizes['small'][p] = merge(expand_sizes['small'][p], supported_small_sizes(p, pow2, pow3, pow5, pow7))
+@@ -1053,6 +1068,8 @@ def cli():
+     if manual_large:
+         for p in precisions:
+             expand_sizes['large'][p] = merge(expand_sizes['large'][p], manual_large)
++    logf.write("after sizes\n")
++    logf.flush()
+ 
+     #
+     # which kernels by new-gen and which by old-gen? categorize input kernels
+@@ -1062,6 +1079,8 @@ def cli():
+     new_small_kernels = new_large_kernels = []
+ 
+     # Don't subtract_from_all for large, since so far sbrc and transpose still rely on old-gen.
++    logf.write("before precisions\n")
++    logf.write(f"n_precisions {len(precisions)}\n")
+     for p in precisions:
+         expand_sizes['small'][p], new_smalls = pick(expand_sizes['small'][p], supported_new_small_kernels)
+         expand_sizes['large'][p], new_larges = pick(expand_sizes['large'][p], supported_new_large_kernels, subtract_from_all=False)
+@@ -1076,6 +1095,8 @@ def cli():
+                 del expand_sizes['small'][p][length]
+         new_small_kernels = merge_length(new_small_kernels, new_smalls)
+         new_large_kernels = merge_length(new_large_kernels, new_larges)
++    logf.write("after precisions\n")
++    logf.flush()
+ 
+     new_kernels = new_small_kernels + new_large_kernels
+     if dim2:
+@@ -1089,36 +1110,51 @@ def cli():
+             k.runtime_compile = False
+ 
+     # update the patterns after removing new kernels from old generator to avoid including some missing cpp
++    logf.write("before pattern remove\n")
+     if 'small' in patterns and len(expand_sizes['small']['sp']) == 0 and len(expand_sizes['small']['dp']) == 0:
+         patterns.remove('small')
+     if 'large' in patterns and len(expand_sizes['large']['sp']) == 0 and len(expand_sizes['large']['dp']) == 0:
+         patterns.remove('large')
++    logf.write("after pattern remove\n")
++    logf.flush()
+ 
+     #
+     # return the necessary include files to cmake
+     #
+     if args.command == 'list':
+-
++        logf.write("listing\n")
+         scprint(set(list_old_generated_kernels(patterns=patterns,
+                                            precisions=precisions,
+                                            num_small_kernel_groups=args.groups)
+                     + list_generated_kernels(new_kernels)))
++        logf.write("after listing\n")
++        logf.close()
+         return
+ 
+     if args.command == 'generate':
++        logf.write("generating\n")
++        logf.flush()
+ 
+         # collection of Functions to generate prototypes for
+         psmall, plarge, p2d = {}, {}, {}
+ 
+         # already excludes small and large-1D from new-generators
++        logf.write("before precisions\n")
++        logf.flush()
+         for p in precisions:
+             psmall = pmerge(psmall, generate_small_1d_prototypes(p, expand_sizes['small'][p]))
+             plarge = pmerge(plarge, generate_large_1d_prototypes(p, expand_sizes['large'][p]))
++        logf.write("after precisions\n")
++        logf.flush()
+ 
+         if dim2:
++            logf.write("before precisions\n")
++            logf.flush()
+             for p in precisions:
+                 transform_2D = merge([], supported_2d_sizes(p))
+                 p2d = pmerge(p2d, generate_2d_prototypes(p, transform_2D))
++            logf.write("after precisions\n")
++            logf.flush()
+ 
+         # hijack a few new kernels...
+         pnew = pmerge({}, generate_new_kernels(new_kernels, precisions))
+@@ -1131,13 +1167,28 @@ def cli():
+         new_large_lengths = {k.length for k in new_large_kernels} # sbcc by new-gen
+ 
+         if old_small_lengths:
+-            subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-small', cjoin(sorted(old_small_lengths))], check=True)
++            logf.write("old small length\n")
++            logf.flush()
++            gargs = [
++                args.generator, '-g', str(args.groups), '-p', args.precision,
++                '-t', 'none', '--manual-small', cjoin(sorted(old_small_lengths)),
++            ]
++            logf.write(str(gargs))
++            logf.write("\n")
++            logf.flush()
++            subprocess.run(gargs, check=True)
+         if old_large_lengths:
+             if new_large_lengths:
++                logf.write("new large length\n")
++                logf.flush()
+                 subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths)), '--no-sbcc', cjoin(sorted(new_large_lengths))], check=True)
+             else:
++                logf.write("else large length\n")
++                logf.flush()
+                 subprocess.run([args.generator, '-g', str(args.groups), '-p', args.precision, '-t', 'none', '--manual-large', cjoin(sorted(old_large_lengths))], check=True)
+ 
++    logf.close()
++
+ 
+ if __name__ == '__main__':
+     cli()

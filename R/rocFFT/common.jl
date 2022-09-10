@@ -60,6 +60,8 @@ ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 export AMDGPU_TARGETS="gfx900"
 #export AMDGPU_TARGETS="gfx803;gfx900;gfx906;gfx908;gfx1010;gfx1011;gfx1012"
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/log.patch
+
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -83,6 +85,7 @@ function configure_build(version)
     sources = [
         ArchiveSource(
             ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
+        DirectorySource("./bundled"),
     ]
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
