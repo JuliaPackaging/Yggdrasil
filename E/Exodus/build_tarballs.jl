@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-ls -l /workspace/destdir/
+ls -l $WORKSPACE/destdir/
 
 # install TPLs first
 #
