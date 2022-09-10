@@ -6,9 +6,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"5.0.2"
 
 mpitrampoline_version = v"5.0.2"
+version = mpitrampoline_version
 mpich_version_str = "4.0.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.8.1"
