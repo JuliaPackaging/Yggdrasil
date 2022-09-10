@@ -7,7 +7,10 @@ version = v"1.10.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
-cuda_tag = "11.3" # No CUDA 10.2, since pre-built x86_64 CUDA binaries are built for CUDA 11
+cuda_versions = [
+    # No CUDA 10.2, since pre-built x86_64 CUDA binaries are built for CUDA 11
+    v"11.3", # Using 11.3, and not 11.4, to be compatible with TensorRT (JLL) v8.0.1 (which includes aarch64 support)
+]
 cuda_aarch64_tag = "10.2"
 cudnn_version = v"8.2.4"
 tensorrt_version = v"8.0.1"
@@ -90,12 +93,15 @@ platforms = supported_platforms(; exclude=platform_exclude_filter)
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
 cuda_platforms = Platform[]
-for p in [
-    Platform("x86_64", "Linux"; cuda = cuda_tag),
-    Platform("x86_64", "Windows"; cuda = cuda_tag)
-]
-    push!(platforms, p)
-    push!(cuda_platforms, p)
+for cuda_version in cuda_versions
+    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
+    for p in [
+        Platform("x86_64", "Linux"; cuda = cuda_tag),
+        Platform("x86_64", "Windows"; cuda = cuda_tag)
+    ]
+        push!(platforms, p)
+        push!(cuda_platforms, p)
+    end
 end
 push!(platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
 push!(cuda_platforms, Platform("aarch64", "Linux"; cuda = cuda_aarch64_tag))
