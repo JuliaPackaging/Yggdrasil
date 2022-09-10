@@ -7,7 +7,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
 version = v"1.2.0"
-lamem_version = v"1.2.0"
 
 PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 
