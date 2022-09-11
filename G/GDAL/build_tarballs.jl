@@ -6,8 +6,8 @@ name = "GDAL"
 upstream_version = v"3.5.1"
 version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-    upstream_version.minor * 100 + version_offset.minor,
-    upstream_version.patch * 100 + version_offset.patch)
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
@@ -108,9 +108,9 @@ dependencies = [
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73"),
     Dependency("NetCDF_jll"; compat="400.902.5"),
-    Dependency("HDF5_jll")
+    Dependency("HDF5_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"8")
