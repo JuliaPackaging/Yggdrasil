@@ -39,10 +39,17 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_PARQUET=ON
 -DARROW_SIMD_LEVEL=NONE
 -DARROW_USE_XSIMD=OFF
+-DARROW_JEMALLOC=OFF
 -Dxsimd_SOURCE=AUTO
 -Dre2_SOURCE=AUTO)
 
-echo $CMAKE_FLAGS
+# Some platforms don't have BZ2 (yet)
+if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DARROW_WITH_BZ2=ON)
+else
+    echo "Disabling BZ2 support"
+    CMAKE_FLAGS+=(-DARROW_WITH_BZ2=OFF)
+fi
 
 # CMake is doubling the suffixes...
 if [[ "${target}" == *-mingw32 ]]; then
