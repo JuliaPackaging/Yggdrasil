@@ -77,6 +77,7 @@ dependencies = [
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
     Dependency("utf8proc_jll")
+    Dependency("RE2_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
