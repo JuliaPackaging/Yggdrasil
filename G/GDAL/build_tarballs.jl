@@ -6,8 +6,8 @@ name = "GDAL"
 upstream_version = v"3.5.1"
 version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
-                        upstream_version.minor * 100 + version_offset.minor,
-                        upstream_version.patch * 100 + version_offset.patch)
+    upstream_version.minor * 100 + version_offset.minor,
+    upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
@@ -28,25 +28,41 @@ if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-undefined"
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_PYTHON_BINDINGS=OFF \
-    -DBUILD_JAVA_BINDINGS=OFF \
-    -DBUILD_CSHARP_BINDINGS=OFF \
-    -DGDAL_USE_CURL=ON \
-    -DGDAL_USE_EXPAT=ON \
-    -DGDAL_USE_GEOTIFF=ON \
-    -DGDAL_USE_GEOS=ON \
-    -DGDAL_USE_OPENJPEG=ON \
-    -DGDAL_USE_SQLITE3=ON \
-    -DGDAL_USE_TIFF=ON \
-    -DGDAL_USE_ZLIB=ON \
-    -DGDAL_USE_ZSTD=ON \
-    ..
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+-DCMAKE_PREFIX_PATH=${prefix}
+-DCMAKE_FIND_ROOT_PATH=${prefix}
+-DCMAKE_BUILD_TYPE=Release
+-DBUILD_PYTHON_BINDINGS=OFF
+-DBUILD_JAVA_BINDINGS=OFF
+-DBUILD_CSHARP_BINDINGS=OFF
+-DGDAL_USE_CURL=ON
+-DGDAL_USE_EXPAT=ON
+-DGDAL_USE_GEOTIFF=ON
+-DGDAL_USE_GEOS=ON
+-DGDAL_USE_OPENJPEG=ON
+-DGDAL_USE_SQLITE3=ON
+-DGDAL_USE_TIFF=ON
+-DGDAL_USE_ZLIB=ON
+-DGDAL_USE_ZSTD=ON)
 
+# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
+else
+    echo "Disabling NetCDF support"
+    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
+fi
+
+# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=ON)
+else
+    echo "Disabling HDF5 support"
+    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=OFF)
+fi
+
+cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
 """
@@ -91,8 +107,10 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.3"),
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73"),
+    Dependency("NetCDF_jll"; compat="400.902.5"),
+    Dependency("HDF5_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+    julia_compat="1.6", preferred_gcc_version=v"8")
