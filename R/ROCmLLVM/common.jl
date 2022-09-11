@@ -30,7 +30,6 @@ function configure_build(rocm_version; assert::Bool = false)
     lbin = "llvm/bin"
     products = [
         FileProduct(joinpath(llib, "libLLVMCore.a"), :libllvmcore),
-        FileProduct(joinpath(llib, "liblldCore.a"), :liblldcore),
         FileProduct(joinpath(llib, "libclangBasic.a"), :libclangbasic),
         LibraryProduct("libclang", :libclang, llib; dont_dlopen=true),
         LibraryProduct("libclang-cpp", :libclang_cpp, llib; dont_dlopen=true),
