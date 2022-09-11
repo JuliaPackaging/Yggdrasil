@@ -23,9 +23,9 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_SHARED_LIBS=ON)
 
-# To actually use shared_mutex
+# Until https://github.com/google/re2/issues/390 is fixed
 if [[ ${target} == *mingw* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-std=c++17")
+    sed -i 's/cxx_std_11/cxx_std_17/g' ../CMakeLists.txt
 fi
 
 cmake .. "${CMAKE_FLAGS[@]}"
@@ -44,7 +44,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
