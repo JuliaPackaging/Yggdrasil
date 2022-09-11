@@ -95,6 +95,16 @@ products = [
     ExecutableProduct("ogrtindex", :ogrtindex_path),
 ]
 
+hdf5_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
+    Platform("aarch64", "macos"),
+]
+hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"; compat="~3.11"),
@@ -107,8 +117,8 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.3"),
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73"),
-    Dependency("NetCDF_jll"; compat="400.902.5"),
-    Dependency("HDF5_jll"),
+    Dependency("NetCDF_jll"; compat="400.902.5", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
