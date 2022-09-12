@@ -45,14 +45,6 @@ platform_sources = Dict(
             "498dc37ce1bd513f591b633565151c4de8f11a12914814f2bf85afebbd35ee23";
         ),
 
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/libgcc-ng-9.3.0-hdf63c60_101.tar.bz2",
-        #     "bd735039588da538ecb09ab5dc1819d1bd4a8dedc520b85d5ff1ea2d94c42603";
-        # ),
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/libstdcxx-ng-9.3.0-hdf63c60_101.tar.bz2",
-        #     "63d1298a60509ad37ea6eba6d01e950ba53398ce013323a15cf9ca1811404665";
-        # ),
 
         ArchiveSource(
             "https://conda.anaconda.org/intel/linux-64/mkl-2022.1.0-intel_223.tar.bz2",
@@ -74,11 +66,6 @@ platform_sources = Dict(
             "https://conda.anaconda.org/intel/linux-64/mkl-include-2022.1.0-intel_223.tar.bz2",
             "704e658a9b25a200f8035f3d0a8f2e094736496a2169f87609f1cfed2e2eb0a9";
         ),
-
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/tbb-2021.6.0-intel_835.tar.bz2",
-        #     "ce47c1d22829cdd8c04b050acf2003082607e5a954bcbf486a7639045b411e5e";
-        # ),
     ]
 )
 
