@@ -15,6 +15,7 @@ cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
 mkdir build && cd build
 
 CC=${WORKSPACE}/srcdir/rocm-clang \
+CXX=${WORKSPACE}/srcdir/rocm-clang++ \
 cmake \
     -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -37,15 +38,9 @@ function configure_build(version)
             ROCM_GIT * "/archive/rocm-$(version).tar.gz", ROCM_TAGS[version]),
         DirectorySource("../scripts"),
     ]
-    DEV_DIR = "/home/pxl-th/.julia/dev/"
     dependencies = [
-        # BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
-        BuildDependency(PackageSpec(;
-            name="ROCmLLVM_jll", version,
-            path=joinpath(DEV_DIR, "ROCmLLVM_jll"))),
-        BuildDependency(PackageSpec(;
-            name="rocm_cmake_jll", version,
-            path=joinpath(DEV_DIR, "rocm_cmake_jll"))),
+        BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
+        BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
         Dependency("Zlib_jll"),
     ]
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
