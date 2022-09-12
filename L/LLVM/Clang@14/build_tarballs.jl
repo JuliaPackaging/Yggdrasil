@@ -1,6 +1,6 @@
-name = "MLIR"
-llvm_full_version = v"14.0.5+3"
-libllvm_version = v"14.0.5+3"
+name = "Clang"
+llvm_full_version = v"14.0.8+0"
+libllvm_version = v"14.0.8+0"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -21,7 +21,7 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_assertions in (false, true)
-    push!(builds, configure_extraction(ARGS, llvm_full_version, name, libllvm_version; assert=llvm_assertions, augmentation=true))
+    push!(builds, configure_extraction(ARGS,llvm_full_version, name, libllvm_version; assert=llvm_assertions, augmentation=true))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
