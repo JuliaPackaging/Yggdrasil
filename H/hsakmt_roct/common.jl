@@ -26,6 +26,8 @@ cmake \
 
 make -j${nproc}
 make install
+
+install_license ${WORKSPACE}/srcdir/ROCT-Thunk-Interface*/LICENSE.md
 """
 
 function configure_build(version)
