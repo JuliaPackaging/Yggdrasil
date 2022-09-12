@@ -49,7 +49,7 @@ platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmpart", :libmpart),
-    LibraryProduct("libmpartjl", :libmpartjl, String["julia/mpart"]),
+    LibraryProduct("libmpartjl", :libmpartjl, String["julia"]),
 ]
 
 # Dependencies that must be installed before this package can be built
