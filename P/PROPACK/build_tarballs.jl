@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/PROPACK-*/
 
-LBT="-lblastrampoline"
+LBT="-L${libdir} -lblastrampoline"
 FFLAGS=(-xf77-cpp-input)
 if [[ ${nbits} == 64 ]]; then
   FFLAGS+=(-fdefault-integer-8 -fno-align-commons)
