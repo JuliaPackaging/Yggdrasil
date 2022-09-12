@@ -91,8 +91,8 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling,
-# but use the Clang version to work around an issue with the SYCL headers.
+# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
+# XXX: use the Clang version to work around an issue with the SYCL headers
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
