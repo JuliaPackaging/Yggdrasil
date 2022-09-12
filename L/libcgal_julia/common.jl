@@ -4,7 +4,7 @@ using BinaryBuilder
 import Pkg: PackageSpec
 
 name = "libcgal_julia"
-rversion = v"0.17.0"
+rversion = v"0.18.0"
 version = VersionNumber(rversion.major,
                         rversion.minor,
                         100rversion.patch + julia_version.minor)
@@ -16,7 +16,7 @@ rname = "libcgal-julia"
 sources = [
     isyggdrasil ?
         GitSource("https://github.com/rgcv/$rname.git",
-                  "91ab24f45b689a5fcd760db068f0c8fd06539744") :
+                  "dab124dce4a0818d2fff672d12c45bb783454f31") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
