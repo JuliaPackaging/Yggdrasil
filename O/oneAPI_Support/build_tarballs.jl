@@ -81,7 +81,7 @@ rm -rf lib/clang
 cp -r include/* ${includedir}
 for lib in mkl_sycl mkl_intel_ilp64 mkl_sequential mkl_core sycl \
            pi_level_zero pi_opencl OpenCL svml irng imf intlc; do
-    cp -a lib/lib${lib}* ${libdir}
+    cp -a lib/lib${lib}*.so* ${libdir}
 done
 
 cd oneAPI.jl/deps
