@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libRadtran-2.0.4/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-touch lib/libRadtran.${dlext}
+touch lib/libRadtran.so
 make clean
 make
 make install
