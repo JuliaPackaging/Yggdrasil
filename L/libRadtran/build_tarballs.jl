@@ -14,10 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libRadtran-2.0.4/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-touch lib/libRadtran.so
+touch lib/libRadtran.${dlext}
 make clean
 make
 make install
+mv lib/libRadtran.${dlext} ${prefix}/lib/
 install_license COPYING
 """
 
@@ -55,7 +56,8 @@ products = [
     ExecutableProduct("cldprp", :cldprp),
     ExecutableProduct("plkavg", :plkavg),
     ExecutableProduct("time2sza", :time2sza),
-    ExecutableProduct("uvspecfunction", :uvspecfunction)
+    ExecutableProduct("uvspecfunction", :uvspecfunction),
+    LibraryProduct("libRadtran", :libRadtran),
 ]
 
 # Dependencies that must be installed before this package can be built
