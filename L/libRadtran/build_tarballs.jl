@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libRadtran-2.0.4/
+cd $WORKSPACE/srcdir/libRadtran-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 touch lib/libRadtran.so
 make clean
