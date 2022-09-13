@@ -38,6 +38,8 @@ make -j${nproc} install
 
 # Compile TestU01extractors shim
 make -j${nproc} -C ../src/TestU01extractors/ install
+
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
