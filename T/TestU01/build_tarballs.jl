@@ -20,24 +20,36 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/TestU01*
 update_configure_scripts
 
-# Always export this since the only executable we build is a host-tool
-export EXEEXT=""
+MFLAGS=(
+    -j${nproc}
+
+    # Always set this since the only executable we build is a host-tool
+    # and we don't want to accidentally try to rebuild it.
+    EXEEXT=""
+)
+
 if [[ "${target}" = *-mingw* ]]; then
   export lt_cv_deplibs_check_method=pass_all
   export LDFLAGS="-lws2_32"
 fi
+
 ./bootstrap
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 
 # Make `tcode` to run on the host, as it's used to bootstrap
-make -j${nproc} CC="${HOSTCC}" LD="${HOSTLD}" tcode
+make ${MFLAGS[@]} CC="${HOSTCC}" LD="${HOSTLD}" LDFLAGS="" tcode
+
+# libtool is hopeless, I give up
+if [[ "${target}" = *-mingw* ]]; then
+    cp .libs/tcode tcode
+fi
 
 # Make the library we actually want to ship
-make -j${nproc}
-make -j${nproc} install
+make ${MFLAGS[@]}
+make ${MFLAGS[@]} install
 
 # Compile TestU01extractors shim
-make -j${nproc} -C ../src/TestU01extractors/ install
+make ${MFLAGS[@]} -C ../src/TestU01extractors/ install
 
 install_license COPYING
 """
