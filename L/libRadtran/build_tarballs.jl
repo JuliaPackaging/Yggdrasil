@@ -18,7 +18,7 @@ touch lib/libRadtran.so
 make clean
 make
 make install
-mv lib/libRadtran.so ${prefix}/lib/libRadtran.${dlext}
+install -Dvm 755 lib/libRadtran.so "${libdir}/libRadtran.${dlext}"
 install_license COPYING
 """
 
