@@ -51,6 +51,9 @@ make ${MFLAGS[@]} install
 # Compile TestU01extractors shim
 make ${MFLAGS[@]} -C ../src/TestU01extractors/ install
 
+# Delete improperly-installed `tcode`
+rm ${bindir}/tcode
+
 install_license COPYING
 """
 
