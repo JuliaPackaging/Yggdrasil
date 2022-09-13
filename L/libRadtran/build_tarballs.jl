@@ -15,6 +15,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Find MPI implementation
+grep -iq MPICH $prefix/include/mpi.h && mpi_impl=mpich
+grep -iq MPItrampoline $prefix/include/mpi.h && mpi_impl=mpitrampoline
+grep -iq OpenMPI $prefix/include/mpi.h && mpi_impl=openmpi
+
 cd ${includedir}
 case $mpi_impl in
 mpich)
