@@ -41,6 +41,9 @@ if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
     # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
     sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
 fi
+# don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
+# have libcrypt.so.2 (backported from Python 3.11)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcrypt.patch
 autoreconf -i
 
 # Next, build host version
@@ -64,12 +67,6 @@ conf_args+=(--with-ensurepip=no)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
 conf_args+=(ac_cv_have_chflags=no)
-if [[ "${target}" == *-linux-gnu* ]]; then
-    # We use very old versions of glibc which used to have `libcrypt.so.1`, but modern
-    # glibcs have `libcrypt.so.2`, so if we link to `libcrypt.so.1` most users would
-    # have troubles running the programs at runtime.
-    conf_args+=(ac_cv_lib_crypt_crypt=no)
-fi
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" "${conf_args[@]}"
 make -j${nproc}
 make install
