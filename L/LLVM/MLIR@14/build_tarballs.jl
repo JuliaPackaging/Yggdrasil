@@ -1,6 +1,6 @@
 name = "MLIR"
-llvm_full_version = v"14.0.8+0"
-libllvm_version = v"14.0.8+0"
+llvm_full_version = v"14.0.6+0"
+libllvm_version = v"14.0.6+0"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
