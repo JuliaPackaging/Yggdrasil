@@ -66,8 +66,6 @@ julia_version=$(./julia_version)
 ./autogen.sh
 
 # configure GAP
-# the custom ARCHEXT ensures that the different Julia versions use
-# different GAParch values
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
     --with-gmp=${prefix} \
@@ -104,18 +102,14 @@ rm -rf native-build
 # compile GAP
 make -j${nproc}
 
-# install GAP binaries
+# install GAP binaries, headers, shared library, sysinfo
 make install-bin install-headers install-libgap install-sysinfo
-
-# FIXME: until install-headers is fixed, also install generated headers
-cp build/*.h ${prefix}/include/gap/
 
 # the license
 install_license LICENSE
 
 # get rid of the wrapper shell script, which is useless for us
 mv ${libdir}/gap/gap ${prefix}/bin/gap
-
 
 # We deliberately do NOT install the GAP library, documentation, etc. because
 # they are identical across all platforms; instead, we use another platform
