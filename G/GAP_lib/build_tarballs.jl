@@ -47,21 +47,23 @@ find pkg -name '._*' -exec rm \{\} \; # unwanted files
 
 # compile a native version of GAP so we can use it to generate the manual
 # (the manual is only in FULL gap release tarballs, not in the -core tarball
-# nor in git snapshots)
-mkdir native-build
-cd native-build
-../configure --build=${MACHTYPE} --host=${MACHTYPE} CC=${CC_BUILD} CXX=${CXX_BUILD} --with-zlib=${prefix} --with-gmp=${prefix}
+# nor in git snapshots), and also so that we can invoke the
+# `install-gaproot` target (which is arch independent, so no need to use a
+# GAP built for the host arch.)
+./configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --with-gmp=${prefix} \
+    --without-readline \
+    --with-zlib=${prefix} \
+    CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
-make html   # build the manual (only HTML and txt; for PDF we'd need LaTeX)
-cd ..
 
-# remove the native build, it has done its job
-rm -rf native-build
+# build the manual (only HTML and txt; for PDF we'd need LaTeX)
+make html
 
 # the license
 install_license LICENSE
 
-# install library file
+# install library files
 make install-gaproot
 """
 
