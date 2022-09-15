@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name     = "CGAL"
-rversion = "5.3"
+rversion = "5.5"
 version  = VersionNumber(rversion)
 
 # Collection of sources required to build CGAL
 sources = [
     ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion.tar.xz",
-                  "2c242e3f27655bc80b34e2fa5e32187a46003d2d9cd7dbec8fbcbc342cea2fb6"),
+                  "98ac395ca08aacf38b7a8170a822b650aedf10355df41dd0e4bfb238408e08a6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,9 +43,9 @@ products = Product[]
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Essential dependencies
-    Dependency("boost_jll"; compat="=1.71.0"),
-    Dependency("GMP_jll"; compat="6.1.2"),
-    Dependency("MPFR_jll"; compat="4.0.2"),
+    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
 ]
 
 # Build the tarballs.
