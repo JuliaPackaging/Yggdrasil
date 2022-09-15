@@ -20,18 +20,15 @@ done
 cd ReLAPACK
 make
 cd src/
-${CC} -shared -o ${libdir}/librelapack.${dlext} *.o -lblastrampoline
-mv librelapack.${dlext} $libdir
+${CC} -shared -o librelapack.${dlext} *.o -lblastrampoline -lm
+mv librelapack.${dlext} ${libdir}
 mv ../inc/relapack.h ${includedir}
 exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -44,4 +41,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
