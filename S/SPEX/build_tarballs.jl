@@ -17,7 +17,7 @@ cd ${WORKSPACE}/srcdir/SPEX
 atomic_patch -p1 ../werror.patch
 CFLAGS="${CFLAGS} -std=c99"
 cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Util
-if [[${target} == *mingw*]]; then
+if [[ "${target}" == *mingw* ]]; then
     make library -j${nproc} UNAME=Windows SO_OPTS="${SO_OPTS} -shared -L${libdir}"
 else
     make library -j${nproc}
@@ -25,7 +25,7 @@ fi
 cp ${WORKSPACE}/srcdir/SPEX/include/SPEX_Util.h ${includedir}
 cp ${WORKSPACE}/srcdir/SPEX/lib/libspexutil* ${libdir}
 cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Left_LU
-if [[${target} == *mingw*]]; then
+if [[ "${target}" == *mingw* ]]; then
     make library UNAME=Windows SO_OPTS="${SO_OPTS} -shared -L${libdir}"
 else
     make library -j${nproc}
