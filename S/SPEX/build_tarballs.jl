@@ -6,18 +6,23 @@ version = v"1.1.5"
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/clouren/SPEX",
-        "9471682b072419063d73bc950949bf3458b187f9")
+        "9471682b072419063d73bc950949bf3458b187f9"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
-cd ${WORKSPACE}/srcdir/SPEX/SPEX
+cd ${WORKSPACE}/srcdir/SPEX
+atomic_patch -p1 ../werror.patch
 CFLAGS="${CFLAGS} -std=c99"
-make -j${nproc}
-cp ../lib/libspex* ${libdir}
-cp ../include/SPEX* ${includedir}
-install_license SPEX_Left_LU/License/lesserv3.txt
+cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Util
+make library -j${nproc}
+cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Left_LU
+make library -j${nproc}
+cp ${WORKSPACE}/srcdir/SPEX/include/SPEX* ${includedir}
+cp ${WORKSPACE}/srcdir/SPEX/lib/libspex* ${libdir}
+install_license ${WORKSPACE}/srcdir/SPEX/SPEX/License.txt
 """
 
 # These are the platforms we will build for by default, unless further
