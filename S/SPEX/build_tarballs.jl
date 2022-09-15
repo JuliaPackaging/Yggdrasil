@@ -12,12 +12,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
-cd ${WORKSPACE}/srcdir/SPEX
+cd ${WORKSPACE}/srcdir/SPEX/SPEX
 CFLAGS="${CFLAGS} -std=c99"
 make -j${nproc}
-cp lib/libspex* ${libdir}
-cp include/SPEX* ${includedir}
-install_license SPEX/SPEX_Left_LU/License/lesserv3.txt
+cp ../lib/libspex* ${libdir}
+cp ../include/SPEX* ${includedir}
+install_license SPEX_Left_LU/License/lesserv3.txt
 """
 
 # These are the platforms we will build for by default, unless further
