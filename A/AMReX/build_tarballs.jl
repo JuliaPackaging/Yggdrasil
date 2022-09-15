@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "22.07"
+version_string = "22.09"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "7df433c780ab8429362df8d6d995c95d87a7c3f31ab81d5b0f416203dece086d"),
+                  "24601fbb9d554f7b66d7db89b14ff95dadb18d51db893af7ee6c70d4b7dd4be6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -83,9 +83,9 @@ dependencies = [
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
-# AMReX's cmake stage fails with OpenMPI on almost all architectures
-platforms = filter(p -> !(p["mpi"] == "openmpi"), platforms)
-# With MPItrampoline, select only those platforms where MPItrampoline is actually built
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 append!(dependencies, platform_dependencies)

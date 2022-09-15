@@ -27,6 +27,11 @@ BUILD_FLAGS=(
     "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 # Special windows flags
 if [[ ${target} == *-mingw* ]]; then
     BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_CLAR=OFF)
@@ -51,6 +56,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -61,6 +67,7 @@ products = [
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
     Dependency("LibSSH2_jll"; compat="1.10.1"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

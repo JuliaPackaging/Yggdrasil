@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-upstream_version = v"9.0.0"
+upstream_version = v"9.1.0"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -11,7 +11,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "0620aa01b812de00b54d6c23e7c5cc843ae2cd129b24fabe411800302172b989")
+    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "81b2239b94cad0886222cde4f53cb49d34905aad2a1317244a0c30a553db2315")
 ]
 
 # Bash recipe for building across all platforms
@@ -89,9 +89,9 @@ products = [
 dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
-    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
+    Dependency("SQLite_jll")
+    Dependency("Libtiff_jll")
+    Dependency("LibCURL_jll"; compat="7.73")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

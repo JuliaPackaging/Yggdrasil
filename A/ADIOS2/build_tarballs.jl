@@ -6,12 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.1"
+version = v"2.8.4"
+adios_version = v"2.8.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(version).tar.gz",
-                  "3f515b442bbd52e3189866b121613fe3b59edb8845692ea86fad83d1eba35d93"),
+    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(adios_version).tar.gz",
+                  "4906ab1899721c41dd918dddb039ba2848a1fb0cf84f3a563a1179b9d6ee0d9f"),
     DirectorySource("./bundled"),
 ]
 
@@ -35,11 +36,7 @@ if [[ "$target" == *-apple-* ]]; then
         # and wants to use "-framework" as a stand-alone option. This fails
         # gloriously, and cmake concludes that MPI is not available.
         archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        archopts="-DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
     fi
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    archopts="-DMPI_C_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz' -DMPI_CXX_LIBRARIES='-lmpi;-lopen-rte;-lopen-pal;-lm;-lz'"
 elif [[ "$target" == x86_64-w64-mingw32 ]]; then
     # - The MSMPI Fortran bindings are missing a function; see
     #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
@@ -84,9 +81,7 @@ install_license ../Copyright.txt ../LICENSE
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-    end
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -98,6 +93,15 @@ platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 # Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -137,11 +141,6 @@ dependencies = [
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
 ]
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-# With MPItrampoline, select only those platforms where MPItrampoline is actually built
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
