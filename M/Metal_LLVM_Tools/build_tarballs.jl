@@ -99,7 +99,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        Dependency("Zlib_jll")
+        Dependency("Zlib_jll"),
+        Dependency("Ncurses_jll")
     ]
 
     for platform in platforms
