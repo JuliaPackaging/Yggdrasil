@@ -22,7 +22,7 @@ cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Left_LU
 make library -j${nproc}
 cp ${WORKSPACE}/srcdir/SPEX/include/SPEX* ${includedir}
 cp ${WORKSPACE}/srcdir/SPEX/lib/libspex* ${libdir}
-install_license ${WORKSPACE}/srcdir/SPEX/SPEX/License.txt
+install_license ${WORKSPACE}/srcdir/SPEX/SPEX/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
