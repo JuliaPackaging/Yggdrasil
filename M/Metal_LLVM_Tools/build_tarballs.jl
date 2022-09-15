@@ -71,6 +71,17 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # Only build the Metal back-end
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=Metal)
 
+# Turn on ZLIB
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+# Turn off XML2
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
+
+# Disable useless things like docs, terminfo, etc....
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=Off)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_TERMINFO=Off)
+CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
+CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
+
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} \
     tools/metallib-as/install \
@@ -99,8 +110,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        Dependency("Zlib_jll"),
-        Dependency("Ncurses_jll")
+        Dependency("Zlib_jll")
     ]
 
     for platform in platforms
