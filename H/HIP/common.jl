@@ -29,7 +29,7 @@ const GIT_TAGS_CLR = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 
 function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
