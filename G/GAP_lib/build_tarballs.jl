@@ -21,17 +21,17 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.11.1"
-version = v"400.1192.002"
+upstream_version = v"4.12.0"
+version = v"400.1200.000"
 
 # Collection of sources required to complete build
 sources = [
     # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "977fb055cf3793aa4c329e3d6ea765774fecc8ac"),
+    GitSource("https://github.com/gap-system/gap.git", "7ba252e2bc68ceccb5d267118d47fa5ca20bc513"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
-                  "5f66ac4053db34e4c0ebca25dd7666b891c812c084082db6cc28c551c57a3792";
+                  "2f2b19406d5926ccdd0957da52ca36824fcd8252193a5a5d2677463516ec8cf1";
                   unpack_target="pkg"),
 ]
 
@@ -47,25 +47,24 @@ find pkg -name '._*' -exec rm \{\} \; # unwanted files
 
 # compile a native version of GAP so we can use it to generate the manual
 # (the manual is only in FULL gap release tarballs, not in the -core tarball
-# nor in git snapshots)
-mkdir native-build
-cd native-build
-#apk add gmp-dev zlib-dev
-../configure --build=${MACHTYPE} --host=${MACHTYPE} CC=${CC_BUILD} CXX=${CXX_BUILD} --with-zlib=${prefix} --with-gmp=${prefix}
+# nor in git snapshots), and also so that we can invoke the
+# `install-gaproot` target (which is arch independent, so no need to use a
+# GAP built for the host arch.)
+./configure --build=${MACHTYPE} --host=${MACHTYPE} \
+    --with-gmp=${prefix} \
+    --without-readline \
+    --with-zlib=${prefix} \
+    CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
-make html   # build the manual (only HTML and txt; for PDF we'd need LaTeX)
-cd ..
 
-# remove the native build, it has done its job
-rm -rf native-build
+# build the manual (only HTML and txt; for PDF we'd need LaTeX)
+make html
 
 # the license
 install_license LICENSE
 
-# "install" most of the files
-rm -rf autom4te.cache dev extern hpcgap/extern pkg
-mkdir -p ${prefix}/share/gap/
-mv * ${prefix}/share/gap/
+# install library files
+make install-gaproot
 """
 
 # These are the platforms we will build for by default, unless further
