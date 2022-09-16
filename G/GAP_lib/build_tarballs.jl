@@ -50,7 +50,7 @@ find pkg -name '._*' -exec rm \{\} \; # unwanted files
 # nor in git snapshots), and also so that we can invoke the
 # `install-gaproot` target (which is arch independent, so no need to use a
 # GAP built for the host arch.)
-./configure --build=${MACHTYPE} --host=${MACHTYPE} \
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
     --with-gmp=${prefix} \
     --without-readline \
     --with-zlib=${prefix} \
@@ -63,8 +63,8 @@ make html
 # the license
 install_license LICENSE
 
-# install library files
-make install-gaproot
+# install documentation and library files
+make install-doc install-gaproot
 """
 
 # These are the platforms we will build for by default, unless further
