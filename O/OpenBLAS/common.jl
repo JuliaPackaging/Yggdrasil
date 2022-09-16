@@ -97,7 +97,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     # We want the routine gemmt from ReLAPACK
     if [ ${version_patch} -ge 21 ]; then
         flags+=(BUILD_RELAPACK=1)
-    end
+    fi
 
     if [[ ${nbits} == 64 ]] && [[ "${OPENBLAS32}" != "true" ]] && [[ "${AARCH64_ILP64}${target}" != "falseaarch64-"* ]]; then
         # We're building an ILP64 BLAS with 64-bit BlasInt
