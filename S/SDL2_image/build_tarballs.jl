@@ -7,8 +7,8 @@ version = v"2.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    "http://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.zip" =>
-    "eee0927d1e7819d57c623fe3e2b3c6761c77c474fe9bc425e8674d30ac049b1c",
+    "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.6.2.zip" =>
+    "efe3c229853d0d40c35e5a34c3f532d5d9728f0abc623bc62c962bcef8754205",
 ]
 
 # Bash recipe for building across all platforms
@@ -46,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;julia_compat="1.6")
