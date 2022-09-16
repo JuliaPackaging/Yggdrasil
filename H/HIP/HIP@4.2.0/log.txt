@@ -1,0 +1,1146 @@
+HIP-rocm-4.2.0/
+HIP-rocm-4.2.0/.clang-format
+HIP-rocm-4.2.0/.gitignore
+HIP-rocm-4.2.0/CMakeLists.txt
+HIP-rocm-4.2.0/CONTRIBUTING.md
+HIP-rocm-4.2.0/INSTALL.md
+HIP-rocm-4.2.0/Jenkinsfile
+HIP-rocm-4.2.0/LICENSE.txt
+HIP-rocm-4.2.0/README.md
+HIP-rocm-4.2.0/RELEASE.md
+HIP-rocm-4.2.0/amdocl/
+HIP-rocm-4.2.0/amdocl/CL/
+HIP-rocm-4.2.0/amdocl/CL/cl.h
+HIP-rocm-4.2.0/amdocl/CL/cl_egl.h
+HIP-rocm-4.2.0/amdocl/CL/cl_ext.h
+HIP-rocm-4.2.0/amdocl/CL/cl_gl.h
+HIP-rocm-4.2.0/amdocl/CL/cl_gl_ext.h
+HIP-rocm-4.2.0/amdocl/CL/cl_icd.h
+HIP-rocm-4.2.0/amdocl/CL/cl_platform.h
+HIP-rocm-4.2.0/amdocl/CL/cl_version.h
+HIP-rocm-4.2.0/amdocl/CL/opencl.h
+HIP-rocm-4.2.0/amdocl/EGL/
+HIP-rocm-4.2.0/amdocl/EGL/egl.h
+HIP-rocm-4.2.0/amdocl/EGL/eglext.h
+HIP-rocm-4.2.0/amdocl/EGL/eglplatform.h
+HIP-rocm-4.2.0/amdocl/KHR/
+HIP-rocm-4.2.0/amdocl/KHR/khrplatform.h
+HIP-rocm-4.2.0/amdocl/cl_common.hpp
+HIP-rocm-4.2.0/amdocl/cl_debugger_amd.h
+HIP-rocm-4.2.0/amdocl/cl_icd.cpp
+HIP-rocm-4.2.0/amdocl/cl_icd_amd.h
+HIP-rocm-4.2.0/amdocl/cl_kernel.h
+HIP-rocm-4.2.0/amdocl/cl_profile_amd.h
+HIP-rocm-4.2.0/amdocl/cl_thread_trace_amd.h
+HIP-rocm-4.2.0/amdocl/gl_functions.hpp
+HIP-rocm-4.2.0/amdocl/icd/
+HIP-rocm-4.2.0/amdocl/icd/loader/
+HIP-rocm-4.2.0/amdocl/icd/loader/icd_dispatch.h
+HIP-rocm-4.2.0/bin/
+HIP-rocm-4.2.0/bin/findcode.sh
+HIP-rocm-4.2.0/bin/finduncodep.sh
+HIP-rocm-4.2.0/bin/hip_embed_pch.sh
+HIP-rocm-4.2.0/bin/hipcc
+HIP-rocm-4.2.0/bin/hipcc_cmake_linker_helper
+HIP-rocm-4.2.0/bin/hipconfig
+HIP-rocm-4.2.0/bin/hipconvertinplace-perl.sh
+HIP-rocm-4.2.0/bin/hipconvertinplace.sh
+HIP-rocm-4.2.0/bin/hipdemangleatp
+HIP-rocm-4.2.0/bin/hipexamine-perl.sh
+HIP-rocm-4.2.0/bin/hipexamine.sh
+HIP-rocm-4.2.0/bin/hipify-cmakefile
+HIP-rocm-4.2.0/bin/hipify-perl
+HIP-rocm-4.2.0/bin/hipvars.pm
+HIP-rocm-4.2.0/bin/roc-obj-extract
+HIP-rocm-4.2.0/bin/roc-obj-ls
+HIP-rocm-4.2.0/cmake/
+HIP-rocm-4.2.0/cmake/FindHIP.cmake
+HIP-rocm-4.2.0/cmake/FindHIP/
+HIP-rocm-4.2.0/cmake/FindHIP/run_hipcc.cmake
+HIP-rocm-4.2.0/cmake/FindHIP/run_make2cmake.cmake
+HIP-rocm-4.2.0/cmake/FindROCR.cmake
+HIP-rocm-4.2.0/cmake/FindROCT.cmake
+HIP-rocm-4.2.0/configure
+HIP-rocm-4.2.0/docker/
+HIP-rocm-4.2.0/docker/dockerfile-build-ubuntu-16.04
+HIP-rocm-4.2.0/docker/dockerfile-hip-ubuntu-16.04
+HIP-rocm-4.2.0/docs/
+HIP-rocm-4.2.0/docs/doxygen-input/
+HIP-rocm-4.2.0/docs/doxygen-input/doxy.cfg
+HIP-rocm-4.2.0/docs/doxygen-input/mainpage.txt
+HIP-rocm-4.2.0/docs/doxygen-input/sync.txt
+HIP-rocm-4.2.0/docs/markdown/
+HIP-rocm-4.2.0/docs/markdown/CUBLAS_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CUDA_Driver_API_functions_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CUDNN_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CUFFT_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CURAND_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/CUSPARSE_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/clang_options.md
+HIP-rocm-4.2.0/docs/markdown/clang_options.txt
+HIP-rocm-4.2.0/docs/markdown/cuComplex_API_supported_by_HIP.md
+HIP-rocm-4.2.0/docs/markdown/device_md_gen.py
+HIP-rocm-4.2.0/docs/markdown/gen_clang_option_doc.sh
+HIP-rocm-4.2.0/docs/markdown/hip-math-api.md
+HIP-rocm-4.2.0/docs/markdown/hip_bugs.md
+HIP-rocm-4.2.0/docs/markdown/hip_deprecated_api_list.md
+HIP-rocm-4.2.0/docs/markdown/hip_faq.md
+HIP-rocm-4.2.0/docs/markdown/hip_kernel_language.md
+HIP-rocm-4.2.0/docs/markdown/hip_logging.md
+HIP-rocm-4.2.0/docs/markdown/hip_porting_driver_api.md
+HIP-rocm-4.2.0/docs/markdown/hip_porting_guide.md
+HIP-rocm-4.2.0/docs/markdown/hip_programming_guide.md
+HIP-rocm-4.2.0/docs/markdown/hip_terms.md
+HIP-rocm-4.2.0/docs/markdown/hip_terms2.md
+HIP-rocm-4.2.0/docs/markdown/obj_tooling.md
+HIP-rocm-4.2.0/hip-config.cmake.in
+HIP-rocm-4.2.0/hip-lang-config.cmake.in
+HIP-rocm-4.2.0/hip_prof_gen.py
+HIP-rocm-4.2.0/include/
+HIP-rocm-4.2.0/include/hip/
+HIP-rocm-4.2.0/include/hip/amd_detail/
+HIP-rocm-4.2.0/include/hip/amd_detail/channel_descriptor.h
+HIP-rocm-4.2.0/include/hip/amd_detail/concepts.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/cuda/
+HIP-rocm-4.2.0/include/hip/amd_detail/cuda/cuda.h
+HIP-rocm-4.2.0/include/hip/amd_detail/cuda/math_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/device_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/device_library_decls.h
+HIP-rocm-4.2.0/include/hip/amd_detail/driver_types.h
+HIP-rocm-4.2.0/include/hip/amd_detail/functional_grid_launch.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/grid_launch.h
+HIP-rocm-4.2.0/include/hip/amd_detail/grid_launch.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/grid_launch_GGL.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/helpers.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_atomic.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_common.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_complex.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_cooperative_groups.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_cooperative_groups_helper.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_fp16.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_fp16_gcc.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_fp16_math_fwd.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_ldg.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_memory.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_runtime.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_runtime_api.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_runtime_prof.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_surface_types.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_texture_types.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hip_vector_types.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hiprtc.h
+HIP-rocm-4.2.0/include/hip/amd_detail/host_defines.h
+HIP-rocm-4.2.0/include/hip/amd_detail/hsa_helpers.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/library_types.h
+HIP-rocm-4.2.0/include/hip/amd_detail/llvm_intrinsics.h
+HIP-rocm-4.2.0/include/hip/amd_detail/macro_based_grid_launch.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/math_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/math_fwd.h
+HIP-rocm-4.2.0/include/hip/amd_detail/ockl_image.h
+HIP-rocm-4.2.0/include/hip/amd_detail/program_state.hpp
+HIP-rocm-4.2.0/include/hip/amd_detail/surface_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/texture_fetch_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/texture_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/texture_indirect_functions.h
+HIP-rocm-4.2.0/include/hip/amd_detail/texture_types.h
+HIP-rocm-4.2.0/include/hip/channel_descriptor.h
+HIP-rocm-4.2.0/include/hip/device_functions.h
+HIP-rocm-4.2.0/include/hip/driver_types.h
+HIP-rocm-4.2.0/include/hip/hcc_detail
+HIP-rocm-4.2.0/include/hip/hip_bfloat16.h
+HIP-rocm-4.2.0/include/hip/hip_common.h
+HIP-rocm-4.2.0/include/hip/hip_complex.h
+HIP-rocm-4.2.0/include/hip/hip_cooperative_groups.h
+HIP-rocm-4.2.0/include/hip/hip_ext.h
+HIP-rocm-4.2.0/include/hip/hip_fp16.h
+HIP-rocm-4.2.0/include/hip/hip_hcc.h
+HIP-rocm-4.2.0/include/hip/hip_profile.h
+HIP-rocm-4.2.0/include/hip/hip_runtime.h
+HIP-rocm-4.2.0/include/hip/hip_runtime_api.h
+HIP-rocm-4.2.0/include/hip/hip_texture_types.h
+HIP-rocm-4.2.0/include/hip/hip_vector_types.h
+HIP-rocm-4.2.0/include/hip/hiprtc.h
+HIP-rocm-4.2.0/include/hip/library_types.h
+HIP-rocm-4.2.0/include/hip/math_functions.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/
+HIP-rocm-4.2.0/include/hip/nvidia_detail/channel_descriptor.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/hip_complex.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/hip_cooperative_groups.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/hip_runtime.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/hip_runtime_api.h
+HIP-rocm-4.2.0/include/hip/nvidia_detail/hip_texture_types.h
+HIP-rocm-4.2.0/include/hip/texture_types.h
+HIP-rocm-4.2.0/install.sh
+HIP-rocm-4.2.0/packaging/
+HIP-rocm-4.2.0/packaging/convert_md_to_html.sh
+HIP-rocm-4.2.0/packaging/hip-base.postinst
+HIP-rocm-4.2.0/packaging/hip-base.prerm
+HIP-rocm-4.2.0/packaging/hip-base.txt
+HIP-rocm-4.2.0/packaging/hip-doc.txt
+HIP-rocm-4.2.0/packaging/hip-nvcc.postinst
+HIP-rocm-4.2.0/packaging/hip-nvcc.prerm
+HIP-rocm-4.2.0/packaging/hip-nvcc.txt
+HIP-rocm-4.2.0/packaging/hip-rocclr.postinst
+HIP-rocm-4.2.0/packaging/hip-rocclr.prerm
+HIP-rocm-4.2.0/packaging/hip-rocclr.txt
+HIP-rocm-4.2.0/packaging/hip-samples.txt
+HIP-rocm-4.2.0/rocclr/
+HIP-rocm-4.2.0/rocclr/CMakeLists.txt
+HIP-rocm-4.2.0/rocclr/amd_hsa_elf.hpp
+HIP-rocm-4.2.0/rocclr/cl_gl.cpp
+HIP-rocm-4.2.0/rocclr/cl_gl_amd.hpp
+HIP-rocm-4.2.0/rocclr/cl_lqdflash_amd.cpp
+HIP-rocm-4.2.0/rocclr/cl_lqdflash_amd.h
+HIP-rocm-4.2.0/rocclr/fixme.cpp
+HIP-rocm-4.2.0/rocclr/hip_activity.cpp
+HIP-rocm-4.2.0/rocclr/hip_code_object.cpp
+HIP-rocm-4.2.0/rocclr/hip_code_object.hpp
+HIP-rocm-4.2.0/rocclr/hip_context.cpp
+HIP-rocm-4.2.0/rocclr/hip_conversions.hpp
+HIP-rocm-4.2.0/rocclr/hip_device.cpp
+HIP-rocm-4.2.0/rocclr/hip_device_runtime.cpp
+HIP-rocm-4.2.0/rocclr/hip_error.cpp
+HIP-rocm-4.2.0/rocclr/hip_event.cpp
+HIP-rocm-4.2.0/rocclr/hip_event.hpp
+HIP-rocm-4.2.0/rocclr/hip_fatbin.cpp
+HIP-rocm-4.2.0/rocclr/hip_fatbin.hpp
+HIP-rocm-4.2.0/rocclr/hip_formatting.hpp
+HIP-rocm-4.2.0/rocclr/hip_global.cpp
+HIP-rocm-4.2.0/rocclr/hip_global.hpp
+HIP-rocm-4.2.0/rocclr/hip_hcc.def.in
+HIP-rocm-4.2.0/rocclr/hip_hcc.map.in
+HIP-rocm-4.2.0/rocclr/hip_hcc.rc
+HIP-rocm-4.2.0/rocclr/hip_hmm.cpp
+HIP-rocm-4.2.0/rocclr/hip_intercept.cpp
+HIP-rocm-4.2.0/rocclr/hip_internal.hpp
+HIP-rocm-4.2.0/rocclr/hip_memory.cpp
+HIP-rocm-4.2.0/rocclr/hip_module.cpp
+HIP-rocm-4.2.0/rocclr/hip_peer.cpp
+HIP-rocm-4.2.0/rocclr/hip_platform.cpp
+HIP-rocm-4.2.0/rocclr/hip_platform.hpp
+HIP-rocm-4.2.0/rocclr/hip_prof_api.h
+HIP-rocm-4.2.0/rocclr/hip_prof_gen.py
+HIP-rocm-4.2.0/rocclr/hip_profile.cpp
+HIP-rocm-4.2.0/rocclr/hip_rtc.cpp
+HIP-rocm-4.2.0/rocclr/hip_stream.cpp
+HIP-rocm-4.2.0/rocclr/hip_stream_ops.cpp
+HIP-rocm-4.2.0/rocclr/hip_surface.cpp
+HIP-rocm-4.2.0/rocclr/hip_texture.cpp
+HIP-rocm-4.2.0/rocclr/hiprtc_internal.hpp
+HIP-rocm-4.2.0/rocclr/trace_helper.h
+HIP-rocm-4.2.0/samples/
+HIP-rocm-4.2.0/samples/0_Intro/
+HIP-rocm-4.2.0/samples/0_Intro/bit_extract/
+HIP-rocm-4.2.0/samples/0_Intro/bit_extract/CMakeLists.txt
+HIP-rocm-4.2.0/samples/0_Intro/bit_extract/Makefile
+HIP-rocm-4.2.0/samples/0_Intro/bit_extract/README.md
+HIP-rocm-4.2.0/samples/0_Intro/bit_extract/bit_extract.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api/
+HIP-rocm-4.2.0/samples/0_Intro/module_api/.gitignore
+HIP-rocm-4.2.0/samples/0_Intro/module_api/CMakeLists.txt
+HIP-rocm-4.2.0/samples/0_Intro/module_api/Makefile
+HIP-rocm-4.2.0/samples/0_Intro/module_api/defaultDriver.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api/launchKernelHcc.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api/runKernel.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api/vcpy_kernel.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api_global/
+HIP-rocm-4.2.0/samples/0_Intro/module_api_global/CMakeLists.txt
+HIP-rocm-4.2.0/samples/0_Intro/module_api_global/Makefile
+HIP-rocm-4.2.0/samples/0_Intro/module_api_global/runKernel.cpp
+HIP-rocm-4.2.0/samples/0_Intro/module_api_global/vcpy_kernel.cpp
+HIP-rocm-4.2.0/samples/0_Intro/square/
+HIP-rocm-4.2.0/samples/0_Intro/square/CMakeLists.txt
+HIP-rocm-4.2.0/samples/0_Intro/square/Makefile
+HIP-rocm-4.2.0/samples/0_Intro/square/README.md
+HIP-rocm-4.2.0/samples/0_Intro/square/square.cu
+HIP-rocm-4.2.0/samples/0_Intro/square/square.hipref.cpp
+HIP-rocm-4.2.0/samples/1_Utils/
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/CMakeLists.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/LICENSE.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/Makefile
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/ResultDatabase.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/ResultDatabase.h
+HIP-rocm-4.2.0/samples/1_Utils/hipBusBandwidth/hipBusBandwidth.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/CMakeLists.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/LICENSE.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/Makefile
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/ResultDatabase.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/ResultDatabase.h
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/c.cmd
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/classic.cmd
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/hipCommander.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/l2.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/loop.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/loop2.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/nullkernel.hip.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/nullkernel.hsaco
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/latency2.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/latency_hostsync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/latency_nosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/latency_nullstream.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/modulelaunch_latency.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_d2h_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_d2h_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_d2h_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_d2h_sync_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_h2d_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_h2d_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_h2d_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_h2d_sync_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_kernel_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_kernel_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_kernel_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_kernel_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2_sync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2d2h_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2h2d_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2h2d_kernel_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2h2d_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2kernels.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_2kernels_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_d2h_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_d2h_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_d2h_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_d2h_sync_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_h2d_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_h2d_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_h2d_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_h2d_sync_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_kernel_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_kernel_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_kernel_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_kernel_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3_sync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3d2h_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3h2d_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3kernels.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_3kernels_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_4kernels.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_5kernels.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_6kernels.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_d2h_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_d2h_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_d2h_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_d2h_sync_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_10.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_kernel_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_kernel_d2h_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_kernel_wosync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_sync_kernel_sync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_h2d_sync_kernel_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel_barrier.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel_sync_d2h.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_kernel_sync_h2d.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_streamcreate.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/perf/scripts/latency_sync.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/setstream.hcm
+HIP-rocm-4.2.0/samples/1_Utils/hipCommander/testcase.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/CMakeLists.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/Makefile
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/hipDispatchEnqueueRateMT.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/hipDispatchLatency.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipDispatchLatency/test_kernel.cpp
+HIP-rocm-4.2.0/samples/1_Utils/hipInfo/
+HIP-rocm-4.2.0/samples/1_Utils/hipInfo/CMakeLists.txt
+HIP-rocm-4.2.0/samples/1_Utils/hipInfo/Makefile
+HIP-rocm-4.2.0/samples/1_Utils/hipInfo/README.md
+HIP-rocm-4.2.0/samples/1_Utils/hipInfo/hipInfo.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/
+HIP-rocm-4.2.0/samples/2_Cookbook/0_MatrixTranspose/
+HIP-rocm-4.2.0/samples/2_Cookbook/0_MatrixTranspose/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/0_MatrixTranspose/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/0_MatrixTranspose/MatrixTranspose.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/0_MatrixTranspose/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/10_inline_asm/
+HIP-rocm-4.2.0/samples/2_Cookbook/10_inline_asm/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/10_inline_asm/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/10_inline_asm/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/10_inline_asm/inline_asm.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/11_texture_driver/
+HIP-rocm-4.2.0/samples/2_Cookbook/11_texture_driver/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/11_texture_driver/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/11_texture_driver/tex2dKernel.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/11_texture_driver/texture2dDrv.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/12_cmake_hip_add_executable/
+HIP-rocm-4.2.0/samples/2_Cookbook/12_cmake_hip_add_executable/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/12_cmake_hip_add_executable/MatrixTranspose.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/12_cmake_hip_add_executable/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/13_occupancy/
+HIP-rocm-4.2.0/samples/2_Cookbook/13_occupancy/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/13_occupancy/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/13_occupancy/occupancy.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/14_gpu_arch/
+HIP-rocm-4.2.0/samples/2_Cookbook/14_gpu_arch/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/14_gpu_arch/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/14_gpu_arch/gpuarch.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/16_assembly_to_executable/
+HIP-rocm-4.2.0/samples/2_Cookbook/16_assembly_to_executable/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/16_assembly_to_executable/README.md
+HIP-rocm-4.2.0/samples/2_Cookbook/16_assembly_to_executable/hip_obj_gen.mcin
+HIP-rocm-4.2.0/samples/2_Cookbook/16_assembly_to_executable/square.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/17_llvm_ir_to_executable/
+HIP-rocm-4.2.0/samples/2_Cookbook/17_llvm_ir_to_executable/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/17_llvm_ir_to_executable/README.md
+HIP-rocm-4.2.0/samples/2_Cookbook/17_llvm_ir_to_executable/hip_obj_gen.mcin
+HIP-rocm-4.2.0/samples/2_Cookbook/17_llvm_ir_to_executable/square.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/1_hipEvent/
+HIP-rocm-4.2.0/samples/2_Cookbook/1_hipEvent/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/1_hipEvent/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/1_hipEvent/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/1_hipEvent/hipEvent.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/3_shared_memory/
+HIP-rocm-4.2.0/samples/2_Cookbook/3_shared_memory/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/3_shared_memory/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/3_shared_memory/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/3_shared_memory/sharedMemory.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/4_shfl/
+HIP-rocm-4.2.0/samples/2_Cookbook/4_shfl/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/4_shfl/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/4_shfl/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/4_shfl/shfl.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/5_2dshfl/
+HIP-rocm-4.2.0/samples/2_Cookbook/5_2dshfl/2dshfl.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/5_2dshfl/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/5_2dshfl/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/5_2dshfl/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/6_dynamic_shared/
+HIP-rocm-4.2.0/samples/2_Cookbook/6_dynamic_shared/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/6_dynamic_shared/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/6_dynamic_shared/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/6_dynamic_shared/dynamic_shared.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/7_streams/
+HIP-rocm-4.2.0/samples/2_Cookbook/7_streams/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/7_streams/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/7_streams/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/7_streams/stream.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/8_peer2peer/
+HIP-rocm-4.2.0/samples/2_Cookbook/8_peer2peer/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/8_peer2peer/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/8_peer2peer/peer2peer.cpp
+HIP-rocm-4.2.0/samples/2_Cookbook/9_unroll/
+HIP-rocm-4.2.0/samples/2_Cookbook/9_unroll/CMakeLists.txt
+HIP-rocm-4.2.0/samples/2_Cookbook/9_unroll/Makefile
+HIP-rocm-4.2.0/samples/2_Cookbook/9_unroll/Readme.md
+HIP-rocm-4.2.0/samples/2_Cookbook/9_unroll/unroll.cpp
+HIP-rocm-4.2.0/samples/README.md
+HIP-rocm-4.2.0/tests/
+HIP-rocm-4.2.0/tests/README.md
+HIP-rocm-4.2.0/tests/Tests.cmake
+HIP-rocm-4.2.0/tests/hipify-clang/
+HIP-rocm-4.2.0/tests/hipify-clang/unit_tests/
+HIP-rocm-4.2.0/tests/hipify-clang/unit_tests/libraries/
+HIP-rocm-4.2.0/tests/hipify-clang/unit_tests/libraries/cuSPARSE/
+HIP-rocm-4.2.0/tests/hipify-clang/unit_tests/libraries/cuSPARSE/cuSPARSE_12.cu
+HIP-rocm-4.2.0/tests/hit/
+HIP-rocm-4.2.0/tests/hit/HIT.cmake
+HIP-rocm-4.2.0/tests/hit/parser
+HIP-rocm-4.2.0/tests/performance/
+HIP-rocm-4.2.0/tests/performance/compute/
+HIP-rocm-4.2.0/tests/performance/compute/hipPerfDotProduct.cpp
+HIP-rocm-4.2.0/tests/performance/compute/hipPerfMandelbrot.cpp
+HIP-rocm-4.2.0/tests/performance/dispatch/
+HIP-rocm-4.2.0/tests/performance/dispatch/hipPerfDispatchSpeed.cpp
+HIP-rocm-4.2.0/tests/performance/memory/
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfBufferCopyRectSpeed.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfBufferCopySpeed.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfDevMemReadSpeed.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfDevMemWriteSpeed.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfHostNumaAlloc.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfMemMallocCpyFree.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfMemcpy.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfMemset.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfSampleRate.cpp
+HIP-rocm-4.2.0/tests/performance/memory/hipPerfSharedMemReadSpeed.cpp
+HIP-rocm-4.2.0/tests/performance/module/
+HIP-rocm-4.2.0/tests/performance/module/hipPerfModuleLoad.cpp
+HIP-rocm-4.2.0/tests/performance/stream/
+HIP-rocm-4.2.0/tests/performance/stream/hipPerfDeviceConcurrency.cpp
+HIP-rocm-4.2.0/tests/performance/stream/hipPerfStreamConcurrency.cpp
+HIP-rocm-4.2.0/tests/performance/stream/hipPerfStreamCreateCopyDestroy.cpp
+HIP-rocm-4.2.0/tests/src/
+HIP-rocm-4.2.0/tests/src/.gitignore
+HIP-rocm-4.2.0/tests/src/Functional/
+HIP-rocm-4.2.0/tests/src/Functional/device/
+HIP-rocm-4.2.0/tests/src/Functional/device/hipFuncDeviceSynchronize.cpp
+HIP-rocm-4.2.0/tests/src/Functional/device/hipFuncGetDevice.cpp
+HIP-rocm-4.2.0/tests/src/Functional/device/hipFuncSetDevice.cpp
+HIP-rocm-4.2.0/tests/src/Functional/device/hipFuncSetDeviceFlags.cpp
+HIP-rocm-4.2.0/tests/src/Functional/host/
+HIP-rocm-4.2.0/tests/src/Functional/host/hipFloat16.cpp
+HIP-rocm-4.2.0/tests/src/Makefile
+HIP-rocm-4.2.0/tests/src/Negative/
+HIP-rocm-4.2.0/tests/src/Negative/Device/
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipDeviceGetAttribute.cpp
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipDeviceUtil.h
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipGetDevice.cpp
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipGetDeviceCount.cpp
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipGetDeviceProperties.cpp
+HIP-rocm-4.2.0/tests/src/Negative/Device/hipSetDevice.cpp
+HIP-rocm-4.2.0/tests/src/Negative/memory/
+HIP-rocm-4.2.0/tests/src/Negative/memory/hipMemcpyFromSymbol.cpp
+HIP-rocm-4.2.0/tests/src/Negative/memory/hipMemcpyFromSymbolAsync.cpp
+HIP-rocm-4.2.0/tests/src/Negative/memory/hipMemcpyToSymbol.cpp
+HIP-rocm-4.2.0/tests/src/Negative/memory/hipMemcpyToSymbolAsync.cpp
+HIP-rocm-4.2.0/tests/src/Negative/memory/hipMemory.cpp
+HIP-rocm-4.2.0/tests/src/Negative/stream/
+HIP-rocm-4.2.0/tests/src/Negative/stream/hipStreamCreateWithFlags.cpp
+HIP-rocm-4.2.0/tests/src/clara/
+HIP-rocm-4.2.0/tests/src/clara/clara.hpp
+HIP-rocm-4.2.0/tests/src/compiler/
+HIP-rocm-4.2.0/tests/src/compiler/hipClassKernel.cpp
+HIP-rocm-4.2.0/tests/src/compiler/hipClassKernel.h
+HIP-rocm-4.2.0/tests/src/context/
+HIP-rocm-4.2.0/tests/src/context/hipCtx_simple.cpp
+HIP-rocm-4.2.0/tests/src/context/hipDrvGetPCIBusId.cpp
+HIP-rocm-4.2.0/tests/src/context/hipDrvMemcpy.cpp
+HIP-rocm-4.2.0/tests/src/context/hipMemsetD8.cpp
+HIP-rocm-4.2.0/tests/src/cppstd/
+HIP-rocm-4.2.0/tests/src/cppstd/hipInvocable11.cpp
+HIP-rocm-4.2.0/tests/src/cppstd/hipInvocable11Fallback.cpp
+HIP-rocm-4.2.0/tests/src/cppstd/hipInvocable14.cpp
+HIP-rocm-4.2.0/tests/src/cppstd/hipInvocable17.cpp
+HIP-rocm-4.2.0/tests/src/cppstd/is_callable_test.hpp
+HIP-rocm-4.2.0/tests/src/cudaRegister.cu
+HIP-rocm-4.2.0/tests/src/deviceLib/
+HIP-rocm-4.2.0/tests/src/deviceLib/hipBfloat16.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipComplex.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipDeviceMalloc.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipDeviceMemcpy.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipDoublePrecisionIntrinsics.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipDoublePrecisionMathDevice.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipDoublePrecisionMathHost.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipFloatMath.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipFloatMathPrecise.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipHalf2Comparision.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipIntegerIntrinsics.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipLaunchKernelFunc.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipMathFunctions.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipSimpleAtomicsTest.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipSinglePrecisionIntrinsics.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipSinglePrecisionMathDevice.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipSinglePrecisionMathHost.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipStdComplex.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestAtomicAdd.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestClock.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestDevice.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestDeviceDouble.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestDeviceLimit.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestDeviceSymbol.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestDotFunctions.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestFMA.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestHalf.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestHost.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestIncludeMath.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestNativeHalf.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipTestNew.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipThreadFence.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipVectorTypes.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipVectorTypesDevice.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hipVersion.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_anyall.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_ballot.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_bitextract.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_bitinsert.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_brev.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_clz.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_ffs.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_floatnTM.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_mbcnt.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_popc.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_test_ldg.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_test_make_type.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_test_syncthreads_and.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_test_syncthreads_count.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_test_syncthreads_or.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_threadfence_system.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/hip_trig.cpp
+HIP-rocm-4.2.0/tests/src/deviceLib/vector_test_common.h
+HIP-rocm-4.2.0/tests/src/dynamicLoading/
+HIP-rocm-4.2.0/tests/src/dynamicLoading/bit_extract_kernel.cpp
+HIP-rocm-4.2.0/tests/src/dynamicLoading/complex_loading_behavior.cpp
+HIP-rocm-4.2.0/tests/src/dynamicLoading/hipApiDynamicLoad.cpp
+HIP-rocm-4.2.0/tests/src/experimental/
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gApi.c
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gHipApi.c
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gHipApi.h
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/ghipapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxApi.cpp
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxApi1.cpp
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxApi1.h
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxHipApi.cpp
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxHipApi.h
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/gxxhipapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hHip.c
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hHipApi.c
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipapig.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipapigxx.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipg.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipgapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipgxx.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipgxxapi.sh
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hipxxKer.cpp
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hxxHip.cpp
+HIP-rocm-4.2.0/tests/src/experimental/xcompile/hxxHipApi.cpp
+HIP-rocm-4.2.0/tests/src/g++/
+HIP-rocm-4.2.0/tests/src/g++/hipMalloc.cpp
+HIP-rocm-4.2.0/tests/src/gcc/
+HIP-rocm-4.2.0/tests/src/gcc/LaunchKernel.c
+HIP-rocm-4.2.0/tests/src/gcc/LaunchKernel.h
+HIP-rocm-4.2.0/tests/src/gcc/gpu.cpp
+HIP-rocm-4.2.0/tests/src/gcc/hipMalloc.c
+HIP-rocm-4.2.0/tests/src/hipC.c
+HIP-rocm-4.2.0/tests/src/hipC.cpp
+HIP-rocm-4.2.0/tests/src/hipCKernel.c
+HIP-rocm-4.2.0/tests/src/hipEnvVar.cpp
+HIP-rocm-4.2.0/tests/src/hipEnvVarDriver.cpp
+HIP-rocm-4.2.0/tests/src/hipHcc.cpp
+HIP-rocm-4.2.0/tests/src/hipPointerAttrib.cpp
+HIP-rocm-4.2.0/tests/src/hiprtc/
+HIP-rocm-4.2.0/tests/src/hiprtc/hiprtcGetLoweredName.cpp
+HIP-rocm-4.2.0/tests/src/hiprtc/saxpy.cpp
+HIP-rocm-4.2.0/tests/src/hiprtc/saxpy_pch.cpp
+HIP-rocm-4.2.0/tests/src/hostcall/
+HIP-rocm-4.2.0/tests/src/hostcall/hipHostcallFuncCall.cpp
+HIP-rocm-4.2.0/tests/src/hostcall/hipHostcallPrintThings.cpp
+HIP-rocm-4.2.0/tests/src/ipc/
+HIP-rocm-4.2.0/tests/src/ipc/MultiProcess.h
+HIP-rocm-4.2.0/tests/src/ipc/hipMultiProcIpcEvent.cpp
+HIP-rocm-4.2.0/tests/src/ipc/hipMultiProcIpcMem.cpp
+HIP-rocm-4.2.0/tests/src/ipc/hipSimpleIpcMem.cpp
+HIP-rocm-4.2.0/tests/src/kernel/
+HIP-rocm-4.2.0/tests/src/kernel/hipDynamicShared.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipDynamicShared2.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipEmptyKernel.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipExtLaunchKernelGGL.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipGridLaunch.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipLanguageExtensions.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipLaunchParm.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipLaunchParmFunctor.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipPrintfKernel.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipShflTests.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipShflUpDownTest.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipTestConstant.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipTestGlobalVariable.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipTestMallocKernel.cpp
+HIP-rocm-4.2.0/tests/src/kernel/hipTestMemKernel.cpp
+HIP-rocm-4.2.0/tests/src/kernel/inline_asm_vadd.cpp
+HIP-rocm-4.2.0/tests/src/kernel/inline_asm_vmac.cpp
+HIP-rocm-4.2.0/tests/src/kernel/launch_bounds.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/
+HIP-rocm-4.2.0/tests/src/nvcc/Device/
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipChooseDevice.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipDeviceGetAttribute.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipDeviceGetCacheConfig.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipDeviceGetLimit.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipDeviceGetSharedMemConfig.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipGetDevice.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipGetDeviceCount.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipGetDeviceProperties.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipSetDevice.cpp
+HIP-rocm-4.2.0/tests/src/nvcc/Device/hipSetDeviceFlags.cpp
+HIP-rocm-4.2.0/tests/src/p2p/
+HIP-rocm-4.2.0/tests/src/p2p/hipPeerToPeer_simple.cpp
+HIP-rocm-4.2.0/tests/src/printf/
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfAltForms.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfBasic.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfFlags.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfManyDevices.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfManyWaves.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfSpecifiers.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfStar.cpp
+HIP-rocm-4.2.0/tests/src/printf/hipPrintfWidthPrecision.cpp
+HIP-rocm-4.2.0/tests/src/printf/printf_common.h
+HIP-rocm-4.2.0/tests/src/runtimeApi/
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/api_failure_tests.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/cooperative_streams.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/grid_group_data_sharing.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGGridGroupType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGGridGroupTypeViaBaseType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGGridGroupTypeViaPublicApi.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGMultiGridGroupType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGMultiGridGroupTypeViaBaseType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGMultiGridGroupTypeViaPublicApi.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGThreadBlockType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGThreadBlockTypeViaBaseType.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipCGThreadBlockTypeViaPublicApi.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipLaunchCoopMultiKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/hipLaunchCooperativeKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/multi_gpu_api_failure_tests.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/multi_gpu_streams.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/multi_grid_group_all_gpus.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/simple_grid_group_barrier.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/cooperativeGrps/simple_multi_grid_group_barrier.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipChooseDevice.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceComputeCapability.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceGetByPCIBusId.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceGetName.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceGetPCIBusId.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceSynchronize.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipDeviceTotalMem.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipGetDeviceAttribute.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipGetDeviceProperties.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipRuntimeGetVersion.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipSetCachceConfig.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipSetDeviceFlags.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/device/hipSetGetDevice.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/error/
+HIP-rocm-4.2.0/tests/src/runtimeApi/error/hipPeekAtLastError.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/hipEvent.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/hipEventElapsedTime.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/hipEventIpc.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/hipEventRecord.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/event/record_event.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/d2dMemCpyWithPinnedHostMemory.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipArray.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipHostGetFlags.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipHostMalloc.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipHostRegister.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipIpcMemAccessTest.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMallocConcurrency.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMallocManaged.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMallocManaged_MultiScenario.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipManagedKeyword.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemPtrGetInfo.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy2D.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy2DAsync.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy2D_simple.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy3D.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyAll.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyAsync.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyAsync2.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyDtoD.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyDtoDAsync.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyNegativeMThrdMSize.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyNegetiveTests.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyPeer.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyPeerAsync.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyWithStream.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpyWithStreamMultiThread.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemcpy_simple.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemoryAllocateCoherent.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemoryAllocateCoherentDriver.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset2D.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset2DAsyncMultiThreadAndKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset3D.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset3DFunctional.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset3DNegative.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemset3DRegressMultiThread.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemsetAsyncAndKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemsetAsyncMultiThread.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMemsetInvalidPtr.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMultiMemcpyMultiThrdMultiStrm.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipMultiMemcpyMultiThread.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipPointerAttributes.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipRandomMemcpyAsync.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/hipTestMemcpyPin.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/memory/p2p_copy_coherency.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/empty_kernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/global_kernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipExtLaunchKernelGGL.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipExtLaunchMultiKernelMultiDevice.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipExtModuleLaunchKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipFuncGetAttributes.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipFuncSetAttribute.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipFuncSetCacheConfig.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipFuncSetSharedMemConfig.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModule.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleGetGlobal.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLaunchKernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadData.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadDataMultThreadOnMultGPU.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadDataMultThreaded.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadMultProcessOnMultGPU.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadMultiThreaded.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleLoadUnloadStress.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleNegative.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleOccupancyMaxPotentialActiveBlockSize.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleTexture2dDrv.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipModuleUnload.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/hipOpenCLCOTest.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/kernel_composite_test.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/matmul.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/opencl_add.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/tex2d_kernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/vcpy_kernel.code
+HIP-rocm-4.2.0/tests/src/runtimeApi/module/vcpy_kernel.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/multiThread/
+HIP-rocm-4.2.0/tests/src/runtimeApi/multiThread/hipMultiThreadDevice.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/multiThread/hipMultiThreadStreams1.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/multiThread/hipMultiThreadStreams2.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/occupancy/
+HIP-rocm-4.2.0/tests/src/runtimeApi/occupancy/hipOccupancyMaxActiveBlocksPerMultiprocessor.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/occupancy/hipOccupancyMaxPotentialBlockSize.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/p2p/
+HIP-rocm-4.2.0/tests/src/runtimeApi/p2p/hipDeviceGetP2PAttribute.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/p2p/hipP2pLinkTypeAndHopFunc.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/p2p/hipP2pLinkTypeAndHopFunc.h
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/StreamAddCallback.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipAPIStreamDisable.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipAPIStreamEnable.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipMultiStreams.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipNullStream.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStream.h
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_AltEnqueue.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_MStrm_Mgpu.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_MultiCalls.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_MultiThread.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_StrmSyncTiming.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_ThrdBehaviour.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamACb_order.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamAddCallback.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamAddCallbackCatch.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamCreateWithPriority.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamGetCUMask.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamGetFlags.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamGetPriority.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamL5.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamSync2.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamWaitEvent.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/stream/hipStreamWithCUMask.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/streamOperations/
+HIP-rocm-4.2.0/tests/src/runtimeApi/streamOperations/hipstream_operations.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/synchronization/
+HIP-rocm-4.2.0/tests/src/runtimeApi/synchronization/copy_coherency.cpp
+HIP-rocm-4.2.0/tests/src/runtimeApi/synchronization/memcpyInt.device.cpp
+HIP-rocm-4.2.0/tests/src/specialFunc.cu
+HIP-rocm-4.2.0/tests/src/stress/
+HIP-rocm-4.2.0/tests/src/stress/README.md
+HIP-rocm-4.2.0/tests/src/stress/hipStressAsync.cpp
+HIP-rocm-4.2.0/tests/src/stress/hipStressChain.cpp
+HIP-rocm-4.2.0/tests/src/stress/hipStressKernel.cpp
+HIP-rocm-4.2.0/tests/src/stress/hipStressMemcpy.cpp
+HIP-rocm-4.2.0/tests/src/stress/hipStressSync.cpp
+HIP-rocm-4.2.0/tests/src/surface/
+HIP-rocm-4.2.0/tests/src/surface/hipSurfaceObj2D.cpp
+HIP-rocm-4.2.0/tests/src/testAPIStream.sh
+HIP-rocm-4.2.0/tests/src/test_common.cpp
+HIP-rocm-4.2.0/tests/src/test_common.h
+HIP-rocm-4.2.0/tests/src/texture/
+HIP-rocm-4.2.0/tests/src/texture/hipBindTex2DPitch.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipBindTexRef1DFetch.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipGetChanDesc.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipNormalizedFloatValueTex.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipTex1DFetchCheckModes.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipTexObjPitch.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipTextureObj1DFetch.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipTextureObj2D.cpp
+HIP-rocm-4.2.0/tests/src/texture/hipTextureRef2D.cpp
+HIP-rocm-4.2.0/tests/src/texture/simpleTexture2DLayered.cpp
+HIP-rocm-4.2.0/tests/src/texture/simpleTexture3D.cpp
+HIP-rocm-4.2.0/tests/src/timer.cpp
+HIP-rocm-4.2.0/tests/src/timer.h
+HIP-rocm-4.2.0/tests/unit/
+HIP-rocm-4.2.0/tests/unit/test_common.cpp
+HIP-rocm-4.2.0/tests/unit/test_common.h
+HIP-rocm-4.2.0/util/
+HIP-rocm-4.2.0/util/gedit/
+HIP-rocm-4.2.0/util/gedit/README.md
+HIP-rocm-4.2.0/util/gedit/hip.lang
+HIP-rocm-4.2.0/util/gedit/install.sh
+HIP-rocm-4.2.0/util/vim/
+HIP-rocm-4.2.0/util/vim/README.md
+HIP-rocm-4.2.0/util/vim/hip.vim
+[ Info: Building for x86_64-linux-gnu-cxx11
+[ Info: Cached file found in /home/pxl-th/.julia/packages/BinaryBuilderBase/wJV2d/deps/downloads/ecb929e0fc2eaaf7bbd16a1446a876a15baf72419c723734f456ee62e70b4c24-rocm-4.2.0.tar.gz
+[ Info: Directory "./bundled" found
+[ Info: Directory "../scripts" found
+[ Info: Extracting tarball ecb929e0fc2eaaf7bbd16a1446a876a15baf72419c723734f456ee62e70b4c24-rocm-4.2.0.tar.gz...
+[ Info: Copying content of bundled in srcdir...
+[ Info: Copying content of scripts in srcdir...
+┌ Warning: Dependency argp_standalone_jll does not have a mapping for artifact argp_standalone for platform x86_64-linux-gnu-libgfortran4-cxx11
+└ @ BinaryBuilderBase ~/.julia/packages/BinaryBuilderBase/wJV2d/src/Prefix.jl:694
+[ Info: Checking to see if /home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ/ is encrypted...
+[ Info: Checking to see if /home/pxl-th/.julia/packages/BinaryBuilderBase/wJV2d/deps/ is encrypted...
+ERROR: LoadError: Build for HIP on x86_64-linux-gnu-cxx11 did not complete successfully
+
+Stacktrace:
+ [1] error(s::String)
+   @ Base ./error.jl:35
+ [2] autobuild(dir::AbstractString, src_name::AbstractString, src_version::VersionNumber, sources::Vector{<:BinaryBuilderBase.AbstractSource}, script::AbstractString, platforms::Vector, products::Vector{<:Product}, dependencies::Vector{<:BinaryBuilderBase.AbstractDependency}; verbose::Bool, debug::Bool, skip_audit::Bool, ignore_audit_errors::Bool, autofix::Bool, code_dir::Union{Nothing, String}, require_license::Bool, kwargs::Base.Pairs{Symbol, V, Tuple{Vararg{Symbol, N}}, NamedTuple{names, T}} where {V, N, names, T<:Tuple{Vararg{Any, N}}})
+   @ BinaryBuilder ~/.julia/packages/BinaryBuilder/wohhx/src/AutoBuild.jl:872
+ [3] build_tarballs(ARGS::Any, src_name::Any, src_version::Any, sources::Any, script::Any, platforms::Any, products::Any, dependencies::Any; julia_compat::String, kwargs::Base.Pairs{Symbol, V, Tuple{Vararg{Symbol, N}}, NamedTuple{names, T}} where {V, N, names, T<:Tuple{Vararg{Any, N}}})
+   @ BinaryBuilder ~/.julia/packages/BinaryBuilder/wohhx/src/AutoBuild.jl:344
+ [4] top-level scope
+   @ ~/code/Yggdrasil/H/HIP/HIP@4.2.0/build_tarballs.jl:5
+in expression starting at /home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build_tarballs.jl:5
+    Updating registry at `~/.julia/registries/General.toml`
+    Updating registry at `~/.julia/registries/General.toml`
+   Resolving package versions...
+    Updating `~/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ/x86_64-linux-gnu-libgfortran4-cxx11/.project/Project.toml`
+⌃ [8fbdd1d2] + ROCmCompilerSupport_jll v4.2.0+1
+⌅ [873c0968] + ROCmDeviceLibs_jll v4.2.0+1
+⌅ [866f66b9] + ROCmLLVM_jll v4.2.0+1
+⌃ [10ae2a08] + ROCmOpenCLRuntime_jll v4.2.0+2
+⌅ [dd59ff1a] + hsa_rocr_jll v4.2.0+2
+⌅ [1cecccd7] + hsakmt_roct_jll v4.2.0+0
+⌅ [c3eb98f6] + rocm_cmake_jll v4.2.0+0
+⌃ [5a766526] + rocminfo_jll v4.2.0+0
+    Updating `~/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ/x86_64-linux-gnu-libgfortran4-cxx11/.project/Manifest.toml`
+⌃ [34da2185] + Compat v2.2.1
+  [692b3bcd] + JLLWrappers v1.4.1
+  [21216c6a] + Preferences v1.3.0
+  [6e34b625] + Bzip2_jll v1.0.8+0
+  [ab5a07f8] + Elfutils_jll v0.182.0+1
+  [d4300ac3] + Libgcrypt_jll v1.8.7+0
+  [7e76a0d4] + Libglvnd_jll v1.3.0+3
+  [7add5ba3] + Libgpg_error_jll v1.42.0+0
+  [94ce4f54] + Libiconv_jll v1.16.1+1
+  [7f51dc2b] + NUMA_jll v2.0.14+0
+⌃ [8fbdd1d2] + ROCmCompilerSupport_jll v4.2.0+1
+⌅ [873c0968] + ROCmDeviceLibs_jll v4.2.0+1
+⌅ [866f66b9] + ROCmLLVM_jll v4.2.0+1
+⌃ [10ae2a08] + ROCmOpenCLRuntime_jll v4.2.0+2
+  [02c8fc9c] + XML2_jll v2.9.14+0
+  [aed1982a] + XSLT_jll v1.1.34+0
+  [ffd25f8a] + XZ_jll v5.2.5+2
+  [4f6342f7] + Xorg_libX11_jll v1.6.9+4
+  [0c0b7dd1] + Xorg_libXau_jll v1.0.9+4
+  [a3789734] + Xorg_libXdmcp_jll v1.1.3+4
+  [1082639a] + Xorg_libXext_jll v1.3.4+4
+  [14d82f49] + Xorg_libpthread_stubs_jll v0.1.0+3
+  [c7cfdc94] + Xorg_libxcb_jll v1.13.0+3
+  [c4d99508] + Xorg_xorgproto_jll v2019.2.0+2
+  [c5fb5394] + Xorg_xtrans_jll v1.4.0+3
+  [c53206cc] + argp_standalone_jll v1.3.1+0
+  [d65627f6] + fts_jll v1.2.7+1
+⌅ [dd59ff1a] + hsa_rocr_jll v4.2.0+2
+⌅ [1cecccd7] + hsakmt_roct_jll v4.2.0+0
+  [c88a4935] + obstack_jll v1.2.2+0
+⌅ [c3eb98f6] + rocm_cmake_jll v4.2.0+0
+⌃ [5a766526] + rocminfo_jll v4.2.0+0
+  [0dad84c5] + ArgTools v1.1.1
+  [56f22d72] + Artifacts v1.3.0
+  [2a0f44e3] + Base64
+  [ade2ca70] + Dates
+  [8bb1440f] + DelimitedFiles
+  [8ba89e20] + Distributed
+  [f43a241f] + Downloads v1.6.0
+  [7b1f6079] + FileWatching
+  [b77e0a4c] + InteractiveUtils
+  [b27032c2] + LibCURL v0.6.3
+  [76f85450] + LibGit2
+  [8f399da3] + Libdl
+  [37e2e46d] + LinearAlgebra
+  [56ddb016] + Logging
+  [d6f4376e] + Markdown
+  [a63ad114] + Mmap
+  [ca575930] + NetworkOptions v1.2.0
+  [44cfe95a] + Pkg
+  [de0858da] + Printf
+  [3fa0cd96] + REPL
+  [9a3f8284] + Random
+  [ea8e919c] + SHA v0.5.7
+  [9e88b42a] + Serialization
+  [1a1011a3] + SharedArrays
+  [6462fe0b] + Sockets
+  [2f01184e] + SparseArrays
+  [10745b16] + Statistics
+  [fa267f1f] + TOML v1.0.3
+  [a4e569a6] + Tar v1.9.2
+  [8dfed614] + Test
+  [cf7118a7] + UUIDs
+  [4ec0a83e] + Unicode
+  [deac9b47] + LibCURL_jll v7.84.0+1
+  [29816b5a] + LibSSH2_jll v1.10.2+2
+  [c8ffd9c3] + MbedTLS_jll v2.28.0+2
+  [14a3606d] + MozillaCACerts_jll v2022.3.29+0
+  [83775a58] + Zlib_jll v1.2.12+4
+  [8e850b90] + libblastrampoline_jll v5.1.1+1
+  [8e850ede] + nghttp2_jll v1.48.0+1
+  [3f19e933] + p7zip_jll v17.4.0+1
+        Info Packages marked with ⌃ and ⌅ have new versions available, but those with ⌅ cannot be upgraded. To see why use `status --outdated -m`
+[01:07:26] patching file CMakeLists.txt
+[01:07:26] Hunk #1 succeeded at 481 (offset -7 lines).
+[01:07:26] patching file rocclr/hip_code_object.cpp
+[01:07:26] Re-run cmake no build system arguments
+[01:07:26] verbose sandbox enabled (running in unprivileged container mode)
+[01:07:26] Parsed --rootfs as "/home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5"
+[01:07:26] Parsed --cd as "/workspace/srcdir"
+[01:07:26] Parsed --workspace as "/home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ" -> "/workspace"
+[01:07:26] Parsed --workspace as "/home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ/metadir" -> "/meta"
+[01:07:26] Parsed --workspace as "/tmp/jl_aFxYX4" -> "/opt/bin"
+[01:07:26] Parsed --workspace as "/tmp/jl_ZUKeeb" -> "/opt/toolchains"
+[01:07:26] Parsed --workspace as "/tmp/jl_jchQwA" -> "/etc/resolv.conf"
+[01:07:26] Parsed --map as "/home/pxl-th/.julia/artifacts/93f4959433015551e5a77a47768c01a06a7ba4a2" -> "/opt/x86_64-linux-gnu/PlatformSupport-2021.8.10"
+[01:07:26] Parsed --map as "/home/pxl-th/.julia/artifacts/aca979c25bceaf90fcafaa75c6b14c10c53fd418" -> "/opt/x86_64-linux-gnu/GCCBootstrap-7.1.0"
+[01:07:26] Parsed --map as "/home/pxl-th/.julia/artifacts/35dc5ddb1b3037f449fee5771b6c12ebcc4350b8" -> "/opt/x86_64-linux-musl/LLVMBootstrap-9.0.1"
+[01:07:26] Parsed --map as "/home/pxl-th/.julia/artifacts/047fec931a6c54eb4d5df41acf4d35c704dac1c1" -> "/opt/x86_64-linux-musl/PlatformSupport-2021.8.10"
+[01:07:26] Parsed --map as "/home/pxl-th/.julia/artifacts/7d9b99d27fe50d9ffb7d5fca4b55a7b953f040d1" -> "/opt/x86_64-linux-musl/GCCBootstrap-7.1.0"
+[01:07:26] Child Process PID is 154428
+[01:07:26] --> Mapping 1000:1000 to root:root within container namespace
+[01:07:26] --> Creating overlay workdir at /proc
+[01:07:26] --> Mounting overlay of /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5 at /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5 (modifications in /proc/upper/rootfs, workspace in /proc/work/rootfs)
+[01:07:26] --> mapping /home/pxl-th/.julia/artifacts/7d9b99d27fe50d9ffb7d5fca4b55a7b953f040d1 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/GCCBootstrap-7.1.0
+[01:07:26] --> mapping /home/pxl-th/.julia/artifacts/047fec931a6c54eb4d5df41acf4d35c704dac1c1 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/PlatformSupport-2021.8.10
+[01:07:26] --> mapping /home/pxl-th/.julia/artifacts/35dc5ddb1b3037f449fee5771b6c12ebcc4350b8 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/LLVMBootstrap-9.0.1
+[01:07:26] --> mapping /home/pxl-th/.julia/artifacts/aca979c25bceaf90fcafaa75c6b14c10c53fd418 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-gnu/GCCBootstrap-7.1.0
+[01:07:26] --> mapping /home/pxl-th/.julia/artifacts/93f4959433015551e5a77a47768c01a06a7ba4a2 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-gnu/PlatformSupport-2021.8.10
+[01:07:26] --> Mounting overlay of /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-gnu/PlatformSupport-2021.8.10:/home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-gnu/GCCBootstrap-7.1.0 at /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-gnu (modifications in /proc/upper/x86_64-linux-gnu, workspace in /proc/work/x86_64-linux-gnu)
+[01:07:26] --> Mounting overlay of /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/LLVMBootstrap-9.0.1:/home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/PlatformSupport-2021.8.10:/home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl/GCCBootstrap-7.1.0 at /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/x86_64-linux-musl (modifications in /proc/upper/x86_64-linux-musl, workspace in /proc/work/x86_64-linux-musl)
+[01:07:26] --> Mounting procfs at /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/proc
+[01:07:26] --> Bind-mounting /dev/null over /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/dev/null
+[01:07:26] --> Bind-mounting /dev/tty over /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/dev/tty
+[01:07:26] --> Bind-mounting /dev/urandom over /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/dev/urandom
+[01:07:26] --> Bind-mounting /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/dev/pts/ptmx over /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/dev/ptmx
+[01:07:26] --> workspacing /tmp/jl_jchQwA to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/etc/resolv.conf
+[01:07:26] --> workspacing /tmp/jl_ZUKeeb to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/toolchains
+[01:07:26] --> workspacing /tmp/jl_aFxYX4 to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/opt/bin
+[01:07:26] --> workspacing /home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ/metadir to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/meta
+[01:07:26] --> workspacing /home/pxl-th/code/Yggdrasil/H/HIP/HIP@4.2.0/build/x86_64-linux-gnu-cxx11/4yi5AAsZ to /home/pxl-th/.julia/artifacts/d0c08357d84c092c9d6a8bad715001ad33e3d5d5/workspace
+[01:07:26] --> Mounting procfs at /proc
+[01:07:26] About to run `/bin/bash` `-l` `-c` `# Stop if we hit any errors.
+[01:07:26] set -e
+[01:07:26] 
+[01:07:26] # If we're running as `bash`, then use the `DEBUG` and `ERR` traps
+[01:07:26] if [ $(basename $0) = "bash" ]; then
+[01:07:26]     trap "RET=\$?; \
+[01:07:26]           trap - DEBUG INT TERM ERR EXIT; \
+[01:07:26]           set +e +x; \
+[01:07:26]           auto_install_license; \
+[01:07:26]           save_env; \
+[01:07:26]           exit \$RET" \
+[01:07:26]         EXIT
+[01:07:26] 
+[01:07:26]     trap "RET=\$?; \
+[01:07:26]           trap - DEBUG INT TERM ERR EXIT; \
+[01:07:26]           set +e +x; \
+[01:07:26]           echo Previous command \$! exited with \$RET >&2; \
+[01:07:26]           save_env; \
+[01:07:26]           exit \$RET" \
+[01:07:26]         INT TERM ERR
+[01:07:26] 
+[01:07:26]     # Start saving everything into our history
+[01:07:26]     trap save_history DEBUG
+[01:07:26] else
+[01:07:26]     # If we're running in `sh` or something like that, we need a
+[01:07:26]     # slightly slimmer set of traps. :(
+[01:07:26]     trap "RET=\$?; \
+[01:07:26]           echo Previous command exited with \$RET >&2; \
+[01:07:26]           set +e +x; \
+[01:07:26]           save_env; \
+[01:07:26]           exit \$RET" \
+[01:07:26]         EXIT INT TERM
+[01:07:26] fi
+[01:07:26] 
+[01:07:26] cd ${WORKSPACE}/srcdir/HIP*/
+[01:07:26] atomic_patch -p1 "${WORKSPACE}/srcdir/patches/disable-tests.patch"
+[01:07:26] atomic_patch -p1 --binary "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+[01:07:26] mkdir build && cd build
+[01:07:26] CC=${WORKSPACE}/srcdir/rocm-clang CXX=${WORKSPACE}/srcdir/rocm-clang++ \
+[01:07:26] CXXFLAGS="-isystem ${prefix}/rocclr/include/elf -isystem ${prefix}/include/elfutils -isystem ${prefix}/rocclr/include/compiler/lib/include $CXXFLAGS " \
+[01:07:26] cmake \
+[01:07:26]     -DCMAKE_PREFIX_PATH=${prefix} \
+[01:07:26]     -DCMAKE_SKIP_BUILD_RPATH=TRUE \
+[01:07:26]     -DCMAKE_INSTALL_PREFIX="${prefix}/hip" \
+[01:07:26]     -DLLVM_DIR="${prefix}/llvm/lib/cmake/llvm" \
+[01:07:26]     -DClang_DIR="${prefix}/llvm/lib/cmake/clang" \
+[01:07:26]     -DROCM_PATH=${prefix} \
+[01:07:26]     -DHIP_PLATFORM=amd \
+[01:07:26]     -DHIP_RUNTIME=rocclr \
+[01:07:26]     -DHIP_COMPILER=clang \
+[01:07:26]     -DHIPCC_VERBOSE=7 \
+[01:07:26]     -D__HIP_ENABLE_PCH=OFF \
+[01:07:26] ..
+[01:07:26] make -j${nproc}
+[01:07:26] make install
+[01:07:26] pip install yaml
+[01:07:26] install_license ${WORKSPACE}/srcdir/HIP*/LICENSE.txt
+[01:07:26] 
+[01:07:26] ` 
+[01:07:26]  ---> cd ${WORKSPACE}/srcdir/HIP*/
+[01:07:26]  ---> atomic_patch -p1 "${WORKSPACE}/srcdir/patches/disable-tests.patch"
+[01:07:26] Attempting to apply disable-tests.patch...
+[01:07:26]  ---> atomic_patch -p1 --binary "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+[01:07:26] Attempting to apply no-init-abort.patch...
+[01:07:26]  ---> mkdir build
+[01:07:26]  ---> cd build
+[01:07:26]  ---> CC=${WORKSPACE}/srcdir/rocm-clang CXX=${WORKSPACE}/srcdir/rocm-clang++ CXXFLAGS="-isystem ${prefix}/rocclr/include/elf -isystem ${prefix}/include/elfutils -isystem ${prefix}/rocclr/include/compiler/lib/include $CXXFLAGS " cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_SKIP_BUILD_RPATH=TRUE -DCMAKE_INSTALL_PREFIX="${prefix}/hip" -DLLVM_DIR="${prefix}/llvm/lib/cmake/llvm" -DClang_DIR="${prefix}/llvm/lib/cmake/clang" -DROCM_PATH=${prefix} -DHIP_PLATFORM=amd -DHIP_RUNTIME=rocclr -DHIP_COMPILER=clang -DHIPCC_VERBOSE=7 -D__HIP_ENABLE_PCH=OFF ..
+[01:07:26] -- The C compiler identification is Clang 12.0.0
+[01:07:26] -- The CXX compiler identification is Clang 12.0.0
+[01:07:26] -- Detecting C compiler ABI info
+[01:07:27] -- Detecting C compiler ABI info - done
+[01:07:27] -- Check for working C compiler: /workspace/srcdir/rocm-clang - skipped
+[01:07:27] -- Detecting C compile features
+[01:07:27] -- Detecting C compile features - done
+[01:07:27] -- Detecting CXX compiler ABI info
+[01:07:27] -- Detecting CXX compiler ABI info - done
+[01:07:27] -- Check for working CXX compiler: /workspace/srcdir/rocm-clang++ - skipped
+[01:07:27] -- Detecting CXX compile features
+[01:07:27] -- Detecting CXX compile features - done
+[01:07:27] sh: /opt/rocm/llvm/bin/clang++: not found
+[01:07:27] Use of uninitialized value $HIP_CLANG_VERSION in concatenation (.) or string at /workspace/srcdir/HIP-rocm-4.2.0/bin/hipconfig line 71.
+[01:07:27] -- Found Git: /usr/bin/git (found version "2.34.2") 
+[01:07:27] fatal: not a git repository (or any parent up to mount point /)
+[01:07:27] Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+[01:07:27] date: unrecognized option: f
+[01:07:27] BusyBox v1.34.1 (2021-11-23 00:57:35 UTC) multi-call binary.
+[01:07:27] 
+[01:07:27] Usage: date [OPTIONS] [+FMT] [[-s] TIME]
+[01:07:27] 
+[01:07:27] Display time (using +FMT), or set time
+[01:07:27] 
+[01:07:27] 	-u		Work in UTC (don't convert to local time)
+[01:07:27] 	[-s] TIME	Set time to TIME
+[01:07:27] 	-d TIME		Display TIME, not 'now'
+[01:07:27] 	-D FMT		FMT (strptime format) for -s/-d TIME conversion
+[01:07:27] 	-r FILE		Display last modification time of FILE
+[01:07:27] 	-R		Output RFC-2822 date
+[01:07:27] 	-I[SPEC]	Output ISO-8601 date
+[01:07:27] 			SPEC=date (default), hours, minutes, seconds or ns
+[01:07:27] 
+[01:07:27] Recognized TIME formats:
+[01:07:27] 	@seconds_since_1970
+[01:07:27] 	hh:mm[:ss]
+[01:07:27] 	[YYYY.]MM.DD-hh:mm[:ss]
+[01:07:27] 	YYYY-MM-DD hh:mm[:ss]
+[01:07:27] 	[[[[[YY]YY]MM]DD]hh]mm[.ss]
+[01:07:27] 	'date TIME' form accepts MMDDhhmm[[YY]YY][.ss] instead
+[01:07:27] fatal: not a git repository (or any parent up to mount point /)
+[01:07:27] Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+[01:07:27] fatal: not a git repository (or any parent up to mount point /)
+[01:07:27] Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+[01:07:27] Using CPACK_DEBIAN_PACKAGE_RELEASE local
+[01:07:27] CPACK_RPM_PACKAGE_RELEASE: local
+[01:07:27] -- HIP Platform: amd
+[01:07:27] -- HIP Runtime: rocclr
+[01:07:27] -- HIP Compiler: clang
+[01:07:27] CMake Error at CMakeLists.txt:226 (message):
+[01:07:27]   Don't know where to find HSA runtime.  Please specify absolute path using
+[01:07:27]   -DHSA_PATH
+[01:07:27] 
+[01:07:27] 
+[01:07:27] -- Configuring incomplete, errors occurred!
+[01:07:27] See also "/workspace/srcdir/HIP-rocm-4.2.0/build/CMakeFiles/CMakeOutput.log".
+[01:07:27]  ---> CC=${WORKSPACE}/srcdir/rocm-clang CXX=${WORKSPACE}/srcdir/rocm-clang++ CXXFLAGS="-isystem ${prefix}/rocclr/include/elf -isystem ${prefix}/include/elfutils -isystem ${prefix}/rocclr/include/compiler/lib/include $CXXFLAGS " cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_SKIP_BUILD_RPATH=TRUE -DCMAKE_INSTALL_PREFIX="${prefix}/hip" -DLLVM_DIR="${prefix}/llvm/lib/cmake/llvm" -DClang_DIR="${prefix}/llvm/lib/cmake/clang" -DROCM_PATH=${prefix} -DHIP_PLATFORM=amd -DHIP_RUNTIME=rocclr -DHIP_COMPILER=clang -DHIPCC_VERBOSE=7 -D__HIP_ENABLE_PCH=OFF ..
+[01:07:27]  ---> CC=${WORKSPACE}/srcdir/rocm-clang CXX=${WORKSPACE}/srcdir/rocm-clang++ CXXFLAGS="-isystem ${prefix}/rocclr/include/elf -isystem ${prefix}/include/elfutils -isystem ${prefix}/rocclr/include/compiler/lib/include $CXXFLAGS " cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_SKIP_BUILD_RPATH=TRUE -DCMAKE_INSTALL_PREFIX="${prefix}/hip" -DLLVM_DIR="${prefix}/llvm/lib/cmake/llvm" -DClang_DIR="${prefix}/llvm/lib/cmake/clang" -DROCM_PATH=${prefix} -DHIP_PLATFORM=amd -DHIP_RUNTIME=rocclr -DHIP_COMPILER=clang -DHIPCC_VERBOSE=7 -D__HIP_ENABLE_PCH=OFF ..
+[01:07:27] Previous command exited with 1
+[01:07:27] Child Process exited, exit code 1

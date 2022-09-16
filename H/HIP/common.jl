@@ -45,15 +45,16 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
         install_license = raw"""
         install_license ${WORKSPACE}/srcdir/HIP*/LICENSE.txt
         """
-        cmake_flags = raw"""
-        -DHSA_PATH="${prefix}/hsa" \
-        """
+        cmake_flags = ""
     else
         setup_and_patches = raw"""
         export HIPAMD_DIR=$(realpath ${WORKSPACE}/srcdir/hipamd-*)
         export HIP_DIR=$(realpath ${WORKSPACE}/srcdir/HIP-*)
         export ROCclr_DIR=$(realpath ${WORKSPACE}/srcdir/ROCclr-*)
         export OPENCL_SRC=$(realpath ${WORKSPACE}/srcdir/ROCm-OpenCL-Runtime-*)
+
+        # Needed for /bin/hipconfig.pl
+        export HIP_CLANG_PATH="${prefix}/llvm/bin"
 
         cd ${ROCclr_DIR}
         atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
@@ -83,13 +84,16 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
     raw"""
     cmake \
         -DCMAKE_PREFIX_PATH=${prefix} \
+        -DCMAKE_SKIP_BUILD_RPATH=TRUE \
         -DCMAKE_INSTALL_PREFIX="${prefix}/hip" \
         -DLLVM_DIR="${prefix}/llvm/lib/cmake/llvm" \
         -DClang_DIR="${prefix}/llvm/lib/cmake/clang" \
+        -DHSA_PATH="${prefix}/hsa" \
         -DROCM_PATH=${prefix} \
         -DHIP_PLATFORM=amd \
         -DHIP_RUNTIME=rocclr \
         -DHIP_COMPILER=clang \
+        -DHIPCC_VERBOSE=7 \
         -D__HIP_ENABLE_PCH=OFF \
     """ *
     cmake_flags *
