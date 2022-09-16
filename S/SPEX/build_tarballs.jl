@@ -48,7 +48,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("SuiteSparse_jll"),
-    Dependency("GMP_jll", v"6.2.1+2"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1")
 ]
 
