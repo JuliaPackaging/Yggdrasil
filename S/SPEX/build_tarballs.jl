@@ -37,7 +37,7 @@ install_license ${WORKSPACE}/srcdir/SPEX/SPEX/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -48,8 +48,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("SuiteSparse_jll"),
-    Dependency("GMP_jll"),
-    Dependency("MPFR_jll")
+    Dependency("GMP_jll", v"6.2.1+2"),
+    Dependency("MPFR_jll", v"4.1.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
