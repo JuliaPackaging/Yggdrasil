@@ -29,7 +29,7 @@ const GIT_TAGS_CLR = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 
 function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
@@ -57,6 +57,7 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
 
         cd ${ROCclr_DIR}
         atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-disable-tls.patch
 
         cd ${WORKSPACE}/srcdir/hipamd*/
         atomic_patch -p1 "${WORKSPACE}/srcdir/patches/improve-compilation-disable-tests.patch"

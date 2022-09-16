@@ -1,0 +1,16 @@
+diff --git a/thread/thread.cpp b/thread/thread.cpp
+index c7a6c35b..75c97c04 100644
+--- a/thread/thread.cpp
++++ b/thread/thread.cpp
+@@ -121,7 +121,11 @@ void Thread::resume() {
+ 
+ namespace details {
+ 
++#ifdef __GLIBC__
+ __thread Thread* thread_ __attribute__((tls_model("initial-exec")));
++#else
++__thread Thread* thread_;
++#endif
+ 
+ }  // namespace details
+ 
