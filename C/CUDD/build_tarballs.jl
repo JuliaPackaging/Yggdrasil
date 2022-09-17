@@ -14,7 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd cudd-3.0.0/
-sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --enable-obj --enable-silent-rules
 make -j${nproc}
 make install
@@ -22,23 +21,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
