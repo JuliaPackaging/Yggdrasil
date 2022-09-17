@@ -14,15 +14,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL2_image-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DSDL2_IMAGE_WEBP=ON -DSDL2_IMAGE_TIF=ON SDL2IMAGE_BACKEND_IMAGEIO=OFF ..
 make -j${nproc}
 make install
-if [[ "${target}" == *-freebsd* ]]; then
-    # We need to manually build the shared library for FreeBSD
-    cd "${libdir}"
-    ar x libSDL2_image.a
-    cc -shared -o libSDL2_image.${dlext} *.o
-fi
 """
 
 # These are the platforms we will build for by default, unless further
