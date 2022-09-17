@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "re2c"
-version = v"3.0.0"
+version_string = "3.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/skvadrik/re2c/releases/download/3.0/re2c-3.0.tar.xz", "b3babbbb1461e13fe22c630a40c43885efcfbbbb585830c6f4c0d791cf82ba0b")
+    ArchiveSource("https://github.com/skvadrik/re2c/releases/download/$(version_string)/re2c-$(version_string).tar.xz", "b3babbbb1461e13fe22c630a40c43885efcfbbbb585830c6f4c0d791cf82ba0b")
 ]
 
 # Bash recipe for building across all platforms
