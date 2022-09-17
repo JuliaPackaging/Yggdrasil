@@ -1,22 +1,22 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f425504d..6bc6f468 100755
+index f425504d..c5213688 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -39,8 +39,11 @@ list(APPEND CMAKE_MODULE_PATH ${HIP_COMMON_DIR}/cmake)
+@@ -37,10 +37,9 @@ project(hip)
+ #  By default, CMake will search for a folder named opencl or ROCm-OpenCL-Runtime relative to the current path. Specify -DAMD_OPENCL_PATH=$OPENCL_DIR if opencl source is in obscure location.
+ list(APPEND CMAKE_MODULE_PATH ${HIP_COMMON_DIR}/cmake)
  
- # required to add the right link to libhsa-runtime in install/lib path
- # CMAKE_PREFIX_PATH is used as rpath to search for libs outside HIP
+-# required to add the right link to libhsa-runtime in install/lib path
+-# CMAKE_PREFIX_PATH is used as rpath to search for libs outside HIP
 -set(CMAKE_INSTALL_RPATH "${CMAKE_PREFIX_PATH}/lib")
 -set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-+# set(CMAKE_INSTALL_RPATH "${CMAKE_PREFIX_PATH}/lib")
-+set (CMAKE_SKIP_BUILD_RPATH TRUE)
++set(CMAKE_SKIP_BUILD_RPATH TRUE)
 +set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 +set(CMAKE_INSTALL_RPATH "$ORIGIN/../../lib")
-+# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
  
  #############################
  # Options
-@@ -91,7 +94,18 @@ string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
+@@ -91,7 +90,18 @@ string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
  list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
  set(HIP_VERSION_GITDATE 0)
  
@@ -36,7 +36,7 @@ index f425504d..6bc6f468 100755
  
  # FIXME: Two different version strings used.
  # Below we use UNIX commands, not compatible with Windows.
-@@ -138,9 +152,6 @@ if(GIT_FOUND)
+@@ -138,9 +148,6 @@ if(GIT_FOUND)
    else()
      set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}-${HIP_VERSION_GITHASH})
    endif()
@@ -46,7 +46,7 @@ index f425504d..6bc6f468 100755
  endif()
  
  ## Debian package specific variables
-@@ -190,7 +201,7 @@ if (DEFINED ENV{ROCM_RPATH})
+@@ -190,7 +197,7 @@ if (DEFINED ENV{ROCM_RPATH})
      set (CMAKE_INSTALL_RPATH "$ENV{ROCM_RPATH}")
      set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
      set (CMAKE_SKIP_BUILD_RPATH TRUE)
@@ -55,7 +55,7 @@ index f425504d..6bc6f468 100755
  endif ()
  
  # overwrite HIP_VERSION_PATCH for packaging
-@@ -429,36 +440,6 @@ if(CLANGFORMAT_EXE)
+@@ -429,36 +436,6 @@ if(CLANGFORMAT_EXE)
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
  endif()
  
