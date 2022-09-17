@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd cudd-3.0.0/
+sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --enable-obj --enable-silent-rules
 make -j${nproc}
 make install
