@@ -10,6 +10,9 @@ sources = [
     ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "b10b2be2f88675b7e46cae653880be93558009c8970d23e50ea917ce095791f6"),
 ]
 
+# Adjusted version for Mac M1 support
+version = v"6.4.2"
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
@@ -43,4 +46,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

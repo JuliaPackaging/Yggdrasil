@@ -72,9 +72,13 @@ const HIP_CMAKE = Dict(
         ..
     make -j${nproc}
     make install
+
+    install_license ${WORKSPACE}/srcdir/HIP*/LICENSE.txt
     """,
     v"4.5.2" => raw"""
     cd ${WORKSPACE}/srcdir/hipamd*/
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+
     mkdir build && cd build
     export HIP_DIR=$(realpath ${WORKSPACE}/srcdir/HIP-*)
 
@@ -97,6 +101,8 @@ const HIP_CMAKE = Dict(
         ..
     make -j${nproc}
     make install
+
+    install_license ${WORKSPACE}/srcdir/hipamd*/LICENSE.txt
     """
 )
 
