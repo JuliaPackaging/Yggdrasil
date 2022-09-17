@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/re2c-3.0/
+cd $WORKSPACE/srcdir/re2c-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j$nproc
 make install
