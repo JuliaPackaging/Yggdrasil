@@ -27,7 +27,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcudd", :libcudd)
+    LibraryProduct(["libcudd", "libcudd-3-0-0"], :libcudd)
 ]
 
 # Dependencies that must be installed before this package can be built
