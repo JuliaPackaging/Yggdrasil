@@ -18,8 +18,6 @@ make -j$nproc
 make install
 install_license LICENSE 
 cp src/bin/cpptranslate $bindir/
-cp src/bin/parse $bindir/
-cp src/bin/parse2 $bindir/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,9 +30,7 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblfortran_runtime", :liblfortran_runtime, "share/lfortran/lib"),
-    ExecutableProduct("parse2", :parse2),
     ExecutableProduct("lfortran", :lfortran),
-    ExecutableProduct("parse", :parse1),
     ExecutableProduct("cpptranslate", :cpptranslate)
 ]
 
