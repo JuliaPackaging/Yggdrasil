@@ -7,40 +7,24 @@ version = v"1.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bartp5/libtexprintf.git", "275a89bbfeb132007027a0a0e0dea333a72e40e5")
+    GitSource("https://github.com/bartp5/libtexprintf.git", "275a89bbfeb132007027a0a0e0dea333a72e40e5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libtexprintf/
-./autogen.sh 
+cd $WORKSPACE/srcdir/libtexprintf/
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/win-fix.diff
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no --enable-shared=yes --enable-fast-install=yes
 make -j${nproc}
 make install
-mkdir -p ${prefix}/share/licenses/libtexprintf
-cp COPYING ${prefix}/share/licenses/libtexprintf
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
