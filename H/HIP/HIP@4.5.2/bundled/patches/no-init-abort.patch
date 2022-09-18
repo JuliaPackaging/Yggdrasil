@@ -1,0 +1,16 @@
+diff --git a/src/hip_code_object.cpp b/src/hip_code_object.cpp
+index 4595e92b..3008da47 100644
+--- a/src/hip_code_object.cpp
++++ b/src/hip_code_object.cpp
+@@ -486,8 +486,9 @@ hipError_t CodeObject::extractCodeObjectFromFatBinary(const void* data,
+       }
+     }
+ 
+-    guarantee(false, "hipErrorNoBinaryForGpu: Unable to find code object for all current devices!");
+-    return hipErrorNoBinaryForGpu;
++    /* guarantee(false, "hipErrorNoBinaryForGpu: Unable to find code object for all current devices!"); */
++    /* return hipErrorNoBinaryForGpu; */
++    return hipSuccess;
+   }
+ }
+ 
