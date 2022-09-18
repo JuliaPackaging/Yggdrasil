@@ -100,7 +100,9 @@ platforms = expand_gfortran_versions(supported_platforms())
 # https://github.com/JuliaPackaging/Yggdrasil/pull/4770
 # Since we need to link to libblastrampoline which has seen multiple
 # ABI-incompatible versions, we need to expand the julia versions we target
-julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+#julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+# Focus on Julia v"1.8.0" during debug
+julia_versions = [v"1.8.0"]
 function set_julia_version(platforms::Vector{Platform}, julia_version::VersionNumber)
     _platforms = deepcopy(platforms)
     for p in _platforms
@@ -119,8 +121,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(get_addable_spec("libblastrampoline_jll", v"3.0.4+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.7.0", platforms)),
-    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.0+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.8.0", platforms)),
+    # Focus on 1.8 during debug
+    #Dependency(get_addable_spec("libblastrampoline_jll", v"3.0.4+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.7.0", platforms)),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.1+1"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.8.0", platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
