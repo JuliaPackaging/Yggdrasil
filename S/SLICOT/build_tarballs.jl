@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
 name = "SLICOT"
-version = v"5.8.1"
+version = v"5.8.0"
 
 # Collection of sources required to complete build
 # Note to maintainers: extracts from LAPACK are deprecated routines, so probably don't want
