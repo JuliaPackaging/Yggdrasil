@@ -17,20 +17,9 @@ cd $WORKSPACE/srcdir/inetutils-*
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-ifconfig \
-    --disable-hostname \
-    --disable-logger \
-    --disable-rcp \
-    --disable-rexec \
-    --disable-rlogin \
-    --disable-rsh \
-    --disable-tftp \
-    --disable-traceroute \
-    --disable-inetd \
-    --disable-rexecd \
-    --disable-syslogd \
-    --disable-tftpd \
-    "${conf_args[@]}"
+    --disable-servers \
+    --disable-clients \
+    --enable-telnet
 make -j${nproc}
 make install
 """
