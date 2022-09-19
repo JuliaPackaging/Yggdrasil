@@ -15,6 +15,9 @@ const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"])]
 
 const BUILDSCRIPT = raw"""
 cd ${WORKSPACE}/srcdir/rocBLAS*/
+
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rpath.patch"
+
 mkdir build
 
 export ROCM_PATH=${prefix}
@@ -61,7 +64,7 @@ ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 unset SOURCE_DATE_EPOCH
 pip install -U pip wheel setuptools
 
-export AMDGPU_TARGETS="all"
+export AMDGPU_TARGETS="gfx1030"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -78,13 +81,14 @@ cmake -S . -B build \
     -DTensile_COMPILER=hipcc \
     -DTensile_LOGIC=asm_full \
     -DTensile_CODE_OBJECT_VERSION=V3 \
-    -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
     -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
     -DBUILD_CLIENTS_TESTS=OFF \
     -DBUILD_CLIENTS_BENCHMARKS=OFF \
     -DBUILD_CLIENTS_SAMPLES=OFF \
     -DBUILD_TESTING=OFF \
     -Dpython=python
+
+# -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
 
 make -j${nproc} -C build install
 
@@ -95,6 +99,7 @@ function configure_build(version)
     sources = [
         ArchiveSource(
             ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
+        DirectorySource("./bundled"),
     ]
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
