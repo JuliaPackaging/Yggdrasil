@@ -53,9 +53,9 @@ function download_cached_binaries(download_dir, platforms)
     bb_hash = ENV["BB_HASH"]
     proj_hash = ENV["PROJ_HASH"]
 
-    for platform in platforms
-        url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
-        filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
+    for platform in platforms, suffix in ("", "-logs")
+        url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform))$(suffix).tar.gz"
+        filename = "$(name)$(suffix).v$(version).$(triplet(platform)).tar.gz"
         reset_downloader()
         println("Downloading $url...")
         Downloads.download(url, joinpath(download_dir, filename))

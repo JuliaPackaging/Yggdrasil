@@ -108,9 +108,6 @@ make install-bin install-headers install-libgap install-sysinfo
 # the license
 install_license LICENSE
 
-# get rid of the wrapper shell script, which is useless for us
-mv ${libdir}/gap/gap ${prefix}/bin/gap
-
 # We deliberately do NOT install the GAP library, documentation, etc. because
 # they are identical across all platforms; instead, we use another platform
 # independent artifact to ship them to the user.
