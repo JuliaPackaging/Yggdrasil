@@ -39,32 +39,5 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
         Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
 
-
-    # HACK HACK HACK: the gac and sysinfo.gap shipped in GAP_jll are currently broken.
-    # We modify sources and script below to work around that. This should eventually go,
-    # once GAP_jll is fixed
-
-    global sources
-    sources = [
-        DirectorySource("../bundled"),
-        sources...
-    ]
-
-    global script
-    script = raw"""
-    # HACK WORKAROUND GAP_jll deficiencies
-    # TODO: tweak for mac build
-    if [[ "${target}" == *darwin* ]]; then
-      cp gac-darwin ${prefix}/share/gap/gac
-    else
-      cp gac ${prefix}/share/gap/gac
-    fi
-    chmod a+x ${prefix}/share/gap/gac
-    cp sysinfo.gap ${prefix}/share/gap/
-    """ * script * raw"""
-    rm -rf ${prefix}/include
-    rm -rf ${prefix}/share/gap
-    """
-
     return platforms, dependencies
 end
