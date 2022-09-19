@@ -34,7 +34,8 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version; uses_cxx = true)
+platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
