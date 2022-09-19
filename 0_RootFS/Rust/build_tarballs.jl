@@ -27,7 +27,7 @@ sources = [
 ]
 
 # Check if deploy flag is set
-deploy, deploy_repo = extract_flag!(ARGS, "--deploy", "JuliaBinaryWrappers/$(src_name)_jll.jl")
+deploy = "--deploy" in ARGS
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
