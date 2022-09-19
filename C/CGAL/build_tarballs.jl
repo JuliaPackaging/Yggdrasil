@@ -44,8 +44,8 @@ products = Product[]
 dependencies = [
     # Essential dependencies
     Dependency("boost_jll"; compat="=1.76.0"),
-    Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1+3"),
 ]
 
 # Build the tarballs.
