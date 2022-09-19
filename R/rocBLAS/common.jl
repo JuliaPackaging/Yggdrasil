@@ -4,6 +4,7 @@ const NAME = "rocBLAS"
 const GIT_TAGS = Dict(
     v"4.2.0" => "547f6d5d38a41786839f01c5bfa46ffe9937b389193a8891f251e276a1a47fb0",
     v"4.5.2" => "15d725e38f91d1ff7772c4204b97c1515af58fa7b8ec2a2014b99b6d337909c4",
+    v"5.2.3" => "36f74ce53b82331a756c42f95f3138498d6f4a66f2fd370cff9ab18281bb12d5",
 )
 
 const ROCM_PLATFORMS = [
@@ -23,7 +24,6 @@ export HIP_PLATFORM=amd
 export HIP_RUNTIME=rocclr
 export HIP_COMPILER=clang
 export HSA_PATH=${prefix}
-# export HIP_ROCCLR_HOME=${prefix}/lib
 export HIP_CLANG_PATH=${prefix}/llvm/bin
 
 # Other HIPCC env variables.
@@ -61,7 +61,7 @@ ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 unset SOURCE_DATE_EPOCH
 pip install -U pip wheel setuptools
 
-export TENSILE_ARCHITECTURE="gfx900"
+export AMDGPU_TARGETS="all"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -78,11 +78,13 @@ cmake -S . -B build \
     -DTensile_COMPILER=hipcc \
     -DTensile_LOGIC=asm_full \
     -DTensile_CODE_OBJECT_VERSION=V3 \
-    -DTensile_ARCHITECTURE=$TENSILE_ARCHITECTURE \
+    -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
+    -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
     -DBUILD_CLIENTS_TESTS=OFF \
     -DBUILD_CLIENTS_BENCHMARKS=OFF \
     -DBUILD_CLIENTS_SAMPLES=OFF \
-    -DBUILD_TESTING=OFF
+    -DBUILD_TESTING=OFF \
+    -Dpython=python
 
 make -j${nproc} -C build install
 
