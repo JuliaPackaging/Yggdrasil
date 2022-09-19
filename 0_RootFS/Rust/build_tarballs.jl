@@ -26,6 +26,9 @@ sources = [
                "95427cb0592e32ed39c8bd522fe2a40a746ba07afb8149f91e936cddb4d6eeac"),
 ]
 
+# Check if deploy flag is set
+deploy, deploy_repo = extract_flag!(ARGS, "--deploy", "JuliaBinaryWrappers/$(src_name)_jll.jl")
+
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
 cd ${WORKSPACE}/srcdir
@@ -112,7 +115,9 @@ for target_platform in supported_platforms()
     squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustToolchain", version; platform=rust_host, target=target_platform)
 
     # Upload them both to GH releases on Yggdrasil
-    upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustToolchain", version, unpacked_hash, squashfs_hash, rust_host; target=target_platform)
+    if deploy
+        upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustToolchain", version, unpacked_hash, squashfs_hash, rust_host; target=target_platform)
+    end
 end
 
 # Finally, we do RustBase:
@@ -127,4 +132,7 @@ unpacked_hash = create_artifact() do dir
 end
 
 squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustBase", version; platform=rust_host)
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustBase", version, unpacked_hash, squashfs_hash, rust_host)
+
+if deploy
+    upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustBase", version, unpacked_hash, squashfs_hash, rust_host)
+end
