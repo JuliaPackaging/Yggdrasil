@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libtexprintf/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/win-fix.diff
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/texfree.diff
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no --enable-shared=yes --enable-fast-install=yes
 make -j${nproc}
