@@ -8,10 +8,7 @@ julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end), ", ")
 
 name = "libcgal_julia"
-rversion = v"0.18.0"
-version = VersionNumber(rversion.major,
-                        rversion.minor,
-                        100rversion.patch)
+version = v"0.18.0"
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
@@ -23,6 +20,11 @@ sources = [
                   "dab124dce4a0818d2fff672d12c45bb783454f31") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
+
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 jlcgaldir = ifelse(isyggdrasil, rname, ".")
