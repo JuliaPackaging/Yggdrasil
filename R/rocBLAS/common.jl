@@ -79,6 +79,7 @@ cmake -S . -B build \
     -DTensile_COMPILER=hipcc \
     -DTensile_LOGIC=asm_full \
     -DTensile_CODE_OBJECT_VERSION=V3 \
+    -DTensile_CPU_THREADS=16 \
     -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
     -DBUILD_CLIENTS_TESTS=OFF \
     -DBUILD_CLIENTS_BENCHMARKS=OFF \
