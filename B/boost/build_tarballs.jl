@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.76.0"
+version = v"1.80.0"
 
 # Collection of sources required to build boost
 sources = [
-    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"),
+    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+                  "4b2136f98bdd1f5857f1c3dea9ac2018effe65286cf251534b6ae20cc45e1847"),
     DirectorySource("./bundled"),
 ]
 
