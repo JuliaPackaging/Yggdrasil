@@ -8,7 +8,7 @@ version = v"1.80.0"
 # Collection of sources required to build boost
 sources = [
     ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "4b2136f98bdd1f5857f1c3dea9ac2018effe65286cf251534b6ae20cc45e1847"),
+                  "1e19565d82e43bc59209a168f5ac899d3ba471d55c7610c677d4ccf2c9c500c0"),
     DirectorySource("./bundled"),
 ]
 
