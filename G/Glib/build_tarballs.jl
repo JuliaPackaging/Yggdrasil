@@ -27,6 +27,10 @@ if [[ "${target}" == *-freebsd* ]]; then
     #     Don't fail if getxattr is not available. The code is already ready
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
+elif [[ "${target}" == *-darwin* ]]; then
+    # Copied from
+    # https://gitlab.gnome.org/GNOME/glib/-/blob/main/.gitlab-ci.yml
+    MESON_FLAGS=(--wrap-mode=default)
 fi
 
 mkdir build_glib && cd build_glib
