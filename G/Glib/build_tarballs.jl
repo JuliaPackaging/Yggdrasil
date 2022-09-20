@@ -28,12 +28,11 @@ if [[ "${target}" == *-freebsd* ]]; then
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 elif [[ "${target}" == *-darwin* ]]; then
-    # Copied from
-    # https://gitlab.gnome.org/GNOME/glib/-/blob/main/.gitlab-ci.yml
-    MESON_FLAGS=(--wrap-mode=default)
+    export CFLAGS="-mmacosx-version-min=10.14"
 fi
 
 mkdir build_glib && cd build_glib
+
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dman=false \
