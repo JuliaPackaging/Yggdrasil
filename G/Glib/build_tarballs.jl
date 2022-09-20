@@ -27,8 +27,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     #     Don't fail if getxattr is not available. The code is already ready
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
-elif [[ "${target}" == *-darwin* ]]; then
-    export CFLAGS="-mmacosx-version-min=10.14"
 fi
 
 mkdir build_glib && cd build_glib
@@ -36,7 +34,6 @@ mkdir build_glib && cd build_glib
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dman=false \
-    -Diconv=external \
     "${MESON_FLAGS[@]}" \
     ..
 ninja -j${nproc}
