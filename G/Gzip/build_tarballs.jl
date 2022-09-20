@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gzip-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+if [[ "$target" == *-mingw* ]]; then
+    sed "s/LIBS =/LIBS = -lssp/g" -i Makefile
+fi
 make -j${nproc}
 make install
 install_license COPYING
