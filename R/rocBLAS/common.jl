@@ -87,8 +87,6 @@ cmake -S . -B build \
     -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF \
     -Dpython=python
 
-# -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
-
 make -j${nproc} -C build install
 
 install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENSE.md
