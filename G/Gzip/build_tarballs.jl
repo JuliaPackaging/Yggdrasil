@@ -3,20 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Gzip"
-version = v"1.10.0"
+version = v"1.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-1.10.tar.xz", "8425ccac99872d544d4310305f915f5ea81e04d0f437ef1a230dc9d1c819d7c0")
+    ArchiveSource("https://ftp.gnu.org/gnu/gzip/gzip-$(version.major).$(version.minor).tar.xz", "ce5e03e519f637e1f814011ace35c4f87b33c0bbabeec35baf5fbd3479e91956")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gzip-1.10/
+cd $WORKSPACE/srcdir/gzip-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
