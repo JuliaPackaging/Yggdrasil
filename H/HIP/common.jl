@@ -74,6 +74,11 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
         -DHIP_SRC_PATH=${HIPAMD_DIR} \
         -DAMD_OPENCL_PATH=${OPENCL_SRC} \
         """
+        if version ≥ v"5.2.3"
+            cmake_flags *= raw"""
+            -DFILE_REORG_BACKWARD_COMPATIBILITY=OFF \
+            """
+        end
     end
 
     setup_and_patches *
