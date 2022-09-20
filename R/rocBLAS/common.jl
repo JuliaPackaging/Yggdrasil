@@ -16,8 +16,6 @@ const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"])]
 const BUILDSCRIPT = raw"""
 cd ${WORKSPACE}/srcdir/rocBLAS*/
 
-# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rpath.patch"
-
 mkdir build
 
 export ROCM_PATH=${prefix}
@@ -50,7 +48,7 @@ export HIPCC_COMPILE_FLAGS_APPEND=$BB_COMPILE_FLAGS
 export HIPCC_LINK_FLAGS_APPEND=$BB_LINK_FLAGS
 
 export PATH="${prefix}/hip/bin:${prefix}/llvm/bin:${PATH}"
-export LD_LIBRARY_PATH="${prefix}/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${prefix}/lib:$prefix/hip/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
 
 # NOTE
 # Looking at hcc-cmd, it is clear that it is omitting 'hip/include' directory.
@@ -64,7 +62,7 @@ ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 unset SOURCE_DATE_EPOCH
 pip install -U pip wheel setuptools
 
-export AMDGPU_TARGETS="gfx1030"
+export AMDGPU_TARGETS="all"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -100,7 +98,6 @@ function configure_build(version)
     sources = [
         ArchiveSource(
             ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
-        DirectorySource("./bundled"),
     ]
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
