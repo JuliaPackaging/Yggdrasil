@@ -8,8 +8,7 @@ version = v"1.80.0"
 # Collection of sources required to build boost
 sources = [
     ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "1e19565d82e43bc59209a168f5ac899d3ba471d55c7610c677d4ccf2c9c500c0"),
-    DirectorySource("./bundled"),
+                  "1e19565d82e43bc59209a168f5ac899d3ba471d55c7610c677d4ccf2c9c500c0")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,11 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
-
-# Patch adapted from
-# https://svnweb.freebsd.org/ports/head/devel/boost-libs/files/patch-boost_math_tools_config.hpp?revision=439932&view=markup
-# to be able to build long double math libraries
-atomic_patch -p1 ../patches/boost_math_tools_config_hpp.patch
 
 rm project-config.jam
 toolset=gcc
