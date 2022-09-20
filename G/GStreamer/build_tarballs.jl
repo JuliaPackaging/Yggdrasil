@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GStreamer"
-version = v"1.18.3"
+version = v"1.20.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-$(version).tar.xz", "0c2e09e18f2df69a99b5cb3bd53c597b3cc2e35cf6c98043bb86a66f3d312100")
+    ArchiveSource("https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-$(version).tar.xz", "607daf64bbbd5fb18af9d17e21c0d22c4d702fffe83b23cb22d1b1af2ca23a2a")
 ]
 
 # Bash recipe for building across all platforms
