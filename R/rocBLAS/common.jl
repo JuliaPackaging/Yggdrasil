@@ -16,7 +16,7 @@ const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"])]
 const BUILDSCRIPT = raw"""
 cd ${WORKSPACE}/srcdir/rocBLAS*/
 
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rpath.patch"
+# atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rpath.patch"
 
 mkdir build
 
@@ -86,6 +86,7 @@ cmake -S . -B build \
     -DBUILD_CLIENTS_BENCHMARKS=OFF \
     -DBUILD_CLIENTS_SAMPLES=OFF \
     -DBUILD_TESTING=OFF \
+    -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF \
     -Dpython=python
 
 # -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
