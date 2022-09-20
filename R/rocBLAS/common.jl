@@ -87,7 +87,7 @@ cmake -S . -B build \
     -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF \
     -Dpython=python
 
-make -j${nproc} -C build install
+make -j16 -C build install
 
 install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENSE.md
 """
