@@ -7,7 +7,7 @@ version = v"1.7.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/toastedcrumpets/DynamO/archive/refs/tags/dynamo-1-7-6.tar.gz", "99c9abc35b3665d9c3c94d625f1661824c456f90b8e023926d49092fbf7c59de")
+    ArchiveSource("https://github.com/toastedcrumpets/DynamO/archive/refs/tags/dynamo-$(replace("$version", "." => "-")).tar.gz", "99c9abc35b3665d9c3c94d625f1661824c456f90b8e023926d49092fbf7c59de")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,7 @@ platforms = [
     Platform("powerpc64le", "linux"; libc = "glibc")
 ]
 
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
