@@ -1,7 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
-import Pkg: PackageSpec
+using BinaryBuilder, Pkg
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
@@ -84,7 +83,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll")),
+    BuildDependency("libjulia_jll"),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
 
