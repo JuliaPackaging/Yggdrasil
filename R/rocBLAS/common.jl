@@ -62,7 +62,15 @@ ln -s ${prefix}/hip/include/* ${prefix}/lib/include
 unset SOURCE_DATE_EPOCH
 pip install -U pip wheel setuptools
 
-export AMDGPU_TARGETS="all"
+if [ ${target} == "x86_64-linux-musl" ]; then
+    export AMDGPU_TARGETS="gfx900;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack+;gfx90a:xnack-"
+    # Below if what 'all' option expands to. Causes OOM on musl.
+    # export AMDGPU_TARGETS="gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack+;gfx90a:xnack-;gfx1010;gfx1012;gfx1030;gfx1100;gfx1102"
+else
+    export AMDGPU_TARGETS="all"
+fi
+
+echo "Building against following targets: ${AMDGPU_TARGETS}"
 
 CXX=${prefix}/hip/bin/hipcc \
 cmake -S . -B build \
@@ -79,7 +87,6 @@ cmake -S . -B build \
     -DTensile_COMPILER=hipcc \
     -DTensile_LOGIC=asm_full \
     -DTensile_CODE_OBJECT_VERSION=V3 \
-    -DTensile_CPU_THREADS=16 \
     -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
     -DBUILD_CLIENTS_TESTS=OFF \
     -DBUILD_CLIENTS_BENCHMARKS=OFF \
@@ -88,7 +95,7 @@ cmake -S . -B build \
     -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF \
     -Dpython=python
 
-make -j16 -C build install
+make -j${nproc} -C build install
 
 install_license ${WORKSPACE}/srcdir/rocBLAS*/LICENSE.md
 """
