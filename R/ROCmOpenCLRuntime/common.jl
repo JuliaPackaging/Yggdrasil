@@ -24,6 +24,7 @@ const CLR_PATCHES = Dict(
     # Link rt. OpenCL needs it, otherwise we get `undefined symbol: clock_gettime`.
     atomic_patch -p1 $WORKSPACE/srcdir/patches/rocclr-link-lrt.patch
     atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-disable-tls.patch
     """,
     v"4.5.2" => raw"""
     atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
