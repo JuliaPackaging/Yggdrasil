@@ -11,7 +11,7 @@ const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
-const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["rocblas/lib"])]
+const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["lib"])]
 
 # Taken from: https://github.com/ROCmSoftwarePlatform/rocRAND/blob/develop/CMakeLists.txt
 const TARGETS = Dict(
