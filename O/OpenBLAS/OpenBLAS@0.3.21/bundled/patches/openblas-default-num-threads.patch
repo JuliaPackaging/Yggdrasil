@@ -1,0 +1,24 @@
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Thu Sep 22 10:38:36 2022 -0700
+
+    Add `OPENBLAS_DEFAULT_NUM_THREADS`
+    
+    This allows Julia to set a default number of threads (usually `1`) to be
+    used when no other thread counts are specified, to short-circuit the
+    default OpenBLAS thread initialization routine that spins up a different
+    number of threads than Julia would otherwise choose
+
+diff --git a/driver/others/init.c b/driver/others/init.c
+index cc3145a6..cd10e8d3 100644
+--- a/driver/others/init.c
++++ b/driver/others/init.c
+@@ -823,6 +823,8 @@ void gotoblas_affinity_init(void) {
+ 
+   if (numprocs == 0) numprocs = readenv_atoi("OMP_NUM_THREADS");
+ 
++  if (numprocs == 0) numprocs = readenv_atoi("OPENBLAS_DEFAULT_NUM_THREADS");
++
+   numnodes = 1;
+ 
+   if (numprocs == 1) {
+
