@@ -9,10 +9,10 @@ const GIT_TAGS = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 const PRODUCTS = [
-    LibraryProduct(["librocrand"], :librocrand, ["rocrand/lib"]),
+    LibraryProduct(["librocrand"], :librocrand, ["lib"]),
     # LibraryProduct(["libhiprand"], :libhiprand, ["hiprand/lib"]),
 ]
 
@@ -88,12 +88,9 @@ function configure_build(version)
     make -j${nproc} -C build install
 
     install_license ${WORKSPACE}/srcdir/rocRAND*/LICENSE.txt
-
-    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../../hip/lib' ${prefix}/rocrand/lib/librocrand.so
     """
 
     sources = [
-        # GitSource("https://github.com/ROCmSoftwarePlatform/rocRAND.git", GIT_TAGS[version])
         ArchiveSource(ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
     ]
     dependencies = [
