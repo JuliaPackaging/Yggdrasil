@@ -55,8 +55,9 @@ install_license COPYING*
 """
 
     # We enable experimental platforms as this is a core Julia dependency
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+    platforms = supported_platforms(;experimental=true)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    platforms = expand_cxxstring_abis(platforms)
     products = [
         LibraryProduct("libgmp", :libgmp),
         LibraryProduct("libgmpxx", :libgmpxx),
@@ -64,7 +65,7 @@ install_license COPYING*
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+        BuildDependency("LLVMCompilerRT_jll", platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     return name, version, sources, script, platforms, products, dependencies
