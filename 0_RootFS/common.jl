@@ -1,6 +1,7 @@
 using SHA, BinaryBuilder, Pkg, Pkg.Artifacts, Base.BinaryPlatforms
 using BinaryBuilder: CompilerShard, BinaryBuilderBase
 using BinaryBuilderBase: archive_artifact
+using squashfs_tools_jll
 
 host_platform = Platform("x86_64", "linux"; libc="musl")
 
@@ -18,7 +19,7 @@ function unpacked_to_squashfs(unpacked_hash::Base.SHA1, name, version; platform=
     art_name = BinaryBuilderBase.artifact_name(squashfs_cs)
     squash_hash = create_artifact() do target_dir
         target_squashfs = joinpath(target_dir, art_name)
-        success(`mksquashfs $(path) $(target_squashfs) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
+        success(`$(mksquashfs()) $(path) $(target_squashfs) -force-uid 0 -force-gid 0 -comp xz -b 1048576 -Xdict-size 100% -noappend`)
     end
     @info("$(art_name) hash: $(bytes2hex(squash_hash.bytes))")
     return squash_hash
