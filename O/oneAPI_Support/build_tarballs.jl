@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"2022.1.0"
+version = v"0.1"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
-    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "5ba0922ebad8205ec26876c4c42d1b9bb9a3fa95")
+    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "c9f21108139d0b186e83f183aacc4df9a65b895a")
 ]
 
 platform_sources = Dict(
@@ -45,14 +45,6 @@ platform_sources = Dict(
             "498dc37ce1bd513f591b633565151c4de8f11a12914814f2bf85afebbd35ee23";
         ),
 
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/libgcc-ng-9.3.0-hdf63c60_101.tar.bz2",
-        #     "bd735039588da538ecb09ab5dc1819d1bd4a8dedc520b85d5ff1ea2d94c42603";
-        # ),
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/libstdcxx-ng-9.3.0-hdf63c60_101.tar.bz2",
-        #     "63d1298a60509ad37ea6eba6d01e950ba53398ce013323a15cf9ca1811404665";
-        # ),
 
         ArchiveSource(
             "https://conda.anaconda.org/intel/linux-64/mkl-2022.1.0-intel_223.tar.bz2",
@@ -74,11 +66,6 @@ platform_sources = Dict(
             "https://conda.anaconda.org/intel/linux-64/mkl-include-2022.1.0-intel_223.tar.bz2",
             "704e658a9b25a200f8035f3d0a8f2e094736496a2169f87609f1cfed2e2eb0a9";
         ),
-
-        # ArchiveSource(
-        #     "https://conda.anaconda.org/intel/linux-64/tbb-2021.6.0-intel_835.tar.bz2",
-        #     "ce47c1d22829cdd8c04b050acf2003082607e5a954bcbf486a7639045b411e5e";
-        # ),
     ]
 )
 
@@ -94,7 +81,7 @@ rm -rf lib/clang
 cp -r include/* ${includedir}
 for lib in mkl_sycl mkl_intel_ilp64 mkl_sequential mkl_core sycl \
            pi_level_zero pi_opencl OpenCL svml irng imf intlc; do
-    cp -a lib/lib${lib}* ${libdir}
+    cp -a lib/lib${lib}*.so* ${libdir}
 done
 
 cd oneAPI.jl/deps
@@ -104,8 +91,8 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling,
-# but use the Clang version to work around an issue with the SYCL headers.
+# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
+# XXX: use the Clang version to work around an issue with the SYCL headers
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}

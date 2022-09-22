@@ -48,7 +48,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libSDL2_ttf", "SDL2_ttf"], :libsdl2_ttf)
+    LibraryProduct(["libSDL2_ttf", "SDL2_ttf"], :libsdl2_ttf),
 ]
 
 # Dependencies that must be installed before this package can be built
