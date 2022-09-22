@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibTeXPrintf"
-version = v"1.14.0"
+version = v"1.14.1"
 
 # Collection of sources required to complete build
 sources = [
