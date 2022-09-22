@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"6.9.12-34"
+upstream_version = v"6.9.12-62"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/$(upstream_version).tar.gz",
-                  "990f93f39ae36f917c64f7e5929810150de416b275e8afc2580fdea68be28255"),
+                  "21eb4c5a4f0f9e76f1e67fb6a20f7b1e4374346ed9351bec9898f370d7b2f035"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,9 +17,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
 if [[ "${target}" == *-linux-gnu ]]; then
     atomic_patch -p1 ../patches/utilities-link-rt.patch
-elif [[ "${target}" == *-mingw* ]]; then
-    # Link to ws2_32 to fix undefined reference to `__imp_WSAStartup`.
-    atomic_patch -p1 ../patches/windows-undefined-reference-__imp_WSAStartup.patch
 fi
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 ./configure --prefix=${prefix} \
