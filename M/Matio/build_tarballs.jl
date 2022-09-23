@@ -17,12 +17,6 @@ cd matio
 
 # trying with cmake
 
-OS=$(uname -s)
-if [ "$OS" = "Darwin" ] ; then
-    LD_EXT="dylib"
-else
-    LD_EXT="so"
-fi
 
 cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
         -DBUILD_SHARED_LIBS:BOOL=ON \
