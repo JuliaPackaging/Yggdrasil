@@ -13,27 +13,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-export LDFLAGS_MAKE="${LDFLAGS}"
-
 cd matio
-git submodule update --init
 
 # trying with cmake
 
 OS=$(uname -s)
 if [ "$OS" = "Darwin" ] ; then
     LD_EXT="dylib"
-    # this file is referenced by hdf.h by not installed
-    touch ${includedir}/features.h
 else
     LD_EXT="so"
 fi
-
-
-# https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
-rm /workspace/destdir/lib/*.la
 
 cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
         -DBUILD_SHARED_LIBS:BOOL=ON \
@@ -59,10 +48,10 @@ cmake --install .
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macOs"),
-    Platform("aarch64", "macOs"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
+    # Platform("x86_64", "macOs"),
+    # Platform("aarch64", "macOs"),
+    # Platform("x86_64", "windows"),
+    # Platform("i686", "windows")
 ]
 
 
@@ -73,12 +62,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency("Zlib_jll"),
-    # Dependency("HDF5_jll"),
-    Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
     Dependency("Zlib_jll"),
-    Dependency("XML2_jll"),
-    Dependency("LibCURL_jll"; compat = "7.73.0"),
+    Dependency("HDF5_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
