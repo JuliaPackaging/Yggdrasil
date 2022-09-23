@@ -63,7 +63,7 @@ platforms = [
     Platform("aarch64", "macOs"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows")
-# ]
+]
 
 
 # The products that we will ensure are always built
