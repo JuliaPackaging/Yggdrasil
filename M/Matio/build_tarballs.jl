@@ -16,15 +16,41 @@ script = raw"""
 cd matio
 git submodule update --init
 
-if [ "$OS" == "Darwin" ] ; then
-    brew install libtool
+# trying with cmake
+
+OS=$(uname -s)
+if [ "$OS" = "Darwin" ] ; then
+    LD_EXT="dylib"
+else
+    LD_EXT="so"
 fi
 
-./autogen.sh
-./configure --with-zlib=${prefix} --with-hdf5=${prefix} --prefix=${prefix} --enable-mat73 --enable-shared
-make
-make check
-make install
+cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
+        -DBUILD_SHARED_LIBS:BOOL=ON \
+        -DMATIO_SHARED:BOOL=ON \
+	    -DMATIO_DEFAULT_FILE_VERSION=7.3 \
+        -DMATIO_MAT73:BOOL=ON \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_INSTALL_LIBDIR:PATH=lib \
+        -DMATIO_WITH_HDF5:BOOL=ON \
+        -DMATIO_WITH_ZLIB:BOOL=ON \
+        -DHDF5_ROOT:PATH=${prefix} \
+        -DHDF5_DIR:PATH=${prefix}
+	    # -DZLIB_INCLUDE_DIR:PATH=${prefix}/include 
+        # -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
+
+cmake --build .
+cmake --install .
+# if [ "$OS" == "Darwin" ] ; then
+#     echo "Installing libtool"
+#     brew install libtool
+# fi
+
+# ./autogen.sh
+# ./configure --with-zlib=${prefix} --with-hdf5=${prefix} --prefix=${prefix} --enable-mat73 --enable-shared
+# make
+# make check
+# make install
 
 """
 
