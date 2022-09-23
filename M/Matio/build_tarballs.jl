@@ -12,13 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd matio
-
-# trying with cmake
-
-
-cmake . \
+mkdir build && cd build
+cmake .. \
         -DBUILD_SHARED_LIBS:BOOL=ON \
         -DMATIO_SHARED:BOOL=ON \
 	-DMATIO_DEFAULT_FILE_VERSION=7.3 \
@@ -29,10 +25,8 @@ cmake . \
         -DHDF5_ROOT:PATH=${prefix} \
         -DHDF5_DIR:PATH=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-
-cmake --build .
-cmake --install .
-
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
