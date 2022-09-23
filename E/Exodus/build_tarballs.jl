@@ -16,13 +16,6 @@ cd $WORKSPACE/srcdir/seacas && export ACCESS=`pwd`
 mkdir build
 cd build
 
-
-# test
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-export LDFLAGS_MAKE="${LDFLAGS}"
-
-
 INSTALL_PATH=${prefix}
 
 GENERATOR=${GENERATOR:-"Unix Makefiles"}
@@ -31,7 +24,7 @@ FORTRAN=NO
 MPI=NO
 SHARED=YES
 STATIC=NO
-HAVE_NETCDF=YES
+HAVE_NETCDF=NO
 
 CXX=g++
 CC=gcc
@@ -42,16 +35,6 @@ CXXFLAGS="-Wall -Wunused -pedantic"
 THREADSAFE=NO
 BUILD_TYPE=RELEASE
 DEBUG=OFF
-
-if [[ ${target} == *-mingw* ]]; then
-    export LIBS="-lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz"
-    # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
-    # unless -no-undefined is added to LDFLAGS
-    LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined -Wl,--export-all-symbols"
-    # additional configure options from
-    # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
-    CONFIGURE_OPTIONS="--disable-byterange"
-fi
 
 if [ "$OS" == "Darwin" ] ; then
     DARWIN_OPT="-D CMAKE_MACOSX_RPATH:BOOL=ON"
