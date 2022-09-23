@@ -5,8 +5,8 @@ version = v"1.0.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/minio/minio", "ed0cbfb31e00644013e6c2073310a2268c04a381"),
-    FileSource("https://dl.min.io/server/minio/release/darwin-arm64/minio", "6a6710fa637aa4bd95a83ad43dd0e5a2ed223adeb18e45148d339aa8ca59cddc"; filename="miniobin")
+    GitSource("https://github.com/minio/minio", "20c89ebbb30f44bbd0eba4e462846a89ab3a56fa"),
+    FileSource("https://dl.min.io/server/minio/release/darwin-arm64/minio", "6f650ba1119f9a456138e47ef3cabc0af08d40e4cce293c8d36392f8613528bb"; filename="miniobin")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,8 +31,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               compilers=[:c, :go], julia_compat="1.6")
