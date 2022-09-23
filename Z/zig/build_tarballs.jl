@@ -21,7 +21,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/${target}/zig-*
 mkdir ${bindir}
-cp lib ${bindir}
+cp -r lib ${bindir}
 cp zig${exeext} ${bindir}
 
 install_license LICENSE
