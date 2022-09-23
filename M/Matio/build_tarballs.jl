@@ -40,7 +40,14 @@ cmake --install .
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "macOs"),
+    Platform("aarch64", "macOs"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows")
+]
 
 
 # The products that we will ensure are always built
