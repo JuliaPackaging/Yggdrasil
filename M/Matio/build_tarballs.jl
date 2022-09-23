@@ -31,6 +31,10 @@ else
     LD_EXT="so"
 fi
 
+
+# https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
+rm /workspace/destdir/lib/*.la
+
 cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
         -DBUILD_SHARED_LIBS:BOOL=ON \
         -DMATIO_SHARED:BOOL=ON \
