@@ -41,16 +41,6 @@ cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
 
 cmake --build .
 cmake --install .
-# if [ "$OS" == "Darwin" ] ; then
-#     echo "Installing libtool"
-#     brew install libtool
-# fi
-
-# ./autogen.sh
-# ./configure --with-zlib=${prefix} --with-hdf5=${prefix} --prefix=${prefix} --enable-mat73 --enable-shared
-# make
-# make check
-# make install
 
 """
 
@@ -59,10 +49,10 @@ cmake --install .
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macOs"),
-    Platform("aarch64", "macOs"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
+    # Platform("x86_64", "macOs"),
+    # Platform("aarch64", "macOs"),
+    # Platform("x86_64", "windows"),
+    # Platform("i686", "windows")
 ]
 
 
@@ -74,7 +64,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll") #, compat="1.12.2"),
+    Dependency("HDF5_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
