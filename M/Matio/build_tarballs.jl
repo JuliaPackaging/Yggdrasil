@@ -35,9 +35,9 @@ cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
         -DMATIO_WITH_HDF5:BOOL=ON \
         -DMATIO_WITH_ZLIB:BOOL=ON \
         -DHDF5_ROOT:PATH=${prefix} \
-        -DHDF5_DIR:PATH=${prefix}
-	    # -DZLIB_INCLUDE_DIR:PATH=${prefix}/include 
-        # -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
+        -DHDF5_DIR:PATH=${prefix} \
+	    -DZLIB_INCLUDE_DIR:PATH=${prefix}/include \
+        -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
 
 cmake --build .
 cmake --install .
