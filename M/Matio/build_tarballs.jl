@@ -15,6 +15,11 @@ script = raw"""
 
 cd matio
 git submodule update --init
+
+if [ "$OS" == "Darwin" ] ; then
+    brew install libtool
+fi
+
 ./autogen.sh
 ./configure --with-zlib=${prefix} --with-hdf5=${prefix} --prefix=${prefix} --enable-mat73 --enable-shared
 make
