@@ -7,7 +7,7 @@ version = v"1.3.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://files.inria.fr/starpu/starpu-1.3.9/starpu-1.3.9.tar.gz", "73adf2a5d25b04023132cfb1a8d9293b356354af7d1134e876122a205128d241"),
+    ArchiveSource("https://files.inria.fr/starpu/starpu-$(version)/starpu-$(version).tar.gz", "73adf2a5d25b04023132cfb1a8d9293b356354af7d1134e876122a205128d241"),
     DirectorySource("./bundled")
 ]
 
