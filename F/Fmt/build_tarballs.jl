@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-INSTALL_PATH=${prefix}
+
 cd $WORKSPACE/srcdir/fmt
 mkdir build
 cd build
@@ -22,18 +22,11 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CXX=g++
 fi
 
-if [ "$OS" == "Darwin" ] ; then
-    DARWIN_OPT="-D CMAKE_MACOSX_RPATH:BOOL=ON"
-else
-    DARWIN_OPT=""
-fi
-
-
 cmake \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+-DCMAKE_BUILD_TYPE=Release \
 -DBUILD_SHARED_LIBS=True \
--DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
-${DARWIN_OPT} \
+-DCMAKE_INSTALL_PREFIX=${prefix} \
 ..
 make
 make install
