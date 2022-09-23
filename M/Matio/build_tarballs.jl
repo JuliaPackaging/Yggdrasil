@@ -18,20 +18,17 @@ cd matio
 # trying with cmake
 
 
-cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
+cmake . \
         -DBUILD_SHARED_LIBS:BOOL=ON \
         -DMATIO_SHARED:BOOL=ON \
-	    -DMATIO_DEFAULT_FILE_VERSION=7.3 \
+	-DMATIO_DEFAULT_FILE_VERSION=7.3 \
         -DMATIO_MAT73:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_INSTALL_LIBDIR:PATH=lib \
         -DMATIO_WITH_HDF5:BOOL=ON \
         -DMATIO_WITH_ZLIB:BOOL=ON \
         -DHDF5_ROOT:PATH=${prefix} \
         -DHDF5_DIR:PATH=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-	    # -DZLIB_INCLUDE_DIR:PATH=${prefix}/include \
-        # -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
 
 cmake --build .
 cmake --install .
