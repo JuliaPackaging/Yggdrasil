@@ -20,10 +20,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/${target}/zig-*
-mkdir ${bindir}
-cp -r lib ${bindir}
-cp zig${exeext} ${bindir}
 
+mkdir -p ${bindir}/zig/
+cp -r lib ${bindir}/zig/
+cp zig${exeext} ${bindir}/zig/
+
+chmod +x ${bindir}/*
 install_license LICENSE
 """
 
@@ -42,7 +44,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("zig", :zig),
+    ExecutableProduct("zig/zig", :zig),
 ]
 
 # Dependencies that must be installed before this package can be built
