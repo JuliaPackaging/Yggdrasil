@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Matio"
-version = v"0.1.0"
+version = v"1.5.23"
 
 # Collection of sources required to complete build
 sources = [
@@ -63,7 +63,7 @@ platforms = [
     Platform("aarch64", "macOs"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows")
-]
+# ]
 
 
 # The products that we will ensure are always built
@@ -74,7 +74,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll", compat="1.12.2"),
+    Dependency("HDF5_jll") #, compat="1.12.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
