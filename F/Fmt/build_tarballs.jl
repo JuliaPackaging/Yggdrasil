@@ -16,10 +16,24 @@ INSTALL_PATH=${prefix}
 cd $WORKSPACE/srcdir/fmt
 mkdir build
 cd build
+
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
+
+if [ "$OS" == "Darwin" ] ; then
+    DARWIN_OPT="-D CMAKE_MACOSX_RPATH:BOOL=ON"
+else
+    DARWIN_OPT=""
+fi
+
+
 cmake \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DBUILD_SHARED_LIBS=True \
 -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
+${DARWIN_OPT} \
 ..
 make
 make install
