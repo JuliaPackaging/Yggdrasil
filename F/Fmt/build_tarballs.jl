@@ -38,13 +38,7 @@ ${DARWIN_OPT} \
 make
 make install
 
-# the license file isn't found automatically for some reason
-# perhaps it's the .rst extension?
-#
-mkdir ${prefix}/share
-mkdir ${prefix}/share/licenses
-mkdir ${prefix}/share/licenses/Fmt
-cp $WORKSPACE/srcdir/fmt/LICENSE.rst ${prefix}/share/licenses/Fmt/LICENSE
+install_license ../LICENSE.rst
 """
 
 platforms = [
