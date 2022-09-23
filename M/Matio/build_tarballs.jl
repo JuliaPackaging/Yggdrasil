@@ -25,6 +25,8 @@ git submodule update --init
 OS=$(uname -s)
 if [ "$OS" = "Darwin" ] ; then
     LD_EXT="dylib"
+    # this file is referenced by hdf.h by not installed
+    touch ${includedir}/features.h
 else
     LD_EXT="so"
 fi
