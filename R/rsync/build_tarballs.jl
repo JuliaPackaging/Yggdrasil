@@ -28,7 +28,7 @@ CONFIGURE_FLAGS+=(--disable-iconv-open)
 CONFIGURE_FLAGS+=(--disable-debug)
 
 ./configure ${CONFIGURE_FLAGS[@]}
-make -j install
+make -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
