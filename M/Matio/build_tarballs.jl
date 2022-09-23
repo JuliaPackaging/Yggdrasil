@@ -29,8 +29,9 @@ cmake . -DCMAKE_C_COMPILER:FILEPATH=${CC} \
         -DMATIO_WITH_ZLIB:BOOL=ON \
         -DHDF5_ROOT:PATH=${prefix} \
         -DHDF5_DIR:PATH=${prefix} \
-	    -DZLIB_INCLUDE_DIR:PATH=${prefix}/include \
-        -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+	    # -DZLIB_INCLUDE_DIR:PATH=${prefix}/include \
+        # -DZLIB_LIBRARY:FILEPATH=${prefix}/lib/libz.${LD_EXT}
 
 cmake --build .
 cmake --install .
@@ -42,10 +43,10 @@ cmake --install .
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
-    # Platform("x86_64", "macOs"),
-    # Platform("aarch64", "macOs"),
-    # Platform("x86_64", "windows"),
-    # Platform("i686", "windows")
+    Platform("x86_64", "macOs"),
+    Platform("aarch64", "macOs"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows")
 ]
 
 
