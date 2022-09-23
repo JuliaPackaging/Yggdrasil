@@ -73,9 +73,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Dependency("Zlib_jll"),
+    # Dependency("HDF5_jll"),
+    Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll"),
+    Dependency("XML2_jll"),
+    Dependency("LibCURL_jll"; compat = "7.73.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
