@@ -25,7 +25,6 @@ mkdir -p ${bindir}/zig/
 cp -r lib ${bindir}/zig/
 cp zig${exeext} ${bindir}/zig/
 
-chmod +x ${bindir}/*
 install_license LICENSE
 """
 
