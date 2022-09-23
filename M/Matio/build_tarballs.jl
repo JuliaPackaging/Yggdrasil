@@ -13,6 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
+export LDFLAGS_MAKE="${LDFLAGS}"
+
 cd matio
 git submodule update --init
 
@@ -49,10 +53,10 @@ cmake --install .
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
-    # Platform("x86_64", "macOs"),
-    # Platform("aarch64", "macOs"),
-    # Platform("x86_64", "windows"),
-    # Platform("i686", "windows")
+    Platform("x86_64", "macOs"),
+    Platform("aarch64", "macOs"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows")
 ]
 
 
