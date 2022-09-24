@@ -16,7 +16,7 @@ rname = "libcgal-julia"
 sources = [
     isyggdrasil ?
         GitSource("https://github.com/rgcv/$rname.git",
-                  "dab124dce4a0818d2fff672d12c45bb783454f31") :
+                  "513bc673b0662024e9aff56fc7671f43ecc6bcc6") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
