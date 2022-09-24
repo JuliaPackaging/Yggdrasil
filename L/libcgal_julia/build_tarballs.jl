@@ -1,13 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
-import Pkg: PackageSpec
+using BinaryBuilder, Pkg
+
+# reminder: change the above version if restricting the supported julia versions
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 name = "libcgal_julia"
-rversion = v"0.17.0"
-version = VersionNumber(rversion.major,
-                        rversion.minor,
-                        100rversion.patch + julia_version.minor)
+version = v"0.18.0"
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
@@ -16,9 +16,14 @@ rname = "libcgal-julia"
 sources = [
     isyggdrasil ?
         GitSource("https://github.com/rgcv/$rname.git",
-                  "91ab24f45b689a5fcd760db068f0c8fd06539744") :
+                  "513bc673b0662024e9aff56fc7671f43ecc6bcc6") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
+
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 jlcgaldir = ifelse(isyggdrasil, rname, ".")
@@ -57,7 +62,7 @@ install_license $jlcgaldir/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 # generates an abundance of linker errors and notes about using older versions
 # of GCC.  Among many things, this could be related to boost as well.  However,
 # requiring newer versions would, much like libsingular_julia, require the
@@ -78,15 +83,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
-    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
+    BuildDependency("libjulia_jll"),
+    BuildDependency("GMP_jll"),
+    BuildDependency("MPFR_jll"),
 
-    Dependency("CGAL_jll", compat="~5.3"),
-    Dependency("libcxxwrap_julia_jll", VersionNumber(0, 8, julia_version.minor)),
+    Dependency("CGAL_jll", compat="~5.5"),
+    Dependency("libcxxwrap_julia_jll", compat="0.9.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=gcc_version,
-               julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    preferred_gcc_version = v"8",
+    julia_compat)
