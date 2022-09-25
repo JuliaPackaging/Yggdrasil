@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "JSBSim"
 version = v"1.1.12"
-julia_version = v"1.5.3"
+julia_version = v"1.6"
 
 # Collection of sources required to build JSBSim
 sources = [
@@ -48,7 +48,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
+#    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
     Dependency("libcxxwrap_julia_jll"),
 ]
 
