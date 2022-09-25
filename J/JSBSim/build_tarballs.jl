@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "JSBSim"
 version = v"1.1.12"
-julia_version = v"1.6"
+julia_version = v"1.5.3"
 
 # Collection of sources required to build JSBSim
 sources = [
