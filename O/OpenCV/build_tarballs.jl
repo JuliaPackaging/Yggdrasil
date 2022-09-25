@@ -77,19 +77,19 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libopencv_calib3d", "libopencv_calib3d452"], :libopencv_calib3d),
-    LibraryProduct(["libopencv_objdetect", "libopencv_objdetect452"], :libopencv_objdetect),
-    LibraryProduct(["libopencv_core", "libopencv_core452"], :libopencv_core),
-    LibraryProduct(["libopencv_dnn", "libopencv_dnn452"], :libopencv_dnn),
-    LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs452"], :libopencv_imgcodecs),
-    LibraryProduct(["libopencv_highgui", "libopencv_highgui452"], :libopencv_highgui),
-    LibraryProduct(["libopencv_flann", "libopencv_flann452"], :libopencv_flann),
-    LibraryProduct(["libopencv_gapi", "libopencv_gapi452"], :libopencv_gapi),
-    LibraryProduct(["libopencv_imgproc", "libopencv_imgproc452"], :libopencv_imgproc),
-    LibraryProduct(["libopencv_features2d", "libopencv_features2d452"], :libopencv_features2d),
-    LibraryProduct(["libopencv_stitching", "libopencv_stitching452"], :libopencv_stitching),
-    LibraryProduct(["libopencv_video", "libopencv_video452"], :libopencv_video),
-    LibraryProduct(["libopencv_videoio", "libopencv_videoio452"], :libopencv_videoio),
+    LibraryProduct(["libopencv_calib3d", "libopencv_calib3d460"], :libopencv_calib3d),
+    LibraryProduct(["libopencv_objdetect", "libopencv_objdetect460"], :libopencv_objdetect),
+    LibraryProduct(["libopencv_core", "libopencv_core460"], :libopencv_core),
+    LibraryProduct(["libopencv_dnn", "libopencv_dnn460"], :libopencv_dnn),
+    LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs460"], :libopencv_imgcodecs),
+    LibraryProduct(["libopencv_highgui", "libopencv_highgui460"], :libopencv_highgui),
+    LibraryProduct(["libopencv_flann", "libopencv_flann460"], :libopencv_flann),
+    LibraryProduct(["libopencv_gapi", "libopencv_gapi460"], :libopencv_gapi),
+    LibraryProduct(["libopencv_imgproc", "libopencv_imgproc460"], :libopencv_imgproc),
+    LibraryProduct(["libopencv_features2d", "libopencv_features2d460"], :libopencv_features2d),
+    LibraryProduct(["libopencv_stitching", "libopencv_stitching460"], :libopencv_stitching),
+    LibraryProduct(["libopencv_video", "libopencv_video460"], :libopencv_video),
+    LibraryProduct(["libopencv_videoio", "libopencv_videoio460"], :libopencv_videoio),
     LibraryProduct("libopencv_julia", :libopencv_julia)#,
     # FileProduct("OpenCV.jl.tar", :OpenCV_jl)
 ]
