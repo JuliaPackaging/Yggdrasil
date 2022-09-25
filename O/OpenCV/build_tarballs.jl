@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "OpenCV"
-version = v"4.5.2"
-julia_version = v"1.6.0"
+version = v"4.6.0"
+julia_version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "39d25787f16c4dd6435b9fe0a8253394ac51e7fb"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "f5d7f6712d4ff229ba4f45cf79dfd11c557d56fd"),
+    GitSource("https://github.com/opencv/opencv.git", "b0dc474160e389b9c9045da5db49d03ae17c6a6b"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "db16caf6ceee76b43b94c846be276e92a43e9700"),
     DirectorySource("./bundled"),
 ]
 
@@ -103,4 +103,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", preferred_gcc_version = v"7")
