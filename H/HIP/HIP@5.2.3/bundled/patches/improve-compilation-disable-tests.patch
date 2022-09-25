@@ -46,15 +46,6 @@ index f425504d..c5213688 100755
  endif()
  
  ## Debian package specific variables
-@@ -190,7 +197,7 @@ if (DEFINED ENV{ROCM_RPATH})
-     set (CMAKE_INSTALL_RPATH "$ENV{ROCM_RPATH}")
-     set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-     set (CMAKE_SKIP_BUILD_RPATH TRUE)
--    set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-+    # set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
- endif ()
- 
- # overwrite HIP_VERSION_PATCH for packaging
 @@ -429,36 +436,6 @@ if(CLANGFORMAT_EXE)
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
  endif()
