@@ -258,7 +258,7 @@ dependencies = [
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
 #    Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
-    Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="3.13.0"),
+    Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
 ]
 
