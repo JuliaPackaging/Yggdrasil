@@ -2,7 +2,9 @@ using BinaryBuilder, Pkg
 
 name = "JSBSim"
 version = v"1.1.12"
-julia_version = v"1.6"
+
+julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build JSBSim
 sources = [
@@ -41,7 +43,7 @@ cp julia/*JSBSimJL*.$dlext $libdir/.
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = libjulia_platforms(julia_version)
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 filter!(p -> libc(p) != "musl" && !Sys.isfreebsd(p), platforms) # muslc is not supported
@@ -59,4 +61,4 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    julia_compat = julia_compat)
