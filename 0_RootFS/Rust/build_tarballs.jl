@@ -18,7 +18,7 @@ rustup_name = "RustStage1"
 rustup_version = v"1.25.1"
 
 # This is the version of the Rust toolchain we install
-version = v"1.63.0"
+version = v"1.64.0"
 
 sources = [
     # We'll use rustup to install rust
