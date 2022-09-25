@@ -1,19 +1,18 @@
 using BinaryBuilder
 
 name = "JSBSim"
-version = v"1.1.5"
-julia_version = v"1.5.3"
+version = v"1.1.12"
+#julia_version = v"1.5.3"
 
 # Collection of sources required to build JSBSim
 sources = [
     GitSource("https://github.com/JSBSim-Team/jsbsim.git",
-              "9bc866713431d3296441697a91517b32c9c017d3"),
+              "133fcff53ae15abcbbbd4d06390e1b59ab76e5c6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/jsbsim
-sed -ri 's/PROJECT_VERSION_PATCH\s\"6\"/PROJECT_VERSION_PATCH \"5\"/g' CMakeLists.txt
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
