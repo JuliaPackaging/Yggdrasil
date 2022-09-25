@@ -52,7 +52,6 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DWITH_QT=${USE_QT} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
-      -DOPENCV_FORCE_UNSAFE_XADD=TRUE \ # TODO if this works, drop for non-BSD / Mac platforms
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
       ../opencv/
 if [[ "${target}" == *-freebsd* ]]; then
