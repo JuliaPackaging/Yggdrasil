@@ -25,7 +25,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libhwloc", :libhwloc)
+    LibraryProduct("libhwloc", :libhwloc),
+    ExecutableProduct("lstopo-no-graphics", :lstopo_no_graphics)
 ]
 
 # Dependencies that must be installed before this package can be built
