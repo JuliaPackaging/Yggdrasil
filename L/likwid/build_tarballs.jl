@@ -3,18 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "likwid"
-version = v"5.2.1"
+version = v"5.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/RRZE-HPC/likwid/archive/refs/tags/v$(version).tar.gz", "1b8e668da117f24302a344596336eca2c69d2bc2f49fa228ca41ea0688f6cbc2"),
+    ArchiveSource("https://github.com/RRZE-HPC/likwid/archive/refs/tags/v$(version).tar.gz", "7dda6af722e04a6c40536fc9f89766ce10f595a8569b29e80563767a6a8f940e"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/likwid*
-atomic_patch -p2 ../patches/perfevents_hasschedaffinity_exthwlocfix.patch
+cd $WORKSPACE/srcdir
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+cd likwid-5.2.2/
+if [[ "${target}" == powerpc64le-linux-* ]]; then
+    export COMPILER=GCCPOWER
+elif [[ "${target}" == aarch64-linux-* ]]; then
+    export COMPILER=GCCARMv8
+elif [[ "${target}" == armv7l-linux-* ]]; then
+    export COMPILER=GCCARMv7
+elif [[ "${target}" == i686-linux-* ]]; then
+    export COMPILER=GCCX86
+else # assume x86_64
+    export COMPILER=GCC
+fi
 make PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
 make install PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
 exit
@@ -23,7 +37,9 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "glibc")
 ]
 
 
