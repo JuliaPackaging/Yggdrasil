@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "diffutils"
-version = v"3.8"
+version_string = "3.8"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
