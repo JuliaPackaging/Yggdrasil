@@ -26,7 +26,7 @@ cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> nbits(p) == 32)
+platforms = supported_platforms(; exclude=p -> (nbits(p) == 32) | (arch(p) == "aarch64"))
 
 # The products that we will ensure are always built
 products = [
