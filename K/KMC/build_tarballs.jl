@@ -15,6 +15,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/KMC/
 sed -i -e 's/CC = \/usr\/local\/bin\/g++-10/CC = g++/' Makefile
 
+if [[ $target != aarch64-linux-* ]]; then
+    sed -i -e 's/ -m64 / /' Makefile
+fi
+
 make kmc kmc_dump kmc_tools
 mkdir -p ${bindir}
 cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
