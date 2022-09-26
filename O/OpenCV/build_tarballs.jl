@@ -47,12 +47,13 @@ elif [[ "${target}" == *-w64-* ]]; then
     export USE_QT="OFF"
 fi
 
-cmake -DJulia_PREFIX=${prefix} \
+cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
+      -DJulia_PREFIX=${prefix} \
       -DWITH_JULIA=ON \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_STANDARD=11 \  
+      -DCMAKE_CXX_STANDARD=11 \
       -DBUILD_TESTS=OFF \
       -DBUILD_PERF_TESTS=OFF \
       -DBUILD_EXAMPLES=OFF \
