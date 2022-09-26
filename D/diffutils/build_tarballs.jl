@@ -8,7 +8,7 @@ version = v"3.8"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version.major).$(version.minor).tar.xz",
+        "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version_string).tar.xz",
         "a6bdd7d1b31266d11c4f4de6c1b748d4607ab0231af5188fc2533d0ae2438fec",
     ),
     DirectorySource("./bundled"),
