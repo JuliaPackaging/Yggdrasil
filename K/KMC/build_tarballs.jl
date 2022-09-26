@@ -13,12 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/KMC/
-make all
-# sed -i -e 's/CC = \/usr\/local\/bin\/g++-10/CC = g++/' Makefile
-# make kmc kmc_dump kmc_tools
-# cp kmc_api/*.h include/
-# cp -r bin $prefix/
-# cp -r include $prefix/
+make kmc kmc_dump kmc_tools
+mkdir -p ${bindir}
+cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
