@@ -91,24 +91,19 @@ all_load="--whole-archive"
 noall_load="--no-whole-archive"
 extra=""
 if [[ "${target}" == *-apple-* ]]; then
-    all_load="-all_load"
-    noall_load="-noall_load"
-    extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+  all_load="-all_load"
+  noall_load="-noall_load"
+  extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
 fi
-cd $SIFDECODE/objects/$MYARCH/double/
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libsifdecode.a -Wl,${noall_load} -o ${libdir}/libsifdecode.${dlext}
 cd $CUTEST/objects/$MYARCH/single
 gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_single.${dlext}
 cd $CUTEST/objects/$MYARCH/double
 gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_double.${dlext}
 
-cp $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/slct
-cp $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/clsf
-cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
-cp $SIFDECODE/objects/$MYARCH/double/run_sifdecode ${bindir}/run_sifdecode
-cp $SIFDECODE/objects/$MYARCH/double/libsifdecode.a ${prefix}/lib/libsifdecode.a
-cp $CUTEST/objects/$MYARCH/single/libcutest.a ${prefix}/lib/libcutest_single.a
-cp $CUTEST/objects/$MYARCH/double/libcutest.a ${prefix}/lib/libcutest_double.a
+ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
+ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
+ln -s $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/
+ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
 install_license $CUTEST/lgpl-3.0.txt
 """
 
@@ -119,14 +114,9 @@ platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libsifdecode.a", :libsifdecode_a),
-    FileProduct("lib/libcutest_single.a", :libcutest_single_a),
-    FileProduct("lib/libcutest_double.a", :libcutest_double_a),
+    ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
-    ExecutableProduct("sifdecoder", :sifdecoder),
-    ExecutableProduct("run_sifdecode", :run_sifdecode),
-    LibraryProduct("libsifdecode", :libsifdecode),
     LibraryProduct("libcutest_single", :libcutest_single),
     LibraryProduct("libcutest_double", :libcutest_double),
 ]
