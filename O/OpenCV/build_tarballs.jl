@@ -37,6 +37,7 @@ if [[ "${target}" == *-apple-* ]]; then
     done
     # Apply patch to help CMake find our 64-bit OpenBLAS
     atomic_patch -p1 -d../opencv ../patches/find-openblas64.patch
+    atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
     # Disable QT
     export USE_QT="OFF"
 elif [[ "${target}" == *-w64-* ]]; then
