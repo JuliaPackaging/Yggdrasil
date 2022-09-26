@@ -48,7 +48,7 @@ cd $SIFDECODE
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "6" > sifdecode.opts   # PC64
   echo "2" >> sifdecode.opts  # Linux
-  echo "8" >> sifdecode.opts  # gfortran
+  echo "6" >> sifdecode.opts  # gfortran
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > sifdecode.opts  # macOS
   echo "2" >> sifdecode.opts  # gfortran
@@ -67,7 +67,7 @@ if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "2" >> cutest.opts  # Linux
   echo "6" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "9" >> cutest.opts  # gcc
+  echo "8" >> cutest.opts  # gcc
   export MYARCH=pc64.lnx.gfo
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
