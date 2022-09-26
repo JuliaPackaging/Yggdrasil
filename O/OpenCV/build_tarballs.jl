@@ -23,11 +23,6 @@ cd ..
 mkdir build && cd build
 export USE_QT="ON"
 
-# Patch a minor clang issue
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    atomic_patch -p1 -d../opencv ../patches/atomic_fix.patch
-fi
-
 if [[ "${target}" == *-apple-* ]]; then
     # We want to use OpenBLAS over Accelerate framework...
     export OpenBLAS_HOME=${prefix}
@@ -57,6 +52,7 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_STANDARD=11      
       -DBUILD_TESTS=OFF \
       -DBUILD_PERF_TESTS=OFF \
       -DBUILD_EXAMPLES=OFF \
