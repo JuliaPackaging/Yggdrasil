@@ -96,9 +96,9 @@ if [[ "${target}" == *-apple-* ]]; then
   extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
 fi
 cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_single.${dlext}
+gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
 cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o ${libdir}/libcutest_double.${dlext}
+gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
 
 ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
 ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
