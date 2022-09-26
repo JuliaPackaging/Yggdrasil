@@ -19,10 +19,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/diffutils-*/
 
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/win_signal_handling.patch
+    atomic_patch -p1 ../patches/win_sa_restart.patch
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --target=${compiler_target} --disable-dependency-tracking
 
 # skip gnulib-tests on mingw
 if [[ "${target}" == *-mingw* ]]; then
