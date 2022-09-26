@@ -6,7 +6,7 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.4.3"
+version = v"3.4.4"
 source_version = v"3.4.2"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
@@ -105,7 +105,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
 
 # The products that we will ensure are always built.
 products = [
