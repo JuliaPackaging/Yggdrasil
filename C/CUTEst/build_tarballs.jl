@@ -87,12 +87,8 @@ echo "nnydy" >> cutest.opts
 ./install_cutest < cutest.opts
 
 # build shared libs
-all_load="--whole-archive"
-noall_load="--no-whole-archive"
 extra=""
 if [[ "${target}" == *-apple-* ]]; then
-  all_load="-all_load"
-  noall_load="-noall_load"
   extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
 fi
 cd $CUTEST/objects/$MYARCH/single
