@@ -67,7 +67,7 @@ if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "2" >> cutest.opts  # Linux
   echo "6" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "8" >> cutest.opts  # gcc
+  echo "9" >> cutest.opts  # gcc
   export MYARCH=pc64.lnx.gfo
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
@@ -111,6 +111,7 @@ install_license $CUTEST/lgpl-3.0.txt
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = filter!(!(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
