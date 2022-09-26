@@ -46,8 +46,8 @@ elif [[ "${target}" == *-w64-* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
     export USE_QT="OFF"
 fi
-cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
-      -DJulia_PREFIX=${prefix} \
+
+cmake -DJulia_PREFIX=${prefix} \
       -DWITH_JULIA=ON \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
