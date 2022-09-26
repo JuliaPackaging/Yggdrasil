@@ -13,6 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/KMC/
+sed -i -e 's/CC = \/usr\/local\/bin\/g++-10/CC = g++/' Makefile
+
 make kmc kmc_dump kmc_tools
 mkdir -p ${bindir}
 cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
@@ -20,7 +22,7 @@ cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p -> nbits(p) == 32)
 
 # The products that we will ensure are always built
 products = [
