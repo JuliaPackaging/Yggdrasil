@@ -48,7 +48,7 @@ cd $SIFDECODE
 if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "6" > sifdecode.opts   # PC64
   echo "2" >> sifdecode.opts  # Linux
-  echo "6" >> sifdecode.opts  # gfortran
+  echo "8" >> sifdecode.opts  # gfortran
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > sifdecode.opts  # macOS
   echo "2" >> sifdecode.opts  # gfortran
@@ -117,8 +117,8 @@ products = [
     ExecutableProduct("sifdecoder", :sifdecoder),
     ExecutableProduct("slct", :slct),
     ExecutableProduct("clsf", :clsf),
-    LibraryProduct("libcutest_single", :libcutest_single),
-    LibraryProduct("libcutest_double", :libcutest_double),
+    # LibraryProduct("libcutest_single", :libcutest_single),
+    # LibraryProduct("libcutest_double", :libcutest_double),
 ]
 
 dependencies = [
