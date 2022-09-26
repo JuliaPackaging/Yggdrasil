@@ -8,8 +8,8 @@ julia_version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "b0dc474160e389b9c9045da5db49d03ae17c6a6b"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "db16caf6ceee76b43b94c846be276e92a43e9700"),
+    GitSource("https://github.com/opencv/opencv.git", "a682f02f595ae90e58fdfaeeeb4c6d99d9aecdd1"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "94d15ee5c603128ac6fbd355c2210176814c481b"),
     DirectorySource("./bundled"),
 ]
 
