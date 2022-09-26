@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.68.0"
+version = v"0.69.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "ab157a8789fe6c2db886e6ede19b8d2c61dd632b"),
+    GitSource("https://github.com/sciapp/gr.git", "6e00675c1cc8f50e65707cfe59e0b37ab1fe2c97"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "3001e2d12b368f7bda444b73112d26e59bdda459cf9ab395d7ad9679b8eee745", "gr.js")
 ]
