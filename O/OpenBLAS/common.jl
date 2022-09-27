@@ -231,6 +231,6 @@ function openblas_dependencies(platforms; kwargs...)
         Dependency("CompilerSupportLibraries_jll"),
         HostBuildDependency("FlangClassic_jll"),
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
-        BuildDependency("FlangClassic_RTLib_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms))
+        Dependency("FlangClassic_RTLib_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms))
     ]
 end
