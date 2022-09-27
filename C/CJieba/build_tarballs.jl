@@ -16,12 +16,12 @@ mkdir $libdir $prefix/share
 curl https://raw.githubusercontent.com/yanyiwu/cppjieba/master/LICENSE > LICENSE
 install_license LICENSE 
 cd cjieba-0.3.0/
-g++ lib/jieba.cpp -shared -fPIC -I./deps/ -std=c++11 -o libcjieba.so
-cp libcjieba.so $libdir
+g++ -o "$libdir/libcjieba.$dlext" lib/jieba.cpp -shared -fPIC -I./deps/ -std=c++11
 cp -a dict $prefix/share/
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libcjieba", :libcjieba),
