@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cd likwid-5.2.2/
+cd likwid-*
 if [[ "${target}" == powerpc64le-linux-* ]]; then
     export COMPILER=GCCPOWER
 elif [[ "${target}" == aarch64-linux-* ]]; then
