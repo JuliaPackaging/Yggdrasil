@@ -31,7 +31,6 @@ else # assume x86_64
 fi
 make PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
 make install PREFIX=${prefix} HWLOC_INCLUDE_DIR=${includedir} HWLOC_LIB_DIR=${libdir} HWLOC_LIB_NAME=hwloc LUA_INCLUDE_DIR=${includedir} LUA_LIB_DIR=${libdir} LUA_LIB_NAME=lua LUA_BIN=${bindir}
-exit
 """
 
 # These are the platforms we will build for by default, unless further
