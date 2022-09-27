@@ -16,6 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/KMC/
 
 atomic_patch -p1 ../patches/drop_prepackaged_libs.patch
+atomic_patch -p1 ../patches/unvendor_paths.patch
 
 make kmc kmc_dump kmc_tools
 mkdir -p ${bindir}

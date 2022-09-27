@@ -1,0 +1,37 @@
+diff --git a/kmc_core/fastq_reader.h b/kmc_core/fastq_reader.h
+index 7a59897..11474c1 100644
+--- a/kmc_core/fastq_reader.h
++++ b/kmc_core/fastq_reader.h
+@@ -15,8 +15,8 @@
+ #include "params.h"
+ #include <stdio.h>
+ 
+-#include "libs/zlib.h"
+-#include "libs/bzlib.h"
++#include "zlib.h"
++#include "bzlib.h"
+ 
+ using namespace std;
+ 
+diff --git a/kmc_tools/fastq_reader.h b/kmc_tools/fastq_reader.h
+index f4fe1f2..86c9005 100644
+--- a/kmc_tools/fastq_reader.h
++++ b/kmc_tools/fastq_reader.h
+@@ -17,8 +17,8 @@
+ #include <stdio.h>
+ #include <iostream>
+ 
+-#include "libs/zlib.h"
+-#include "libs/bzlib.h"
++#include "zlib.h"
++#include "bzlib.h"
+ 
+ 
+ using namespace std;
+@@ -96,4 +96,4 @@ public:
+ 
+ #endif
+ 
+-// ***** EOF
+\ No newline at end of file
++// ***** EOF
