@@ -13,6 +13,6 @@ push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
 dependencies = openblas_dependencies(platforms)
 
-# Build the tarballs
+# Build the tarballs!
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.9")
