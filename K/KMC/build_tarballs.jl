@@ -7,17 +7,15 @@ version = v"3.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/refresh-bio/KMC.git", "13b9b04120e902d158bd0cb87d83b63b742781b9")
+    GitSource("https://github.com/refresh-bio/KMC.git", "13b9b04120e902d158bd0cb87d83b63b742781b9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/KMC/
-sed -i -e 's/CC = \/usr\/local\/bin\/g++-10/CC = g++/' Makefile
 
-if [[ $target != aarch64-linux-* ]]; then
-    sed -i -e 's/ -m64 / /' Makefile
-fi
+atomic_patch -p1 ../patches/drop_prepackaged_libs.patch
 
 make kmc kmc_dump kmc_tools
 mkdir -p ${bindir}
@@ -36,7 +34,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("Bzip2_jll"),
+    Dependency("Zlib_jll"),
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

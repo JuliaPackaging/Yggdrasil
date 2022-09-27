@@ -1,0 +1,61 @@
+diff --git a/Makefile b/Makefile
+index bc07d35..7281b89 100644
+--- a/Makefile
++++ b/Makefile
+@@ -13,7 +13,7 @@ OUT_BIN_DIR = bin
+ OUT_INCLUDE_DIR = include
+ 
+ ifeq ($(UNAME_S),Darwin)
+-	CC = /usr/local/bin/g++-10
++	CC = g++
+ 
+ 	CFLAGS	= -Wall -O3 -m64 -static-libgcc -static-libstdc++ -pthread -std=c++14
+ 	CLINK	= -lm -static-libgcc -static-libstdc++ -O3 -pthread -std=c++14
+@@ -53,14 +53,6 @@ $(KMC_MAIN_DIR)/kmc_runner.o
+ ifeq ($(UNAME_S),Darwin)
+ 	RADULS_OBJS =
+ 
+-	KMC_LIBS = \
+-	$(KMC_MAIN_DIR)/libs/libz.1.2.5.dylib \
+-	$(KMC_MAIN_DIR)/libs/libbz2.1.0.5.dylib
+-
+-	KMC_TOOLS_LIBS = \
+-	$(KMC_TOOLS_DIR)/libs/libz.1.2.5.dylib \
+-	$(KMC_TOOLS_DIR)/libs/libbz2.1.0.5.dylib
+-
+ 	LIB_KMC_CORE = $(OUT_BIN_DIR)/libkmc_core.mac.a
+ else
+ 	RADULS_OBJS = \
+@@ -69,14 +61,6 @@ else
+ 	$(KMC_MAIN_DIR)/raduls_avx2.o \
+ 	$(KMC_MAIN_DIR)/raduls_avx.o
+ 
+-	KMC_LIBS = \
+-	$(KMC_MAIN_DIR)/libs/libz.a \
+-	$(KMC_MAIN_DIR)/libs/libbz2.a
+-
+-	KMC_TOOLS_LIBS = \
+-	$(KMC_TOOLS_DIR)/libs/libz.a \
+-	$(KMC_TOOLS_DIR)/libs/libbz2.a
+-
+ 	LIB_KMC_CORE = $(OUT_BIN_DIR)/libkmc_core.a
+ endif
+ 
+@@ -127,7 +111,7 @@ $(LIB_KMC_CORE): $(KMC_CORE_OBJS) $(RADULS_OBJS) $(KMC_API_OBJS) $(KFF_OBJS)
+ 
+ kmc: $(KMC_CLI_OBJS) $(LIB_KMC_CORE)
+ 	-mkdir -p $(OUT_BIN_DIR)
+-	$(CC) $(CLINK) -o $(OUT_BIN_DIR)/$@ $^ $(KMC_LIBS)
++	$(CC) $(CLINK) -o $(OUT_BIN_DIR)/$@ $^
+ 
+ kmc_dump: $(KMC_DUMP_OBJS) $(KMC_API_OBJS)
+ 	-mkdir -p $(OUT_BIN_DIR)
+@@ -135,7 +119,7 @@ kmc_dump: $(KMC_DUMP_OBJS) $(KMC_API_OBJS)
+ 
+ kmc_tools: $(KMC_TOOLS_OBJS) $(KMC_API_OBJS) $(KFF_OBJS)
+ 	-mkdir -p $(OUT_BIN_DIR)
+-	$(CC) $(CLINK) -o $(OUT_BIN_DIR)/$@ $^ $(KMC_TOOLS_LIBS)
++	$(CC) $(CLINK) -o $(OUT_BIN_DIR)/$@ $^
+ 
+ $(PY_KMC_API_DIR)/%.o: $(KMC_API_DIR)/%.cpp
+ 	$(CC) -c -fPIC -Wall -O3 -m64 -std=c++14 $^ -o $@
