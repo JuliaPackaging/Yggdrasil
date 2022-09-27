@@ -6,7 +6,7 @@ version = v"2.74.0"
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-        "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
+                  "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
     DirectorySource("./bundled"),
 ]
 
@@ -36,7 +36,7 @@ meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dman=false \
     "${MESON_FLAGS[@]}" \
     ..
-ninja -j${nproc}
+ninja -j${nproc} --verbose
 ninja install
 """
 
