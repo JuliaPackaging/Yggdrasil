@@ -9,8 +9,8 @@ version = v"5.15.3"
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$(version)/submodules/qtbase-everywhere-opensource-src-$(version).tar.xz",
                   "26394ec9375d52c1592bd7b689b1619c6b8dbe9b6f91fdd5c355589787f3a0b6"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.13.sdk.tar.xz",
+                  "1d2984acab2900c73d076fbd40750035359ee1abe1a6c61eafcd218f68923a5a"),
     DirectorySource("./bundled"),
 ]
 
@@ -52,7 +52,7 @@ case "$target" in
 	*apple-darwin*)
         echo "QMAKE_CFLAGS_ARCH_HASWELL =" >> ../qtbase-everywhere-src-*/mkspecs/macx-clang/qmake.conf
         if [[ "${target}" == x86_64-* ]]; then
-            cd $WORKSPACE/srcdir/MacOSX10.14.sdk
+            cd $WORKSPACE/srcdir/MacOSX10.13.sdk
             rm -rf /opt/$target/$target/sys-root/System
             rsync -a usr/* /opt/$target/$target/sys-root/usr/
             cp -a System /opt/$target/$target/sys-root/
@@ -77,7 +77,7 @@ QMAKE_MAC_XCODE_SETTINGS += xcode_copy_phase_strip_setting
 EOT
 
         sed -i '1s;^;QMAKE_MAC_SDK.macosx.Path = '"/opt/$target/$target/sys-root"'\
-        QMAKE_MAC_SDK.macosx.SDKVersion = '"10.14"'\
+        QMAKE_MAC_SDK.macosx.SDKVersion = '"10.13"'\
         QMAKE_MAC_SDK.macosx.PlatformPath = '"/opt/$target"'\n;' 'mkspecs/features/mac/sdk.prf'
         echo "" >  mkspecs/features/mac/no_warn_empty_obj_files.prf
 
@@ -96,7 +96,7 @@ EOT
         ../qtbase-everywhere-src-*/configure \
             QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks \
             QMAKE_RANLIB=${BIN_DIR}/ranlib \
-            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.14 \
+            QMAKE_MACOSX_DEPLOYMENT_TARGET=10.13 \
             -platform musl -xplatform macx-clang -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
             -prefix ${prefix} $commonoptions \
             -skip qtwinextras \
