@@ -7,8 +7,9 @@ version = v"3.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://buttari.perso.enseeiht.fr/qr_mumps/releases/qr_mumps-$version.tgz",
-                  "f78524dcc58f597c9255e162fa17a7aabe5d2ce0ef5f0d7dcd71221cf4bdf231")
+    GitSource("https://gitlab.com/qr_mumps/qr_mumps.git" ,"66e9b6c97959343362d4f1b22cd4307813752df5"),
+    # ArchiveSource("http://buttari.perso.enseeiht.fr/qr_mumps/releases/qr_mumps-$version.tgz",
+    #               "f78524dcc58f597c9255e162fa17a7aabe5d2ce0ef5f0d7dcd71221cf4bdf231")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,9 +17,25 @@ script = raw"""
 cd $WORKSPACE/srcdir/qr_mumps*
 mkdir build
 cd build
-cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$prefix -DQRM_ORDERING_AMD=ON -DQRM_ORDERING_METIS=ON \
-                           -DQRM_ORDERING_SCOTCH=ON -DQRM_WITH_STARPU=OFF -DQRM_WITH_CUDA=OFF -DCMAKE_BUILD_TYPE=Release \
-                           -DLAPACK_LIBRARIES="-L${libdir} -lblastrampoline" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CROSSCOMPILING_EMULATOR=""
+if [[ "${target}" == *mingw* ]]; then
+    BOOL=OFF
+else
+    BOOL=ON
+fi
+cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON \
+                           -DCMAKE_INSTALL_PREFIX=$prefix \
+                           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+                           -DCMAKE_CROSSCOMPILING_EMULATOR="" \
+                           -DQRM_ORDERING_AMD=ON \
+                           -DQRM_ORDERING_METIS=ON \
+                           -DQRM_ORDERING_SCOTCH=$BOOL \
+                           -DQRM_WITH_STARPU=OFF \
+                           -DQRM_WITH_CUDA=OFF \
+                           -DBLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+                           -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+                           -DMETIS_LIBRARIES="${libdir}/libmetis.${dlext}" \
+                           -DCMAKE_BUILD_TYPE=Release
+
 make -j${nproc}
 make install
 exit
@@ -27,7 +44,6 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
