@@ -70,7 +70,7 @@ dependencies = [
     Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
     # Gettext is only needed on macOS, as far as I could see
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    Dependency("PCRE_jll"),
+    Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
