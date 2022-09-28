@@ -34,6 +34,7 @@ cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON \
                            -DBLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
                            -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
                            -DMETIS_LIBRARIES="${libdir}/libmetis.${dlext}" \
+                           -DAMD_LIBRARIES="${libdir}/amd.${dlext};${libdir}/colamd.${dlext}" \
                            -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
