@@ -29,6 +29,9 @@ if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
 
+# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
+atomic_patch -p1 ../patches/utimensat-macos.patch
+
 mkdir build_glib && cd build_glib
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
