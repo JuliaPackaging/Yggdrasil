@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/
-${CC} -fPIC -shared -o ${libdir}/qhullwrapper.${dlext} qhullwrapper.h qhullwrapper.c -L${libdir} -lqhull_r
+${CC} -fPIC -shared -o ${libdir}/qhullwrapper.${dlext} qhullwrapper.c -L${libdir} -lqhull_r
 """
 # platforms are passed in on the command line
 platforms = supported_platforms()
