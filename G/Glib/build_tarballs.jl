@@ -1,18 +1,19 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.68.3"
+version = v"2.74.0"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "e7e1a3c20c026109c45c9ec4a31d8dcebc22e86c69486993e565817d64be3138"),
+                  "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
+install_license COPYING
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -28,14 +29,23 @@ if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
 
+# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
+atomic_patch -p1 ../patches/utimensat-macos.patch
+
 mkdir build_glib && cd build_glib
+
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     -Dman=false \
-    -Diconv=external \
     "${MESON_FLAGS[@]}" \
     ..
-ninja -j${nproc}
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`
+sed -i.bak 's/csrDT/csrD/' build.ninja
+
+ninja -j${nproc} --verbose
 ninja install
 """
 
@@ -60,10 +70,10 @@ dependencies = [
     Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
     # Gettext is only needed on macOS, as far as I could see
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    Dependency("PCRE_jll"),
+    Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
