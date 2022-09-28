@@ -25,7 +25,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="Qhull_jll"))
+    Dependency(PackageSpec(name="Qhull_jll"), compat="8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
