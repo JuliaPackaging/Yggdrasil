@@ -38,7 +38,7 @@ const augment = raw"""
         end
         return platform
     end
-"""
+    """
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
