@@ -54,6 +54,9 @@ FILE(GLOB kmc_kff_sources
 # target_link_libraries(kmc_api Threads::Threads)
 
 add_library(kmc_api SHARED ${kmc_core_sources} ${kmc_api_sources} ${kmc_kff_sources})
+target_include_directories(kmc_api PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>)
 target_link_libraries(kmc_api Threads::Threads ZLIB::ZLIB BZip2::BZip2)
 
 add_executable(kmc_tools ${kmc_tools_sources} ${kmc_api_sources} ${kmc_kff_sources})
