@@ -22,9 +22,12 @@ mv ../CMakeLists.txt .
 mkdir build
 cd build
 
-cmake ../ -DZLIB_INCLUDE_DIR=${includedir} \
-          -DBZIP2_INCLUDE_DIR=${includedir} \
-          -DCMAKE_LIBRARY_PATH=${libdir}
+cmake ../ -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DZLIB_INCLUDE_DIR=${includedir} \
+      -DBZIP2_INCLUDE_DIR=${includedir} \
+      -DCMAKE_LIBRARY_PATH=${libdir}
 make -j${nproc} VERBOSE=1
 
 
