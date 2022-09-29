@@ -22,10 +22,8 @@ mv ../CMakeLists.txt .
 mkdir build
 cd build
 
-cmake ../ -DZLIB_LIBRARY=$libdir \
-          -DZLIB_INCLUDE_DIR=$includedir \
-          -DBZIP2_LIBRARY=$libdir \
-          -DBZIP2_INCLUDE_DIR=$includedir \
+cmake ../ -DZLIB_INCLUDE_DIR=${includedir} \
+          -DBZIP2_INCLUDE_DIR=${includedir} \
           -DCMAKE_LIBRARY_PATH=${libdir}
 make -j${nproc} VERBOSE=1
 
