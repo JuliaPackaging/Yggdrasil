@@ -1,5 +1,3 @@
-# cmake ../ -DZLIB_LIBRARY=$libdir -DZLIB_INCLUDE_DIR=$includedir -DBZIP2_LIBRARY=$libdir -DBZIP2_INCLUDE_DIR=$includedir -DCMAKE_LIBRARY_PATH=${libdir}
-
 cmake_minimum_required(VERSION 3.10)
 
 project(KMC)
@@ -7,6 +5,7 @@ project(KMC)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Threads REQUIRED)
 find_package(ZLIB)
 find_package(BZip2)
 

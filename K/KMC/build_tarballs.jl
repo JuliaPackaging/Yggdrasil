@@ -18,7 +18,19 @@ cd $WORKSPACE/srcdir/KMC/
 atomic_patch -p1 ../patches/drop_prepackaged_libs.patch
 atomic_patch -p1 ../patches/unvendor_paths.patch
 
-make kmc kmc_dump kmc_tools
+mv ../CMakeLists.txt .
+mkdir build
+cd build
+
+cmake ../ -DZLIB_LIBRARY=$libdir \
+          -DZLIB_INCLUDE_DIR=$includedir \
+          -DBZIP2_LIBRARY=$libdir \
+          -DBZIP2_INCLUDE_DIR=$includedir \
+          -DCMAKE_LIBRARY_PATH=${libdir}
+make -j${nproc} VERBOSE=1
+
+
+# make kmc kmc_dump kmc_tools
 mkdir -p ${bindir}
 cp bin/kmc${exeext} bin/kmc_dump${exeext} bin/kmc_tools${exeext} ${bindir}
 """
