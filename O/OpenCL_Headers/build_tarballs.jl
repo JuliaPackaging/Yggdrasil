@@ -28,7 +28,6 @@ cmake --build ./OpenCL-Headers/build --target install -j${nproc}
 # platforms are passed in on the command line
 platforms = [AnyPlatform()]
 
-
 # The products that we will ensure are always built
 products = [
     FileProduct("include/CL/cl.h", :cl_h)
