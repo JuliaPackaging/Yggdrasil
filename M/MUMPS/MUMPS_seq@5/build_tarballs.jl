@@ -68,8 +68,8 @@ make_args+=(OPTF=-O3
             FC="gfortran -fPIC ${FFLAGS[@]}"
             FL="gfortran -fPIC"
             RANLIB="echo"
-            LIBBLAS=${BLAS_LAPACK}
-            LAPACK=${BLAS_LAPACK})
+            LIBBLAS="${BLAS_LAPACK}"
+            LAPACK="${BLAS_LAPACK}")
 
 make -j${nproc} allshared "${make_args[@]}"
 
