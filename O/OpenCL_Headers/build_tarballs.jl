@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "OpenCL_Headers"
-version = v"2022.9.23"
+version = v"2022.09.23"
 
 # Collection of sources required to complete build
 sources = [
