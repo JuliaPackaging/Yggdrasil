@@ -39,5 +39,12 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
         Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
 
+    global script
+    script = raw"""
+    # HACK WORKAROUND GAP_jll deficiencies
+    # must add -lgap to the linker flags used by gac
+    perl -pi -e 's/c_addlibs=""/c_addlibs="-lgap"/' ${prefix}/bin/gac
+    """ * script
+
     return platforms, dependencies
 end
