@@ -26,7 +26,7 @@ platforms = supported_platforms(; exclude=os -> Sys.iswindows(os) || Sys.isfreeb
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOpenCL", :libcl)
+    LibraryProduct("libOpenCL", :libopencl)
 ]
 
 # Dependencies that must be installed before this package can be built
