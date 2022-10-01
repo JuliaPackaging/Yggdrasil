@@ -27,6 +27,9 @@ chmod a+x ${prefix}/lib/gap/gac
 ./configure ${prefix}/lib/gap
 make -j${nproc} CFLAGS="-I$includedir -I$includedir/ncurses"
 
+# revert the HACK
+rm ${prefix}/lib/gap/gac
+
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
@@ -45,3 +48,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

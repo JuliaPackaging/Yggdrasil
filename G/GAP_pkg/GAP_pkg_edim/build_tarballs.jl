@@ -20,8 +20,8 @@ script = raw"""
 cd EDIM*
 
 # HACK to fool the EDIM build system
-touch ${prefix}/lib/gap/GNUmakefile
 mkdir -p ${prefix}/lib/gap
+touch ${prefix}/lib/gap/GNUmakefile
 cp ${prefix}/bin/gac ${prefix}/lib/gap/gac
 chmod a+x ${prefix}/lib/gap/gac
 
@@ -29,7 +29,8 @@ chmod a+x ${prefix}/lib/gap/gac
 make -j${nproc}
 
 # revert the HACK
-rm -f ${prefix}/lib/gap/GNUmakefile
+rm ${prefix}/lib/gap/GNUmakefile
+rm ${prefix}/lib/gap/gac
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
@@ -49,3 +50,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+
