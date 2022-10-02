@@ -32,10 +32,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenCL_Headers_jll", uuid="a7aa756b-2b7f-562a-9e9d-e94076c5c8ee"))
-    Dependency(PackageSpec(name="OpenCL_jll", uuid="6cb37087-e8b6-5417-8430-1f242f1e46e4"))
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2022.09.23")),
+    BuildDependency(PackageSpec(; name="OpenCL_jll", version=v"2022.09.23")),
+    BuildDependency(PackageSpec(name="FFTW_jll", version=v"3.3.10")),
+    BuildDependency(PackageSpec(name="boost_jll", version=v"1.76.0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
