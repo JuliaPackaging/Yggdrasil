@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Tokei"
-version = v"12.1.2"
+version = v"12.1.200"
 
 sources = [
     ArchiveSource("https://github.com/XAMPPRocky/tokei/archive/refs/tags/v$(version).tar.gz",
@@ -30,4 +30,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")
