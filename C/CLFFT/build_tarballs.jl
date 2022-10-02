@@ -34,8 +34,8 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2022.09.23")),
     BuildDependency(PackageSpec(; name="OpenCL_jll", version=v"2022.09.23")),
-    BuildDependency(PackageSpec(name="FFTW_jll", version=v"3.3.10")),
-    BuildDependency(PackageSpec(name="boost_jll", version=v"1.76.0"))
+    BuildDependency(PackageSpec(; name="FFTW_jll", version=v"3.3.10")),
+    BuildDependency(PackageSpec(; name="boost_jll", version=v"1.76.0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
