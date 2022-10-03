@@ -4,7 +4,7 @@ const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/rocSPARSE/"
 const GIT_TAGS = Dict(
     v"4.2.0" => "8a86ed49d278e234c82e406a1430dc28f50d416f8f1065cf5bdf25cc5721129c",
     v"4.5.2" => "e37af2cd097e239a55a278df534183b5591ef4d985fe1a268a229bd11ada6599",
-    v"5.2.3" => "e37af2cd097e239a55a278df534183b5591ef4d985fe1a268a229bd11ada6511",
+    v"5.2.3" => "6da3f3303a8ada94c4dbff4b42ee33a2e2883a908ee21c41cb2aa7180382026a",
 )
 
 const ROCM_PLATFORMS = [
