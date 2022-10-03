@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 
 install_license ./OpenCL-ICD-Loader/LICENSE
 
-cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -S ./OpenCL-ICD-Loader -B ./OpenCL-ICD-Loader/build
+cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -S ./OpenCL-ICD-Loader -B ./OpenCL-ICD-Loader/build
 cmake --build ./OpenCL-ICD-Loader/build --target install -j${nproc}
 """
 
