@@ -7,20 +7,26 @@ const GIT_TAGS = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    # TODO add, when rocBLAS 5.2.3+ is built for musl
     # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
-const PRODUCTS = [LibraryProduct(["libMIOpen"], :libMIOpen, ["lib"])]
-# Add half to products?
+const PRODUCTS = [
+    LibraryProduct(["libMIOpen"], :libMIOpen, ["lib"]),
+    FileProduct("include/half.hpp", :libhalf),
+]
 
 function configure_build(version)
     buildscript = raw"""
+    mv ${WORKSPACE}/srcdir/half/include/half.hpp ${prefix}/include
+    export HALF_INCLUDE_DIR=${prefix}/include
+
     mv ${WORKSPACE}/srcdir/rocm-clang* ${prefix}/llvm/bin
 
     cd ${WORKSPACE}/srcdir/MIOpen*/
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost-fix.patch
     mkdir build
 
-    export AMDGPU_TARGETS="gfx1030"
+    export AMDGPU_TARGETS="gfx900;gfx906;gfx90a;gfx1010;gfx1012;gfx1030"
     export ROCM_PATH=${prefix}
 
     export HIP_PATH=${prefix}/hip
@@ -28,10 +34,8 @@ function configure_build(version)
     export HIP_RUNTIME=rocclr
     export HIP_COMPILER=clang
 
-    export HALF_INCLUDE_DIR=${WORKSPACE}/srcdir/half/include
-
     CXXFLAGS="${CXXFLAGS} -I${prefix}/include/rocblas" \
-    cmake -S . -B build -Wno-dev \
+    cmake -S . -B build \
         -DCMAKE_CXX_COMPILER=${prefix}/llvm/bin/rocm-clang++ \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_PREFIX_PATH=${prefix} \
@@ -65,11 +69,7 @@ function configure_build(version)
         Dependency("rocBLAS_jll", version),
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),
-
-        # Dependency("boost_jll"),
-        Dependency(PackageSpec(;
-            name="boost_jll",
-            path=joinpath("/home/pxl-th/.julia/dev", "boost_jll"))),
+        Dependency("boost_jll", v"1.79.0"),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
