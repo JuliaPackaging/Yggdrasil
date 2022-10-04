@@ -13,8 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-export CC=gcc
-export CXX=g++
+CC=gcc
+CXX=g++
+
+g++ -v
 
 cd $WORKSPACE/srcdir/fmt
 mkdir build
