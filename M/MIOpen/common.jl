@@ -1,8 +1,8 @@
 const NAME = "MIOpen"
 
-const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/MIOpen"
+const ROCM_GIT = "https://github.com/ROCmSoftwarePlatform/MIOpen/"
 const GIT_TAGS = Dict(
-    v"5.2.3" => "36f74ce53b82331a756c42f95f3138498d6f4a66f2fd370cff9ab18281bb1211",
+    v"5.2.3" => "28747847446955b3bab24f7fc65c1a6b863a12f12ad3a35e0312072482d38122",
 )
 
 const ROCM_PLATFORMS = [
@@ -10,79 +10,38 @@ const ROCM_PLATFORMS = [
     # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 const PRODUCTS = [LibraryProduct(["libMIOpen"], :libMIOpen, ["lib"])]
+# Add half to products?
 
 function configure_build(version)
     buildscript = raw"""
-    cd ${WORKSPACE}/srcdir/rocBLAS*/
+    mv ${WORKSPACE}/srcdir/rocm-clang* ${prefix}/llvm/bin
 
+    cd ${WORKSPACE}/srcdir/MIOpen*/
     mkdir build
 
+    export AMDGPU_TARGETS="gfx1030"
     export ROCM_PATH=${prefix}
-    export HIP_PATH=${prefix}/hip
 
+    export HIP_PATH=${prefix}/hip
     export HIP_PLATFORM=amd
     export HIP_RUNTIME=rocclr
     export HIP_COMPILER=clang
-    export HSA_PATH=${prefix}
-    export HIP_CLANG_PATH=${prefix}/llvm/bin
 
-    # Other HIPCC env variables.
-    export HIPCC_VERBOSE=1
-    export HIP_LIB_PATH=${prefix}/hip/lib
-    export DEVICE_LIB_PATH=${prefix}/amdgcn/bitcode
-    export HIP_CLANG_HCC_COMPAT_MODE=1
+    export MIOPEN_BACKEND=HIP
+    export HALF_INCLUDE_DIR=${WORKSPACE}/srcdir/half/include
 
-    # BB compile HIPCC flags:
-    BB_COMPILE_BASE_DIR=/opt/${target}/${target}
-    BB_COMPILE_CPP_DIR=${BB_COMPILE_BASE_DIR}/include/c++/*
-    OMP_DIR=/opt/${target}/lib/gcc/${target}/*/include
-    BB_COMPILE_FLAGS=" -isystem ${OMP_DIR} -isystem ${BB_COMPILE_CPP_DIR} -isystem ${BB_COMPILE_CPP_DIR}/${target} --sysroot=${BB_COMPILE_BASE_DIR}/sys-root"
 
-    # BB link HIPCC flags:
-    BB_LINK_GCC_DIR=/opt/${target}/lib/gcc/${target}/*
-    BB_LINK_FLAGS=" --sysroot=${BB_COMPILE_BASE_DIR}/sys-root -B ${BB_LINK_GCC_DIR} -L ${BB_LINK_GCC_DIR}  -L ${BB_COMPILE_BASE_DIR}/lib64 -L ${prefix}/lib"
-
-    # Set compile & link flags for hipcc.
-    export HIPCC_COMPILE_FLAGS_APPEND=$BB_COMPILE_FLAGS
-    export HIPCC_LINK_FLAGS_APPEND=$BB_LINK_FLAGS
-
-    export PATH="${prefix}/hip/bin:${prefix}/llvm/bin:${PATH}"
-    export LD_LIBRARY_PATH="${prefix}/lib:$prefix/hip/lib:${prefix}/llvm/lib:${LD_LIBRARY_PATH}"
-
-    # NOTE
-    # Looking at hcc-cmd, it is clear that it is omitting 'hip/include' directory.
-    # Therefore we symlink to other directory that it looks at.
-    mkdir ${prefix}/lib/include
-    ln -s ${prefix}/hip/include/* ${prefix}/lib/include
-
-    # NOTE
-    # This is needed to avoid errors with zipping files older than 1980.
-    # See: https://github.com/pypa/wheel/issues/418
-    unset SOURCE_DATE_EPOCH
-    pip install -U pip wheel setuptools
-
-    CXX=${prefix}/hip/bin/hipcc \
+    CXXFLAGS="${CXXFLAGS} -I ${prefix}/include/rocblas" \
     cmake -S . -B build \
+        -DCMAKE_CXX_COMPILER=${prefix}/llvm/bin/rocm-clang++ \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_PREFIX_PATH=${prefix} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_COMPILER=${prefix}/hip/bin/hipcc \
-        -DCMAKE_CXX_FLAGS="-fuse-ld=lld" \
-        -DROCM_PATH=${prefix} \
-        -DBUILD_VERBOSE=ON \
-        -DBUILD_WITH_TENSILE=ON \
-        -DBUILD_WITH_TENSILE_HOST=ON \
-        -DTensile_LIBRARY_FORMAT=yaml \
-        -DTensile_COMPILER=hipcc \
-        -DTensile_LOGIC=asm_full \
-        -DTensile_CODE_OBJECT_VERSION=V3 \
-        -DTensile_ARCHITECTURE=${AMDGPU_TARGETS} \
+        -DROCM_PATH=${ROCM_PATH} \
         -DAMDGPU_TARGETS=${AMDGPU_TARGETS} \
-        -DBUILD_CLIENTS_TESTS=OFF \
-        -DBUILD_CLIENTS_BENCHMARKS=OFF \
-        -DBUILD_CLIENTS_SAMPLES=OFF \
-        -DBUILD_TESTING=OFF \
-        -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF \
+        -DBoost_USE_STATIC_LIBS=OFF \
+        -DMIOPEN_USE_MLIR=OFF \
+        -DHALF_INCLUDE_DIR=${HALF_INCLUDE_DIR}
 
     make -j${nproc} -C build install
 
@@ -92,18 +51,20 @@ function configure_build(version)
     sources = [
         ArchiveSource(
             ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
+        ArchiveSource(
+            "https://downloads.sourceforge.net/project/half/half/2.1.0/half-2.1.0.zip",
+            "ad1788afe0300fa2b02b0d1df128d857f021f92ccf7c8bddd07812685fa07a25";
+            unpack_target="half"),
         DirectorySource("../scripts"),
     ]
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency("ROCmCompilerSupport_jll", version),
-        Dependency("ROCmOpenCLRuntime_jll", version),
-        Dependency("ROCmDeviceLibs_jll", version),
-        Dependency("rocminfo_jll", version),
-        Dependency("hsa_rocr_jll", version),
-        Dependency("rocBLAS_jll", version),
         Dependency("HIP_jll", version),
+        Dependency("rocBLAS_jll", version),
+        Dependency("Zlib_jll"),
+        Dependency("SQLite_jll"),
+        Dependency("boost_jll"),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
