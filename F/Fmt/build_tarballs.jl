@@ -16,7 +16,7 @@ script = raw"""
 CC=gcc
 CXX=g++
 
-g++ -v
+gcc -v
 
 cd $WORKSPACE/srcdir/fmt
 mkdir build
