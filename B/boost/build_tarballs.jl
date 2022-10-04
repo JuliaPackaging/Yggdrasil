@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.76.0"
+version = v"1.79.0"
 
 # Collection of sources required to build boost
 sources = [
-    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"),
+    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/$(string(version))/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+                  "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,7 +21,7 @@ cd $WORKSPACE/srcdir/boost*/
 # Patch adapted from
 # https://svnweb.freebsd.org/ports/head/devel/boost-libs/files/patch-boost_math_tools_config.hpp?revision=439932&view=markup
 # to be able to build long double math libraries
-atomic_patch -p1 ../patches/boost_math_tools_config_hpp.patch
+# atomic_patch -p1 ../patches/boost_math_tools_config_hpp.patch
 
 rm project-config.jam
 toolset=gcc
@@ -64,7 +64,10 @@ install_license LICENSE_1_0.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+# platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+]
 
 # The products that we will ensure are always built
 products = [

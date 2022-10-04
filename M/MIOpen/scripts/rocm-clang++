@@ -15,7 +15,7 @@ fi
 
 COMPILE_BASE_DIR=/opt/${target}/${target}
 COMPILE_CPP_DIR=${COMPILE_BASE_DIR}/include/c++/*
-PRE_FLAGS+=(-isystem ${COMPILE_CPP_DIR} -isystem ${COMPILE_CPP_DIR}/${target})
+# PRE_FLAGS+=(-isystem ${COMPILE_CPP_DIR} -isystem ${COMPILE_CPP_DIR}/${target})
 
 if [[ " ${ARGS[@]} " != *' -c '* ]] && [[ " ${ARGS[@]} " != *' -E '* ]] && [[ " ${ARGS[@]} " != *' -M '* ]] && [[ " ${ARGS[@]} " != *' -fsyntax-only '* ]]; then
     POST_FLAGS+=( -rtlib=libgcc )
@@ -25,6 +25,7 @@ fi
 
 COMPILE_BASE_DIR=/opt/${target}/${target}
 LINK_GCC_DIR=/opt/${target}/lib/gcc/${target}/*
+POST_FLAGS+=(-isystem ${COMPILE_CPP_DIR} -isystem ${COMPILE_CPP_DIR}/${target})
 POST_FLAGS+=(-B ${LINK_GCC_DIR} -L ${LINK_GCC_DIR} -L ${COMPILE_BASE_DIR}/lib64)
 
 if [[ " ${ARGS[@]} " == *"-march="* ]]; then
