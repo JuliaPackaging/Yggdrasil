@@ -17,16 +17,13 @@ cd $WORKSPACE/srcdir/fmt
 mkdir build
 cd build
 
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
-
 cmake \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DCMAKE_BUILD_TYPE=Release \
 -DBUILD_SHARED_LIBS=True \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
+-DCMAKE_C_COMPILER=gcc \
+-DCMAKE_CXX_COMPILER=g++ \
 ..
 make
 make install
