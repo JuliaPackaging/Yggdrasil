@@ -13,17 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-CC=gcc
-CXX=g++
-
-gcc -v
-
 cd $WORKSPACE/srcdir/fmt
 mkdir build
 cd build
 
 cmake \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
 -DCMAKE_BUILD_TYPE=Release \
 -DBUILD_SHARED_LIBS=True \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
