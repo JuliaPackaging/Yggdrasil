@@ -65,11 +65,11 @@ function configure_build(version)
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency("HIP_jll", version),
-        Dependency("rocBLAS_jll", version),
+        Dependency("HIP_jll"; compat=string(version)),
+        Dependency("rocBLAS_jll"; compat=string(version)),
         Dependency("Zlib_jll"),
         Dependency("SQLite_jll"),
-        Dependency("boost_jll", v"1.79.0"),
+        Dependency("boost_jll"; compat="1.79.0"),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
