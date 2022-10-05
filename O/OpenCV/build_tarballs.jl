@@ -6,6 +6,7 @@ name = "OpenCV"
 version = v"4.6.0"
 julia_version = v"1.8.0"
 
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/opencv/opencv.git", "b0dc474160e389b9c9045da5db49d03ae17c6a6b"),
