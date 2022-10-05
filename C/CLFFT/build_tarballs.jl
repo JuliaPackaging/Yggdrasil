@@ -46,9 +46,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2022.09.23")),
-    Dependency(PackageSpec(; name="OpenCL_jll", version=v"2022.09.23")),
-    Dependency(PackageSpec(; name="FFTW_jll", version=v"3.3.10")),
-    Dependency(PackageSpec(; name="boost_jll", version=v"1.76.0"))
+    Dependency("OpenCL_jll", compat="2022.09.23"),
+    Dependency("FFTW_jll", compat="3.3.10"),
+    Dependency("boost_jll", compat="1.76.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
