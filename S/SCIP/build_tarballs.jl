@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"0.2.1"
+version = v"800.0.200"
 
 # Collection of sources required to complete build
 sources = [
@@ -25,6 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DBOOST=off\
   -DSYM=bliss\
+  -TPI=tny\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc}
 make install
