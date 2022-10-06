@@ -31,6 +31,7 @@ $WORKSPACE/srcdir/gcc-*/libstdc++-v3/configure \
 --disable-werror \
 --enable-shared \
 --enable-threads=posix \
+--enable-tls \
 --with-sysroot="${sysroot}" \
 --program-prefix="${COMPILER_TARGET}-"
 
@@ -40,6 +41,8 @@ cat <<-EOF >> config.h
 #undef _GLIBCXX_X86_RDRAND
 #undef HAVE_ALIGNED_ALLOC
 #define _GLIBCXX_HAS_GTHREADS 1
+#define HAVE_CC_TLS 1 
+#define HAVE_TLS 1
 EOF
 
 ## Build, build, build!
