@@ -23,7 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DSYM=bliss\
-  -TPI=tny\
+  -DTPI=tny\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc} scip
 make papilo-executable
