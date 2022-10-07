@@ -18,11 +18,12 @@ mkdir build
 cd build
 
 cmake \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
--DCMAKE_BUILD_TYPE=Release \
--DBUILD_SHARED_LIBS=True \
--DCMAKE_INSTALL_PREFIX=${prefix} \
-..
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=True \
+    -DFMT_TEST=OFF \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    ..
 make
 make install
 
