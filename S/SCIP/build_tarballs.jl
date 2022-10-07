@@ -25,7 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DBOOST=off\
   -DSYM=bliss\
-  -TPI=tny\
+  -DTPI=tny\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc}
 make install
