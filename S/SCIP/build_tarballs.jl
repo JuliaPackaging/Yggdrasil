@@ -12,6 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == *86*-linux-gnu ]]; then
+   export LDFLAGS="-lrt"
+fi
+
 cd scipoptsuite*
 mkdir build
 cd build/
