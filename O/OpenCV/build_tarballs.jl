@@ -2,10 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+
 name = "OpenCV"
 version = v"4.6.0"
-julia_version = v"1.8.0"
 
+julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
 # Collection of sources required to complete build
 sources = [
@@ -17,10 +23,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
 # Apply patch for BB specific CMake changes
 cd opencv_contrib
 git apply ../patches/opencv-julia.patch
 cd ..
+
 mkdir build && cd build
 export USE_QT="ON"
 
@@ -70,11 +78,13 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
 if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-malloc-h.patch
 fi
+
 make -j${nproc}
 make install
 
 # Install also libopencv_julia
 cp lib/libopencv_julia.* ${libdir}/.
+
 # Move julia bindings to the prefix
 cp -R OpenCV ${prefix}
 
@@ -83,7 +93,9 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+
 # We don't have Qt5 for Musl platforms
 filter!(p -> libc(p) != "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
@@ -111,9 +123,9 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Qt5Base_jll", uuid="ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"))
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency(PackageSpec(name="libjulia_jll"))
     Dependency(PackageSpec(name="libcxxwrap_julia_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
