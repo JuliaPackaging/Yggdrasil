@@ -27,7 +27,7 @@ $CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" -O3  --shared -o "${libdir}/libtrian
 install_license README
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 products = [LibraryProduct("libtriangle", :libtriangle)]
 
