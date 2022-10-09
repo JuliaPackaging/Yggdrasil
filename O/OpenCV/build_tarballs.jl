@@ -10,6 +10,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenCV"
 version = v"4.6.0"
+version_collapsed_str = replace(string(version), "." => "")
 
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
@@ -102,19 +103,19 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libopencv_calib3d", "libopencv_calib3d460"], :libopencv_calib3d),
-    LibraryProduct(["libopencv_objdetect", "libopencv_objdetect460"], :libopencv_objdetect),
-    LibraryProduct(["libopencv_core", "libopencv_core460"], :libopencv_core),
-    LibraryProduct(["libopencv_dnn", "libopencv_dnn460"], :libopencv_dnn),
-    LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs460"], :libopencv_imgcodecs),
-    LibraryProduct(["libopencv_highgui", "libopencv_highgui460"], :libopencv_highgui),
-    LibraryProduct(["libopencv_flann", "libopencv_flann460"], :libopencv_flann),
-    LibraryProduct(["libopencv_gapi", "libopencv_gapi460"], :libopencv_gapi),
-    LibraryProduct(["libopencv_imgproc", "libopencv_imgproc460"], :libopencv_imgproc),
-    LibraryProduct(["libopencv_features2d", "libopencv_features2d460"], :libopencv_features2d),
-    LibraryProduct(["libopencv_stitching", "libopencv_stitching460"], :libopencv_stitching),
-    LibraryProduct(["libopencv_video", "libopencv_video460"], :libopencv_video),
-    LibraryProduct(["libopencv_videoio", "libopencv_videoio460"], :libopencv_videoio),
+    LibraryProduct(["libopencv_calib3d", "libopencv_calib3d" * version_collapsed_str], :libopencv_calib3d),
+    LibraryProduct(["libopencv_objdetect", "libopencv_objdetect" * version_collapsed_str], :libopencv_objdetect),
+    LibraryProduct(["libopencv_core", "libopencv_core" * version_collapsed_str], :libopencv_core),
+    LibraryProduct(["libopencv_dnn", "libopencv_dnn" * version_collapsed_str], :libopencv_dnn),
+    LibraryProduct(["libopencv_imgcodecs", "libopencv_imgcodecs" * version_collapsed_str], :libopencv_imgcodecs),
+    LibraryProduct(["libopencv_highgui", "libopencv_highgui" * version_collapsed_str], :libopencv_highgui),
+    LibraryProduct(["libopencv_flann", "libopencv_flann" * version_collapsed_str], :libopencv_flann),
+    LibraryProduct(["libopencv_gapi", "libopencv_gapi" * version_collapsed_str], :libopencv_gapi),
+    LibraryProduct(["libopencv_imgproc", "libopencv_imgproc" * version_collapsed_str], :libopencv_imgproc),
+    LibraryProduct(["libopencv_features2d", "libopencv_features2d" * version_collapsed_str], :libopencv_features2d),
+    LibraryProduct(["libopencv_stitching", "libopencv_stitching" * version_collapsed_str], :libopencv_stitching),
+    LibraryProduct(["libopencv_video", "libopencv_video" * version_collapsed_str], :libopencv_video),
+    LibraryProduct(["libopencv_videoio", "libopencv_videoio" * version_collapsed_str], :libopencv_videoio),
     LibraryProduct("libopencv_julia", :libopencv_julia)#,
     # FileProduct("OpenCV.jl.tar", :OpenCV_jl)
 ]
@@ -128,4 +129,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; , julia_compat="1.6", preferred_gcc_version = v"9")
