@@ -22,7 +22,7 @@ else
     ARCHFLAGS=(-DULONG="unsigned long" -fPIC)
 fi
 
-$CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" $LDFLAGS -O3  --shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
+$CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" -O3  --shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
 
 install_license README
 """
