@@ -16,10 +16,10 @@ mkdir -p "${libdir}"
 
 GENERICFLAGS=(-DREAL=double  -DTRILIBRARY  -DNDEBUG -DNO_TIMER -DEXTERNAL_TEST)
 
-ARCHFLAGS=(-DULONG="unsigned long" -fPIC)
-
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
     ARCHFLAGS=(-DULONG="unsigned long long")
+else
+    ARCHFLAGS=(-DULONG="unsigned long" -fPIC)
 fi
 
 $CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" $LDFLAGS -O3  --shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
