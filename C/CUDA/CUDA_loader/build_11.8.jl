@@ -1,4 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.7.1"))]
+dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.8.0"))]
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
@@ -119,7 +119,7 @@ products = [
     LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
     LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libcupti", "cupti64_2022.2.1"], :libcupti),
+    LibraryProduct(["libcupti", "cupti64_2022.3.0"], :libcupti),
     LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
@@ -129,7 +129,7 @@ products = [
     ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
-platforms = [Platform("x86_64", "linux"; cuda="11.7"),
-             Platform("powerpc64le", "linux"; cuda="11.7"),
-             Platform("aarch64", "linux"; cuda="11.7"),
-             Platform("x86_64", "windows"; cuda="11.7")]
+platforms = [Platform("x86_64", "linux"; cuda="11.8"),
+             Platform("powerpc64le", "linux"; cuda="11.8"),
+             Platform("aarch64", "linux"; cuda="11.8"),
+             Platform("x86_64", "windows"; cuda="11.8")]
