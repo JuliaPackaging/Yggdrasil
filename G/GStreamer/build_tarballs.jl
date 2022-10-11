@@ -12,9 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-apk add bash-completion libcap gettext
-cd gstreamer-*
+cd $WORKSPACE/srcdir/gstreamer-*
 mkdir build
 cd build
 if [[ "${target}" == *-mingw* ]]; then
@@ -46,6 +44,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Need a host gettext for msgfmt
+    HostBuildDependency("Gettext_jll")
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"); compat="2.68.1")
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3"))
     Dependency(PackageSpec(name="Elfutils_jll", uuid="ab5a07f8-06af-567f-a878-e8bb879eba5a"))
