@@ -7,7 +7,9 @@ version = v"1.20.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-$(version).tar.xz", "607daf64bbbd5fb18af9d17e21c0d22c4d702fffe83b23cb22d1b1af2ca23a2a")
+    ArchiveSource("https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-$(version).tar.xz",
+                  "607daf64bbbd5fb18af9d17e21c0d22c4d702fffe83b23cb22d1b1af2ca23a2a"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,10 +20,13 @@ cd build
 if [[ "${target}" == *-mingw* ]]; then
     # Need to tell we're targeting at least Windows 7 so that `FILE_STANDARD_INFO` is defined
     sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7', '-D_WIN32_WINNT=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
+    # Install right version of `pthread_time.h` which defines `CLOCK_MONOTONIC` and `TIMER_ABSTIME`
+    cp -v ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 fi
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja -j${nproc}
 ninja install
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further
