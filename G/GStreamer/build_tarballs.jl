@@ -51,7 +51,7 @@ dependencies = [
     Dependency(PackageSpec(name="Elfutils_jll", uuid="ab5a07f8-06af-567f-a878-e8bb879eba5a"))
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.0")
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2")
-    Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"))
+    Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"); platforms=filter(Sys.islinux, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
