@@ -17,6 +17,10 @@ apk add bash-completion libcap gettext
 cd gstreamer-*
 mkdir build
 cd build
+if [[ "${target}" == *-mingw* ]]; then
+    # Need to tell we're targeting at least Windows 7 so that `FILE_STANDARD_INFO` is defined
+    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7', '-D_WIN32_WINNT=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
+fi
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
 ninja -j${nproc}
 ninja install
