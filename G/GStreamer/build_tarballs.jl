@@ -59,7 +59,7 @@ dependencies = [
     HostBuildDependency("Gettext_jll")
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"); compat="2.68.1")
     Dependency(PackageSpec(name="LibUnwind_jll", uuid="745a5e78-f969-53e9-954f-d19f2f74f4e3"); platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms))
-    Dependency(PackageSpec(name="Elfutils_jll", uuid="ab5a07f8-06af-567f-a878-e8bb879eba5a"))
+    Dependency(PackageSpec(name="Elfutils_jll", uuid="ab5a07f8-06af-567f-a878-e8bb879eba5a"); platforms=filter(Sys.islinux, platforms))
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.0")
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2")
     Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"); platforms=filter(Sys.islinux, platforms))
