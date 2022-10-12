@@ -49,17 +49,17 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 if should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_x86, script,
                    [Platform("x86_64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true)
+                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end
 
 if should_build_platform("powerpc64le-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
                    [Platform("powerpc64le", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true)
+                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end
 
 if should_build_platform("aarch64-linux-gnu")
     build_tarballs(ARGS, name, version, sources_linux_aarch64, script,
                    [Platform("aarch64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true)
+                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
 end
