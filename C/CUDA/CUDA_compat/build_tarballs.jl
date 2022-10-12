@@ -40,8 +40,10 @@ mv usr/local/cuda-*/compat/* ${libdir}
 """
 
 products = [
-    LibraryProduct("libcuda", :libcuda),
-    LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler),
+    LibraryProduct("libcuda", :libcuda;
+                   dont_dlopen=true),
+    LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler;
+                   dont_dlopen=true),
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
@@ -49,17 +51,17 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 if should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_x86, script,
                    [Platform("x86_64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
+                   lazy_artifacts=true, skip_audit=true)
 end
 
 if should_build_platform("powerpc64le-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
                    [Platform("powerpc64le", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
+                   lazy_artifacts=true, skip_audit=true)
 end
 
 if should_build_platform("aarch64-linux-gnu")
     build_tarballs(ARGS, name, version, sources_linux_aarch64, script,
                    [Platform("aarch64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, dont_dlopen=true)
+                   lazy_artifacts=true, skip_audit=true)
 end
