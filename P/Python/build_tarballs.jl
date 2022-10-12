@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.8.8"
-
-# NOTE: Python 3.8.9+ contains configure changes that break our build.
-#       see https://github.com/python/cpython/issues/88201
+version = v"3.10.7"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "7c664249ff77e443d6ea0e4cf0e587eae918ca3c48d081d1915fe2a1f1bcc5cc"),
+                  "6eed8415b7516fb2f260906db5d48dd4c06acc0cb24a7d6cc15296a604dcdc48"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Python's autoconf scripts use non-default macros
+apk add autoconf-archive
+
 # Having a global `python3` screws things up a bit, so get rid of that
 rm -f $(which python3)
 
@@ -35,15 +35,18 @@ chmod +x /usr/bin/arch
 # Patch out cross compile limitations
 cd ${WORKSPACE}/srcdir/Python-*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross_compile_configure_ac.patch
+
+# Disable detection of multiarch as it breaks with clang >= 13, which adds a
+# major.minor version number in -print-multiarch output, confusing Python.
+# https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
 if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
-    # disable detection of multiarch as it breaks with clang >= 13, which adds a
-    # major.minor version number in -print-multiarch output, confusing Python.
-    # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
     sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
 fi
-# don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
+
+# Don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
 # have libcrypt.so.2 (backported from Python 3.11)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcrypt.patch
+
 autoreconf -i
 
 # Next, build host version
@@ -64,6 +67,10 @@ conf_args=()
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
 conf_args+=(--with-ensurepip=no)
+conf_args+=( --disable-test-modules)
+conf_args+=(--with-system-expat)
+conf_args+=(--with-system-ffi)
+conf_args+=(--with-system-libmpdec)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
 conf_args+=(ac_cv_have_chflags=no)
@@ -92,6 +99,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"),

@@ -4,40 +4,25 @@ using Base.BinaryPlatforms: arch, os
 include("../../fancy_toys.jl")
 
 name = "CUDNN"
-version = v"8.2.4"
+version = v"8.6.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
 cd ${WORKSPACE}/srcdir
-if [[ ${target} == powerpc64le-linux-gnu ]]; then
-    cd cuda/targets/ppc64le-linux
+if [[ ${target} == *-linux-gnu ]]; then
+    cd cudnn*
     find .
 
-    install_license NVIDIA_SLA_cuDNN_Support.txt
+    install_license LICENSE
 
     mv lib/libcudnn*.so* ${libdir}
     mv include/* ${prefix}/include
-elif [[ ${target} == aarch64-linux-gnu && ${bb_full_target} == aarch64-linux-gnu-*-cuda+10.2 ]]; then
-    apk add dpkg
-    dpkg-deb -x libcudnn8_*.deb .
-    dpkg-deb -x libcudnn8-dev_*.deb .
-    mv -nv ./usr/include/aarch64-linux-gnu/* ${includedir}
-    mv -nv ./usr/lib/aarch64-linux-gnu/libcudnn*.so* ${libdir}
-    install_license ./usr/src/cudnn_samples_v8/NVIDIA_SLA_cuDNN_Support.txt
-elif [[ ${target} == *-linux-gnu ]]; then
-    cd cuda
-    find .
-
-    install_license NVIDIA_SLA_cuDNN_Support.txt
-
-    mv lib64/libcudnn*.so* ${libdir}
-    mv include/* ${prefix}/include
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cd cuda
+    cd cudnn*
     find .
 
-    install_license NVIDIA_SLA_cuDNN_Support.txt
+    install_license LICENSE
 
     mv bin/cudnn*64_*.dll ${libdir}
     mv include/* ${prefix}/include
@@ -58,7 +43,7 @@ products = [
 
 dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4"]
+cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8"]
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     include("build_$(cuda_tag).jl")
