@@ -24,6 +24,12 @@ if [[ "${target}" == *-mingw* ]]; then
     cp -v ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 fi
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN}
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`, until they fix it in Meson.
+sed -i.bak 's/csrDT/csrD/' build.ninja
+
 ninja -j${nproc}
 ninja install
 install_license ../COPYING
