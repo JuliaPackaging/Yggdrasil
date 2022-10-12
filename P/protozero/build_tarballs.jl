@@ -31,7 +31,12 @@ platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 # protozero is a header only library, so no binary products
-products = Product[]
+products = [
+    FileProduct("include/protozero/pbf_writer.hpp", :pbf_writer),
+    FileProduct("include/protozero/pbf_reader.hpp", :pbf_reader),
+    FileProduct("include/protozero/pbf_message.hpp", :pbf_message),
+    FileProduct("include/protozero/pbf_builder.hpp", :pbf_builder),
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
