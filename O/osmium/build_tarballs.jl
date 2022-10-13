@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/osmium-tool
 
 # Patch Windows feature flag
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/osmium-tool-windows.patch
+    atomic_patch -p1 ../patches/fix_windows_flag.patch
 fi
 
 mkdir build && cd build
