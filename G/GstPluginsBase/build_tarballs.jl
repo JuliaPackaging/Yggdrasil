@@ -63,7 +63,7 @@ products = [
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll")
-    Dependency(PackageSpec(name="GStreamer_jll", uuid="aaaaf01e-2457-52c6-9fe8-886f7267d736"))
+    Dependency(PackageSpec(name="GStreamer_jll", uuid="aaaaf01e-2457-52c6-9fe8-886f7267d736"); compat="2.68.1")
     Dependency(PackageSpec(name="Opus_jll", uuid="91d4177d-7536-5919-b921-800302f37372"))
     Dependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
     Dependency(PackageSpec(name="Pango_jll", uuid="36c8627f-9965-5494-a995-c6b170f724f3"))
