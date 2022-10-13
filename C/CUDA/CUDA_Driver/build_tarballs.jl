@@ -1,4 +1,4 @@
-# CUDA forward compatibility package as taken from the datacenter driver
+# CUDA forward compatibility driver
 #
 # - https://docs.nvidia.com/deploy/cuda-compatibility/index.html#forward-compatibility-title
 # - https://docs.nvidia.com/datacenter/tesla/index.html
@@ -8,7 +8,7 @@ using BinaryBuilder, Pkg
 
 include("../../../fancy_toys.jl")
 
-name = "CUDA_compat"
+name = "CUDA_Driver"
 version = v"11.8"
 
 cuda_version = "$(version.major)-$(version.minor)"
