@@ -22,14 +22,7 @@ install_license gst-plugins-base-*/COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms(exclude=[Platform("i686", "linux", libc = "musl"), Platform("powerpc64le", "linux")])
 
 # The products that we will ensure are always built
 products = [
