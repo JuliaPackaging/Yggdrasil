@@ -3,26 +3,56 @@
 using BinaryBuilder, Pkg
 
 name = "Exodus"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/gsjaardema/seacas.git", "a1da779b061fbdc750f18bcae29295dc5064cb74")
-    # GitSource("https://github.com/gsjaardema/seacas.git", "1452c325ab5d507d000397c713a5b0c4dc57bf81")
+    GitSource("https://github.com/cmhamel/seacas.git", "177d194ad2a104a21704091e2646af291f5c0a47")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
 cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
-### The SEACAS code will install in ${INSTALL_PATH}/bin, ${INSTALL_PATH}/lib, and ${INSTALL_PATH}/include.
-INSTALL_PATH=${prefix} \
-FORTRAN=NO \
-NETCDF_PATH=${prefix} \
-PNETCDF_PATH=${prefix} \
-HDF5_PATH=${prefix} \
-../cmake-exodus
+
+#cmake -G "Unix Makefiles" \
+cmake \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    \
+    -D CMAKE_CXX_COMPILER:FILEPATH=${CXX} \
+    -D CMAKE_C_COMPILER:FILEPATH=${CC} \
+    -D CMAKE_Fortran_COMPILER:FILEPATH=${FC} \
+    -D CMAKE_CXX_FLAGS="-Wall -Wunused -pedantic" \
+    -D CMAKE_C_FLAGS="-Wall -Wunused -pedantic -std=c11" \
+    -D CMAKE_Fortran_FLAGS="" \
+    -D Seacas_ENABLE_STRONG_C_COMPILE_WARNINGS="" \
+    -D Seacas_ENABLE_STRONG_CXX_COMPILE_WARNINGS="" \
+    -D CMAKE_INSTALL_RPATH:PATH=${prefix}/lib \
+    -D BUILD_SHARED_LIBS:BOOL=YES \
+    -D Seacas_ENABLE_SEACASExodus=YES \
+    -D Seacas_ENABLE_SEACASExodus_for=NO \
+    -D Seacas_ENABLE_SEACASExoIIv2for32=NO \
+    -D Seacas_ENABLE_TESTS=NO \
+    -D SEACASExodus_ENABLE_STATIC:BOOL=NO \
+    -D Seacas_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=YES \
+    -D Seacas_HIDE_DEPRECATED_CODE:BOOL=NO \
+    -D Seacas_ENABLE_Fortran=NO \
+    \
+    -D TPL_ENABLE_Netcdf:BOOL=YES \
+    -D TPL_ENABLE_MPI:BOOL=NO \
+    -D TPL_ENABLE_Pthread:BOOL=NO \
+    -D SEACASExodus_ENABLE_THREADSAFE:BOOL=NO \
+    \
+    -D NetCDF_ROOT:PATH=${prefix} \
+    -D HDF5_ROOT:PATH=${prefix} \
+    -D HDF5_NO_SYSTEM_PATHS=YES \
+    -D PNetCDF_ROOT:PATH=${prefix} \
+    \
+    ..
 
 make -j${nproc}
 make install
@@ -33,6 +63,10 @@ make install
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64","macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ]
 
 
