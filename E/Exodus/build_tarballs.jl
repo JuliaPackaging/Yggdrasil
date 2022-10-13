@@ -17,7 +17,6 @@ cd $WORKSPACE/srcdir/seacas
 mkdir build
 cd build
 
-#cmake -G "Unix Makefiles" \
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
