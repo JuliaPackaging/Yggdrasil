@@ -14,7 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release gst-plugins-base-*
-sed -i.bak 's/csrDT/csrD/' build.ninja
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`, until they fix it in Meson.
+# sed -i.bak 's/csrDT/csrD/' build.ninja
+
 ninja -j${nproc}
 ninja install
 install_license gst-plugins-base-*/COPYING
@@ -56,6 +61,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Need a host gettext for msgfmt
+    HostBuildDependency("Gettext_jll")
     Dependency(PackageSpec(name="GStreamer_jll", uuid="aaaaf01e-2457-52c6-9fe8-886f7267d736"))
     Dependency(PackageSpec(name="Opus_jll", uuid="91d4177d-7536-5919-b921-800302f37372"))
     Dependency(PackageSpec(name="ORC_jll", uuid="fb41591b-4dee-5dae-bf56-d83afd04fbc0"))
