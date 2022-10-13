@@ -9,12 +9,12 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 name = "MParT"
-version = v"0.3.3"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "3002a8fba22367126cf7fd494f902dfff7e9dc5b")
+    "e86e265026cfdfc3c183d39e611536dce85bf689")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,7 +34,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
   -DMPART_PYTHON=OFF \
   -DMPART_MATLAB=OFF \
   -DMPART_JULIA=ON \
-  -DJULIA_INSTALL_PREFIX=${prefix}/lib \
   -DJulia_PREFIX=${prefix} \
   ..
 
@@ -50,14 +49,14 @@ platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmpart", :libmpart),
-    LibraryProduct("libmpartjl", :libmpartjl),
+    LibraryProduct("libmpartjl", :libmpartjl, String["julia"]),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="=3.6.0"),
+    Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="=3.6.1"),
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     BuildDependency("libjulia_jll"),
 ]

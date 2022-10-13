@@ -237,3 +237,18 @@ index 9422402d2e..e15cea0ba6 100644
  
  /*
     Private routine to delete internal storage when a communicator is freed.
+
+diff --git a/src/mat/impls/scalapack/matscalapack.c b/src/mat/impls/scalapack/matscalapack.c
+index 9422402d2e..e15cea0ba6 100644
+--- a/src/mat/impls/scalapack/matscalapack.c
++++ b/src/mat/impls/scalapack/matscalapack.c
+@@ -17,7 +17,8 @@
+     The variable Petsc_ScaLAPACK_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a Mat_ScaLAPACK_Grid
+ */
+-static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_ScaLAPACK_keyval;
++__attribute__((__constructor__)) static void init_Petsc_ScaLAPACK_keyval() { Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID; }
+ 
+ static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+ { 

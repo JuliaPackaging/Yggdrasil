@@ -2,23 +2,23 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1192.000"
-gap_lib_version = v"400.1192.000"
+gap_version = v"400.1200.000"
+gap_lib_version = v"400.1200.000"
 name = "datastructures"
-upstream_version = v"0.2.6" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = v"0.2.7" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.gz",
-                  "fa05bd5ece4392c78927c7069e8db6fbd0712f73f1b1a00b2d2a2eae712b6fbe"),
+                  "82900ec59f5411228b9b272f9943ebf73296f4a7c1fb979066ae5396624ae376"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd datastructures*
-./configure ${prefix}/share/gap
+./configure ${prefix}/lib/gap
 make -j${nproc}
 
 # copy the loadable module
@@ -39,3 +39,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

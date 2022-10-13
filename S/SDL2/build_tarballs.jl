@@ -50,6 +50,7 @@ dependencies = [
     Dependency("Xorg_libXScrnSaver_jll"; platforms=x11_platforms),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
+    Dependency("alsa_plugins_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
