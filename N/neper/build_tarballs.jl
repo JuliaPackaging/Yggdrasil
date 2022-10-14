@@ -27,7 +27,7 @@ function exclude(p)
         #  1685 | ut_print_elapsedtime (struct timeval beg_time, struct timeval end_time)
         #       |                       ~~~~~~~~~~~~~~~^~~~~~~~
         return true
-    if Sys.iswindows(p)
+    elseif Sys.iswindows(p)
         # In file included from /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/library_error_exit.c:62:0:
         # /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/common.h:130:71: fatal error: sys/wait.h: No such file or directory
         return true
