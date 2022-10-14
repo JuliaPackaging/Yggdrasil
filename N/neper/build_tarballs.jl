@@ -47,6 +47,7 @@ dependencies = [
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2"),
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778")),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9")),
+    RuntimeDependency(PackageSpec(name="gmsh_jll", uuid="630162c2-fc9b-58b3-9910-8442a8a132e6")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5")
