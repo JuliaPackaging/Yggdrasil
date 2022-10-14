@@ -34,7 +34,8 @@ fi
 # see https://stackoverflow.com/q/70725646/2442087
 FLAGS=(ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes)
 
-GMP_CFLAGS="-I${prefix}/include" ./configure \
+export GMP_CFLAGS="-I${includedir}"
+./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
