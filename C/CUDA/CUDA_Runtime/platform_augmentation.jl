@@ -1,6 +1,25 @@
 using Libdl
 
-using CUDA_Driver
+try
+    using CUDA_Driver
+catch err
+    # During package installation, Pkg installs all packages in parallel, so CUDA_Driver
+    # may not be available yet. In that case, postpone the decision until we are able to
+    # load the driver and accurately determine which CUDA Runtime to use.
+    #
+    # XXX: this is not a future-proof solution, as it shouldn't be possible to load any
+    # non-stdlib dependencies from a package hook at any point. A better solution would be
+    # to put CUDA_Driver_jll's artifacts in here and inline the code from CUDA_Driver
+    # (while possibly renaming this artifact to CUDA_jll), so that we can use the driver
+    # artifact during package installation to determine which runtime artifacts to use.
+    # But that requires changes to BinaryBuilder so that we can bind multiple artifacts,
+    # as well as the guarantee that it should be possible to load lazy artifacts from
+    # package augmentation hooks (https://github.com/JuliaLang/Pkg.jl/issues/3225).
+end
+if !@isdefined(libcuda)
+    # cowardly refuse to select any artifacts if we don't know for sure which one to use.
+    libcuda() = nothing
+end
 
 using Base.BinaryPlatforms
 

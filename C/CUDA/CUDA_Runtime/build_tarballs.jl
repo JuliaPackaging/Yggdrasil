@@ -27,8 +27,9 @@ for cuda_version in cuda_versions
         augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
 
         should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (; dependencies=[Dependency("CUDA_Driver"); dependencies],
-                         script, products, platforms=[augmented_platform],
+        push!(builds,
+              (; dependencies=[Dependency("CUDA_Driver"; top_level=true); dependencies],
+                 script, products, platforms=[augmented_platform],
         ))
     end
 end
