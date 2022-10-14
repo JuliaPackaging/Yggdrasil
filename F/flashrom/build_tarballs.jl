@@ -14,8 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/flashrom/
-make PREFIX=${prefix} -j${nproc}
-make PREFIX=${prefix} install
+
+FLAGS=(
+    CONFIG_INTERNAL=yes
+    PREFIX=${prefix}
+)
+
+make ${FLAGS[@]} -j${nproc}
+make ${FLAGS[@]} install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -27,11 +33,12 @@ platforms = filter(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("flashrom", :flashrom, "sbin")
+    ExecutableProduct("flashrom", :flashrom, "sbin"),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("pciutils_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
