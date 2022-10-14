@@ -30,9 +30,10 @@ function build_libcurl(ARGS, name::String)
         --without-ssl --without-gnutls
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
-	--disable-ares --disable-manual
+        --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
+        --without-brotli
 
         # A few things we actually enable
         --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
