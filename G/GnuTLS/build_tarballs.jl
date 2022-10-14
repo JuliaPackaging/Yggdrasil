@@ -47,7 +47,7 @@ make install
 platforms = supported_platforms(; experimental=true)
 
 # Disable windows because O_NONBLOCK isn't defined
-filter!(!Sys.iswindows, platforms)
+# filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
