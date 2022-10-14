@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.7.1"
+version = v"3.7.8"
 
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "3777d7963eca5e06eb315686163b7b3f5045e2baac5e54e038ace9835e5cac6f"),
+                  "c58ad39af0670efe6a8aee5e3a8b2331a1200418b64b7c51977fb396d4617114"),
     DirectorySource("./bundled"),
 ]
 
