@@ -25,6 +25,10 @@ function exclude(p)
         # CMake Error at CMakeLists.txt:262 (install):
         #  install FILES given no DESTINATION!
         return true
+    elseif get(p.tags, "os", nothing) == "windows" && get(p.tags, "arch", nothing) == "x86_64"
+        # CMake Error at CMakeLists.txt:262 (install):
+        #  install FILES given no DESTINATION!
+        return true
     elseif get(p.tags, "os", nothing) == "freebsd"
         # CMake Error at CMakeLists.txt:262 (install):
         #  install FILES given no DESTINATION!
