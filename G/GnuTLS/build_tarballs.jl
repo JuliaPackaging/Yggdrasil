@@ -22,7 +22,7 @@ if [[ ${target} == *darwin* ]]; then
     # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
     # complain about: `Symbol not found: ___isOSVersionAtLeast`
     if [[ "${target}" == x86_64* ]]; then
-        export CFLAGS="-mmacosx-version-min=10.12"
+        export CFLAGS="-mmacosx-version-min=10.11"
     fi
 fi
 
