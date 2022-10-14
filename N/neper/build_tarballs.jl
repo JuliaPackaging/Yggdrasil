@@ -10,12 +10,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/neper-*
 mkdir build && cd build
-if [[ ${target} == *-apple-* ]]; then
-    HAVE_OPENMP=0
-else
-    HAVE_OPENMP=1
-fi
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DHAVE_OPENMP=${HAVE_OPENMP} ../src
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../src
 make -j${nproc}
 make install
 """
@@ -45,7 +40,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4")),
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778")),
     # /opt/aarch64-linux-gnu/bin/../lib/gcc/aarch64-linux-gnu/12.1.0/../../../../aarch64-linux-gnu/bin/ld: /opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libscotch.so: undefined reference to `gzwrite'
