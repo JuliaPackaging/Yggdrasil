@@ -60,7 +60,7 @@ products = Product[
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("Nettle_jll", v"3.7.2"; compat="~3.7.2"),
+    Dependency("Nettle_jll"; compat="~3.7.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
