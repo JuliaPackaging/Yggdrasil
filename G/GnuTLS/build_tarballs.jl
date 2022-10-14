@@ -22,7 +22,7 @@ cd $WORKSPACE/srcdir/gnutls-*/
 if [[ ${target} == *darwin* ]]; then
     # Fix undefined reference to "_c_isdigit"
     # See https://gitlab.com/gnutls/gnutls/-/issues/1033
-    # atomic_patch -p1 ../patches/03-undo-libtasn1-cisdigit.patch
+    atomic_patch -p1 ../patches/03-undo-libtasn1-cisdigit.patch
 
     # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
     # complain about: `Symbol not found: ___isOSVersionAtLeast`
