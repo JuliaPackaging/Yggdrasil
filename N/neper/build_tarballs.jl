@@ -15,28 +15,21 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+      -DCMAKE_INSTALL_PREFIX_COMPLETION_FULL=$prefix/completion \
       ../src
 make -j${nproc}
 make install
 """
 
 function exclude(p)
-    if get(p.tags, "libc", nothing) == "musl"
+    if get(p.tags, "libc", nothing) == "musl" || get(p.tags, "os", nothing) == "freebsd"
         # src/contrib/ut/src/ut_print/ut_print.c:1685:38: error: parameter 1 (‘beg_time’) has incomplete type
         #  1685 | ut_print_elapsedtime (struct timeval beg_time, struct timeval end_time)
         #       |                       ~~~~~~~~~~~~~~~^~~~~~~~
         return true
-    elseif get(p.tags, "os", nothing) == "windows" && get(p.tags, "arch", nothing) == "i686"
-        # CMake Error at CMakeLists.txt:262 (install):
-        #  install FILES given no DESTINATION!
-        return true
-    elseif get(p.tags, "os", nothing) == "windows" && get(p.tags, "arch", nothing) == "x86_64"
-        # CMake Error at CMakeLists.txt:262 (install):
-        #  install FILES given no DESTINATION!
-        return true
-    elseif get(p.tags, "os", nothing) == "freebsd"
-        # CMake Error at CMakeLists.txt:262 (install):
-        #  install FILES given no DESTINATION!
+    elseif get(p.tags, "os", nothing) == "windows"
+        # In file included from /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/library_error_exit.c:62:0:
+        # /workspace/srcdir/neper-4.5.0/src/contrib/scotch/src/libscotch/common.h:130:71: fatal error: sys/wait.h: No such file or directory
         return true
     end
     return false
