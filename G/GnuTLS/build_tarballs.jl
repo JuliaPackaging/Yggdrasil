@@ -36,7 +36,7 @@ fi
 GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
-    --ac_cv_func_malloc_0_nonnull=yes \
+    --gl_cv_func_malloc_posix=no \
     --without-p11-kit 
 
 make -j${nproc}
