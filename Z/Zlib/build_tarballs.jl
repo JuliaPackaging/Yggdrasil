@@ -1,19 +1,20 @@
 using BinaryBuilder
+using BinaryBuilderBase: sanitize
 
 # zlib version
 name = "Zlib"
-version = v"1.2.12"
-
+version = v"1.2.13"
 
 # Collection of sources required to build zlib
 sources = [
-    ArchiveSource("https://zlib.net/zlib-$(version).tar.gz",
-                  "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9"),
+    # use Git source because zlib has a track record of deleting release tarballs of old versions
+    GitSource("https://github.com/madler/zlib.git",
+              "04f42ceca40f73e2978b50e93806c2a18c1281fc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/zlib-*
+cd $WORKSPACE/srcdir/zlib*
 mkdir build && cd build
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -41,7 +42,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
