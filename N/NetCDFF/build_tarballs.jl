@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NetCDFF"
-version = v"4.5.4"
+version = v"4.6.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v$(version).tar.gz",
-                  "1a8613cb639e83e2df5a8e6c21fa48a0c64b053c244abddecec66cfcac03a48a"),
+                  "8194aa70e400c0adfc456127c1d97af2c6489207171d13b10cd754a16da8b0ca"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.802.101"),
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.902.5"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
     # a compatible build version for this to work.
