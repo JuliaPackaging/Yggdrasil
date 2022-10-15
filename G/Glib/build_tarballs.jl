@@ -86,7 +86,7 @@ dependencies = [
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE2_jll"; compat="10.35"),
     Dependency("Zlib_jll"),
-    Dependency("GnuTLS_jll"; compat="3.7.8+1"),
+    Dependency("GnuTLS_jll"; compat="3.7.8"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
