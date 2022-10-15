@@ -32,10 +32,9 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("p11-kit-client", :libp11kitclient, "lib/pkcs11"),
+    # p11-kit-client.so is not built on Windows, so we temporarily disable it
+    # LibraryProduct("p11-kit-client", :libp11kitclient, "lib/pkcs11"),
     LibraryProduct("libp11-kit", :libp11kit),
-    ExecutableProduct("p11-kit-server", :p11kitserver, "libexec/p11-kit"),
-    ExecutableProduct("p11-kit-remote", :p11kitremote, "libexec/p11-kit"),
     ExecutableProduct("p11-kit", :p11kit)
 ]
 
