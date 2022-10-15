@@ -7,12 +7,14 @@ version = v"2.74.0"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
+    ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-networking-$(version).tar.xz",
+                  "1f185aaef094123f8e25d8fa55661b3fd71020163a0174adb35a37685cda613b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/glib-*/
+cd $WORKSPACE/srcdir/glib-2*/
 install_license COPYING
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -47,6 +49,22 @@ sed -i.bak 's/csrDT/csrD/' build.ninja
 
 ninja -j${nproc} --verbose
 ninja install
+
+cd $WORKSPACE/srcdir/glib-networking*/
+
+mkdir build_glib && cd build_glib
+
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
+    ..
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`
+sed -i.bak 's/csrDT/csrD/' build.ninja
+
+ninja -j${nproc} --verbose
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -72,6 +90,7 @@ dependencies = [
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
     Dependency("PCRE2_jll"; compat="10.35"),
     Dependency("Zlib_jll"),
+    Dependency("GnuTLS_jll"; compat="3.7.8+1"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
