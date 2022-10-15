@@ -17,7 +17,8 @@ install_license COPYING
 mkdir build-glib && cd build-glib
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ..
 ninja -j${nproc}
-ninja install
+cp proxy/environment/libgioenvironmentproxy.so ${libdir}
+cp tls/gnutls/libgiognutls.so ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,8 +27,8 @@ platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgioenvironmentproxy", :libgioenvironmentproxy, "lib/gio/modules"),
-    LibraryProduct("libgiognutls", :libgiognutls, "lib/gio/modules")
+    LibraryProduct("libgioenvironmentproxy", :libgioenvironmentproxy),
+    LibraryProduct("libgiognutls", :libgiognutls)
 ]
 
 # Dependencies that must be installed before this package can be built
