@@ -19,8 +19,8 @@ cd $WORKSPACE/srcdir/tar-*/
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patches for MinGW:
     # https://github.com/msys2/MSYS2-packages/tree/master/tar
-    atomic_patch -p1 ../patches/gnulib-weak-symbols.patch
-    atomic_patch -p1 ../patches/tar-1.33-msys2.patch
+    # atomic_patch -p1 ../patches/gnulib-weak-symbols.patch
+    # atomic_patch -p1 ../patches/tar-1.33-msys2.patch
     atomic_patch -p1 ../patches/tar-1.33-textmount.patch
     autoreconf -fv
 fi
