@@ -32,6 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Host gettext needed for "msgfmt"
+    HostBuildDependency("Gettext_jll")
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
     Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"))
 ]
