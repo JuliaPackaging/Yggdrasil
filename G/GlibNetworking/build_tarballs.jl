@@ -17,13 +17,13 @@ install_license COPYING
 mkdir build-glib && cd build-glib
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ..
 ninja -j${nproc}
-cp proxy/environment/libgioenvironmentproxy.so ${libdir}
-cp tls/gnutls/libgiognutls.so ${libdir}
+cp proxy/environment/libgioenvironmentproxy.${dlext} ${libdir}
+cp tls/gnutls/libgiognutls.${dlext} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
