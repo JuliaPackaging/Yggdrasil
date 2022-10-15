@@ -39,7 +39,6 @@ export GMP_CFLAGS="-I${includedir}"
     --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
-    --without-p11-kit \
     "${FLAGS[@]}"
 
 make -j${nproc}
