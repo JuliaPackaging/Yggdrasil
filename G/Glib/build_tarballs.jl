@@ -7,7 +7,7 @@ version = v"2.74.0"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
-    ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-networking-$(version).tar.xz",
+    ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib-networking/$(version.major).$(version.minor)/glib-networking-$(version).tar.xz",
                   "1f185aaef094123f8e25d8fa55661b3fd71020163a0174adb35a37685cda613b"),
     DirectorySource("./bundled"),
 ]
