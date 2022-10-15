@@ -39,7 +39,6 @@ export GMP_CFLAGS="-I${includedir}"
     --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
-    --without-p11-kit \
     "${FLAGS[@]}"
 
 make -j${nproc}
@@ -61,6 +60,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("Nettle_jll"; compat="~3.7.2"),
+    Dependency("P11Kit_jll"; compat="0.24.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
