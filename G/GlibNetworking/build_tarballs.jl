@@ -14,8 +14,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/glib-networking-*
 install_license COPYING
+
 mkdir build-glib && cd build-glib
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ..
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`
+sed -i.bak 's/csrDT/csrD/' build.ninja
+
 ninja -j${nproc}
 cp proxy/environment/libgioenvironmentproxy.${dlext} ${libdir}
 cp tls/gnutls/libgiognutls.${dlext} ${libdir}
