@@ -13,14 +13,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd kahypar/
+cd $WORKSPACE/srcdir/kahypar/
+# Never build with `-march=native`
+atomic_patch -p1 ../patches/no_native.patch
 git submodule update --init --recursive --depth=1
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DKAHYPAR_PYTHON_INTERFACE=OFF
 make install.library
 """
 
