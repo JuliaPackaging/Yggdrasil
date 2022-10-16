@@ -26,8 +26,9 @@ sed -i.bak 's/csrDT/csrD/' build.ninja
 ninja -j${nproc}
 
 # Darwin products are also .so instead of .dylib so we need to rename
-cp proxy/environment/libgioenvironmentproxy.so ${libdir}/libgioenvironmentproxy.${dlext}
-cp tls/gnutls/libgiognutls.so ${libdir}/libgiognutls.${dlext}
+mkdir -p ${libdir}/gio/modules
+cp proxy/environment/libgioenvironmentproxy.so ${libdir}/gio/modules/libgioenvironmentproxy.${dlext}
+cp tls/gnutls/libgiognutls.so ${libdir}/gio/modules/libgiognutls.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,8 +37,8 @@ platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgioenvironmentproxy", :libgioenvironmentproxy),
-    LibraryProduct("libgiognutls", :libgiognutls)
+    LibraryProduct("libgioenvironmentproxy", :libgioenvironmentproxy, "lib/gio/modules"),
+    LibraryProduct("libgiognutls", :libgiognutls, "lib/gio/modules")
 ]
 
 # Dependencies that must be installed before this package can be built
