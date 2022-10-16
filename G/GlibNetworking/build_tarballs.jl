@@ -24,8 +24,10 @@ meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ..
 sed -i.bak 's/csrDT/csrD/' build.ninja
 
 ninja -j${nproc}
-cp proxy/environment/libgioenvironmentproxy.${dlext} ${libdir}
-cp tls/gnutls/libgiognutls.${dlext} ${libdir}
+
+# Darwin products are also .so instead of .dylib so we need to rename
+cp proxy/environment/libgioenvironmentproxy.so ${libdir}/libgioenvironmentproxy.${dlext}
+cp tls/gnutls/libgiognutls.so ${libdir}/libgioenvironmentproxy.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
