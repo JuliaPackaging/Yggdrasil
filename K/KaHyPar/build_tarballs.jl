@@ -35,7 +35,7 @@ platforms = [
     Platform("aarch64", "macos"; ),
     Platform("x86_64", "freebsd"; )
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
