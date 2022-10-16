@@ -27,7 +27,7 @@ ninja -j${nproc}
 
 # Darwin products are also .so instead of .dylib so we need to rename
 cp proxy/environment/libgioenvironmentproxy.so ${libdir}/libgioenvironmentproxy.${dlext}
-cp tls/gnutls/libgiognutls.so ${libdir}/libgioenvironmentproxy.${dlext}
+cp tls/gnutls/libgiognutls.so ${libdir}/libgiognutls.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
