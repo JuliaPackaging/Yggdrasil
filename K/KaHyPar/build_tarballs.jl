@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "KaHyPar"
-version = v"1.2.1"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kahypar/kahypar.git", "971c38a4c7b7ed1ecf001d0263c1099cbc72886e"),
+    GitSource("https://github.com/kahypar/kahypar.git", "3802b7976002663b4126a11c5bff84996a830fb9"),
     DirectorySource("./bundled")
 ]
 
@@ -30,6 +30,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("x86_64", "macos"; ),
+    Platform("aarch64", "macos"; ),
     Platform("x86_64", "freebsd"; )
 ]
 
