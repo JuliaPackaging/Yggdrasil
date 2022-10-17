@@ -18,29 +18,14 @@ end
 
 using Base.BinaryPlatforms
 
-# TODO: query this from CUDA_Driver_jll
-function driver_version()
+function toolkit_version(cuda_toolkits)
     if !@isdefined(CUDA_Driver_jll) ||          # see above
        !isdefined(CUDA_Driver_jll, :libcuda)    # no driver found
         return nothing
     end
 
-    version_ref = Ref{Cint}()
-    status = ccall((:cuDriverGetVersion, CUDA_Driver_jll.libcuda), UInt32,
-                   (Ptr{Cint},), version_ref)
-    if status != 0
-        return nothing
-    end
-    major, ver = divrem(version_ref[], 1000)
-    minor, patch = divrem(ver, 10)
-    return VersionNumber(major, minor, patch)
-end
-
-function toolkit_version(cuda_toolkits)
-    cuda_driver = driver_version()
-    if cuda_driver === nothing
-        return nothing
-    elseif cuda_driver < v"11"
+    cuda_driver = CUDA_Driver_jll.libcuda_version
+    if cuda_driver < v"11"
         @error "CUDA driver 11+ is required (found $cuda_driver)."
         return nothing
     end
