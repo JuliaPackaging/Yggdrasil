@@ -1,48 +1,39 @@
 using Libdl
 
 try
-    using CUDA_Driver
+    using CUDA_Driver_jll
 catch err
-    # During package installation, Pkg installs all packages in parallel, so CUDA_Driver
-    # may not be available yet. In that case, postpone the decision until we are able to
-    # load the driver and accurately determine which CUDA Runtime to use.
+    # During package installation, Pkg installs all packages in parallel, so CUDA_Driver may
+    # not be available yet. In that case, postpone the decision until we are able to load
+    # the driver and accurately determine which CUDA Runtime to use.
     #
     # XXX: this is not a future-proof solution, as it shouldn't be possible to load any
     # non-stdlib dependencies from a package hook at any point. A better solution would be
-    # to put CUDA_Driver_jll's artifacts in here and inline the code from CUDA_Driver
-    # (while possibly renaming this artifact to CUDA_jll), so that we can use the driver
-    # artifact during package installation to determine which runtime artifacts to use.
-    # But that requires changes to BinaryBuilder so that we can bind multiple artifacts,
-    # as well as the guarantee that it should be possible to load lazy artifacts from
-    # package augmentation hooks (https://github.com/JuliaLang/Pkg.jl/issues/3225).
-end
-if !@isdefined(libcuda)
-    # cowardly refuse to select any artifacts if we don't know for sure which one to use.
-    libcuda() = nothing
+    # to inline CUDA_Driver_jll here (while possibly renaming this artifact to CUDA_jll), so
+    # that we can use the driver artifact during package installation to determine which
+    # runtime artifacts to use. But that requires changes to BinaryBuilder so that we can
+    # bind multiple artifacts, as well as the guarantee that it should be possible to load
+    # lazy artifacts from package augmentation hooks (see JuliaLang/Pkg.jl#3225).
 end
 
 using Base.BinaryPlatforms
 
+# TODO: query this from CUDA_Driver_jll
 function driver_version()
-    if libcuda() === nothing
+    if !@isdefined(CUDA_Driver_jll) ||          # see above
+       !isdefined(CUDA_Driver_jll, :libcuda)    # no driver found
         return nothing
     end
 
-    libcuda_handle = Libdl.dlopen(libcuda())
-    try
-        function_handle = Libdl.dlsym(libcuda_handle, "cuDriverGetVersion")
-        version_ref = Ref{Cint}()
-        status = ccall(function_handle, UInt32, (Ptr{Cint},), version_ref)
-        if status != 0
-            # TODO: warn here about the error?
-            return nothing
-        end
-        major, ver = divrem(version_ref[], 1000)
-        minor, patch = divrem(ver, 10)
-        return VersionNumber(major, minor, patch)
-    finally
-        Libdl.dlclose(libcuda_handle)
+    version_ref = Ref{Cint}()
+    status = ccall((:cuDriverGetVersion, CUDA_Driver_jll.libcuda), UInt32,
+                   (Ptr{Cint},), version_ref)
+    if status != 0
+        return nothing
     end
+    major, ver = divrem(version_ref[], 1000)
+    minor, patch = divrem(ver, 10)
+    return VersionNumber(major, minor, patch)
 end
 
 function toolkit_version(cuda_toolkits)
