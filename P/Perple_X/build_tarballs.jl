@@ -15,22 +15,21 @@ script = raw"""
 cd $WORKSPACE/srcdir/Perple_X/sources/
 make -f makefile_691 
 
+FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
+
+if [[ "${target}" == *-mingw* ]]; then
+    # this is non-ideal, but does the job (also due to lack of access to the source code)
+    if test -f "vertex${exeext}"; then
+        for file in ${FilesArray[*]}; do
+            mv $file${exeext} $file
+        done;
+    fi
+fi
 
 install_license LICENSE
-install -Dvm 755 vertex "${bindir}/vertex${exeext}"
-install -Dvm 755 build "${bindir}/build${exeext}"
-install -Dvm 755 actcor "${bindir}/actcor${exeext}"
-install -Dvm 755 convex "${bindir}/convex${exeext}"
-install -Dvm 755 ctransf "${bindir}/ctransf${exeext}"
-install -Dvm 755 fluids "${bindir}/fluids${exeext}"
-install -Dvm 755 frendly "${bindir}/frendly${exeext}"
-install -Dvm 755 meemum "${bindir}/meemum${exeext}"
-install -Dvm 755 pspts "${bindir}/pspts${exeext}"
-install -Dvm 755 pssect "${bindir}/pssect${exeext}"
-install -Dvm 755 pstable "${bindir}/pstable${exeext}"
-install -Dvm 755 psvdraw "${bindir}/psvdraw${exeext}"
-install -Dvm 755 pt2curv "${bindir}/pt2curv${exeext}"
-install -Dvm 755 werami "${bindir}/werami${exeext}"
+for file in ${FilesArray[*]}; do
+    install -Dvm 755 $file "${bindir}/$file${exeext}"
+done;
 
 exit
 """
