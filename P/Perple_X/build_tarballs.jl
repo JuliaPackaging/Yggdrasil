@@ -13,7 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Perple_X/sources/
-make -f makefile_691 
+
+# compile
+make -j${nproc} -f makefile_691 
 
 FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
 
@@ -26,12 +28,11 @@ if [[ "${target}" == *-mingw* ]]; then
     fi
 fi
 
-install_license LICENSE
 for file in ${FilesArray[*]}; do
     install -Dvm 755 $file "${bindir}/$file${exeext}"
 done;
 
-exit
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
