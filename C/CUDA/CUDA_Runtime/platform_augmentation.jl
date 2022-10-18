@@ -1,4 +1,4 @@
-using Libdl
+using Base.BinaryPlatforms
 
 try
     using CUDA_Driver_jll
@@ -16,7 +16,9 @@ catch err
     # lazy artifacts from package augmentation hooks (see JuliaLang/Pkg.jl#3225).
 end
 
-using Base.BinaryPlatforms
+# Can't use Preferences for the same reason
+const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
 
 function toolkit_version(cuda_toolkits)
     if !@isdefined(CUDA_Driver_jll) ||          # see above
@@ -30,13 +32,13 @@ function toolkit_version(cuda_toolkits)
         return nothing
     end
 
-    cuda_version_override = get(ENV, "JULIA_CUDA_VERSION", nothing)
-    if cuda_version_override === ""
-        return nothing
-    elseif cuda_version_override !== nothing
-        cuda_version_override = VersionNumber(cuda_version_override)
+    # check if the user prefers a specific version
+    cuda_version_override = if haskey(preferences, "version")
+        VersionNumber(preferences["version"])
+    else
+        nothing
     end
-    # TODO: support for Preferences.jl-based override?
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 
     # "[...] applications built against any of the older CUDA Toolkits always continued
     #  to function on newer drivers due to binary backward compatibility"
