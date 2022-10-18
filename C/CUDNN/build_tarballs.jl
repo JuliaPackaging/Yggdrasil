@@ -1,7 +1,9 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
 version = v"8.6.0"
@@ -34,22 +36,21 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
+augment_platform_block = CUDA.augment
+
 products = [
-    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn, dont_dlopen = true),
+    LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
 ]
 
-# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
-#      lacking that, we can't currently dlopen the library
+dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
-
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8"]
+cuda_versions = [v"10.2", v"11.8"]
 for cuda_version in cuda_versions
-    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
-    include("build_$(cuda_tag).jl")
+    include("build_$(cuda_version.major).$(cuda_version.minor).jl")
 
     for (platform, sources) in platforms_and_sources
-        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        augmented_platform = Platform(arch(platform), os(platform);
+                                      cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
         if platform == Platform("x86_64", "windows")
             push!(sources,
