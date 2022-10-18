@@ -1,7 +1,9 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
 version = v"1.4.0"#.6
@@ -21,33 +23,36 @@ platforms_and_sources = Dict(
                       "4f01a8aac2c25177e928c63381a80e3342f214ec86ad66965dcbfe81fc5c901d")],
 )
 
-products = [
-    LibraryProduct(["libcutensor", "cutensor"], :libcutensor, dont_dlopen = true),
-    LibraryProduct(["libcutensorMg", "cutensorMg"], :libcutensorMg, dont_dlopen = true),
-]
+augment_platform_block = CUDA.augment
 
-# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
-#      lacking that, we can't currently dlopen the library
+products = [
+    LibraryProduct(["libcutensor", "cutensor"], :libcutensor),
+    LibraryProduct(["libcutensorMg", "cutensorMg"], :libcutensorMg),
+]
 
 dependencies = [
-    Dependency(PackageSpec(name="CUDA_loader_jll")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
-                           uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    RuntimeDependency(PackageSpec(name="CompilerSupportLibraries_jll",
+                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
-for cuda_version in cuda_versions
-    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
-    include("build_$(cuda_tag).jl")
+builds = ["10.2", "11"]
+for build in builds
+    include("build_$(build).jl")
+    cuda_version = VersionNumber(build)
 
     for (platform, sources) in platforms_and_sources
         if platform == Platform("aarch64", "linux") && cuda_version < v"11"
             # ARM binaries are only provided for CUDA 11+
             continue
         end
-        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        augmented_platform = Platform(arch(platform), os(platform);
+                                      cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true)
+                       products, dependencies; lazy_artifacts=true, skip_audit=true,
+                       julia_compat="1.6", augment_platform_block)
+        # NOTE: skipping audit because libcutensor depends on the CUDA driver (libcuda),
+        #       which is not present on the Yggdrasil CI systems, so the dlopen check fails.
     end
 end
