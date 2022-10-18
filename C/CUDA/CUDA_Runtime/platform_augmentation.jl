@@ -1,5 +1,7 @@
 using Base.BinaryPlatforms
 
+using Base: thismajor, thisminor
+
 try
     using CUDA_Driver_jll
 catch err
@@ -26,12 +28,6 @@ function toolkit_version(cuda_toolkits)
         return nothing
     end
 
-    cuda_driver = CUDA_Driver_jll.libcuda_version
-    if cuda_driver < v"11"
-        @error "CUDA driver 11+ is required (found $cuda_driver)."
-        return nothing
-    end
-
     # check if the user prefers a specific version
     cuda_version_override = if haskey(preferences, "version")
         VersionNumber(preferences["version"])
@@ -42,14 +38,19 @@ function toolkit_version(cuda_toolkits)
 
     # "[...] applications built against any of the older CUDA Toolkits always continued
     #  to function on newer drivers due to binary backward compatibility"
+    cuda_driver = CUDA_Driver_jll.libcuda_version
     filter!(cuda_toolkits) do toolkit
         if cuda_version_override !== nothing
             toolkit == cuda_version_override
-        else
+        elseif cuda_driver >= v"11"
+            # enhanced compatibility
+            #
             # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
             #  from within a CUDA major release family can run, with limited feature-set,
             #  on systems having at least the minimum required driver version"
-            toolkit.major <= cuda_driver.major
+            thismajor(toolkit) <= thismajor(cuda_driver)
+        else
+            thisminor(toolkit) <= thisminor(cuda_driver)
         end
     end
     if isempty(cuda_toolkits)
