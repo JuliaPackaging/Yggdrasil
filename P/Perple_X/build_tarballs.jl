@@ -26,7 +26,7 @@ done;
 
 # 2) compile shared libraries
 make -f makefile_691 clean
-make -j${nproc} -f makefile_691 EXT=.${dlext} FLINK='-shared -fPIC'
+make -j${nproc} -f makefile_691 EXT=.${dlext} FLINK='-shared' FFLAGS='-fPIC -O3'
 
 # deploy 
 for file in ${FilesArray[*]}; do
