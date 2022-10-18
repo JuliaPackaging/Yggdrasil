@@ -1,6 +1,7 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MSTM3"
 version = v"3.0.0"
@@ -12,10 +13,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir
+# Find MPI implementation
+grep -iq MPICH $prefix/include/mpi.h && mpi_impl=mpich
+grep -iq MPItrampoline $prefix/include/mpi.h && mpi_impl=mpitrampoline
+grep -iq OpenMPI $prefix/include/mpi.h && mpi_impl=openmpi
+
 if [[ "$target" == *-mingw* ]]; then
+    # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
+    cd ${includedir}
     cp ${prefix}/src/mpi.f90 .
-    gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -I${includedir} -fno-range-check mpi.f90
+    gfortran -c -DWIN${nbits} -DINT_PTR_KIND=8 -fno-range-check mpi.f90
+    cd ${WORKSPACE}/srcdir/MSTM/code
     if [[ ${target} == x86_64-* ]]; then
         cfg_stub="void __guard_check_icall_fptr(unsigned long ptr) { }"
         msmpifec=msmpifec64
@@ -27,26 +35,67 @@ if [[ "$target" == *-mingw* ]]; then
     fi
     echo "${cfg_stub}" | gcc -x c -c -o cfg_stub.o -
     gfortran -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm3${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -o "${bindir}/mstm3_serial${exeext}"
+    rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
+    # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
+    cd ${includedir}
+    case $mpi_impl in
+    mpich)
+        # TODO: Implement this. We need to store the mpi.f90 that is generated when MPICH is built.
+        ;;
+    mpitrampoline)
+        wget https://raw.githubusercontent.com/eschnett/MPItrampoline/v5.0.1/include/mpi.F90
+        # gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fallow-argument-mismatch -fcray-pointer -O2 -c mpi.F90
+        gfortran -DGCC_ATTRIBUTES_NO_ARG_CHECK= -fcray-pointer -O2 -c mpi.F90
+        ;;
+    openmpi)
+        ;;
+    esac
+    cd ${WORKSPACE}/srcdir
+    export MPITRAMPOLINE_FC=gfortran
     mpifort -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3_serial${exeext}"
 fi
+
+install_license mstm-manual-2013-v3.0.pdf
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter(x -> libgfortran_version(x) != v"4.0.0" && os(x) != "freebsd", expand_gfortran_versions(supported_platforms()))
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# Disable MPICH + libgfortran3 because `mpi.mod` is incompatible:
+platforms = filter(p -> !(p["mpi"] == "mpich" && libgfortran_version(p) == v"3"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mstm3", :mstm3)
+    ExecutableProduct("mstm3_serial", :mstm3_serial)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms))
-    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
