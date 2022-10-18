@@ -58,6 +58,6 @@ for cuda_version in cuda_versions
                               "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4"))
         end
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true)
+                       products, dependencies; lazy_artifacts=true, augment_platform_block)
     end
 end
