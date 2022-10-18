@@ -34,8 +34,8 @@ if [[ "$target" == *-mingw* ]]; then
         msmpi=msmpi
     fi
     echo "${cfg_stub}" | gcc -x c -c -o cfg_stub.o -
-    gfortran -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm3${exeext}"
-    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -o "${bindir}/mstm3_serial${exeext}"
+    gfortran -O2 -fno-range-check -fallow-argument-mismatch mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm3${exeext}"
+    gfortran -O2 -fno-range-check -fallow-argument-mismatch mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -o "${bindir}/mstm3_serial${exeext}"
     rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
     # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
@@ -54,8 +54,8 @@ else
     esac
     cd ${WORKSPACE}/srcdir
     export MPITRAMPOLINE_FC=gfortran
-    mpifort -O2 -fno-range-check mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3${exeext}"
-    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3_serial${exeext}"
+    mpifort -O2 -fno-range-check -fallow-argument-mismatch mpidefs-parallel-v3.0.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3${exeext}"
+    gfortran -O2 -fno-range-check -fallow-argument-mismatch mpidefs-serial.f90 mstm-intrinsics-v3.0.f90 mstm-modules-v3.0.f90 mstm-main-v3.0.f90 -o "${bindir}/mstm3_serial${exeext}"
 fi
 
 install_license mstm-manual-2013-v3.0.pdf
