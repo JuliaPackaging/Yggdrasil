@@ -44,7 +44,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
 -DGDAL_USE_SQLITE3=ON
 -DGDAL_USE_TIFF=ON
 -DGDAL_USE_ZLIB=ON
--DGDAL_USE_ZSTD=ON)
+-DGDAL_USE_ZSTD=ON
+-DGDAL_USE_POSTGRESQL=ON)
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
@@ -111,6 +112,7 @@ dependencies = [
     Dependency("PROJ_jll"; compat="~900.100"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
+    Dependency("LibPQ_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
