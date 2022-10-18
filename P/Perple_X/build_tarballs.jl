@@ -7,29 +7,30 @@ version = v"6.9.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "11eb2a349586d511ff170e7b67fd04e54eb3db82")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "b0eb132a34de94b768ba69c8244ceaf4efa698a7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Perple_X/sources/
 
-# compile
-make -j${nproc} -f makefile_691 
-
 FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
 
-if [[ "${target}" == *-mingw* ]]; then
-    # this is non-ideal, but does the job (also due to lack of access to the source code)
-    if test -f "vertex${exeext}"; then
-        for file in ${FilesArray[*]}; do
-            mv $file${exeext} $file
-        done;
-    fi
-fi
+# 1) compile binaries
+make -j${nproc} -f makefile_691 EXT=${exeext}
 
+# deploy binaries & libraries
 for file in ${FilesArray[*]}; do
-    install -Dvm 755 $file "${bindir}/$file${exeext}"
+    install -Dvm 755 $file${exeext} "${bindir}/$file${exeext}"
+done;
+
+# 2) compile shared libraries
+make -f makefile_691 clean
+make -j${nproc} -f makefile_691 EXT=.${dlext} FLINK='-shared -fPIC'
+
+# deploy 
+for file in ${FilesArray[*]}; do
+    install -Dvm 755 $file.${dlext} "${libdir}/lib$file.${dlext}"
 done;
 
 install_license LICENSE
@@ -43,25 +44,51 @@ platforms = expand_gfortran_versions(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("fluids", :fluids),
+    LibraryProduct("libfluids", :libfluids),
+    
     ExecutableProduct("meemum", :meemum),
+    LibraryProduct("libmeemum", :libmeemum),
+    
     ExecutableProduct("pt2curv", :pt2curv),
+    LibraryProduct("libpt2curv", :libpt2curv),
+    
     ExecutableProduct("pspts", :pspts),
+    LibraryProduct("libpspts", :libpspts),
+
     ExecutableProduct("actcor", :actcor),
+    LibraryProduct("libactcor", :libactcor),
+    
     ExecutableProduct("ctransf", :ctransf),
+    LibraryProduct("libctransf", :libctransf),
+    
     ExecutableProduct("frendly", :frendly),
+    LibraryProduct("libfrendly", :libfrendly),
+    
     ExecutableProduct("vertex", :vertex),
+    LibraryProduct("libvertex", :libvertex),
+    
     ExecutableProduct("build", :build),
+    LibraryProduct("libbuild", :libbuild),
+    
     ExecutableProduct("pstable", :pstable),
+    LibraryProduct("libpstable", :libpstable),
+    
     ExecutableProduct("psvdraw", :psvdraw),
+    LibraryProduct("libpsvdraw", :libpsvdraw),
+    
     ExecutableProduct("pssect", :pssect),
+    LibraryProduct("libpssect", :libpssect),
+    
     ExecutableProduct("werami", :werami),
-    ExecutableProduct("convex", :convex)
+    LibraryProduct("libwerami", :libwerami),
+    
+    ExecutableProduct("convex", :convex),
+    LibraryProduct("libconvex", :libconvex)
+
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-]
+dependencies = [Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
