@@ -44,9 +44,10 @@ products = [
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-cuda_versions = [v"10.2", v"11.8"]
-for cuda_version in cuda_versions
-    include("build_$(cuda_version.major).$(cuda_version.minor).jl")
+builds = ["10.2", "11"]
+for build in builds
+    include("build_$(build).jl")
+    cuda_version = VersionNumber(build)
 
     for (platform, sources) in platforms_and_sources
         augmented_platform = Platform(arch(platform), os(platform);
