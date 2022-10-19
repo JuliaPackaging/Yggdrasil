@@ -50,9 +50,8 @@ for build in builds
                                       cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true, skip_audit=true,
-                       julia_compat="1.6", augment_platform_block)
-        # NOTE: skipping audit because libcutensor depends on the CUDA driver (libcuda),
-        #       which is not present on the Yggdrasil CI systems, so the dlopen check fails.
+                       products, dependencies; lazy_artifacts=true,
+                       julia_compat="1.6", augment_platform_block,
+                       skip_audit=true, dont_dlopen=true)
     end
 end
