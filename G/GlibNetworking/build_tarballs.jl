@@ -25,10 +25,11 @@ sed -i.bak 's/csrDT/csrD/' build.ninja
 
 ninja -j${nproc}
 
-# Darwin products are also .so instead of .dylib so we need to rename
+# We cannot use `ninja install` here since it would run a script
+# which cannot work in cross-compile environments.
 mkdir -p ${libdir}/gio/modules
-cp proxy/environment/libgioenvironmentproxy.so ${libdir}/gio/modules/libgioenvironmentproxy.${dlext}
-cp tls/gnutls/libgiognutls.so ${libdir}/gio/modules/libgiognutls.${dlext}
+cp proxy/environment/libgioenvironmentproxy.so ${libdir}/gio/modules/
+cp tls/gnutls/libgiognutls.so ${libdir}/gio/modules/
 """
 
 # These are the platforms we will build for by default, unless further
