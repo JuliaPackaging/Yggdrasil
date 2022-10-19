@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.5.1"
-version_offset = v"0.0.2"
+version_offset = v"0.0.3"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -45,7 +45,9 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
 -DGDAL_USE_TIFF=ON
 -DGDAL_USE_ZLIB=ON
 -DGDAL_USE_ZSTD=ON
--DGDAL_USE_POSTGRESQL=ON)
+-DGDAL_USE_POSTGRESQL=ON
+-DPostgreSQL_INCLUDE_DIR=${includedir}
+-DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext})
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
