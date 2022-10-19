@@ -15,6 +15,9 @@ const augment = """
     end
 
     function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
+        if a == "none" || b == "none"
+            return false
+        end
         a = VersionNumber(a)
         b = VersionNumber(b)
 
