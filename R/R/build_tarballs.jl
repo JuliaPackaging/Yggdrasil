@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "R"
-version = v"4.1.2"
+version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://cran.r-project.org/src/base/R-4/R-$(version).tar.gz",
-                  "2036225e9f7207d4ce097e54972aecdaa8b40d7d9911cd26491fac5a0fab38af"),
+                  "38eab7719b7ad095388f06aa090c5a2b202791945de60d3e2bb0eab1f5097488"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,7 @@ export CPPFLAGS="-I${includedir}"
     --enable-R-shlib=yes \
     --with-blas="-L${libdir} -lopenblas" \
     --with-lapack \
+    --disable-byte-compiled-packages \
     r_cv_header_zlib_h=yes \
     r_cv_have_bzlib=yes \
     r_cv_have_lzma=yes \
