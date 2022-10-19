@@ -59,6 +59,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Libiconv_jll"),
     Dependency("OpenBLAS32_jll"),
+    Dependency("Ncurses_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
