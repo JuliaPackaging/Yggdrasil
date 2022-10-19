@@ -95,8 +95,8 @@ filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct(["python", "python3"], :python),
-    LibraryProduct(["libpython3", "libpython$(version.major).$(version.minor)"], :libpython),
+    ExecutableProduct("python3", :python),
+    LibraryProduct("libpython3", :libpython),
 ]
 
 # Dependencies that must be installed before this package can be built
