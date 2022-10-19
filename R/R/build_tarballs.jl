@@ -23,6 +23,7 @@ export CPPFLAGS="-I${includedir}"
     --with-blas="-L${libdir} -lopenblas" \
     --with-lapack \
     --disable-byte-compiled-packages \
+    --disable-java \
     r_cv_header_zlib_h=yes \
     r_cv_have_bzlib=yes \
     r_cv_have_lzma=yes \
