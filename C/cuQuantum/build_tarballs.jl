@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_string = "0.1.0.30"
+version_string = "22.07.1.14"
 version = let
     maj, min, patch, extra = parse.(Int, split(version_string, '.'))
     VersionNumber(maj, min, patch * 100 + extra)
@@ -15,13 +15,13 @@ end
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-$(version_string)-archive.tar.xz",
-                      "8ad8e98f14275ffe0de02574be5c86224af1c657c41baf02c16440301ffe0aae")],
+                      "4c4931096498451593ad553b6cb7a107bb6d6cedea65c80d5376d0cfbb647f8e")],
     Platform("powerpc64le", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-ppc64le/cuquantum-linux-ppc64le-$(version_string)-archive.tar.xz",
-                      "0eb84eef619a1cfab5870fb585200a9869a197866685252e4ca8187322809554")],
+                      "2d35dba3c739e8de51591bcd2d7edf1a3c9995850af6525ae08e9b5c3798cf9a")],
     Platform("aarch64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-sbsa/cuquantum-linux-sbsa-$(version_string)-archive.tar.xz",
-                      "3dd04cf08f1323318e0e63a7e28bc904c426ced3367aca809fba7e7beef94063")],
+                      "0c8fb14bf8916170e15a2ae7cfa950e23af13c9cb0915bad88d754221ad60116")],
 )
 
 # Bash recipe for building across all platforms
@@ -50,7 +50,7 @@ augment_platform_block = CUDA.augment
 
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="~1.4")
+    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="~1.6")
 ]
 
 # The products that we will ensure are always built
