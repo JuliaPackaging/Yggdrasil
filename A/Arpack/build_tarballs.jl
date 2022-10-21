@@ -5,8 +5,8 @@ name = "Arpack"
 version = v"3.8.0"
 
 sources = [
-    ArchiveSource("https://github.com/opencollab/arpack-ng/archive/refs/tags/3.8.0.tar.gz",
-                  "ada5aeb3878874383307239c9235b716a8a170c6d096a6625bfd529844df003d"),
+    ArchiveSource("https://github.com/opencollab/arpack-ng.git",
+                  "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
 ]
 
 # Bash recipe for building across all platforms
