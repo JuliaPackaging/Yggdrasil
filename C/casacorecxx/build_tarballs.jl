@@ -23,10 +23,18 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 exit
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [Platform("x86_64", "linux"; libc="glibc", julia_version="1.8")]
-platforms = expand_cxxstring_abis(platforms)
+# Julia version compatibility
+julia_versions = [v"1.7", v"1.8", v"1.9"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+
+# Get a full list of platforms supported by Libjulia
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+
+# Filter this list based on the same filter criteria used in the casacore build script
+filter!(platforms) do p
+    !Sys.iswindows(p) && !Sys.isfreebsd(p) && libc(p) == "glibc"
+end
 
 # The products that we will ensure are always built
 products = Product[LibraryProduct("libcasacorecxx", :libcasacorecxx),]
@@ -38,5 +46,5 @@ dependencies = [Dependency("libcxxwrap_julia_jll"),
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.8",
-               preferred_gcc_version=v"12") # We need C++17 for CxxWrap
+               julia_compat,
+               preferred_gcc_version=v"7") # We need C++17 for CxxWrap
