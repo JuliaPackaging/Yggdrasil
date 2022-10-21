@@ -18,6 +18,9 @@ const augment = """
         if a == "none" || b == "none"
             return false
         end
+        if a == "local" || b == "local"
+            return a == b
+        end
         a = VersionNumber(a)
         b = VersionNumber(b)
 

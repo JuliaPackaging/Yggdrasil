@@ -12,13 +12,23 @@ end
 # Can't use Preferences for the same reason
 const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
 const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 
-function toolkit_version(cuda_toolkits)
+# returns the value for the "cuda" tag we should use in the platform.
+# possible values:
+#  - "$MAJOR.$MINOR": a VersionNumber-like string
+#  - "local": the user has requested to use the local CUDA installation
+#  - "none": no compatible CUDA toolkit was found.
+#    note that we don't just leave off the platform tag or Pkg would select *any* artifact.
+function cuda_toolkit_tag()
     # check if the user requested a specific version
     if haskey(preferences, "version")
-        cuda_version_override = VersionNumber(preferences["version"])
+        version = tryparse(VersionNumber, preferences["version"])
+        if version === nothing
+            return preferences["version"]
+        end
+        cuda_version_override = version
     end
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 
     # if not, we need to be able to use the driver to determine the version.
     # note that we only require this when there's no override, to support
@@ -26,7 +36,7 @@ function toolkit_version(cuda_toolkits)
     if !@isdefined(cuda_version_override)
         if !@isdefined(CUDA_Driver_jll) ||          # see above
            !isdefined(CUDA_Driver_jll, :libcuda)    # no driver found
-            return nothing
+            return "none"
         end
 
         cuda_driver = CUDA_Driver_jll.libcuda_version
@@ -49,23 +59,15 @@ function toolkit_version(cuda_toolkits)
         end
     end
     if isempty(cuda_toolkits)
-        return nothing
+        return "none"
     end
 
-    last(cuda_toolkits)
+    cuda_toolkit = last(cuda_toolkits)
+    "$(cuda_toolkit.major).$(cuda_toolkit.minor)"
 end
 
-# versions will be provided by build_tarballs.jl
-function augment_platform!(platform::Platform, cuda_toolkits::Vector{VersionNumber})
+function augment_platform!(platform::Platform)
     haskey(platform, "cuda") && return platform
-
-    cuda_toolkit = toolkit_version(cuda_toolkits)
-    platform["cuda"] = if cuda_toolkit !== nothing
-        "$(cuda_toolkit.major).$(cuda_toolkit.minor)"
-    else
-        # don't use an empty string here, because Pkg will then load *any* artifact
-        "none"
-    end
-
+    platform["cuda"] = cuda_toolkit_tag()
     return platform
 end

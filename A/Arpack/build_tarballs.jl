@@ -7,7 +7,6 @@ version = v"3.8.0"
 sources = [
     GitSource("https://github.com/opencollab/arpack-ng.git",
               "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
-]
 
 # Bash recipe for building across all platforms
 script = raw"""
