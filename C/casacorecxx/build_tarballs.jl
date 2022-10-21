@@ -6,11 +6,11 @@ name = "casacorecxx"
 version = v"0.1.0"
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/torrance/casacorecxx.git", "1b979164db214721c1c3cf52388b0ef9ed0c5d9b")]
+sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "bd97a3cb69bb21bf0aaec8944a18f3ba1a2be4b3")]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/casacorecxx
+cd $WORKSPACE/srcdir/Casacore.jl/casacorecxx
 mkdir build && cd build
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
