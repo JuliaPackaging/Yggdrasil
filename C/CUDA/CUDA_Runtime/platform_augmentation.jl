@@ -12,6 +12,7 @@ end
 # Can't use Preferences for the same reason
 const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
 const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 
 # returns the value for the "cuda" tag we should use in the platform.
 # possible values:
@@ -28,7 +29,6 @@ function cuda_toolkit_tag()
         end
         cuda_version_override = version
     end
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 
     # if not, we need to be able to use the driver to determine the version.
     # note that we only require this when there's no override, to support
