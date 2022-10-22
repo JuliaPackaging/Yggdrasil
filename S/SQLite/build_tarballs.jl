@@ -9,7 +9,7 @@ version = v"3.39.4"
 sources = [
     ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3390400.tar.gz",
                   "f31d445b48e67e284cf206717cc170ab63cbe4fd7f79a82793b772285e78fdbb"),
-    FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/packages/lib32-sqlite/trunk/license.txt",
+    FileSource("https://github.com/archlinux/svntogit-community/blob/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
 ]
