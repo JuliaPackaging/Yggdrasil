@@ -61,5 +61,6 @@ dependencies = [
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # GCC 8 is needed for `std::from_chars`
+               preferred_gcc_version=v"8", julia_compat="1.6")
