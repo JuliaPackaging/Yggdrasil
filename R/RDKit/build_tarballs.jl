@@ -11,11 +11,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
-# Fix name of static libraries dependencies of `librdkitcffi` when building for Windows.
-atomic_patch -p1 ../patches/static-libraries-windows.patch
-# To check whether to optimise popcnt you must check the _*TARGET*_ system, not
-# the host one.
-atomic_patch -p1 ../patches/popcnt-target-system.patch
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
