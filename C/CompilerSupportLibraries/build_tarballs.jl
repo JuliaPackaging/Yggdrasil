@@ -3,7 +3,7 @@ using BinaryBuilder, SHA
 include("../../fancy_toys.jl")
 
 name = "CompilerSupportLibraries"
-version = v"0.6.1"
+version = v"0.7.0"
 
 # We are going to need to extract the latest libstdc++ and libgomp from BB
 # So let's grab them into tarballs by using preferred_gcc_version:
@@ -61,12 +61,6 @@ script = raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
-echo ***********************************************************
-echo LatestLibraries logs, reproduced here for debuggability:
-zcat ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
-echo ***********************************************************
-rm -f ${prefix}/logs/LatestLibraries/LatestLibraries.log.gz
-
 # Make sure expansions aren't empty
 shopt -s nullglob
 
@@ -81,6 +75,8 @@ done
 # libwinpthread is a special snowflake and is only within `bin` for some reason
 if [[ ${target} == *mingw* ]]; then
     cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
+    # Install also `libmsvcrt.a`, needed for linking
+    install -Dvm 0644 "/opt/${target}/${target}/sys-root/lib/libmsvcrt.a" "${prefix}/lib/libmsvcrt.a"
 fi
 
 # Delete .a and .py files, we don't want those.
@@ -138,6 +134,8 @@ for platform in platforms
             # Don't push to the common products, otherwise we'll keep
             # accumulating libatomic into it when looping over all platforms.
             vcat(common_products, LibraryProduct("libatomic", :libatomic))
+        elseif Sys.iswindows(platform)
+            vcat(common_products, FileProduct("lib/libmsvcrt.a", :libmsvcrt))
         else
             common_products
         end
