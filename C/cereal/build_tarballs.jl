@@ -14,7 +14,8 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cereal-*/
-cp -vr include/* ${prefix}/include/
+mkdir "${includedir}"
+cp -vr include/* "${includedir}/."
 """
 
 # These are the platforms we will build for by default, unless further
