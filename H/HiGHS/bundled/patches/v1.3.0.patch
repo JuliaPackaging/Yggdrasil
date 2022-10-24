@@ -1,27 +1,68 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e5d3a14b8..8bd2dac90 100644
+index e5d3a14b8..2112a7e54 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -125,8 +125,8 @@ enable_cxx_compiler_flag_if_supported("-Wno-format-truncation")
+@@ -125,9 +125,16 @@ enable_cxx_compiler_flag_if_supported("-Wno-format-truncation")
  enable_cxx_compiler_flag_if_supported("-pedantic")
  endif()
  
 -check_cxx_compiler_flag("-mpopcnt" FLAG_MPOPCNT_SUPPORTED)
 -set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mpopcnt")
-+# check_cxx_compiler_flag("-mpopcnt" FLAG_MPOPCNT_SUPPORTED)
-+# set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mpopcnt")
- 
+-
++if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
++  message("FLAG_MPOPCNT_SUPPORTED is not available on aarch64")
++  set(FLAG_MPOPCNT_SUPPORTED OFF)
++elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ppc64|powerpc64)")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mpopcntd")
++  set(FLAG_MPOPCNT_SUPPORTED ON)
++else()
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mpopcnt")
++  set(FLAG_MPOPCNT_SUPPORTED ON)
++endif()
  
  option(DEBUGSOL "check the debug solution" OFF)
-diff --git a/extern/filereaderlp/reader.cpp b/extern/filereaderlp/reader.cpp
-index 83c9b4685..2149ca59a 100644
---- a/extern/filereaderlp/reader.cpp
-+++ b/extern/filereaderlp/reader.cpp
-@@ -2,6 +2,7 @@
  
- #include "builder.hpp"
+diff --git a/src/util/HighsHash.h b/src/util/HighsHash.h
+index 2dc0684a1..75e801294 100644
+--- a/src/util/HighsHash.h
++++ b/src/util/HighsHash.h
+@@ -104,8 +104,6 @@ struct HighsHashHelpers {
  
-+#include <cstring>
- #include <cassert>
- #include <iostream>
- #include <fstream>
+   static int log2i(uint32_t n) { return 31 - __builtin_clz(n); }
+ 
+-  static int popcnt(uint64_t x) { return __builtin_popcountll(x); }
+-
+ #elif defined(HIGHS_HAVE_BITSCAN_REVERSE)
+   static int log2i(uint64_t n) {
+     unsigned long result;
+@@ -118,8 +116,6 @@ struct HighsHashHelpers {
+     _BitScanReverse(&result, (unsigned long)n);
+     return result;
+   }
+-
+-  static int popcnt(uint64_t x) { return __popcnt64(x); }
+ #else
+   // integer log2 algorithm without floating point arithmetic. It uses an
+   // unrolled loop and requires few instructions that can be well optimized.
+@@ -161,7 +157,13 @@ struct HighsHashHelpers {
+ 
+     return x;
+   }
++#endif
+ 
++#ifdef FLAG_MPOPCNT_SUPPORTED
++  static int popcnt(uint64_t x) { return __builtin_popcountll(x); }
++#elif defined(HIGHS_HAVE_BITSCAN_REVERSE)
++  static int popcnt(uint64_t x) { return __popcnt64(x); }
++#else
+   static int popcnt(uint64_t x) {
+     constexpr uint64_t m1 = 0x5555555555555555ull;
+     constexpr uint64_t m2 = 0x3333333333333333ull;
+@@ -174,7 +176,6 @@ struct HighsHashHelpers {
+ 
+     return (x * h01) >> 56;
+   }
+-
+ #endif
+ 
+   /// compute a * b mod 2^61-1
