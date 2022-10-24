@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e5d3a14b8..8bd2dac90 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -125,8 +125,8 @@ enable_cxx_compiler_flag_if_supported("-Wno-format-truncation")
+ enable_cxx_compiler_flag_if_supported("-pedantic")
+ endif()
+ 
+-check_cxx_compiler_flag("-mpopcnt" FLAG_MPOPCNT_SUPPORTED)
+-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mpopcnt")
++# check_cxx_compiler_flag("-mpopcnt" FLAG_MPOPCNT_SUPPORTED)
++# set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mpopcnt")
+ 
+ 
+ option(DEBUGSOL "check the debug solution" OFF)
+diff --git a/extern/filereaderlp/reader.cpp b/extern/filereaderlp/reader.cpp
+index 83c9b4685..2149ca59a 100644
+--- a/extern/filereaderlp/reader.cpp
++++ b/extern/filereaderlp/reader.cpp
+@@ -2,6 +2,7 @@
+ 
+ #include "builder.hpp"
+ 
++#include <cstring>
+ #include <cassert>
+ #include <iostream>
+ #include <fstream>
