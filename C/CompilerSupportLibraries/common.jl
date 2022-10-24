@@ -6,7 +6,7 @@ function build_csl(ARGS, version::VersionNumber;
                    # Note: use preferred_gcc_version=v"100" to always force
                    # latest compatible version.
                    preferred_gcc_version::VersionNumber,
-                   include_libmsvcrt::Bool,
+                   windows_staticlibs::Bool,
                    julia_compat::String,
                    )
     name = "CompilerSupportLibraries"
@@ -63,7 +63,7 @@ done
 
     ## Now that we've got those tarballs, we're going to use them as sources to overwrite
     ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
-    script = "INCLUDE_LIBMSVCRT=$(include_libmsvcrt)\n" * raw"""
+    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\n" * raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
@@ -81,9 +81,11 @@ done
 # libwinpthread is a special snowflake and is only within `bin` for some reason
 if [[ ${target} == *mingw* ]]; then
     cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
-    if [[ "${INCLUDE_LIBMSVCRT}" == "true" ]]; then
-        # Install also `libmsvcrt.a`, needed for linking
-        install -Dvm 0644 "/opt/${target}/${target}/sys-root/lib/libmsvcrt.a" "${prefix}/lib/libmsvcrt.a"
+    if [[ "${WINDOWS_STATICLIBS}" == "true" ]]; then
+        # Install also some static libraries, needed for linking
+        for lib in libmsvcrt.a libgcc.a libssp.a; do
+            qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${prefix}/lib/${lib}" \;
+        done
     fi
 fi
 
@@ -142,8 +144,12 @@ install_license /usr/share/licenses/GPL-3.0+
                 # Don't push to the common products, otherwise we'll keep
                 # accumulating libatomic into it when looping over all platforms.
                 vcat(common_products, LibraryProduct("libatomic", :libatomic))
-            elseif include_libmsvcrt && Sys.iswindows(platform)
-                vcat(common_products, FileProduct("lib/libmsvcrt.a", :libmsvcrt))
+            elseif windows_staticlibs && Sys.iswindows(platform)
+                vcat(common_products,
+                     [FileProduct("lib/libmsvcrt.a", :libmsvcrt_a),
+                      FileProduct("lib/libgcc.a", :libgcc_a),
+                      FileProduct("lib/libssp.a", :libssp_a),
+                      ])
             else
                 common_products
             end
