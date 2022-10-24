@@ -9,7 +9,7 @@ version = v"1.3.0"
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "fbd9bd3065cde87768080a6762e00af34fb6c7c6",
+        "e5004072be62335eebe96149eabf3879d8d82635",
     ),
     DirectorySource("../bundled"),
 ]
