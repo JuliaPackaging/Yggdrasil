@@ -26,7 +26,7 @@ function configure_build(version)
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost-fix.patch
     mkdir build
 
-    export AMDGPU_TARGETS="gfx900;gfx906;gfx90a;gfx1010;gfx1012;gfx1030"
+    export AMDGPU_TARGETS="gfx900;gfx906;gfx90a;gfx1010;gfx1012;gfx1030;gfx1031;gfx1032;gfx1033"
     export ROCM_PATH=${prefix}
 
     export HIP_PATH=${prefix}/hip
