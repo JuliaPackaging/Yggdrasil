@@ -14,7 +14,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cereal-*/
-mkdir "${includedir}"
+mkdir -p "${includedir}"
 cp -vr include/* "${includedir}/."
 """
 
