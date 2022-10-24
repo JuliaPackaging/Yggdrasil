@@ -6,22 +6,21 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.4.3"
-source_version = v"3.4.2"
+version = v"4.0.0"
+source_version = v"4.0.0"
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
-    DirectorySource("./bundled"),
+                  "041d9eee96445667d2f7b970d2a799592027f1f8818cd96a65dcce1ac0745773")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
 
 # Apply any patches that are needed.
-for f in ${WORKSPACE}/srcdir/patches/*.patch;
-do
-    atomic_patch -p1 ${f};
-done
+#for f in ${WORKSPACE}/srcdir/patches/*.patch;
+#do
+#    atomic_patch -p1 ${f};
+#done
 
 mkdir build && cd build
 
@@ -31,16 +30,12 @@ mkdir build && cd build
 # version.  So we'll just create a crappy little script, since Julia may not
 # be available in the build environment.
 echo "#!/bin/bash" > julia
-echo "echo \"Fake Julia version 1.3.0\"" >> julia
+echo "echo \"Fake Julia version 1.8.2\"" >> julia
 chmod +x julia
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_INSTALL_PREFIX=${prefix}
-       -DBUILD_SHARED_LIBS=ON
-       -DDEBUG=OFF
-       -DPROFILE=OFF
-       -DUSE_OPENMP=OFF
-       -DBoost_NO_BOOST_CMAKE=1
+       -DUSE_OPENMP=ON
        -DBUILD_JULIA_BINDINGS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
@@ -109,8 +104,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built.
 products = [
-    # The main mlpack library.
-    LibraryProduct("libmlpack", :libmlpack),
     # Utility library with functionality to call the mlpack::CLI singleton.
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
     # Each of these contains a mlpackMain() implementation for the given
@@ -185,9 +178,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.76.0"),
     Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.13")
+    Dependency("OpenBLAS_jll", v"0.3.13"),
+    Dependency("cereal_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
