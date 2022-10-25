@@ -69,7 +69,8 @@ function binutils_script()
         --with-sysroot=${prefix}/${target} \
         --disable-multilib \
         --program-prefix="${target}-" \
-        --disable-werror
+        --disable-werror \
+        --enable-new-dtags
 
     # Force `make` to use `/bin/true` instead of `makeinfo` so that we don't
     # die while failing to build docs.
