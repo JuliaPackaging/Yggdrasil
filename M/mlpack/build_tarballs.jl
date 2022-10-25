@@ -190,6 +190,7 @@ products = [
 dependencies = [
     Dependency("armadillo_jll"),
     Dependency("OpenBLAS_jll", v"0.3.13"),
+    Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("cereal_jll"),
     BuildDependency("ensmallen_jll")
 ]
