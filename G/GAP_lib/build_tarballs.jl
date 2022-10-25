@@ -40,9 +40,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
 mv ../pkg .
-find pkg -name '._*' -exec rm \{\} \; # unwanted files
 
-# run autogen.sh if compiling from it source and/or if configure was patched
+# must run autogen.sh if compiling from git snapshot and/or if configure was patched;
+# it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
 # compile a native version of GAP so we can use it to generate the manual
@@ -57,8 +57,10 @@ find pkg -name '._*' -exec rm \{\} \; # unwanted files
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
 
-# build the manual (only HTML and txt; for PDF we'd need LaTeX)
-make html
+# build the manual if necessary (only HTML and txt; for PDF we'd need LaTeX)
+if [[ ! -f doc/ref/chap0.html ]] ; then
+  make html
+fi
 
 # the license
 install_license LICENSE

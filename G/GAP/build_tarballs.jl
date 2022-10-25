@@ -73,13 +73,9 @@ julia_version=$(./julia_version)
     --with-zlib=${prefix} \
     --with-gc=julia \
     --with-julia
-mkdir -p build
 
 # WORKAROUND: avoid error: /usr/local/include: No such file or directory
 export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
-# WORKAROUND: avoid error: redundant redeclaration of ‘jl_gc_safepoint’ for Julia 1.8 & 1.9
-# (see https://github.com/JuliaLang/julia/pull/45120 for a proper fix)
-#export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
 
 # configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
 mkdir native-build
@@ -91,9 +87,7 @@ cd native-build
     --with-zlib=${host_prefix} \
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
-cp build/c_*.c ../src/
-cp ffgen ..
-cp build/ffdata.* ../build/
+cp build/c_*.c build/ffdata.* ../src/
 cd ..
 
 # remove the native build, it has done its job
