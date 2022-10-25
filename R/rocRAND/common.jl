@@ -18,7 +18,7 @@ const PRODUCTS = [
 
 const TARGETS = Dict(
     v"4.2.0" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-"],
-    v"4.5.2" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack-", "gfx90a:xnack+", "gfx1030", "gfx1031", "gfx1032", "gfx1033"],
+    v"4.5.2" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack-", "gfx90a:xnack+"],
     v"5.2.3" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack-", "gfx90a:xnack+", "gfx1030", "gfx1031", "gfx1032", "gfx1033"],
 )
 
