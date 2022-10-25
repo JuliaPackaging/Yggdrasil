@@ -45,8 +45,8 @@ Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
 Clp_version_offset = v"0.0.1"
 Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 
-Osi_upstream_version = v"0.108.6"
-Osi_gitsha = "dfa6449d6756fdd96912cf96e168d0be07b1d37c"
+Osi_upstream_version = v"0.108.7"
+Osi_gitsha = "c67528fc8b2a36dc936b285fe34030439b9147c3"
 Osi_version_offset = v"0.0.0"
 Osi_version = offset_version(Osi_upstream_version, Osi_version_offset)
 
