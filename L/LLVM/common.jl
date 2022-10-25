@@ -273,6 +273,14 @@ ninja -j${nproc} -vv
 # Install!
 ninja install
 
+shopt -s nullglob
+for x in ${prefix}/lib/*.so; do
+    # All things that have RPATH or doesn't have $ORIGIN,
+    # but not those without $RUNPATH and $ORIGIN
+    [ -n "$(objdump -x "$x" | grep 'RPATH\|RUNPATH')" ] && \
+      patchelf --set-rpath "\$ORIGIN" "$x";
+done
+
 # Life is harsh on Windows and dynamic libraries are
 # expected to live alongside the binaries. So we have
 # to copy the *.dll from bin/ to tools/ as well...

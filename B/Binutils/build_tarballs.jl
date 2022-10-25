@@ -58,7 +58,8 @@ else
         --host=\${MACHTYPE} \\
         --with-sysroot="\${prefix}/$(compiler_target)/sys-root" \\
         --enable-multilib \\
-        --disable-werror
+        --disable-werror \\
+	--enable-new-dtags
 
     make -j\${nproc}
     make install

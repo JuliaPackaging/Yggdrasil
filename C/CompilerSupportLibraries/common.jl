@@ -113,6 +113,10 @@ if [[ ${target} == *apple* ]]; then
     done
 fi
 
+for lib in libgfortran libasan libtsan libubsan liblsan; do
+  [ ! -f "${libdir}/${lib}.so" ] || patchelf --set-rpath "\$ORIGIN" "${libdir}/${lib}.so"
+done
+
 # Remove extraneous libraries
 rm -f ${libdir}/{libiconv,libxml2,libz}*.${dlext}*
 
