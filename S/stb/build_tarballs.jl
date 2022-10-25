@@ -17,7 +17,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/stb*/
 mkdir -p "${includedir}"
-cp -vr include/* "${includedir}/."
+cp -vr *.h "${includedir}/."
 """
 
 # These are the platforms we will build for by default, unless further
