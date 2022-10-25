@@ -40,16 +40,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     checksums = Dict(
         v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
         v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
+        v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
     )
 
-    if version == v"1.8.0-DEV"
+    if version == v"1.9.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "3e092a25212c819b05b2e1d131a5ab28bce5722a"),
-            DirectorySource("./bundled"),
-        ]
-    elseif version == v"1.9.0-DEV"
-        sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "487d0e68aad44b9bf15415bc7263966be73cd814"),
+            GitSource("https://github.com/JuliaLang/julia.git", "37e0579af04919e1e6264bbfc33ed8f4c537005a"),
             DirectorySource("./bundled"),
         ]
     else
@@ -138,7 +134,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         if [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
+            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
         else
             LLVMLINK="-L${prefix}/bin -lLLVM"
         fi
@@ -154,7 +150,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         elif [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
+            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
         else
             echo "Error, LLVM version not specified"
             exit 1
@@ -308,7 +304,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("LibUnwind_jll"),
-        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
         BuildDependency("utf8proc_jll"),
@@ -329,17 +324,21 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # This means the resulting package has fewer dependencies declared, but at least it
     # will work and allow people to build JLL binaries ready for Julia 1.7
     if version.major == 1 && version.minor == 6
+        push!(dependencies, Dependency("LibUV_jll"))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
         push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
     elseif version.major == 1 && version.minor == 7
+        push!(dependencies, Dependency("LibUV_jll"))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
     elseif version.major == 1 && version.minor == 8
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.0+3")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
     elseif version.major == 1 && version.minor == 9
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+0")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+0")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
     else
         error("Unsupported Julia version")
