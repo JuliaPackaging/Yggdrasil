@@ -15,7 +15,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/stb/
+cd ${WORKSPACE}/srcdir/stb*/
 mkdir -p "${includedir}"
 cp -vr include/* "${includedir}/."
 """
