@@ -10,7 +10,7 @@ name = "stb"
 # revision...
 version = v"0.0.20221025"
 sources = [
-    ArchiveSource("https://github.com/nothings/stb/archive/8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55.zip"
+    ArchiveSource("https://github.com/nothings/stb/archive/8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55.zip",
                   "93a16ee3e866e719feec459f6f132cce932c5ec751eb38e3ec1975f911353d2e")
 ]
 
