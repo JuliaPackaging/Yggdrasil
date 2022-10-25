@@ -101,8 +101,7 @@ else
     cp -v src/mlpack/bindings/julia/mlpack/src/*.${dlext} "${libdir}"
 fi
 
-cd ../
-install_license LICENSE.txt
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
