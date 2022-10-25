@@ -23,13 +23,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
-if [[ ${target} == *mingw32* ]]; then
-    FLAGS+=(UNAME=Windows)
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
-else
-    FLAGS+=(UNAME="$(uname)")
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
-fi
+FLAGS+=(UNAME="$(uname)")
+FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 
 BLAS_NAME=blastrampoline
 if [[ ${nbits} == 64 ]]; then
@@ -42,12 +37,12 @@ FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 FLAGS+=(CUDA_PATH="$prefix/cuda")
 
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
 FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
+for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD CAMD CCOLAMD COLAMD CHOLMOD SPQR; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
@@ -55,16 +50,16 @@ done
 # For now, we'll have to adjust the name of the OpenBLAS library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for OpenBLAS"
+    echo "-- Modifying library name for BLAS"
 
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
         if [[ ${target} == *-apple-* ]]; then
-            OPENBLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
-            install_name_tool -change ${OPENBLAS_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+            BLAS_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+            install_name_tool -change ${BLAS_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
-            OPENBLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${OPENBLAS_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+            BLAS_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${BLAS_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
         fi
     done
 fi
