@@ -1,5 +1,11 @@
 include("../common.jl")
 
+using Base.BinaryPlatforms: arch, os
+
+const YGGDRASIL_DIR = "../../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
 name = "SuiteSparse_GPU"
 
 sources = [
@@ -32,15 +38,16 @@ fi
 
 FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
-# CUDA
+# Enable CUDA
 FLAGS+=(CUDA_PATH="$prefix/cuda")
 
-# METIS
-FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SLIP_LU Mongoose; do
+for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
@@ -71,25 +78,45 @@ fi
 install_license LICENSE.txt
 """
 
+augment_platform_block = CUDA.augment
+
 # Override the default platforms
 platforms = [
     Platform("x86_64", "linux"),
 ]
 
-append!(products, [
-    LibraryProduct("libsliplu",                 :libsliplu),
-#    LibraryProduct("libmongoose",               :libmongoose),
-    LibraryProduct("libGPUQREngine",            :libGPUQREngine),
-    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
-])
-
-dependencies = [
-    dependencies;
-    Dependency("METIS_jll")
-    Dependency("MPFR_jll")
-    Dependency("GMP_jll")
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.0.130"))
+products = [
+    products;
+    LibraryProduct("libGPUQREngine",            :libGPUQREngine)
+    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime)
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6")
+# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
+cuda_full_versions = Dict(
+    v"10.2" => v"10.2.89",
+    v"11.0" => v"11.0.3"
+)
+
+# build SuiteSparse for all supported CUDA toolkits
+#
+# the library doesn't have specific CUDA requirements, so we only build for CUDA 10.2,
+# the oldest version supported by CUDA.jl, and 11.0, which (per semantic versioning)
+# should support every CUDA 11.x version.
+#
+# if SuiteSparse would start using specific APIs from recent CUDA versions, add those here.
+for cuda_version in [v"10.2", v"11.0"], platform in platforms
+    augmented_platform = Platform(arch(platform), os(platform);
+                                  cuda=CUDA.platform(cuda_version))
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    cuda_deps = [
+        BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                    version=cuda_full_versions[cuda_version])),
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    ]
+
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+                   products, [dependencies; cuda_deps]; lazy_artifacts=true,
+                   julia_compat="1.7", augment_platform_block,
+                   skip_audit=true, dont_dlopen=true)
+end
