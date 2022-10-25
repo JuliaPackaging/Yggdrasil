@@ -36,9 +36,9 @@ FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 # Enable CUDA
 FLAGS+=(CUDA_PATH="$prefix/cuda")
 
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+# To disable METIS in CHOLMOD, pass -DNPARTITION and avoiding linking metis
 FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN" SPQR_CONFIG="$SUN")
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
