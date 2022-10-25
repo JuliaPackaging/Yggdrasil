@@ -80,8 +80,8 @@ platforms = [
     Platform("x86_64", "linux"),
 ]
 
-dependencies = [ 
-    dependencies, 
+dependencies = [
+    Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll"),
     Dependency("METIS_jll"),
  ]
