@@ -1,4 +1,4 @@
-# Build script for stn: C++ header-only single-file utilities.
+# Build script for stb: C++ header-only single-file utilities.
 # This is basically just a dummy package that installs header files, and makes
 # them available for other packages.
 
