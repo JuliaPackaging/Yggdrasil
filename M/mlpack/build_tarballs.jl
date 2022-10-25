@@ -186,6 +186,7 @@ dependencies = [
     Dependency("armadillo_jll"),
     Dependency("OpenBLAS_jll", v"0.3.13"),
     Dependency("CompilerSupportLibraries_jll"),
+    # These are header-only libraries just needed for the build process.
     BuildDependency("cereal_jll"),
     BuildDependency("ensmallen_jll"),
     BuildDependency("stb_jll")
