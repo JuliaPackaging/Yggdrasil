@@ -8,12 +8,12 @@ deleteat!(ARGS, length(ARGS))
 
 # Encode the compiler target into the name
 name = "Binutils-$(compiler_target)"
-version = v"2.24"
+version = v"2.39"
 
 # Collection of sources required to build Binutils
 sources = [
-    "https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2" =>
-	"e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137",
+    "https://ftp.gnu.org/gnu/binutils/binutils-2.39.tar.bz2" =>
+	"da24a84fef220102dd24042df06fdea851c2614a5377f86effa28f33b7b16148",
     "https://github.com/tpoechtrager/apple-libtapi.git" =>
     "e56673694db395e25b31808b4fbb9a7005e6875f",
     "https://github.com/tpoechtrager/cctools-port.git" =>
