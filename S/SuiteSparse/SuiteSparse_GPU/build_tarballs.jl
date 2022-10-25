@@ -42,7 +42,7 @@ FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine AMD CAMD CCOLAMD COLAMD CHOLMOD SPQR; do
+for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine CHOLMOD SPQR; do
     make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
     make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
@@ -80,14 +80,14 @@ platforms = [
     Platform("x86_64", "linux"),
 ]
 
-push!(dependencies, Dependency("METIS_jll"))
+dependencies = [ 
+    dependencies, 
+    Dependency("SuiteSparse_jll"),
+    Dependency("METIS_jll"),
+ ]
 
 products = [
     LibraryProduct("libsuitesparseconfig",      :libsuitesparseconfig),
-    LibraryProduct("libamd",                    :libamd),
-    LibraryProduct("libcamd",                   :libcamd),
-    LibraryProduct("libccolamd",                :libccolamd),
-    LibraryProduct("libcolamd",                 :libcolamd),
     LibraryProduct("libcholmod",                :libcholmod),
     LibraryProduct("libspqr",                   :libspqr),
     LibraryProduct("libGPUQREngine",            :libGPUQREngine),
