@@ -110,7 +110,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("oneAPI_Level_Zero_Headers_jll")
+    BuildDependency("oneAPI_Level_Zero_Headers_jll"),
+    Dependency("oneAPI_Level_Zero_Loader_jll")
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
@@ -127,6 +128,5 @@ for (idx, (platform, sources)) in enumerate(platform_sources)
         args = ARGS
     end
     build_tarballs(args, name, version, [generic_sources; sources], script, [platform],
-                   products, dependencies; skip_audit=true, dont_dlopen=true,
-                   preferred_gcc_version=v"8")
+                   products, dependencies; preferred_gcc_version=v"8")
 end
