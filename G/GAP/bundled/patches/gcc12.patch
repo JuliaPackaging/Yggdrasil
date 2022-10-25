@@ -1,12 +1,14 @@
-commit 6f851174fe92c077e316005612e7246819434e0e
-Author: Max Horn <max@quendi.de>
-Date:   2022-09-14 00:12:02 +0200
+From 592581753cf7a281eafa251ddc976b0eede11afa Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Wed, 14 Sep 2022 00:12:02 +0200
+Subject: [PATCH 4/4] kernel: workaround GCC 12 warning
 
-    kernel: workaround GCC 12 warning
-    
-    With GCC 12, we get a spurious warning indicating that `buf` in `GetStr`
-    may be used uninitialized. Weirdly, it does not complain about the almost
-    identical code in e.g. `GetPragma`.
+With GCC 12, we get a spurious warning indicating that `buf` in `GetStr`
+may be used uninitialized. Weirdly, it does not complain about the almost
+identical code in e.g. `GetPragma`.
+---
+ src/scanner.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/scanner.c b/src/scanner.c
 index f5dbbcc04..23adc944e 100644
@@ -21,3 +23,6 @@ index f5dbbcc04..23adc944e 100644
      UInt i = 0;
  
      while (c != '"' && c != '\n' && c != '\377') {
+-- 
+2.38.1
+
