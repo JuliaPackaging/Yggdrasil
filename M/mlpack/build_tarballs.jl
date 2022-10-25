@@ -123,8 +123,6 @@ products = [
         :libmlpack_julia_bayesian_linear_regression),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
-    LibraryProduct("libmlpack_julia_decision_stump",
-        :libmlpack_julia_decision_stump),
     LibraryProduct("libmlpack_julia_decision_tree",
         :libmlpack_julia_decision_tree),
     LibraryProduct("libmlpack_julia_det", :libmlpack_julia_det),
