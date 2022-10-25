@@ -83,9 +83,15 @@ platforms = [
 push!(dependencies, Dependency("METIS_jll"))
 
 products = [
-    products;
-    LibraryProduct("libGPUQREngine",            :libGPUQREngine)
-    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime)
+    LibraryProduct("libsuitesparseconfig",      :libsuitesparseconfig),
+    LibraryProduct("libamd",                    :libamd),
+    LibraryProduct("libcamd",                   :libcamd),
+    LibraryProduct("libccolamd",                :libccolamd),
+    LibraryProduct("libcolamd",                 :libcolamd),
+    LibraryProduct("libcholmod",                :libcholmod),
+    LibraryProduct("libspqr",                   :libspqr),
+    LibraryProduct("libGPUQREngine",            :libGPUQREngine),
+    LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
 ]
 
 # XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
