@@ -11,19 +11,11 @@ version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
                   "041d9eee96445667d2f7b970d2a799592027f1f8818cd96a65dcce1ac0745773"),
-    # STB headers for image support.
-    ArchiveSource("https://www.mlpack.org/files/stb.tar.gz",
-                  "5c01115d6909621af63a502437334f2014065a5ce6bb7ac05acbf15f24acce15"),
     # Patches to fix build issues.
     DirectorySource("./bundled")
 ]
 
 script = raw"""
-# First, install STB headers.
-cd ${WORKSPACE}/srcdir/stb/
-mkdir -p ${includedir}/
-cp -vr include/*.h ${includedir}/
-
 cd ${WORKSPACE}/srcdir/mlpack-*/
 
 # Apply any patches that are needed.
@@ -192,7 +184,8 @@ dependencies = [
     Dependency("OpenBLAS_jll", v"0.3.13"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("cereal_jll"),
-    BuildDependency("ensmallen_jll")
+    BuildDependency("ensmallen_jll"),
+    BuildDependency("stb_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
