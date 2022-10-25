@@ -80,6 +80,8 @@ platforms = [
     Platform("x86_64", "linux"),
 ]
 
+push!(dependencies, Dependency("METIS_jll"))
+
 products = [
     products;
     LibraryProduct("libGPUQREngine",            :libGPUQREngine)
