@@ -83,7 +83,7 @@ if [[ ${target} == *mingw* ]]; then
     cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
     if [[ "${WINDOWS_STATICLIBS}" == "true" ]]; then
         # Install also some static libraries, needed for linking
-        for lib in libmsvcrt.a libgcc.a libssp.a; do
+        for lib in libmsvcrt.a libgcc.a libgcc_s.a libssp.a; do
             qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${prefix}/lib/${lib}" \;
         done
     fi
@@ -148,6 +148,7 @@ install_license /usr/share/licenses/GPL-3.0+
                 vcat(common_products,
                      [FileProduct("lib/libmsvcrt.a", :libmsvcrt_a),
                       FileProduct("lib/libgcc.a", :libgcc_a),
+                      FileProduct("lib/libgcc_s.a", :libgcc_s_a),
                       FileProduct("lib/libssp.a", :libssp_a),
                       ])
             else
