@@ -1,7 +1,7 @@
-From 739f802c85c747e509670c56606563e2570839ea Mon Sep 17 00:00:00 2001
+From 2deedf339740abf0abd25eee3e98211cf5c7ec5a Mon Sep 17 00:00:00 2001
 From: Max Horn <max@quendi.de>
 Date: Tue, 13 Sep 2022 16:09:19 +0200
-Subject: [PATCH 2/3] Don't invoke jl_init()
+Subject: [PATCH 2/4] Don't invoke jl_init()
 
 This is not needed when running this code from within Julia
 ---
@@ -21,5 +21,5 @@ index db02b5d39..c5c536467 100644
      SetJuliaTLS();
  #ifdef SKIP_GUARD_PAGES
 -- 
-2.37.3
+2.38.1
 
