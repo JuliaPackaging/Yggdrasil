@@ -181,7 +181,8 @@ products = [
 dependencies = [
     Dependency("armadillo_jll"),
     Dependency("OpenBLAS_jll", v"0.3.13"),
-    Dependency("cereal_jll")
+    Dependency("cereal_jll"),
+    Dependency("ensmallen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
