@@ -13,7 +13,9 @@ sources = [
                   "041d9eee96445667d2f7b970d2a799592027f1f8818cd96a65dcce1ac0745773"),
     # STB headers for image support.
     ArchiveSource("https://www.mlpack.org/files/stb.tar.gz",
-                  "5c01115d6909621af63a502437334f2014065a5ce6bb7ac05acbf15f24acce15")
+                  "5c01115d6909621af63a502437334f2014065a5ce6bb7ac05acbf15f24acce15"),
+    # Patches to fix build issues.
+    DirectorySource("./bundled")
 ]
 
 script = raw"""
@@ -25,10 +27,10 @@ cp -vr include/*.h ${includedir}/
 cd ${WORKSPACE}/srcdir/mlpack-*/
 
 # Apply any patches that are needed.
-#for f in ${WORKSPACE}/srcdir/patches/*.patch;
-#do
-#    atomic_patch -p1 ${f};
-#done
+for f in ${WORKSPACE}/srcdir/patches/*.patch;
+do
+    atomic_patch -p1 ${f};
+done
 
 mkdir build && cd build
 
