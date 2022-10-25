@@ -34,6 +34,7 @@ echo "echo \"Fake Julia version 1.8.2\"" >> julia
 chmod +x julia
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_CROSSCOMPILING=OFF
        -DCMAKE_INSTALL_PREFIX=${prefix}
        -DUSE_OPENMP=ON
        -DBUILD_JULIA_BINDINGS=ON
