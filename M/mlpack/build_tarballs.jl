@@ -184,7 +184,10 @@ products = [
 dependencies = [
     Dependency("armadillo_jll"),
     Dependency("OpenBLAS_jll", v"0.3.13"),
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     # These are header-only libraries just needed for the build process.
     BuildDependency("cereal_jll"),
     BuildDependency("ensmallen_jll"),
