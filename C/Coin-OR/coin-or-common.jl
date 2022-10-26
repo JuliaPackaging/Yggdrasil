@@ -33,26 +33,17 @@ Couenne_gitsha = "7154f7a9b3cd84be378d02b483d090b76fc79ce8"
 Cbc_version = offset_version(v"2.10.8", v"0.0.0")
 Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 
-Cgl_upstream_version = v"0.60.6"
+Cgl_version = offset_version(v"0.60.6", v"0.0.0")
 Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
-Cgl_version_offset = v"0.0.0"
-Cgl_version = offset_version(Cgl_upstream_version, Cgl_version_offset)
 
-Clp_upstream_version = v"1.17.7"
+Clp_version = offset_version(v"1.17.7", v"0.0.0")
 Clp_gitsha = "1c2586a08d33ecc59ed67d319c29044802c0866b"
-Clp_version_offset = v"0.0.0"
-Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 
-Osi_upstream_version = v"0.108.7"
+Osi_version = offset_version(v"0.108.7", v"0.0.0")
 Osi_gitsha = "c67528fc8b2a36dc936b285fe34030439b9147c3"
-Osi_version_offset = v"0.0.0"
-Osi_version = offset_version(Osi_upstream_version, Osi_version_offset)
 
-CoinUtils_upstream_version = v"2.11.6"
+CoinUtils_version = offset_version(v"2.11.6", v"0.0.0")
 CoinUtils_gitsha = "26e9639ed9897e13e89169870dbe910296a9783b"
-CoinUtils_verson_offset = v"0.0.0"
-CoinUtils_version =
-    offset_version(CoinUtils_upstream_version, CoinUtils_verson_offset)
 
 Ipopt_upstream_version = v"3.14.4"
 Ipopt_gitsha = "d872b3a3d17863c6a2a27475cc9af9e933cb7e92"
@@ -72,11 +63,8 @@ CHiPPS_BLIS_version = offset_version(v"0.94.8", v"0.0.2")
 # This is not the exact 0.94.8 tag, but a few commits later on releases/0.94.8
 CHiPPS_BLIS_gitsha = "0ad6d4530d48e3b5f417a3407f5f2e8605145b50"
 
-SYMPHONY_upstream_version = v"5.6.17"
-SYMPHONY_gitsha = "f917d42e6655a82ea4e9290aa7d41b0f60a91f20"
-SYMPHONY_version_offset = v"0.0.0"
-SYMPHONY_version =
-    offset_version(SYMPHONY_upstream_version, SYMPHONY_version_offset)
+SYMPHONY_version = offset_version(v"5.6.19", v"0.0.0")
+SYMPHONY_gitsha = "28adc89185be98780b1ab6528ab270e569561b87"
 
 MibS_version = offset_version(v"1.1.3", v"0.0.1")
 MibS_gitsha = "4b7ec93c4bd1d6a978deff9987cf1df74f6598d3"
