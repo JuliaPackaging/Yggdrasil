@@ -40,9 +40,9 @@ Cgl_gitsha = "31797b2997219934db02a40d501c4b6d8efa7398"
 Cgl_version_offset = v"0.0.0"
 Cgl_version = offset_version(Cgl_upstream_version, Cgl_version_offset)
 
-Clp_upstream_version = v"1.17.6"
-Clp_gitsha = "756ddd3ed813eb1fa8b2d1b4fe813e6a4d7aa1eb"
-Clp_version_offset = v"0.0.1"
+Clp_upstream_version = v"1.17.7"
+Clp_gitsha = "1c2586a08d33ecc59ed67d319c29044802c0866b"
+Clp_version_offset = v"0.0.0"
 Clp_version = offset_version(Clp_upstream_version, Clp_version_offset)
 
 Osi_upstream_version = v"0.108.7"
