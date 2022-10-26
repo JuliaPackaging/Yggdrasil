@@ -35,8 +35,8 @@ Cbc_gitsha = "7b5ccc016f035f56614c8018b20d700978144e9f"
 Cbc_version_offset = v"0.0.1"
 Cbc_version = offset_version(Cbc_upstream_version, Cbc_version_offset)
 
-Cgl_upstream_version = v"0.60.3"
-Cgl_gitsha = "31797b2997219934db02a40d501c4b6d8efa7398"
+Cgl_upstream_version = v"0.60.6"
+Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
 Cgl_version_offset = v"0.0.0"
 Cgl_version = offset_version(Cgl_upstream_version, Cgl_version_offset)
 
