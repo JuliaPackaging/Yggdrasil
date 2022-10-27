@@ -15,9 +15,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mimalloc/
-if [[ "${target}" == i686-*-mingw* ]]; then
-    atomic_patch -p1 ../patches/mimalloc-redirect32.patch
-fi
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -29,12 +26,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j ${nproc}
 make -j ${nproc} install
-# Manually install the mimalloc-redirect lib for Windows
-if [[ "${target}" == i686-*-mingw* ]]; then
-    cp "mimalloc-redirect32.${dlext}" "${libdir}/."
-elif [[ "${target}" == x86_64-*-mingw* ]]; then
-    cp "mimalloc-redirect.${dlext}" "${libdir}/."
-fi
 """
 
 # These are the platforms we will build for by default, unless further
