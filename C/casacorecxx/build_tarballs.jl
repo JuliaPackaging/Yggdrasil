@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "casacorecxx"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "bd97a3cb69bb21bf0aaec8944a18f3ba1a2be4b3")]
+sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "adf9223fb7e98fadc105afa348a9c4ea4fd310d5")]
 
 # Bash recipe for building across all platforms
 script = raw"""
