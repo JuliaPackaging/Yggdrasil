@@ -8,7 +8,7 @@ version = v"2.0.6"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "82712f4a8f038a7fb4df2790f4c3b7e3ed9e219b"),
+              "f2712f4a8f038a7fb4df2790f4c3b7e3ed9e219b"),
     DirectorySource("./bundled"),
 ]
 
