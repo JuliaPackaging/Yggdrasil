@@ -2,6 +2,8 @@ using Base.BinaryPlatforms
 
 using Base: thismajor, thisminor
 
+using Libdl
+
 try
     using CUDA_Driver_jll
 catch err
@@ -34,12 +36,43 @@ function cuda_toolkit_tag()
     # note that we only require this when there's no override, to support
     # precompiling with a fixed version without having the driver available.
     if !@isdefined(cuda_version_override)
-        if !@isdefined(CUDA_Driver_jll) ||          # see above
-           !isdefined(CUDA_Driver_jll, :libcuda)    # no driver found
+        if !@isdefined(CUDA_Driver_jll)
+            # driver JLL not available because we're in the middle of installing packages
             return "none"
         end
+        if CUDA_Driver_jll.is_available()
+            if !isdefined(CUDA_Driver_jll, :libcuda)
+                # no driver found
+                return "none"
+            end
+            cuda_driver = CUDA_Driver_jll.libcuda_version
+        else
+            # CUDA_Driver_jll only kicks in for supported platforms, so fall back to
+            # a system search if the artifact isn't available (JLLWrappers.jl#50)
+            driver_name = if Sys.iswindows()
+                Libdl.find_library("nvcuda")
+            else
+                Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+            end
+            if driver_name == ""
+                # no driver found
+                return "none"
+            end
 
-        cuda_driver = CUDA_Driver_jll.libcuda_version
+            function driver_version(library_handle)
+                function_handle = Libdl.dlsym(library_handle, "cuDriverGetVersion")
+                version_ref = Ref{Cint}()
+                status = ccall(function_handle, Cint, (Ptr{Cint},), version_ref)
+                if status != 0
+                    return nothing
+                end
+                major, ver = divrem(version_ref[], 1000)
+                minor, patch = divrem(ver, 10)
+                return VersionNumber(major, minor, patch)
+            end
+            driver_handle = Libdl.dlopen(driver_name; throw_error=true)
+            cuda_driver = driver_version(driver_handle)
+        end
     end
 
     # "[...] applications built against any of the older CUDA Toolkits always continued
