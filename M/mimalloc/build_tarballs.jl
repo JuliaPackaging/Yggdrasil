@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"2.0.1"
+version = v"2.0.6"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "8e35ccc43be293a9bfd6e63da310a79c235d25d9"),
+              "82712f4a8f038a7fb4df2790f4c3b7e3ed9e219b"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,10 +22,10 @@ mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DMI_BUILD_STATIC=OFF \
     -DMI_BUILD_OBJECT=OFF \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
+    -DMI_OVERRIDE=OFF \
     ..
 make -j ${nproc}
 make -j ${nproc} install
