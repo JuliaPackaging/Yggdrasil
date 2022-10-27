@@ -1,6 +1,9 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
 version_string = "22.07.1.14"
@@ -43,18 +46,26 @@ rm ${libdir}/*.a
 install_license LICENSE docs/*
 """
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("libcustatevec", :libcustatevec; dont_dlopen=true),
-    LibraryProduct("libcutensornet", :libcutensornet; dont_dlopen=true),
+augment_platform_block = CUDA.augment
+
+dependencies = [
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="~1.6")
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libcustatevec", :libcustatevec),
+    LibraryProduct("libcutensornet", :libcutensornet),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 for (platform, sources) in platforms_and_sources
-    should_build_platform(triplet(platform)) || continue
-    build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, dependencies; lazy_artifacts=true)
+    augmented_platform = Platform(arch(platform), os(platform);
+                                  cuda=CUDA.platform(v"11"))
+    should_build_platform(triplet(augmented_platform)) || continue
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+                   products, dependencies; lazy_artifacts=true,
+                   julia_compat="1.6", augment_platform_block,
+                   skip_audit=true, dont_dlopen=true)
 end

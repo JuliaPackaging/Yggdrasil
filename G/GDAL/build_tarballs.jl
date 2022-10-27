@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.5.1"
-version_offset = v"0.0.3"
+upstream_version = v"3.5.2"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "7c4406ca010dc8632703a0a326f39e9db25d9f1f6ebaaeca64a963e3fac123d1"),
+        "fbd696e1b2a858fbd2eb3718db16b14ed9ba82521d3578770d480c74fe1146d2"),
 ]
 
 # Bash recipe for building across all platforms

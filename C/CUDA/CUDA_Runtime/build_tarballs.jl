@@ -5,16 +5,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.2.2"
+version = v"0.2.3"
 
 cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8"]
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
-
-    function augment_platform!(platform::Platform)
-        augment_platform!(platform, $cuda_versions)
-    end"""
+    const cuda_toolkits = $cuda_versions"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -48,5 +45,3 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", lazy_artifacts=true,
                    augment_platform_block)
 end
-
-# bump

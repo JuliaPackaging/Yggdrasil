@@ -1,0 +1,31 @@
+From 4b55443f4a35b4205a80f4b125640a641fa041d9 Mon Sep 17 00:00:00 2001
+From: Ryan Curtin <ryan@ratml.org>
+Date: Tue, 25 Oct 2022 12:14:02 -0400
+Subject: [PATCH] Fix MacOS configuration regex.
+
+---
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4a2f1bc6fe..8ef6c72f45 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -185,12 +185,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+     exec_program(/usr/bin/sw_vers ARGS
+         -productVersion OUTPUT_VARIABLE MACOSX_VERSION_RAW)
+     string(REGEX REPLACE
+-        "([0-9]+)(?:\\.([0-9]+).*)*" "\\1"
++        "([0-9]+)(\\.([0-9]+).*)*" "\\1"
+         MACOSX_MAJOR_VERSION
+         "${MACOSX_VERSION_RAW}")
+ 
+     string(REGEX REPLACE
+-        "([0-9]+)(?:\\.([0-9]+).*)*" "\\2"
++        "([0-9]+)\\.([0-9]+)(\\.([0-9]+).*)*" "\\2"
+         MACOSX_MINOR_VERSION
+         "${MACOSX_VERSION_RAW}")
+ 
+-- 
+2.37.2
+
