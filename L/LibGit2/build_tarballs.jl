@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.4.3"
+version = v"1.4.4"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "465bbf88ea939a965fbcbade72870c61f815e457"),
+              "3b7d756ccfaf9ec2922d2db22e6cc98f8ab6580c"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/libgit2*/
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-win32-ownership.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
