@@ -9,7 +9,6 @@ version = v"2.0.6"
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
               "f2712f4a8f038a7fb4df2790f4c3b7e3ed9e219b"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
