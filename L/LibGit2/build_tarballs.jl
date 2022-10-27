@@ -17,6 +17,8 @@ cd $WORKSPACE/srcdir/libgit2*/
 # https://github.com/libgit2/libgit2/issues/3866
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
+# https://github.com/libgit2/libgit2/pull/6377
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-lowercase-windows-h.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
