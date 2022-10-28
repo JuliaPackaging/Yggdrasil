@@ -17,6 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/make-4.3
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findprog-in-ignore-directories.patch
 if [[ "${target}" == *-mingw* ]]; then
     cp $WORKSPACE/srcdir/Makefile GNUmakefile
     mkdir -p ${prefix}/lib
