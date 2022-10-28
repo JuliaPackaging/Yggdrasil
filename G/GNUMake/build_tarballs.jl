@@ -3,6 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GNUMake"
+# NOTE: For the time being we exclude "experimental platforms" (aarch64-darwin and armv6l),
+# but remember to include them in future releases
 version = v"4.3"
 
 # Collection of sources required to complete build
@@ -15,8 +17,9 @@ sources = [
 # Really ugly straight translation of the build_w32.bat file here. Could probably still use make file
 # but this is more or less a translation of the "official" install method.
 script = raw"""
-cd $WORKSPACE/srcdir/make-4.3
+cd $WORKSPACE/srcdir/make*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
+# See savannah.gnu.org/bugs/?57962
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findprog-in-ignore-directories.patch
 if [[ "${target}" == *-mingw* ]]; then
     cp $WORKSPACE/srcdir/Makefile GNUmakefile
@@ -32,12 +35,14 @@ else
     make -j${nproc}
     make install
 fi
-install_license ${WORKSPACE}/srcdir/make-*/COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Exclude "experimental platforms", can include them later
+filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -49,4 +54,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
