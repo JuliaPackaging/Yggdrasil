@@ -1,23 +1,21 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.03.1"
+version = v"2022.09.1"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "7e205e0d93a3046c1eaab37120c9f6971194ddf2"),
+    GitSource("https://github.com/rdkit/rdkit.git", "dc16d0e160033ac215b574beed12a52d0b344fc5"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
-# Fix name of static libraries dependencies of `librdkitcffi` when building for Windows.
-atomic_patch -p1 ../patches/static-libraries-windows.patch
-# To check whether to optimise popcnt you must check the _*TARGET*_ system, not
-# the host one.
-atomic_patch -p1 ../patches/popcnt-target-system.patch
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
+
+# seen in the conda-forge feedstock: https://github.com/conda-forge/rdkit-feedstock/blob/main/recipe/build.sh#L18
+atomic_patch -p1 ../patches/2022-09-1.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
@@ -66,5 +64,6 @@ dependencies = [
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # GCC 8 is needed for `std::from_chars`
+               preferred_gcc_version=v"8", julia_compat="1.6")
