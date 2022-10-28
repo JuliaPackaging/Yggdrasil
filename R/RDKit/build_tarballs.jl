@@ -15,7 +15,7 @@ cd ${WORKSPACE}/srcdir/rdkit
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
 # seen in the conda-forge feedstock: https://github.com/conda-forge/rdkit-feedstock/blob/main/recipe/build.sh#L18
-atomic_patch -p1 ../patches/2022-09-01.patch
+atomic_patch -p1 ../patches/2022-09-1.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
