@@ -27,7 +27,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    # hyperfine links to libgcc_s on non-macOS for unwinding
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
