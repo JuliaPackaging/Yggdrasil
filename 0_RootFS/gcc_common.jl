@@ -119,6 +119,8 @@ function gcc_script(compiler_target::Platform)
     elif [[ "${COMPILER_TARGET}" == *-mingw* ]]; then
         # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
         export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
+        # Always disable TLS: https://github.com/JuliaLang/julia/pull/45582#issuecomment-1295697412
+        GCC_CONF_ARGS="${GCC_CONF_ARGS} --disable-tls"
 
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
