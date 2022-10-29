@@ -596,7 +596,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
 
     # Build the tarballs, and possibly a `build.jl` as well.
     ndARGS, deploy_target = find_deploy_arg(ARGS)
-    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true, julia_compat="1.6")
+    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, Dependency[]; skip_audit=true, julia_compat="1.6")
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)
