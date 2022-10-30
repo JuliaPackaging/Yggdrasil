@@ -12,3 +12,15 @@ index 5d1da18b7..61c907ad3 100644
 
  if(CMAKE_AR)
    set(EP_COMMON_TOOLCHAIN ${EP_COMMON_TOOLCHAIN} -DCMAKE_AR=${CMAKE_AR})
+diff --git a/cpp/cmake_modules/FindThrift.cmake b/cpp/cmake_modules/FindThrift.cmake
+index 07028971d..8a937c426 100644
+--- a/cpp/cmake_modules/FindThrift.cmake
++++ b/cpp/cmake_modules/FindThrift.cmake
+@@ -142,6 +142,7 @@ if(Thrift_FOUND)
+   endif()
+   set_target_properties(thrift::thrift
+                         PROPERTIES IMPORTED_LOCATION "${THRIFT_LIB}"
++                                   IMPORTED_IMPLIB "${THRIFT_LIB}"
+                                    INTERFACE_INCLUDE_DIRECTORIES "${THRIFT_INCLUDE_DIR}")
+   if(WIN32 AND NOT MSVC_TOOLCHAIN)
+     # We don't need this for Visual C++ because Thrift uses

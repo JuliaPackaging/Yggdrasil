@@ -26,17 +26,24 @@ cd cpp && mkdir build_dir && cd build_dir
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
--DARROW_BUILD_UTILITIES=ON
+-DARROW_BUILD_UTILITIES=OFF
+-DARROW_WITH_UTF8PROC=OFF
 -DARROW_DEPENDENCY_SOURCE=SYSTEM
+-DARROW_VERBOSE_THIRDPARTY_BUILD=ON
 -DARROW_BUILD_STATIC=OFF
 -DARROW_DATASET=ON
+-DARROW_COMPUTE=OFF
+-DARROW_WITH_RE2=OFF
 -DARROW_WITH_BZ2=ON
+-DARROW_IPC=OFF
 -DARROW_WITH_LZ4=ON
--DARROW_WITH_ZSTD=ON
+-DARROW_WITH_ZSTD=OFF
 -DARROW_WITH_ZLIB=ON
 -DARROW_WITH_SNAPPY=ON
 -DARROW_JEMALLOC_USE_SHARED=ON
+-DARROW_THRIFT_USE_SHARED=ON
 -DARROW_PARQUET=ON
+-DPARQUET_BUILD_EXECUTABLES=OFF
 -DARROW_SIMD_LEVEL=NONE
 -DARROW_USE_XSIMD=OFF
 -DARROW_JEMALLOC=OFF
@@ -78,13 +85,13 @@ dependencies = [
     Dependency("boost_jll", compat="=1.76.0")
     Dependency("Zlib_jll")
     Dependency("Bzip2_jll", compat="1.0.7")
-    Dependency("Zstd_jll")
+    # Dependency("Zstd_jll")
     Dependency("Lz4_jll")
-    Dependency("jemalloc_jll")
+    # Dependency("jemalloc_jll")
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
-    Dependency("utf8proc_jll")
-    Dependency("RE2_jll")
+    # Dependency("utf8proc_jll")
+    # Dependency("RE2_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
