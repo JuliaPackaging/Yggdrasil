@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-version = v"9.0.0"
+version = v"10.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-9.0.0.zip", "fb2469e9bfeb3e9a45f1e3086f536a329d59a0efd3c905436d3b6e8dd030be41")
+    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-10.0.0.zip", "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
     DirectorySource("./bundled")
 ]
 
