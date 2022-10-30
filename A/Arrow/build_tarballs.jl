@@ -64,6 +64,11 @@ if [[ "${target}" == *-mingw32 ]]; then
     ln -s ${prefix}/lib/libutf8proc.a ${prefix}/lib/libutf8proc.dll.a.a
 fi
 
+# Ignore check for availibility on older macOS versions
+if [[ "${target}" == *-x86_64-apple-darwin ]]; then
+    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
+fi
+
 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
