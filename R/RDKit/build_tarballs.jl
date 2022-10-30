@@ -21,6 +21,7 @@ FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
     # https://github.com/rdkit/rdkit/issues/5709
+    export CFLAGS="-DRDKIT_DYN_LINK"
     export CXXFLAGS="-DRDKIT_DYN_LINK"
 fi
 
