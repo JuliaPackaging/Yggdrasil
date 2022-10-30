@@ -54,24 +54,22 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_JEMALLOC=OFF
 -Dxsimd_SOURCE=AUTO)
 
-# Some platforms don't have BZ2 (yet)
-if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
-    CMAKE_FLAGS+=(-DARROW_WITH_BZ2=ON)
-else
-    echo "Disabling BZ2 support"
-    CMAKE_FLAGS+=(-DARROW_WITH_BZ2=OFF)
-fi
-
 # CMake is doubling the suffixes...
 if [[ "${target}" == *-mingw32 ]]; then
     ln -s ${prefix}/lib/libthrift.dll.a ${prefix}/lib/libthrift.a.dll.a
     ln -s ${prefix}/lib/libutf8proc.a ${prefix}/lib/libutf8proc.dll.a.a
 fi
 
-
 cmake .. "${CMAKE_FLAGS[@]}"
 
 make -j${nproc}
+
+# Remove double suffixes
+if [[ "${target}" == *-mingw32 ]]; then
+    rm ${prefix}/lib/libthrift.a.dll.a
+    rm ${prefix}/lib/libutf8proc.dll.a.a
+fi
+
 make install
 """
 
