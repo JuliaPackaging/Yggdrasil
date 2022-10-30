@@ -46,15 +46,13 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_WITH_ZSTD=OFF
 -DARROW_WITH_ZLIB=ON
 -DARROW_WITH_SNAPPY=ON
--DARROW_JEMALLOC_USE_SHARED=ON
 -DARROW_THRIFT_USE_SHARED=ON
 -DARROW_PARQUET=ON
 -DPARQUET_BUILD_EXECUTABLES=OFF
 -DARROW_SIMD_LEVEL=NONE
 -DARROW_USE_XSIMD=OFF
 -DARROW_JEMALLOC=OFF
--Dxsimd_SOURCE=AUTO
--Dre2_SOURCE=AUTO)
+-Dxsimd_SOURCE=AUTO)
 
 # Some platforms don't have BZ2 (yet)
 if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
@@ -92,13 +90,9 @@ dependencies = [
     Dependency("boost_jll", compat="=1.76.0")
     Dependency("Zlib_jll")
     Dependency("Bzip2_jll", compat="1.0.7")
-    # Dependency("Zstd_jll")
     Dependency("Lz4_jll")
-    # Dependency("jemalloc_jll")
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
-    # Dependency("utf8proc_jll")
-    # Dependency("RE2_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
