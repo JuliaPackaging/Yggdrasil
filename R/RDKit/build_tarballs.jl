@@ -20,6 +20,8 @@ atomic_patch -p1 ../patches/2022-09-1.patch
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
+    # https://github.com/rdkit/rdkit/issues/5709
+    export CXXFLAGS="-DRDKIT_DYN_LINK"
 fi
 
 mkdir build
