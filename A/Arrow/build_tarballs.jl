@@ -23,8 +23,14 @@ done
 
 cd cpp && mkdir build_dir && cd build_dir
 
+# Ignore check for availibility on older macOS versions
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
+fi
+
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+-DARROW_CXXFLAGS="${CXXFLAGS}"
 -DCMAKE_BUILD_TYPE=Release
 -DARROW_BUILD_UTILITIES=OFF
 -DARROW_WITH_UTF8PROC=OFF
@@ -64,10 +70,6 @@ if [[ "${target}" == *-mingw32 ]]; then
     ln -s ${prefix}/lib/libutf8proc.a ${prefix}/lib/libutf8proc.dll.a.a
 fi
 
-# Ignore check for availibility on older macOS versions
-if [[ "${target}" == *-x86_64-apple-darwin ]]; then
-    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
-fi
 
 cmake .. "${CMAKE_FLAGS[@]}"
 
