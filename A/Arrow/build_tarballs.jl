@@ -7,7 +7,7 @@ version = v"10.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-10.0.0.zip", "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
+    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-$(version).zip", "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
     DirectorySource("./bundled")
 ]
 
@@ -93,6 +93,7 @@ dependencies = [
     Dependency("Lz4_jll")
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
