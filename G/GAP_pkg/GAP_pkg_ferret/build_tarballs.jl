@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.100"
+gap_version = v"400.1200.101"
 gap_lib_version = v"400.1201.100"
 name = "ferret"
 upstream_version = v"1.0.9" # when you increment this, reset offset to v"0.0.0"
