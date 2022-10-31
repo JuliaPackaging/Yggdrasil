@@ -24,7 +24,7 @@ cp out/libscs*.${dlext} ${libdir}
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
+    # Platform("i686", "linux"; libc="glibc"),
     # Platform("x86_64", "macos"),
     # Platform("i686", "windows"),
     # Platform("x86_64", "windows"),
