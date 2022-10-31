@@ -5,7 +5,7 @@ version = v"3.2.1"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "c785d2fad46a30f1d43764d682509d0b56e5c64f")
+    GitSource("https://github.com/cvxgrp/scs.git", "f2da64d314d86a97ebb8e957f215f27f9e2a7b79")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MKL_jll"; compat="2022.0.0"),
+    Dependency("MKL_jll"; compat="2022.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
