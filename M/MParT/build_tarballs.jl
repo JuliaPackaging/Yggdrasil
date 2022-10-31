@@ -9,7 +9,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 name = "MParT"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
