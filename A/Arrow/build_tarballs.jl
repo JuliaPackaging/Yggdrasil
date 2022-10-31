@@ -87,7 +87,7 @@ products = [
 dependencies = [
     Dependency("boost_jll", compat="=1.76.0")
     Dependency("Zlib_jll")
-    Dependency("Bzip2_jll", compat="1.0.7")
+    Dependency("Bzip2_jll", compat="1.0.8")
     Dependency("Lz4_jll")
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
