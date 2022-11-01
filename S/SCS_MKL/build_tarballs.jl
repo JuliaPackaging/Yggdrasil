@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "SCS_MKL"
-version = v"3.2.1"
+version = v"3.2.2"
 
 # Collection of sources required to build SCSBuilder
 sources = [
