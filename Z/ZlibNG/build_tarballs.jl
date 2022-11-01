@@ -22,10 +22,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     ..
 make -j${nproc}
 make install
-
-if [[ "${target}" == *-mingw* ]]; then
-    cp "${WORKSPACE}/srcdir/zlib-ng/build/libzlib1.dll" "${libdir}/libz.dll"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,7 +47,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libz", :libz)
+    LibraryProduct(["libz", "libzlib1"], :libzng)
 ]
 
 # Dependencies that must be installed before this package can be built
