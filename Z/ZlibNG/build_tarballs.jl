@@ -18,14 +18,13 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_FLAGS="-O3" \
-    -WITH_NATIVE_INSTRUCTIONS=true \
-    -DZLIB_COMPAT=true \
+    -DZLIB_COMPAT=ON \
     ..
 make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw* ]]; then
-    cp "${WORKSPACE}/srcdir/zlib-ng/build/zlib1.dll" "${libdir}/libz.dll"
+    cp "${WORKSPACE}/srcdir/zlib-ng/build/libzlib1.dll" "${libdir}/libz.dll"
 fi
 """
 
