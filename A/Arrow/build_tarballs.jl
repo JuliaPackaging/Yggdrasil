@@ -7,7 +7,8 @@ version = v"10.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-$(version).zip", "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
+    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-$(version).zip",
+                  "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
     DirectorySource("./bundled")
 ]
 
@@ -95,4 +96,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")
