@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.44"
+auto_version = "refs/tags/v0.0.45"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "5980f31982e0f12be152564a413354224ef5611f")]
+sources = [GitSource(repo, "60aa782519fc75bf66e9e76eac84b1142f2ef6dd")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
