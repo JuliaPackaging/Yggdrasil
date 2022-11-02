@@ -73,10 +73,10 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR),
-    LibraryProduct("libGR3", :libGR3),
-    LibraryProduct("libGRM", :libGRM),
-    LibraryProduct("libGKS", :libGKS),
+    LibraryProduct("libGR", :libGR, dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
 ]
 
