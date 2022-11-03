@@ -1,0 +1,13 @@
+diff --git a/src/comgr.cpp b/src/comgr.cpp
+index cf108f247..a0b22c031 100644
+--- a/src/comgr.cpp
++++ b/src/comgr.cpp
+@@ -126,7 +126,7 @@ MIOPEN_DECLARE_ENV_VAR(MIOPEN_DEBUG_OPENCL_WAVE64_NOWGP)
+ 
+ #endif // COMGR_SUPPORTS_PCH
+ 
+-#define PCH_IS_SUPPORTED (COMGR_SUPPORTS_PCH && HIP_SUPPORTS_PCH)
++#define PCH_IS_SUPPORTED 0
+ 
+ /// It seems like precompiled headers are built with "warpSize" fixed to 64.
+ /// This leads to issues in HIP kernels that use "warpSize" on devices that
