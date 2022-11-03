@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "XGBoost"
-version = v"1.6.2"
+version = v"1.7.0"
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","b9934246faa9a25e10a12339685dfbe56d56f70b"), 
+    GitSource("https://github.com/dmlc/xgboost.git","4bc59ef7c33061d17820137253d617b051a72d65"), 
     DirectorySource("./bundled"),
 ]
 
@@ -13,9 +13,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
-
-# See https://github.com/dmlc/XGBoost.jl/issues/110#issuecomment-1236411155
-atomic_patch -p1 ../patches/remove-unused-operator.patch
 
 # Patch dmlc-core to use case-sensitive windows.h includes: https://github.com/dmlc/dmlc-core/pull/673
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
