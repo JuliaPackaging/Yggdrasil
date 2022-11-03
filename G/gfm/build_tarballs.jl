@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "gfm"
-version = v"0.29.6"
+version = v"29.0.6"
 
 # Collection of sources required to complete build
 sources = [
