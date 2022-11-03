@@ -63,7 +63,7 @@ done
 
     ## Now that we've got those tarballs, we're going to use them as sources to overwrite
     ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
-    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\n" * raw"""
+    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\nPREFERRED_GCC_VERSION=$(preferred_gcc_version)\n" * raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
@@ -110,6 +110,12 @@ if [[ ${target} == *apple* ]]; then
     for libgcc_s in ${libdir}/libgcc_s.*.dylib; do
         LIBGCC_NAME=$(basename "${libgcc_s}")
         install_name_tool -id @rpath/${LIBGCC_NAME} "${libdir}/${LIBGCC_NAME}"
+        if [[ "${LIBGCC_NAME}" == "libgcc_s.1.dylib" ]] && [[ "${PREFERRED_GCC_VERSION%.*.*}" -ge 12 ]]; then
+            # GCC 12 on x86_64-apple-darwin changed the ABI of libgcc_s from 1 to 1.1, but keeping a compatibility shim
+            # called libgcc_s.1.dylib which forwards all calls to libgcc_s.1.1.dylib.  We have to manually fix the path
+            # of the dependency because the auditor won't do it: <https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1243>.
+            install_name_tool -change "/workspace/destdir/${target}/lib/libgcc_s.1.1.dylib" "@rpath/libgcc_s.1.1.dylib" "${libdir}/${LIBGCC_NAME}"
+        fi
     done
 fi
 
