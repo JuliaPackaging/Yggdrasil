@@ -25,13 +25,12 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    CFLAGS=$CFLAGS -mmacosx-version-min=10.14
 fi
 
 cd $WORKSPACE/srcdir/ducc*/julia
-${CXX} ${CFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -c
+${CXX} ${CFLAGS} -mmacosx-version-min=10.14 -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -c
 # -fcx-limited-range is not supported by clang
-${CXX} ${CFLAGS} -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
+${CXX} ${CFLAGS} -mmacosx-version-min=10.14 -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
 install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 """
 
