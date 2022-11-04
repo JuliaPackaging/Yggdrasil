@@ -16,7 +16,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 echo ${CXX}
+${CXX} -v
 echo ${CFLAGS}
+echo ${CXXFLAGS}
 
 cd $WORKSPACE/srcdir/ducc-*/julia
 ${CXX} ${CFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -c
