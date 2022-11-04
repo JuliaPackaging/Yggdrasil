@@ -10,7 +10,7 @@ version = v"0.27.0"
 
 # Collection of sources required to complete build
 sources = [
-GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "0fde4979684d28966157356211ad278ec3278cf9")
+GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "84967dd5d3e3062874a03c99a6d51ab375d3fb9d")
 ]
 
 # Bash recipe for building across all platforms
