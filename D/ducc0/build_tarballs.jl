@@ -11,8 +11,8 @@ version = v"0.27.0"
 # Collection of sources required to complete build
 sources = [
 GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "84967dd5d3e3062874a03c99a6d51ab375d3fb9d"),
-ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.14.sdk.tar.xz",
-              "123dcd2e02051bed8e189581f6eea1b04eddd55a80f98960214421404aa64b72"),
+ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
