@@ -10,17 +10,13 @@ version = v"0.27.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.mpcdf.mpg.de/mtr/ducc/-/archive/juliatest.tar.gz", "d8e3ce4cbc4212a69cf0ad9ddfbb46f056c5bc7c87d73ceb9c3f15d4a2da426c")
+GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "886556fb9d22c5c70d91e2eccdbbcf1697906e1d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-echo ${CXX}
-${CXX} -v
-echo ${CFLAGS}
-echo ${CXXFLAGS}
 
-cd $WORKSPACE/srcdir/ducc-*/julia
+cd $WORKSPACE/srcdir/ducc*/julia
 ${CXX} ${CFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -c
 ${CXX} ${CFLAGS} -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
 install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
