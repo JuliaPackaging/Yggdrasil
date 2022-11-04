@@ -53,7 +53,13 @@ platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmetis", :libmetis)
+    LibraryProduct("libmetis", :libmetis),
+    LibraryProduct("libmetis_Int32_Real64", :libmetis_Int32_Real64, 
+        ["\$libdir/metis/metis_Int32_Real64/lib", "\$libdir/metis/metis_Int32_Real64/bin"]),
+    LibraryProduct("libmetis_Int64_Real32", :libmetis_Int64_Real32, 
+        ["\$libdir/metis/metis_Int64_Real32/lib", "\$libdir/metis/metis_Int64_Real32/bin"]),
+    LibraryProduct("libmetis_Int64_Real64", :libmetis_Int64_Real64, 
+        ["\$libdir/metis/metis_Int64_Real64/lib", "\$libdir/metis/metis_Int64_Real64/bin"])
 ]
 
 # Dependencies that must be installed before this package can be built
