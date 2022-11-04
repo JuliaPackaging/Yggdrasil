@@ -17,6 +17,7 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DZLIB_ENABLE_TESTS=OFF \
     ..
 make -j${nproc}
 make install
@@ -24,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=[Platform("x86_64", "freebsd")])
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
