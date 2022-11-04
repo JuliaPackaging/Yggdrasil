@@ -43,8 +43,8 @@ function configure_build(version)
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency("ROCmDeviceLibs_jll", version),
-        Dependency("hsa_rocr_jll", version),
+        Dependency("ROCmDeviceLibs_jll"; compat=string(version)),
+        Dependency("hsa_rocr_jll"; compat=string(version)),
     ]
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
