@@ -10,11 +10,22 @@ version = v"0.27.0"
 
 # Collection of sources required to complete build
 sources = [
-GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "84967dd5d3e3062874a03c99a6d51ab375d3fb9d")
+GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "84967dd5d3e3062874a03c99a6d51ab375d3fb9d"),
+ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.14.sdk.tar.xz",
+              "123dcd2e02051bed8e189581f6eea1b04eddd55a80f98960214421404aa64b72"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK to work around compilation failures
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+fi
 
 cd $WORKSPACE/srcdir/ducc*/julia
 ${CXX} ${CFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -c
