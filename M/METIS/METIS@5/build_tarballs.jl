@@ -20,15 +20,31 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0003-WIN32-Install-RUNTIME-to-bin.patch
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
 fi
+atomic_patch -p1 $WORKSPACE/srcdir/patches/005-add-ifndefs.patch
+sed -i -e 's!add_library(metis.*!& \nset_target_properties(metis PROPERTIES OUTPUT_NAME "${BINARY_NAME}")!g' libmetis/CMakeLists.txt
+
 mkdir -p build
 cd build/
-cmake $WORKSPACE/srcdir/metis-5.1.0/ \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DCMAKE_VERBOSE_MAKEFILE=1 \
-    -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
-    -DSHARED=1
-make -j${nproc} install
+# {1} is binary name, {2} is inttype (32 or 64) and {3} is realtype (32 or 64), {4} is the prefix if necessary.
+build_metis()
+{
+    METIS_PREFIX=${4:-${libdir}/metis/${1}}
+    mkdir -p ${METIS_PREFIX}
+    cmake $WORKSPACE/srcdir/metis-5.1.0/ \
+        -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+        -DCMAKE_VERBOSE_MAKEFILE=1 \
+        -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
+        -DSHARED=1 \
+        -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${2} -DREALTYPEWIDTH=${3}" \
+        -DBINARY_NAME="${1}"
+    make -j${nproc} install
+}
+
+build_metis metis 32 32 $prefix
+build_metis metis_Int32_Real64 32 64
+build_metis metis_Int64_Real32 64 32
+build_metis metis_Int64_Real64 64 64
 """
 
 # These are the platforms we will build for by default, unless further
