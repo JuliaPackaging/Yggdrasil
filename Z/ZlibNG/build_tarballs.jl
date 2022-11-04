@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"1.2.12"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "0c118a14dd56d0484a8ca432cf801b9a6e6d024a")
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "b3dcf11b4204a16fde71fa8224d7b7054e225b93")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_FLAGS="-O3" \
-    -DZLIB_COMPAT=ON \
     ..
 make -j${nproc}
 make install
@@ -26,28 +25,12 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
+platforms = supported_platforms(exclude=[Platform("x86_64", "freebsd")])
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libz", "libzlib1"], :libzng)
+    LibraryProduct(["libz-ng", "libzlib-ng2"], :libzng)
 ]
 
 # Dependencies that must be installed before this package can be built
