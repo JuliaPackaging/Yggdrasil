@@ -23,7 +23,7 @@ rm -f /usr/bin/flex
 # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
 if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
-    #elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+    elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer SDK which supports `std::filesystem` to work around the issue
     #     Undefined symbols for architecture x86_64:
     #       "__ZNKSt3__14__fs10filesystem4path10__filenameEv", referenced from:
