@@ -8,12 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.8.14"
+version = v"4.11.2"
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Z3Prover/z3.git", "df8f9d7dcb8b9f9b3de1072017b7c2b7f63f0af8"),
+    ArchiveSource("https://github.com/Z3Prover/z3/archive/z3-$(version).tar.gz",
+                  "e3a82431b95412408a9c994466fad7252135c8ed3f719c986cd75c8c5f234c7e"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -36,7 +37,7 @@ fi
 
 # Bash recipe for building across all platforms
 script = macfix * raw"""
-cd $WORKSPACE/srcdir/z3/
+cd $WORKSPACE/srcdir/z3-*
 
 mkdir z3-build && cd z3-build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -48,7 +49,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
-install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
+install_license ${WORKSPACE}/srcdir/z3-*/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
