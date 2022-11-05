@@ -18,7 +18,6 @@ ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/M
 # Bash recipe for building across all platforms
 script = raw"""
 
-#XFLAGS=
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer SDK to work around compilation failures
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
@@ -30,6 +29,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/ducc*/julia
+install_license LICENSE
 ${CXX} ${CFLAGS} ${MACFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -c
 # -fcx-limited-range is not supported by clang
 ${CXX} ${CFLAGS} ${MACFLAGS} -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
