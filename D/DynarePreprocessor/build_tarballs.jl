@@ -21,11 +21,6 @@ rm -f /usr/bin/flex
 
 # Help FreeBSD find header files.  See
 # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-    LDFLAGS=-static-libgcc
-fi
 if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
     #elif [[ "${target}" == x86_64-apple-darwin* ]]; then
