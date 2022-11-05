@@ -44,6 +44,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DZ3_USE_LIB_GMP=True \
     -DZ3_BUILD_JULIA_BINDINGS=True \
     -DJulia_PREFIX="${prefix}" \
     ..
@@ -68,6 +69,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
+    Dependency("GMP_jll"),
     Dependency("libcxxwrap_julia_jll")
 ]
 
