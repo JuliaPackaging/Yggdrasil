@@ -5,8 +5,8 @@ name = "DynarePreprocessor"
 version = v"6.0.2"
 sources = [
     GitSource("https://git.dynare.org/Dynare/preprocessor.git", "00fd9dadb6dde5929c224c74e0a43715554a2c05"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
-                  "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
