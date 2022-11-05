@@ -56,8 +56,7 @@ cp "src/dynare-preprocessor${exeext}" "${bindir}"
 install_license COPYING
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
