@@ -34,8 +34,8 @@ if [[ "${target}" == *-freebsd* ]]; then
     #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-DynamicModel.o
     #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-ModFile.o
     #           _main in dynare_preprocessor-DynareMain.o
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
-    #    rm -rf /opt/${target}/${target}/sys-root/System
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
