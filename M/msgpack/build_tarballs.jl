@@ -31,7 +31,7 @@ function configure_build(version)
     """
 
     sources = [GitSource(GIT, GIT_TAGS[tag])]
-    dependencies = []
+    dependencies = Dependency[]
     NAME, version, sources, buildscript, PLATFORMS, PRODUCTS, dependencies
 end
 
