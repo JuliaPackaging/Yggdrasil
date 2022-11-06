@@ -70,7 +70,8 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("libcxxwrap_julia_jll")
+    Dependency("libcxxwrap_julia_jll"),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms,
