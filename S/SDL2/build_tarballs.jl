@@ -9,14 +9,19 @@ version = v"2.24.2"
 sources = [
     GitSource("https://github.com/libsdl-org/SDL.git",
               "55b03c7493a7abed33cf803d1380a40fa8af903f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+# https://github.com/libsdl-org/SDL/issues/6491
+atomic_patch -p1 ../patches/aarch64-darwin-remove-version-check.patch
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DSDL_STATIC=OFF
 make -j${nproc}
 make install
 install_license ../LICENSE.txt
@@ -25,7 +30,6 @@ install_license ../LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
 
 # The products that we will ensure are always built
 products = [

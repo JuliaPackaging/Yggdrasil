@@ -1,0 +1,21 @@
+diff --git a/src/joystick/iphoneos/SDL_mfijoystick.m b/src/joystick/iphoneos/SDL_mfijoystick.m
+index 662d820dc..fe05945e4 100644
+--- a/src/joystick/iphoneos/SDL_mfijoystick.m
++++ b/src/joystick/iphoneos/SDL_mfijoystick.m
+@@ -226,11 +226,11 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
+     Uint8 subtype = 0;
+     const char *name = NULL;
+ 
+-    if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
+-        if (!GCController.shouldMonitorBackgroundEvents) {
+-            GCController.shouldMonitorBackgroundEvents = YES;
+-        }
+-    }
++    /* if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) { */
++    /*     if (!GCController.shouldMonitorBackgroundEvents) { */
++    /*         GCController.shouldMonitorBackgroundEvents = YES; */
++    /*     } */
++    /* } */
+ 
+     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
+      * struct, and ARC doesn't work with structs. */
