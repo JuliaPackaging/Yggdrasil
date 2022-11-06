@@ -80,7 +80,7 @@ dependencies = [
     Dependency("Lz4_jll")
     Dependency("Thrift_jll")
     Dependency("snappy_jll")
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
