@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "libusb"
-version = v"1.0.24"
+version = v"1.0.26"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libusb/libusb.git",
-              "c6a35c56016ea2ab2f19115d2ea1e85e0edae155"),
+              "4239bc3a50014b8e6a5a2a59df1fff3b7469543b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd libusb/
-./bootstrap.sh 
+./bootstrap.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-udev
 make -j${nproc}
 make install
@@ -24,7 +24,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms(;experimental=true) if !Sys.isfreebsd(p)]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -33,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
