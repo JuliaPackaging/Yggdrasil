@@ -16,16 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
 mkdir build
 cd build
-FLAGS=()
-if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(--with-x)
-fi
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared \
-    --disable-static \
-    "${FLAGS[@]}"
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
 install_license ../LICENSE.txt
