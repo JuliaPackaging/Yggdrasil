@@ -7,10 +7,7 @@ const GIT_TAGS = Dict(
     "cpp-3.0.1" => "2c4f2b890ef1546fc022d270d11e657f6fc8022f",
 )
 
-const PLATFORMS = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-]
+const PLATFORMS = supported_platforms()
 const PRODUCTS = [LibraryProduct(["libmsgpackc"], :libmsgpackc, ["lib"])]
 
 function configure_build(version)
@@ -37,4 +34,4 @@ end
 
 build_tarballs(
     ARGS, configure_build(v"3.0.1")...;
-    preferred_gcc_version=v"7", preferred_llvm_version=v"9")
+    preferred_gcc_version=v"7", preferred_llvm_version=v"9", julia_compat="1.6")
