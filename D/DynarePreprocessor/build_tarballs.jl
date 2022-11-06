@@ -2,12 +2,9 @@ using BinaryBuilder
 
 
 name = "DynarePreprocessor"
-version = v"6.0.0"
+version = v"6.0.2"
 sources = [
-    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "285a4389a3a368774124c9ae66ed7fc367592946"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
+    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "00fd9dadb6dde5929c224c74e0a43715554a2c05"),
 ]
 
 script = raw"""
@@ -18,30 +15,6 @@ sed s/-lstdc++fs// -i src/Makefile.am
 
 # Remove flex from RootFS to let use our flex from `flex_jll`
 rm -f /usr/bin/flex
-
-# Help FreeBSD find header files.  See
-# https://github.com/JuliaPackaging/Yggdrasil/issues/3949
-if [[ "${target}" == *-freebsd* ]]; then
-    export CPPFLAGS="-I${includedir}"
-elif [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports `std::filesystem` to work around the issue
-    #     Undefined symbols for architecture x86_64:
-    #       "__ZNKSt3__14__fs10filesystem4path10__filenameEv", referenced from:
-    #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-ModelTree.o
-    #           __ZNK11StaticModel15writeStaticFileERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEbbbS8_RKNS0_4__fs10filesystem4pathESD_b in dynare_preprocessor-StaticModel.o
-    #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-StaticModel.o
-    #           __ZNK12DynamicModel16writeDynamicFileERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEbbbS8_RKNS0_4__fs10filesystem4pathESD_b in dynare_preprocessor-DynamicModel.o
-    #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-DynamicModel.o
-    #           __ZNSt3__14__fs10filesystem4pathdVERKS2_ in dynare_preprocessor-ModFile.o
-    #           _main in dynare_preprocessor-DynareMain.o
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
-
-atomic_patch -p1 "../patches/patches.patch"
 
 autoreconf -si
 
@@ -55,7 +28,7 @@ cp "src/dynare-preprocessor${exeext}" "${bindir}"
 install_license COPYING
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms(exclude=[Platform("aarch64", "macOS"), Platform("x86_64", "macOS"), Platform("x86_64", "FreeBSD")]) )
 
 products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),
@@ -67,4 +40,4 @@ dependencies = [
     HostBuildDependency("flex_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10")
