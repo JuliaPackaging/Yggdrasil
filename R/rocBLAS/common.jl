@@ -17,7 +17,8 @@ const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["lib"])]
 const TARGETS = Dict(
     v"4.2.0" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-"],
     v"4.5.2" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1011", "gfx1012", "gfx1030"],
-    v"5.2.3" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1012", "gfx1030"],
+    # v"5.2.3" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1012", "gfx1030"],
+    v"5.2.3" => ["gfx1030"],
 )
 
 function get_targets(version)
@@ -76,6 +77,9 @@ function configure_build(version)
     unset SOURCE_DATE_EPOCH
     pip install -U pip wheel setuptools
 
+    # apk add msgpack-c-dev
+    # pip install -U pip msgpack
+
     """ *
     get_targets(version) *
     raw"""
@@ -91,7 +95,7 @@ function configure_build(version)
         -DBUILD_VERBOSE=ON \
         -DBUILD_WITH_TENSILE=ON \
         -DBUILD_WITH_TENSILE_HOST=ON \
-        -DTensile_LIBRARY_FORMAT=yaml \
+        -DTensile_LIBRARY_FORMAT=msgpack \
         -DTensile_COMPILER=hipcc \
         -DTensile_LOGIC=asm_full \
         -DTensile_CODE_OBJECT_VERSION=V3 \
@@ -116,12 +120,16 @@ function configure_build(version)
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency("ROCmCompilerSupport_jll", version),
-        Dependency("ROCmOpenCLRuntime_jll", version),
-        Dependency("ROCmDeviceLibs_jll", version),
-        Dependency("rocminfo_jll", version),
-        Dependency("hsa_rocr_jll", version),
-        Dependency("HIP_jll", version),
+        Dependency(PackageSpec(;
+            name="msgpack_jll",
+            uuid="43dd8cde-e9ee-5d59-924a-18d3f2773c4d",
+            path="/home/pxl-th/.julia/dev/msgpack_jll")),
+        Dependency("ROCmCompilerSupport_jll"; compat=string(version)),
+        Dependency("ROCmOpenCLRuntime_jll"; compat=string(version)),
+        Dependency("ROCmDeviceLibs_jll"; compat=string(version)),
+        Dependency("rocminfo_jll"; compat=string(version)),
+        Dependency("hsa_rocr_jll"; compat=string(version)),
+        Dependency("HIP_jll"; compat=string(version)),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
