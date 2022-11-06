@@ -21,13 +21,17 @@ mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
+    if [[ "${target}" == *-freebsd* ]]; then
+        # Needed for libusb_* symbols
+        export LIBUSB_LIBS="-lusb"
+    fi
 fi
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \
     "${FLAGS[@]}"
-make -j${nproc}
-make install
+make -j${nproc} V=1
+make install V=1
 install_license ../LICENSE.txt
 """
 
