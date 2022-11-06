@@ -32,6 +32,4 @@ function configure_build(version)
     NAME, version, sources, buildscript, PLATFORMS, PRODUCTS, dependencies
 end
 
-build_tarballs(
-    ARGS, configure_build(v"3.0.1")...;
-    preferred_gcc_version=v"7", preferred_llvm_version=v"9", julia_compat="1.6")
+build_tarballs(ARGS, configure_build(v"3.0.1")...; julia_compat="1.6")
