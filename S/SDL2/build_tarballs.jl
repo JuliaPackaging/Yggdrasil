@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "SDL2"
-version = v"2.0.20"
+version = v"2.24.0"
 
 # Collection of sources required to build SDL2
 sources = [
-    ArchiveSource("https://libsdl.org/release/SDL2-$(version).tar.gz",
-                  "c56aba1d7b5b0e7e999e4a7698c70b63a3394ff9704b5f6e1c57e0c16f04dd06"),
+    GitSource("https://github.com/libsdl-org/SDL.git",
+              "8c9beb0c873f6ca5efbd88f1ad2648bfc793b2ac"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL2*/
+cd $WORKSPACE/srcdir/SDL*/
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
@@ -26,6 +26,7 @@ export LDFLAGS="-L${libdir}"
     "${FLAGS[@]}"
 make -j${nproc}
 make install
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
