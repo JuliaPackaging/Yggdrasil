@@ -14,19 +14,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
+mkdir build
+cd build
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(--with-x)
 fi
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
     --disable-static \
     "${FLAGS[@]}"
 make -j${nproc}
 make install
-install_license LICENSE.txt
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
