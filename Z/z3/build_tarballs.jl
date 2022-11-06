@@ -69,7 +69,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency(get_addable_spec("GMP_jll", v"6.2.0+5")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
