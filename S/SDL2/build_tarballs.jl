@@ -3,29 +3,28 @@
 using BinaryBuilder
 
 name = "SDL2"
-version = v"2.0.20"
+version = v"2.24.2"
 
 # Collection of sources required to build SDL2
 sources = [
-    ArchiveSource("https://libsdl.org/release/SDL2-$(version).tar.gz",
-                  "c56aba1d7b5b0e7e999e4a7698c70b63a3394ff9704b5f6e1c57e0c16f04dd06"),
+    GitSource("https://github.com/libsdl-org/SDL.git",
+              "55b03c7493a7abed33cf803d1380a40fa8af903f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL2*/
-FLAGS=()
-if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(--with-x)
-fi
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared \
-    --disable-static \
-    "${FLAGS[@]}"
+cd $WORKSPACE/srcdir/SDL*/
+# https://github.com/libsdl-org/SDL/issues/6491
+atomic_patch -p1 ../patches/aarch64-darwin-remove-version-check.patch
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DSDL_STATIC=OFF
 make -j${nproc}
 make install
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
