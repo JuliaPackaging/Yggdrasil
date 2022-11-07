@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Qt5Base"
 version = v"5.15.3"
@@ -57,6 +57,9 @@ case "$target" in
             rsync -a usr/* /opt/$target/$target/sys-root/usr/
             cp -a System /opt/$target/$target/sys-root/
             export MACOSX_DEPLOYMENT_TARGET=10.13
+            # Link to libclang_rt.osx to resolve the symbol `___isPlatformVersionAtLeast`.
+            export LDFLAGS="-L${libdir}/darwin"
+            export LIBS="-lclang_rt.osx"
         fi
 
         cd $WORKSPACE/srcdir/qtbase-everywhere-src-*/
@@ -171,6 +174,9 @@ products_macos = [
     FrameworkProduct("QtXml", :libqt5xml),
 ]
 
+# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_libX11_jll"),
@@ -188,6 +194,8 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]
 
 include("../../fancy_toys.jl")
@@ -195,11 +203,11 @@ include("../../fancy_toys.jl")
 julia_compat = "1.6"
 
 if any(should_build_platform.(triplet.(platforms_linux)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", julia_compat)
+    build_tarballs(ARGS, name, version, sources, script, platforms_linux, products, dependencies; preferred_gcc_version = v"7", preferred_llvm_version=llvm_version, julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8", julia_compat)
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"8", preferred_llvm_version=llvm_version, julia_compat)
 end
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7", julia_compat)
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"7", preferred_llvm_version=llvm_version, julia_compat)
 end
