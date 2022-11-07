@@ -18,12 +18,20 @@ cd $WORKSPACE/srcdir/SDL*/
 # https://github.com/libsdl-org/SDL/issues/6491
 atomic_patch -p1 ../patches/aarch64-darwin-remove-version-check.patch
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DSDL_STATIC=OFF
-make -j${nproc}
-make install
+FLAGS=()
+if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    FLAGS+=(--with-x)
+    if [[ "${target}" == *-freebsd* ]]; then
+        # Needed for libusb_* symbols
+        export LIBUSB_LIBS="-lusb"
+    fi
+fi
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-shared \
+    --disable-static \
+    "${FLAGS[@]}"
+make -j${nproc} V=1
+make install V=1
 install_license ../LICENSE.txt
 """
 
