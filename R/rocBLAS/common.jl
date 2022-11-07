@@ -9,7 +9,7 @@ const GIT_TAGS = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["lib"])]
 
@@ -17,8 +17,7 @@ const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["lib"])]
 const TARGETS = Dict(
     v"4.2.0" => ["gfx900:xnack-", "gfx906:xnack-", "gfx908:xnack-"],
     v"4.5.2" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1011", "gfx1012", "gfx1030"],
-    # v"5.2.3" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1012", "gfx1030"],
-    v"5.2.3" => ["gfx1030"],
+    v"5.2.3" => ["gfx900", "gfx906:xnack-", "gfx908:xnack-", "gfx90a:xnack+", "gfx90a:xnack-", "gfx1010", "gfx1012", "gfx1030"],
 )
 
 function get_targets(version)
@@ -70,20 +69,9 @@ function configure_build(version)
     # Therefore we symlink to other directory that it looks at.
     mkdir ${prefix}/lib/include
     ln -s ${prefix}/hip/include/* ${prefix}/lib/include
-
-    # NOTE
-    # This is needed to avoid errors with zipping files older than 1980.
-    # See: https://github.com/pypa/wheel/issues/418
-    unset SOURCE_DATE_EPOCH
-    pip install -U pip wheel setuptools
-
-    # apk add msgpack-c-dev
-    # pip install -U pip msgpack
-
     """ *
     get_targets(version) *
     raw"""
-
     CXX=${prefix}/hip/bin/hipcc \
     cmake -S . -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -120,16 +108,13 @@ function configure_build(version)
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency(PackageSpec(;
-            name="msgpack_jll",
-            uuid="43dd8cde-e9ee-5d59-924a-18d3f2773c4d",
-            path="/home/pxl-th/.julia/dev/msgpack_jll")),
         Dependency("ROCmCompilerSupport_jll"; compat=string(version)),
         Dependency("ROCmOpenCLRuntime_jll"; compat=string(version)),
         Dependency("ROCmDeviceLibs_jll"; compat=string(version)),
         Dependency("rocminfo_jll"; compat=string(version)),
         Dependency("hsa_rocr_jll"; compat=string(version)),
         Dependency("HIP_jll"; compat=string(version)),
+        Dependency("msgpack_jll"),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
