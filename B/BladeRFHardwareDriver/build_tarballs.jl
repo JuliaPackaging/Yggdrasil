@@ -7,15 +7,17 @@ version = v"2.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Nuand/bladeRF.git", "0ffb795c450fe814060f95cd37455847c9c536d2")
+    GitSource("https://github.com/Nuand/bladeRF.git",
+              "0ffb795c450fe814060f95cd37455847c9c536d2"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd bladeRF/host/
-mkdir build
-cd build
+cd $WORKSPACE/srcdir/bladeRF/host/
+# Hotfix for FreeBSD: https://github.com/Nuand/bladeRF/issues/891
+atomic_patch -p2 ../../patches/readline-freebsd.patch
+mkdir build && cd build
 if [[ "${target}" == *86*-linux-gnu ]]; then
     export LDFLAGS="-lrt";
 fi
@@ -29,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> Sys.isfreebsd(p) || Sys.iswindows(p))
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
