@@ -9,7 +9,7 @@ const GIT_TAGS = Dict(
 
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
+    # Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 const PRODUCTS = [LibraryProduct(["librocblas"], :librocblas, ["lib"])]
 
