@@ -33,7 +33,7 @@ cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64), {3} is the prefix if necessary.
 build_parmetis()
 {
-    PARMETIS_PREFIX=${4:-${libdir}/parmetis/Int${1}_Real${2}}
+    PARMETIS_PREFIX=${3:-${libdir}/parmetis/Int${1}_Real${2}}
     if [ "${1}" == "32" ] && [ "${2}" == "32" ]; then
         PARMETIS_NAME=parmetis
         METIS_NAME=metis
