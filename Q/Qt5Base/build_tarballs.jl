@@ -58,8 +58,8 @@ case "$target" in
             cp -a System /opt/$target/$target/sys-root/
             export MACOSX_DEPLOYMENT_TARGET=10.13
             # Link to libclang_rt.osx to resolve the symbol `___isPlatformVersionAtLeast`.
-            export LDFLAGS="-L${libdir}/darwin"
-            export LIBS="-lclang_rt.osx"
+            rtlibdir="-L${libdir}/darwin"
+            rtlibs="QMAKE_LFLAGS+=-lclang_rt.osx"
         fi
 
         cd $WORKSPACE/srcdir/qtbase-everywhere-src-*/
@@ -98,7 +98,7 @@ EOT
 
         export QT_MAC_SDK_NO_VERSION_CHECK=1
         ../qtbase-everywhere-src-*/configure \
-            QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks \
+            QMAKE_CXXFLAGS+=-F/opt/$target/$target/sys-root/System/Library/Frameworks $rtlibdir $rtlibs \
             QMAKE_RANLIB=${BIN_DIR}/ranlib \
             QMAKE_MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" \
             -platform musl -xplatform macx-clang -device-option CROSS_COMPILE=${BIN_DIR}/$target- \
