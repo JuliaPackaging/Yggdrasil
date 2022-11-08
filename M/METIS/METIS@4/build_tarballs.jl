@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 name = "METIS4"
 upstream_version = v"4.0.3"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -48,6 +48,8 @@ mkdir -p ${prefix}/lib
 mv libmetis.a ${prefix}/lib
 mkdir -p ${prefix}/include
 cp Lib/metis.h ${prefix}/include
+cd ${prefix}/lib
+$CC -shared $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) -o libmetis4.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -56,6 +58,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libmetis4", :libmetis4),
     FileProduct("lib/libmetis.a", :libmetis_a)
 ]
 
