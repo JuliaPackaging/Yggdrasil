@@ -30,17 +30,43 @@ grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
 grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 
 cd build
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+# {1} is inttype (32 or 64) and {2} is realtype (32 or 64), {3} is the prefix if necessary.
+build_parmetis()
+{
+    PARMETIS_PREFIX=${4:-${libdir}/parmetis/Int${1}_Real${2}}
+    if [ "${1}" == "32" ] && [ "${2}" == "32" ]; then
+        PARMETIS_NAME=parmetis
+        METIS_NAME=metis
+        METIS_PATH="${prefix}"
+    else
+        METIS_NAME="metis_Int${1}_Real${2}"
+        PARMETIS_NAME="par${METIS_NAME}"
+        METIS_PATH="${libdir}/metis/${METIS_NAME}"
+    fi
+    mkdir -p ${METIS_PATH}
+    cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${PARMETIS_PREFIX} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DSHARED=1 \
     -DGKLIB_PATH=$(realpath ../metis/GKlib) \
-    -DMETIS_PATH=$(realpath ../metis) \
+    -DMETIS_PATH="${METIS_PATH}" \
     -DMPI_INCLUDE_PATH="${prefix}/include" \
-    -DMPI_LIBRARIES="${mpi_libraries}"
-make -j${nproc}
-make install
+    -DMPI_LIBRARIES="${mpi_libraries}" \
+    -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
+    -DBINARY_NAME="${PARMETIS_NAME}" \
+    -DMETIS_LIBRARY="${METIS_NAME}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-L${METIS_PATH}/lib" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L${METIS_PATH}/lib"
+
+    make -j${nproc}
+    make install
+}
+
+build_parmetis 32 32 $prefix
+build_parmetis 32 64
+build_parmetis 64 32
+build_parmetis 64 64
 """
 
 augment_platform_block = """
@@ -63,12 +89,18 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libparmetis", :libparmetis)
+    LibraryProduct("libparmetis", :libparmetis),
+    LibraryProduct("libparmetis_Int32_Real64", :libparmetis_Int32_Real64, 
+        ["\$libdir/parmetis/Int32_Real64/lib", "\$libdir/parmetis/Int32_Real64/bin"]),
+    LibraryProduct("libparmetis_Int64_Real32", :libparmetis_Int64_Real32, 
+        ["\$libdir/parmetis/Int64_Real32/lib", "\$libdir/parmetis/Int64_Real32/bin"]),
+    LibraryProduct("libparmetis_Int64_Real64", :libparmetis_Int64_Real64, 
+        ["\$libdir/parmetis/Int64_Real64/lib", "\$libdir/parmetis/Int64_Real64/bin"])
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("METIS_jll"),
+    Dependency("METIS_jll", v"5.1.2"),
 ]
 append!(dependencies, platform_dependencies)
 
