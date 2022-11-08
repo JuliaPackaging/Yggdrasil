@@ -87,9 +87,9 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -105,6 +105,9 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    ninja -j${nproc} clang-tidy-confusable-chars-gen
 fi
 popd
 
@@ -210,6 +213,9 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
 fi
 
 # Explicitly use our cmake toolchain file
