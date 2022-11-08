@@ -12,11 +12,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd CBQN/
-make shared-o3
-make install
-exit
+cd $WORKSPACE/srcdir/CBQN/
+
+# Yes, the build systems fiddles with git remotes names, so we need to make it happy.  Sigh.
+git remote rename origin bb
+git remote add origin https://github.com/dzaima/CBQN.git
+git fetch origin
+
+make shared-o3 C_INCLUDE_PATH="${prefix}/lib/libffi-3.2.1/include"
+install -Dvm 0755 "libcbqn.${dlext}" "${libdir}/libcbqn.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -24,7 +28,8 @@ exit
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
+    LibraryProduct("libcbqn", :libcbqn),
 ]
 
 # Dependencies that must be installed before this package can be built
