@@ -7,7 +7,7 @@ version = v"0.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/CEED/libCEED/archive/v0.10.1.tar.gz",
+    ArchiveSource("https://github.com/CEED/libCEED/archive/v$(version).tar.gz",
                   "65f4f9a0ec188e77806fdb157bc94cc070026de81f0baca6d0f92f59d3852ad0")
 ]
 
