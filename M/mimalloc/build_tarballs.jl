@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"2.0.6"
+version = v"2.0.7"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "f2712f4a8f038a7fb4df2790f4c3b7e3ed9e219b"),
+              "91ba1f374da66e624841f53f6659da3a8f8f93ea),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
     -DMI_OVERRIDE=OFF \
+    -DMI_LOCAL_DYNAMIC_TLS=ON\
     ..
 make -j ${nproc}
 make -j ${nproc} install
