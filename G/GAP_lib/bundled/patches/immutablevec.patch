@@ -1,0 +1,212 @@
+diff --git a/hpcgap/lib/vecmat.gi b/hpcgap/lib/vecmat.gi
+index 485ba9afd..05a411028 100644
+--- a/hpcgap/lib/vecmat.gi
++++ b/hpcgap/lib/vecmat.gi
+@@ -1739,7 +1739,7 @@ end);
+ 
+ #############################################################################
+ ##
+-#F  ImmutableVector( <field>, <vector>
++#F  ImmutableVector( <field>, <vector> )
+ ##
+ InstallMethod( ImmutableVector,"general,2",[IsObject,IsRowVector],0,
+ function(f,v)
+@@ -1752,6 +1752,11 @@ function(f,v)
+   return Immutable(v);
+ end);
+ 
++InstallOtherMethod( ImmutableVector,"vectorObj,2",[IsObject,IsVectorObj],0,
++function(f,v)
++  return MakeImmutable( ChangedBaseDomain( v, f ) );
++end);
++
+ InstallOtherMethod( ImmutableVector,"general,3",[IsObject,IsRowVector,IsBool],0,
+ function(f,v,change)
+   local v2;
+diff --git a/lib/vecmat.gd b/lib/vecmat.gd
+index 4812c71ca..7dea6195b 100644
+--- a/lib/vecmat.gd
++++ b/lib/vecmat.gd
+@@ -265,20 +265,36 @@ DeclareSynonym( "ConvertToGF2MatrixRep", CONV_GF2MAT);
+ ##  <Oper Name="ImmutableMatrix" Arg='field, matrix[, change]'/>
+ ##
+ ##  <Description>
+-##  returns an immutable matrix equal to <A>matrix</A> which is in the optimal
+-##  (concerning space and runtime) representation for matrices defined over
+-##  <A>field</A>. This means that matrices obtained by several calls of
++##  Let <A>matrix</A> be an object for which either <Ref Filt="IsMatrix"/> or
++##  <Ref Filt="IsMatrixObj"/> returns <K>true</K>.
++##  In the former case, <A>matrix</A> is a list of lists,
++##  and <Ref Oper="ImmutableMatrix"/> returns an immutable object for which
++##  <Ref Filt="IsMatrix"/> returns <K>true</K> (in particular again a list of
++##  lists), which is equal to <A>matrix</A>,
++##  and which is in the optimal (concerning space and runtime) representation
++##  for matrices defined over <A>field</A>,
++##  provided that the entries of <A>matrix</A> lie in <A>field</A>.
++##  In the latter case, <Ref Oper="ImmutableMatrix"/> returns an immutable
++##  object that is equal to the result of
++##  <Ref Oper="ChangedBaseDomain" Label="for a matrix object"/>
++##  when this is called with <A>matrix</A> and <A>field</A>.
++##  <P/>
++##  This means that matrices obtained by several calls of
+ ##  <Ref Oper="ImmutableMatrix"/> for the same <A>field</A> are compatible
+ ##  for fast arithmetic without need for field conversion.
+ ##  <P/>
+-##  The input matrix <A>matrix</A> or its rows might change their
+-##  representation as a side effect of this function,
+-##  however the result of <Ref Oper="ImmutableMatrix"/> is not necessarily
+-##  <E>identical</E> to <A>matrix</A> if a conversion is not possible.
++##  If the input matrix <A>matrix</A> is in <Ref Filt="IsMatrix"/>
++##  then it or its rows might change their representation as a side effect
++##  of this function.
++##  However, one cannot rely on this side effect.
++##  Also, if <A>matrix</A> is already immutable and the result of
++##  <Ref Oper="ImmutableMatrix"/> has the same internal representation as
++##  <A>matrix</A>, the result is not necessarily <E>identical</E> to
++##  <A>matrix</A>.
+ ##  <P/>
+-##  If <A>change</A> is <K>true</K>, the rows of <A>matrix</A>
+-##  (or <A>matrix</A> itself) may be changed to become immutable;
+-##  otherwise they are copied first.
++##  If <A>change</A> is <K>true</K>, <A>matrix</A> or its rows (if there are
++##  subobjects that represent rows) may be changed to become immutable;
++##  otherwise the rows of <A>matrix</A> are copied first.
+ ##  </Description>
+ ##  </ManSection>
+ ##  <#/GAPDoc>
+@@ -295,16 +311,33 @@ DeclareOperation( "ImmutableMatrix",[IsObject,IsMatrix]);
+ ##  <Oper Name="ImmutableVector" Arg='field, vector[, change]'/>
+ ##
+ ##  <Description>
+-##  returns an immutable vector equal to <A>vector</A> which is in the optimal
+-##  (concerning space and runtime) representation for vectors defined over
+-##  <A>field</A>. This means that vectors obtained by several calls of
++##  Let <A>vector</A> be an object for which <Ref Filt="IsRowVector"/>
++##  or <Ref Filt="IsVectorObj"/> returns <K>true</K>.
++##  In the former case, <A>vector</A> is a list,
++##  and <Ref Oper="ImmutableVector"/> returns an immutable object for which
++##  <Ref Filt="IsRowVector"/> returns <K>true</K> (in particular again a list),
++##  which is equal to <A>vector</A>,
++##  and which is in the optimal (concerning space and runtime) representation
++##  for vectors defined over <A>field</A>,
++##  provided that the entries of <A>vector</A> lie in <A>field</A>.
++##  In the latter case, if <A>vector</A> is not in <Ref Filt="IsRowVector"/>,
++##  <Ref Oper="ImmutableVector"/> returns an immutable object that is equal
++##  to the result of
++##  <Ref Oper="ChangedBaseDomain" Label="for a vector object"/>
++##  when this is called with <A>vector</A> and <A>field</A>.
++##  <P/>
++##  This means that vectors obtained by several calls of
+ ##  <Ref Oper="ImmutableVector"/> for the same <A>field</A> are compatible
+ ##  for fast arithmetic without need for field conversion.
+ ##  <P/>
+-##  The input vector <A>vector</A> might change its representation
+-##  as a side effect of this function,
+-##  however the result of <Ref Oper="ImmutableVector"/> is not necessarily
+-##  <E>identical</E> to <A>vector</A> if a conversion is not possible.
++##  If the input vector <A>vector</A> is in <Ref Filt="IsRowVector"/>
++##  then it might change its representation as a side effect
++##  of this function.
++##  However, one cannot rely on this side effect.
++##  Also, if <A>vector</A> is already immutable and the result of
++##  <Ref Oper="ImmutableVector"/> has the same internal representation as
++##  <A>vector</A>, the result is not necessarily <E>identical</E> to
++##  <A>vector</A>.
+ ##  <P/>
+ ##  If <A>change</A> is <K>true</K>, then <A>vector</A> may be changed to
+ ##  become immutable; otherwise it is copied first.
+diff --git a/lib/vecmat.gi b/lib/vecmat.gi
+index 0add96a9d..749f69c5d 100644
+--- a/lib/vecmat.gi
++++ b/lib/vecmat.gi
+@@ -1734,36 +1734,35 @@ end);
+ 
+ #############################################################################
+ ##
+-#F  ImmutableVector( <field>, <vector>
++#F  ImmutableVector( <field>, <vector> )
+ ##
+ InstallMethod( ImmutableVector,"general,2",[IsObject,IsRowVector],0,
+ function(f,v)
+-  if IsInt(f) then
+-    if IsPrimePowerInt(f) then
+-      f := GF(f);
+-    else
+-      f := ZmodnZ(f);
+-    fi;
++  local v2;
++  if not IsInt(f) then f := Size(f); fi;
++  # 'IsRowVector' implies 'IsList'.
++  # We are not allowed to return a non-list,
++  # thus we are not allowed to call 'Vector'.
++  # Since there is a method for 'IsVectorObj' as the second argument,
++  # we do not deal with proper vector objects here.
++  if f <= 256 then
++    v2 := CopyToVectorRep(v,f);
++    if v2 <> fail then v := v2; fi;
+   fi;
+-  if IsVectorObj(v) then
+-    # result is a vector object iff 'v' is
+-    if f=BaseDomain(v) then
+-      return Immutable(v);
+-    else
+-      return Immutable(Vector(f,Unpack(v)));
+-    fi;
+-  fi;
+-  ConvertToVectorRepNC(v,f);
+   return Immutable(v);
+ end);
+ 
+ InstallOtherMethod( ImmutableVector,"vectorObj,2",[IsObject,IsVectorObj],0,
+ function(f,v)
+-  return Immutable(v);
++  return MakeImmutable( ChangedBaseDomain( v, f ) );
+ end);
+ 
+ InstallOtherMethod( ImmutableVector,"general,3",[IsObject,IsRowVector,IsBool],0,
+ function(f,v,change)
++#TODO: Do we really want to change the representation of 'v'?
++#      The documentation of 'ImmutableVector' allows this.
++#      However, the HPC GAP variant cannot do this,
++#      and calls 'CopyToVectorRep' instead.
+   ConvertToVectorRepNC(v,f);
+   if change then
+     MakeImmutable(v);
+diff --git a/tst/testinstall/vecmat.tst b/tst/testinstall/vecmat.tst
+index 008a3f98c..6b14d3f35 100644
+--- a/tst/testinstall/vecmat.tst
++++ b/tst/testinstall/vecmat.tst
+@@ -1,5 +1,5 @@
+ #@local F,F9,TestReadMatEntry,dim,m,v,w,checkShift,testlens,types,vecs,i,j
+-#@local v1,v2
++#@local v1,v2,G
+ gap> START_TEST("vecmat.tst");
+ 
+ #
+@@ -399,5 +399,26 @@ gap> for types in [[IsGF2VectorRep, GF(2)],
+ >      od;
+ >    od;
+ 
++# Check the change of the base domain.
++gap> v:= Vector( IsPlistVectorRep, GF(4), [ 0, 1 ] * Z(2) );;
++gap> ImmutableVector( GF(2), v );
++<immutable plist vector over GF(2) of length 2>
++
++# ImmutableVector is not allowed to return non-lists when called with lists.
++gap> v:= [ 0, 1 ] * Z(5)^0;;
++gap> IsList( v );
++true
++gap> IsList( ImmutableVector( GF(5^6), v ) );
++true
++gap> ConvertToVectorRep( v );;  IsList( v );
++true
++gap> IsList( ImmutableVector( GF(5^6), v ) );
++true
++
++# Check that the vector representations fit in the computation of the
++# nice monomorphism.
++gap> G:= Group([ [ [ Z(5^6)^6944, 0*Z(5) ], [ 0*Z(5), Z(5^2)^20 ] ] ]);;
++gap> Size( G );;
++
+ #
+ gap> STOP_TEST("vecmat.tst");
