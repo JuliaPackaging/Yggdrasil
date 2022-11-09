@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP_lib"
 upstream_version = v"4.12.1"
-version = v"400.1201.100"
+version = v"400.1201.101"
 
 # Collection of sources required to complete build
 sources = [
