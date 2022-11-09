@@ -8,11 +8,14 @@ version = v"2.0.7"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "91ba1f374da66e624841f53f6659da3a8f8f93ea),
+              "91ba1f374da66e624841f53f6659da3a8f8f93ea"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if[ "${target}" != *-*-musl ]]; then
+    CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON) 
+fi
 cd $WORKSPACE/srcdir/mimalloc/
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -22,7 +25,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
     -DMI_OVERRIDE=OFF \
-    -DMI_LOCAL_DYNAMIC_TLS=ON\
     ..
 make -j ${nproc}
 make -j ${nproc} install
