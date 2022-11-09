@@ -18,7 +18,7 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv6l", platforms)
     end
 
-    if julia_version == v"1.9.0"
+    if julia_version == v"1.9.0" || julia_version == v"1.10.0"
         # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
         filter!(p -> arch(p) != "armv6l", platforms)
         filter!(p -> arch(p) != "armv7l", platforms)
@@ -51,7 +51,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.9.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "37e0579af04919e1e6264bbfc33ed8f4c537005a"),
+            GitSource("https://github.com/JuliaLang/julia.git", "9b20acac2069c8a374c89c89acd15f20d0f2a7ae"),
+            DirectorySource("./bundled"),
+        ]
+    elseif version == v"1.10.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia.git", "7fe6b16f4056906c99cee1ca8bbed08e2c154c1a"),
             DirectorySource("./bundled"),
         ]
     else
@@ -141,6 +146,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
             LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
+        elif [[ "${version}" == 1.10.* ]]; then
+            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
         else
             LLVMLINK="-L${prefix}/bin -lLLVM"
         fi
@@ -156,6 +163,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         elif [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
+        elif [[ "${version}" == 1.10.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
         else
             echo "Error, LLVM version not specified"
@@ -263,9 +272,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     # choose make targets which compile libjulia but don't try to build a sysimage
     if [[ "${version}" == 1.[0-5].* ]]; then
-        MAKE_TARGET=julia-ui-release
+        MAKE_TARGET="julia-ui-release julia-ui-debug"
     else
-        MAKE_TARGET="julia-src-release julia-cli-release"
+        MAKE_TARGET="julia-src-release julia-cli-release julia-src-debug julia-cli-debug"
     fi
 
     # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
@@ -305,6 +314,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libjulia", :libjulia; dont_dlopen=true),
+        LibraryProduct("libjulia-debug", :libjulia_debug; dont_dlopen=true),
     ]
 
     # Dependencies that must be installed before this package can be built/used
@@ -346,6 +356,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
     elseif version.major == 1 && version.minor == 9
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+0")))
+    elseif version.major == 1 && version.minor == 10
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
