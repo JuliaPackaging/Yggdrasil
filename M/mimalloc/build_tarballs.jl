@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if[ "${target}" != *-*-musl ]]; then
+if [[ "${target}" == *-*-musl ]]; then
     CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON) 
 fi
 cd $WORKSPACE/srcdir/mimalloc/
