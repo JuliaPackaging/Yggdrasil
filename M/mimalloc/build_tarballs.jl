@@ -13,7 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == *-*-musl ]]; then
+if [[ "${target}" == *-linux-musl* ]]; then
+    # Musl doesn't support init-exec TLS
     CMAKE_FLAGS=(-DMI_LOCAL_DYNAMIC_TLS=ON) 
 fi
 cd $WORKSPACE/srcdir/mimalloc/
