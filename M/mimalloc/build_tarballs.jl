@@ -25,6 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DMI_INSTALL_TOPLEVEL=ON \
     -DMI_BUILD_TESTS=OFF \
     -DMI_OVERRIDE=OFF \
+    "${CMAKE_FLAGS}" \
     ..
 make -j ${nproc}
 make -j ${nproc} install
