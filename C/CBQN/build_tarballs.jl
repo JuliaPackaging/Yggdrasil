@@ -28,7 +28,7 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(NO_DYNAMIC_LIST=1)
 fi
 
-make shared-o3 C_INCLUDE_PATH="${includedir}" "${FLAGS[@]}"
+make shared-o3 C_INCLUDE_PATH="${includedir}" LIBRARY_PATH="${libdir}" "${FLAGS[@]}"
 install -Dvm 0755 "libcbqn.${dlext}" "${libdir}/libcbqn.${dlext}"
 """
 
