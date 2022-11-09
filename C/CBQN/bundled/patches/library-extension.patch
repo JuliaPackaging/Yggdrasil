@@ -1,0 +1,24 @@
+diff --git a/makefile b/makefile
+index 34d354a..b922cb1 100644
+--- a/makefile
++++ b/makefile
+@@ -34,9 +34,9 @@ wasi-o3:
+ emcc-o3:
+ 	@${MAKE} i_singeli=0 i_t=emcc_o3 i_OUTPUT=. i_emcc=1 CC=emcc i_f='-DWASM -DEMCC -O3' i_lf='-s EXPORTED_FUNCTIONS=_main,_cbqn_runLine,_cbqn_evalSrc -s EXPORTED_RUNTIME_METHODS=ccall,cwrap -s ALLOW_MEMORY_GROWTH=1' i_FFI=0 run_incremental_0
+ shared-o3:
+-	@${MAKE} i_OUTPUT=libcbqn.so i_SHARED=1 i_t=shared_o3 i_f="-O3" run_incremental_0
++	@${MAKE} i_OUTPUT=libcbqn.$(dlext) i_SHARED=1 i_t=shared_o3 i_f="-O3" run_incremental_0
+ shared-c:
+-	@${MAKE} i_OUTPUT=libcbqn.so i_SHARED=1 custom=1                run_incremental_0
++	@${MAKE} i_OUTPUT=libcbqn.$(dlext) i_SHARED=1 custom=1                run_incremental_0
+ c:
+ 	@${MAKE} custom=1 run_incremental_0
+ 
+@@ -289,6 +289,6 @@ clean-specific:
+ 	rm -f $(bd)/*.d
+ 	rm -f $(bd)/BQN
+ 	rmdir $(bd); true
+-	
++
+ 
+ clean: clean-build clean-runtime clean-singeli
