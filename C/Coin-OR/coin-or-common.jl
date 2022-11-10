@@ -76,7 +76,7 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
-MUMPS_seq_version = v"500.500.101"
+MUMPS_seq_version = v"5.4.1"
 OpenBLAS32_version = v"0.3.21"
 
 # These are the platforms we will build for by default, unless further
