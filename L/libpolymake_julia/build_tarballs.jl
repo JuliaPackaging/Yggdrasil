@@ -10,7 +10,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libpolymake_julia"
-version = v"0.8.2"
+version = v"0.8.3"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
@@ -18,8 +18,8 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 # Collection of sources required to build libpolymake_julia
 sources = [
-    ArchiveSource("https://github.com/oscar-system/libpolymake-julia/archive/v$(version).tar.gz",
-                  "318e2486046326a0f42994d269df1bd674f2446664c0212c28c23b03ada7148b"),
+    GitSource("https://github.com/oscar-system/libpolymake-julia.git",
+              "8111b73c57fe3fdea811ed79baaa85735fdaf294"),
 ]
 
 # Bash recipe for building across all platforms
