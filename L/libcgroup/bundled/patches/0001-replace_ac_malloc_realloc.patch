@@ -1,0 +1,14 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -178,10 +178,8 @@
+ # Checks for library functions.
+ AC_FUNC_CHOWN
+ AC_FUNC_GETMNTENT
+-AC_FUNC_MALLOC
+-AC_FUNC_REALLOC
+ AC_FUNC_STAT
+-AC_CHECK_FUNCS([getmntent hasmntopt memset mkdir rmdir strdup])
++AC_CHECK_FUNCS([malloc realloc getmntent hasmntopt memset mkdir rmdir strdup])
+
+ AC_SEARCH_LIBS(
+ 	[fts_open],
