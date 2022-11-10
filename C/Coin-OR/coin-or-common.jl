@@ -18,7 +18,7 @@ function offset_version(upstream, offset)
 end
 
 # GCC version for building the whole system
-gcc_version = v"6"
+gcc_version = v"12"
 
 # Versions of various COIN-OR libraries
 
