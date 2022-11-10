@@ -74,9 +74,9 @@ SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
 ASL_version = v"0.1.3"
-METIS_version = v"5.1.1"
+METIS_version = v"5.1.2"
 MUMPS_seq_version = v"500.500.101"
-OpenBLAS32_version = v"0.3.10"
+OpenBLAS32_version = v"0.3.21"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
