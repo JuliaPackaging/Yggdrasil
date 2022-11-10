@@ -73,6 +73,7 @@ SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
 SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
+Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"500.500.101"
