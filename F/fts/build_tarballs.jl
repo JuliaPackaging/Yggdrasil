@@ -23,7 +23,8 @@ install_license ./COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms())
+platforms = supported_platforms(; experimental=true)
+filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +36,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
