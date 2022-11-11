@@ -26,10 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       ..
 
 make -j${nproc}
-make install
-if [[ "${target}" == *-apple-* ]]; then
-    mv ${libdir}/SoapySDR/modules0.8/libbladeRFSupport.so ${libdir}/SoapySDR/modules0.8/libbladeRFSupport.dylib
-fi
+install -Dvm 755 "libbladeRFSupport.so" "${libdir}/SoapySDR/modules0.8/libbladeRFSupport.${dlext}"
 install_license $WORKSPACE/srcdir/SoapyBladeRF/LICENSE.LGPLv2.1
 """
 
