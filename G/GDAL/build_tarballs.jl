@@ -13,6 +13,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
         "0d6a79eec0c6afb97c7172e429ec05c9d15d3917987ad686a914b292c83531db"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +28,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     # complain if this symbol is used in the built library, even if this won't
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
-    export LDFLAGS="-undefined -lexecinfo"
+    export LDFLAGS="-lexecinfo -undefined"
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
