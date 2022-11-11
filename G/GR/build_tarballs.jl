@@ -7,7 +7,7 @@ version = v"0.70.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "25cf336838e06b5df0a7d74df2095a5ac7ce9e56"),
+    GitSource("https://github.com/sciapp/gr.git", "2ffade8fe088bb8bf4c81c214037aeb0ca4063e2"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "9a086916c3a6f331db5b7a5344989f825fd7db1c0b10c236cbb9b9cccf3c006c", "gr.js")
 ]
