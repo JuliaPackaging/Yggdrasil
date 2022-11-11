@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.15.1"
+version = v"0.15.2"
 openpmi_api_version = "v.0.14.5" # This is really the `dev` branch after version 0.14.5
 
 # `v"1.6.3"` fails to build
@@ -16,10 +16,9 @@ julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
 sources = [
     # ArchiveSource("https://github.com/openPMD/openPMD-api/archive/refs/tags/0.13.4.tar.gz",
     #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
-    # We temporarily use a feature branch instead of a released
-    # version because the Julia bindings are not released yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/84bce33ffe0f730ac13562a6f0ff142222efff95.tar.gz",
-                  "ab394d567946b34a0a163d02c6d237f2339cddaa29dce57716ae326d034da623"),
+    # We use a feature branch instead of a released version because the Julia bindings are not released yet
+    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/20cdbe774e9dd5b739f3aede0c7fc69a7dbaf431.tar.gz",
+                  "1004cee967e36522b17742ef946451fb9d852a78e05950206c854ce6a5764cd9"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
