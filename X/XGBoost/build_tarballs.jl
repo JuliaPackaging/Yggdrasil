@@ -3,6 +3,10 @@ using BinaryBuilder, Pkg
 name = "XGBoost"
 version = v"1.7.1"
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
 # Collection of sources required to build XGBoost
 sources = [
     GitSource("https://github.com/dmlc/xgboost.git","534c940a7ea50ab3b8a827546ac9908f859379f2"), 
@@ -18,8 +22,15 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-make -j${nproc}
+if [[ ${target} == x86_64-linux* ]]; then
+    export CUDA_HOME=${WORKSPACE}/destdir/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DUSE_CUDA=ON -DBUILD_WITH_CUDA_CUB=ON
+    make -j${nproc}
+else
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
+    make -j${nproc}
+fi
 
 # Manual installation, to avoid installing dmlc
 cd ..
@@ -39,7 +50,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms())[3:4]
 
 # The products that we will ensure are always built
 products = [
@@ -53,6 +64,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3"); platforms = platforms), #[3:4]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
