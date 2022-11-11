@@ -30,6 +30,7 @@ make install
 if [[ "${target}" == *-apple-* ]]; then
     mv ${libdir}/SoapySDR/modules0.8/libbladeRFSupport.so ${libdir}/SoapySDR/modules0.8/libbladeRFSupport.dylib
 fi
+install_license $WORKSPACE/srcdir/SoapyBladeRF/LICENSE.LGPLv2.1
 """
 
 # These are the platforms we will build for by default, unless further
