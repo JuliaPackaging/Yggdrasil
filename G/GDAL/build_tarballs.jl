@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.5.2"
-version_offset = v"0.0.0"
+upstream_version = v"3.6.0"
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "fbd696e1b2a858fbd2eb3718db16b14ed9ba82521d3578770d480c74fe1146d2"),
+        "0d6a79eec0c6afb97c7172e429ec05c9d15d3917987ad686a914b292c83531db"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,7 +47,9 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
 -DGDAL_USE_ZSTD=ON
 -DGDAL_USE_POSTGRESQL=ON
 -DPostgreSQL_INCLUDE_DIR=${includedir}
--DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext})
+-DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
+-DGDAL_USE_ARROW=ON
+-DGDAL_USE_PARQUET=ON)
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
@@ -123,6 +125,7 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73"),
     Dependency("NetCDF_jll"; compat="400.902.5", platforms=hdf5_platforms),
     Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    Dependency("Arrow_jll"; compat="10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
