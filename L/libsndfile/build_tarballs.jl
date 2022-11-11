@@ -48,6 +48,8 @@ products = [
 dependencies = [
     Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("FLAC_jll"),
+    Dependency("LAME_jll"),
+    Dependency("mpg123_jll"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("Opus_jll"),
