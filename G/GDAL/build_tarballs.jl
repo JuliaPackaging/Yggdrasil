@@ -24,8 +24,24 @@ cd build
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
-    # be a problem at runtime. This flag allows having undefined symbols.
-    export LDFLAGS="-undefined"
+    # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
+    # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
+    export LDFLAGS="-undefined -lexecinfo"
+fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the issue
+    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/arrow/type.h:1745:36: error: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' is unavailable: introduced in macOS 10.14
+    #     if (IsFieldPath()) return std::get<FieldPath>(impl_).indices().size() > 1;
+    #                                    ^
+    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
 fi
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
