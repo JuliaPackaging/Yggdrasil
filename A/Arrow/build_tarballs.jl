@@ -69,7 +69,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libparquet", :libparquet),
-    LibraryProduct("libarrow", :libarrow)
+    LibraryProduct("libarrow", :libarrow),
+    LibraryProduct("libarrow_dataset", :libarrow_dataset),
 ]
 
 # Dependencies that must be installed before this package can be built
