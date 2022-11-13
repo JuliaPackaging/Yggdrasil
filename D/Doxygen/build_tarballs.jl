@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Doxygen"
-version = v"1.9.2"
+version = v"1.9.5"
 
 # Notes
 # - compile error on g++ < 8
@@ -11,7 +11,7 @@ version = v"1.9.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/doxygen/doxygen/archive/refs/tags/Release_$(version.major)_$(version.minor)_$(version.patch).tar.gz",
-                  "40f429241027ea60f978f730229d22e971786172fdb4dc74db6406e7f6c034b3"),
+                  "1c5c9cd4445f694e43f089c17529caae6fe889b732fb0b145211025a1fcda1bb"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,7 +32,7 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
