@@ -12,7 +12,23 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/preprocessor
 
-# remove -lstdc++fs in Makefile.am
+# Remove flex from RootFS to let use our flex from `flex_jll`
+rm -f /usr/bin/flex
+
+if [[ "${target}" == *-freebsd* ]]; then
+    export CPPFLAGS="-I${includedir}"
+    atomic_patch -p1 "../patches/patches.patch"
+elif [[ "${target}" == *-apple-* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/usr/include/libxml2/libxml
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=11.3
+    popd
+    atomic_patch -p1 "../patches/patches.patch"
+fi
+
 sed s/-lstdc++fs// -i src/Makefile.am
 
 # Remove flex from RootFS to let use our flex from `flex_jll`
