@@ -23,7 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DDISABLE_UNITY=TRUE \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_UNITTESTS=FALSE ..
-make -j${nproc}
+LDFLAGS=" -lrt " make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw32 ]]; then
