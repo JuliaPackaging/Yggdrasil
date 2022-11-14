@@ -7,7 +7,7 @@ version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xiaoyeli/superlu/archive/v5.3.0.tar.gz", "3e464afa77335de200aeb739074a11e96d9bef6d0b519950cfa6684c4be1f350")
+    ArchiveSource("https://github.com/xiaoyeli/superlu/archive/v$(version).tar.gz", "3e464afa77335de200aeb739074a11e96d9bef6d0b519950cfa6684c4be1f350")
 ]
 
 # Bash recipe for building across all platforms
