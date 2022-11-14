@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/duckdb*/
 
 mkdir build && cd build
 
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    export LDFLAGS="-lrt";
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_PARQUET_EXTENSION=TRUE \
@@ -23,7 +27,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DDISABLE_UNITY=TRUE \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_UNITTESTS=FALSE ..
-LDFLAGS=" -lrt " make -j${nproc}
+make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw32 ]]; then
