@@ -7,7 +7,8 @@ version = v"3.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.5.tar.gz", "93925805c1fc4f8162b35f0ae109c4a75344e6decae5a240afdfce25f8a433ec")
+    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v$(version).tar.gz",
+                  "93925805c1fc4f8162b35f0ae109c4a75344e6decae5a240afdfce25f8a433ec")
 ]
 
 
