@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenEXR"
-version = v"3.1.1"
+version = v"3.1.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.1.tar.gz", "045254e201c0f87d1d1a4b2b5815c4ae54845af2e6ec0ab88e979b5fdb30a86e")
+    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.5.tar.gz", "93925805c1fc4f8162b35f0ae109c4a75344e6decae5a240afdfce25f8a433ec")
 ]
 
 
