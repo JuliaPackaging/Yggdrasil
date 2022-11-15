@@ -45,9 +45,10 @@ linux_script = raw"""
 cd node-*
 export CC_host=$HOSTCC
 export CXX_host=$HOSTCXX
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/configure.py.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node.gypi.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node_credentials.cc.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/test_crypto_clienthello.cc.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/node.gypi.patch"
 # Build & install libnode
 if [[ $target == $MACHTYPE ]]
 then
