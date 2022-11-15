@@ -35,11 +35,14 @@ make install
 install_license ../LICENSE
 """
 
-# Note: We are restricted to the platforms that NetCDF supports, the library is Unix only
+# Note: We are restricted to the platforms that NetCDF supports
 platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("aarch64","macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ] 
 platforms = expand_cxxstring_abis(platforms)
 
