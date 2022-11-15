@@ -22,9 +22,6 @@ ${CC} -std=c99 -O2 -fPIC -shared -lnvToolsExt -o ${libdir}/libjulia_nvtx_callbac
 install_license /usr/share/licenses/MIT
 """
 
-# We only build for Linux
-platforms = filter(p -> Sys.islinux(p), supported_platforms())
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libjulia_nvtx_callbacks", :libjulia_nvtx_callbacks),
@@ -32,10 +29,12 @@ products = [
 
 dependencies = [PackageSpec(name="CUDA_Runtime_jll")]
 
+# CUDA platforms
 platforms = [Platform("x86_64", "linux"),
              Platform("powerpc64le", "linux"),
              Platform("aarch64", "linux"),
              Platform("x86_64", "windows")]
+
 cuda_builds = ["10.2", "11.0", "11.8"]
 augment_platform_block = CUDA.augment
 
