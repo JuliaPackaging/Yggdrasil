@@ -37,6 +37,7 @@ platforms = [Platform("x86_64", "linux"),
              Platform("aarch64", "linux"),
              Platform("x86_64", "windows")]
 cuda_builds = ["10.2", "11.0", "11.8"]
+augment_platform_block = CUDA.augment
 
 for build in cuda_builds, platform in platforms
     cuda_version = VersionNumber(build)
