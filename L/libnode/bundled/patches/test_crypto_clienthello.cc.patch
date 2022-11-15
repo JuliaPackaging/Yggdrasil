@@ -1,8 +1,16 @@
 diff --git a/test/cctest/test_crypto_clienthello.cc b/test/cctest/test_crypto_clienthello.cc
-index 60a8e294c8..391f76cf7d 100644
+index 60a8e294c8..e673073dc3 100644
 --- a/test/cctest/test_crypto_clienthello.cc
 +++ b/test/cctest/test_crypto_clienthello.cc
-@@ -54,7 +54,7 @@ class OverrunGuardedBuffer {
+@@ -16,6 +16,7 @@
+ // safety is violated.
+ #if !defined(NO_GUARD_PAGE)
+ #ifdef __linux__
++#include <malloc.h>
+ #include <sys/mman.h>
+ #include <unistd.h>
+ #if defined(_SC_PAGE_SIZE) && defined(PROT_NONE) && defined(PROT_READ) &&      \
+@@ -54,7 +55,7 @@ class OverrunGuardedBuffer {
  #ifdef USE_MPROTECT
      // Place the packet right before a guard page, which, when accessed, causes
      // a segmentation fault.
