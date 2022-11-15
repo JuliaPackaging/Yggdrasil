@@ -25,7 +25,7 @@ sources = [
 w64_script = raw"""
 cd ${target}/libnode-*
 cd node-*
-chmod +x *.cmd
+chmod +x *.cmd *.exe
 mkdir -p ${bindir}
 mv * ${bindir}/
 mv ${bindir}/include ${prefix}
@@ -35,6 +35,7 @@ install_license ./LICENSE
 
 mac_script = raw"""
 cd ${target}/libnode-*
+chmod +x bin/*
 mv * ${prefix}/
 mv ${prefix}/LICENSE .
 install_license ./LICENSE
