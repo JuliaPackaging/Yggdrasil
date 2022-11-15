@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.4.4"
+version = v"0.4.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "4d164d6d0b8c62f03ae8b3981ced67387b0324b2")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "139047dcd037275df816d9ab5fe327254d790c62")
 ]
 
 # Bash recipe for building across all platforms

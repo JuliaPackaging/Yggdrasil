@@ -69,17 +69,9 @@ function configure_build(version)
     # Therefore we symlink to other directory that it looks at.
     mkdir ${prefix}/lib/include
     ln -s ${prefix}/hip/include/* ${prefix}/lib/include
-
-    # NOTE
-    # This is needed to avoid errors with zipping files older than 1980.
-    # See: https://github.com/pypa/wheel/issues/418
-    unset SOURCE_DATE_EPOCH
-    pip install -U pip wheel setuptools
-
     """ *
     get_targets(version) *
     raw"""
-
     CXX=${prefix}/hip/bin/hipcc \
     cmake -S . -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -91,7 +83,7 @@ function configure_build(version)
         -DBUILD_VERBOSE=ON \
         -DBUILD_WITH_TENSILE=ON \
         -DBUILD_WITH_TENSILE_HOST=ON \
-        -DTensile_LIBRARY_FORMAT=yaml \
+        -DTensile_LIBRARY_FORMAT=msgpack \
         -DTensile_COMPILER=hipcc \
         -DTensile_LOGIC=asm_full \
         -DTensile_CODE_OBJECT_VERSION=V3 \
@@ -116,12 +108,13 @@ function configure_build(version)
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version)),
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
-        Dependency("ROCmCompilerSupport_jll", version),
-        Dependency("ROCmOpenCLRuntime_jll", version),
-        Dependency("ROCmDeviceLibs_jll", version),
-        Dependency("rocminfo_jll", version),
-        Dependency("hsa_rocr_jll", version),
-        Dependency("HIP_jll", version),
+        Dependency("ROCmCompilerSupport_jll"; compat=string(version)),
+        Dependency("ROCmOpenCLRuntime_jll"; compat=string(version)),
+        Dependency("ROCmDeviceLibs_jll"; compat=string(version)),
+        Dependency("rocminfo_jll"; compat=string(version)),
+        Dependency("hsa_rocr_jll"; compat=string(version)),
+        Dependency("HIP_jll"; compat=string(version)),
+        Dependency("msgpack_jll"),
     ]
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
