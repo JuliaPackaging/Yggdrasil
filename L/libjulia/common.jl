@@ -28,13 +28,17 @@ function libjulia_platforms(julia_version)
         p["julia_version"] = string(julia_version)
     end
 
-    # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
+    # While the "official" Julia kernel ABI does not involve any C++ linker
+    # symbols before Julia 1.6, `libjulia` exported "unofficial" symbols
     # dependent on the C++ strings ABI (coming from LLVM related code). This
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(platforms)
+    #
+    # In Julia >= 1.6, these C++ symbols all moved into `libjulia-internal`.
+    if julia_version < v"1.6"
+        platforms = expand_cxxstring_abis(platforms)
+    end
 
     return platforms
 end
