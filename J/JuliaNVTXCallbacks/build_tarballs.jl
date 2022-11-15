@@ -27,7 +27,7 @@ products = [
     LibraryProduct("libjulia_nvtx_callbacks", :libjulia_nvtx_callbacks),
 ]
 
-dependencies = [PackageSpec(name="CUDA_Runtime_jll")]
+dependencies = [Dependency("CUDA_Runtime_jll")]
 
 # CUDA platforms
 platforms = [Platform("x86_64", "linux"),
@@ -44,5 +44,5 @@ for build in cuda_builds, platform in platforms
                                   cuda=CUDA.platform(cuda_version))
     should_build_platform(triplet(augmented_platform)) || continue
 
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", augment_platform_block)
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, dependencies; julia_compat="1.6", augment_platform_block)
 end
