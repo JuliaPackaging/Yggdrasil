@@ -36,6 +36,15 @@ platforms = [Platform("x86_64", "linux"),
              Platform("x86_64", "windows")]
 
 cuda_versions = [v"10.2", v"11.0", v"11.8"]
+
+cuda_full_versions = Dict(
+    v"10.2" => v"10.2.89",
+    v"11.0" => v"11.0.3",
+    v"11.4" => v"11.4.2",
+    v"11.8" => v"11.8"
+)
+
+
 augment_platform_block = CUDA.augment
 
 for cuda_version in cuda_versions, platform in platforms
@@ -46,10 +55,19 @@ for cuda_version in cuda_versions, platform in platforms
     if cuda_version == v"11.0" && platform == Platform("aarch64", "linux")
         cuda_version = v"11.4"
     end
+
     
     augmented_platform = Platform(arch(platform), os(platform);
                                   cuda=CUDA.platform(cuda_version))
     should_build_platform(triplet(augmented_platform)) || continue
 
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, dependencies; julia_compat="1.6", augment_platform_block)
+    
+    cuda_deps = [
+        BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                    version=cuda_full_versions[cuda_version])),
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    ]
+
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, [dependencies; cuda_deps];
+                   lazy_artifacts=true, julia_compat="1.6", augment_platform_block)
 end
