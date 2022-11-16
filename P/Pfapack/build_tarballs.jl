@@ -42,7 +42,7 @@ platforms = supported_platforms()
 
 # Since we need to link to libblastrampoline which has seen multiple
 # ABI-incompatible versions, we need to expand the julia versions we target
-julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 function set_julia_version(platforms::Vector{Platform}, julia_version::VersionNumber)
     _platforms = deepcopy(platforms)
     for p in _platforms
@@ -62,7 +62,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(get_addable_spec("libblastrampoline_jll", v"3.0.4+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.7.0", platforms)),
-    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.0+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.8.0", platforms)),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.1+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.8.0", platforms)),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.2.0+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.9.0", platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
