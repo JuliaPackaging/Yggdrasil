@@ -20,6 +20,7 @@ rm -f /usr/bin/flex
 
 # Help FreeBSD find header files.  See
 # https://github.com/JuliaPackaging/Yggdrasil/issues/3949
+
 if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
 elif [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -32,7 +33,7 @@ elif [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-atomic_patch -p1 "../patches/patches.patch"
+atomic_patch -p1 "../patches/patches.patch" 
 
 autoreconf -si
 
@@ -58,4 +59,4 @@ dependencies = [
     HostBuildDependency("flex_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"13")
