@@ -40,11 +40,11 @@ done
 install -Dvm 755 "libRNAstructure.${dlext}" "${libdir}/"
 
 # install data tables
-find data_tables/ -type f -or -type d -exec \
+find data_tables/ -type f -exec \
     install -Dvm 644 '{}' "${prefix}/{}" \;
 
 # install CycleFold data files
-find CycleFold/datafiles/ -type f -or -type d -exec \
+find CycleFold/datafiles/ -type f -exec \
     install -Dvm 644 '{}' "${prefix}/{}" \;
 
 install_license gpl.txt
