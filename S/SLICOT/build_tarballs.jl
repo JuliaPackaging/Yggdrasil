@@ -100,7 +100,7 @@ platforms = expand_gfortran_versions(supported_platforms())
 # https://github.com/JuliaPackaging/Yggdrasil/pull/4770
 # Since we need to link to libblastrampoline which has seen multiple
 # ABI-incompatible versions, we need to expand the julia versions we target
-julia_versions = [v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 function set_julia_version(platforms::Vector{Platform}, julia_version::VersionNumber)
     _platforms = deepcopy(platforms)
     for p in _platforms
