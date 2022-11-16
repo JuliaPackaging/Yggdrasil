@@ -35,11 +35,18 @@ platforms = [Platform("x86_64", "linux"),
              Platform("aarch64", "linux"),
              Platform("x86_64", "windows")]
 
-cuda_builds = ["10.2", "11.0", "11.8"]
+cuda_versions = [v"10.2", v"11.0", v"11.8"]
 augment_platform_block = CUDA.augment
 
-for build in cuda_builds, platform in platforms
-    cuda_version = VersionNumber(build)
+for cuda_version in cuda_versions, platform in platforms
+    # not all platforms have all versions of CUDA_Runtime_jll
+    if cuda_version < v"11.0" && platform == Platform("powerpc64le", "linux")
+        continue
+    end
+    if cuda_version == v"11.0" && platform == Platform("aarch64", "linux")
+        cuda_version = v"11.4"
+    end
+    
     augmented_platform = Platform(arch(platform), os(platform);
                                   cuda=CUDA.platform(cuda_version))
     should_build_platform(triplet(augmented_platform)) || continue
