@@ -43,6 +43,10 @@ install -Dvm 755 "libRNAstructure.${dlext}" "${libdir}/"
 find data_tables/ -type f -print0 |
     xargs -0 -I '{}' install -Dvm 644 '{}' "${prefix}/{}"
 
+# install CycleFold data files
+find CycleFold/datafiles/ -type f -print0 |
+    xargs -0 -I '{}' install -Dvm 644 '{}' "${prefix}/{}"
+
 install_license gpl.txt
 """
 
