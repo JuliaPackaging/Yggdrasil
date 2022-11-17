@@ -21,10 +21,22 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-if [[ ${target} == x86_64-linux-gnu* ]]; then
+# if  [[ "${target}" == powerpc64le-linux* || "${target}" == x86_64-linux-gnu* ]]; then
+if  [[ "${target}" == x86_64-linux-gnu* ]]; then
+    # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
+    # make it use the workspace instead
+    export TMPDIR=${WORKSPACE}/tmpdir
+    mkdir ${TMPDIR}
+    
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
-    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DUSE_CUDA=ON -DBUILD_WITH_CUDA_CUB=ON
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+            -DUSE_CUDA=ON \
+            -DBUILD_WITH_CUDA_CUB=ON
+    make -j${nproc}
+elif [[ ${target} == *w64-mingw* ]]; then
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
     make -j${nproc}
 else
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
@@ -50,6 +62,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+cuda_platforms = expand_cxxstring_abis(supported_platforms()[[2,16]])
 
 # The products that we will ensure are always built
 products = [
@@ -63,7 +76,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3"); platforms = platforms[3:4]),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3"); platforms = cuda_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
