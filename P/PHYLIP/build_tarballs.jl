@@ -20,14 +20,13 @@ cd phylip-*/src/
 
 MAKEFILE_TARGET=""
 if [[ "${bb_target}" == *apple* ]]; then
-    MAKEFILE_TARGET="Makefile.osx"
+    make CC="${CC}" -f Makefile.osx install
 elif [[ "${bb_target}" == *mingw* ]]; then
-    MAKEFILE_TARGET="Makefile.cyg"
+    CFLAGS=" -MNO-CYGWIN -DWIN32 -O3 -fomit-frame-pointer"
+    make CC="${CC}" CFLAGS="${CFLAGS}" -f Makefile.cyg install
 else
-    MAKEFILE_TARGET="Makefile.unx"
+    make CC="${CC}" -f Makefile.unx install
 fi
-
-make CC="${CC}" -f ${MAKEFILE_TARGET} install
 
 mkdir -p ${bindir} ${libdir}
 mv ../exe/lib* ${libdir}/
