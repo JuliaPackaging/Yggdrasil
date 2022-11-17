@@ -112,6 +112,7 @@ fi
 """
 
 products = [
+    LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
     LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
     LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
     LibraryProduct(["libcublas", "cublas64_11"], :libcublas),

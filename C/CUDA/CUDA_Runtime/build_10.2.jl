@@ -106,6 +106,7 @@ fi
 """
 
 products = [
+    LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
     LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
     LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
     LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
@@ -121,8 +122,6 @@ products = [
     ExecutableProduct("nvlink", :nvlink),
 ]
 
-platforms = [
-    Platform("aarch64", "linux"; cuda="10.2"),
-    Platform("x86_64", "linux"; cuda="10.2"),
-    Platform("x86_64", "windows"; cuda="10.2")
-]
+platforms = [Platform("aarch64", "linux"; cuda="10.2"),
+             Platform("x86_64", "linux"; cuda="10.2"),
+             Platform("x86_64", "windows"; cuda="10.2")]

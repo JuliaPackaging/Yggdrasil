@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.9.14"
+version = v"2.10.3"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "77e7c7240ce447582d2c3471f050423c01ec0e201c3bf2fd6731064d1891f362"),
+                  "3f9fb74bb02049f3454892c88d3e57a23e30a88a7d444a80064625af2f543898"),
 ]
 
 # Bash recipe for building across all platforms

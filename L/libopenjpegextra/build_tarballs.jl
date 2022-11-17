@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libopenjpegextra"
-version = v"0.0.1"
+version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ashwani-rathee/libopenjpegextra.git", "5e5f3348687d268daff8c7145f7283df052f794c")
+    GitSource("https://github.com/ashwani-rathee/libopenjpegextra.git", "f3b81edc36486bd3940ad46d242730907f20a575")
 ]
 
 # Bash recipe for building across all platforms

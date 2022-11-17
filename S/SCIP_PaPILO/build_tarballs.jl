@@ -4,10 +4,10 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"0.1.0"
+version = v"800.0.200"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "74c2bb3be6b9b99e75b03b3161ebcfbfb1d211e7becdd9929328a6e92ffce5a7"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.2.tgz", "1cfc8d31b4ef9c12fae535f5c911616491439bb79cdfa39a30e4d035f4919d96"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DSYM=bliss\
+  -DTPI=tny\
   -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
 make -j${nproc} scip
 make papilo-executable
@@ -53,12 +54,12 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), v"0.77.0"),
+    Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.0"),
-    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"), v"300.1400.400"),
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.0"),
+    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="=300.1400.400"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.10"),
     Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2021.4.1"),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
