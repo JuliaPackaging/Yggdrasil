@@ -7,7 +7,10 @@ version = v"3.697.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://evolution.gs.washington.edu/phylip/download/phylip-$(version.major).$(version.minor).tar.gz", "9a26d8b08b8afea7f708509ef41df484003101eaf4beceb5cf7851eb940510c1")
+    ArchiveSource(
+        "http://evolution.gs.washington.edu/phylip/download/phylip-$(version.major).$(version.minor).tar.gz",
+        "9a26d8b08b8afea7f708509ef41df484003101eaf4beceb5cf7851eb940510c1"
+    )
 ]
 
 # Bash recipe for building across all platforms
@@ -24,11 +27,11 @@ else
     MAKEFILE_TARGET="Makefile.unx"
 fi
 
-make -f $MAKEFILE_TARGET install
+make CC="${CC}" -f ${MAKEFILE_TARGET} install
 
-mkdir -p $bindir $libdir
-mv ../exe/lib* $libdir/
-mv ../exe/* $bindir/
+mkdir -p ${bindir} ${libdir}
+mv ../exe/lib* ${libdir}/
+mv ../exe/* ${bindir}/
 
 install_license COPYRIGHT
 """
