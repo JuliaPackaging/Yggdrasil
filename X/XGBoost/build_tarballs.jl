@@ -35,7 +35,12 @@ if  [[ "${target}" == x86_64-linux-gnu* ]]; then
             -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
 elif [[ ${target} == *w64-mingw* ]]; then
-    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
+    export CUDA_HOME=${WORKSPACE}/destdir/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
+    export CUDACXX=${WORKSPACE}/destdir/cuda/bin/nvcc.exe
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+        -DUSE_CUDA=ON 
     make -j${nproc}
 else
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
