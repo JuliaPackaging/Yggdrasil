@@ -10,6 +10,7 @@ sources = [
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -30,4 +31,5 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]

@@ -26,15 +26,15 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.12.0-dev"
-version = v"400.1192.002"
+upstream_version = v"4.12.0"
+version = v"400.1200.000"
 
 julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
 
 # Collection of sources required to complete build
 sources = [
-    # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "977fb055cf3793aa4c329e3d6ea765774fecc8ac"),
+    # GAP 4.12.0 git tag
+    GitSource("https://github.com/gap-system/gap.git", "7ba252e2bc68ceccb5d267118d47fa5ca20bc513"),
 #    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
 #                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
     DirectorySource("./bundled"),
@@ -66,10 +66,8 @@ julia_version=$(./julia_version)
 ./autogen.sh
 
 # configure GAP
-# the custom ARCHEXT ensures that the different Julia versions use
-# different GAParch values
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    ARCHEXT="$julia_version" \
+    JULIA_VERSION="$julia_version" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
     --with-zlib=${prefix} \
@@ -81,12 +79,11 @@ mkdir -p build
 export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
 # WORKAROUND: avoid error: redundant redeclaration of ‘jl_gc_safepoint’ for Julia 1.8 & 1.9
 # (see https://github.com/JuliaLang/julia/pull/45120 for a proper fix)
-export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
+#export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
 
 # configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
 mkdir native-build
 cd native-build
-rm ${host_libdir}/*.la  # delete *.la, they hardcode libdir='/workspace/destdir/lib'
 ../configure --build=${MACHTYPE} --host=${MACHTYPE} \
     --enable-Werror \
     --with-gmp=${host_prefix} \
@@ -105,24 +102,11 @@ rm -rf native-build
 # compile GAP
 make -j${nproc}
 
-# install GAP binaries
-make install-bin install-headers install-libgap
-
-# FIXME: until install-headers is fixed, also install generated headers
-cp build/*.h ${prefix}/include/gap/
+# install GAP binaries, headers, shared library, sysinfo
+make install-bin install-headers install-libgap install-sysinfo
 
 # the license
 install_license LICENSE
-
-# get rid of *.la files, they just cause trouble
-rm ${prefix}/lib/*.la
-
-# get rid of the wrapper shell script, which is useless for us
-mv ${libdir}/gap/gap ${prefix}/bin/gap
-
-# install gac and sysinfo.gap
-mkdir -p ${prefix}/share/gap/
-cp gac sysinfo.gap ${prefix}/share/gap/
 
 # We deliberately do NOT install the GAP library, documentation, etc. because
 # they are identical across all platforms; instead, we use another platform

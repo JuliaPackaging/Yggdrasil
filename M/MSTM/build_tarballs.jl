@@ -35,6 +35,7 @@ if [[ "$target" == *-mingw* ]]; then
     fi
     echo "${cfg_stub}" | gcc -x c -c -o cfg_stub.o -
     gfortran -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -L${prefix}/lib -I${includedir} -l${msmpifec} -l${msmpi} -o "${bindir}/mstm${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics.f90 mstm-v4.0.f90 cfg_stub.o -o "${bindir}/mstm_serial${exeext}"
     rm ${includedir}/mpi.f90 ${includedir}/*.mod ${includedir}/*.o
 else
     # Re-compile MPI's mpi.f90; it might have been compiled with the wrong compiler
@@ -54,6 +55,7 @@ else
     cd ${WORKSPACE}/srcdir/MSTM/code
     export MPITRAMPOLINE_FC=gfortran
     mpifort -O2 -fno-range-check mpidefs-parallel.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o "${bindir}/mstm${exeext}"
+    gfortran -O2 -fno-range-check mpidefs-serial.f90 mstm-intrinsics.f90 mstm-v4.0.f90 -o "${bindir}/mstm_serial${exeext}"
 fi
 install_license ${WORKSPACE}/srcdir/MSTM/LICENSE
 """
@@ -82,7 +84,8 @@ platforms = filter(p -> !(p["mpi"] == "mpich" && libgfortran_version(p) == v"3")
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mstm", :mstm)
+    ExecutableProduct("mstm", :mstm),
+    ExecutableProduct("mstm_serial", :mstm_serial),
 ]
 
 # Dependencies that must be installed before this package can be built

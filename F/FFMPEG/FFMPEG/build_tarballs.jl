@@ -39,6 +39,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency("Opus_jll"),
+    Dependency("PCRE2_jll"; compat="10.35"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

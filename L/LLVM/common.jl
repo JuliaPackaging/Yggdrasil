@@ -14,7 +14,7 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
-    v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
+    v"14.0.6" => "63feb57573d16e7c64d99c971659dd98971ad06c", # julia-14.0.6-0
 )
 
 const buildscript = raw"""
@@ -443,7 +443,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    platforms = supported_platforms(;experimental=experimental_platforms)
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    platforms = expand_cxxstring_abis(platforms)
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
@@ -554,7 +556,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+
+    platforms = supported_platforms(;experimental=experimental_platforms)
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
         augmented_platforms = Platform[]
