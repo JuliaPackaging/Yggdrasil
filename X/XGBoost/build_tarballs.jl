@@ -21,7 +21,6 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-# if  [[ "${target}" == powerpc64le-linux* || "${target}" == x86_64-linux-gnu* ]]; then
 if  [[ "${target}" == x86_64-linux-gnu* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
