@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd phylip-3.697/src/
 make -f Makefile.unx install
-mv ../exe/* $prefix/
+mv ../exe/* $bindir/
 install_license COPYRIGHT
 """
 
