@@ -14,11 +14,22 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd phylip-*/src/
-make -f Makefile.unx install
+
+MAKEFILE_TARGET=""
+if [[ "${bb_target}" == *apple* ]]; then
+    MAKEFILE_TARGET="Makefile.osx"
+elif [[ "${bb_target}" == *mingw* ]]; then
+    MAKEFILE_TARGET="Makefile.cyg"
+else
+    MAKEFILE_TARGET="Makefile.unx"
+fi
+
+make -f $MAKEFILE_TARGET install
+
 mkdir -p $bindir $libdir
-mv ../exe/libdrawtree.* $libdir/
-mv ../exe/libdrawgram.* $libdir/
+mv ../exe/lib* $libdir/
 mv ../exe/* $bindir/
+
 install_license COPYRIGHT
 """
 
