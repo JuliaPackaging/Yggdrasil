@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir
 cd phylip-3.697/src/
 make -f Makefile.unx install
 mv ../exe/* $prefix/
+install_license COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
