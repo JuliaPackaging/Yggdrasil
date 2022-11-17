@@ -63,8 +63,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdrawtree", :libdrawtree_so),
-    LibraryProduct("libdrawgram", :libdrawgram_so),
+    LibraryProduct(["libdrawtree", "drawtree"], :libdrawtree),
+    LibraryProduct(["libdrawgram", "drawgram"], :libdrawgram),
     ExecutableProduct("dnacomp", :dnacomp),
     ExecutableProduct("drawgram", :drawgram),
     ExecutableProduct("gendist", :gendist),
