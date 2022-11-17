@@ -12,7 +12,7 @@ name = "libsingular_julia"
 version = v"0.27.0"
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libsingular-julia
@@ -62,4 +62,3 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     julia_compat = julia_compat)
-
