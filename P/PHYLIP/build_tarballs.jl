@@ -19,19 +19,23 @@ script = raw"""
 cd $WORKSPACE/srcdir/phylip-*/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows_fixes.patch"
 
+mkdir -p ${bindir} ${libdir}
+
 cd $WORKSPACE/srcdir/phylip-*/src/
 
 if [[ "${bb_target}" == *apple* ]]; then
     make CC="${CC}" -f Makefile.osx install
+    mv ../exe/lib* ${libdir}/
+    mv ../exe/* ${bindir}/
 elif [[ "${bb_target}" == *mingw* ]]; then
-    make CC="${CC}" EXEDIR="../exe" -f Makefile.cyg install
+    make CC="${CC}" -f Makefile.cyg install
+    mv ../source/*.dll ${libdir}/
+    mv ../source/* ${bindir}/
 else
     make CC="${CC}" -f Makefile.unx install
+    mv ../exe/lib* ${libdir}/
+    mv ../exe/* ${bindir}/
 fi
-
-mkdir -p ${bindir} ${libdir}
-mv ../exe/lib* ${libdir}/
-mv ../exe/* ${bindir}/
 
 install_license COPYRIGHT
 """
