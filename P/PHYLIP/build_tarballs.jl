@@ -17,7 +17,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/phylip-*/
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows_fixes.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fixes.patch"
 
 mkdir -p ${bindir} ${libdir}
 
