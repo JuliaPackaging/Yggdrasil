@@ -15,7 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd phylip-3.697/src/
 make -f Makefile.unx install
-mkdir $bindir
+mkdir $bindir $libdir
+mv ../exe/libdrawtree.so $libdir/
+mv ../exe/libdrawgram.so $libdir/
 mv ../exe/* $bindir/
 install_license COPYRIGHT
 """
