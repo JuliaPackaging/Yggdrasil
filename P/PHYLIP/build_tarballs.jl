@@ -23,7 +23,8 @@ if [[ "${bb_target}" == *apple* ]]; then
     make CC="${CC}" -f Makefile.osx install
 elif [[ "${bb_target}" == *mingw* ]]; then
     CFLAGS=" -DWIN32 -O3 -fomit-frame-pointer"
-    make CC="${CC}" CFLAGS="${CFLAGS}" -f Makefile.cyg install
+    DFLAGS=" -lgdi32"
+    make CC="${CC}" CFLAGS="${CFLAGS}" DFLAGS="${DFLAGS}" -f Makefile.cyg install
 else
     make CC="${CC}" -f Makefile.unx install
 fi
