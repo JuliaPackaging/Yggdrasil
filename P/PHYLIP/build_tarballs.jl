@@ -7,8 +7,7 @@ version = v"3.697.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://evolution.gs.washington.edu/phylip/download/phylip-$(version.major).$(version.minor).tar.gz",
-                  "9a26d8b08b8afea7f708509ef41df484003101eaf4beceb5cf7851eb940510c1")
+    ArchiveSource("http://evolution.gs.washington.edu/phylip/download/phylip-$(version.major).$(version.minor).tar.gz", "9a26d8b08b8afea7f708509ef41df484003101eaf4beceb5cf7851eb940510c1")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd phylip-*/src/
 make -f Makefile.unx install
-mkdir $bindir $libdir
+mkdir -p $bindir $libdir
 mv ../exe/libdrawtree.so $libdir/
 mv ../exe/libdrawgram.so $libdir/
 mv ../exe/* $bindir/
@@ -25,7 +24,23 @@ install_license COPYRIGHT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms())
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "macos"; ),
+    Platform("x86_64", "freebsd"; ),
+    Platform("i686", "windows"; ),
+    Platform("x86_64", "windows"; )
+]
 
 
 # The products that we will ensure are always built
@@ -35,29 +50,29 @@ products = [
     ExecutableProduct("dnacomp", :dnacomp),
     ExecutableProduct("drawgram", :drawgram),
     ExecutableProduct("gendist", :gendist),
-    ExecutableProduct("retree", :retree),
+    ExecutableProduct("treedist", :treedist),
     ExecutableProduct("dnapenny", :dnapenny),
-    ExecutableProduct("mix", :mix),
-    ExecutableProduct("penny", :penny),
+    ExecutableProduct("neighbor", :neighbor),
+    ExecutableProduct("promlk", :promlk),
     ExecutableProduct("dnaml", :dnaml),
     ExecutableProduct("drawtree", :drawtree),
-    ExecutableProduct("promlk", :promlk),
+    ExecutableProduct("protpars", :protpars),
     ExecutableProduct("clique", :clique),
     ExecutableProduct("fitch", :fitch),
+    ExecutableProduct("mix", :mix),
+    ExecutableProduct("move", :move),
     ExecutableProduct("dnadist", :dnadist),
-    ExecutableProduct("protpars", :protpars),
+    ExecutableProduct("restml", :restml),
     ExecutableProduct("dnapars", :dnapars),
-    ExecutableProduct("seqboot", :seqboot),
-    ExecutableProduct("treedist", :treedist),
     ExecutableProduct("dnamlk", :dnamlk),
-    ExecutableProduct("protdist", :protdist),
+    ExecutableProduct("restdist", :restdist),
     ExecutableProduct("dolmove", :dolmove),
     ExecutableProduct("contml", :contml),
-    ExecutableProduct("proml", :proml),
+    ExecutableProduct("protdist", :protdist),
     ExecutableProduct("dnainvar", :dnainvar),
-    ExecutableProduct("move", :move),
-    ExecutableProduct("restdist", :restdist),
-    ExecutableProduct("restml", :restml),
+    ExecutableProduct("pars", :pars),
+    ExecutableProduct("retree", :retree),
+    ExecutableProduct("seqboot", :seqboot),
     ExecutableProduct("contrast", :contrast),
     ExecutableProduct("dollop", :dollop),
     ExecutableProduct("dolpenny", :dolpenny),
@@ -65,8 +80,8 @@ products = [
     ExecutableProduct("dnamove", :dnamove),
     ExecutableProduct("factor", :factor),
     ExecutableProduct("kitsch", :kitsch),
-    ExecutableProduct("neighbor", :neighbor),
-    ExecutableProduct("pars", :pars)
+    ExecutableProduct("penny", :penny),
+    ExecutableProduct("proml", :proml)
 ]
 
 # Dependencies that must be installed before this package can be built
