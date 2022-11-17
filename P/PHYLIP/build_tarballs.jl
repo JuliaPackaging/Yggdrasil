@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd phylip-3.697/src/
+cd phylip-*/src/
 make -f Makefile.unx install
 mkdir $bindir $libdir
 mv ../exe/libdrawtree.so $libdir/
