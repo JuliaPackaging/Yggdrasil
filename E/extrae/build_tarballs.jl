@@ -7,13 +7,20 @@ sources = [
     ArchiveSource(
         "https://github.com/bsc-performance-tools/extrae/archive/refs/tags/$(version).tar.gz",
         "e6765eb087be3f3c162e08d65f425de5f26912811392527d56ecd75d4fb6b99d"),
+        DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
+
+atomic_patch -p1 ../patches/0001-autoconf-replace-pointer-size-check-by-AC_CHECK_SIZE.patch
+atomic_patch -p1 ../patches/0002-autoconf-use-simpler-endianiness-check.patch
+
 autoreconf -fvi
 ./configure \
-    --prefix=$prefix \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
     --without-binutils \
     --without-dyninst \
     --without-mpi \
