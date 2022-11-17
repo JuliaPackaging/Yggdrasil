@@ -16,10 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/symengine-*
 
-for f in $WORKSPACE/srcdir/patches/*.patch; do
-    echo "Applying patch ${f}"
-    atomic_patch -p1 ${f}
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-fix.patch
 
 mkdir build
 cd build
