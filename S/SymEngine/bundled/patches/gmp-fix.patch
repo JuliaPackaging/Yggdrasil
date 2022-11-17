@@ -4,71 +4,19 @@ Date: Thu, 17 Nov 2022 12:28:32 -0300
 Subject: [PATCH] Use the correct freefunc
 
 ---
- symengine/mp_class.h     | 14 +++++++++++---
  symengine/mp_wrapper.cpp | 17 +++++++++++++----
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/symengine/mp_class.h b/symengine/mp_class.h
-index 84e932b292..088f667fb8 100644
---- a/symengine/mp_class.h
-+++ b/symengine/mp_class.h
-@@ -3,6 +3,7 @@
- 
- #include <symengine/symengine_config.h>
- #include <symengine/symengine_casts.h>
-+#include <cstring>
- #if SYMENGINE_INTEGER_CLASS != SYMENGINE_BOOSTMP
- #include <symengine/mp_wrapper.h>
- #endif
-@@ -123,9 +124,11 @@ inline void mp_set_str(integer_class &i, const std::string &a)
- 
- inline std::string mp_get_hex_str(const integer_class &i)
- {
-+    void (*freefunc)(void *, size_t);
-+    mp_get_memory_functions(NULL, NULL, &freefunc);
-     char *c = mpz_get_str(NULL, 16, i.get_mpz_t());
-     std::string r = std::string(c);
--    free(c);
-+    freefunc(c, strlen(c) + 1);
-     return r;
- }
- 
-@@ -476,9 +479,12 @@ inline void mp_set_str(integer_class &i, const std::string &a)
- 
- inline std::string mp_get_hex_str(const integer_class &i)
- {
-+
-+    void (*freefunc)(void *, size_t);
-+    mp_get_memory_functions(NULL, NULL, &freefunc);
-     char *c = mpz_get_str(NULL, 16, i.get_mpz_view());
-     std::string r = std::string(c);
--    free(c);
-+    freefunc(c, strlen(c) + 1);
-     return r;
- }
- 
-@@ -612,9 +618,11 @@ inline void mp_set_str(fmpz_wrapper &i, const std::string &a)
- 
- inline std::string mp_get_hex_str(const fmpz_wrapper &i)
- {
-+    void (*freefunc)(void *, size_t);
-+    mp_get_memory_functions(NULL, NULL, &freefunc);
-     char *c = fmpz_get_str(NULL, 16, i.get_fmpz_t());
-     std::string r = std::string(c);
--    free(c);
-+    freefunc(c, strlen(c) + 1);
-     return r;
- }
- 
+
 diff --git a/symengine/mp_wrapper.cpp b/symengine/mp_wrapper.cpp
-index 6b8e523f02..4a841c3f53 100644
+index 6b8e523f02..4a84di1c3f53 100644
 --- a/symengine/mp_wrapper.cpp
 +++ b/symengine/mp_wrapper.cpp
 @@ -1,39 +1,48 @@
  #include <symengine/mp_wrapper.h>
  #include <stdlib.h>
 +#include <cstring>
- 
+
  namespace SymEngine
  {
  #if SYMENGINE_INTEGER_CLASS == SYMENGINE_FLINT
@@ -82,7 +30,7 @@ index 6b8e523f02..4a841c3f53 100644
 +    freefunc(c, strlen(c) + 1);
      return os;
  }
- 
+
  std::ostream &operator<<(std::ostream &os, const fmpq_wrapper &f)
  {
 +    void (*freefunc)(void *, size_t);
@@ -94,7 +42,7 @@ index 6b8e523f02..4a841c3f53 100644
      return os;
  }
  #elif SYMENGINE_INTEGER_CLASS == SYMENGINE_GMP
- 
+
  std::ostream &operator<<(std::ostream &os, const mpz_wrapper &f)
  {
 +    void (*freefunc)(void *, size_t);
@@ -105,7 +53,7 @@ index 6b8e523f02..4a841c3f53 100644
 +    freefunc(c, strlen(c) + 1);
      return os;
  }
- 
+
  std::ostream &operator<<(std::ostream &os, const mpq_wrapper &f)
  {
 +    void (*freefunc)(void *, size_t);
