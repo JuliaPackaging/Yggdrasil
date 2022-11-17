@@ -9,6 +9,7 @@ version = v"0.9.0"
 sources = [
     ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
                   "dcf174ac708ed2acea46691f6e78b9eb946d8a2ba62f75e87cf3bf4f0d651724"),
+                  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
