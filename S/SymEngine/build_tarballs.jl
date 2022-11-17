@@ -15,6 +15,12 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/symengine-*
+
+for f in $WORKSPACE/srcdir/patches/*.patch; do
+    echo "Applying patch ${f}"
+    atomic_patch -p1 ${f}
+done
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
