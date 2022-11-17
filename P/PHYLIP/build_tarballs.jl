@@ -10,21 +10,21 @@ sources = [
     ArchiveSource(
         "http://evolution.gs.washington.edu/phylip/download/phylip-$(version.major).$(version.minor).tar.gz",
         "9a26d8b08b8afea7f708509ef41df484003101eaf4beceb5cf7851eb940510c1"
-    )
+    ),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd phylip-*/src/
+cd $WORKSPACE/srcdir/phylip-*/
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows_fixes.patch"
 
-MAKEFILE_TARGET=""
+cd $WORKSPACE/srcdir/phylip-*/src/
+
 if [[ "${bb_target}" == *apple* ]]; then
     make CC="${CC}" -f Makefile.osx install
 elif [[ "${bb_target}" == *mingw* ]]; then
-    CFLAGS=" -DWIN32 -O3 -fomit-frame-pointer"
-    DFLAGS=" -lgdi32"
-    make CC="${CC}" CFLAGS="${CFLAGS}" DFLAGS="${DFLAGS}" -f Makefile.cyg install
+    make CC="${CC}" EXEDIR="../exe" -f Makefile.cyg install
 else
     make CC="${CC}" -f Makefile.unx install
 fi
