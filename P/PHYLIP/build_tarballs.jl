@@ -16,8 +16,8 @@ cd $WORKSPACE/srcdir
 cd phylip-*/src/
 make -f Makefile.unx install
 mkdir -p $bindir $libdir
-mv ../exe/libdrawtree.so $libdir/
-mv ../exe/libdrawgram.so $libdir/
+mv ../exe/libdrawtree.$dlext $libdir/
+mv ../exe/libdrawgram.$dlext $libdir/
 mv ../exe/* $bindir/
 install_license COPYRIGHT
 """
