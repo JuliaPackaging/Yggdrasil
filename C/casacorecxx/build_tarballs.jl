@@ -24,7 +24,7 @@ exit
 """
 
 # Julia version compatibility
-julia_versions = [v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Get a full list of platforms supported by Libjulia
