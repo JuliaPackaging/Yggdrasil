@@ -42,12 +42,16 @@ cd Lib
 make -j${nproc} COPTIONS="${COPTIONS} -fPIC"
 cd ..
 
-# We copy the .a files into ${prefix}/lib since the main purpose is to link them in other builds.
-# Specifically this is in a separate location than the typical location for libraries on Windows.
-mkdir -p ${prefix}/lib
-mkdir -p ${prefix}/include
-cp Lib/metis.h ${prefix}/include
-$CC -shared $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) $(flagon -Wl,-soname,libmetis4.${dlext}) -o ${prefix}/lib/libmetis4.${dlext}
+if [[ "${target}" == *apple* ]]; then
+    SONAME="-install_name"
+else
+    SONAME="-soname"
+fi
+
+mkdir -p $libdir
+mkdir -p $includedir
+cp Lib/metis.h $includedir
+$CC -shared -Wl,$SONAME,libmetis4.${dlext} $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libmetis4.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
