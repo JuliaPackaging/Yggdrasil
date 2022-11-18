@@ -1,20 +1,33 @@
 using BinaryBuilder
 
-
 name = "DynarePreprocessor"
-version = v"6.0.2"
+version = v"6.1.0"
 sources = [
-    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "00fd9dadb6dde5929c224c74e0a43715554a2c05"),
+    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "4807a6c8806b650094f8a1fc8bc7435e94d38305"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                  "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/preprocessor
 
-# remove -lstdc++fs in Makefile.am
-sed s/-lstdc++fs// -i src/Makefile.am
-
 # Remove flex from RootFS to let use our flex from `flex_jll`
 rm -f /usr/bin/flex
+
+if [[ "${target}" == *-freebsd* ]]; then
+    export CPPFLAGS="-I${includedir}"
+    atomic_patch -p1 "../patches/patches.patch"
+elif [[ "${target}" == *-apple-* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=11.3
+    popd
+    atomic_patch -p1 "../patches/patches.patch"
+fi
 
 autoreconf -si
 
@@ -28,7 +41,7 @@ cp "src/dynare-preprocessor${exeext}" "${bindir}"
 install_license COPYING
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude=[Platform("aarch64", "macOS"), Platform("x86_64", "macOS"), Platform("x86_64", "FreeBSD")]) )
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("dynare-preprocessor", :dynare_preprocessor),

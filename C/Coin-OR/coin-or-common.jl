@@ -18,7 +18,7 @@ function offset_version(upstream, offset)
 end
 
 # GCC version for building the whole system
-gcc_version = v"6"
+gcc_version = v"8"
 
 # Versions of various COIN-OR libraries
 
@@ -73,10 +73,12 @@ SHOT_gitsha = "11fda1ecb84af9718f1e0c0ebf7ae5ae8c45041a"
 SHOT_version = offset_version(v"1.1.0", v"0.0.0")
 
 # Third-party packages needed by COIN-OR libraries.
+Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
-METIS_version = v"5.1.1"
-MUMPS_seq_version = v"500.500.101"
-OpenBLAS32_version = v"0.3.10"
+METIS_version = v"5.1.2"
+MUMPS_seq_version = v"5.4.1"
+MUMPS_seq_version_LBT = v"500.500.101"
+OpenBLAS32_version = v"0.3.21"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

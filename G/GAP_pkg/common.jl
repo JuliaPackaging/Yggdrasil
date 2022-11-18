@@ -30,7 +30,7 @@ end
 
 function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionNumber = gap_version)
 
-    platforms = supported_platforms(; experimental=true)
+    platforms = supported_platforms()
     filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
     filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
