@@ -33,7 +33,8 @@ if  [[ "${target}" == *linux-gnu-cuda* ]]; then
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
             -DUSE_CUDA=ON \
-            -DBUILD_WITH_CUDA_CUB=ON
+            -DBUILD_WITH_CUDA_CUB=ON \
+            -DUSE_NCCL=ON
     make -j${nproc}
 else
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
@@ -89,7 +90,6 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
 
-
 # build cuda tarballs
 for cuda_version in cuda_versions, platform in cuda_platforms
     augmented_platform = Platform(arch(platform), os(platform);
@@ -99,6 +99,7 @@ for cuda_version in cuda_versions, platform in cuda_platforms
     cuda_deps = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
                                     version=cuda_full_versions[cuda_version])),
+        RuntimeDependency(PackageSpec(name="NCCL_jll", version=v"2.15.1")),
     ]
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, [dependencies; cuda_deps];
