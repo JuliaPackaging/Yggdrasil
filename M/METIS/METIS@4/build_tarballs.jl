@@ -47,8 +47,7 @@ cd ..
 mkdir -p ${prefix}/lib
 mkdir -p ${prefix}/include
 cp Lib/metis.h ${prefix}/include
-cd ${prefix}/lib
-$CC -shared $(flagon -Wl,--whole-archive) Lib/libmetis.a $(flagon -Wl,--no-whole-archive) $(flagon -Wl,-soname,libmetis4.${dlext}) -o libmetis4.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) $(flagon -Wl,-soname,libmetis4.${dlext}) -o ${prefix}/lib/libmetis4.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
