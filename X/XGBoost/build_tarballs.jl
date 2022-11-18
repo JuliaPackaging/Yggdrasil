@@ -34,7 +34,7 @@ if  [[ "${target}" == x86_64-linux-gnu* ]]; then
             -DUSE_CUDA=ON \
             -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
-elif [[ ${target} == *w64-mingw* ]]; then
+elif [[ ${target} == x86_64-w64-mingw* ]]; then
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
     export CUDACXX=${WORKSPACE}/destdir/cuda/bin/nvcc.exe
