@@ -30,6 +30,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Get a full list of platforms supported by Libjulia
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 # Filter this list based on the same filter criteria used in the casacore build script
 filter!(platforms) do p
