@@ -45,11 +45,10 @@ cd ..
 # We copy the .a files into ${prefix}/lib since the main purpose is to link them in other builds.
 # Specifically this is in a separate location than the typical location for libraries on Windows.
 mkdir -p ${prefix}/lib
-mv libmetis.a ${prefix}/lib
 mkdir -p ${prefix}/include
 cp Lib/metis.h ${prefix}/include
 cd ${prefix}/lib
-$CC -shared $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) -o libmetis4.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) $(flagon -Wl,-soname,libmetis4.${dlext}) -o libmetis4.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -59,7 +58,6 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmetis4", :libmetis4),
-    FileProduct("lib/libmetis.a", :libmetis_a)
 ]
 
 # Dependencies that must be installed before this package can be built
