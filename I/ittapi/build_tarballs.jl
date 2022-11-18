@@ -16,9 +16,8 @@ cd $WORKSPACE/srcdir/ittapi/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DITT_API_IPT_SUPPORT=1
 make
 ar -x bin/libittnotify.a
-cc -shared ittnotify_static*.o ittptmark*.o -o libittnotify.so
-mkdir -p $prefix/lib
-cp libittnotify.so $prefix/lib/
+cc -shared ittnotify_static*.o ittptmark*.o -o libittnotify.${dlext}
+install -Dvm 0755 libittnotify.${dlext} ${libdir}/libittnotify.${dllext}
 install_license LICENSES/*
 """
 
