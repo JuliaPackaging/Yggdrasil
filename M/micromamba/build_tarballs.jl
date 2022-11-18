@@ -3,28 +3,28 @@
 using BinaryBuilder
 
 name = "micromamba"
-version = v"0.26.0"
+version = v"1.0.0"
 
 # Collection of sources required to build micromamba
 # These are actually just the conda packages for each platform
 sources = [
     FileSource("https://micro.mamba.pm/api/micromamba/linux-64/$version",
-        "404100d70109e1c264abae0a28c85b336e47dc2b82957642373794855a05e86c",
+        "41bda425dd9c44b59cc35781c1b4031465c36648791e8598f7826f65ef09e387",
         filename="micromamba-x86_64-linux-gnu.tar.bz2"),
     FileSource("https://micro.mamba.pm/api/micromamba/linux-aarch64/$version",
-        "1413aa95bacc0546b02d54bde8b38c161de571465ccca1107ca303c0cb26a958",
+        "57934f137d326aaaebfd9788ddd0e112135d33b95a7dd3e9292517ce025b4d5a",
         filename="micromamba-aarch64-linux-gnu.tar.bz2"),
     FileSource("https://micro.mamba.pm/api/micromamba/linux-ppc64le/$version",
-        "51f14e6dd24fb9068002da3ba7ca5193879c208676c55c4f3f2459ee222ca64a",
+        "196831fad6384fc7520ae2bf2eddaae6b3a256d80f607efb5eb1d97d3cc0c4e0",
         filename="micromamba-powerpc64le-linux-gnu.tar.bz2"),
     FileSource("https://micro.mamba.pm/api/micromamba/osx-64/$version",
-        "08b52c26ce58c5c0cb94ed420333a09897c48855ed5ed781f50a2ef7801349d7",
+        "2141288a06b520c81724eb1fad2e99395133c7d64ca9c776ae8d6ccc7edfd8e0",
         filename="micromamba-x86_64-apple-darwin14.tar.bz2"),
     FileSource("https://micro.mamba.pm/api/micromamba/osx-arm64/$version",
-        "4989c0a5c94d0917d7e1941036ea3adf3da287c4e8249ac680fc41134210ea60",
+        "ffb87b3923a01f22d299d21f8da2b57b0a22bf1be4f59f634f449ffa431d7d18",
         filename="micromamba-aarch64-apple-darwin20.tar.bz2"),
     FileSource("https://micro.mamba.pm/api/micromamba/win-64/$version",
-        "862d1cc64fa097d705bafa0cf472b173159f940b40ef77537efca80aa162cab1",
+        "e8b02c5b51eecb71953a460846f37acd6066eb3cef6cd3aebc60835048f37ad3",
         filename="micromamba-x86_64-w64-mingw32.tar.bz2"),
 ]
 
