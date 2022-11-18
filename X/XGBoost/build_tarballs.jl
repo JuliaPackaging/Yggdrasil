@@ -60,11 +60,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-cuda_platforms = [Platform("x86_64", "linux"),
-                  # Platform("powerpc64le", "linux"),
-                  # Platform("aarch64", "linux"),
-                  # Platform("x86_64", "windows")
-                 ] |> expand_cxxstring_abis
+cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"))
 
 cuda_versions = [v"11.0", v"11.8"]
 
@@ -96,11 +92,6 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
 
 # build cuda tarballs
 for cuda_version in cuda_versions, platform in cuda_platforms
-    # not all platforms have all versions of CUDA_full_jll
-    if cuda_version == v"11.0" && platform == Platform("aarch64", "linux")
-        cuda_version = v"11.4"
-    end
-
     augmented_platform = Platform(arch(platform), os(platform);
                                   cuda=CUDA.platform(cuda_version))
     should_build_platform(triplet(augmented_platform)) || continue
