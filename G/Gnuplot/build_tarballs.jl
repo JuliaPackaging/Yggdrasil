@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "Gnuplot"
-version = v"5.4.1"
+version = v"5.4.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
-                  "6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e"),
+                  "66f679115dd30559e110498fc94d926949d4d370b4999a042e724b8e910ee478"),
     DirectorySource("./bundled"),
 ]
 
