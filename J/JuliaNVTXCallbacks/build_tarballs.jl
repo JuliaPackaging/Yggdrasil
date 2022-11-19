@@ -11,7 +11,7 @@ version = v"0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/simonbyrne/NVTX.jl",
-              "079ab5516320242353cb168b115b0200a14a6cf8"),
+              "41d6fc678b758ee499c5841b4a71d9d76d720396"),
 ]
 
 # Bash recipe for building across all platforms
