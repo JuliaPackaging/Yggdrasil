@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "casacorecxx"
-version = v"0.1.2"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "f5663368f322c9392f5af37165652beac7e33e8f")]
+sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "bf73cbd1cf6c681102b8314172970dc1ca1618da")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -24,12 +24,13 @@ exit
 """
 
 # Julia version compatibility
-julia_versions = [v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Get a full list of platforms supported by Libjulia
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 # Filter this list based on the same filter criteria used in the casacore build script
 filter!(platforms) do p

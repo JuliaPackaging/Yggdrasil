@@ -13,7 +13,7 @@ name = "libpolymake_julia"
 version = v"0.8.3"
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
@@ -80,4 +80,3 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
     julia_compat = julia_compat)
-

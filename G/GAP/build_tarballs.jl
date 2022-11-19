@@ -29,7 +29,7 @@ name = "GAP"
 upstream_version = v"4.12.1"
 version = v"400.1200.101"
 
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [

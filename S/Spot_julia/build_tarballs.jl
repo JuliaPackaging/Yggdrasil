@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Spot_julia"
 version = v"2.9.7"
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
