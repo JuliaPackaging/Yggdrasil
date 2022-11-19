@@ -85,6 +85,8 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=True)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_Z3_SOLVER=True)
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
@@ -491,9 +493,10 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         name = custom_name
     end
     # Dependencies that must be installed before this package can be built
-    # TODO: LibXML2
     dependencies = Dependency[
+        Dependency("XML2_jll"),
         Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("z3_jll"),
     ]
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end

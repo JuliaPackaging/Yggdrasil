@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.15.2"
+version = v"0.15.3"
 openpmi_api_version = "v.0.14.5" # This is really the `dev` branch after version 0.14.5
 
 # `v"1.6.3"` fails to build
@@ -19,8 +19,8 @@ sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
     ArchiveSource("https://github.com/eschnett/openPMD-api/archive/20cdbe774e9dd5b739f3aede0c7fc69a7dbaf431.tar.gz",
                   "1004cee967e36522b17742ef946451fb9d852a78e05950206c854ce6a5764cd9"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
+                  "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,9 +43,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
     #         constexpr value_type& value() &
     #                               ^
-    export MACOSX_DEPLOYMENT_TARGET=10.15
+    export MACOSX_DEPLOYMENT_TARGET=11.0
     # ...and install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    pushd $WORKSPACE/srcdir/MacOSX*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
@@ -133,6 +133,10 @@ dependencies = [
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid FreeBSD where some C++17 features are not yet supported
+# <https://github.com/JuliaPackaging/Yggdrasil/issues/5851>
+platforms = filter(p -> !Sys.isfreebsd(p), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # TODO: Do this automatically
