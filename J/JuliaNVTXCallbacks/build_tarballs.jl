@@ -11,7 +11,7 @@ version = v"0.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/simonbyrne/NVTX.jl",
-              "4d104acb90915930575ee259da6e3e67cf7ef7b8"),
+              "54c215bec0d2e71b43d6ccab5d57e9fb6dd9615f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/NVTX.jl/deps
 mkdir -p ${libdir}
 CUDA_PATH="${prefix}/cuda"
-${CC} -std=c99 -O2 -fPIC -shared -I${CUDA_PATH} -o ${libdir}/libjulia_nvtx_callbacks.${dlext} callbacks.c 
+${CC} -std=c99 -O2 -fPIC -shared -o ${libdir}/libjulia_nvtx_callbacks.${dlext} callbacks.c 
 install_license /usr/share/licenses/MIT
 """
 
