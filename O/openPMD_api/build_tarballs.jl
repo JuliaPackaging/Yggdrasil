@@ -36,7 +36,7 @@ cd openPMD-api-*
 mkdir build
 cd build
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "${target}" == *-darwin* ]]; then
     # Work around the issue
     #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
     #                     optional.value()->coefficient *= -1.0;
@@ -48,13 +48,15 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # ...and install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
+    # cp: can't create '/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/./include/libxml2/libxml': File exists
+    rm -rf /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/libxml2/libxml
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
 
 mpiopts=
-if [[ "$target" == *-apple-* ]]; then
+if [[ "$target" == *-darwin-* ]]; then
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
         #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
