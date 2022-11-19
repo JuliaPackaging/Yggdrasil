@@ -19,6 +19,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/NVTX.jl/deps
 mkdir -p ${libdir}
 CUDA_PATH="${prefix}/cuda"
+ls ${CUDA_PATH}/include
+
+cat ${CUDA_PATH}/include/nvToolsExt.h
+
 ${CC} -std=c99 -O2 -fPIC -shared -I${CUDA_PATH}/include -lnvToolsExt -o ${libdir}/libjulia_nvtx_callbacks.${dlext} callbacks.c 
 install_license /usr/share/licenses/MIT
 """
