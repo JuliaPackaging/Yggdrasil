@@ -10,7 +10,8 @@ version = v"0.15.3"
 openpmi_api_version = "v.0.14.5" # This is really the `dev` branch after version 0.14.5
 
 # `v"1.6.3"` fails to build
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+# We disable `v"1.7"` because there would otherwise be too many (> 256) build jobs
+julia_versions = [v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
