@@ -20,6 +20,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
+METIS_version = v"400.000.300"
+
 sources = [
   ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$(upstream_version).tar.gz",
                 "d0f86f91a74c51a17a2ff1be9c9cee2338976f13a6d00896ba5b43a5ca05d933"),
@@ -88,7 +90,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name = "METIS4_jll",
                                 uuid = "40b5814e-7855-5c9f-99f7-a735ce3fdf8b",
-                                version = v"400.000.300")),
+                                version = "=$(METIS_version)")),
     BuildDependency("OpenBLAS32_jll"),
     BuildDependency("CompilerSupportLibraries_jll"),
 ]
