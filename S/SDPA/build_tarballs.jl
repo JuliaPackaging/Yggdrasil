@@ -137,7 +137,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),
     BuildDependency(MUMPS_seq_packagespec),
-    BuildDependency(METIS_packagespec),
+    BuildDependency(METIS_packagespec, compat="=$(METIS_version)"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
