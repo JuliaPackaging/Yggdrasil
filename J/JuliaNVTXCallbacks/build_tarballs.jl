@@ -16,6 +16,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-linux-limits.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-windows-case.patch
 cd ${WORKSPACE}/srcdir/NVTX.jl/deps
 mkdir -p ${libdir}
 ${CC} -std=c99 -O2 -fPIC -shared -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libjulia_nvtx_callbacks.${dlext} callbacks.c 
