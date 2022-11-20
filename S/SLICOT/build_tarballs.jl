@@ -22,7 +22,8 @@ script = raw"""
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
 # and https://github.com/JuliaPackaging/Yggdrasil/issues/4969
 if [[ "${target}" == *-mingw* ]]; then
-    rm -f ${libdir}/libblastrampoline-*.${dlext}
+    rm -f ${libdir}/libblastrampoline-*.dll
+    rm -f ${libdir}/libblastrampoline-*.dll.a
 fi
 
 cd $WORKSPACE/srcdir/SLICOT-Reference
