@@ -25,6 +25,8 @@ elif [[ "${target}" == *-mingw* ]]; then
     # Apply patch from https://github.com/msys2/MINGW-packages/blob/5dcff9fd637714972b113c6d3fbf6db17e9b707a/mingw-w64-gnuplot/01-gnuplot.patch
     atomic_patch -p1 ../patches/01-gnuplot.patch
     autoreconf -fiv
+    sed -i -e "s/BUILD_MINGW_TRUE='#'/BUILD_MINGW_TRUE=/g" ./configure
+    sed -i -e "s/BUILD_MINGW_FALSE=$/BUILD_MINGW_FALSE='#'/g" ./configure
 fi
 
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
