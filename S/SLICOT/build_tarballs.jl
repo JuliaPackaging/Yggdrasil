@@ -18,6 +18,13 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
+# and https://github.com/JuliaPackaging/Yggdrasil/issues/4969
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${libdir}/libblastrampoline-*.${dlext}
+fi
+
 cd $WORKSPACE/srcdir/SLICOT-Reference
 echo "cmake_minimum_required(VERSION 3.17)" >>CMakeLists.txt
 echo "project( cml )" >>CMakeLists.txt
