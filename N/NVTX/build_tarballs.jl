@@ -14,9 +14,14 @@ sources = [
 script = raw"""
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-linux-limits.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-windows-case.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-pragma-hidden.patch
 cd ${WORKSPACE}/srcdir/
 mkdir -p ${libdir}
-${CC} -std=c99 -O2 -fPIC -shared -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c 
+if [[ "${target}" == *-linux-* ]]; then
+    CFLAGS="-fPIC"
+    LIBS="-ldl"
+fi
+${CC} -std=c99 -O2 ${CFLAGS} -shared ${LIBS} -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c
 install_license ${WORKSPACE}/srcdir/NVTX/LICENSE.txt
 """
 
