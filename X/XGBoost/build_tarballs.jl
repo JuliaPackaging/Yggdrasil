@@ -63,12 +63,10 @@ install_license LICENSE
 platforms = expand_cxxstring_abis(supported_platforms())
 cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"))
 
-cuda_versions = [v"11.0", v"11.8"]
+cuda_versions = [v"11.0"]
 
 cuda_full_versions = Dict(
     v"11.0" => v"11.0.3",
-    v"11.4" => v"11.4.2",
-    v"11.8" => v"11.8"
 )
 
 augment_platform_block = CUDA.augment
@@ -99,6 +97,7 @@ for cuda_version in cuda_versions, platform in cuda_platforms
     cuda_deps = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
                                     version=cuda_full_versions[cuda_version])),
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
         RuntimeDependency(PackageSpec(name="NCCL_jll", version=v"2.15.1")),
     ]
 
