@@ -45,7 +45,5 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)), 
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
 
