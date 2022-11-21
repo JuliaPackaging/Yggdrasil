@@ -1,0 +1,11 @@
+--- a/include/openPMD/RecordComponent.tpp
++++ b/include/openPMD/RecordComponent.tpp
+@@ -4900,7 +4900,7 @@
+     for( auto const& dimensionSize : extent )
+         numPoints *= dimensionSize;
+ 
+-#if defined(__clang_major__) && __clang_major__ < 7
++#if defined(__clang_major__)
+     auto newData =
+         std::shared_ptr<T>(new T[numPoints], [](T *p) { delete[] p; });
+     loadChunk(newData, offset, extent);
