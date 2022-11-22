@@ -7,13 +7,21 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/MQLib/MQLib.git", "686a4fc52b9d2037b4a9ed55fbd178cc9e60ebc3")
+    GitSource("https://github.com/MQLib/MQLib.git",
+              "686a4fc52b9d2037b4a9ed55fbd178cc9e60ebc3"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/MQLib/
-make
+# https://github.com/MQLib/MQLib/pull/6
+atomic_patch -p1 ../patches/cxx-makefile.patch
+# https://github.com/MQLib/MQLib/pull/7
+atomic_patch -p1 ../patches/math-defines.patch
+# https://github.com/MQLib/MQLib/pull/8
+atomic_patch -p1 ../patches/include-limits.patch
+make -j${nproc}
 install -Dvm 0755 bin/MQLib "${bindir}/MQLib${exeext}"
 """
 
@@ -28,7 +36,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
