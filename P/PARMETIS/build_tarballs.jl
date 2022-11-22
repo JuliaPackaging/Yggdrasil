@@ -56,8 +56,8 @@ build_parmetis()
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
     -DMETIS_LIBRARY="${METIS_NAME}" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-L${METIS_PATH}/lib" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L${METIS_PATH}/lib"
+    -DCMAKE_SHARED_LINKER_FLAGS="-L${METIS_PATH}/lib -L${libdir}" \
+    -DCMAKE_EXE_LINKER_FLAGS="-L${METIS_PATH}/lib -L${libdir}"
 
     make -j${nproc}
     make install
