@@ -13,11 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/MQLib/
-
 make
-
-cp ${WORKSPACE}/srcdir/MQLib/bin/MQLib ${prefix}/MQLib
-cp ${WORKSPACE}/srcdir/MQLib/bin/MQLib.a ${prefix}/MQLib.a
+install -Dvm 0755 bin/MQLib "${bindir}/MQLib${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
