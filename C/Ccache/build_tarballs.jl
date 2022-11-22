@@ -42,4 +42,12 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               # GCC 8 is actually required for full support of std::filesystem, but that
+               # doesn't work with MinGW, but then with GCC 9 we run into
+               #     [ 19%] Built target libhiredis_static
+               #     /tmp/cchLGcal.s: Assembler messages:
+               #     /tmp/cchLGcal.s:3360: Error: invalid register for .seh_savexmm
+               #     /tmp/cchLGcal.s:3362: Error: invalid register for .seh_savexmm
+               # (<https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65782>), which brings us to
+               # GCC 10.
+               julia_compat="1.6", preferred_gcc_version=v"10")
