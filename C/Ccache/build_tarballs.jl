@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Ccache"
-version = v"4.2"
+upstream_version = "4.7.4"
+version = VersionNumber(upstream_version)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ccache/ccache/releases/download/v$(version.major).$(version.minor)/ccache-$(version.major).$(version.minor).tar.xz",
-                  "2f14b11888c39778c93814fc6843fc25ad60ff6ba4eeee3dff29a1bad67ba94f"),
+    ArchiveSource("https://github.com/ccache/ccache/releases/download/v$(upstream_version)/ccache-$(upstream_version).tar.xz",
+                  "df0c64d15d3efaf0b4f6837dd6b1467e40eeaaa807db25ce79c3a08a46a84e36"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,4 +41,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")
