@@ -72,8 +72,10 @@ if [[ ${nbits} == 64 ]]; then
   FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
-if [[ "${target}" == *mingw* ]]; then
+if [[ "${target}" == *mingw* && ${nbits} == 32 ]]; then
   BLAS_LAPACK="-L${libdir} -lopenblas"
+elif [[ "${target}" == *mingw* && ${nbits} == 64 ]]; then
+  BLAS_LAPACK="-L${libdir} -lopenblas64_"
 else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
