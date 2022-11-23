@@ -72,12 +72,18 @@ if [[ ${nbits} == 64 ]]; then
   FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
+if [[ "${target}" == *mingw* ]]; then
+  BLAS_LAPACK="-L${libdir} -lopenblas"
+else
+  BLAS_LAPACK="-L${libdir} -lblastrampoline"
+fi
+
 mkdir ../build
 cd ../build/
 # Above on the fly added CMake code builds shared library with specified LAPACK/BLAS
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DLAPACK_blas_LIBRARIES="-L${libdir} -lblastrampoline" \
+    -DLAPACK_blas_LIBRARIES="${BLAS_LAPACK}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}" \
     ..
@@ -96,21 +102,6 @@ install_license ../LICENSE
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 
-# The following was derived from #4770 (Pfapack)
-# https://github.com/JuliaPackaging/Yggdrasil/pull/4770
-# Since we need to link to libblastrampoline which has seen multiple
-# ABI-incompatible versions, we need to expand the julia versions we target
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-function set_julia_version(platforms::Vector{Platform}, julia_version::VersionNumber)
-    _platforms = deepcopy(platforms)
-    for p in _platforms
-        p["julia_version"] = string(julia_version)
-    end
-    return _platforms
-end
-expand_julia_versions(platforms::Vector{Platform}, julia_versions::Vector{VersionNumber}) =
-    vcat(set_julia_version.(Ref(platforms), julia_versions)...)
-platforms = expand_julia_versions(platforms, julia_versions)
 
 # The products that we will ensure are always built
 products = [
@@ -119,10 +110,20 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(get_addable_spec("libblastrampoline_jll", v"3.0.4+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.7.0", platforms)),
-    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.1+1"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.8.0", platforms)),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"), platforms=filter(Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    julia_compat="1.8"
+)
