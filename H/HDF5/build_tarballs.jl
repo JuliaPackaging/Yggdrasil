@@ -5,8 +5,8 @@ name = "HDF5"
 version = v"1.12.0"
 
 sources = [
-    GitSource("https://github.com/steven-varga/hdf5.git",
-              "b49b22d6882d97b1ec01d482822955bd8e923203"),
+    GitSource("https://github.com/HDFGroup/hdf5.git",
+              "eac2cd54e209cfa9556174f3fc1a592533aa64ad"),
 ]
 
 # Bash recipe for building across all platforms
@@ -41,7 +41,7 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
