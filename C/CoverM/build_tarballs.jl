@@ -16,8 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/CoverM/
 cargo build --release
-mkdir -p "${bindir}"
-cp "target/${rust_target}/release/coverm${exeext}" "${bindir}/."
+install -Dvm 0755 "target/${rust_target}/release/coverm${exeext}" "${bindir}/coverm${exeext}"
 install_license LICENCE.txt
 """
 
