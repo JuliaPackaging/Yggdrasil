@@ -51,6 +51,7 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
