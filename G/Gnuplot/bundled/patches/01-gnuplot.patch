@@ -145,7 +145,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +# MINGW specific build section
 +if BUILD_MINGW
 +
-+AM_CPPFLAGS += -DHAVE_GDIPLUS -DHAVE_DWRITE -DHAVE_D2D -DHAVE_D2D11 -DHAVE_PRNTVPT -DWIN32
++AM_CPPFLAGS += -DHAVE_GDIPLUS -DHAVE_DWRITE -DHAVE_D2D -DWIN32
 +AM_CPPFLAGS += -O2 -pipe -DUNICODE -D_UNICODE -Wno-unused-function
 +AM_CPPFLAGS += -D_Windows -DHAVE_CONFIG_H
 +AM_CPPFLAGS += -D__USE_MINGW_ANSI_STDIO=1
@@ -160,7 +160,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +gnuplot_CPPFLAGS = $(AM_CPPFLAGS) -DPIPES -DWGP_CONSOLE
 +gnuplot_LDADD += -lkernel32 -lgdi32 -lwinspool -lcomdlg32 -lcomctl32 \
 + -ladvapi32 -lshell32 -lmsimg32 -lgdiplus -lshlwapi -ld2d1 -ld3d11 -ldwrite \
-+ -lprntvpt -lwindowscodecs -lole32 -lgobject-2.0
++ -lwindowscodecs -lole32 -lgobject-2.0
 +gnuplot_LDFLAGS = $(AM_LDFLAGS) -mconsole -municode
 +
  if BUILD_WXWIDGETS
