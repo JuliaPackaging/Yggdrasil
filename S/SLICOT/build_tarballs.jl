@@ -4,7 +4,10 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
 name = "SLICOT"
-version = v"5.8.0"
+
+# NOTE: upstream library version is v5.8 + apparently cosmetic commits  
+# patch number is added here to avoid poisoning the JLL version sequence
+version = v"5.8.1"
 
 # Collection of sources required to complete build
 # Note to maintainers: extracts from LAPACK are deprecated routines, so probably don't want
