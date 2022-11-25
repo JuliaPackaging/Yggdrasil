@@ -15,7 +15,7 @@ include("../common.jl")
 
 # We first download Rustup, and use that to install rust
 rustup_name = "RustStage1"
-rustup_version = v"1.25.1"
+rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
 version = v"1.65.0"
@@ -23,7 +23,7 @@ version = v"1.65.0"
 sources = [
     # We'll use rustup to install rust
     FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
-               "95427cb0592e32ed39c8bd522fe2a40a746ba07afb8149f91e936cddb4d6eeac"),
+               "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
 ]
 
 # Check if deploy flag is set
