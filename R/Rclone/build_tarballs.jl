@@ -8,7 +8,7 @@ version = v"1.60.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "b0037124c04fd1c31a1d9ae1c80e25555da3a22d7ab1ae714ed2c02247fbdac5")
+                  "51b8d39b8fd419868d91ed5d0d0a22fb80d943f3fd3bab645c5498a3ad8b3dd9")
 ]
 
 # Bash recipe for building across all platforms
