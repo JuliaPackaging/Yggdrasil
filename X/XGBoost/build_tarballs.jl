@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "XGBoost"
-version = v"1.7.0"
+version = v"1.7.1"
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","4bc59ef7c33061d17820137253d617b051a72d65"), 
+    GitSource("https://github.com/dmlc/xgboost.git","534c940a7ea50ab3b8a827546ac9908f859379f2"), 
     DirectorySource("./bundled"),
 ]
 

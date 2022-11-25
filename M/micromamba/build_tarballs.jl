@@ -3,28 +3,29 @@
 using BinaryBuilder
 
 name = "micromamba"
-version = v"0.25.1"
+version = v"1.0.0"
+build = "1"
 
 # Collection of sources required to build micromamba
 # These are actually just the conda packages for each platform
 sources = [
-    FileSource("https://micro.mamba.pm/api/micromamba/linux-64/$version",
-        "2d8ab91435ea75e4b76412795742b6a17ff25f6d7081a9411a1bc96688e1f7d1",
+    FileSource("https://conda.anaconda.org/conda-forge/linux-64/micromamba-$version-$build.tar.bz2",
+        "41bda425dd9c44b59cc35781c1b4031465c36648791e8598f7826f65ef09e387",
         filename="micromamba-x86_64-linux-gnu.tar.bz2"),
-    FileSource("https://micro.mamba.pm/api/micromamba/linux-aarch64/$version",
-        "069937fc13c42b3963f1bbe991ad921cdcd75f07771b9a6468c92b66d9b298f6",
+    FileSource("https://conda.anaconda.org/conda-forge/linux-aarch64/micromamba-$version-$build.tar.bz2",
+        "57934f137d326aaaebfd9788ddd0e112135d33b95a7dd3e9292517ce025b4d5a",
         filename="micromamba-aarch64-linux-gnu.tar.bz2"),
-    FileSource("https://micro.mamba.pm/api/micromamba/linux-ppc64le/$version",
-        "0f5be296570c93317ff22af8b586cf07bd4a96c5e30b323b53fa0970755c2c31",
+    FileSource("https://conda.anaconda.org/conda-forge/linux-ppc64le/micromamba-$version-$build.tar.bz2",
+        "196831fad6384fc7520ae2bf2eddaae6b3a256d80f607efb5eb1d97d3cc0c4e0",
         filename="micromamba-powerpc64le-linux-gnu.tar.bz2"),
-    FileSource("https://micro.mamba.pm/api/micromamba/osx-64/$version",
-        "bd80ed9cb39748a40ae7dfd124aa18e453bf4793e281daf687710c81272e8be1",
+    FileSource("https://conda.anaconda.org/conda-forge/osx-64/micromamba-$version-$build.tar.bz2",
+        "2141288a06b520c81724eb1fad2e99395133c7d64ca9c776ae8d6ccc7edfd8e0",
         filename="micromamba-x86_64-apple-darwin14.tar.bz2"),
-    FileSource("https://micro.mamba.pm/api/micromamba/osx-arm64/$version",
-        "b39fb2f9f2bed41c5ad885f41f49ba751a4ba5ee01ee96ca8293a84aa603d1b2",
+    FileSource("https://conda.anaconda.org/conda-forge/osx-arm64/micromamba-$version-$build.tar.bz2",
+        "ffb87b3923a01f22d299d21f8da2b57b0a22bf1be4f59f634f449ffa431d7d18",
         filename="micromamba-aarch64-apple-darwin20.tar.bz2"),
-    FileSource("https://micro.mamba.pm/api/micromamba/win-64/$version",
-        "ed3b12b747f05a630198d3a8a8f7120bde22ae9033cb62af95d6f3df57fe9b0c",
+    FileSource("https://conda.anaconda.org/conda-forge/win-64/micromamba-$version-$build.tar.bz2",
+        "e8b02c5b51eecb71953a460846f37acd6066eb3cef6cd3aebc60835048f37ad3",
         filename="micromamba-x86_64-w64-mingw32.tar.bz2"),
 ]
 
@@ -72,4 +73,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6", lazy_artifacts=true)

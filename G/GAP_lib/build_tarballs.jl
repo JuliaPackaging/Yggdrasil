@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP_lib"
 upstream_version = v"4.12.1"
-version = v"400.1201.100"
+version = v"400.1201.102"
 
 # Collection of sources required to complete build
 sources = [
@@ -31,11 +31,16 @@ sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
                   "86d24a1a2208d57822b9aed159b2d5c1306e1a800c6440c6a0d4566e65829c57";
                   unpack_target="pkg"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 mv ../pkg .
 

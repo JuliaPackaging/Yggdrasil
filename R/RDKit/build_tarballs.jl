@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.09.1"
+version = v"2022.09.2"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "dc16d0e160033ac215b574beed12a52d0b344fc5"),
+    GitSource("https://github.com/rdkit/rdkit.git", "bda55ac79856b1e67821d2e54ef0ba462a8df96b"),
     DirectorySource("./bundled"),
 ]
 
@@ -13,9 +13,6 @@ cd ${WORKSPACE}/srcdir/rdkit
 
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
-
-# seen in the conda-forge feedstock: https://github.com/conda-forge/rdkit-feedstock/blob/main/recipe/build.sh#L18
-atomic_patch -p1 ../patches/2022-09-1.patch
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then

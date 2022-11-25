@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # The version of this JLL is decoupled from the upstream version.

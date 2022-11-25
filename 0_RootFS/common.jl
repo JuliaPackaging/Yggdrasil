@@ -95,11 +95,11 @@ function upload_compiler_shard(repo, name, version, hash, archive_type; platform
     if archive_type == :unpacked
         # Note (Mosè): I'm not 100% sure this is always the correct platform, but looked
         # like the best option from what I could gather.  Note also that the logs tarball
-        # may not always exist (e.g. for RustToolchain), so eventually we may want to guard
-        # this with `if isfile(logs_filename)`.
+        # may not always exist (e.g. for RustToolchain), so we need to guard this with
+        # `isfile(logs_filename)`.
         p = isnothing(target) ? platform : target
         logs_filename = joinpath("products", "$(name)-logs.v$(version).$(triplet(p)).tar.gz")
-        BinaryBuilder.upload_to_github_releases(repo, tag, logs_filename)
+        isfile(logs_filename) && BinaryBuilder.upload_to_github_releases(repo, tag, logs_filename)
     end
 
     return [
