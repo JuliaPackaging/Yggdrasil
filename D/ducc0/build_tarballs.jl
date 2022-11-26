@@ -25,7 +25,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    CXXFLAGS="-mmacosx-version-min=10.14"
+    MACOSX_DEPLOYMENT_TARGET="10.14"
 fi
 
 cd $WORKSPACE/srcdir/ducc*/julia
