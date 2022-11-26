@@ -9,14 +9,12 @@ version = v"2.54.5"
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
                   "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
-atomic_patch -p1 ../patches/0001-Makefile.am-use-the-correct-EXEEXT-extension-for-the.patch
 autoreconf -fiv
 
 # On most platforms we have to use `${rust_target}` as `host`
