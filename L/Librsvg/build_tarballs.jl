@@ -17,6 +17,9 @@ cd $WORKSPACE/srcdir/librsvg-*/
 
 autoreconf -fiv
 
+# Delete misleading libtool files
+rm -vf ${prefix}/lib/*.la
+
 # On most platforms we have to use `${rust_target}` as `host`
 FLAGS=(--host=${rust_target})
 if [[ "${target}" == *-mingw* ]]; then
