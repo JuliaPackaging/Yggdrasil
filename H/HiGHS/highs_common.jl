@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.3.0"
+version = v"1.4.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "e5004072be62335eebe96149eabf3879d8d82635",
+        "b6d4b3dead77132567ccd6fee7c12532e382db08",
     ),
     DirectorySource("../bundled"),
 ]
@@ -21,8 +21,6 @@ platforms = supported_platforms()
 function build_script(; shared_libs::String)
     return "BUILD_SHARED=$(shared_libs)\n" * raw"""
 cd $WORKSPACE/srcdir/HiGHS
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/v1.3.0.patch
 
 mkdir -p build
 cd build
