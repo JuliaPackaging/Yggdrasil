@@ -11,7 +11,6 @@ sources = [
         "https://github.com/ERGO-Code/HiGHS.git",
         "b6d4b3dead77132567ccd6fee7c12532e382db08",
     ),
-    DirectorySource("../bundled"),
 ]
 
 # These are the platforms we will build for by default, unless further
