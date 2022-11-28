@@ -55,7 +55,9 @@ build_parmetis()
     -DMPI_LIBRARIES="${mpi_libraries}" \
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
-    -DMETIS_LIBRARY="${METIS_NAME}"
+    -DMETIS_LIBRARY="${METIS_NAME}" \
+    -DCMAKE_INSTALL_RPATH="${libdir}"
+    
     make -j${nproc}
     make install
 }
