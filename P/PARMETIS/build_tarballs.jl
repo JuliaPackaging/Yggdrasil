@@ -38,12 +38,12 @@ build_parmetis()
         PARMETIS_NAME=parmetis
         METIS_NAME=metis
         METIS_PATH="${prefix}"
-        R_PATH="\${ORIGIN}"
+        R_PATH='$ORIGIN'
     else
         METIS_NAME="metis_Int${1}_Real${2}"
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
-        R_PATH="\${ORIGIN}/../../../../"
+        R_PATH='$ORIGIN/../../../'
     fi
     mkdir -p ${PARMETIS_PREFIX}
     cmake .. \
