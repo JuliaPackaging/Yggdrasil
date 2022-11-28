@@ -38,10 +38,12 @@ build_parmetis()
         PARMETIS_NAME=parmetis
         METIS_NAME=metis
         METIS_PATH="${prefix}"
+        R_PATH="\${ORIGIN}"
     else
         METIS_NAME="metis_Int${1}_Real${2}"
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
+        R_PATH="\${ORIGIN}/../../../../"
     fi
     mkdir -p ${PARMETIS_PREFIX}
     cmake .. \
@@ -56,7 +58,7 @@ build_parmetis()
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
     -DMETIS_LIBRARY="${METIS_NAME}" \
-    -DCMAKE_INSTALL_RPATH="${libdir}"
+    -DCMAKE_INSTALL_RPATH=${R_PATH}
     
     make -j${nproc}
     make install
