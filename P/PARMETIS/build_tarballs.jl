@@ -43,7 +43,7 @@ build_parmetis()
         PARMETIS_NAME="par${METIS_NAME}"
         METIS_PATH="${libdir}/metis/${METIS_NAME}"
     fi
-    mkdir -p ${METIS_PATH}
+    mkdir -p ${PARMETIS_PREFIX}
     cmake .. \
     -DCMAKE_INSTALL_PREFIX=${PARMETIS_PREFIX} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -55,10 +55,7 @@ build_parmetis()
     -DMPI_LIBRARIES="${mpi_libraries}" \
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
-    -DMETIS_LIBRARY="${METIS_NAME}" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-L${METIS_PATH}/lib -L${libdir}" \
-    -DCMAKE_EXE_LINKER_FLAGS="-L${METIS_PATH}/lib -L${libdir}"
-
+    -DMETIS_LIBRARY="${METIS_NAME}"
     make -j${nproc}
     make install
 }
