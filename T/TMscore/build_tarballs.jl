@@ -7,13 +7,12 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("https://seq2fun.dcmb.med.umich.edu//TM-score/TMscore.cpp", "30274251f4123601af102cf6d4f1a9cc496878c1ae776702f554e2fc25658d7f"),
-    FileSource("https://www.boost.org/LICENSE_1_0.txt", "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566")
+    GitSource("https://github.com/cossio/TMscore.git", "3b7d30405c94df0eb55fe2510255145616a4bb46")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/TMscore/
 mkdir -p ${bindir}
 ${CXX} -O3 -lm -o ${bindir}/TMscore${exeext} TMscore.cpp
 install_license LICENSE_1_0.txt
