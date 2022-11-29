@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
 name = "JuliaNVTXCallbacks"
-version = v"0.1"
+version = v"0.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -10,7 +10,7 @@ sources = [
               "e170594ac7cf1dac584da473d4ca9301087090c1"), # v3.1.0
     DirectorySource("./bundled"),
     GitSource("https://github.com/simonbyrne/NVTX.jl",
-              "54c215bec0d2e71b43d6ccab5d57e9fb6dd9615f"),          
+              "b0da4d650c0b9ae1b138e10f35c5d102c41828ec"),          
 ]
 
 # Bash recipe for building across all platforms
