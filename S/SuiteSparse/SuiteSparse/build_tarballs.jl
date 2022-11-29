@@ -6,13 +6,9 @@ sources = [
     sources;
     DirectorySource("./bundled")
 ]
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
-
-# Apply Jameson's shlib patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
@@ -35,11 +31,13 @@ if [[ ${nbits} == 64 ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 fi
 
-FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
+#FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
 
 # Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
 #FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
 FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+
+export CMAKE_OPTIONS="-DBLA_VENDOR=${BLAS_NAME} -DALLOW_64BIT_BLAS=1"
 
 make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
 

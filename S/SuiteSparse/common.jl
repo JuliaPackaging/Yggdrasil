@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
-version = v"5.10.1"
+version = v"6.0.1"
 
 # Collection of sources required to build SuiteSparse
 sources = [
     GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
-              "538273cfd53720a10e34a3d80d3779b607e1ac26"),
+              "4faadddd6d373e1b85f567dc034e9eb9733247c7"),
 ]
 
 # We enable experimental platforms as this is a core Julia dependency
