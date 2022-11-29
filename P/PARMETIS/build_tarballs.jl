@@ -93,7 +93,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("METIS_jll", v"5.1.2"),
+    Dependency("METIS_jll"; compat="5.1.2"),
 ]
 append!(dependencies, platform_dependencies)
 
