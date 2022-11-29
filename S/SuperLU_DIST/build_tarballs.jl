@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.0.1"
+version = v"8.0.2"
 superlu_dist_version = v"8.0.0"
 
 # Collection of sources required to complete build
@@ -55,7 +55,7 @@ build_superlu_dist()
         -Denable_single=ON \
         -Denable_double=ON \
         -Denable_complex16=ON \
-        -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+        -DTPL_BLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
         ${PLATFLAGS} \
         -DCMAKE_C_FLAGS="-std=c99" \
         -DXSDK_INDEX_SIZE=${INT} \
@@ -99,8 +99,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat=),
+    Dependency("libblastrampoline_jll"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.6"),
     Dependency("METIS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
