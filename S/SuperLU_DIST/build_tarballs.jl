@@ -24,23 +24,27 @@ if [[ "${target}" == *-mingw* ]]; then
     # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
-else
-    PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
 
 build_superlu_dist()
 {
     if [[ "${1}" == "Int64" ]]; then
         INT=64
+        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
     else
         INT=32
+        METIS_PATH="${libdir}/libmetis.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
     fi
-    SUPERLU_PREFIX=${libdir}/superlu_dist/Int${INT}
-    mkdir -p ${SUPERLU_PREFIX}
+    if [[ "${taret}" != *-mingw* ]]; then
+        PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
+    fi
+
     mkdir build-${INT}
     pushd build-${INT}
     cmake \
-        -DCMAKE_INSTALL_PREFIX=${SUPERLU_PREFIX} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
@@ -96,7 +100,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat=),
     Dependency("METIS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
