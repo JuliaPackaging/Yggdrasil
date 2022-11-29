@@ -10,7 +10,7 @@ sources = [
               "e170594ac7cf1dac584da473d4ca9301087090c1"), # v3.1.0
     DirectorySource("./bundled"),
     GitSource("https://github.com/simonbyrne/NVTX.jl",
-              "b0da4d650c0b9ae1b138e10f35c5d102c41828ec"),          
+              "11c27acd9de99b6914c331b767be60fc843e7065"),          
 ]
 
 # Bash recipe for building across all platforms
