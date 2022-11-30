@@ -82,6 +82,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     script = raw"""
     apk add coreutils libuv-dev utf8proc
 
+    # WORKAROUND for mingw: remove the fake `uname` binary, it throws off the
+    # Julia buildsystem
+    if [[ "${target}" == *mingw* ]]; then
+      rm -f /usr/bin/uname
+    fi
+
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
     # use the Julia version to determine the directory from which to read patches
