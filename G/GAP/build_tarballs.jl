@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.12.1"
-version = v"400.1200.101"
+version = v"400.1200.102"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
@@ -137,6 +137,11 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
 
-    sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
-    ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
+    try
+        cglobal(:jl_reinit_foreign_type)
+    catch
+        # no jl_reinit_foreign_type -> fall back to old behavior
+        sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
+        ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
+    end
 """)
