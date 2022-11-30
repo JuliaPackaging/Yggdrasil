@@ -31,10 +31,10 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_cxxstring_abis([
+platforms = [
     Platform("i686", "Linux"),
     Platform("x86_64", "Linux"),
-])
+]
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
