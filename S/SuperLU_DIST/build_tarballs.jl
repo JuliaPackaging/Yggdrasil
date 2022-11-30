@@ -24,6 +24,9 @@ if [[ "${target}" == *-mingw* ]]; then
     # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
+    BLAS="libopenblas"
+else
+    BLAS="libblastrampoline"
 fi
 
 build_superlu_dist()
@@ -37,7 +40,7 @@ build_superlu_dist()
         METIS_PATH="${libdir}/libmetis.${dlext}"
         PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
     fi
-    if [[ "${taret}" != *-mingw* ]]; then
+    if [[ "${target}" != *-mingw* ]]; then
         PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
     fi
 
@@ -55,7 +58,7 @@ build_superlu_dist()
         -Denable_single=ON \
         -Denable_double=ON \
         -Denable_complex16=ON \
-        -DTPL_BLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+        -DTPL_BLAS_LIBRARIES="${libdir}/${BLAS}.${dlext}" \
         ${PLATFLAGS} \
         -DCMAKE_C_FLAGS="-std=c99" \
         -DXSDK_INDEX_SIZE=${INT} \
@@ -100,6 +103,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.6"),
     Dependency("METIS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
