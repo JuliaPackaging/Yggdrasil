@@ -21,6 +21,7 @@ autoreconf -fvi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
+    --disable-openmp \
     --without-binutils \
     --without-dyninst \
     --without-mpi \
@@ -38,7 +39,6 @@ platforms = [
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
-    LibraryProduct("libomptrace", :libomptrace),
     LibraryProduct("libnanostrace", :libnanostrace),
 ]
 
