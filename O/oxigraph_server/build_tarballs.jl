@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.3.6"
+version = v"0.3.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxigraph/oxigraph.git", "49fd92a6ea292e7261201037791d8eff51bcc1b8"),
+    GitSource("https://github.com/oxigraph/oxigraph.git", "825b330132ebfc0f1669b4c2ec2529a96a9a11dd"),
 ]
 
 # Bash recipe for building across all platforms
