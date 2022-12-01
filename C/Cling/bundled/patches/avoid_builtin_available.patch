@@ -1,0 +1,13 @@
+diff --git a/lib/Support/Unix/Path.inc b/lib/Support/Unix/Path.inc
+index 27c8a1bc9b7..11f2cc518d0 100644
+--- a/lib/Support/Unix/Path.inc
++++ b/lib/Support/Unix/Path.inc
+@@ -1201,7 +1201,7 @@ namespace fs {
+ std::error_code copy_file(const Twine &From, const Twine &To) {
+   uint32_t Flag = COPYFILE_DATA;
+ #if __has_builtin(__builtin_available) && defined(COPYFILE_CLONE)
+-  if (__builtin_available(macos 10.12, *)) {
++  {
+     bool IsSymlink;
+     if (std::error_code Error = is_symlink_file(From, IsSymlink))
+       return Error;
