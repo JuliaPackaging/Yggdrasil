@@ -143,9 +143,9 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
  # corgraph.asm header.mac hrcgraph.asm pcgraph.asm lineproc.mac
  
 +# MINGW specific build section
-+if BUILD_MINGW
 +
-+AM_CPPFLAGS += -DHAVE_GDIPLUS -DHAVE_DWRITE -DHAVE_D2D -DWIN32
++
++AM_CPPFLAGS += -DHAVE_GDIPLUS -DHAVE_DWRITE -DWIN32
 +AM_CPPFLAGS += -O2 -pipe -DUNICODE -D_UNICODE -Wno-unused-function
 +AM_CPPFLAGS += -D_Windows -DHAVE_CONFIG_H
 +AM_CPPFLAGS += -D__USE_MINGW_ANSI_STDIO=1
@@ -154,7 +154,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +AM_LDFLAGS = 
 +
 +gnuplot_SOURCES += win/winmain.c win/wgnuplib.c win/wgraph.c win/wprinter.c \
-+win/wpause.c win/wgdiplus.cpp win/wd2d.cpp win/wtext.h plot.h\
++win/wpause.c win/wgdiplus.cpp win/wtext.h plot.h\
 +gpexecute.c
 +
 +gnuplot_CPPFLAGS = $(AM_CPPFLAGS) -DPIPES -DWGP_CONSOLE
@@ -181,7 +181,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +wgnuplot_SOURCES += win/wtext.c win/screenbuf.c win/wmenu.c win/wredirect.cpp
 +wgnuplot_CPPFLAGS = $(AM_CPPFLAGS) -DPIPES
 +wgnuplot_LDADD = $(gnuplot_LDADD) wgplt_res.$(O)
-+wgnuplot_LDFLAGS = $(AM_LDFLAGS) -mwindows -municode
++wgnuplot_LDFLAGS = $(AM_LDFLAGS) -mwindows --enable-auto-import -municode
 +
 +#wgnuplot_pipes section
 +bin_PROGRAMS += wgnuplot_pipes
@@ -203,7 +203,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +	windres $(RCFLAGS) $< wgplt_res.$(O)
 +	echo wgplt_res.$(O)
 +
-+endif
++
 +
  endif
  
