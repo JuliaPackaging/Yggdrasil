@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
+
 name = "Torch"
 version = v"1.10.2"
 
@@ -252,9 +254,11 @@ dependencies = [
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
     Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
+    RuntimeDependency("CUDA_Runtime_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
-    julia_compat = "1.6")
+    julia_compat = "1.6",
+    augment_platform_block = CUDA.augment)
