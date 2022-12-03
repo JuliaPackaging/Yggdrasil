@@ -99,11 +99,8 @@ ninja -j${nproc} \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macOS"),
-    Platform("aarch64", "linux"; libc = "glibc")
-]
+platforms = supported_platforms(;
+            exclude=x->startswith(x.tags["arch"], r"arm|power"))
 
 
 # The products that we will ensure are always built
