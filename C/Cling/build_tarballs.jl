@@ -99,9 +99,22 @@ ninja -j${nproc} \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;
-            exclude=x->startswith(x.tags["arch"], r"arm|power"))
-
+platforms = supported_platforms(;exclude=x->
+    startswith(x.tags["arch"], r"arm|power") ||
+    Sys.isfreebsd(x) ||
+    Sys.iswindows(x) ||
+    x == Platform("aarch64", "macos"))
+    # FreeBSD build failed with:
+    #   libc.so.7: undefined reference to `__progname', `environ`
+    #
+    # Windows build failed with:
+    #   TCHAR.H, Shlwapi.h: No such file or directory
+    #
+    # aarch64 macOS failed with:
+    #   The C compiler is not able to compile a simple test program.
+    #
+    # Failed build Logs:
+    # https://dev.azure.com/JuliaPackaging/Yggdrasil/_build/results?buildId=23989&view=results
 
 # The products that we will ensure are always built
 products = [
