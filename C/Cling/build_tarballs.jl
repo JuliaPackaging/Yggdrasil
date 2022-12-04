@@ -115,6 +115,7 @@ platforms = supported_platforms(;exclude=x->
     #
     # Failed build Logs:
     # https://dev.azure.com/JuliaPackaging/Yggdrasil/_build/results?buildId=23989&view=results
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
