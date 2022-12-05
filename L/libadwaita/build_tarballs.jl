@@ -6,7 +6,7 @@ name = "libadwaita"
 version = v"1.2.0"
 
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/libadwaita/1.2/libadwaita-1.2.0.tar.xz",
+    ArchiveSource("https://download.gnome.org/sources/libadwaita/$(version.major).$(version.minor)/libadwaita-$(version).tar.xz",
                   "322f3e1be39ba67981d9fe7228a85818eccaa2ed0aa42bcafe263af881c6460c"),
 ]
 
