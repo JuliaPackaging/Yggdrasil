@@ -100,10 +100,10 @@ ninja -j${nproc} \
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;exclude=x->
-    startswith(x.tags["arch"], r"arm|power") ||
+    startswith(arch(p), r"arm|power") ||
     Sys.isfreebsd(x) ||
     Sys.iswindows(x) ||
-    x == Platform("aarch64", "macos"))
+    (Sys.isapple(x) && arch(p) == "aarch64"))
     # FreeBSD build failed with:
     #   libc.so.7: undefined reference to `__progname', `environ`
     #
