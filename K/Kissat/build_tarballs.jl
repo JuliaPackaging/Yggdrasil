@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Kissat"
-version = v"2.0.0"
+version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/arminbiere/kissat.git", "00a3a338e3433b54478efb0f7be0a694b01f0eb9"),
+    GitSource("https://github.com/arminbiere/kissat.git", "97917ddf2b12adc6f63c7b2a5a403a1ee7d81836"),
 ]
 
 # Bash recipe for building across all platforms
