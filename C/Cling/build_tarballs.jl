@@ -100,7 +100,7 @@ ninja -j${nproc} \
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;exclude=x->
-    startswith(arch(p), r"arm|power") ||
+    startswith(arch(x), r"arm|power") ||
     Sys.isfreebsd(x) ||
     Sys.iswindows(x) ||
     (Sys.isapple(x) && arch(x) == "aarch64"))
