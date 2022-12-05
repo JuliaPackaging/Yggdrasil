@@ -103,7 +103,7 @@ platforms = supported_platforms(;exclude=x->
     startswith(arch(p), r"arm|power") ||
     Sys.isfreebsd(x) ||
     Sys.iswindows(x) ||
-    (Sys.isapple(x) && arch(p) == "aarch64"))
+    (Sys.isapple(x) && arch(x) == "aarch64"))
     # FreeBSD build failed with:
     #   libc.so.7: undefined reference to `__progname', `environ`
     #
