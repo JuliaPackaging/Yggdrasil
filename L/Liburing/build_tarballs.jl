@@ -9,7 +9,7 @@ version = v"2.4.0"
 sources = [
     # PR743: https://github.com/axboe/liburing/pull/743
     GitSource("https://github.com/cmazakas/liburing.git",
-              "9d2ee254e7411b7e683a9a5d3b61f9b3400747ee"),
+              "9e2890d35e9677d8cfc7ac66cdb2d97c48a0b5a2"),
 
     # FIXME revert to axboe/master when PR is merged...
     # GitSource("https://github.com/axboe/liburing.git", "??"),
