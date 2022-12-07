@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version_string = "22.07.1.14"
+version_string = "22.11.0.13"
 version = let
     maj, min, patch, extra = parse.(Int, split(version_string, '.'))
     VersionNumber(maj, min, patch * 100 + extra)
@@ -15,13 +15,13 @@ end
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-x86_64/cuquantum-linux-x86_64-$(version_string)-archive.tar.xz",
-                      "4c4931096498451593ad553b6cb7a107bb6d6cedea65c80d5376d0cfbb647f8e")],
+                      "c02f20d4ece8f94c5e29f26613c520664cb888788366b0e2ddbba366e08ceba9")],
     Platform("powerpc64le", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-ppc64le/cuquantum-linux-ppc64le-$(version_string)-archive.tar.xz",
-                      "2d35dba3c739e8de51591bcd2d7edf1a3c9995850af6525ae08e9b5c3798cf9a")],
+                      "6432abc24269b750e2049b32f0ad9d9f573c90af6fd3505434999d0217445d46")],
     Platform("aarch64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cuquantum/redist/cuquantum/linux-sbsa/cuquantum-linux-sbsa-$(version_string)-archive.tar.xz",
-                      "0c8fb14bf8916170e15a2ae7cfa950e23af13c9cb0915bad88d754221ad60116")],
+                      "85d8df2e2fd6cb55311ac69e792dfaae87931d399898fefdcbb4773d606ff7e9")],
 )
 
 # Bash recipe for building across all platforms
