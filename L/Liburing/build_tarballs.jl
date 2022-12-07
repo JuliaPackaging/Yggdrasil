@@ -7,12 +7,7 @@ version = v"2.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    # PR743: https://github.com/axboe/liburing/pull/743
-    GitSource("https://github.com/cmazakas/liburing.git",
-              "9e2890d35e9677d8cfc7ac66cdb2d97c48a0b5a2"),
-
-    # FIXME revert to axboe/master when PR is merged...
-    # GitSource("https://github.com/axboe/liburing.git", "??"),
+    GitSource("https://github.com/axboe/liburing.git", "8699273dee7b7f736144e2554bc32746f626f786"),
 ]
 
 # Bash recipe for building across all platforms
