@@ -9,9 +9,6 @@ sources = [
 ]
 
 script = raw"""
-# FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
-ln -sf $(which uname) /usr/bin/uname
-
 cd ${WORKSPACE}/srcdir/binutils-*/
 
 ./configure --prefix=${prefix} \
