@@ -14,11 +14,10 @@ ln -sf $(which uname) /usr/bin/uname
 
 cd ${WORKSPACE}/srcdir/binutils-*/
 
-update_configure_scripts
-
 ./configure --prefix=${prefix} \
     --target=${target} \
-    --host=${MACHTYPE} \
+    --build=${MACHTYPE} \
+    --host=${target} \
     --disable-dependency-tracking \
     --enable-deterministic-archives \
     --disable-werror \
@@ -27,9 +26,15 @@ update_configure_scripts
     --disable-gas \
     --disable-gold \
     --disable-ld \
+    --enable-install-libbfd \
+    --enable-install-libctf \
+    --enable-install-libiberty \
     --enable-plugins \
     --enable-targets=${target} \
-    --disable-nls
+    --disable-nls \
+    --enable-64-bit-bfd \
+    --disable-static \
+    --enable-shared
 
 make -j${nproc}
 make install
@@ -66,9 +71,12 @@ products = [
     ExecutableProduct("objdump", :objdump),
     ExecutableProduct("ranlib", :ranlib),
     ExecutableProduct("readelf", :readelf),
-    ExecutableProduct(Dict("binnames" => ["size"], "variable_name" => "size", "dir_path" => nothing)),
+    ExecutableProduct("size", :binutils_size),
     ExecutableProduct("strings", :strings),
-    ExecutableProduct(Dict("binnames" => ["strip"], "variable_name" => "strip", "dir_path" => nothing)),
+    ExecutableProduct("strip", :binutils_strip),
+    LibraryProduct("libbfd", :libbfd),
+    LibraryProduct("libctf", :libctf),
+    LibraryProduct("libopcodes", :libopcodes),
 ]
 
 dependencies = []
