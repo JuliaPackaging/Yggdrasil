@@ -35,18 +35,6 @@ cd ${WORKSPACE}/srcdir/binutils-*/
 
 make -j${nproc}
 make install
-
-# Finally, create a bunch of symlinks stripping out the target so that
-# things like `nm` "just work", as long as we've got our path set properly.
-# NOTE: In 'x86_64-linux-musl' binaries are already stripped
-if [ ${target} != "x86_64-linux-musl" ]; then
-    for f in ${prefix}/bin/${target}-*; do
-        fbase=$(basename $f)
-        if [ ! -f ${prefix}/bin/${fbase#${target}-} ]; then
-            ln -s $fbase ${prefix}/bin/${fbase#${target}-}
-        fi
-    done
-fi
 """
 
 platforms = supported_platforms(; exclude=!Sys.islinux)
