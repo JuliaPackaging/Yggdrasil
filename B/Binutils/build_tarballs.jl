@@ -52,7 +52,7 @@ if [ ${target} != "x86_64-linux-musl" ]; then
 fi
 """
 
-platforms = supported_platforms(; exclude=x -> os(x) != "linux")
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
