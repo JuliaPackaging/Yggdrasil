@@ -4,7 +4,7 @@ name = "Binutils"
 version = v"2.39"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.39.tar.xz", "645c25f563b8adc0a81dbd6a41cffbf4d37083a382e02d5d3df4f65c09516d00"),
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz", "645c25f563b8adc0a81dbd6a41cffbf4d37083a382e02d5d3df4f65c09516d00"),
     DirectorySource("$(@__DIR__)/bundled"),
 ]
 
