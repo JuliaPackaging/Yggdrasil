@@ -15,15 +15,31 @@
 
 using BinaryBuilder
 
-HELICS_VERSION = v"2.8.1"
-HELICS_SHA = "9485091fb1bf5d0dd3b21a2641dd78051bbf5374cd823425e458053abafdfa1f"
+HELICS_VERSION = v"3.1.2"
+HELICS_SHA = "83ca23e8d313672c738d0251d0b316e5754c6d864dbe427ab6dbb3d270e7c2b0"
 
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    export CXXFLAGS="-mmacosx-version-min=10.15"
+    export CFLAGS="-mmacosx-version-min=10.15"
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # While waiting for https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193 to be merged
+    export CXXFLAGS="-mmacosx-version-min=11.0"
+fi
+
 cd $WORKSPACE/srcdir
 
 mkdir build
@@ -39,11 +55,18 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-products = [
-    LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
-]
+products = if HELICS_VERSION < v"3.0.0"
+    [
+        LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
+    ]
+else
+    [
+        LibraryProduct("libhelics", :libhelics),
+    ]
+end
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
+
+platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.isfreebsd))
 
 dependencies = [
     Dependency("ZeroMQ_jll"),
@@ -60,6 +83,6 @@ build_tarballs(
     platforms,
     products,
     dependencies,
-    ; preferred_gcc_version=v"7",
+    ; preferred_gcc_version=v"8",
     julia_compat="1.6",
 )
