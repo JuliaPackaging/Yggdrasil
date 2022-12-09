@@ -24,7 +24,6 @@ install_license COPYING
 
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-            --enable-shared --enable-dynamic \
             --disable-criu # missing JLL
 make -j${nproc}
 make install
@@ -43,8 +42,7 @@ end
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("crun", :crun),
-    LibraryProduct("libcrun", :libcrun)
+    ExecutableProduct("crun", :crun)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -61,4 +59,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", dont_dlopen=true)
+               julia_compat="1.6", preferred_gcc_version=v"7")
