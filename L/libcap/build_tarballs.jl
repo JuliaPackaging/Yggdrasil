@@ -18,15 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libcap-*/
 
-# GNU (not musl) 64-bit archs put their loader in `/lib64`
-if [[ ${target} == *gnu* ]] && [[ ${nbits} == 64 ]]; then
-    LOADER_DIR=lib64
-else
-    LOADER_DIR=lib
-fi
-
 make -j${nproc} BUILD_CC=${BUILD_CC} COPTS="-O2 -std=c99"
-make install DESTDIR=${prefix} prefix=/ lib=${LOADER_DIR} RAISE_SETFCAP=no
+make install DESTDIR=${prefix} prefix=/ lib=lib
 """
 
 # These are the platforms we will build for by default, unless further
