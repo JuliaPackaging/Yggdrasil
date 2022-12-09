@@ -27,17 +27,13 @@ sources = [
 
 script = raw"""
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    export CXXFLAGS="-mmacosx-version-min=10.15"
-    export CFLAGS="-mmacosx-version-min=10.15"
+    # Install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
-elif [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # While waiting for https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193 to be merged
-    export CXXFLAGS="-mmacosx-version-min=11.0"
 fi
 
 cd $WORKSPACE/srcdir
