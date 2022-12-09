@@ -37,7 +37,7 @@ make -j${nproc}
 make install
 """
 
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; experimental=true)
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
