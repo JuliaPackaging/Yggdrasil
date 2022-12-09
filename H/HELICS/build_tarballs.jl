@@ -24,6 +24,10 @@ sources = [
 ]
 
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+fi
+
 cd $WORKSPACE/srcdir
 
 cmake -B build \
