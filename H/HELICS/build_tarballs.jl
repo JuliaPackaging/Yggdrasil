@@ -47,7 +47,7 @@ products = [
 ]
 
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.isfreebsd))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 dependencies = [
     Dependency("ZeroMQ_jll"),
