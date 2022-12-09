@@ -42,15 +42,9 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-products = if HELICS_VERSION < v"3.0.0"
-    [
-        LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
-    ]
-else
-    [
-        LibraryProduct("libhelics", :libhelics),
-    ]
-end
+products = [
+    LibraryProduct("libhelics", :libhelics),
+]
 
 
 platforms = expand_cxxstring_abis(supported_platforms(exclude=Sys.isfreebsd))
