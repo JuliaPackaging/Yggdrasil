@@ -28,6 +28,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
+echo "sysroot = ${sysroot}"
+echo "our sysroot = /opt/${target}/${target}/sys-root/"
+
 cd $WORKSPACE/srcdir
 
 cmake -B build \
