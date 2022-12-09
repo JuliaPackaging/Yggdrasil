@@ -21,15 +21,20 @@ HELICS_SHA = "b04013969fc02dc36c697c328e6f50a0ac8dbdaf3d3e69870cd6e6ebeb374286"
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
-
-echo "sysroot = ${sysroot}"
-echo "our sysroot = /opt/${target}/${target}/sys-root/"
 
 cd $WORKSPACE/srcdir
 
