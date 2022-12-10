@@ -1,50 +1,62 @@
-using BinaryBuilder
+using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Qemu"
-version = v"6.2.0"
+version = v"7.1.0"
 
 # Collection of sources required to build libffi
 sources = [
-    ArchiveSource("https://download.qemu.org/qemu-6.2.0.tar.xz",
-                  "68e15d8e45ac56326e0b9a4afa8b49a3dfe8aba3488221d098c84698bca65b45"),
+    ArchiveSource("https://download.qemu.org/qemu-$(version).tar.xz",
+                  "a0634e536bded57cf38ec8a751adb124b89c776fe0846f21ab6c6728f1cbbbe6"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qemu-*
+install_license COPYING
 
-# Patch out usage of MADV_NOHUGEPAGE which does not exist in glibc 2.12.X
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
+# check if we need to use a more recent glibc
+if [[ -f "$prefix/usr/include/sched.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
 
-# Patch to include `falloc` header in `strace.c`
+# include `falloc` header in `strace.c` (requires glibc 2.25)
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 
 if [[ "${target}" == *-*-musl ]]; then
-    # Patch to fix messy header situation on musl
+    # fix messy header situation on musl
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
+
+    # include kernel headers for a definition of speculation control prctls (musl 1.1.20)
+    sed -i 's/#include <sys\/prctl.h>/#include <linux\/prctl.h>/g' linux-user/syscall.c
 fi
 
-# Patch to disable tests
+# disable tests
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
 
-# Patch to properly link to rt
+# properly link to rt
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_link_rt.patch"
 
-## Patch in adapter for `clock_gettime()` on macOS 10.12-
+# hacks for macOS
+## adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
-#
-## Patch to fix pointer mismatch between `size_t` and `uint64_t`
+## disable adding the icon to the binary
+#echo '#!/bin/true ' > /usr/bin/Rez
+#echo '#!/bin/true ' > /usr/bin/SetFile
+#chmod +x /usr/bin/Rez
+#chmod +x /usr/bin/SetFile
+
+## fix pointer mismatch between `size_t` and `uint64_t`
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_size_uint64.patch"
 
 # Configure, ignoring some warnings that we don't need, etc...
-./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include -Wno-unused-result" --disable-cocoa --prefix=$prefix
+./configure --prefix=$prefix --host-cc="${HOSTCC}" \
+    --extra-cflags="-I${prefix}/include -Wno-unused-result" \
+    --disable-cocoa
 
-echo '#!/bin/true ' > /usr/bin/Rez
-echo '#!/bin/true ' > /usr/bin/SetFile
-chmod +x /usr/bin/Rez
-chmod +x /usr/bin/SetFile
-make -j${nproc} || true
+make -j${nproc}
+
 make install
 """
 
@@ -56,6 +68,11 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
 ]
 platforms = expand_cxxstring_abis(platforms)
+
+# some platforms need a newer glibc, because the default one is too old
+glibc_platforms = filter(platforms) do p
+    libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
+end
 
 # The products that we will ensure are always built
 products = [
@@ -140,7 +157,12 @@ dependencies = [
     Dependency("PCRE_jll"),
     BuildDependency("Gettext_jll"),
     Dependency("libcap_jll"),
+
+    # qemu needs glibc >=2.14 for CLOCK_BOOTTIME
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                    platforms=glibc_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")
