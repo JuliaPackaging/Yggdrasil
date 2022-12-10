@@ -22,7 +22,7 @@ sources = [
 ]
 
 w64_script = raw"""
-cd ${target}
+cd ${target}/*-dist
 mkdir -p ${bindir}
 mv lib/*.dll ${bindir}/
 mv lib ${prefix}/
@@ -31,7 +31,7 @@ install_license /LICENSE.md
 """
 
 mac_script = raw"""
-cd ${target}
+cd ${target}/*-dist
 mv * ${prefix}/
 cd ../jlnode-*
 install_license ./LICENSE.md
