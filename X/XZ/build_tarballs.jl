@@ -54,6 +54,8 @@ products = [
     ExecutableProduct("xz", :xz),
     LibraryProduct("liblzma", :liblzma),
     ExecutableProduct("lzmadec", :lzmadec),
+    # The static library is needed by libunwind
+    FileProduct("lib/liblzma.a", :liblzma_a),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -62,4 +64,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
