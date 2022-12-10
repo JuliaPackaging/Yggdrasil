@@ -22,6 +22,11 @@ fi
 cd crun
 install_license COPYING
 
+# replace certain glibc includes by direct linux kernel includes.
+# this is to support newer features, like CLONE_NEWCGROUP, without bumping glibc further.
+# we could do this for O_PATH too, but systemd_jll uses glibc 2.19 already, so don't bother.
+find . -name '*.c' -exec sed -i 's/#include <sched.h>/#include <linux\/sched.h>/g' {} \;
+
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
             --disable-criu # missing JLL
