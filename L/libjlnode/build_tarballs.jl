@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libjlnode"
-version = v"16.1.0"
+version = v"18.0.0"
 
 # Collection of sources required to complete build
 sources = [
