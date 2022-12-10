@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/xz-*
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
-if [[ ${COMPILER_TARGET} != *-gnu* ]]; then
+if [[ ${target} != *-gnu* ]]; then
     ./configure ${BUILD_FLAGS[@]}
     make -j${nproc}
     make install
