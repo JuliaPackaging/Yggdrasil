@@ -26,14 +26,14 @@ cd ${target}/*-dist
 mkdir -p ${bindir}
 mv lib/*.dll ${bindir}/
 mv lib ${prefix}/
-cd ../jlnode-*
+cd ../../jlnode-*
 install_license /LICENSE.md
 """
 
 mac_script = raw"""
 cd ${target}/*-dist
 mv * ${prefix}/
-cd ../jlnode-*
+cd ../../jlnode-*
 install_license ./LICENSE.md
 """
 
