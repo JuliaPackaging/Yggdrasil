@@ -20,6 +20,8 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 elif [[ "${target}" == *-mingw* ]]; then
+    # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform"). These come from CompilerSupportLibraries_jll:
+    rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
     # Apply patch from https://github.com/msys2/MINGW-packages/blob/5dcff9fd637714972b113c6d3fbf6db17e9b707a/mingw-w64-gnuplot/01-gnuplot.patch
     atomic_patch -p1 ../patches/01-gnuplot.patch
     autoreconf -fiv
@@ -27,7 +29,7 @@ fi
 
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
 export LDFLAGS="-liconv"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 cd src
 make -j${nproc}
 make install
