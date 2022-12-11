@@ -47,10 +47,6 @@ elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
