@@ -35,6 +35,7 @@ atomic_patch -p1 ../patches/utimensat-macos.patch
 mkdir build_glib && cd build_glib
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --default-library both \
     --buildtype=release \
     -Dman=false \
     "${MESON_FLAGS[@]}" \
