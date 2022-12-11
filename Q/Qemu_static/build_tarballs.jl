@@ -26,14 +26,6 @@ fi
 # include `falloc` header in `strace.c` (requires glibc 2.25)
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 
-if [[ "${target}" == *-*-musl ]]; then
-    # fix messy header situation on musl
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
-
-    # include kernel headers for a definition of speculation control prctls (musl 1.1.20)
-    sed -i 's/#include <sys\/prctl.h>/#include <linux\/prctl.h>/g' linux-user/syscall.c
-fi
-
 # disable tests
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
 
@@ -43,7 +35,13 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
 # recurse on execve
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_execve.patch"
 
-./configure --prefix=$prefix --host-cc="${HOSTCC}" \
+# XXX: qemu uses meson, but uses a complex configure script to invoke it,
+#      so we can't just set --cross-file directly. instead, we need to set
+#      --cross-prefix to convince it's cross compiling, but that then requires
+#      specific binaries to be present there
+cross_prefix=$(dirname $(which gcc))
+ln -s $(which pkg-config) $cross_prefix
+./configure --prefix=$prefix --cross-prefix="$cross_prefix/" \
     --extra-cflags="-I${prefix}/include -Wno-unused-result" \
     --target-list="aarch64-linux-user ppc64le-linux-user i386-linux-user x86_64-linux-user arm-linux-user" \
     --static
@@ -55,11 +53,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-]
+platforms = supported_platforms()
+filter!(Sys.islinux, platforms)              # we're using linux user-mode emulation
+filter!(p -> libc(p) == "glibc", platforms)  # binaries are statically linked,
+                                             # so why bother with musl
 platforms = expand_cxxstring_abis(platforms)
 
 # some platforms need a newer glibc, because the default one is too old
