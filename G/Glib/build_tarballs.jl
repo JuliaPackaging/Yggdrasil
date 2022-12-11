@@ -18,12 +18,10 @@ install_license COPYING
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
 
-if [[ "${target}" == *-freebsd* ]]; then
-    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
-    # complain if this symbol is used in the built library, even if this won't
-    # be a problem at runtim.  This flag allows having undefined symbols.
-    MESON_FLAGS=(-Db_lundef=false)
+# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
+atomic_patch -p1 ../patches/utimensat-macos.patch
 
+if [[ "${target}" == *-freebsd* ]]; then
     # Adapt patch relative to `xattr` from
     # http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/glib2/patches/patch-meson.build?rev=1.2&content-type=text/x-cvsweb-markup.
     # Quoting the comment:
@@ -32,17 +30,26 @@ if [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
 
-# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
-atomic_patch -p1 ../patches/utimensat-macos.patch
-
 mkdir build_glib && cd build_glib
 
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    --default-library both \
-    --buildtype=release \
-    -Dman=false \
-    "${MESON_FLAGS[@]}" \
-    ..
+MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}")
+MESON_FLAGS+=(--buildtype=release)
+MESON_FLAGS+=(-Dman=false)
+
+if [[ "${target}" == *-freebsd* ]]; then
+    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
+    # complain if this symbol is used in the built library, even if this won't
+    # be a problem at runtim.  This flag allows having undefined symbols.
+    MESON_FLAGS+=(-Db_lundef=false)
+fi
+
+if [[ "${target}" != *-mingw* ]]; then
+    # on Windows, we can't build both static and shared libraries at the same time,
+    # so stick to the shared one until we have a need for a static build
+    MESON_FLAGS+=(--default-library both)
+fi
+
+meson "${MESON_FLAGS[@]}" ..
 
 # Meson beautifully forces thin archives, without checking whether the dynamic linker
 # actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
