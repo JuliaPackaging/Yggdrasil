@@ -22,18 +22,18 @@ using BinaryBuilder, Pkg
 #
 
 # WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
+# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.1"
+version_offset = v"0.0.2"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "e143df4b0f19d2f841e36234a12b69f48c4359b9"), # git tag v2.9.0
+    GitSource("https://github.com/flintlib/flint2.git", "abe952e2397ea7b42b41d2eb1b74795e7921ac2c"), # v2.9.0 + bugfixes
     DirectorySource("./bundled"),
 ]
 
