@@ -15,6 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/glib-*/
 install_license COPYING
 
+# meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
+sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
+
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
