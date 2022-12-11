@@ -27,7 +27,6 @@ update_configure_scripts
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-static \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32
