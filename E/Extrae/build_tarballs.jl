@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 using BinaryBuilder, Pkg
 
-name = "extrae"
+name = "Extrae"
 version = v"4.0.1"
 sources = [
     ArchiveSource(
