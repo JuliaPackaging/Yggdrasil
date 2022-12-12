@@ -43,7 +43,7 @@ products = [
     ExecutableProduct("addr2line", :addr2line),
     ExecutableProduct("ar", :ar),
     # ExecutableProduct("as", :as),
-    ExecutableProduct("c++filt", Symbol("c++filt")),
+    ExecutableProduct("c++filt", :cxxfilt),
     # ExecutableProduct("dwp", :dwp),
     ExecutableProduct("elfedit", :elfedit),
     # ExecutableProduct("gprof", :gprof),
