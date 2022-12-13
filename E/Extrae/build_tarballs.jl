@@ -2,47 +2,50 @@
 using BinaryBuilder, Pkg
 
 name = "Extrae"
-version = v"4.0.1"
+version = v"4.0.2rc1"
 sources = [
-    ArchiveSource(
-        "https://github.com/bsc-performance-tools/extrae/archive/refs/tags/$(version).tar.gz",
-        "e6765eb087be3f3c162e08d65f425de5f26912811392527d56ecd75d4fb6b99d"),
-        DirectorySource("./bundled"),
+    GitSource("https://github.com/bsc-performance-tools/extrae", "5eb2a8ad56aca035b1e13b021a944143e59e6b4a"),
+    DirectorySource("$(@__DIR__)/bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/extrae-*
+cd ${WORKSPACE}/srcdir/extrae
 
-atomic_patch -p1 ../patches/0001-autoconf-replace-pointer-size-check-by-AC_CHECK_SIZE.patch
-atomic_patch -p1 ../patches/0002-autoconf-use-simpler-endianiness-check.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-autoconf-replace-pointer-size-check-by-AC_CHECK_SIZE.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-autoconf-use-simpler-endianiness-check.patch
 
 autoreconf -fvi
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --disable-openmp \
-    --without-binutils \
     --without-dyninst \
+    --disable-nanos \
+    --disable-smpss \
     --without-mpi \
-    --without-papi \
-    --without-unwind
+    --with-binutils=$prefix \
+    --with-unwind=$prefix \
+    --with-xml-prefix=$prefix \
+    --with-papi=$prefix
 
 make -j${nproc}
 make install
 """
 
 platforms = [
-    Platform("i686", "Linux"),
     Platform("x86_64", "Linux"),
 ]
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
-    LibraryProduct("libnanostrace", :libnanostrace),
-]
+    ExecutableProduct("extrae-cmd", :extrae_cmd),
+    ExecutableProduct("extrae-header", :extrae_header),
+    ExecutableProduct("extrae-loader", :extrae_loader),]
 
 dependencies = [
+    Dependency("Binutils_jll"),
+    Dependency("LibUnwind_jll"),
+    Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
 ]
 
