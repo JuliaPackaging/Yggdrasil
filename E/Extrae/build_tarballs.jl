@@ -38,7 +38,9 @@ make install
 """
 
 platforms = [
-    Platform("x86_64", "Linux"),
+    Platform("x86_64", "linux"; libc="gnu"),
+    Platform("powerpc64le", "linux"; libc="gnu"),
+    Platform("aarch64", "linux"; libc="gnu"),
 ]
 
 products = [
