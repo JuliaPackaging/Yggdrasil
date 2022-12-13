@@ -2,7 +2,7 @@
 using BinaryBuilder, Pkg
 
 name = "Extrae"
-version = v"4.0.2rc1"
+version = v"4.0.2" # NOTE this is version 4.0.2rc1. its release candidate, but we needed a patch for Binutils 2.39
 sources = [
     GitSource("https://github.com/bsc-performance-tools/extrae", "5eb2a8ad56aca035b1e13b021a944143e59e6b4a"),
     DirectorySource("$(@__DIR__)/bundled"),
