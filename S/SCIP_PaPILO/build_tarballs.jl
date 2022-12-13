@@ -32,9 +32,6 @@ make install
 cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
-for dir in papilo scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
-done
 for dir in scip soplex gcg; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
