@@ -22,7 +22,7 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-if  [[ "${target}" == *linux-gnu-cuda* ]]; then
+if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
@@ -33,8 +33,7 @@ if  [[ "${target}" == *linux-gnu-cuda* ]]; then
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
             -DUSE_CUDA=ON \
-            -DBUILD_WITH_CUDA_CUB=ON \
-            -DUSE_NCCL=ON
+            -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
 else
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
@@ -98,7 +97,6 @@ for cuda_version in cuda_versions, platform in cuda_platforms
         BuildDependency(PackageSpec(name="CUDA_full_jll",
                                     version=cuda_full_versions[cuda_version])),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-        RuntimeDependency(PackageSpec(name="NCCL_jll", version=v"2.15.1")),
     ]
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, [dependencies; cuda_deps];
