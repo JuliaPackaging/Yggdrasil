@@ -45,6 +45,7 @@ platforms = [
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
+    LibraryProduct("libpttrace", :libpttrace),
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
