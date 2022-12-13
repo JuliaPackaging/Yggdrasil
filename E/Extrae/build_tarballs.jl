@@ -45,7 +45,8 @@ products = [
     LibraryProduct("libseqtrace", :libseqtrace),
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
-    ExecutableProduct("extrae-loader", :extrae_loader),]
+    ExecutableProduct("extrae-loader", :extrae_loader),
+]
 
 dependencies = [
     Dependency("Binutils_jll"),
