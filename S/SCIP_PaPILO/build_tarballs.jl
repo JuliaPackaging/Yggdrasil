@@ -33,9 +33,9 @@ cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${dir}
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
-cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP/LICENSE_papilo
+cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_papilo
 """
 
 # These are the platforms we will build for by default, unless further
