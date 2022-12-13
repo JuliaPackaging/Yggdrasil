@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "crun"
-version = v"1.7.1"
+version = v"1.7.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/containers/crun",
-              "0356bf4aff9a133d655dc13b1d9ac9424706cac4")
+              "eaa116bc5b43bd3a4f13e12497bbcb5a918051e1")
 ]
 
 # Bash recipe for building across all platforms
