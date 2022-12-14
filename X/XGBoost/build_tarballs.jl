@@ -65,7 +65,8 @@ cuda_version = v"11.0"
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; cuda=CUDA.platform(cuda_version)))
+cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
+                                        cuda=CUDA.platform(cuda_version)))
 
 for p in cuda_platforms
     push!(platforms, p)
@@ -84,15 +85,15 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
+    # You can only specify one cuda version in the deps. To build against more than 
+    # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=cuda_platforms),
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=cuda_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms[end-4:end], products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                 preferred_gcc_version=v"8", 
                 julia_compat="1.6",
                 augment_platform_block=CUDA.augment)
-
-
-                
