@@ -44,7 +44,7 @@ dependencies = [
     # MbedTLS is only an indirect dependency (through LibCURL), but we want to
     # be sure to have the right version of MbedTLS for the corresponding version
     # of Julia.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24.0")),
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
