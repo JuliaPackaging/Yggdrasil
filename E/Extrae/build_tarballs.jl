@@ -1,4 +1,3 @@
-#!/usr/bin/env julia
 using BinaryBuilder
 
 name = "Extrae"
