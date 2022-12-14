@@ -22,7 +22,7 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-if  [[ "${target}" == *linux-gnu-cuda* ]]; then
+if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
@@ -32,9 +32,9 @@ if  [[ "${target}" == *linux-gnu-cuda* ]]; then
     export PATH=$PATH:$CUDA_HOME/bin
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+            -DCUDA_TOOLKIT_ROOT_DIR=${WORKSPACE}/destdir/cuda \
             -DUSE_CUDA=ON \
-            -DBUILD_WITH_CUDA_CUB=ON \
-            -DUSE_NCCL=ON
+            -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
 else
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
@@ -57,19 +57,21 @@ fi
 install_license LICENSE
 """
 
+cuda_full_versions = Dict(
+    v"11.0" => v"11.0.3",
+)
+cuda_version = v"11.0"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"))
+cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
+                                        cuda=CUDA.platform(cuda_version)))
 
-cuda_versions = [v"11.0"]
+for p in cuda_platforms
+    push!(platforms, p)
+end
 
-cuda_full_versions = Dict(
-    v"11.0" => v"11.0.3",
-)
-
-augment_platform_block = CUDA.augment
 
 # The products that we will ensure are always built
 products = [
@@ -83,24 +85,15 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
+    # You can only specify one cuda version in the deps. To build against more than 
+    # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=cuda_platforms),
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=cuda_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
-
-# build cuda tarballs
-for cuda_version in cuda_versions, platform in cuda_platforms
-    augmented_platform = Platform(arch(platform), os(platform);
-                                  cuda=CUDA.platform(cuda_version))
-    should_build_platform(triplet(augmented_platform)) || continue
-
-    cuda_deps = [
-        BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                    version=cuda_full_versions[cuda_version])),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-        RuntimeDependency(PackageSpec(name="NCCL_jll", version=v"2.15.1")),
-    ]
-
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, [dependencies; cuda_deps];
-                   preferred_gcc_version=v"8", lazy_artifacts=true, julia_compat="1.6", augment_platform_block)
-end
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+                preferred_gcc_version=v"8", 
+                julia_compat="1.6",
+                augment_platform_block=CUDA.augment)
