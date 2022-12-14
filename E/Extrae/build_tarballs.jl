@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "Extrae"
 version = v"4.0.2" # NOTE this is version 4.0.2rc1. its release candidate, but we needed a patch for Binutils 2.39
