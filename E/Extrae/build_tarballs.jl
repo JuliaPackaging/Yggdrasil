@@ -38,7 +38,7 @@ make install
 
 platforms = [
     Platform("x86_64", "Linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
+    # Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
