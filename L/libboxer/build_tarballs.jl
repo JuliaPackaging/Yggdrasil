@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/libboxer*
 cargo build --release
 install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
 install_license LICENSE
-curl "https://github.com/feenkcom/libboxer/releases/download/v$(version)/boxer.h" --output "${includedir}/boxer.h"
+curl "https://github.com/feenkcom/libboxer/releases/download/v0.2.0/boxer.h" --output "${includedir}/boxer.h"
 """
 
 # These are the platforms we will build for by default, unless further
