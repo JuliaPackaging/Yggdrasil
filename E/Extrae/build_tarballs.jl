@@ -21,6 +21,10 @@ if [ $(uname -m) == "aarch64" ]; then
     export ENABLE_ARM64=1
 fi
 
+if [ $(uname -m) == "powerpc64le" ]; then
+    export ENABLE_POWERPC64LE=1
+fi
+
 if [ -d "$prefix/cuda" ]; then
     export ENABLE_CUDA=1
 fi
@@ -31,6 +35,7 @@ autoreconf -fvi
     --build=${MACHTYPE} \
     --host=${target} \
     ${ENABLE_ARM64:+--enable-arm64} \
+    ${ENABLE_POWERPC64LE:+--enable-powerpc64le} \
     --without-dyninst \
     --disable-nanos \
     --disable-smpss \
@@ -47,7 +52,7 @@ make install
 
 platforms = [
     Platform("x86_64", "Linux"; libc="glibc"),
-    # Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
