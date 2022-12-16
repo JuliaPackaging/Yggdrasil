@@ -17,13 +17,15 @@ cd $WORKSPACE/srcdir/libboxer*
 cargo build --release
 install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
 install_license LICENSE
-cbindgen --config cbindgen.toml --crate libboxer --output boxer.h
+""" * """
+curl "https://github.com/feenkcom/libboxer/releases/download/v($version)/boxer.h"
+""" * raw"""
 install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> (Sys.iswindows(p) && arch(p) == "i686") || (Sys.islinux(p) && libc(p) == "musl"))
+platforms = supported_platforms(; exclude=p -> Sys.islinux(p) && libc(p) == "musl")
 
 # The products that we will ensure are always built
 products = [
@@ -33,7 +35,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("cbindgen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
