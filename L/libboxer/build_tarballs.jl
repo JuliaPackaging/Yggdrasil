@@ -23,9 +23,7 @@ install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(supported_platforms()) do p
-    libc(p) != "musl"
-end
+supported_platforms(; exclude=p -> (Sys.iswindows(p) && arch(p) == "i686") || (Sys.islinux(p) && libc(p) == "musl"))
 
 # The products that we will ensure are always built
 products = [
