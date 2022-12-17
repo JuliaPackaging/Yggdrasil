@@ -1,7 +1,7 @@
 using BinaryBuilder
+using Base.BinaryPlatforms
 
 include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
-include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
 
 
 name = "Extrae"
@@ -61,11 +61,13 @@ platforms = expand_cxxstring_abis(platforms)
 
 cuda_version = v"10.2.89"
 cuda_platforms = map(platforms) do platform
-    Platform(arch(platform), os(platform); libc="glibc", cuda=CUDA.platform(cuda_version))
+    Platform(arch(platform), os(platform); libc=libc(platform), cuda=CUDA.platform(cuda_version))
 end
 
-# filter aarch64 + cuda
-cuda_platforms = filter(==("x86_64") ∘ arch, platforms)
+# TODO CUDA_full_jll not supported for `powerpc64le` yet
+for cuda_platform in filter(!=("powerpc64le") ∘ arch, cuda_platforms)
+    push!(platforms, cuda_platform)
+end
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
@@ -75,26 +77,17 @@ products = [
     ExecutableProduct("extrae-loader", :extrae_loader),
 ]
 
-cuda_product = [
-    LibraryProduct("libcudatrace", :libcudatrace),
-]
+# cuda_product = [
+#     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
+# ]
 
 dependencies = [
     Dependency("Binutils_jll"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
-]
-
-cuda_dependencies = [
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version), platforms=cuda_platforms),
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", version=cuda_version), platforms=cuda_platforms),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-for platform in cuda_platforms
-    should_build_platform(triplet(platform)) || continue
-
-    build_tarballs(ARGS, name, version, sources, script, [platform], vcat(products, cuda_product), vcat(dependencies, cuda_dependencies); julia_compat="1.6", lazy_artifacts=true, CUDA.augment)
-end
