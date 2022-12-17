@@ -16,6 +16,7 @@ sources = [
 
 # Adapted from the justfile of the repo
 script = raw"""
+apk add tree
 install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
 cd $WORKSPACE/srcdir/libboxer-*
 cargo build --release
