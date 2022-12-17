@@ -41,6 +41,7 @@ done
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
+    export BLAS_NAME="blastrampoline"
     echo "-- Modifying library name for Lbt"
     if [[ ${target} == *-apple-* ]]; then
         LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
