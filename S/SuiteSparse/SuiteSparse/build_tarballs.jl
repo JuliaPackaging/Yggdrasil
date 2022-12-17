@@ -41,15 +41,18 @@ done
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    BLAS_NAME="blastrampoline"
     echo "-- Modifying library name for Lbt"
-    if [[ ${target} == *-apple-* ]]; then
-        LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
-        install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/libsuitesparseconfig.dylib
-    elif [[ ${target} == *freebsd* ]]; then
-        LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-        patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/libsuitesparseconfig.so
-    fi
+    BLAS_NAME="blastrampoline"
+    for nm in libcholmod libspqr libumfpack; do
+        # Figure out what version it probably latched on to:
+        if [[ ${target} == *-apple-* ]]; then
+            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+            install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+        elif [[ ${target} == *freebsd* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+        fi
+    done
 fi
 
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
