@@ -16,13 +16,15 @@ sources = [
 
 # Adapted from the justfile of the repo
 script = raw"""
-apk add tree
 install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
 cd $WORKSPACE/srcdir/libboxer-*
 cargo build --release
-tree target
 install_license LICENSE
+""" * !Sys.iswindows() ? 
+raw"""
 install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
+""" : raw"""
+install -Dvm 0755 "target/${rust_target}/release/Boxer.${dlext}" "${libdir}/libBoxer.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
