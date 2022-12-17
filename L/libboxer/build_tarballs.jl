@@ -1,3 +1,4 @@
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
@@ -9,16 +10,19 @@ version = v"0.2.0"
 sources = [
     ArchiveSource("https://github.com/feenkcom/libboxer/archive/refs/tags/v$(version).tar.gz",
                   "57d25e5339b0c7b1d8c8242484ce2c4baca05fbea035c8e2d8aab05573eed0c9"),
+    FileSource("https://github.com/feenkcom/libboxer/releases/download/v$(version)/boxer.h", 
+                  "f7e679d2faddca7a99399a03a1fa21c49c0780cf2b73be2c4dd2f70d7a963637"),
 ]
 
 # Adapted from the justfile of the repo
 script = raw"""
-cd $WORKSPACE/srcdir/libboxer*
+install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
+cd $WORKSPACE/srcdir/libboxer-*
 cargo build --release
-install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
+ls target/
 install_license LICENSE
-""" * """
-curl "https://github.com/feenkcom/libboxer/releases/download/v$(version)/boxer.h" --output """ * raw""" "${includedir}/boxer.h" --create-dirs"""
+install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
+"""
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
