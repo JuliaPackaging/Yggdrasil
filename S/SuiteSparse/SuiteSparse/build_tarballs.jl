@@ -2,12 +2,10 @@ include("../common.jl")
 
 name = "SuiteSparse"
 
-sources = [
-    sources;
-    DirectorySource("./bundled")
-]
 # Bash recipe for building across all platforms
 script = raw"""
+apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+
 cd $WORKSPACE/srcdir/SuiteSparse
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
@@ -18,32 +16,25 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-if [[ ${target} == *mingw32* ]]; then
-    FLAGS+=(UNAME=Windows)
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
-else
-    FLAGS+=(UNAME="$(uname)")
-    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
-fi
-
-BLAS_NAME=blastrampoline
-if [[ ${nbits} == 64 ]]; then
-    SUN="-DSUN64 -DLONGBLAS='long long'"
-fi
-
-#FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
-
-# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
-#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
-FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
-
-export CMAKE_OPTIONS="-DBLA_VENDOR=${BLAS_NAME} -DALLOW_64BIT_BLAS=1"
-
-make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
-
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
-    make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
-    make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
+    cd ${proj}/build
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DNOPENMP=ON \
+        -DNPARTITION=ON \
+        -DBLAS_FOUND=1 \
+        -DBLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+        -DBLAS_LINKER_FLAGS="blastrampoline" \
+        -DBLA_VENDOR="${BLAS_NAME}" \
+        -DALLOW_64BIT_BLAS=ON \
+        -DLAPACK_FOUND=1 \
+        -DLAPACK_LINKER_FLAGS="blastrampoline" \
+        -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}"
+    make -j${nproc}
+    make install
+    cd $WORKSPACE/srcdir/SuiteSparse
 done
 
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
