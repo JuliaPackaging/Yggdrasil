@@ -7,7 +7,7 @@ version = v"0.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("`https://github.com/feenkcom/libwinit/archive/refs/tags/v$(version).tar.gz`",
+    ArchiveSource("https://github.com/feenkcom/libwinit/archive/refs/tags/v$(version).tar.gz",
                   "dab68ccefaf496d5c3de751a15a0be54a3eb1ee2d4260105ec3343875c54f0e3"),
     FileSource("https://github.com/feenkcom/libwinit/releases/download/v$(version)/winit.h", 
                "d35910a1c54cf093f70e0cafddb72442f453635cc8147f1c61cb9d9b794da313"),
@@ -19,7 +19,7 @@ install -Dvm 0755 "winit.h" "${includedir}/winit.h"
 cd $WORKSPACE/srcdir/libwinit-*
 cargo build --release
 install_license LICENSE
-if [[ "${target}" == *-mingw* ]]; then``
+if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 0755 "target/${rust_target}/release/Winit.${dlext}" "${libdir}/libWinit.${dlext}"
 else
     install -Dvm 0755 "target/${rust_target}/release/libWinit.${dlext}" "${libdir}/libWinit.${dlext}"
