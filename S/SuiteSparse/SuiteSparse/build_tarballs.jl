@@ -25,6 +25,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
         -DNOPENMP=ON \
         -DNPARTITION=ON \
         -DBLAS_FOUND=1 \
+        -DBLAS64_SUFFIX="_64" \
         -DBLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
         -DBLAS_LINKER_FLAGS="blastrampoline" \
         -DBLA_VENDOR="${BLAS_NAME}" \
