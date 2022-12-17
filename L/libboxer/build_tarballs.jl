@@ -11,7 +11,7 @@ sources = [
     ArchiveSource("https://github.com/feenkcom/libboxer/archive/refs/tags/v$(version).tar.gz",
                   "57d25e5339b0c7b1d8c8242484ce2c4baca05fbea035c8e2d8aab05573eed0c9"),
     FileSource("https://github.com/feenkcom/libboxer/releases/download/v$(version)/boxer.h", 
-                  "f7e679d2faddca7a99399a03a1fa21c49c0780cf2b73be2c4dd2f70d7a963637"),
+               "f7e679d2faddca7a99399a03a1fa21c49c0780cf2b73be2c4dd2f70d7a963637"),
 ]
 
 # Adapted from the justfile of the repo
@@ -38,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
