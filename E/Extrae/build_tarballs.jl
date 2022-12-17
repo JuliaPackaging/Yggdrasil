@@ -1,5 +1,6 @@
 using BinaryBuilder
 using Base.BinaryPlatforms
+using Pkg
 
 include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
 
