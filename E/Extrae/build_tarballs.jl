@@ -18,15 +18,15 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-autoconf-replace-pointer-size-
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-autoconf-use-simpler-endianiness-check.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-autoconf-support-powerpc64le-cross-compilation.patch
 
-if [ $(uname -m) == "aarch64" ]; then
+if [[ $bb_taret = aarch64* ]]; then
     export ENABLE_ARM64=1
 fi
 
-if [ $(uname -m) == "powerpc64le" ]; then
+if [[ $bb_target = powerpc64le* ]]; then
     export ENABLE_POWERPC64LE=1
 fi
 
-if [ -d "$prefix/cuda" ]; then
+if [[ $bb_full_target = *cuda* ]]; then
     export ENABLE_CUDA=1
 fi
 
