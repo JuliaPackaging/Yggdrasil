@@ -28,7 +28,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> (Sys.iswindows(p) && arch(p) == "i686") || (Sys.islinux(p) && (libc(p) == "musl" || arch(p) == "armv6l")) || Sys.isbsd(p))
+platforms = supported_platforms(; exclude=p -> (Sys.iswindows(p) && arch(p) == "i686") || (Sys.islinux(p) && (libc(p) == "musl" || arch(p) == "armv6l" || arch(p) == "armv7l" || arch(p) == "i686")) || Sys.isbsd(p))
 
 # The products that we will ensure are always built
 products = [
