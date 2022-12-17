@@ -38,6 +38,7 @@ autoreconf -fvi
     ${ENABLE_ARM64:+--enable-arm64} \
     ${ENABLE_POWERPC64LE:+--enable-powerpc64le} \
     --without-dyninst \
+    --disable-openmp \
     --disable-nanos \
     --disable-smpss \
     --without-mpi \
