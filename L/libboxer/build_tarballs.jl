@@ -19,7 +19,7 @@ script = raw"""
 install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
 cd $WORKSPACE/srcdir/libboxer-*
 cargo build --release
-ls target/
+tree target
 install_license LICENSE
 install -Dvm 0755 "target/${rust_target}/release/libBoxer.${dlext}" "${libdir}/libBoxer.${dlext}"
 """
