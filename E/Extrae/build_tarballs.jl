@@ -19,7 +19,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-autoconf-replace-pointer-size-
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-autoconf-use-simpler-endianiness-check.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-autoconf-support-powerpc64le-cross-compilation.patch
 
-if [[ $bb_taret = aarch64* ]]; then
+if [[ $bb_target = aarch64* ]]; then
     export ENABLE_ARM64=1
 fi
 
