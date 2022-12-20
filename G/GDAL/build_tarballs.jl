@@ -20,6 +20,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdal-*/
+install_license LICENSE.TXT
+
 mkdir build
 cd build
 
