@@ -90,8 +90,15 @@ dependencies = [
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version), platforms=cuda_platforms),
-    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", version=cuda_version), platforms=cuda_platforms),
 ]
+
+append!(dependencies, [
+    BuildDependency(PackageSpec(name="CUDA_build_jll", version=cuda_version),
+        platforms=filter(p -> tags(p)["cuda"] == CUDA.platform(cuda_version), cuda_platforms))
+    for cuda_version in cuda_versions])
+append!(dependencies, [
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", version=cuda_version),
+        platforms=filter(p -> tags(p)["cuda"] == CUDA.platform(cuda_version), cuda_platforms))
+    for cuda_version in cuda_versions])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
