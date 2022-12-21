@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "MMseqs2"
-version = v"13"
+version = v"14"
 
 # MMseqs2 seem to use as versioning scheme of "major version + first 5
 # characters of the tagged commit"
 # https://github.com/soedinglab/MMseqs2/releases
-version_commitprefix = "45111"
+version_commitprefix = "7e284"
 
 
 # Possible build variants
@@ -35,7 +35,7 @@ version_commitprefix = "45111"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
-                  "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2"),
+                  "a15fd59b121073fdcc8b259fc703e5ce4c671d2c56eb5c027749f4bd4c28dfe1"),
     DirectorySource("./bundled")
 ]
 
@@ -70,7 +70,7 @@ install_license ../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 # expand cxxstring abis on platforms where we use g++
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
