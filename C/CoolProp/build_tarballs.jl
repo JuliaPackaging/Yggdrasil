@@ -16,7 +16,8 @@ cd $WORKSPACE/srcdir
 
 sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
 sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
-sed -i 's/.*-m.*BITNESS.*//' source/CMakeLists.txt
+# Do not add `-m32`/`-m64` flags
+sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
 
 mkdir build
 cd build
