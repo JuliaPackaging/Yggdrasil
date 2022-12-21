@@ -61,15 +61,17 @@ platforms = [
 
 platforms = expand_cxxstring_abis(platforms)
 
-cuda_version = v"10.2.89"
-cuda_platforms = map(platforms) do platform
-    Platform(arch(platform), os(platform); libc=libc(platform), cuda=CUDA.platform(cuda_version))
-end
+cuda_versions = [v"10.2.89", v"11.0.3"]
+cuda_platforms =
+    Iterators.filter(Iterators.product(cuda_versions, platforms)) do (cuda_version, platform)
+        if arch(platform) == "powerpc64le" && cuda_version < v"11.0"
+            return false
+        end
 
-# TODO CUDA_full_jll not supported for `powerpc64le` yet
-for cuda_platform in filter(!=("powerpc64le") ∘ arch, cuda_platforms)
-    push!(platforms, cuda_platform)
-end
+        true
+    end |> x -> Iterators.map(x) do (cuda_version, platform)
+        Platform(arch(platform), os(platform); cxxstring_abi=cxxstring_abi(platform), libc=libc(platform), cuda=CUDA.platform(cuda_version))
+    end |> collect
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
