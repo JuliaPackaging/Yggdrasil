@@ -20,11 +20,10 @@ sed -i 's/.*-m.*BITNESS.*//' source/CMakeLists.txt
 
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCOOLPROP_SHARED_LIBRARY=ON ../CoolProp*/
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCOOLPROP_SHARED_LIBRARY=ON ../source/
 VERBOSE=ON cmake --build . --config Release --target CoolProp -- -j${nproc}
-mkdir -p ${libdir}
-cp -a *CoolProp* ${libdir}
-install_license $WORKSPACE/srcdir/CoolProp*/LICENSE
+install -Dvm 0755 "libCoolProp.${dlext}" "${libdir}/libCoolProp.${dlext}"
+install_license $WORKSPACE/srcdir/source/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
