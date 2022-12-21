@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "CoolProp" 
+name = "CoolProp"
 version = v"6.4.3"
 
 # Collection of sources required to complete build
