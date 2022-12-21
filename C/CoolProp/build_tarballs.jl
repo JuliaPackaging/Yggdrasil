@@ -14,9 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-sed -i 's/Windows/windows/' CoolProp.sources/dev/Tickets/60.cpp
-sed -i 's/Windows/windows/' CoolProp.sources/src/CPfilepaths.cpp
-sed -i 's/.*-m.*BITNESS.*//' CoolProp.sources/CMakeLists.txt
+sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
+sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
+sed -i 's/.*-m.*BITNESS.*//' source/CMakeLists.txt
 
 mkdir build
 cd build
