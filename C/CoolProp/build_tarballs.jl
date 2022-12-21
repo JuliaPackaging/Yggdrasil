@@ -2,16 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "CoolProp"
-version = v"6.4.1"
+name = "CoolProp" 
+version = v"6.4.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "b10b2be2f88675b7e46cae653880be93558009c8970d23e50ea917ce095791f6"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "7d43ef778e5e245720261311fe86c8a1492a7dc49c0155408344117a81465f7d"),
 ]
-
-# Adjusted version for Mac M1 support
-version = v"6.4.2"
 
 # Bash recipe for building across all platforms
 script = raw"""
