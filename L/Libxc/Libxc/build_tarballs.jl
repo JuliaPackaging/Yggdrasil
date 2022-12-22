@@ -4,25 +4,16 @@ name = "Libxc"
 
 # Bash recipe for building across all platforms
 # Notes:
-#   - Autotools fully supported upstream, but Windows builds only work with CMake
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
-if [[ "${target}" = *-mingw* ]]; then
-    mkdir libxc_build
-    cd libxc_build
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release -DENABLE_FORTRAN=ON -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-        -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
-else
-    autoreconf -vi
-    export CFLAGS="$CFLAGS -std=c99"
-    export FCFLAGS="-pipe -O3"
-    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-        --disable-static --enable-shared \
-        --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
-fi
+mkdir libxc_build
+cd libxc_build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
+    -DENABLE_FORTRAN=OFF \
+    -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
 
 make -j${nproc}
 make install
@@ -30,7 +21,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
+platforms = supported_platforms(; experimental=true)
+platforms = [
+     Platform("x86_64", "linux"),  # XXX Don't be wasteful in CI hours for now
+]
 
 
 # The products that we will ensure are always built

@@ -6,19 +6,18 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
 
-# Bash recipe for building across all platforms
+# Bash recipe for building GPU version
 # Notes:
-#   - Autotools fully supported upstream, but Windows builds only work with CMake
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
-autoreconf -vi
-export CFLAGS="$CFLAGS -std=c99"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-cuda --disable-fortran \
-    --disable-static --enable-shared \
-    --enable-vxc=yes --enable-fxc=yes --enable-kxc=no --enable-lxc=no
+mkdir libxc_build
+cd libxc_build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
+    -DENABLE_CUDA=ON -DENABLE_FORTRAN=OFF \
+    -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
 
 make -j${nproc}
 make install
