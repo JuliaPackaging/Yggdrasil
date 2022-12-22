@@ -6,18 +6,24 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
 
+sources = [
+    sources;
+    DirectorySource("./bundled")
+]
+
 # Bash recipe for building GPU version
 # Notes:
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
+
 mkdir libxc_build
 cd libxc_build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_CUDA=ON -DENABLE_FORTRAN=OFF \
-    -DDISABLE_VXC=OFF -DDISABLE_FXC=OFF -DDISABLE_KXC=ON -DDISABLE_LXC=ON ..
+    -DENABLE_CUDA=ON -DENABLE_FORTRAN=OFF -DDISABLE_KXC=ON ..
 
 make -j${nproc}
 make install
