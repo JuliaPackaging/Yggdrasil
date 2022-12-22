@@ -1,6 +1,13 @@
 --- a/src/picosat/picosat.c
 +++ b/src/picosat/picosat.c
-@@ -8147,7 +8147,6 @@ picosat_stats (PS * ps)
+@@ -8144,10 +8144,13 @@ picosat_stats (PS * ps)
+            ps->prefix, picosat_max_bytes_allocated (ps) / (double) (1 << 20));
+ }
+
++#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) || defined(WIN32_) || defined(WIN32__) || defined(__WIN32__) /* mingw does not include sys/resource.h */
++#define NGETRUSAGE
++#endif
++
  #ifndef NGETRUSAGE
  #include <sys/time.h>
  #include <sys/resource.h>
