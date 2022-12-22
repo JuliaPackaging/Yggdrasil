@@ -51,7 +51,7 @@ install_license extensions/mxscarna_src/vienna/COPYING-ViennaRNA
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude=Sys.iswindows)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -81,7 +81,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; filter=(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
