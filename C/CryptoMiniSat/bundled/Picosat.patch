@@ -4,7 +4,7 @@
             ps->prefix, picosat_max_bytes_allocated (ps) / (double) (1 << 20));
  }
 
-+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) || defined(WIN32_) || defined(WIN32__) || defined(__WIN32__) /* mingw does not include sys/resource.h */
++#if defined(_WIN32) /* mingw does not provide sys/resource.h */
 +#define NGETRUSAGE
 +#endif
 +
