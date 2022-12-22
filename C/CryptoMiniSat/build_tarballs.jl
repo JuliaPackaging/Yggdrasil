@@ -19,6 +19,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cryptominisat
 atomic_patch -p1 ../Yalsatpatch.patch
+atomic_patch -p1 ../Picosat.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
