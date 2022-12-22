@@ -7,7 +7,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CryptoMiniSat"
 version = v"5.11.4"
-cryptominisat_version = v"5.11.4"
 
 # Collection of sources required to complete build
 sources = [
