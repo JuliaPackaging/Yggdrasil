@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "CryptoMiniSat"
-version = v"5.8.2"
-cryptominisat_version = v"5.8.0"
+version = v"5.11.4"
+cryptominisat_version = v"5.11.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/msoos/cryptominisat.git", "e7079937ed2bfe9160a104378e5a344028e4ab78"),
+    GitSource("https://github.com/msoos/cryptominisat.git", "219a457501fd0796bd871bd6b3735b130598430c"),
     DirectorySource("./bundled"),
 ]
 
@@ -54,7 +54,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("boost_jll"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
 ]
