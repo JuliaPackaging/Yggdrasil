@@ -53,7 +53,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.8.0"),
+    Dependency("boost_jll"; compat="=1.79.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
 ]
