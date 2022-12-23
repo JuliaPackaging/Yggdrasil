@@ -18,6 +18,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/config.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/needs-tau.patch
 
 mkdir libxc_build
 cd libxc_build
