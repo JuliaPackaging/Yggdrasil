@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = [
      Platform("x86_64", "linux"),  # XXX Don't be wasteful in CI hours for now
 ]
