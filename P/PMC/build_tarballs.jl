@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "LibPMC"
+name = "PMC"
 version = v"0.1.1"
 sources = [
            GitSource("https://github.com/dev10110/pmc","55b617c336a48f84657ebaafefe7f495b8b31a7d") 
