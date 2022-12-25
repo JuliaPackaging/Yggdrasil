@@ -4,7 +4,6 @@ name = "PMC"
 version = v"0.1.1"
 sources = [
            GitSource("https://github.com/dev10110/pmc","55b617c336a48f84657ebaafefe7f495b8b31a7d") 
-           #DirectorySource("./pmc")
 ]
 
 script = raw"""
@@ -18,14 +17,13 @@ make install
 """
 
 platforms = supported_platforms()
-# platforms = [Platform("x86_64", "macOS")]
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libpmc", :libpmc),
 ]
 
-dependencies = [
+dependencies = Dependency[
 ]
 
 julia_compat = "1.6"
