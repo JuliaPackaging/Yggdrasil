@@ -25,11 +25,27 @@ if [[ "${target}" == *-mingw* ]]; then
     #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-pdf-interchange.o: in function `strcat':
     #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:234: undefined reference to `__strcat_chk'
     atomic_patch -p1 ../patches/mingw-libssp.patch
+    # autoreconf needs gtkdocize, install it
+    apk update
+    apk add gtk-doc
     autoreconf -fiv
+    # libcairo on Windows will need to link to libssp, but in Julia v1.8.4 this
+    # can't be loaded automatically, see:
+    # * https://discourse.julialang.org/t/glmakie-and-plots-fail-to-precompile-under-julia-1-8-4/92087
+    # * https://github.com/JuliaLang/julia/pull/48012
+    # To temporarily work around this issue, let's bundle a copy of libssp to ensure it can
+    # be found by libcairo.  TODO: remove this line once we drop support for Julia v1.8-.
+    install -Dvm 0755 "/opt/${target}/${target}/lib/libssp-0.dll" "${libdir}/libssp-0.dll"
+elif [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Remove system libexpat to avoid confusion
+    rm /usr/lib/libexpat.so*
 fi
 
 # Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
 export CPPFLAGS="-I${includedir}"
+
+# Delete old misleading libtool files
+rm -f ${prefix}/lib/*.la
 
 if [[ "${target}" == *-apple-* ]]; then
     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
@@ -80,6 +96,10 @@ dependencies = [
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("LZO_jll"),
     Dependency("Zlib_jll"),
+    # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
+    # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where
+    # this wasn't available.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
