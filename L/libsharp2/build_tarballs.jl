@@ -23,9 +23,9 @@ if [[ "${target}" == x86_64-* ]] && [[ "${target}" != *-apple-* ]] && [[ "${targ
     # Enable runtime multiarch, but not for macOS nor Windows. For Mac OS X, see
     # https://gitlab.mpcdf.mpg.de/mtr/libsharp/-/blob/6374a3a1ffb935443c56f09b371b11cf982a7e28/COMPILE
     # For Windows, see https://github.com/ziotom78/Libsharp.jl/issues/3
-    export CPPFLAGS="-DMULTIARCH"
+    export CFLAGS="-DMULTIARCH"
 fi
-export CFLAGS="-std=c99 -O3"
+export CFLAGS="${CFLAGS} -std=c99 -O3"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-openmp
 make -j${nproc}
 make install
