@@ -136,7 +136,6 @@ install_license /usr/share/licenses/GPL-3.0+
         LibraryProduct("libstdc++", :libstdcxx),
         LibraryProduct("libgfortran", :libgfortran),
         LibraryProduct("libgomp", :libgomp),
-        LibraryProduct("libssp", :libssp),
     ]
 
     for platform in platforms
@@ -151,15 +150,19 @@ install_license /usr/share/licenses/GPL-3.0+
                 # Don't push to the common products, otherwise we'll keep
                 # accumulating libatomic into it when looping over all platforms.
                 vcat(common_products, LibraryProduct("libatomic", :libatomic))
-            elseif windows_staticlibs && Sys.iswindows(platform)
-                vcat(common_products,
-                     [FileProduct("lib/libmsvcrt.a", :libmsvcrt_a),
-                      FileProduct("lib/libgcc.a", :libgcc_a),
-                      FileProduct("lib/libgcc_s.a", :libgcc_s_a),
-                      FileProduct("lib/libssp.dll.a", :libssp_dll_a),
-                      ])
             else
                 common_products
+            end
+            if windows_staticlibs && Sys.iswindows(platform)
+                products = vcat(products,
+                                [FileProduct("lib/libmsvcrt.a", :libmsvcrt_a),
+                                 FileProduct("lib/libgcc.a", :libgcc_a),
+                                 FileProduct("lib/libgcc_s.a", :libgcc_s_a),
+                                 FileProduct("lib/libssp.dll.a", :libssp_dll_a),
+                                 ])
+            end
+            if libc(platform) != "musl"
+                products = vcat(products, LibraryProduct("libssp", :libssp))
             end
             build_tarballs(ARGS, name, version, sources, script, [platform], products, []; preferred_gcc_version, julia_compat)
         end
