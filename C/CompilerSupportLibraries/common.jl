@@ -136,6 +136,7 @@ install_license /usr/share/licenses/GPL-3.0+
         LibraryProduct("libstdc++", :libstdcxx),
         LibraryProduct("libgfortran", :libgfortran),
         LibraryProduct("libgomp", :libgomp),
+        LibraryProduct("libssp", :libssp),
     ]
 
     for platform in platforms
