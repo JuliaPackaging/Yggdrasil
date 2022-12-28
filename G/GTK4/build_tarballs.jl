@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.6.0"
+version = v"4.6.9"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
-    ArchiveSource("https://download.gnome.org/sources/gtk/4.6/gtk-4.6.0.tar.xz",
-                  "782d5951fbfd585fc9ec76c09d07e28e6014c72db001fb567fff217fb96e4d8c"),
+    ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
+                  "decad346d6a94141ab667c43483e7a4b97c7969c23d589dd63cd6a49498a43d0"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,11 +42,6 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 if [[ "${target}" == *apple* ]]; then
     sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
 fi
-
-# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4443
-atomic_patch -p1 ../patches/0001-Include-gdk-private.h-to-fix-error-about-g_source_se.patch
-# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4445
-atomic_patch -p1 ../patches/0001-gdkjpeg-include-stdlib.h-necessary-for-free.patch
 
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
@@ -81,7 +76,7 @@ rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -109,7 +104,7 @@ dependencies = [
     Dependency("xkbcommon_jll"; platforms=x11_platforms),
     Dependency("iso_codes_jll"),
     Dependency("Wayland_jll"; platforms=x11_platforms),
-    Dependency("Wayland_protocols_jll"; compat="1.23", platforms=x11_platforms),
+    Dependency("Wayland_protocols_jll"; compat="1.25", platforms=x11_platforms),
     Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),
