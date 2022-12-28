@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v.0.0.47"
+auto_version = "refs/tags/v0.0.47"
 version = VersionNumber(split(auto_version, "/")[end])
 
 llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
