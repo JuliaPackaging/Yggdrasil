@@ -23,7 +23,7 @@ cuda_version_major=`echo $cuda_version | cut -d . -f 1`
 cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
 cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
 export PATH=$PATH:${cuda_full_path}/bin
-export CUDA_DIR=${cuda_full_path}
+export CUDADIR=${cuda_full_path}
 cp ../make.inc .
 make -j${nproc} sparse-shared
 make install prefix=${prefix}
