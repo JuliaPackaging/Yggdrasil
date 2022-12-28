@@ -26,7 +26,8 @@ cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
 export PATH=$PATH:${cuda_full_path}/bin
 export CUDADIR=${cuda_full_path}
 cp ../make.inc .
-make -j2 sparse-shared
+(( nproc=1+nproc/3 ))
+make -j${nproc} sparse-shared
 make install prefix=${prefix}
 install_license COPYRIGHT
 """
