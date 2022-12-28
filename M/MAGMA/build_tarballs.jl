@@ -26,6 +26,7 @@ cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
 export PATH=$PATH:${cuda_full_path}/bin
 export CUDADIR=${cuda_full_path}
 cp ../make.inc .
+# reduce parallelism since otherwise the builder may OOM.
 (( nproc=1+nproc/3 ))
 make -j${nproc} sparse-shared
 make install prefix=${prefix}
@@ -50,7 +51,9 @@ dependencies = [
     # You can only specify one cuda version in the deps. To build against more than 
     # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    Dependency("libblastrampoline_jll")
+    Dependency("libblastrampoline_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
