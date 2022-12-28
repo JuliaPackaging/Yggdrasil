@@ -31,7 +31,7 @@ cuda_version = v"11.0"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+# platforms = expand_cxxstring_abis(supported_platforms())
 cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
                                         cuda=CUDA.platform(cuda_version)))
 
@@ -56,7 +56,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, cuda_platforms, products, dependencies; 
                 preferred_gcc_version=v"8", 
                 julia_compat="1.6",
                 augment_platform_block=CUDA.augment)
