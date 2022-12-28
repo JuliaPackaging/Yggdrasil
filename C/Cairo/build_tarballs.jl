@@ -29,13 +29,6 @@ if [[ "${target}" == *-mingw* ]]; then
     apk update
     apk add gtk-doc
     autoreconf -fiv
-    # libcairo on Windows will need to link to libssp, but in Julia v1.8.4 this
-    # can't be loaded automatically, see:
-    # * https://discourse.julialang.org/t/glmakie-and-plots-fail-to-precompile-under-julia-1-8-4/92087
-    # * https://github.com/JuliaLang/julia/pull/48012
-    # To temporarily work around this issue, let's bundle a copy of libssp to ensure it can
-    # be found by libcairo.  TODO: remove this line once we drop support for Julia v1.8-.
-    install -Dvm 0755 "/opt/${target}/${target}/lib/libssp-0.dll" "${libdir}/libssp-0.dll"
 elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
