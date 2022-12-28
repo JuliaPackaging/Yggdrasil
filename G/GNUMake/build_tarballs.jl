@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "GNUMake"
-# NOTE: For the time being we exclude "experimental platforms" (aarch64-darwin and armv6l),
-# but remember to include them in future releases
-version = v"4.3"
+version_string = "4.4"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/make/make-4.3.tar.gz", "e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19"),
+    ArchiveSource("https://ftp.gnu.org/gnu/make/make-$(version_string).tar.gz",
+                  "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"),
     DirectorySource("./bundled")
 ]
 
@@ -19,7 +19,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/make*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
-# See savannah.gnu.org/bugs/?57962
+# See https://savannah.gnu.org/bugs/?57962
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findprog-in-ignore-directories.patch
 if [[ "${target}" == *-mingw* ]]; then
     cp $WORKSPACE/srcdir/Makefile GNUmakefile
@@ -41,8 +41,6 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# Exclude "experimental platforms", can include them later
-filter!(p -> arch(p) != "armv6l" && !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +52,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
