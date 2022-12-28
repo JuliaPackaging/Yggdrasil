@@ -10,7 +10,6 @@ sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
                   "decad346d6a94141ab667c43483e7a4b97c7969c23d589dd63cd6a49498a43d0"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
