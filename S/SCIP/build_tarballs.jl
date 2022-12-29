@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.0.200"
+version = v"800.0.300"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.2.tgz", "1cfc8d31b4ef9c12fae535f5c911616491439bb79cdfa39a30e4d035f4919d96"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,9 +38,10 @@ make -j${nproc}
 make install
 
 mkdir -p ${prefix}/share/licenses/SCIP
-for dir in papilo scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
+for dir in scip soplex; do
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
+cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP/LICENSE_papilo
 """
 
 # These are the platforms we will build for by default, unless further

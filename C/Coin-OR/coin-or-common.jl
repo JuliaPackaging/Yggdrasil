@@ -45,9 +45,9 @@ Osi_gitsha = "c67528fc8b2a36dc936b285fe34030439b9147c3"
 CoinUtils_version = offset_version(v"2.11.6", v"0.0.0")
 CoinUtils_gitsha = "26e9639ed9897e13e89169870dbe910296a9783b"
 
-Ipopt_upstream_version = v"3.14.4"
-Ipopt_gitsha = "d872b3a3d17863c6a2a27475cc9af9e933cb7e92"
-Ipopt_verson_offset = v"0.0.3"
+Ipopt_upstream_version = v"3.14.10"
+Ipopt_gitsha = "a34c8531301d66334a993fe5630ecb707994142f"
+Ipopt_verson_offset = v"0.0.0"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
 ALPS_upstream_version = v"1.5.7"

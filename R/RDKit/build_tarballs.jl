@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.09.2"
+version = v"2022.09.3"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "bda55ac79856b1e67821d2e54ef0ba462a8df96b"),
+    GitSource("https://github.com/rdkit/rdkit.git", "c0c87e62252c75542ab5ff2596146d1f92c0dd3d"),
     DirectorySource("./bundled"),
 ]
 

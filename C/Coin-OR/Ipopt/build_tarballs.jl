@@ -20,6 +20,7 @@ if [[ "${target}" == *-linux-* ]]; then
 fi
 
 export CPPFLAGS="${CPPFLAGS} -I${includedir} -I${includedir}/coin"
+
 if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
