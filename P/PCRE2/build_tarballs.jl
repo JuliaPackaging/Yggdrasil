@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "PCRE2"
-version = v"10.40"
+version_string = "10.42"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "ded42661cab30ada2e72ebff9e725e745b4b16ce831993635136f2ef86177724"),
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version_string)/pcre2-$(version_string).tar.gz",
+                  "c33b418e3b936ee3153de2c61cc638e7e4fe3156022a5c77d0711bcbb9d64f1f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +28,6 @@ update_configure_scripts
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-static \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32

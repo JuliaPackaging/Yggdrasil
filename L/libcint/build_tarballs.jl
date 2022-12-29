@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libcint"
-version = v"5.1.1"
+version = v"5.1.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sunqm/libcint.git", "9fdd8eff6f0e1177aa1d70a85686f1b34a482cda")
+    GitSource("https://github.com/sunqm/libcint.git", "cd69f75b08bde058d1c7fc51355d2ea468f45978")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,8 +27,10 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"),
-    Platform("x86_64", "macos")
+    Platform("aarch64", "macos"; ),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "macos"; ),
+    Platform("x86_64", "linux"; libc = "glibc")
 ]
 
 # The products that we will ensure are always built
@@ -41,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
