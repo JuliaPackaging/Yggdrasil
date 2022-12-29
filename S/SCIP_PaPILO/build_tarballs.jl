@@ -4,15 +4,19 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.300"
+version = v"800.0.301"
 
 sources = [
     ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -22,9 +26,14 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DUG=0\
   -DAMPL=0\
   -DGCG=0\
+  -DBOOST=ON\
   -DSYM=bliss\
   -DTPI=tny\
-  -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
+  -DIPOPT_DIR=${prefix} \
+  -DIPOPT_LIBRARIES=${libdir} \
+  -DBLISS_INCLUDE_DIR=${includedir} \
+  -DBLISS_LIBRARY=bliss \
+  ..
 make -j${nproc} scip
 make papilo-executable
 
