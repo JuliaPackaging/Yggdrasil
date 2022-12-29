@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.3.0"
+version = v"6.4.1"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "b865aae43357f792b3b0a162899d9bf6a1393a55c4e5e4ede5316b157b1a0f99"),
+                  "532ad71cc0f9c8f7cb92766c47bc3d23263c60876becd9053802f9727af24fae"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -40,7 +40,7 @@ commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE
 export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
-sed -i 's/"-march=haswell"/"-mavx2" "-mf16c"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
+sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
 
 case "$target" in
 
@@ -98,7 +98,7 @@ esac
 
 cmake --build . --parallel ${nproc}
 cmake --install .
-install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSE.LGPL3
+install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
 # These are the platforms we will build for by default, unless further
