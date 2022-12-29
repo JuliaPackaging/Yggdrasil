@@ -6,23 +6,15 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.0.0"
+source_version = v"4.0.1"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "041d9eee96445667d2f7b970d2a799592027f1f8818cd96a65dcce1ac0745773"),
-    # Patches to fix build issues.
-    DirectorySource("./bundled")
+                  "4c746936ed9da9f16744240ed7b9f2815d3abb90c904071a1d1a628a9bbfb3a5"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
-
-# Apply any patches that are needed.
-for f in ${WORKSPACE}/srcdir/patches/*.patch;
-do
-    atomic_patch -p1 ${f};
-done
 
 mkdir build && cd build
 
