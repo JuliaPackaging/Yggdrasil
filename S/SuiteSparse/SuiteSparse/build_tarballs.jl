@@ -33,7 +33,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
         -DLAPACK_LINKER_FLAGS="blastrampoline" \
         -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
         -DBLAS_UNDERSCORE \
-        DCMAKE_Fortran_COMPILER=""
+        -DCMAKE_Fortran_COMPILER=""
     make -j${nproc}
     make install
     cd $WORKSPACE/srcdir/SuiteSparse
