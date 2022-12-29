@@ -10,7 +10,6 @@ cd $WORKSPACE/srcdir/SuiteSparse
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
-FC=
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
@@ -33,7 +32,8 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
         -DLAPACK_FOUND=1 \
         -DLAPACK_LINKER_FLAGS="blastrampoline" \
         -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
-        -DBLAS_UNDERSCORE
+        -DBLAS_UNDERSCORE \
+        DCMAKE_Fortran_COMPILER=""
     make -j${nproc}
     make install
     cd $WORKSPACE/srcdir/SuiteSparse
