@@ -32,7 +32,8 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
         -DALLOW_64BIT_BLAS=ON \
         -DLAPACK_FOUND=1 \
         -DLAPACK_LINKER_FLAGS="blastrampoline" \
-        -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}"
+        -DLAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+        -DBLAS_UNDERSCORE
     make -j${nproc}
     make install
     cd $WORKSPACE/srcdir/SuiteSparse
