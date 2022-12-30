@@ -10,7 +10,8 @@ name = "LuaJIT"
 # system for it rather than reflecting the upstream version.
 version = v"2.1.20221221"
 
-sources = [GitSource("https://luajit.org/git/luajit.git",
+# We're using the GitHub mirror because the official source seems to be acting weird
+sources = [GitSource("https://github.com/LuaJIT/LuaJIT.git",
                      "a04480e311f93d3ceb2f92549cad3fffa38250ef")]
 
 script = raw"""
