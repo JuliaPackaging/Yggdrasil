@@ -27,7 +27,7 @@ function build_libcurl(ARGS, name::String)
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls
+        --without-gnutls
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
         --disable-ares --disable-manual
