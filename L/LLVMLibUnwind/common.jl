@@ -25,48 +25,82 @@ function configure(version; experimental::Bool=false)
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 
-    chdir = "cd \${WORKSPACE}/srcdir/"
-    if version >= v"14"
-        chdir *= "llvm-project*/"
+    script = if version >= v"14"
+        raw"""
+        cd ${WORKSPACE}/srcdir/llvm-project*/libunwind/
+
+        CMAKE_FLAGS=()
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_INCLUDEDIR=${includedir})
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR=${libdir})
+        CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=MinSizeRel)  # Note: Disables debug messages
+        CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_TESTS=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_INSTALL_HEADERS=ON)
+        CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_ASSERTIONS=OFF)
+
+        if [[ ${target} == x86_64-w64-mingw32 ]]; then
+            # Support for threading requires Windows Vista.
+            export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+        fi
+
+        # Apply all our patches
+        if [ -d $WORKSPACE/srcdir/patches ]; then
+            for f in $WORKSPACE/srcdir/patches/*.patch; do
+                echo "Applying patch ${f}"
+                atomic_patch -p2 ${f}
+            done
+        fi
+
+        mkdir build && cd build
+        cmake "${CMAKE_FLAGS[@]}" ..
+        make -j${nprocs}
+        make install
+
+        install_license ../LICENSE.TXT
+        """
+    else
+        raw"""
+        cd $WORKSPACE/srcdir/libunwind*
+
+        CMAKE_FLAGS=()
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$prefix)
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=MinSizeRel)  # Note: Disables debug messages
+        CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
+
+        if [[ ${target} == x86_64-w64-mingw32 ]]; then
+            # Support for threading requires Windows Vista.
+            export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+        fi
+
+        # Apply all our patches
+        if [ -d $WORKSPACE/srcdir/patches ]; then
+            for f in $WORKSPACE/srcdir/patches/*.patch; do
+                echo "Applying patch ${f}"
+                atomic_patch -p2 ${f}
+            done
+        fi
+
+        mkdir build && cd build
+        cmake "${CMAKE_FLAGS[@]}" ..
+        make -j${nprocs}
+        make install
+
+        # Install header files. Required to access patched in functions
+        cp -aR ../include ${prefix}/
+
+        # Move over the DLL. TODO: There may be a CMAKE flag for this.
+        if [[ ${target} == *mingw32* ]]; then
+            mkdir -p "${libdir}"
+            mv -v lib/libunwind.dll "${libdir}"
+        fi
+        """
     end
-    chdir *= "libunwind*\n\n"
-
-    # Bash recipe for building across all platforms
-    script = chdir * raw"""
-CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$prefix)
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=MinSizeRel)  # Note: Disables debug messages
-CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
-CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
-
-if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    # Support for threading requires Windows Vista.
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
-fi
-
-# Apply all our patches
-if [ -d $WORKSPACE/srcdir/patches ]; then
-    for f in $WORKSPACE/srcdir/patches/*.patch; do
-        echo "Applying patch ${f}"
-        atomic_patch -p2 ${f}
-    done
-fi
-
-mkdir build && cd build
-cmake "${CMAKE_FLAGS[@]}" ..
-make -j${nprocs}
-make install
-
-# Install header files. Required to access patched in functions
-cp -aR ../include ${prefix}/
-
-# Move over the DLL. TODO: There may be a CMAKE flag for this.
-if [[ ${target} == *mingw32* ]]; then
-    mkdir -p "${libdir}"
-    mv -v lib/libunwind.dll "${libdir}"
-fi
-"""
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
