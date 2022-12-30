@@ -25,8 +25,14 @@ function configure(version; experimental::Bool=false)
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 
+    chdir = "cd \${WORKSPACE}/srcdir/"
+    if version >= v"14"
+        chdir *= "llvm-project*/"
+    end
+    chdir *= "libunwind*\n\n"
+
     # Bash recipe for building across all platforms
-    script = "cd \${WORKSPACE}/srcdir/$(source)*\n\n" * raw"""
+    script = chdir * raw"""
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
