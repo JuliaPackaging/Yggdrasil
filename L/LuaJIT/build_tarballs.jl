@@ -4,11 +4,11 @@ name = "LuaJIT"
 # NOTE: LuaJIT has effectively moved to a "rolling release" model where users are
 # expected to track either the `v2.1` or `v2.0` branch of the Git repository rather
 # than relying on formal releases. We'll translate that to Yggdrasil versioning by
-# using the date of the commit passed to `GitSource` as the prerelease number with
-# the upstream version as the main part of the version number. This allows us to
-# create e.g. a v2.1.0 version whenever (if ever) Mike Pall decides to make such a
-# release.
-version = v"2.1.0-20221221"
+# using the date of the commit passed to `GitSource` as the patch number with the
+# upstream version as the major and minor parts of the version. Whenever, if ever,
+# Mike Pall decides to make e.g. a v2.1.0 release, we'll have to continue to use this
+# system for it rather than reflecting the upstream version.
+version = v"2.1.20221221"
 
 sources = [GitSource("https://luajit.org/git/luajit.git",
                      "a04480e311f93d3ceb2f92549cad3fffa38250ef")]
@@ -33,4 +33,5 @@ products = [ExecutableProduct("luajit", :luajit),
 
 dependencies = []
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
