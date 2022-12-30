@@ -6,22 +6,27 @@ function configure(version; experimental::Bool=false)
     name = "LLVMLibUnwind"
 
     hash = Dict(
+        # libunwind-*.src.tar.xz
         v"11.0.0" => "8455011c33b14abfe57b2fd9803fb610316b16d4c9818bec552287e2ba68922f",
         v"11.0.1" => "6db3b173d872911c9ce1f2779ea4463b3b7e582b4e5fda9d3a005c1ed5ec517f",
         v"12.0.1" => "0bea6089518395ca65cf58b0a450716c5c99ce1f041079d3aa42d280ace15ca4",
-        v"14.0.6" => "3bbe9c23c73259fe39c045dc87d0b283236ba6e00750a226b2c2aeac4a51d86b",
+        # llvm-project-*.src.tar.xz
+        v"14.0.6" => "8b3cfd7bc695bd6cea0f37f53f0981f34f87496e79e2529874fd03a2f9dd3a8a",
     )
+
+    # LLVM deprecated standalone builds for several projects, including libunwind, so
+    # for later versions we need the full LLVM source rather than just libunwind even
+    # though libunwind doesn't link to libLLVM.
+    source = version >= v"14" ? "llvm-project" : "libunwind"
 
     # Collection of sources required to complete build
     sources = [
-        ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/libunwind-$(version).src.tar.xz", hash[version]),
+        ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/$(source)-$(version).src.tar.xz", hash[version]),
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 
     # Bash recipe for building across all platforms
-    script = raw"""
-cd $WORKSPACE/srcdir/libunwind*
-
+    script = "cd \${WORKSPACE}/srcdir/$(source)*\n\n" * raw"""
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
