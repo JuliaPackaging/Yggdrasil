@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 function build_libcurl(ARGS, name::String)
-    version = v"7.84.0"
-    hash = "3c6893d38d054d4e378267166858698899e9d87258e8ff1419d020c395384535"
+    version = v"7.87.0"
+    hash = "8a063d664d1c23d35526b87a2bf15514962ffdd8ef7fd40519191b3c23e39548"
 
     if name == "CURL"
         this_is_curl_jll = true
@@ -27,7 +27,7 @@ function build_libcurl(ARGS, name::String)
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls
+        --without-gnutls
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
         --disable-ares --disable-manual
