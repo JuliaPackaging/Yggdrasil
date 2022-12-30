@@ -29,7 +29,8 @@ make install PREFIX="${prefix}"
 
 platforms = filter!(p -> arch(p) !== :powerpc64le, supported_platforms())
 
-products = [ExecutableProduct("luajit", :luajit),
+# On some platforms, `luajit` is a symlink to this file, and we need the actual file
+products = [ExecutableProduct("luajit-2.1.0-beta3", :luajit),
             LibraryProduct(["libluajit-5.1", "lua51"], :libluajit)]
 
 dependencies = []
