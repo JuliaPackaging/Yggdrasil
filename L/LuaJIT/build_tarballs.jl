@@ -15,7 +15,7 @@ sources = [GitSource("https://github.com/LuaJIT/LuaJIT.git",
                      "a04480e311f93d3ceb2f92549cad3fffa38250ef")]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/LuaJIT-*
+cd ${WORKSPACE}/srcdir/LuaJIT*
 
 make -j${nproc} amalg \
     PREFIX="${prefix}" \
