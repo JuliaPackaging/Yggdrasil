@@ -10,6 +10,13 @@ name = "LuaJIT"
 # system for it rather than reflecting the upstream version.
 version = v"2.1.20221221"
 
+# Upstream version, i.e. what the `VERSION` variable in the Makefile in the LuaJIT
+# repository root should expand to.
+upstream_version = v"2.1.0-beta3"
+# The Lua ABI version, i.e. the Lua version targeted for compatibility by this version
+# of LuaJIT. Taken from `ABIVER` in the Makefile.
+abi_version = "5.1"
+
 # We're using the GitHub mirror because the official source seems to be acting weird
 sources = [GitSource("https://github.com/LuaJIT/LuaJIT.git",
                      "a04480e311f93d3ceb2f92549cad3fffa38250ef")]
@@ -17,21 +24,37 @@ sources = [GitSource("https://github.com/LuaJIT/LuaJIT.git",
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT*
 
-make -j${nproc} amalg \
-    PREFIX="${prefix}" \
-    HOST_CC="${CC_BUILD} -m${nbits}" \
-    STATIC_CC="${CC}" \
-    DYNAMIC_CC="${CC} -fPIC" \
-    CROSS="" \
-    TARGET_LD="${CC}"
-make install PREFIX="${prefix}"
+FLAGS=()
+FLAGS+=(PREFIX="${prefix}")
+FLAGS+=(HOST_CC="${CC_BUILD}")
+FLAGS+=(TARGET_CC="${CC}")
+FLAGS+=(HOST_SYS="${MACHTYPE}")
+
+if [[ ${target} == *-apple-* ]]; then
+    FLAGS+=(TARGET_SYS="Darwin")
+elif [[ ${target} == *-freebsd* ]]; then
+    FLAGS+=(TARGET_SYS="FreeBSD")
+elif [[ ${target} == *-mingw* ]]; then
+    FLAGS+=(TARGET_SYS="Windows")
+else
+    FLAGS+=(TARGET_SYS="Linux")
+fi
+
+FLAGS+=(CCOPT_x86="")  # 🤦
+FLAGS+=(Q="")
+
+make -j${nproc} amalg ${FLAGS[@]}
+make install ${FLAGS[@]}
 """
 
-platforms = filter!(p -> arch(p) !== :powerpc64le, supported_platforms())
+platforms = supported_platforms()
 
 # On some platforms, `luajit` is a symlink to this file, and we need the actual file
-products = [ExecutableProduct("luajit-2.1.0-beta3", :luajit),
-            LibraryProduct(["libluajit-5.1", "lua51"], :libluajit)]
+products = [ExecutableProduct("luajit-$(upstream_version)", :luajit),
+            LibraryProduct(["libluajit-$(abi_version)",
+                            "libluajit-$(abi_version).$(upstream_version.major)",
+                            "lua" * replace(abi_version, "." => "")],
+                           :libluajit)]
 
 dependencies = []
 
