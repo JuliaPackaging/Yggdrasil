@@ -35,10 +35,15 @@ fi
 
 FLAGS=(
     PREFIX="${prefix}"
-    HOST_CC="${CC_BUILD} -m${nbits}"
     TARGET_CC="${CC}"
+    HOST_CC="${CC_BUILD} -m${nbits}"
     HOST_SYS="BinaryBuilder"
+    HOST_CFLAGS="-I${host_includedir}"
 )
+
+if [[ ${target} == *-linux-gnu* ]]; then
+    FLAGS+=(LIBS="-ldl")
+fi
 
 make -j${nproc} amalg "${FLAGS[@]}"
 make install "${FLAGS[@]}"
