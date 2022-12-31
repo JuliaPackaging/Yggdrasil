@@ -36,13 +36,26 @@ fi
 FLAGS=(
     PREFIX="${prefix}"
     TARGET_CC="${CC}"
+    TARGET_CFLAGS="-I${includedir}"
+    TARGET_LDFLAGS="-L${libdir}"
     HOST_CC="${CC_BUILD} -m${nbits}"
     HOST_SYS="BinaryBuilder"
     HOST_CFLAGS="-I${host_includedir}"
+    HOST_LDFLAGS="-L${host_libdir}"
 )
 
 if [[ ${target} == *-linux-gnu* ]]; then
     FLAGS+=(LIBS="-ldl")
+fi
+
+if [[ ${target} == *-apple-* ]]; then
+    FLAGS+=(TARGET_SYS="Darwin")
+elif [[ ${target} == *-freebsd* ]]; then
+    FLAGS+=(TARGET_SYS="FreeBSD")
+elif [[ ${target} == *-mingw* ]]; then
+    FLAGS+=(TARGET_SYS="Windows")
+else
+    FLAGS+=(TARGET_SYS="Linux")
 fi
 
 make -j${nproc} amalg "${FLAGS[@]}"
