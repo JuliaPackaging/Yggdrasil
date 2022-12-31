@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index b0288b4d..73710742 100644
+index b0288b4d..ef660560 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -94,11 +94,11 @@ FILES_JITLIB= bc.lua bcsave.lua dump.lua p.lua v.lua zone.lua \
@@ -19,3 +19,18 @@ index b0288b4d..73710742 100644
  TARGET_SYS?= $(HOST_SYS)
  
  ifeq (Darwin,$(TARGET_SYS))
+@@ -106,6 +106,14 @@ ifeq (Darwin,$(TARGET_SYS))
+   INSTALL_SOSHORT1= $(INSTALL_DYLIBSHORT1)
+   INSTALL_SOSHORT2= $(INSTALL_DYLIBSHORT2)
+   LDCONFIG= :
++else ifeq (Windows,$(TARGET_SYS))
++  # XXX: This hard-codes the ABI version from src/Makefile and duplicates some
++  # variables: `FILE_T` is `TARGET_T`, `FILE_A` is `TARGET_DLLDOTANAME`, and
++  # `FILE_SO` is `TARGET_DLLNAME`. We should eventually clean up this godforsaken
++  # mess.
++  FILE_T= luajit.exe
++  FILE_A= libluajit-5.1.dll.a
++  FILE_SO= lua51.dll
+ endif
+ 
+ ##############################################################################
