@@ -17,44 +17,37 @@ upstream_version = v"2.1.0-beta3"
 # of LuaJIT. Taken from `ABIVER` in the Makefile.
 abi_version = "5.1"
 
-# We're using the GitHub mirror because the official source seems to be acting weird
-sources = [GitSource("https://github.com/LuaJIT/LuaJIT.git",
-                     "a04480e311f93d3ceb2f92549cad3fffa38250ef")]
+sources = [
+    # We're using the GitHub mirror because the official source seems to be acting weird
+    GitSource("https://github.com/LuaJIT/LuaJIT.git",
+              "a04480e311f93d3ceb2f92549cad3fffa38250ef"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/LuaJIT*
 
-FLAGS=()
-FLAGS+=(PREFIX="${prefix}")
-FLAGS+=(HOST_CC="${CC_BUILD}")
-FLAGS+=(TARGET_CC="${CC}")
-FLAGS+=(HOST_SYS="${MACHTYPE}")
-
-if [[ ${target} == *-apple-* ]]; then
-    FLAGS+=(TARGET_SYS="Darwin")
-elif [[ ${target} == *-freebsd* ]]; then
-    FLAGS+=(TARGET_SYS="FreeBSD")
-elif [[ ${target} == *-mingw* ]]; then
-    FLAGS+=(TARGET_SYS="Windows")
-else
-    FLAGS+=(TARGET_SYS="Linux")
+if [ -d ${WORKSPACE}/srcdir/patches ]; then
+    for file in ${WORKSPACE}/srcdir/patches/*.patch; do
+        atomic_patch -p1 ${file}
+    done
 fi
 
-FLAGS+=(CCOPT_x86="")  # 🤦
-FLAGS+=(Q="")
-
-make -j${nproc} amalg ${FLAGS[@]}
-make install ${FLAGS[@]}
+make -j${nproc} amalg PREFIX="${prefix}"
+make install PREFIX="${prefix}"
 """
 
-platforms = supported_platforms()
+# PowerPC is not currently supported upstream
+platforms = filter!(p -> arch(p) !== :powerpc64le, supported_platforms())
 
 # On some platforms, `luajit` is a symlink to this file, and we need the actual file
-products = [ExecutableProduct("luajit-$(upstream_version)", :luajit),
-            LibraryProduct(["libluajit-$(abi_version)",
-                            "libluajit-$(abi_version).$(upstream_version.major)",
-                            "lua" * replace(abi_version, "." => "")],
-                           :libluajit)]
+products = [
+    ExecutableProduct("luajit-$(upstream_version)", :luajit),
+    LibraryProduct(["libluajit-$(abi_version)",
+                    "libluajit-$(abi_version).$(upstream_version.major)",
+                    "lua" * replace(abi_version, "." => "")],
+                   :libluajit),
+]
 
 dependencies = []
 
