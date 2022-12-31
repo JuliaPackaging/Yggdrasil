@@ -40,8 +40,8 @@ FLAGS=(
     HOST_SYS="BinaryBuilder"
 )
 
-make -j${nproc} amalg ${FLAGS[@]}
-make install ${FLAGS[@]}
+make -j${nproc} amalg "${FLAGS[@]}"
+make install "${FLAGS[@]}"
 """
 
 # PowerPC is not currently supported upstream
