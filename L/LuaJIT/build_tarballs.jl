@@ -33,8 +33,15 @@ if [ -d ${WORKSPACE}/srcdir/patches ]; then
     done
 fi
 
-make -j${nproc} amalg PREFIX="${prefix}"
-make install PREFIX="${prefix}"
+FLAGS=(
+    PREFIX="${prefix}"
+    HOST_CC="${CC_BUILD} -m${nbits}"
+    TARGET_CC="${CC}"
+    HOST_SYS="BinaryBuilder"
+)
+
+make -j${nproc} amalg ${FLAGS[@]}
+make install ${FLAGS[@]}
 """
 
 # PowerPC is not currently supported upstream

@@ -1,0 +1,21 @@
+diff --git a/Makefile b/Makefile
+index b0288b4d..73710742 100644
+--- a/Makefile
++++ b/Makefile
+@@ -94,11 +94,11 @@ FILES_JITLIB= bc.lua bcsave.lua dump.lua p.lua v.lua zone.lua \
+ 	      dis_arm64be.lua dis_ppc.lua dis_mips.lua dis_mipsel.lua \
+ 	      dis_mips64.lua dis_mips64el.lua vmdef.lua
+ 
+-ifeq (,$(findstring Windows,$(OS)))
+-  HOST_SYS:= $(shell uname -s)
+-else
+-  HOST_SYS= Windows
+-endif
++#ifeq (,$(findstring Windows,$(OS)))
++#  HOST_SYS:= $(shell uname -s)
++#else
++#  HOST_SYS= Windows
++#endif
+ TARGET_SYS?= $(HOST_SYS)
+ 
+ ifeq (Darwin,$(TARGET_SYS))
