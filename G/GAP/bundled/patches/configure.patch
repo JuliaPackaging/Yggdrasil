@@ -1,7 +1,7 @@
-From e3ff603685bf881031f7f63ad18a5bdcf191b162 Mon Sep 17 00:00:00 2001
+From 2ec832675deaa3d68e6061c1617800c6cf1ed6aa Mon Sep 17 00:00:00 2001
 From: Max Horn <max@quendi.de>
 Date: Tue, 13 Sep 2022 16:09:34 +0200
-Subject: [PATCH 3/4] configure.ac: patch Julia compiler flags computation
+Subject: [PATCH 2/2] configure.ac: patch Julia compiler flags computation
 
 The normal code in GAP invokes Julia to "ask" it for the relevant flags.
 But that doesn't work well when cross compiling, and even worse when
@@ -18,7 +18,7 @@ variables.
  1 file changed, 6 insertions(+), 17 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index a5113c4f7..c3410fac7 100644
+index 4ddc2bbc1..c4e6192b5 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -718,35 +718,24 @@ AS_IF([test "x$with_julia" != xno ],[
@@ -64,5 +64,5 @@ index a5113c4f7..c3410fac7 100644
  ],
  [
 -- 
-2.38.1
+2.39.0
 

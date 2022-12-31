@@ -26,15 +26,15 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.12.1"
-version = v"400.1200.102"
+upstream_version = v"4.12.2"
+version = v"400.1200.200"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "1e8e823578e8f1018af592b39bd6f3be1402b482d98f1efb3e24fe6e2f55c926"),
+                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
     DirectorySource("./bundled"),
 ]
 
@@ -75,21 +75,25 @@ julia_version=$(./julia_version)
 # WORKAROUND: avoid error: /usr/local/include: No such file or directory
 export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
 
-# configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
-mkdir native-build
-cd native-build
-../configure --build=${MACHTYPE} --host=${MACHTYPE} \
-    --enable-Werror \
-    --with-gmp=${host_prefix} \
-    --without-readline \
-    --with-zlib=${host_prefix} \
-    CC=${CC_BUILD} CXX=${CXX_BUILD}
-make -j${nproc}
-cp build/c_*.c build/ffdata.* ../src/
-cd ..
+# When building a git snapshot, configure & compile a native version of GAP to
+# generate ffdata.{c,h}, c_oper1.c and c_type1.c -- in a GAP release tarball
+# this is not necessary.
+if [ ! -f src/c_oper1.c ] ; then
+    mkdir native-build
+    cd native-build
+    ../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+        --enable-Werror \
+        --with-gmp=${host_prefix} \
+        --without-readline \
+        --with-zlib=${host_prefix} \
+        CC=${CC_BUILD} CXX=${CXX_BUILD}
+    make -j${nproc}
+    cp build/c_*.c build/ffdata.* ../src/
+    cd ..
 
-# remove the native build, it has done its job
-rm -rf native-build
+    # remove the native build, it has done its job
+    rm -rf native-build
+fi
 
 # compile GAP
 make -j${nproc}
