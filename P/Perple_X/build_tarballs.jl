@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Perple_X"
-version = v"6.9.1"
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "b0eb132a34de94b768ba69c8244ceaf4efa698a7")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "33565053cfaad60ec6d119a4cfdce1c38f87941f")
 ]
 
 # Bash recipe for building across all platforms
