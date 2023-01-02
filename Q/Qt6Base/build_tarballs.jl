@@ -79,7 +79,7 @@ case "$target" in
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         if [[ "${target}" == x86_64-* ]]; then
             export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
-            deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15"
+            deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
         fi
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
     ;;
