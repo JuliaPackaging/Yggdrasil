@@ -83,7 +83,7 @@ products = [
     LibraryProduct("libctransf", :libctransf),
     
     ExecutableProduct("frendly", :frendly),
-    LibraryProduct("libfrendly", :libfrendly)
+    LibraryProduct("libfrendly", :libfrendly),
 ]
 
 # Dependencies that must be installed before this package can be built
