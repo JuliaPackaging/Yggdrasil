@@ -160,7 +160,7 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
-if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
+if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
     CMAKE_CXX_FLAGS+="-fno-gnu-unique"
 fi
