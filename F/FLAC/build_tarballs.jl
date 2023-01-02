@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FLAC"
-version = v"1.3.4"
+version = v"1.4.2"
 
 # Collection of sources required to build FLAC
 sources = [
     ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$(version).tar.xz",
-                  "8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737"),
+                  "e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4"),
     DirectorySource("./bundled"),
 ]
 
@@ -51,6 +51,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Ogg_jll"),
+    # libssp is required for the Windows build, libgcc_s on Linux and FreeBSD
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p) || Sys.iswindows(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
