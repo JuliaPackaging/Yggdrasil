@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Perple_X"
-version = v"6.9.1"
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "b0eb132a34de94b768ba69c8244ceaf4efa698a7")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "f8bc4872949d764bbf7b1ea9e0f3289d737d54f2")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/Perple_X/sources/
 FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
 
 # 1) compile binaries
-make -j${nproc} -f makefile_691 EXT=${exeext}
+make -j${nproc} -f makefile EXT=${exeext}
 
 # deploy binaries & libraries
 for file in ${FilesArray[*]}; do
@@ -25,8 +25,8 @@ for file in ${FilesArray[*]}; do
 done;
 
 # 2) compile shared libraries
-make -f makefile_691 clean
-make -j${nproc} -f makefile_691 EXT=.${dlext} FLINK='-shared' FFLAGS='-fPIC -O3'
+make -f makefile clean
+make -j${nproc} -f makefile EXT=.${dlext} FLINK='-shared' FFLAGS='-fPIC -O3'
 
 # deploy 
 for file in ${FilesArray[*]}; do
@@ -43,48 +43,47 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("fluids", :fluids),
-    LibraryProduct("libfluids", :libfluids),
-    
+    ExecutableProduct("convex", :convex),
+    LibraryProduct("libconvex", :libconvex),
+
     ExecutableProduct("meemum", :meemum),
     LibraryProduct("libmeemum", :libmeemum),
+    
+    ExecutableProduct("vertex", :vertex),
+    LibraryProduct("libvertex", :libvertex),
+    
+    ExecutableProduct("werami", :werami),
+    LibraryProduct("libwerami", :libwerami),
+   
+    ExecutableProduct("pssect", :pssect),
+    LibraryProduct("libpssect", :libpssect),
+        
+    ExecutableProduct("pstable", :pstable),
+    LibraryProduct("libpstable", :libpstable),
+  
+    ExecutableProduct("pspts", :pspts),
+    LibraryProduct("libpspts", :libpspts),
+
+    ExecutableProduct("psvdraw", :psvdraw),
+    LibraryProduct("libpsvdraw", :libpsvdraw),
     
     ExecutableProduct("pt2curv", :pt2curv),
     LibraryProduct("libpt2curv", :libpt2curv),
     
-    ExecutableProduct("pspts", :pspts),
-    LibraryProduct("libpspts", :libpspts),
-
     ExecutableProduct("actcor", :actcor),
     LibraryProduct("libactcor", :libactcor),
+    
+    ExecutableProduct("build", :build),
+    LibraryProduct("libbuild", :libbuild),
+    
+    ExecutableProduct("fluids", :fluids),
+    LibraryProduct("libfluids", :libfluids),
     
     ExecutableProduct("ctransf", :ctransf),
     LibraryProduct("libctransf", :libctransf),
     
     ExecutableProduct("frendly", :frendly),
     LibraryProduct("libfrendly", :libfrendly),
-    
-    ExecutableProduct("vertex", :vertex),
-    LibraryProduct("libvertex", :libvertex),
-    
-    ExecutableProduct("build", :build),
-    LibraryProduct("libbuild", :libbuild),
-    
-    ExecutableProduct("pstable", :pstable),
-    LibraryProduct("libpstable", :libpstable),
-    
-    ExecutableProduct("psvdraw", :psvdraw),
-    LibraryProduct("libpsvdraw", :libpsvdraw),
-    
-    ExecutableProduct("pssect", :pssect),
-    LibraryProduct("libpssect", :libpssect),
-    
-    ExecutableProduct("werami", :werami),
-    LibraryProduct("libwerami", :libwerami),
-    
-    ExecutableProduct("convex", :convex),
-    LibraryProduct("libconvex", :libconvex)
-
 ]
 
 # Dependencies that must be installed before this package can be built
