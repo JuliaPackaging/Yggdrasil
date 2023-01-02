@@ -8,7 +8,7 @@ version = v"6.4.1"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -77,7 +77,11 @@ case "$target" in
     *apple-darwin*)
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.1.sdk
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
+        if [[ "${target}" == x86_64-* ]]; then
+            export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+            deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
+        fi
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
     ;;
 
     *freebsd*)
@@ -87,11 +91,9 @@ case "$target" in
     ;;
 
     *)
-        if [[ "$target" != *"aarch64"* ]]; then
-            sed -i 's/ELFOSABI_GNU/ELFOSABI_LINUX/' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
-            sed -i 's/.*EM_AARCH64.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
-        fi
-        sed -i 's/.*EM_BLACKFIN.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
+        echo "#define ELFOSABI_GNU 3" >> /opt/$target/$target/sys-root/usr/include/elf.h
+        echo "#define EM_AARCH64 183" >> /opt/$target/$target/sys-root/usr/include/elf.h
+        echo "#define EM_BLACKFIN 106" >> /opt/$target/$target/sys-root/usr/include/elf.h
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
     ;;
 esac
@@ -140,6 +142,9 @@ products_macos = [
     FrameworkProduct("QtXml", :libqt6xml),
 ]
 
+# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_libX11_jll"),
@@ -162,6 +167,8 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]
 
 if !host_build
@@ -172,9 +179,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
