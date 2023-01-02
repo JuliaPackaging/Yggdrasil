@@ -88,6 +88,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
       rm -f /usr/bin/uname
     fi
 
+    echo HACK
+
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
     # use the Julia version to determine the directory from which to read patches
