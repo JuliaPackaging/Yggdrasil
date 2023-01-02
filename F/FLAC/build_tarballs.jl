@@ -16,9 +16,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
 
-# Include patch for finding definition of `AT_HWCAP2` for PowerPC within the Linux
-# kernel headers, rather than the glibc headers, sicne our glibc is too old
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
+if [[ "${target}" == *-linux-* ]]; then
+    # Include patch for finding definition of `AT_HWCAP2` for PowerPC within the Linux
+    # kernel headers, rather than the glibc headers, sicne our glibc is too old
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
+fi
 
 if [[ "${target}" == *-mingw* ]]; then
     # Fix error
