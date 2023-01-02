@@ -84,7 +84,6 @@ products = [
     
     ExecutableProduct("frendly", :frendly),
     LibraryProduct("libfrendly", :libfrendly)
-        
 ]
 
 # Dependencies that must be installed before this package can be built
