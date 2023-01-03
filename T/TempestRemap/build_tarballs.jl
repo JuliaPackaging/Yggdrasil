@@ -21,6 +21,13 @@ export LDFLAGS_MAKE="${LDFLAGS}"
 if [[ "${target}" == *-mingw* ]]; then
     LDFLAGS_MAKE+=" -no-undefined"
 fi
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # aclocal.m4 has some lines where it expects `MACOSX_DEPLOYMENT_TARGET` to be up to
+    # version 10.  Let's pretend to be 10.16, as many tools do to make old build systems
+    # happy.
+    export MACOSX_DEPLOYMENT_TARGET="10.16"
+fi
 CONFIGURE_OPTIONS=""
 
 autoreconf -fiv
