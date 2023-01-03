@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.101"
-gap_lib_version = v"400.1201.100"
+gap_version = v"400.1200.200"
+gap_lib_version = v"400.1201.200"
 name = "Browse"
-upstream_version = v"1.8.18" # when you increment this, reset offset to v"0.0.0"
+upstream_version = v"1.8.19" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://www.math.rwth-aachen.de/~Browse/$(name)-$(upstream_version).tar.bz2",
-                  "14d00406f95ef3764beaaf5de8ea01f030e8d2492ad05e9fa1fe06574dbfebfe"),
+    ArchiveSource("https://www.math.rwth-aachen.de/~Browse/Browse-$(upstream_version).tar.bz2",
+                  "5eb792caca5a7ef4e0c04e272963c956bb23743defc573d49ede2f169662ccdb"),
 ]
 
 # Bash recipe for building across all platforms
