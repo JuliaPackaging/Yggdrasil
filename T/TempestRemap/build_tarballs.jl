@@ -18,6 +18,9 @@ atomic_patch -p1 ../patches/triangle.patch
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
+if [[ "${target}" == *-mingw* ]]; then
+    LDFLAGS_MAKE+=" -no-undefined"
+fi
 CONFIGURE_OPTIONS=""
 
 autoreconf -fiv
