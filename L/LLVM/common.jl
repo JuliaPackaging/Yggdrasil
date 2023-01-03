@@ -1,6 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec
+using BinaryBuilderBase: get_addable_spec, sanitize
 
 # Everybody is just going to use the same set of platforms
 
@@ -20,6 +20,11 @@ const llvm_tags = Dict(
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 
 if [[ ${target} == *mingw32* ]]; then
     export CCACHE_DISABLE=true
@@ -492,8 +497,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
-    dependencies = Dependency[
+    dependencies = [
         Dependency("Zlib_jll"), # for LLD&LTO
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
