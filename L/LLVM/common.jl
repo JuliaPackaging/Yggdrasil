@@ -448,9 +448,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = supported_platforms(;experimental=experimental_platforms)
-    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
-    platforms = expand_cxxstring_abis(platforms)
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
