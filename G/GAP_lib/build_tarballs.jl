@@ -21,26 +21,34 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.12.1"
-version = v"400.1201.102"
+upstream_version = v"4.12.2"
+version = v"400.1201.200"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "1e8e823578e8f1018af592b39bd6f3be1402b482d98f1efb3e24fe6e2f55c926"),
+                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
-                  "86d24a1a2208d57822b9aed159b2d5c1306e1a800c6440c6a0d4566e65829c57";
+                  "1fa911d305c458470c1fb555c385402f09cccf1d2d372ab9c416ae7c4a8ebf6d";
                   unpack_target="pkg"),
-    DirectorySource("./bundled"),
+    #DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+if [ -d ${WORKSPACE}/srcdir/patches ] ; then
+  for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
-done
+  done
+fi
+
+# remove patch leftovers
+find . -name '*.orig' -exec rm {} \;
+
+# compress group database
+gzip -n grp/*.grp
 
 mv ../pkg .
 
@@ -70,6 +78,10 @@ install_license LICENSE
 
 # install documentation and library files
 make install-doc install-gaproot
+
+# delete the PDF manuals (they take up a lot of space and few people use them,
+# and those can use the online versions)
+rm ${prefix}/share/gap/doc/*/*.pdf
 """
 
 # These are the platforms we will build for by default, unless further
