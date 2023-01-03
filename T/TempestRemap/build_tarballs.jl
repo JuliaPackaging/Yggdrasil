@@ -14,6 +14,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/tempestremap*
 
 atomic_patch -p1 ../patches/triangle.patch
+atomic_patch -p1 ../patches/libadd.patch
 
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
