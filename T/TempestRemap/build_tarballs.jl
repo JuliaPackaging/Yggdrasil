@@ -7,10 +7,13 @@ version = v"2.1.6"
 sources = [
     ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
                   "d2208b5d6952eba5003ee7abcf22f46a254ba03f6b76dcc4d246068573d424e2"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/tempestremap*
+
+atomic_patch -p1 ../patches/triangle.patch
 
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
