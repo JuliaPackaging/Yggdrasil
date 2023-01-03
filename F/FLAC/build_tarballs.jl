@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FLAC"
-version = v"1.4.2"
+version = v"1.3.4"
 
 # Collection of sources required to build FLAC
 sources = [
     ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$(version).tar.xz",
-                  "e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4"),
+                  "8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,11 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
 
-if [[ "${target}" == *-linux-* ]]; then
-    # Include patch for finding definition of `AT_HWCAP2` for PowerPC within the Linux
-    # kernel headers, rather than the glibc headers, sicne our glibc is too old
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
-fi
+# Include patch for finding definition of `AT_HWCAP2` for PowerPC within the Linux
+# kernel headers, rather than the glibc headers, sicne our glibc is too old
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
 
 if [[ "${target}" == *-mingw* ]]; then
     # Fix error
