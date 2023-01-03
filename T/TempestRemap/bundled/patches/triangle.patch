@@ -1,16 +1,17 @@
 diff --git a/src/triangle.cpp b/src/triangle.cpp
-index d10224a..1bae898 100644
+index d10224a..88935a3 100644
 --- a/src/triangle.cpp
 +++ b/src/triangle.cpp
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,8 @@
  extern "C" {
  
  #include "Defines.h"
 +#include <stdint.h>
++#include <inttypes.h>
  
  /*****************************************************************************/
  /*                                                                           */
-@@ -654,7 +655,7 @@ REAL o3derrboundA, o3derrboundB, o3derrboundC;
+@@ -654,7 +656,7 @@ REAL o3derrboundA, o3derrboundB, o3derrboundC;
  
  /* Random number seed is not constant, but I've made it global anyway.       */
  
@@ -19,7 +20,7 @@ index d10224a..1bae898 100644
  
  
  /* Mesh data structure.  Triangle operates on only one mesh, but the mesh    */
-@@ -831,7 +832,7 @@ struct behavior {
+@@ -831,7 +833,7 @@ struct behavior {
  /*  extracting an orientation (in the range 0 to 2) and a pointer to the     */
  /*  beginning of a triangle.  The encode() routine compresses a pointer to a */
  /*  triangle and an orientation into a single pointer.  My assumptions that  */
@@ -28,7 +29,7 @@ index d10224a..1bae898 100644
  /*  long enough to hold a pointer are two of the few kludges in this program.*/
  /*                                                                           */
  /*  Subsegments are manipulated similarly.  A pointer to a subsegment        */
-@@ -942,16 +943,16 @@ int minus1mod3[3] = {2, 0, 1};
+@@ -942,16 +944,16 @@ int minus1mod3[3] = {2, 0, 1};
  /*   extracted from the two least significant bits of the pointer.           */
  
  #define decode(ptr, otri)                                                     \
@@ -48,7 +49,7 @@ index d10224a..1bae898 100644
  
  /* The following handle manipulation primitives are all described by Guibas  */
  /*   and Stolfi.  However, Guibas and Stolfi use an edge-based data          */
-@@ -1115,16 +1116,16 @@ int minus1mod3[3] = {2, 0, 1};
+@@ -1115,16 +1117,16 @@ int minus1mod3[3] = {2, 0, 1};
  
  #define infect(otri)                                                          \
    (otri).tri[6] = (triangle)                                                  \
@@ -68,7 +69,7 @@ index d10224a..1bae898 100644
  
  /* Check or set a triangle's attributes.                                     */
  
-@@ -1162,16 +1163,16 @@ int minus1mod3[3] = {2, 0, 1};
+@@ -1162,16 +1164,16 @@ int minus1mod3[3] = {2, 0, 1};
  /*   are masked out to produce the real pointer.                             */
  
  #define sdecode(sptr, osub)                                                   \
@@ -88,7 +89,7 @@ index d10224a..1bae898 100644
  
  /* ssym() toggles the orientation of a subsegment.                           */
  
-@@ -3679,27 +3680,27 @@ struct otri *t;
+@@ -3679,27 +3681,27 @@ struct otri *t;
    struct osub printsh;
    vertex printvertex;
  
@@ -120,7 +121,7 @@ index d10224a..1bae898 100644
             printtri.orient);
    }
  
-@@ -3707,38 +3708,38 @@ struct otri *t;
+@@ -3707,38 +3709,38 @@ struct otri *t;
    if (printvertex == (vertex) NULL)
      printf("    Origin[%d] = NULL\n", (t->orient + 1) % 3 + 3);
    else
@@ -168,7 +169,7 @@ index d10224a..1bae898 100644
               printsh.ssorient);
      }
    }
-@@ -3773,20 +3774,20 @@ struct osub *s;
+@@ -3773,20 +3775,20 @@ struct osub *s;
    struct otri printtri;
    vertex printvertex;
  
@@ -193,7 +194,7 @@ index d10224a..1bae898 100644
             printsh.ssorient);
    }
  
-@@ -3794,29 +3795,29 @@ struct osub *s;
+@@ -3794,29 +3796,29 @@ struct osub *s;
    if (printvertex == (vertex) NULL)
      printf("    Origin[%d] = NULL\n", 2 + s->ssorient);
    else
@@ -229,7 +230,7 @@ index d10224a..1bae898 100644
             printtri.orient);
    }
  
-@@ -3824,15 +3825,15 @@ struct osub *s;
+@@ -3824,15 +3826,15 @@ struct osub *s;
    if (printvertex == (vertex) NULL)
      printf("    Segment origin[%d] = NULL\n", 4 + s->ssorient);
    else
@@ -249,7 +250,7 @@ index d10224a..1bae898 100644
             printvertex[0], printvertex[1]);
  }
  
-@@ -3895,7 +3896,7 @@ struct memorypool *pool;
+@@ -3895,7 +3897,7 @@ struct memorypool *pool;
  #endif /* not ANSI_DECLARATORS */
  
  {
@@ -258,7 +259,7 @@ index d10224a..1bae898 100644
  
    pool->items = 0;
    pool->maxitems = 0;
-@@ -3903,11 +3904,11 @@ struct memorypool *pool;
+@@ -3903,11 +3905,11 @@ struct memorypool *pool;
    /* Set the currently active block. */
    pool->nowblock = pool->firstblock;
    /* Find the first item in the pool.  Increment by the size of (VOID *). */
@@ -273,7 +274,7 @@ index d10224a..1bae898 100644
    /* There are lots of unallocated items left in this block. */
    pool->unallocateditems = pool->itemsfirstblock;
    /* The stack of deallocated items is empty. */
-@@ -4012,7 +4013,7 @@ struct memorypool *pool;
+@@ -4012,7 +4014,7 @@ struct memorypool *pool;
  {
    VOID *newitem;
    VOID **newblock;
@@ -282,7 +283,7 @@ index d10224a..1bae898 100644
  
    /* First check the linked list of dead items.  If the list is not   */
    /*   empty, allocate an item from the list rather than a fresh one. */
-@@ -4037,11 +4038,11 @@ struct memorypool *pool;
+@@ -4037,11 +4039,11 @@ struct memorypool *pool;
        pool->nowblock = (VOID **) *(pool->nowblock);
        /* Find the first item in the block.    */
        /*   Increment by the size of (VOID *). */
@@ -297,7 +298,7 @@ index d10224a..1bae898 100644
        /* There are lots of unallocated items left in this block. */
        pool->unallocateditems = pool->itemsperblock;
      }
-@@ -4096,16 +4097,16 @@ struct memorypool *pool;
+@@ -4096,16 +4098,16 @@ struct memorypool *pool;
  #endif /* not ANSI_DECLARATORS */
  
  {
@@ -318,7 +319,7 @@ index d10224a..1bae898 100644
    /* Set the number of items left in the current block. */
    pool->pathitemsleft = pool->itemsfirstblock;
  }
-@@ -4133,7 +4134,7 @@ struct memorypool *pool;
+@@ -4133,7 +4135,7 @@ struct memorypool *pool;
  
  {
    VOID *newitem;
@@ -327,7 +328,7 @@ index d10224a..1bae898 100644
  
    /* Stop upon exhausting the list of items. */
    if (pool->pathitem == pool->nextitem) {
-@@ -4145,11 +4146,11 @@ struct memorypool *pool;
+@@ -4145,11 +4147,11 @@ struct memorypool *pool;
      /* Find the next block. */
      pool->pathblock = (VOID **) *(pool->pathblock);
      /* Find the first item in the block.  Increment by the size of (VOID *). */
@@ -342,7 +343,7 @@ index d10224a..1bae898 100644
      /* Set the number of items left in the current block. */
      pool->pathitemsleft = pool->itemsperblock;
    }
-@@ -4201,16 +4202,16 @@ int subsegbytes;
+@@ -4201,16 +4203,16 @@ int subsegbytes;
  #endif /* not ANSI_DECLARATORS */
  
  {
@@ -363,7 +364,7 @@ index d10224a..1bae898 100644
    /* Initialize the three adjoining triangles to be "outer space."  These  */
    /*   will eventually be changed by various bonding operations, but their */
    /*   values don't really matter, as long as they can legally be          */
-@@ -4230,10 +4231,10 @@ int subsegbytes;
+@@ -4230,10 +4232,10 @@ int subsegbytes;
      m->dummysubbase = (subseg *) trimalloc(subsegbytes +
                                             m->subsegs.alignbytes);
      /* Align `dummysub' on a `subsegs.alignbytes'-byte boundary. */
@@ -377,7 +378,7 @@ index d10224a..1bae898 100644
      /* Initialize the two adjoining subsegments to be the omnipresent      */
      /*   subsegment.  These will eventually be changed by various bonding  */
      /*   operations, but their values don't really matter, as long as they */
-@@ -4590,7 +4591,7 @@ int number;
+@@ -4590,7 +4592,7 @@ int number;
  {
    VOID **getblock;
    char *foundvertex;
@@ -386,7 +387,7 @@ index d10224a..1bae898 100644
    int current;
  
    getblock = m->vertices.firstblock;
-@@ -4607,9 +4608,9 @@ int number;
+@@ -4607,9 +4609,9 @@ int number;
    }
  
    /* Now find the right vertex. */
@@ -399,7 +400,7 @@ index d10224a..1bae898 100644
    return (vertex) (foundvertex + m->vertices.itembytes * (number - current));
  }
  
-@@ -6671,9 +6672,9 @@ struct mesh *m;
+@@ -6671,9 +6673,9 @@ struct mesh *m;
  /*****************************************************************************/
  
  #ifdef ANSI_DECLARATORS
@@ -411,7 +412,7 @@ index d10224a..1bae898 100644
  unsigned int choices;
  #endif /* not ANSI_DECLARATORS */
  
-@@ -7653,7 +7654,7 @@ struct otri *searchtri;
+@@ -7653,7 +7655,7 @@ struct otri *searchtri;
    char *firsttri;
    struct otri sampletri;
    vertex torg, tdest;
@@ -420,7 +421,7 @@ index d10224a..1bae898 100644
    REAL searchdist, dist;
    REAL ahead;
    long samplesperblock, totalsamplesleft, samplesleft;
-@@ -7725,11 +7726,11 @@ struct otri *searchtri;
+@@ -7725,11 +7727,11 @@ struct otri *searchtri;
        population = totalpopulation;
      }
      /* Find a pointer to the first triangle in the block. */
