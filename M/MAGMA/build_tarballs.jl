@@ -56,3 +56,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                 preferred_gcc_version=v"8", 
                 julia_compat="1.6",
                 augment_platform_block=CUDA.augment)
+                
