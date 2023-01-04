@@ -9,13 +9,15 @@ version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-2.7.0.tar.gz", "fda1cbc4607e77cacd8feb1c0f633c5826ba200a018f647f1c5436975b39fd18"),
+    ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-${version}.tar.gz",
+                  "fda1cbc4607e77cacd8feb1c0f633c5826ba200a018f647f1c5436975b39fd18"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/magma-*
+cd $WORKSPACE/srcdir/magma*
+
 export CUDADIR=${WORKSPACE}/destdir/cuda
 export PATH=${PATH}:${CUDADIR}
 cp ../make.inc .
