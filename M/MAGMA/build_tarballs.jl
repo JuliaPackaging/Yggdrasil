@@ -9,7 +9,7 @@ version = v"2.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-${version}.tar.gz",
+    ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-$(version).tar.gz",
                   "fda1cbc4607e77cacd8feb1c0f633c5826ba200a018f647f1c5436975b39fd18"),
     DirectorySource("./bundled")
 ]
