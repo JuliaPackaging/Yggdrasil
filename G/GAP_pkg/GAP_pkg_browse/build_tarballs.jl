@@ -5,7 +5,7 @@ include("../common.jl")
 gap_version = v"400.1200.200"
 gap_lib_version = v"400.1201.200"
 name = "Browse"
-upstream_version = v"1.8.19" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.8.19" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
