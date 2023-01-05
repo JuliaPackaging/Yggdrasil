@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.0.300"
+version = v"800.0.301"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,9 +18,15 @@ script = raw"""
 # remove when CMake accounts for this
 if [[ "${target}" == *86*-linux-gnu ]]; then
    export LDFLAGS="-lrt"
+elif [[ "${target}" == *-mingw* ]]; then
+   # this is required to link to bliss on mingw
+   export LDFLAGS=-L${libdir}
 fi
 
 cd scipoptsuite*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -30,10 +37,14 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DGCG=0\
   -DUG=0\
   -DAMPL=0\
-  -DBOOST=off\
+  -DBOOST=ON\
   -DSYM=bliss\
   -DTPI=tny\
-  -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
+  -DIPOPT_DIR=${prefix} \
+  -DIPOPT_LIBRARIES=${libdir} \
+  -DBLISS_INCLUDE_DIR=${includedir} \
+  -DBLISS_LIBRARY=bliss \
+  ..
 make -j${nproc}
 make install
 
