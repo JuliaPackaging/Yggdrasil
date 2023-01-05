@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AzStorage"
-version = v"0.6.0"
+version = v"0.6.1"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/AzStorage.jl.git",
-        "4a0d10bd58334f2b44a8615f518d5b4b634f4633"
+        "f888c178ab0fa8bdbcc26694550109ad7fadbc03"
     )
 ]
 
@@ -22,9 +22,9 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
-make
+make yggdrasil
 
-install -Dvm 755 libAzStorage.so "${libdir}/libAzStorage.${dlext}"
+install -Dvm 755 libAzStorage.${dlext} "${libdir}/libAzStorage.${dlext}"
 install -Dvm 644 AzStorage.h "${includedir}/AzStorage.h"
 """
 
@@ -41,7 +41,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency("LibCURL_jll", v"7.73.0"),
     # MbedTLS is only an indirect dependency (through LibCURL), but we want to
     # be sure to have the right version of MbedTLS for the corresponding version
