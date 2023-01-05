@@ -24,8 +24,8 @@ fi
 
 make
 
-cp libAzStorage.so ${libdir}/libAzStorage.${dlext}
-cp AzStorage.h ${includedir}/AzStorage.h
+install -Dvm 755 libAzStorage.so "${libdir}/libAzStorage.${dlext}"
+install -Dvm 644 AzStorage.h "${includedir}/AzStorage.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,7 +36,7 @@ platforms = supported_platforms(; experimental=true)
 # TODO - add libgomp dependency
 products = [
     LibraryProduct("libAzStorage", :libAzStorage),
-    FileProduct("include/AzStorage.h", :AzStorage_h)
+    FileProduct("include/AzStorage.h", :AzStorage_h),
 ]
 
 # Dependencies that must be installed before this package can be built
