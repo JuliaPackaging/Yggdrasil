@@ -57,8 +57,8 @@ function update_gap_pkg_recipe(dir)
         gap_lib_version
     end
 
-    old_upstream_version = match(r"upstream_version = v\"([^\"]+)\"", recipe).captures[1]
-    old_offset = VersionNumber(match(r"offset = v\"([^\"]+)\"", recipe).captures[1])
+    old_upstream_version = match(r"upstream_version = v?\"([^\"]+)\"", recipe).captures[1]
+    offset = VersionNumber(match(r"offset = v\"([^\"]+)\"", recipe).captures[1])
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
@@ -90,12 +90,10 @@ function update_gap_pkg_recipe(dir)
         end
         @info "skipping $pkgname"
         return
-    end
-
-    if old_upstream_version != upstream_version
+    elseif old_upstream_version != upstream_version
         offset = v"0.0.0"
     else
-        offset = VersionNumber(old_offset.major, old_offset.minor, old_offset.patch + 1)
+        offset = VersionNumber(offset.major, offset.minor, offset.patch + 1)
     end
 
     # update the metadata
@@ -103,7 +101,7 @@ function update_gap_pkg_recipe(dir)
     recipe = replace(recipe, r"gap_lib_version = v\"[^\"]+\"" => "gap_lib_version = v\"$gap_lib_version\"")
 
     # update version
-    recipe = replace(recipe, r"upstream_version = v\"[^\"]+\"" => "upstream_version = v\"$upstream_version\"")
+    recipe = replace(recipe, r"upstream_version = v?\"[^\"]+\"" => "upstream_version = \"$upstream_version\"")
     recipe = replace(recipe, r"offset = v\"[^\"]+\"" => "offset = v\"$offset\"")
 
     if pkgname != "juliainterface"

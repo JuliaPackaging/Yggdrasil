@@ -12,7 +12,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 gap_version = v"400.1200.200"
 gap_lib_version = v"400.1201.200"
 name = "JuliaInterface"
-upstream_version = v"0.8.2" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.8.2" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 

@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "nq"
-upstream_version = v"2.5.9" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.5.9" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
