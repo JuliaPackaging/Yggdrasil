@@ -24,7 +24,7 @@ fi
 
 make yggdrasil
 
-install -Dvm 755 libAzStorage.so "${libdir}/libAzStorage.${dlext}"
+install -Dvm 755 libAzStorage.${dlext} "${libdir}/libAzStorage.${dlext}"
 install -Dvm 644 AzStorage.h "${includedir}/AzStorage.h"
 """
 
