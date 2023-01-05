@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AzStorage"
-version = v"0.5.0"
+version = v"0.6.0"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/AzStorage.jl.git",
-        "0c365d770fd5fa7d30e2e760cf40f03fbe246de8"
+        "4a0d10bd58334f2b44a8615f518d5b4b634f4633"
     )
 ]
 
@@ -24,7 +24,8 @@ fi
 
 make
 
-cp libAzStorage.so ${libdir}/libAzStorage.${dlext}
+install -Dvm 755 libAzStorage.so "${libdir}/libAzStorage.${dlext}"
+install -Dvm 644 AzStorage.h "${includedir}/AzStorage.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,7 +35,8 @@ platforms = supported_platforms(; experimental=true)
 # The products that we will ensure are always built
 # TODO - add libgomp dependency
 products = [
-    LibraryProduct("libAzStorage", :libAzStorage)
+    LibraryProduct("libAzStorage", :libAzStorage),
+    FileProduct("include/AzStorage.h", :AzStorage_h),
 ]
 
 # Dependencies that must be installed before this package can be built
