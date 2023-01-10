@@ -2,6 +2,7 @@ using BinaryBuilder
 using Base.BinaryPlatforms
 using Pkg
 
+include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
 include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
 
 
@@ -81,24 +82,45 @@ products = [
     ExecutableProduct("extrae-loader", :extrae_loader),
 ]
 
-# cuda_product = [
-#     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
-# ]
+cuda_products = [
+    LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
+]
 
-dependencies = [
+dependencies = BinaryBuilder.AbstractDependency[
     Dependency("Binutils_jll"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
 ]
 
-append!(dependencies, [
-    BuildDependency(PackageSpec(name="CUDA_build_jll", version=cuda_version),
-        platforms=filter(p -> tags(p)["cuda"] == CUDA.platform(cuda_version), cuda_platforms))
-    for cuda_version in cuda_versions])
-append!(dependencies, [
-    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", version=cuda_version),
-        platforms=filter(p -> tags(p)["cuda"] == CUDA.platform(cuda_version), cuda_platforms))
-    for cuda_version in cuda_versions])
+cuda_dependencies = [
+    BuildDependency("CUDA_full_jll"),
+    RuntimeDependency("CUDA_Runtime_jll"),
+]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# from 'fancy_toys.jl'
+requested_platforms = parse.(Platform, filter(arg -> !occursin(r"^--.*", arg), ARGS))
+
+if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
+                                           only(requested_platforms) |> tags |> keys |> (!∋)("cuda"))
+    for platform in platforms
+        !should_build_platform(platform) && continue
+        println("$platform => $(should_build_platform(platform))")
+
+        build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies; julia_compat="1.6")
+    end
+end
+
+if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
+                                           only(requested_platforms) |> tags |> keys |> ∋("cuda"))
+    for cuda_platform in cuda_platforms
+        !should_build_platform(cuda_platform) && continue
+        println("$cuda_platform => $(should_build_platform(cuda_platform))")
+
+        _dependencies = vcat(dependencies, cuda_dependencies)
+        _products = vcat(products, cuda_products)
+
+        build_tarballs(ARGS, name, version, sources, script, [cuda_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
+    end
+end
+
