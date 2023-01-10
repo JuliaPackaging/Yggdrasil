@@ -105,7 +105,6 @@ if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
                                            only(requested_platforms) |> tags |> keys |> (!∋)("cuda"))
     for platform in platforms
         !should_build_platform(platform) && continue
-        println("$platform => $(should_build_platform(platform))")
 
         build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies; julia_compat="1.6")
     end
@@ -115,7 +114,6 @@ if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
                                            only(requested_platforms) |> tags |> keys |> ∋("cuda"))
     for cuda_platform in cuda_platforms
         !should_build_platform(cuda_platform) && continue
-        println("$cuda_platform => $(should_build_platform(cuda_platform))")
 
         _dependencies = vcat(dependencies, cuda_dependencies)
         _products = vcat(products, cuda_products)
