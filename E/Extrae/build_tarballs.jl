@@ -115,10 +115,9 @@ if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
     for cuda_platform in cuda_platforms
         !should_build_platform(cuda_platform) && continue
 
-        _dependencies = vcat(dependencies, cuda_dependencies)
-        _products = vcat(products, cuda_products)
-
-        build_tarballs(ARGS, name, version, sources, script, [cuda_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
+        let dependencies = vcat(dependencies, cuda_dependencies), products = vcat(products, cuda_products)
+            build_tarballs(ARGS, name, version, sources, script, [cuda_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
+        end
     end
 end
 
