@@ -6,11 +6,11 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "ducc0"
-version = v"0.27.0"
+version = v"0.27.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "84967dd5d3e3062874a03c99a6d51ab375d3fb9d"),
+    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "4778ffd93c4a347d2fe26e6d1a586565633f29c2"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
