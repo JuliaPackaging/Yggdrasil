@@ -90,6 +90,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 fi
+if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
@@ -471,6 +474,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     if version >= v"12.0.1"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
+    end
+    if version >= v"14"
+        push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
     end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
