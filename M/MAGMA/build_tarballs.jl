@@ -29,6 +29,7 @@ install_license COPYRIGHT
 """
 
 cuda_platforms = [
+    # CUDA 10.2 would not build, missing symbols.
     # Platform("x86_64", "Linux"; cuda = "10.2"),
     Platform("x86_64", "Linux"; cuda = "11.3"),
 ]
@@ -46,14 +47,13 @@ dependencies = [
     # You can only specify one cuda version in the deps. To build against more than 
     # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3"), platforms=platforms),
-    Dependency("libblastrampoline_jll"),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3")),
+    Dependency("libblastrampoline_jll"; compat=v"5.2.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                 preferred_gcc_version=v"8", 
-                julia_compat="1.6",
+                julia_compat="1.8",
                 augment_platform_block=CUDA.augment)
-                
