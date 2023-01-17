@@ -4,12 +4,12 @@ using BinaryBuilder
 using BinaryBuilderBase: sanitize
 
 name = "MPFR"
-version = v"4.1.1"
+version = v"4.2.0"
 
 # Collection of sources required to build MPFR
 sources = [
     ArchiveSource("https://www.mpfr.org/mpfr-$(version)/mpfr-$(version).tar.xz",
-                  "ffd195bd567dbaffc3b98b23fd00aad0537680c9896171e44fe3ff79e28ac33d"),
+                  "06a378df13501248c1b2db5aa977a2c8126ae849a9d9b7be2546fb4a9c26d993"),
 ]
 
 # Bash recipe for building across all platforms
