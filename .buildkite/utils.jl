@@ -48,6 +48,8 @@ env(NAME, PROJECT) = Dict(
     "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => get(ENV, "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET", ""),
 )
 
+safe_name(fn::AbstractString) = replace(fn, r"[^A-Za-z0-9_\-:]"=>"-")
+
 wait_step() = Dict(:wait => nothing)
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
@@ -79,6 +81,8 @@ end
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
+    apt-get update
+    apt install -y xz-utils
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
@@ -110,9 +114,8 @@ function build_step(NAME, PLATFORM, PROJECT)
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))
 
-
     Dict(
-        :key => "$NAME--$PLATFORM",
+        :key => "$(safe_name(NAME))--$(safe_name(PLATFORM))",
         :label => "build -- $NAME -- $PLATFORM",
         :agents => agent(),
         :plugins => build_plugins,
