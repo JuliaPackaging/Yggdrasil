@@ -88,14 +88,6 @@ if isempty(PLATFORMS)
     @error "Unable to determine the proper platforms" NAME
 end
 
-# Create the BUILD_STEPS
-BUILD_STEPS = Any[]
-for PLATFORM in PLATFORMS
-    println("    $(PLATFORM): building")
-
-    push!(BUILD_STEPS, build_step(NAME, PLATFORM, PROJECT))
-end
-
 const IS_PR = get(ENV, "BUILDKITE_PULL_REQUEST", "false") != "false"
 const SKIP_BUILD_COOKIE="[skip build]"
 
@@ -107,9 +99,9 @@ if IS_PR
     PR_NUMBER = ENV["BUILDKITE_PULL_REQUEST"]
     exec(`git fetch origin "refs/pull/$(PR_NUMBER)/head:refs/remotes/origin/pr/$(PR_NUMBER)"`)
 
-    COMMIT_MSG = readchomp(`git show -s --format=%B origin/pr/$(PR_NUMBER)`) 
+    COMMIT_MSG = readchomp(`git show -s --format=%B origin/pr/$(PR_NUMBER)`)
 else
-    COMMIT_MSG = readchomp(`git show -s --format=%B`) 
+    COMMIT_MSG = readchomp(`git show -s --format=%B`)
 end
 # This variable will tell us whether we want to skip the build
 const SKIP_BUILD = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
@@ -119,7 +111,16 @@ if !IS_PR
     push!(STEPS, jll_init_step(NAME, PROJECT))
     push!(STEPS, wait_step())
 end
-if !SKIP_BUILD
+# Create the BUILD_STEPS
+if SKIP_BUILD
+    println("The commit messages contains $(SKIP_BUILD_COOKIE), skipping build")
+else
+    BUILD_STEPS = Any[]
+    for PLATFORM in PLATFORMS
+        println("    $(PLATFORM): building")
+
+        push!(BUILD_STEPS, build_step(NAME, PLATFORM, PROJECT))
+    end
     push!(STEPS, group_step(NAME, BUILD_STEPS))
 end
 if !IS_PR
