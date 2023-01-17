@@ -39,7 +39,7 @@ tar xjf ../micromamba-$target.tar.bz2
 
 # install the binary
 if [[ $target = *-w64-* ]]; then
-    installd -Dvm 755 Library/bin/micromamba.exe "${bindir}/micromamba.exe"
+    install -Dvm 755 Library/bin/micromamba.exe "${bindir}/micromamba.exe"
 else
     install -Dvm 755 bin/micromamba "${bindir}/micromamba"
 fi
