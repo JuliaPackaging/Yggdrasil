@@ -81,6 +81,7 @@ end
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
+    apk install xz-utils
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
