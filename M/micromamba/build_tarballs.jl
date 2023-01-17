@@ -31,8 +31,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-echo target=$target
-
 # unpack the tarball (BinaryBuilder does not natively support bzip2 so we do this ourselves)
 cd $WORKSPACE/srcdir
 mkdir micromamba
@@ -40,16 +38,14 @@ cd micromamba
 tar xjf ../micromamba-$target.tar.bz2
 
 # install the binary
-mkdir -p $bindir
 if [[ $target = *-w64-* ]]; then
-    cp Library/bin/micromamba.exe $bindir/micromamba.exe
+    installd -Dvm 755 Library/bin/micromamba.exe "${bindir}/micromamba.exe"
 else
-    cp bin/micromamba $bindir/micromamba
+    install -Dvm 755 bin/micromamba "${bindir}/micromamba"
 fi
 
 # install the licenses
-mkdir -p $prefix/share/licenses/micromamba
-cp info/licenses/* $prefix/share/licenses/micromamba/
+install_license info/licenses/*
 """
 
 # These are the platforms we will build for by default, unless further
