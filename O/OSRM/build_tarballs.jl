@@ -14,7 +14,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 mkdir build && cd build
-cmake ..
+cmake .. \
+    -DBZIP2_INCLUDE_DIR=${includedir} \
+    -DBZIP2_LIBRARIES=${libdir}/libbz2.${dlext} \
+    -DLUA_INCLUDE_DIR=${includedir} \
+    -DLUA_LIBRARIES=${libdir}/liblua.${dlext} \
+    -DZLIB_INCLUDE_DIR=${includedir} \
+    -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
+    -Wno-dev
 make -j${nproc}
 make install
 """
@@ -41,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
