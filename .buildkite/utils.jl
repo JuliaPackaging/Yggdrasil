@@ -91,7 +91,7 @@ function build_step(NAME, PLATFORM, PROJECT)
     push!(build_plugins,
         "staticfloat/sandbox#v1" => Dict(
             "rootfs_url" => "https://github.com/JuliaCI/rootfs-images/releases/download/v5.52/yggdrasil.x86_64.tar.gz",
-            "rootfs_treehash" => "0000000000000000000000000000000000000000", # TODO: put in the real hash
+            "rootfs_treehash" => "78d5944ebe98cd51c6b076f999d460a1f8d1a3c4",
             "workspaces" => [
                 "/cache/repos:/cache/repos"
             ],
