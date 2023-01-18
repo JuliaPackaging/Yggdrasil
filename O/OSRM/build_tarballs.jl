@@ -12,6 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+atomic_patch -p1 ../patches/boost_deprecated_header.patch
 cd $WORKSPACE/srcdir/osrm-backend
 mkdir build && cd build
 cmake .. \
