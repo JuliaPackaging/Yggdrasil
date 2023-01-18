@@ -7,13 +7,17 @@ version = v"5.27.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "6bff4d6d557389bcf641eaa522e30bb87a4d4fb9")
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "6bff4d6d557389bcf641eaa522e30bb87a4d4fb9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-atomic_patch -p1 ../patches/boost_deprecated_header.patch
 cd $WORKSPACE/srcdir/osrm-backend
+
+# Patch boost/phoenix.hpp header path
+atomic_patch -p1 ../patches/boost_deprecated_header.patch
+
 mkdir build && cd build
 cmake .. \
     -DBZIP2_INCLUDE_DIR=${includedir} \
