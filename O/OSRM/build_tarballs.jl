@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OSRM"
-version = v"5.27.1"
+version = v"5.28.0" # UNTAGGED / ASK FOR TAG
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "6bff4d6d557389bcf641eaa522e30bb87a4d4fb9"),
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "d9df33dd0a492c50632deddd0ddfdfbf3cb5bbd7"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
-# Patch boost/phoenix.hpp, boost/iterator/function_output_iterator.hpp header path
+# Patch boost/phoenix.hpp header path
 atomic_patch -p1 ../patches/boost_deprecated_header.patch
 
 mkdir build && cd build
