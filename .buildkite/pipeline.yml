@@ -1,7 +1,7 @@
 steps:
   - label: ":runner: Dynamically launch Pipelines"
     plugins:
-      - JuliaCI/julia#v1: # This is the "outer Julia"
+      - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.7"
           depot_hard_size_limit: "68719476736" # 64GB
