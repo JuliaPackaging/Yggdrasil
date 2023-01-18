@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
-# Patch boost/phoenix.hpp header path
+# Patch boost/phoenix.hpp, boost/iterator/function_output_iterator.hpp header path
 atomic_patch -p1 ../patches/boost_deprecated_header.patch
 
 mkdir build && cd build
