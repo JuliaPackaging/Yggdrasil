@@ -27,8 +27,8 @@ cmake .. \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -Wno-dev
-make -j${nproc}
-make install
+cmake --build .
+cmake --build . --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,7 +47,7 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"))
     Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
-    Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"))
+    HostBuildDependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"))
     Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"))
     Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"))
 ]
