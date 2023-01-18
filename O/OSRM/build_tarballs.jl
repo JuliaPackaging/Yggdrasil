@@ -1,0 +1,44 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "OSRM"
+version = v"5.27.1"
+
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "6bff4d6d557389bcf641eaa522e30bb87a4d4fb9")
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/osrm-backend
+mkdir build && cd build
+cmake ..
+make -j${nproc}
+make install
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+# The products that we will ensure are always built
+products = Product[
+    LibraryProduct("libosrm", :libosrm)
+    ExecutableProduct("osrm-routed", :osrm_routed)
+    
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"))
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"))
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"))
+    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"))
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
