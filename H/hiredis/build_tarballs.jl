@@ -12,11 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd hiredis/
-make install USE_SSL=1
-mv libhiredis.so libhiredis_ssl.so $prefix
-exit
+cd $WORKSPACE/srcdir/hiredis/
+make -j${nproc} USE_SSL=1 PREFIX="${prefix}" LIBRARY_PATH=$(basename "${libdir}") install
 """
 
 # These are the platforms we will build for by default, unless further
