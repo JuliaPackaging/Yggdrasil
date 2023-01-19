@@ -29,12 +29,13 @@ cmake .. \
     -DLUA_LIBRARIES=${libdir}/liblua.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
+    -DBUILD_SHARED_LIBS=ON \
     -Wno-dev
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
 
 cp osrm-* ${bindir}
-cp libosrm_* ${libdir}
+cp libosrm* ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,6 +52,14 @@ products = Product[
     ExecutableProduct("osrm-customize", :osrm_customize)
     ExecutableProduct("osrm-datastore", :osrm_datastore)
     ExecutableProduct("osrm-extract", :osrm_extract)
+    LibraryProduct("libosrm", :libosrm)
+    LibraryProduct("libosrm_contract", :libosrm_contract)
+    LibraryProduct("libosrm_customize", :libosrm_customize)
+    LibraryProduct("libosrm_extract", :libosrm_extract)
+    LibraryProduct("libosrm_guidance", :libosrm_guidance)
+    LibraryProduct("libosrm_partition", :libosrm_partition)
+    LibraryProduct("libosrm_store", :libosrm_store)
+    LibraryProduct("libosrm_update", :libosrm_update)
 ]
 
 # Dependencies that must be installed before this package can be built
