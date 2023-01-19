@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tracy-0.9/
+cd $WORKSPACE/srcdir/tracy*/
 if [[ "${target}" != *-mingw* ]]; then
     echo "target_compile_definitions(TracyClient PUBLIC __STDC_FORMAT_MACROS)" >> CMakeLists.txt
 else
@@ -23,14 +23,13 @@ fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-freebsd-elfw.patch
 cmake -B static -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DTRACY_FIBERS=ON .
 cd static
-make
+make -j${nproc}
 make install
 cd ..
 cmake -B shared -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DTRACY_FIBERS=ON .
 cd shared
-make
+make -j${nproc}
 make install
-cd ..
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,7 +43,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
