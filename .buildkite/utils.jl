@@ -44,7 +44,7 @@ env(NAME, PROJECT) = Dict(
     "NAME" => NAME,
     "PROJECT" => PROJECT,
     "YGGDRASIL" => "true",
-    # Inherit the secret so that we can decrypt cryptic secrets 
+    # Inherit the secret so that we can decrypt cryptic secrets
     "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => get(ENV, "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET", ""),
 )
 
@@ -126,7 +126,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.gz"
+            "**/products/$(first(split(NAME, "@")))*.tar.gz"
         ]
     )
 end
