@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "OSRM"
-version = v"5.28.0" # UNTAGGED / ASK FOR TAG
+version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 
 # Collection of sources required to complete build
 sources = [
@@ -21,6 +21,7 @@ atomic_patch -p1 ../patches/boost_deprecated_header.patch
 CFLAGS="-Wno-error=suggest-override"
 
 mkdir build && cd build
+
 cmake .. \
     -DBZIP2_INCLUDE_DIR=${includedir} \
     -DBZIP2_LIBRARIES=${libdir}/libbz2.${dlext} \
@@ -31,6 +32,9 @@ cmake .. \
     -Wno-dev
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
+
+cp osrm-* ${bindir}
+cp libosrm_* ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,9 +43,21 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct("libosrm", :libosrm)
     ExecutableProduct("osrm-routed", :osrm_routed)
-    
+    ExecutableProduct("osrm-partition", :osrm_partition)
+    ExecutableProduct("osrm-components", :osrm_components)
+    ExecutableProduct("osrm-contract", :osrm_contract)
+    ExecutableProduct("osrm-customize", :osrm_customize)
+    ExecutableProduct("osrm-datastore", :osrm_datastore)
+    ExecutableProduct("osrm-extract", :osrm_extract)
+    LibraryProduct("libosrm", :libosrm)    
+    LibraryProduct("libosrm_contract", :libosrm_contract)    
+    LibraryProduct("libosrm_customize", :libosrm_customize)    
+    LibraryProduct("libosrm_update", :libosrm_update)    
+    LibraryProduct("libosrm_guidance", :libosrm_guidance)    
+    LibraryProduct("libosrm_partition", :libosrm_partition)    
+    LibraryProduct("libosrm_store", :libosrm_store)    
+    LibraryProduct("libosrm_update", :libosrm_update)    
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -53,7 +69,7 @@ dependencies = [
     Dependency("oneTBB_jll")
     Dependency("Lua_jll")
     HostBuildDependency("Lua_jll")
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
