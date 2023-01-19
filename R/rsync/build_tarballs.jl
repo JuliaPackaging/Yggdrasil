@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "rsync"
-version = v"3.2.6"
+version = v"3.2.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz", "fb3365bab27837d41feaf42e967c57bd3a47bc8f10765a3671efd6a3835454d3")
+    ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
+                  "4e7d9d3f6ed10878c58c5fb724a67dacf4b6aac7340b13e488fb2dc41346f2bb")
 ]
 
 # Bash recipe for building across all platforms

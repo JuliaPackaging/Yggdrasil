@@ -3,24 +3,29 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.19.0"
+version = v"1.21.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-$(version).tar.xz",
-                  "baccd902300d354581cd5ad3cc49daa4921d55fb416a5883e218750fef166d15"),
+    ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
+                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-*/
 
-# We need to run `wayland-scanner` on the host system
-apk add wayland-dev
+# We need to run `wayland-scanner` of the same version on the host system
+apk add wayland-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/main
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-documentation --with-host-scanner
-make -j${nproc}
-make install
+mkdir build-wayland
+
+cd build-wayland
+meson .. \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Ddocumentation=false
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further

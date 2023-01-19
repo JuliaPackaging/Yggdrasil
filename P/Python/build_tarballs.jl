@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.7"
+version = v"3.10.8"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "6eed8415b7516fb2f260906db5d48dd4c06acc0cb24a7d6cc15296a604dcdc48"),
+                  "6a30ecde59c47048013eb5a658c9b5dec277203d2793667f578df7671f7f03f3"),
     DirectorySource("./bundled"),
 ]
 
@@ -60,21 +60,26 @@ make -j${nproc} python sharedmods
 # Next, build target version
 cd ${WORKSPACE}/srcdir/Python-*/
 mkdir build_target && cd build_target
+
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
+
 conf_args=()
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
 conf_args+=(--with-ensurepip=no)
-conf_args+=( --disable-test-modules)
+conf_args+=(--disable-test-modules)
 conf_args+=(--with-system-expat)
 conf_args+=(--with-system-ffi)
 conf_args+=(--with-system-libmpdec)
+conf_args+=(--enable-optimizations)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
 conf_args+=(ac_cv_have_chflags=no)
+
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" "${conf_args[@]}"
+
 make -j${nproc}
 make install
 """
@@ -90,8 +95,8 @@ filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct(["python", "python3"], :python),
-    LibraryProduct(["libpython3", "libpython3.8"], :libpython),
+    ExecutableProduct("python3", :python),
+    LibraryProduct("libpython3", :libpython),
 ]
 
 # Dependencies that must be installed before this package can be built

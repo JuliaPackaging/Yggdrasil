@@ -21,28 +21,39 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.12.0"
-version = v"400.1200.000"
+upstream_version = v"4.12.2"
+version = v"400.1201.200"
 
 # Collection of sources required to complete build
 sources = [
-    # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "7ba252e2bc68ceccb5d267118d47fa5ca20bc513"),
-#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-#                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
-                  "2f2b19406d5926ccdd0957da52ca36824fcd8252193a5a5d2677463516ec8cf1";
+                  "1fa911d305c458470c1fb555c385402f09cccf1d2d372ab9c416ae7c4a8ebf6d";
                   unpack_target="pkg"),
+    #DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-mv ../pkg .
-find pkg -name '._*' -exec rm \{\} \; # unwanted files
+if [ -d ${WORKSPACE}/srcdir/patches ] ; then
+  for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+  done
+fi
 
-# run autogen.sh if compiling from it source and/or if configure was patched
+# remove patch leftovers
+find . -name '*.orig' -exec rm {} \;
+
+# compress group database
+gzip -n grp/*.grp
+
+mv ../pkg .
+
+# must run autogen.sh if compiling from git snapshot and/or if configure was patched;
+# it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
 # compile a native version of GAP so we can use it to generate the manual
@@ -57,14 +68,20 @@ find pkg -name '._*' -exec rm \{\} \; # unwanted files
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
 
-# build the manual (only HTML and txt; for PDF we'd need LaTeX)
-make html
+# build the manual if necessary (only HTML and txt; for PDF we'd need LaTeX)
+if [[ ! -f doc/ref/chap0.html ]] ; then
+  make html
+fi
 
 # the license
 install_license LICENSE
 
 # install documentation and library files
 make install-doc install-gaproot
+
+# delete the PDF manuals (they take up a lot of space and few people use them,
+# and those can use the online versions)
+rm ${prefix}/share/gap/doc/*/*.pdf
 """
 
 # These are the platforms we will build for by default, unless further

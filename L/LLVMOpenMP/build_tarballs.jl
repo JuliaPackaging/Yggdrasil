@@ -3,12 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"14.0.4"
+version = v"15.0.4"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "d4b627e2668c3c1001b6c772297273dc67b42f2deec934a59650a55731f8d411"
+        "1b6f92013e7555759127d84264c3e98eab116a3a5138570058d8507e1513f76e"
+    ),
+    # we need a bunch of additional cmake files to build the subproject separately
+    # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
+    ArchiveSource(
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
+        "9df45bf3a0a46264d5007485592381bbaf50f034b4155290cb0d917539d8facf"
     ),
     DirectorySource("./bundled"),
 ]
@@ -16,6 +22,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openmp-*/
+mv ../cmake-* ../cmake
 # https://github.com/msys2/MINGW-packages/blob/d440dcb738/mingw-w64-clang/0901-cast-to-make-gcc-happy.patch
 atomic_patch -p1 ../patches/0901-cast-to-make-gcc-happy.patch
 

@@ -7,18 +7,19 @@ version = v"2.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libsdl.org/projects/SDL_image/release/SDL2_image-$(version).zip",
-                  "efe3c229853d0d40c35e5a34c3f532d5d9728f0abc623bc62c962bcef8754205"),
+    GitSource("https://github.com/libsdl-org/SDL_image.git",
+              "a861543ab78f5d5e18e6af43964ce8df60cb30b3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL2_image-*/
+cd $WORKSPACE/srcdir/SDL*/
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DSDL2_IMAGE_WEBP=ON -DSDL2_IMAGE_TIF=ON SDL2IMAGE_BACKEND_IMAGEIO=OFF ..
 make -j${nproc}
 make install
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further

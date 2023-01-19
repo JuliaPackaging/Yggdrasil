@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "MMseqs2"
-version = v"13"
+version = v"14"
 
 # MMseqs2 seem to use as versioning scheme of "major version + first 5
 # characters of the tagged commit"
 # https://github.com/soedinglab/MMseqs2/releases
-version_commitprefix = "45111"
+version_commitprefix = "7e284"
 
 
 # Possible build variants
@@ -35,7 +35,7 @@ version_commitprefix = "45111"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
-                  "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2"),
+                  "a15fd59b121073fdcc8b259fc703e5ce4c671d2c56eb5c027749f4bd4c28dfe1"),
     DirectorySource("./bundled")
 ]
 
@@ -70,7 +70,7 @@ install_license ../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 # expand cxxstring abis on platforms where we use g++
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
@@ -84,9 +84,11 @@ dependencies = Dependency[
     Dependency(PackageSpec(name="Zlib_jll")),
     Dependency(PackageSpec(name="Bzip2_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else, however
+    # other libraries from `CompilerSupportLibraries_jll` are needed on x86_64 macOS and
+    # FreeBSD
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-               platforms=filter(!Sys.isbsd, platforms)),
+               platforms=filter(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]

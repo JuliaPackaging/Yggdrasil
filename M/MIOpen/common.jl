@@ -24,6 +24,7 @@ function configure_build(version)
 
     cd ${WORKSPACE}/srcdir/MIOpen*/
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost-fix.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-pch.patch
     mkdir build
 
     export AMDGPU_TARGETS="gfx900;gfx906;gfx90a;gfx1010;gfx1012;gfx1030"

@@ -1,6 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec
+using BinaryBuilderBase: get_addable_spec, sanitize
 
 # Everybody is just going to use the same set of platforms
 
@@ -14,12 +14,17 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
-    v"14.0.6" => "63feb57573d16e7c64d99c971659dd98971ad06c", # julia-14.0.6-0
+    v"14.0.6" => "1403b8588ba20e4611e9d4f7613278e6f0f73b62", # julia-14.0.6-1
 )
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 
 if [[ ${target} == *mingw32* ]]; then
     export CCACHE_DISABLE=true
@@ -160,7 +165,7 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
-if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
+if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
     CMAKE_CXX_FLAGS+="-fno-gnu-unique"
 fi
@@ -443,9 +448,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = supported_platforms(;experimental=experimental_platforms)
-    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
-    platforms = expand_cxxstring_abis(platforms)
+    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
@@ -492,8 +495,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
-    dependencies = Dependency[
+    dependencies = [
         Dependency("Zlib_jll"), # for LLD&LTO
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
