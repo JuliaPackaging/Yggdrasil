@@ -95,7 +95,7 @@ dependencies = [
     Dependency("XML2_jll")
     Dependency("oneTBB_jll"; platforms=filter(p -> (arch(p) ∉ ("armv6l", "armv7l")) & (!Sys.iswindows(p) || arch(p) != "i686"), platforms))
     Dependency("Lua_jll"; compat="~5.4.3")
-    HostBuildDependency(PackageSpec(name="Lua_jll", version="~5.4.3"))
+    HostBuildDependency("Lua_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
 
