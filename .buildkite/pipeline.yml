@@ -19,7 +19,7 @@ steps:
       # Only run on "sandbox.jl" machines
       sandbox_capable: "true"
     if: build.message !~ /\[skip tests\]/
-    timeout_in_minutes: 10
+    timeout_in_minutes: 20
     env:
       JULIA_PKG_SERVER: us-east.pkg.julialang.org
       # Use eager registry to not have to wait for updates of the conservative registry
