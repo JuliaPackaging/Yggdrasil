@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version_string = v"2021.8.0"
+version_string = "2021.8.0"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
