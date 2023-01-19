@@ -23,12 +23,9 @@ CFLAGS="-Wno-error=suggest-override"
 mkdir build && cd build
 
 cmake .. \
-    -DBZIP2_INCLUDE_DIR=${includedir} \
-    -DBZIP2_LIBRARIES=${libdir}/libbz2.${dlext} \
-    -DLUA_INCLUDE_DIR=${includedir} \
-    -DLUA_LIBRARIES=${libdir}/liblua.${dlext} \
-    -DZLIB_INCLUDE_DIR=${includedir} \
-    -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -Wno-dev
 cmake --build . -j${nproc}
