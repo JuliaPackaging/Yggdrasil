@@ -3,21 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version_string = "2021.8.0"
-version = VersionNumber(version_string)
+version = v"2021.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/oneapi-src/oneTBB/archive/refs/tags/v$version_string.tar.gz", "eee380323bb7ce864355ed9431f85c43955faaae9e9bce35c62b372d7ffd9f8b"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/oneapi-src/oneTBB.git",
+    "c9497714821c3d443ee44c732609eb6850195ffb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/oneTBB*
-
-# We can't do Link-Time-Optimization with Clang, disable it.
-atomic_patch -p1 ../patches/clang-no-lto.patch
 
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
