@@ -41,7 +41,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_profiler_api \
+                   cuda_nvrtc cuda_sanitizer_api cuda_profiler_api \
                    libcublas libcufft libcurand libcusolver libcusparse \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
@@ -63,23 +63,12 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     for project in cuda_cccl cuda_cudart cuda_cuobjdump cuda_cupti \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_profiler_api \
+                   cuda_nvrtc cuda_sanitizer_api cuda_profiler_api \
                    libcublas libcufft libcurand libcusolver libcusparse  \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
         cp -a ${project}/*/* ${prefix}/cuda
     done
-
-    # NVIDIA Tools Extension Library
-    7z x "nsight_nvtx/nsight_nvtx/NVIDIA NVTX Installer.x86_64".*.msi -o${temp}/nvtx_installer
-    find nvtx_installer
-    for file in nvtx_installer/*.*_*; do
-        mv $file $(echo $file | sed 's/\.\(\w*\)_.*/.\1/')
-    done
-    mv nvtx_installer/*.dll ${prefix}/cuda/bin
-    mv nvtx_installer/*64_*.lib ${prefix}/cuda/lib/x64
-    mv nvtx_installer/*32_*.lib ${prefix}/cuda/lib/Win32
-    mv nvtx_installer/*.h ${prefix}/cuda/include
 
     # fixup
     chmod +x ${prefix}/cuda/bin/*.{exe,dll}
