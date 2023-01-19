@@ -50,14 +50,6 @@ products = Product[
     ExecutableProduct("osrm-customize", :osrm_customize)
     ExecutableProduct("osrm-datastore", :osrm_datastore)
     ExecutableProduct("osrm-extract", :osrm_extract)
-    LibraryProduct("libosrm", :libosrm)    
-    LibraryProduct("libosrm_contract", :libosrm_contract)    
-    LibraryProduct("libosrm_customize", :libosrm_customize)    
-    LibraryProduct("libosrm_update", :libosrm_update)    
-    LibraryProduct("libosrm_guidance", :libosrm_guidance)    
-    LibraryProduct("libosrm_partition", :libosrm_partition)    
-    LibraryProduct("libosrm_store", :libosrm_store)    
-    LibraryProduct("libosrm_update", :libosrm_update)    
 ]
 
 # Dependencies that must be installed before this package can be built
