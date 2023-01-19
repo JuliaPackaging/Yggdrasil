@@ -22,12 +22,30 @@ CFLAGS="-Wno-error=suggest-override"
 
 mkdir build && cd build
 
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -Wno-dev
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-Wno-dev)
+
+# mingw demands extra flags
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
+    CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
+elif [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the issue
+    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/tbb/../oneapi/tbb/detail/_task.h:216:13: error: aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on macOS 10.14 or newer
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+fi
+
+cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
 
@@ -37,7 +55,17 @@ cp libosrm* ${libdir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# oneTBB_jll isn't available for Windows i686 on Yggdrasil (version 2021.5.0)
+# oneTBB_jll isn't available for armv6l, armv7l
+# musl builds with lots of TBB errors like 'undefined reference to `getcontext''
+platforms = supported_platforms(; exclude=p -> 
+    (Sys.iswindows(p) &&
+    arch(p) == "i686") ||
+    (libc(p) == "musl") ||
+    (arch(p) == "armv6l") ||
+    (arch(p) == "armv6l")
+    )
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
