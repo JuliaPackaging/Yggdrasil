@@ -23,8 +23,8 @@ platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libhiredis", :hiredis),
-    LibraryProduct("libhiredis_ssl", :hiredis_ssl)
+    LibraryProduct("libhiredis", :libhiredis),
+    LibraryProduct("libhiredis_ssl", :libhiredis_ssl),
 ]
 
 # Dependencies that must be installed before this package can be built
