@@ -18,6 +18,8 @@ cd $WORKSPACE/srcdir/osrm-backend
 # Patch boost/phoenix.hpp header path
 atomic_patch -p1 ../patches/boost_deprecated_header.patch
 
+CFLAGS="-Wno-error=suggest-override"
+
 mkdir build && cd build
 cmake .. \
     -DBZIP2_INCLUDE_DIR=${includedir} \
@@ -27,8 +29,8 @@ cmake .. \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -Wno-dev
-cmake --build .
-cmake --build . --target install
+cmake --build . -j${nproc}
+cmake --build . -j${nproc} --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,14 +46,15 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"))
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
-    HostBuildDependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"))
+    Dependency("Bzip2_jll"; compat="1.0.8")
+    Dependency("boost_jll"; compat="=1.76.0")
+    Dependency("Expat_jll"; compat="2.2.10")
+    Dependency("XML2_jll")
+    Dependency("oneTBB_jll")
     Dependency("Lua_jll")
-    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"))
-    Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"))
+    HostBuildDependency("Lua_jll")
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
