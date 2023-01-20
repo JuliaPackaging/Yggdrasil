@@ -23,7 +23,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    CXXFLAGS="-mmacosx-version-min=10.15"
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
