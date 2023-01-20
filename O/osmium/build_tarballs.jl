@@ -3,20 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "osmium"
-version = v"1.14.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/osmcode/osmium-tool.git", "bec0d8c6a058140179fae009858790adc529ec3e"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/osmcode/osmium-tool.git", "214cc1ea4016bee5deba5949dad7545655c58826"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osmium-tool
-
-# Patch Windows feature flag
-atomic_patch -p1 ../patches/fix_windows_flag.patch
 
 mkdir build && cd build
 
@@ -52,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
