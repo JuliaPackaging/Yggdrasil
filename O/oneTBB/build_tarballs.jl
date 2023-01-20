@@ -9,19 +9,14 @@ version = v"2021.8.0"
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
     "c9497714821c3d443ee44c732609eb6850195ffb"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/oneTBB*
 
-if [[ ${target} == *-mingw* ]]; then
-    # _control87 error
-    atomic_patch -p1 ../patches/mingw-control87.patch
- fi
-
 mkdir build && cd build/
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -34,7 +29,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> arch(p) ∈ ("armv6l", "armv7l")))
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> (arch(p) ∈ ("armv6l", "armv7l") || Sys.iswindows(p))))
 
 # The products that we will ensure are always built
 products = [
