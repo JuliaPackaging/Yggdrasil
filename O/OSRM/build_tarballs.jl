@@ -29,22 +29,6 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 CMAKE_FLAGS+=(-Wno-dev)
 
-# mingw demands extra flags
-if [[ "${target}" == *mingw* ]]; then
-    CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
-    CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
-elif [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Work around the issue
-    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/tbb/../oneapi/tbb/detail/_task.h:216:13: error: aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on macOS 10.14 or newer
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    # ...and install a newer SDK
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
-
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
@@ -59,11 +43,10 @@ cp libosrm* ${libdir}
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
 platforms = supported_platforms(; exclude=p -> 
-    (Sys.iswindows(p) &&
-    arch(p) == "i686") ||
+    Sys.iswindows(p) ||
+    Sys.isapple(p) ||
     (libc(p) == "musl") ||
-    (arch(p) == "armv6l") ||
-    (arch(p) == "armv6l")
+    (arch(p) ∈ ("armv6l", "armv7l"))
     )
 
 platforms = expand_cxxstring_abis(platforms)
@@ -93,7 +76,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.76.0")
     Dependency("Expat_jll"; compat="2.2.10")
     Dependency("XML2_jll")
-    Dependency("oneTBB_jll"; platforms=filter(p -> (arch(p) ∉ ("armv6l", "armv7l")) & (!Sys.iswindows(p) || arch(p) != "i686"), platforms))
+    Dependency("oneTBB_jll"; platforms=filter(p -> (!Sys.iswindows(p) || arch(p) != "i686"), platforms))
     Dependency("Lua_jll"; compat="~5.4.3")
     HostBuildDependency("Lua_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
