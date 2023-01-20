@@ -114,5 +114,3 @@ if should_build_platform("x86_64-w64-mingw32")
                    [Platform("x86_64", "windows")], products, dependencies;
                    skip_audit=true)
 end
-
-# bump
