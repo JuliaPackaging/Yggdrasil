@@ -82,7 +82,7 @@ end
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
     apt-get update
-    apt install -y xz-utils
+    apt install -y bzip2 p7zip xz-utils unzip zstd
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
