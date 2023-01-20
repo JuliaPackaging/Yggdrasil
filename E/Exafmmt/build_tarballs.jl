@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd exafmm-t/
+cd $WORKSPACE/srcdir/exafmm-t/
 mkdir build
 cd build
 BLAS=blastrampoline
@@ -23,9 +22,8 @@ cmake ../c -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DBLAS_LIBRARIES="-l${BLAS}" \
     -DLAPACK_LIBRARIES="-l${LAPACK}" 
-make
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
