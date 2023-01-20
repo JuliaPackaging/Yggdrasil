@@ -48,7 +48,8 @@ dependencies = [
     # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3")),
-    Dependency("libblastrampoline_jll"; compat="5.2.0"),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.1.1+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) == v"1.8.0", platforms)),
+    Dependency(get_addable_spec("libblastrampoline_jll", v"5.2.0+0"); platforms=filter(p -> VersionNumber(p["julia_version"]) >= v"1.9.0", platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
