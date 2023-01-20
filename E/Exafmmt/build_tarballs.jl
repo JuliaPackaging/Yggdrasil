@@ -10,7 +10,6 @@ sources = [
     GitSource("https://github.com/JoshuaTetzner/exafmm-t.git", "359558a6ae7b82ea936f44a33400fa6ca7e27e52")
 ]
 
-#/workspace/x86_64-linux-gnu-libgfortran5-cxx11/artifacts/9f61595dd5f6597db74a071ac26c2d094b563029/lib/libblastrampoline.so
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
