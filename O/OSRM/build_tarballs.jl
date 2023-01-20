@@ -35,6 +35,13 @@ cmake --build . -j${nproc} --target install
 
 cp osrm-* ${bindir}
 cp libosrm* ${libdir}
+
+cp ../profiles/*.lua ${includedir}
+
+mkdir  ${includedir}/lib
+cp ../profiles/lib/*.lua ${includedir}/lib
+
+ls ${includedir}/lib
 """
 
 # These are the platforms we will build for by default, unless further
@@ -68,6 +75,30 @@ products = Product[
     LibraryProduct("libosrm_partition", :libosrm_partition)
     LibraryProduct("libosrm_store", :libosrm_store)
     LibraryProduct("libosrm_update", :libosrm_update)
+    FileProduct("bicycle.lua", :bicycle)
+    FileProduct("debug_way.lua", :debug_way)
+    FileProduct("test.lua", :test)
+    FileProduct("car.lua", :car)
+    FileProduct("rasterbot.lua", :rasterbot)
+    FileProduct("testbot.lua", :testbot)
+    FileProduct("debug_example.lua", :debug_example)
+    FileProduct("foot.lua", :foot)
+    FileProduct("rasterbotinterp.lua", :rasterbotinterp)
+    FileProduct("turnbot.lua", :turnbot)
+    FileProduct("lib/access.lua", :lib_access)
+    FileProduct("lib/maxspeed.lua", :lib_maxspeed)
+    FileProduct("lib/profile_debugger.lua", :lib_profile_debugger)
+    FileProduct("lib/set.lua", :lib_set)
+    FileProduct("lib/utils.lua", :lib_utils)
+    FileProduct("lib/destination.lua", :lib_destination)
+    FileProduct("lib/measure.lua", :lib_measure)
+    FileProduct("lib/relations.lua", :lib_relations)
+    FileProduct("lib/tags.lua", :lib_tags)
+    FileProduct("lib/way_handlers.lua", :lib_way_handlers)
+    FileProduct("lib/guidance.lua", :lib_guidance)
+    FileProduct("lib/pprint.lua", :lib_pprint)
+    FileProduct("lib/sequence.lua", :lib_sequence)
+    FileProduct("lib/traffic_signal.lua", :lib_traffic_signal)
 ]
 
 # Dependencies that must be installed before this package can be built
