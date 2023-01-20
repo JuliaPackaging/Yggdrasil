@@ -36,7 +36,6 @@ cmake --build . -j${nproc} --target install
 cp osrm-* ${bindir}
 cp libosrm* ${libdir}
 
-mkdir  ${prefix}/lib
 cp ../profiles/*.lua ${prefix}
 cp ../profiles/lib/*.lua ${prefix}/lib
 """
