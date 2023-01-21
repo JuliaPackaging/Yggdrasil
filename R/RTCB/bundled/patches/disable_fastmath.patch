@@ -1,0 +1,31 @@
+diff --git before/rtcb_public/Makefile after/rtcb_public/Makefile
+index 43d88b8..8424d79 100644
+--- before/rtcb_public/Makefile
++++ after/rtcb_public/Makefile
+@@ -15,7 +15,7 @@
+ #GCC specific. Comment if intel compiler is used
+ #FC 		    := mpifort
+ FC         := gfortran
+-FCFLAGS 	?= -O3 -funroll-loops -ffast-math -fopenmp -cpp -mtune=native
++FCFLAGS 	?= -O3 -funroll-loops -fopenmp -cpp -mtune=native
+ INCLUDES2	= $(INCLUDES) -I$(MODDIR)
+ MODDIR2     =-J$(MODDIR)
+ 
+@@ -61,7 +61,7 @@ endif
+ 
+ ifdef PROFILE
+ FCFLAGS=$(PROFILE)
+-FCFLAGS+=-pg -funroll-loops -ffast-math -fopenmp -cpp -std=f2008
++FCFLAGS+=-pg -funroll-loops -fopenmp -cpp -std=f2008
+ endif
+ 
+ 
+@@ -204,7 +204,7 @@ $(OBJDIR)/stdrng.o: $(SRCDIR)/stdrng.f90
+ $(OBJDIR)/$(COEFF): $(SRCDIRPLN)/normcoeff.f90
+ 	$(FC) $(MODDIR2) $(FCFLAGS) $(MDEFS) -o $@ $< -c
+ 
+-$(OBJDIR)/$(COEFFHM): $(SRCDIRPLN)/normcoeffhm.f90
++$(OBJDIR)/$(COEFFHM): $(SRCDIRPLN)/normcoeff.f90
+ 	$(FC) $(MODDIR2) $(FCFLAGS) $(MDEFS) -o $@ $< -c
+ 
+ $(OBJDIR)/$(COEFFS): $(SRCDIRSPH)/normcoeff_s.f90
