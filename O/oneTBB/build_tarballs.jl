@@ -36,7 +36,7 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> arch(p) ∈ ("armv6l", "armv7l")))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
