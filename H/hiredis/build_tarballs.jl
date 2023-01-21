@@ -17,14 +17,20 @@ script = raw"""
 cd $WORKSPACE/srcdir/hiredis/
 # Link `libhiredis_ssl` to `libhiredis`, no clue how this is supposed to work otherwise.
 atomic_patch -p1 ../patches/link-hiredis-ssl.patch
-make -j${nproc} USE_SSL=1 PREFIX="${prefix}" LIBRARY_PATH=$(basename "${libdir}") DYLIBSUFFIX="${dlext}" install
+make -j${nproc} \
+    USE_SSL=1 \
+    PREFIX="${prefix}" \
+    OPENSSL_PREFIX="${prefix}" \
+    LIBRARY_PATH=$(basename "${libdir}") \
+    DYLIBSUFFIX="${dlext}" \
+    install
 # Remove static libraries
 rm ${prefix}/lib/libhiredis*.a
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
