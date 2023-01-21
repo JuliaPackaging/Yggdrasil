@@ -36,14 +36,7 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-# i686 windows fails with error:
-# [10:30:30] /workspace/srcdir/oneTBB/src/tbb/arena.cpp: In member function ‘__comp_dtor ’:
-# [10:30:30] /workspace/srcdir/oneTBB/src/tbb/arena.cpp:635:5: internal compiler error: in ix86_compute_frame_layout, at config/i386/i386.c:10134
-# [10:30:30]      }
-# [10:30:30]      ^
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> (arch(p) ∈ ("armv6l", "armv7l")) || (Sys.iswindows(p) && arch(p) != "i686")))
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> arch(p) ∈ ("armv6l", "armv7l")))
 
 # The products that we will ensure are always built
 products = [
@@ -57,4 +50,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
