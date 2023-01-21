@@ -29,14 +29,12 @@ agent() = Dict(
     :sandbox_capable => "true"
 )
 
-julia_plugin() = "JuliaCI/julia#v1" => Dict(
+plugins() = Pair{String, Union{Nothing, Dict}}[
+    "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
         "version" => "1.7",
         "depot_hard_size_limit" => "68719476736", #64GB
-    )
-
-plugins() = Pair{String, Union{Nothing, Dict}}[
-    julia_plugin(),
+    ),
     "JuliaCI/merge-commit" => nothing
 ]
 
@@ -46,7 +44,7 @@ env(NAME, PROJECT) = Dict(
     "NAME" => NAME,
     "PROJECT" => PROJECT,
     "YGGDRASIL" => "true",
-    # Inherit the secret so that we can decrypt cryptic secrets 
+    # Inherit the secret so that we can decrypt cryptic secrets
     "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET" => get(ENV, "BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET", ""),
 )
 
@@ -83,20 +81,14 @@ end
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
+    apt-get update
+    apt install -y bzip2 p7zip xz-utils unzip zstd
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
 
     build_plugins = plugins()
     push!(build_plugins,
-        "staticfloat/sandbox#v1" => Dict(
-            "rootfs_url" => "https://github.com/JuliaCI/rootfs-images/releases/download/v5.52/yggdrasil.x86_64.tar.gz",
-            "rootfs_treehash" => "78d5944ebe98cd51c6b076f999d460a1f8d1a3c4",
-            "workspaces" => [
-                "/cache/repos:/cache/repos"
-            ],
-        ),
-        julia_plugin(),
         "staticfloat/cryptic#v2" => Dict(
             "variables" => [
                 "AWS_SECRET_ACCESS_KEY=\"U2FsdGVkX1846b0BRbZjwIWSFV+Fiv1C/Hds/vB3aTkxubHPnRP6lVxGkAkOcFuvAntkoLF6J64QrOHWvjz8xg==\"",
@@ -134,7 +126,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.gz"
+            "**/products/$(first(split(NAME, "@")))*.tar.gz"
         ]
     )
 end

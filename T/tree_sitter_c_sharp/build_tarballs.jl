@@ -2,14 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tree_sitter_julia"
-version = v"0.19.0"
+name = "tree_sitter_c_sharp"
+version = v"0.20.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-julia/archive/v$(version).tar.gz",
-        "005b2206116012bc3bf8315818e7e269580467899d77a24f0c7fc8223e78387b"
+        "https://github.com/tree-sitter/tree-sitter-c-sharp/archive/v$(version).tar.gz",
+        "fccbac820896d9574a5a99f29b0fd1e2875059f093708aa69c91dc689fbfa1d0"
     ),
     DirectorySource("./bundled")
 ]
@@ -27,7 +27,7 @@ make install
 
 cd ..
 if [ -d tree-sitter/queries ]; then
-    cp -r tree-sitter/queries $WORKSPACE/destdir/
+   cp -r tree-sitter/queries $WORKSPACE/destdir/
 fi
 if [ -f tree-sitter/LICENSE ]; then
     install_license tree-sitter/LICENSE
@@ -40,7 +40,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtreesitter_julia", :libtreesitter_julia),
+    LibraryProduct("libtreesitter_c_sharp", :libtreesitter_c_sharp),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -48,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")

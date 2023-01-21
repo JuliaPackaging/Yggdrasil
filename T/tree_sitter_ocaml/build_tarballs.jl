@@ -2,14 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "tree_sitter_julia"
-version = v"0.19.0"
+name = "tree_sitter_ocaml"
+version = v"0.20.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://github.com/tree-sitter/tree-sitter-julia/archive/v$(version).tar.gz",
-        "005b2206116012bc3bf8315818e7e269580467899d77a24f0c7fc8223e78387b"
+        "https://github.com/tree-sitter/tree-sitter-ocaml/archive/v$(version).tar.gz",
+        "56fddf0c5a775807ba535b4a7fda81ef843f384cba9377fc391b1b692f3aa6f7"
     ),
     DirectorySource("./bundled")
 ]
@@ -36,11 +36,11 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtreesitter_julia", :libtreesitter_julia),
+    LibraryProduct("libtreesitter_ocaml", :libtreesitter_ocaml),
 ]
 
 # Dependencies that must be installed before this package can be built

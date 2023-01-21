@@ -68,7 +68,9 @@ julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`) |> exec
 
 TEMP = mktempdir()
 
-const NAME = basename(PROJECT)
+# determine the name, removing any trailing version number
+# (`L/LLVM/LLVM@14` results in `NAME = "LLVM@14"`)
+const NAME = first(split(basename(PROJECT), "@"))
 
 # We always invoke a `build_tarballs.jl` file from its own directory
 cd(PROJECT) do
