@@ -27,7 +27,6 @@ elif [[ "${target}" == *-apple-* ]]; then
 fi
 
 autoreconf -si
-
 update_configure_scripts
 ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc
 make -j${nproc}
