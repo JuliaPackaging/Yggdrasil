@@ -7,16 +7,12 @@ version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "d9df33dd0a492c50632deddd0ddfdfbf3cb5bbd7"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "e590dae5f6638a2165af997c2da2fc1d7d7ea676"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
-
-# Patch boost/phoenix.hpp header path
-atomic_patch -p1 ../patches/boost_deprecated_header.patch
 
 CFLAGS="-Wno-error=suggest-override"
 
@@ -110,4 +106,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
