@@ -36,6 +36,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     
 make -j$(nproc)
 make -j$(nproc) install
+
+install_license ../LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,6 +47,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
+    LibraryProduct("libvalhalla", :libvalhalla),
 ]
 
 # Dependencies that must be installed before this package can be built
