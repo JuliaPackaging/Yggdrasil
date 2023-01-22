@@ -16,7 +16,9 @@ cd $WORKSPACE/srcdir/valhalla/
 
 git submodule update --init --recursive
 
-cmake -B build -DCMAKE_BUILD_TYPE=Release \
+mkdir build && cd build
+
+cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
     -DENABLE_DATA_TOOLS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
@@ -26,21 +28,22 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DProtobuf_INCLUDE_DIR=${includedir} \
     -DPROTOBUF_LIBRARY=${libdir} \
-    -DENABLE_SERVICES=OFF \ # requires libprime_server
+    -DENABLE_SERVICES=OFF \
     -DENABLE_TOOLS=OFF \
     -DENABLE_CCACHE=OFF \
     -DENABLE_BENCHMARKS=OFF \
-    -DLOGGING_LEVEL=DEBUG \
-    -DCMAKE_CROSS_COMPILING=1 \
-    -DBoost_PROGRAM_OPTIONS_LIBRARY=${libdir}/libboost_program_options.${dlext}
+    -DLOGGING_LEVEL=DEBUG
+    # -DCMAKE_CROSS_COMPILING=1 \
+    # -DBoost_PROGRAM_OPTIONS_LIBRARY=${libdir}/libboost_program_options.${dlext}
     
-make -C build -j$(nproc)
-make -C build install
+make -j$(nproc)
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
