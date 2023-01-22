@@ -44,8 +44,7 @@ sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrc
 
 case "$target" in
 
-    x86_64-linux-musl*)
-        export LD_LIBRARY_PATH=$WORKSPACE/srcdir/build/lib:$host_libdir:$LD_LIBRARY_PATH
+    x86_64-linux-musl-cxx11)
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
     ;;
 
