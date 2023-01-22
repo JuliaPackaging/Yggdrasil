@@ -18,8 +18,6 @@ git submodule update --init --recursive
 
 mkdir build && cd build
 
-export CPPFLAGS="${CPPFLAGS} -Wno-deprecated"
-
 cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
     -DENABLE_DATA_TOOLS=OFF \
@@ -29,7 +27,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DProtobuf_INCLUDE_DIR=${includedir} \
-    -DPROTOBUF_LIBRARY=${libdir} \
+    -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext} \
     -DENABLE_SERVICES=OFF \
     -DENABLE_TOOLS=OFF \
     -DENABLE_CCACHE=OFF \
@@ -37,7 +35,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DLOGGING_LEVEL=DEBUG
     
 make -j$(nproc)
-make install
+make -j$(nproc) install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -65,5 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
-# probably could use 6/7/8, work way down if it builds..
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
