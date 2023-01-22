@@ -8,11 +8,17 @@ version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Project-OSRM/osrm-backend.git", "e590dae5f6638a2165af997c2da2fc1d7d7ea676"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
+
+if [[ ${target} == *mingw* ]]; then
+    # Patch to fix build on MINGW
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw.patch
+fi
 
 CFLAGS="-Wno-error=suggest-override"
 
