@@ -21,7 +21,9 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BENCHMARKS=Off \
     -DENABLE_TESTS=Off \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
-    -DZLIB_INCLUDE_DIR=${includedir}
+    -DZLIB_INCLUDE_DIR=${includedir} \
+    -DProtobuf_INCLUDE_DIR=${includedir} \
+    -DPROTOBUF_LIBRARY=${libdir}
 make -C build -j$(nproc)
 make -C build install
 """
