@@ -18,16 +18,21 @@ git submodule update --init --recursive
 
 cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
-    -DENABLE_DATA_TOOLS=Off \
-    -DENABLE_PYTHON_BINDINGS=Off \
-    -DENABLE_BENCHMARKS=Off \
-    -DENABLE_TESTS=Off \
+    -DENABLE_DATA_TOOLS=OFF \
+    -DENABLE_PYTHON_BINDINGS=OFF \
+    -DENABLE_BENCHMARKS=OFF \
+    -DENABLE_TESTS=OFF \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DProtobuf_INCLUDE_DIR=${includedir} \
     -DPROTOBUF_LIBRARY=${libdir} \
-    -DENABLE_SERVICES=Off # requires libprime_server
-    -DENABLE_DATA_TOOLS=OFF
+    -DENABLE_SERVICES=OFF \ # requires libprime_server
+    -DENABLE_TOOLS=OFF \
+    -DENABLE_CCACHE=OFF \
+    -DENABLE_BENCHMARKS=OFF \
+    -DLOGGING_LEVEL=DEBUG \
+    -DBoost_PROGRAM_OPTIONS_LIBRARY=${libdir}/libboost_program_options.${dlext}
+    
 make -C build -j$(nproc)
 make -C build install
 """
@@ -48,6 +53,7 @@ dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147"))
     Dependency("boost_jll")
+    Dependency("GEOS_jll")
     # FOR ENABLE_DATA_TOOLS:
     # Dependency("libspatialite_jll")
     # Dependency("SQLite_jll")
