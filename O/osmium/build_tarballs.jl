@@ -3,30 +3,41 @@
 using BinaryBuilder, Pkg
 
 name = "osmium"
-version = v"1.14.0"
+version = v"1.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/osmcode/osmium-tool.git", "bec0d8c6a058140179fae009858790adc529ec3e"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/osmcode/osmium-tool.git", "214cc1ea4016bee5deba5949dad7545655c58826"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/osmium-tool
 
-# Patch Windows feature flag
-atomic_patch -p1 ../patches/fix_windows_flag.patch
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK to work around compilation failures
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+fi
 
 mkdir build && cd build
 
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=17
 
 make -j${nproc}
 make install
+
+install_license ../LICENSE.txt
 """
 
 
@@ -52,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
