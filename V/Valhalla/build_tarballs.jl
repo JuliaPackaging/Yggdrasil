@@ -31,6 +31,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_CCACHE=OFF \
     -DENABLE_BENCHMARKS=OFF \
     -DLOGGING_LEVEL=DEBUG \
+    -DCMAKE_CROSS_COMPILING=1 \
     -DBoost_PROGRAM_OPTIONS_LIBRARY=${libdir}/libboost_program_options.${dlext}
     
 make -C build -j$(nproc)
