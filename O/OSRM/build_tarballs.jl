@@ -32,6 +32,9 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 CMAKE_FLAGS+=(-Wno-dev)
 
 if [[ ${target} == *mingw* ]]; then
+    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
 fi
