@@ -19,7 +19,7 @@ git submodule update --init --recursive
 mkdir build && cd build
 
 cmake .. -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=On \
+    -DBUILD_SHARED_LIBS=ON \
     -DENABLE_DATA_TOOLS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
     -DENABLE_BENCHMARKS=OFF \
