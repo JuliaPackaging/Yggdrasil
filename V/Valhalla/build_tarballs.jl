@@ -18,6 +18,8 @@ git submodule update --init --recursive
 
 mkdir build && cd build
 
+export CPPFLAGS="${CPPFLAGS} -Wno-deprecated"
+
 cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
     -DENABLE_DATA_TOOLS=OFF \
@@ -33,8 +35,6 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_CCACHE=OFF \
     -DENABLE_BENCHMARKS=OFF \
     -DLOGGING_LEVEL=DEBUG
-    # -DCMAKE_CROSS_COMPILING=1 \
-    # -DBoost_PROGRAM_OPTIONS_LIBRARY=${libdir}/libboost_program_options.${dlext}
     
 make -j$(nproc)
 make install
@@ -65,4 +65,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
