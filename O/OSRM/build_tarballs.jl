@@ -25,6 +25,11 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 CMAKE_FLAGS+=(-Wno-dev)
 
+if [[ ${target} == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
+    CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
+fi
+
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
@@ -42,10 +47,9 @@ cp ../profiles/lib/*.lua ${prefix}/lib
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
 platforms = supported_platforms(; exclude=p -> 
-    Sys.iswindows(p) ||
-    Sys.isapple(p) ||
-    (libc(p) == "musl") ||
-    (arch(p) ∈ ("armv6l", "armv7l"))
+    # Sys.iswindows(p) ||
+    # Sys.isapple(p) ||
+    (libc(p) == "musl")
     )
 
 platforms = expand_cxxstring_abis(platforms)
@@ -99,7 +103,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.76.0")
     Dependency("Expat_jll"; compat="2.2.10")
     Dependency("XML2_jll")
-    Dependency("oneTBB_jll"; platforms=filter(p -> (!Sys.iswindows(p) || arch(p) != "i686"), platforms))
+    Dependency("oneTBB_jll"; compat="2021.8.0")
     Dependency("Lua_jll"; compat="~5.4.3")
     HostBuildDependency("Lua_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
