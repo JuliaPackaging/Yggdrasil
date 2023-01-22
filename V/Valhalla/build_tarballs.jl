@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/valhalla/
 
+git submodule update --init --recursive
+
 cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=On \
     -DENABLE_DATA_TOOLS=Off \
@@ -23,7 +25,9 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DProtobuf_INCLUDE_DIR=${includedir} \
-    -DPROTOBUF_LIBRARY=${libdir}
+    -DPROTOBUF_LIBRARY=${libdir} \
+    -DENABLE_SERVICES=Off # requires libprime_server
+    -DENABLE_DATA_TOOLS=OFF
 make -C build -j$(nproc)
 make -C build install
 """
@@ -43,8 +47,11 @@ dependencies = [
     Dependency(PackageSpec(name="jq_jll", uuid="f8f80db2-c0ba-59e9-a5c3-38d72e3c5ac2"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147"))
-    Dependency(PackageSpec(name="primecount_jll", uuid="ba3b429d-c409-5a27-9e45-21aab9233266"))
     Dependency("boost_jll")
+    # FOR ENABLE_DATA_TOOLS:
+    # Dependency("libspatialite_jll")
+    # Dependency("SQLite_jll")
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
