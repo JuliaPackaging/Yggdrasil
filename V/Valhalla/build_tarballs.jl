@@ -35,8 +35,9 @@ cmake .. \
     -DENABLE_TOOLS=OFF \
     -DENABLE_CCACHE=OFF \
     -DENABLE_BENCHMARKS=OFF \
+    -DProtobuf_PROTOC_EXECUTABLE=${host_bindir}/protoc \
     -DLOGGING_LEVEL=DEBUG
-    
+
 make -j${nproc}
 make -j${nproc} install
 
@@ -70,4 +71,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
