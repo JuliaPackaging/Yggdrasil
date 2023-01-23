@@ -29,7 +29,12 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
 CMAKE_FLAGS+=(-Wno-dev)
+CMAKE_FLAGS+=(-DENABLE_MASON=OFF)
+CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
+CMAKE_FLAGS+=(-DZLIB_LIBRARY="${libdir}/libz.${dlext}")
+CMAKE_FLAGS+=(-DZLIB_LIBRARIES="${libdir}/libz.${dlext}")
 
 if [[ ${target} == *mingw* ]]; then
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
