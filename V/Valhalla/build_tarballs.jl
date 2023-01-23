@@ -34,8 +34,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BENCHMARKS=OFF \
     -DLOGGING_LEVEL=DEBUG
     
-make -j$(nproc)
-make -j$(nproc) install
+make -j${nproc}
+make -j${nproc} install
 
 install_license ../LICENSE.md
 """
