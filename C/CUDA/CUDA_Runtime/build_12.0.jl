@@ -1,4 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.1.1"))]
+dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"12.0.0"))]
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
@@ -42,6 +42,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     # NVIDIA Optimizing Compiler Library
     mv nvvm/lib64/libnvvm.so* ${libdir}
+    mv lib64/libnvJitLink.so* ${libdir}
 
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
@@ -83,6 +84,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # NVIDIA Optimizing Compiler Library
     mv nvvm/bin/nvvm64_*.dll ${bindir}
+    mv bin/nvJitLink_*.dll ${bindir}
 
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
@@ -106,15 +108,16 @@ fi
 """
 
 products = [
-    LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
-    LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
-    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
-    LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
-    LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
+    LibraryProduct(["libcudart", "cudart64_12"], :libcudart),
+    LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
+    LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
+    LibraryProduct(["libcufft", "cufft64_11"], :libcufft),
+    LibraryProduct(["libcublas", "cublas64_12"], :libcublas),
+    LibraryProduct(["libcusparse", "cusparse64_12"], :libcusparse),
     LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
     LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libcupti", "cupti64_2020.2.1"], :libcupti),
+    LibraryProduct(["libcupti", "cupti64_2022.4.0"], :libcupti),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
     ExecutableProduct("ptxas", :ptxas),
@@ -123,6 +126,7 @@ products = [
     ExecutableProduct("compute-sanitizer", :compute_sanitizer),
 ]
 
-platforms = [Platform("x86_64", "linux"; cuda="11.1"),
-             Platform("powerpc64le", "linux"; cuda="11.1"),
-             Platform("x86_64", "windows"; cuda="11.1")]
+platforms = [Platform("x86_64", "linux"; cuda="12.0"),
+             Platform("powerpc64le", "linux"; cuda="12.0"),
+             Platform("aarch64", "linux"; cuda="12.0"),
+             Platform("x86_64", "windows"; cuda="12.0")]
