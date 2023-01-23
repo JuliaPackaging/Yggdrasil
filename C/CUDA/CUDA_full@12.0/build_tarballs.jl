@@ -43,7 +43,7 @@ if [[ ${target} == *-linux-gnu ]]; then
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprune \
                    cuda_nvrtc cuda_sanitizer_api cuda_profiler_api \
                    libcublas libcufft libcurand libcusolver libcusparse \
-                   libnpp libnvjpeg; do
+                   libnpp libnvjpeg libnvjitlink; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
         cp -a ${project}/* ${prefix}/cuda
     done
@@ -65,7 +65,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprune \
                    cuda_nvrtc cuda_sanitizer_api cuda_profiler_api \
                    libcublas libcufft libcurand libcusolver libcusparse  \
-                   libnpp libnvjpeg; do
+                   libnpp libnvjpeg libnvjitlink; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
         cp -a ${project}/*/* ${prefix}/cuda
     done
