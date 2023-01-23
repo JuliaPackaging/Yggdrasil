@@ -18,7 +18,10 @@ git submodule update --init --recursive
 
 mkdir build && cd build
 
-cmake .. -DCMAKE_BUILD_TYPE=Release \
+cmake ..
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DENABLE_DATA_TOOLS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
