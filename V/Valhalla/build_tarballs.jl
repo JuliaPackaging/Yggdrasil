@@ -52,13 +52,13 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="protoc_jll", uuid="c7845625-083e-5bbe-8504-b32d602b7110"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
-    Dependency(PackageSpec(name="jq_jll", uuid="f8f80db2-c0ba-59e9-a5c3-38d72e3c5ac2"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147"))
-    Dependency("boost_jll")
+    Dependency("boost_jll"; compat="=1.76.0") 
     Dependency("GEOS_jll")
+    Dependency("jq_jll")
+    Dependency("LibCURL_jll")
+    Dependency("Lz4_jll")
+    Dependency("protoc_jll")
+    Dependency("Zlib_jll")
     # FOR ENABLE_DATA_TOOLS:
     # Dependency("libspatialite_jll")
     # Dependency("SQLite_jll")
