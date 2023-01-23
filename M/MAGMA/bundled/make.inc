@@ -62,13 +62,13 @@ endif
 FPIC      = -fPIC
 
 # now, generate our flags
-CFLAGS      = -O3 $(FPIC) -DNDEBUG -DADD_ -Wall -fopenmp -std=c99
-CXXFLAGS    = -O3 $(FPIC) -DNDEBUG -DADD_ -Wall -fopenmp -std=c++11
-FFLAGS      = -O3 $(FPIC) -DNDEBUG -DADD_ -Wall -Wno-unused-dummy-argument
-F90FLAGS    = -O3 $(FPIC) -DNDEBUG -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
+CFLAGS      = -O3 $(FPIC) -DNDEBUG -DNOCHANGE -Wall -fopenmp -std=c99
+CXXFLAGS    = -O3 $(FPIC) -DNDEBUG -DNOCHANGE -Wall -fopenmp -std=c++11
+FFLAGS      = -O3 $(FPIC) -DNDEBUG -DNOCHANGE -Wall -Wno-unused-dummy-argument
+F90FLAGS    = -O3 $(FPIC) -DNDEBUG -DNOCHANGE -Wall -Wno-unused-dummy-argument -x f95-cpp-input
 LDFLAGS     =     $(FPIC)                       -fopenmp
 
-DEVCCFLAGS  = -O3         -DNDEBUG -DADD_       
+DEVCCFLAGS  = -O3         -DNDEBUG -DNOCHANGE      
 
 # DEVCCFLAGS are populated later in `backend-specific`
 
@@ -77,14 +77,14 @@ DEVCCFLAGS  = -O3         -DNDEBUG -DADD_
 # libraries
 
 # gcc with OpenBLAS (includes LAPACK)
-LIB       += -lopenblas
+LIB       += -lblastrampoline
 
 # We're going to spoof magma to make it believe lbt is 64-bit ints.
 # Defining MAGMA_ILP64 or MKL_ILP64 changes magma_int_t to int64_t in include/magma_types.h
-# CFLAGS    += -DMKL_ILP64
-# FFLAGS    += -fdefault-integer-8
-# F90FLAGS  += -fdefault-integer-8
-# NVCCFLAGS += -DMKL_ILP64
+CFLAGS    += -DMKL_ILP64
+FFLAGS    += -fdefault-integer-8
+F90FLAGS  += -fdefault-integer-8
+NVCCFLAGS += -DMKL_ILP64
 
 # --------------------
 # directories
