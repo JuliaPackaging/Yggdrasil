@@ -1,0 +1,31 @@
+diff --git a/Makefile b/Makefile
+index 016a771..b1c9e00 100644
+--- a/Makefile
++++ b/Makefile
+@@ -95,14 +95,14 @@ ifeq ($(USE_SSL),1)
+   ifeq ($(uname_S),Linux)
+     ifdef OPENSSL_PREFIX
+       CFLAGS+=-I$(OPENSSL_PREFIX)/include
+-      SSL_LDFLAGS+=-L$(OPENSSL_PREFIX)/lib -lssl -lcrypto
++      SSL_LDFLAGS+=-L$(OPENSSL_PREFIX)/lib -lssl -lcrypto -L. -lhiredis
+     else
+-      SSL_LDFLAGS=-lssl -lcrypto
++      SSL_LDFLAGS=-lssl -lcrypto -L. -lhiredis
+     endif
+   else
+     OPENSSL_PREFIX?=/usr/local/opt/openssl
+     CFLAGS+=-I$(OPENSSL_PREFIX)/include
+-    SSL_LDFLAGS+=-L$(OPENSSL_PREFIX)/lib -lssl -lcrypto
++    SSL_LDFLAGS+=-L$(OPENSSL_PREFIX)/lib -lssl -lcrypto -L. -lhiredis
+   endif
+ endif
+ 
+@@ -161,7 +161,7 @@ $(STLIBNAME): $(OBJ)
+ 	$(STLIB_MAKE_CMD) $(STLIBNAME) $(OBJ)
+ 
+ #################### SSL building rules start ####################
+-$(SSL_DYLIBNAME): $(SSL_OBJ)
++$(SSL_DYLIBNAME): $(SSL_OBJ) $(DYLIBNAME)
+ 	$(SSL_DYLIB_MAKE_CMD) $(DYLIB_PLUGIN) -o $(SSL_DYLIBNAME) $(SSL_OBJ) $(REAL_LDFLAGS) $(LDFLAGS) $(SSL_LDFLAGS)
+ 
+ $(SSL_STLIBNAME): $(SSL_OBJ)
