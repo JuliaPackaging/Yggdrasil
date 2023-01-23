@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.4.1"
+version = v"6.4.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
@@ -13,7 +13,7 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "532ad71cc0f9c8f7cb92766c47bc3d23263c60876becd9053802f9727af24fae"),
+                  "a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -44,8 +44,7 @@ sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrc
 
 case "$target" in
 
-    x86_64-linux-musl*)
-        export LD_LIBRARY_PATH=$WORKSPACE/srcdir/build/lib:$host_libdir:$LD_LIBRARY_PATH
+    x86_64-linux-musl-cxx11)
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
     ;;
 
@@ -107,6 +106,7 @@ install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only
 # platforms are passed in on the command line
 if host_build
     platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
+    platforms_macos = AbstractPlatform[]
 else
     platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
     filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
