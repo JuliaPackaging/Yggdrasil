@@ -61,6 +61,7 @@ dependencies = [
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
     Dependency("protoc_jll")
+    HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
     # FOR ENABLE_DATA_TOOLS:
     # Dependency("libspatialite_jll")
