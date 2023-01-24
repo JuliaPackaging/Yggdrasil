@@ -8,7 +8,8 @@ steps:
       - JuliaCI/merge-commit: ~
       - staticfloat/forerunner#v1:
           watch:
-            - "**/*/build_tarballs.jl"
+            # Watch only changes within our top-level alphabetical directories
+            - "[A-Z]/**"
           path_processor: .buildkite/path_processors/per-project
           target: .buildkite/generator.jl
           target_type: command
