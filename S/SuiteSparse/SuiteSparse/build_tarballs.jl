@@ -30,7 +30,11 @@ else
     FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
 fi
 
-BLAS_NAME=blastrampoline
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=blastrampoline-5
+else
+    BLAS_NAME=blastrampoline
+fi
 if [[ ${nbits} == 64 ]]; then
     SUN="-DSUN64 -DLONGBLAS='long long'"
 fi
@@ -76,4 +80,4 @@ install_license LICENSE.txt
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
 
-# Build trigger: 1
+# Build trigger: 2
