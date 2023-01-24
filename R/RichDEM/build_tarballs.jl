@@ -61,7 +61,8 @@ dependencies = [
         ),
     )
     Dependency(
-        PackageSpec(name = "boost_jll", uuid = "28df3c45-c428-5900-9ff8-a3135698ca75"),
+        PackageSpec(name = "boost_jll", uuid = "28df3c45-c428-5900-9ff8-a3135698ca75");
+        compat="=1.76.0",
     )
     Dependency(
         PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c"),
