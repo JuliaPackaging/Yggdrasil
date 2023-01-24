@@ -16,7 +16,7 @@ index 909aca60..ea0c8f57 100644
      #define MAGMA_ZPOTRF_GPU magma_zpotrf_gpu_
      #define MAGMA_ZPOTRS_GPU magma_zpotrs_gpu_
  
-+#elif defined (ADD64_)
++#elif defined (ADD_64_)
 +
 +    #define MAGMA_ZGEBRD magma_zgebrd_64_
 +    #define MAGMA_ZGEHRD magma_zgehrd_64_
@@ -51,7 +51,7 @@ index c72994f9..47f168ce 100644
          #define FORTRAN_NAME(lcname, UCNAME)  MAGMA_GLOBAL( lcname, UCNAME )
      #elif defined(ADD_)
          #define FORTRAN_NAME(lcname, UCNAME)  lcname##_
-+    #elif defined(ADD64_)
++    #elif defined(ADD_64_)
 +        #define FORTRAN_NAME(lcname, UCNAME)  lcname##_64_
      #elif defined(NOCHANGE)
          #define FORTRAN_NAME(lcname, UCNAME)  lcname
