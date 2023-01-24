@@ -153,7 +153,7 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
         :label => "register -- $NAME",
         :agents => agent(),
         :plugins => register_plugins,
-        :timeout_in_minutes => 30,
+        :timeout_in_minutes => 90,
         :concurrency => 1,
         :concurrency_group => "yggdrasil/register",
         :commands => [script],
