@@ -9,6 +9,7 @@ version = v"3.3.0"
 sources = [
     GitSource("https://github.com/valhalla/valhalla.git", "ea7d44af37c47fcf0cb186e7ba0f9f77e96f202a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz", "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,6 +28,17 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 git submodule update --init --recursive
+
+if [[ ${target} == *-mingw* ]]; then
+    cd third_party/cpp-statsd-client
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
+    cd ../../
+    
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pkg-config-mingw.patch
+
+    # error: ‘inet_pton’ was not declared in this scope
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+fi
 
 mkdir build && cd build
 
