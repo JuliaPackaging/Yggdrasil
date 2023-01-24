@@ -22,18 +22,10 @@ fi
 
 git submodule update --init --recursive
 
-if [[ ${target} == *-mingw* || ${target} == *freebsd* ]]; then
+if [[${target} == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
     cd ../../
-fi
-
-if [[ ${target} == *-mingw* ]]; then
-    # Fix CMake pkg-config file ending .pc.exe
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pkg-config-mingw.patch
-
-    # error: ‘inet_pton’ was not declared in this scope
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
 mkdir build && cd build
@@ -66,7 +58,8 @@ install_license ../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# Windows is blocked until pkg-config issues are figured out (https://github.com/valhalla/valhalla/issues/3931)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
