@@ -77,14 +77,14 @@ DEVCCFLAGS  = -O3         -DNDEBUG -DADD64_
 # libraries
 
 # gcc with OpenBLAS (includes LAPACK)
-LIB       += -lopenblas
+LIB       += -lblastrampoline
 
 # We're going to spoof magma to make it believe lbt is 64-bit ints.
 # Defining MAGMA_ILP64 or MKL_ILP64 changes magma_int_t to int64_t in include/magma_types.h
-# CFLAGS    += -DMKL_ILP64
-# FFLAGS    += -fdefault-integer-8
-# F90FLAGS  += -fdefault-integer-8
-# NVCCFLAGS += -DMKL_ILP64
+CFLAGS    += -DMAGMA_ILP64
+FFLAGS    += -fdefault-integer-8
+F90FLAGS  += -fdefault-integer-8
+NVCCFLAGS += -DMAGMA_ILP64
 
 # --------------------
 # directories
