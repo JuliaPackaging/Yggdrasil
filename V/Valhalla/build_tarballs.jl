@@ -84,10 +84,6 @@ dependencies = [
     Dependency("protoc_jll")
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
-    # FOR ENABLE_DATA_TOOLS:
-    # Dependency("libspatialite_jll")
-    # Dependency("SQLite_jll")
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
