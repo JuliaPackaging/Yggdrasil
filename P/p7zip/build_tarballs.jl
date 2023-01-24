@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "p7zip"
-version = v"17.04"
+version_string = "17.04"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build p7zip
 sources = [
-    ArchiveSource("https://github.com/jinfeihan57/p7zip/archive/refs/tags/v17.04.tar.gz",
+    ArchiveSource("https://github.com/p7zip-project/p7zip/archive/refs/tags/v$(version_string).tar.gz",
                   "ea029a2e21d2d6ad0a156f6679bd66836204aa78148a4c5e498fe682e77127ef"),
     FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107.exe",
                "71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"),

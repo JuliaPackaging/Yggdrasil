@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "DynarePreprocessor"
-version = v"6.1.0"
+version = v"6.2.0"
 sources = [
-    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "4807a6c8806b650094f8a1fc8bc7435e94d38305"),
+    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "b0cb1a728cc25f574879042971e94bc49834d96e"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                   "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -17,7 +16,6 @@ rm -f /usr/bin/flex
 
 if [[ "${target}" == *-freebsd* ]]; then
     export CPPFLAGS="-I${includedir}"
-    atomic_patch -p1 "../patches/patches.patch"
 elif [[ "${target}" == *-apple-* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
@@ -26,11 +24,9 @@ elif [[ "${target}" == *-apple-* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=11.3
     popd
-    atomic_patch -p1 "../patches/patches.patch"
 fi
 
 autoreconf -si
-
 update_configure_scripts
 ./configure --prefix=$prefix  --build=${MACHTYPE} --host=${target} --disable-doc
 make -j${nproc}

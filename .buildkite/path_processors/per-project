@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# De-duplicate directories
+declare -A DIRS
+for f in "$@"; do
+    DIR="$(dirname ${f})"
+    DIRS["${DIR}"]=1
+done
+echo "${!DIRS[@]}"

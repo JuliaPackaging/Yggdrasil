@@ -50,9 +50,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/libcupti.so* ${libdir}
 
-    # NVIDIA Tools Extension Library
-    mv lib64/libnvToolsExt.so* ${libdir}
-
     # Compute Sanitizer
     rm -r compute-sanitizer/{docs,include}
     mv compute-sanitizer/* ${bindir}
@@ -94,9 +91,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/cupti64_*.dll ${bindir}
 
-    # NVIDIA Tools Extension Library
-    mv bin/nvToolsExt64_1.dll ${bindir}
-
     # Compute Sanitizer
     rm -r compute-sanitizer/{docs,include}
     mv compute-sanitizer/* ${bindir}
@@ -121,7 +115,6 @@ products = [
     LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
     LibraryProduct(["libcupti", "cupti64_2021.3.1"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
     ExecutableProduct("ptxas", :ptxas),
