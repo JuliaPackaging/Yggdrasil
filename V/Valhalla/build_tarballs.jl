@@ -22,11 +22,14 @@ fi
 
 git submodule update --init --recursive
 
-if [[ ${target} == *-mingw* ]]; then
+if [[ ${target} == *-mingw* || ${target} == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
     cd ../../
-    
+fi
+
+if [[ ${target} == *-mingw* ]]; then
+    # Fix CMake pkg-config file ending .pc.exe
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pkg-config-mingw.patch
 
     # error: ‘inet_pton’ was not declared in this scope
