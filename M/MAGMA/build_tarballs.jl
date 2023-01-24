@@ -21,6 +21,7 @@ cd $WORKSPACE/srcdir/magma*
 export CUDADIR=${WORKSPACE}/destdir/cuda
 export PATH=${PATH}:${CUDADIR}
 cp ../make.inc .
+# Patch to _64_ suffixes
 atomic_patch -p1 ../0001-mangle-to-ILP64.patch
 # reduce parallelism since otherwise the builder may OOM.
 (( nproc=1+nproc/3 ))
