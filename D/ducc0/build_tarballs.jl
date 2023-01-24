@@ -6,11 +6,11 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "ducc0"
-version = v"0.27.9"
+version = v"0.28.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "4778ffd93c4a347d2fe26e6d1a586565633f29c2"),
+    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "d015eee4949dab6a39f41c62de97410db76affd3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -30,7 +30,7 @@ fi
 
 cd $WORKSPACE/srcdir/ducc*/julia
 install_license ../LICENSE
-${CXX} ${CXXFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -c
+${CXX} ${CXXFLAGS} -O3 -I ../src/ ducc_julia.cc -Wfatal-errors -pthread -std=c++17 -fPIC -fno-math-errno -fassociative-math -freciprocal-math -fno-signed-zeros -fno-trapping-math -ffp-contract=fast -ffinite-math-only -fno-rounding-math -fno-signaling-nans -fexcess-precision=fast -fvisibility=hidden -c
 # -fcx-limited-range is not supported by clang
 ${CXX} ${CXXFLAGS} -O3 -o libducc_julia.${dlext} ducc_julia.o -Wfatal-errors -pthread -std=c++17 -shared -fPIC
 install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
