@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Mingw32"
-version = v"5.0.4"
+version = v"10.0.0"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v$(version).tar.bz2",
-                  "5527e1f6496841e2bb72f97a184fc79affdcd37972eaa9ebf7a5fd05c31ff803"),
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
 ]
 
@@ -75,8 +75,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("KernelHeaders_jll"), # TODO does not exist
-    #"https://github.com/staticfloat/KernelHeadersBuilder/releases/download/v4.12.0-0/build_KernelHeaders.v4.12.0.jl",
+    Dependency("LinuxKernelHeaders_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
