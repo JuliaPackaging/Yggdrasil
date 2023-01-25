@@ -22,7 +22,7 @@ fi
 
 git submodule update --init --recursive
 
-if [[${target} == *freebsd* ]]; then
+if [[ "${target}" == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
     cd ../../
