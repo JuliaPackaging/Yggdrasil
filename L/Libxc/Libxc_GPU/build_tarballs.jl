@@ -18,6 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
 # Needed for Libxc 6.1.0 as these backport some fixes on libxc master
+# On Libxc > 6.1.0 we can also remove the -DBUILD_TESTING=OFF
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/source-fixes.patch
 
