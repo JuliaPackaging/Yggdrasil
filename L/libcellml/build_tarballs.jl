@@ -22,6 +22,7 @@ cmake -DINSTALL_PREFIX=${prefix} \
     -DCOVERAGE=OFF \
     -DLLVM_COVERAGE=OFF \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
+    -DUNIT_TESTS=OFF \
     ..
 make -j${nproc}
 make install
