@@ -22,8 +22,36 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/richdem-*
 mkdir build && cd build
-cmake -DJulia_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_GDAL=ON ../. 
-cmake --build . --config Release --parallel $nproc --target install
+
+cmake \
+    -DJulia_PREFIX=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DJlCxx_DIR=$prefix/lib/cmake/JlCxx \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DUSE_GDAL=ON ../. 
+
+# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DWITH_NETCDF=ON)
+else
+    echo "Disabling NetCDF support"
+    CMAKE_FLAGS+=(-DWITH_NETCDF=OFF)
+fi
+# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DWITH_HDF5=ON)
+else
+    echo "Disabling HDF5 support"
+    CMAKE_FLAGS+=(-DWITH_HDF5=OFF)
+fi
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    export LDFLAGS="$LDFLAGS -lcurl"  # same fix as used for PROJ
+    rm /usr/lib/libexpat.so.1  # ugly, but can't figure out CMake behaviour here
+fi
+
+VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc} 
 """
 
 # These are the platforms we will build for by default, unless further
@@ -58,10 +86,18 @@ dependencies = [
     )
     Dependency(
         PackageSpec(name = "boost_jll", uuid = "28df3c45-c428-5900-9ff8-a3135698ca75");
-        compat="=1.76.0",
+        compat = "=1.76.0",
     )
     Dependency(
-        PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c"),
+        PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c");
+        compat = "=3.2.1",
+    )
+    Dependency(
+        PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"),
+    )
+    Dependency(
+        PackageSpec(name = "NetCDF_jll", uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3");
+        compat = "400.902.5",
     )
     Dependency(
         PackageSpec(name = "OpenMPI_jll", uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"),
