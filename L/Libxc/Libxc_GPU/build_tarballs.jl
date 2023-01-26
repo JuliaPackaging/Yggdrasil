@@ -1,10 +1,12 @@
-include("../common.jl")
+using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
+version = v"6.1.0"
+include("../sources.jl")
 
 sources = [
     sources;

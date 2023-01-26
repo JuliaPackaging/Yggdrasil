@@ -1,6 +1,9 @@
-include("../common.jl")
+using BinaryBuilder, Pkg
 
 name = "Libxc"
+version = v"6.1.0"
+include("../sources.jl")
+
 
 # Bash recipe for building across all platforms
 # Notes:
