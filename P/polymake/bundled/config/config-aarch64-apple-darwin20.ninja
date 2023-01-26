@@ -7,7 +7,7 @@ app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/inc
 CC = cc
 CXX = c++
 CFLAGS = -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include
-CXXFLAGS = -stdlib=libc++ -std=c++14 -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include -I/workspace/destdir/deps/boost_jll/include -I/workspace/destdir/deps/FLINT_jll/include -DPOLYMAKE_WITH_FLINT
+CXXFLAGS = -stdlib=libc++ -std=c++14 -fopenmp -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include -I/workspace/destdir/deps/boost_jll/include -I/workspace/destdir/deps/FLINT_jll/include -DPOLYMAKE_WITH_FLINT
 ARCHFLAGS = 
 CsharedFLAGS = -fPIC -pipe
 CXXOPT = -O3
@@ -20,7 +20,7 @@ CPPStd = 201402
 DlExt = bundle
 So = dylib
 XcodeVersion = 9.1.0
-LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
+LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++ -fopenmp
 LDsharedFLAGS = -bundle -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -undefined dynamic_lookup -fstack-protector-strong
 LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong  -mmacosx-version-min=10.8 -fstack-protector-strong
 LDsonameFLAGS = -install_name /workspace/destdir/lib/

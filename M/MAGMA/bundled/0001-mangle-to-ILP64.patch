@@ -1,0 +1,68 @@
+From c740510529f92c4269d2b882b3e297bfa6c81430 Mon Sep 17 00:00:00 2001
+From: Raye Kimmerer <kimmerer@mit.edu>
+Date: Tue, 24 Jan 2023 01:54:13 -0500
+Subject: [PATCH] mangle to ILP64
+
+---
+ control/magma_zf77pgi.cpp | 24 ++++++++++++++++++++++++
+ include/magma_mangling.h  |  4 +++-
+ 2 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/control/magma_zf77pgi.cpp b/control/magma_zf77pgi.cpp
+index 909aca60..ea0c8f57 100644
+--- a/control/magma_zf77pgi.cpp
++++ b/control/magma_zf77pgi.cpp
+@@ -36,6 +36,30 @@
+     #define MAGMA_ZPOTRF_GPU magma_zpotrf_gpu_
+     #define MAGMA_ZPOTRS_GPU magma_zpotrs_gpu_
+ 
++#elif defined (ADD_64_)
++
++    #define MAGMA_ZGEBRD magma_zgebrd_64_
++    #define MAGMA_ZGEHRD magma_zgehrd_64_
++    #define MAGMA_ZGELQF magma_zgelqf_64_
++    #define MAGMA_ZGEQLF magma_zgeqlf_64_
++    #define MAGMA_ZGEQRF magma_zgeqrf_64_
++    #define MAGMA_ZGETRF magma_zgetrf_64_
++    #define MAGMA_ZLABRD magma_zlabrd_64_
++    #define MAGMA_ZLAHR2 magma_zlahr2_64_
++    #define MAGMA_ZLAHRU magma_zlahru_64_
++    #define MAGMA_ZPOTRF magma_zpotrf_64_
++    #define MAGMA_ZHETRD magma_zhetrd_64_
++    
++    #define MAGMA_ZUNMQR_GPU magma_zunmqr_gpu_64_
++    #define MAGMA_ZGEQRF_GPU  magma_zgeqrf_gpu_64_
++    #define MAGMA_ZGEQRF2_GPU magma_zgeqrf2_gpu_64_
++    #define MAGMA_ZGEQRS_GPU magma_zgeqrs_gpu_64_
++    #define MAGMA_ZGETRF_GPU magma_zgetrf_gpu_64_
++    #define MAGMA_ZGETRS_GPU magma_zgetrs_gpu_64_
++    #define MAGMA_ZLARFB_GPU magma_zlarfb_gpu_64_
++    #define MAGMA_ZPOTRF_GPU magma_zpotrf_gpu_64_
++    #define MAGMA_ZPOTRS_GPU magma_zpotrs_gpu_64_
++
+ #elif defined (NOCHANGE)
+ 
+     #define MAGMA_ZGEBRD magma_zgebrd
+diff --git a/include/magma_mangling.h b/include/magma_mangling.h
+index c72994f9..47f168ce 100644
+--- a/include/magma_mangling.h
++++ b/include/magma_mangling.h
+@@ -24,12 +24,14 @@
+         #define FORTRAN_NAME(lcname, UCNAME)  MAGMA_GLOBAL( lcname, UCNAME )
+     #elif defined(ADD_)
+         #define FORTRAN_NAME(lcname, UCNAME)  lcname##_
++    #elif defined(ADD_64_)
++        #define FORTRAN_NAME(lcname, UCNAME)  lcname##_64_
+     #elif defined(NOCHANGE)
+         #define FORTRAN_NAME(lcname, UCNAME)  lcname
+     #elif defined(UPCASE)
+         #define FORTRAN_NAME(lcname, UCNAME)  UCNAME
+     #else
+-        #error "One of ADD_, NOCHANGE, or UPCASE must be defined to set how Fortran functions are name mangled. For example, in MAGMA, add -DADD_ to CFLAGS, FFLAGS, etc. in make.inc. If using CMake, it defines MAGMA_GLOBAL instead."
++        #error "One of ADD_, ADD_64_, NOCHANGE, or UPCASE must be defined to set how Fortran functions are name mangled. For example, in MAGMA, add -DADD_ to CFLAGS, FFLAGS, etc. in make.inc. If using CMake, it defines MAGMA_GLOBAL instead."
+         #define FORTRAN_NAME(lcname, UCNAME)  lcname##_error
+     #endif
+ #endif
+-- 
+2.37.2
+

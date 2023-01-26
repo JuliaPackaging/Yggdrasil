@@ -1,0 +1,58 @@
+diff --git a/src/comgr.cpp b/src/comgr.cpp
+index cf108f247..e6a4e13a0 100644
+--- a/src/comgr.cpp
++++ b/src/comgr.cpp
+@@ -126,7 +126,7 @@ MIOPEN_DECLARE_ENV_VAR(MIOPEN_DEBUG_OPENCL_WAVE64_NOWGP)
+ 
+ #endif // COMGR_SUPPORTS_PCH
+ 
+-#define PCH_IS_SUPPORTED (COMGR_SUPPORTS_PCH && HIP_SUPPORTS_PCH)
++#define PCH_IS_SUPPORTED 0
+ 
+ /// It seems like precompiled headers are built with "warpSize" fixed to 64.
+ /// This leads to issues in HIP kernels that use "warpSize" on devices that
+@@ -832,6 +832,8 @@ void BuildHip(const std::string& name,
+                 raw += " -nogpuinc -DMIOPEN_DONT_USE_HIP_RUNTIME_HEADERS=1";
+             }
+ #endif
++            raw += " -DMIOPEN_DONT_USE_HIP_RUNTIME_HEADERS=1";
++
+             auto optCompile = miopen::SplitSpaceSeparated(raw, compiler::lc::GetOptionsNoSplit());
+             auto optLink    = optCompile;
+             compiler::lc::hip::RemoveCompilerOptionsUnwanted(optCompile);
+diff --git a/src/solver/conv_direct_naive_conv_bwd.cpp b/src/solver/conv_direct_naive_conv_bwd.cpp
+index e039b4b4c..542079671 100644
+--- a/src/solver/conv_direct_naive_conv_bwd.cpp
++++ b/src/solver/conv_direct_naive_conv_bwd.cpp
+@@ -36,6 +36,7 @@ namespace solver {
+ 
+ bool ConvDirectNaiveConvBwd::IsApplicable(const ConvolutionContext& ctx) const
+ {
++    return false;
+     if(!miopen::debug::AlwaysEnableConvDirectNaive &&
+        miopen::IsDisabled(MIOPEN_DEBUG_CONV_DIRECT_NAIVE_CONV_BWD{}))
+         return false;
+diff --git a/src/solver/conv_direct_naive_conv_fwd.cpp b/src/solver/conv_direct_naive_conv_fwd.cpp
+index 3ea0b6492..c8ea58dac 100644
+--- a/src/solver/conv_direct_naive_conv_fwd.cpp
++++ b/src/solver/conv_direct_naive_conv_fwd.cpp
+@@ -36,6 +36,7 @@ namespace solver {
+ 
+ bool ConvDirectNaiveConvFwd::IsApplicable(const ConvolutionContext& ctx) const
+ {
++    return false;
+     if(!miopen::debug::AlwaysEnableConvDirectNaive &&
+        miopen::IsDisabled(MIOPEN_DEBUG_CONV_DIRECT_NAIVE_CONV_FWD{}))
+         return false;
+diff --git a/src/solver/conv_direct_naive_conv_wrw.cpp b/src/solver/conv_direct_naive_conv_wrw.cpp
+index e9a708fc4..69fc0413e 100644
+--- a/src/solver/conv_direct_naive_conv_wrw.cpp
++++ b/src/solver/conv_direct_naive_conv_wrw.cpp
+@@ -36,6 +36,7 @@ namespace solver {
+ 
+ bool ConvDirectNaiveConvWrw::IsApplicable(const ConvolutionContext& ctx) const
+ {
++    return false;
+     if(!miopen::debug::AlwaysEnableConvDirectNaive &&
+        miopen::IsDisabled(MIOPEN_DEBUG_CONV_DIRECT_NAIVE_CONV_WRW{}))
+         return false;

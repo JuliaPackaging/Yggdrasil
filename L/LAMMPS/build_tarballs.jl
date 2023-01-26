@@ -6,16 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.2.2" # Equivalent to 29Sep2021_update2
+version = v"2.3.0" # Equivalent to 23Jun2022_update1
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
 # 2.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021
 # 2.2.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021_update2
+# 2.3.0 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update1
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "7586adbb6a61254125992709ef2fda9134cfca6c")
+    GitSource("https://github.com/lammps/lammps.git", "d618b0ffc05dfd86915c0d148c0a72fba995eba4")
 ]
 
 # Bash recipe for building across all platforms
@@ -50,26 +51,24 @@ fi
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-    end
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = supported_platforms(; experimental=true)
 platforms = supported_platforms()
-platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
-
-# We need this since currently MPItrampoline_jll has a dependency on gfortran
-platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
-# Compiler failure
-filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) =="glibc" && libgfortran_version(p) == v"4") , platforms)
-
 platforms = expand_cxxstring_abis(platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -81,14 +80,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
 ]
-
-all_platforms, platform_dependencies = MPI.augment_platforms(platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, all_platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8",
-               augment_platform_block)
-
-# bump
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")

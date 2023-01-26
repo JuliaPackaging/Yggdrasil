@@ -4,16 +4,21 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.8.1"
+version = v"0.9.0"
+
 sources = [
     ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
-                  "41eb6ae6901c09e53d7f61f0758f9201e81fc534bfeecd4b2bd4b4e6f6768693"),
+                  "dcf174ac708ed2acea46691f6e78b9eb946d8a2ba62f75e87cf3bf4f0d651724"),
+                  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 
 script = raw"""
 cd $WORKSPACE/srcdir/symengine-*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-fix.patch
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -28,7 +33,7 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

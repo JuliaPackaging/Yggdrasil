@@ -3,21 +3,22 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.52.4"
+version = v"2.54.5"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "660ec8836a3a91587bc9384920132d4c38d1d1718c67fe160c5213fe4dec2928"),
-    DirectorySource("./bundled"),
+                  "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
-atomic_patch -p1 ../patches/0001-Makefile.am-use-the-correct-EXEEXT-extension-for-the.patch
 autoreconf -fiv
+
+# Delete misleading libtool files
+rm -vf ${prefix}/lib/*.la
 
 # On most platforms we have to use `${rust_target}` as `host`
 FLAGS=(--host=${rust_target})

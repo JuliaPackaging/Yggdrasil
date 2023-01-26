@@ -3,23 +3,23 @@ using BinaryBuilder
 include("../../../fancy_toys.jl")
 
 name = "CUDA_full"
-version = v"11.7.0"
+version = v"11.7.1"
 
 sources_linux = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_515.43.04_linux.run",
-               "087fdfcbba1f79543b1f78e43a8dfdac5f6db242d042dde820e16dc185892f26", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run",
+               "52286a29706549b7d0feeb0e7e3eca1b15287c436a69fa880ad385b1be3e04db", "installer.run")
 ]
 sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_515.43.04_linux_ppc64le.run",
-               "74a507ac54067c258e6b7c9063c98d411116ecc5c5397b1f6e6a999e86dff08a", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux_ppc64le.run",
+               "f59fc381cbd903da55bfea9f81534bd4d20e3db716c332be3d2c4804efc2ec6b", "installer.run")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_515.43.04_linux_sbsa.run",
-               "e777839a618ca9a3d5ad42ded43a1b6392af2321a7327635a4afcc986876a21b", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux_sbsa.run",
+               "1607b98c30cb8efa52b9c8f564ec92d26ee1922cb677740aafacce313e544ecd", "installer.run")
 ]
 sources_win10 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_516.01_windows.exe",
-               "ec0f554ead2cee1fb51d8bf98c7d13c5df91df62d4654e4ea626fb4278c4a4b6", "installer.exe")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_516.94_windows.exe",
+               "22d6899b2d8851e7db54bdea201b280c544d0c1867da0128a659e2a223bc36c2", "installer.exe")
 ]
 
 script = raw"""

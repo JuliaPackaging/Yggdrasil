@@ -1,14 +1,16 @@
 using BinaryBuilder, Pkg
 
 name = "XGBoost"
-version = v"1.6.1"
+version = v"1.7.3"
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","5d92a7d936fc3fad4c7ecb6031c3c1c7da882a14"), 
+    GitSource("https://github.com/dmlc/xgboost.git","ccf43d4ba0a94e2f0a3cc5a526197539ae46f410"), 
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,22 +18,28 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
-# Patch dmlc-core to use case-sensitive windows.h includes
+# Patch dmlc-core to use case-sensitive windows.h includes: https://github.com/dmlc/dmlc-core/pull/673
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    #install a newer SDK which supports `___cxa_deleted_virtual`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
-
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-make -j${nproc}
+if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
+    # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
+    # make it use the workspace instead
+    export TMPDIR=${WORKSPACE}/tmpdir
+    mkdir ${TMPDIR}
+    
+    export CUDA_HOME=${WORKSPACE}/destdir/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+            -DCUDA_TOOLKIT_ROOT_DIR=${WORKSPACE}/destdir/cuda \
+            -DUSE_CUDA=ON \
+            -DBUILD_WITH_CUDA_CUB=ON
+    make -j${nproc}
+else
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
+    make -j${nproc}
+fi
 
 # Manual installation, to avoid installing dmlc
 cd ..
@@ -49,9 +57,21 @@ fi
 install_license LICENSE
 """
 
+cuda_full_versions = Dict(
+    v"11.0" => v"11.0.3",
+)
+cuda_version = v"11.0"
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
+                                        cuda=CUDA.platform(cuda_version)))
+
+for p in cuda_platforms
+    push!(platforms, p)
+end
+
 
 # The products that we will ensure are always built
 products = [
@@ -65,7 +85,15 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
+    # You can only specify one cuda version in the deps. To build against more than 
+    # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=cuda_platforms),
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=cuda_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+                preferred_gcc_version=v"8", 
+                julia_compat="1.6",
+                augment_platform_block=CUDA.augment)

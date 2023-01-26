@@ -1,0 +1,25 @@
+From aa4d7e44f9d238aae277b964217c2c40a936fc96 Mon Sep 17 00:00:00 2001
+From: Will Kimmerer <kimmerer@mit.edu>
+Date: Mon, 28 Nov 2022 04:48:11 -0500
+Subject: [PATCH] link_directories
+
+---
+ CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1bf94e9..c97b049 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -32,6 +32,8 @@ include_directories(${MPI_INCLUDE_PATH})
+ include_directories(${GKLIB_PATH})
+ include_directories(${METIS_PATH}/include)
+ 
++link_directories(${METIS_PATH}/lib)
++
+ # List of directories that cmake will look for CMakeLists.txt
+ #add_subdirectory(${METIS_PATH}/libmetis ${CMAKE_BINARY_DIR}/libmetis)
+ add_subdirectory(include)
+-- 
+2.37.2
+

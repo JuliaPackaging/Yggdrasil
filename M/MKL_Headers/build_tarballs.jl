@@ -3,33 +3,33 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2022.0.0"
+version = v"2022.2.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.1/download/linux-64/mkl-include-2022.0.1-intel_117.tar.bz2",
-        "e664eb639faf03d5a4e76b435deb28a67ef7f59f3c55adaeeef771a7c94b56e3";
+        "https://anaconda.org/intel/mkl-include/2022.2.1/download/linux-64/mkl-include-2022.2.1-intel_16993.tar.bz2",
+        "144b4939c875ae52b5479317e73be839f5b26b3b0e2c3a52bd59507bc25be56c";
         unpack_target = "mkl-include-x86_64-linux-gnu"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.1/download/linux-32/mkl-include-2022.0.1-intel_117.tar.bz2",
-        "411f636d3e95f75453de80a5574273454b67181c7c30d3276c6cb18a91ef3eeb";
+        "https://anaconda.org/intel/mkl-include/2022.2.1/download/linux-32/mkl-include-2022.2.1-intel_16993.tar.bz2",
+        "2deec097b972d7784b26b454169af302a0d4e26cc1d65cbb4ed72baf00a8849e";
         unpack_target = "mkl-include-i686-linux-gnu"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/osx-64/mkl-include-2022.0.0-intel_105.tar.bz2",
-        "d7aa8f0c7904045c6f569462c0d04cc34250ee991855f5a3ab2fba8bbc5a0d81";
+        "https://anaconda.org/intel/mkl-include/2022.2.1/download/osx-64/mkl-include-2022.2.1-intel_15346.tar.bz2",
+        "fa14e44b3adbcc156aa7b531c4e83143cf9d31fe990210cb6d5d5456f8a417a8";
         unpack_target = "mkl-include-x86_64-apple-darwin14"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/win-32/mkl-include-2022.0.0-intel_115.tar.bz2",
-        "2d9999a92959be25b5dabbd5b69a4b7f738b87215254c776d59c6b2f8b2addf3";
+        "https://anaconda.org/intel/mkl-include/2022.2.1/download/win-32/mkl-include-2022.2.1-intel_19754.tar.bz2",
+        "04c3ce3f1e6e23e575f904fbdafd089f3241bf28ca1005b2464d87795295dc50";
         unpack_target = "mkl-include-i686-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/win-64/mkl-include-2022.0.0-intel_115.tar.bz2",
-        "eb8f6187d8e4ded8c48b701d00658ef49adc2180e42f1ff52f43c1fecc79a870";
+        "https://anaconda.org/intel/mkl-include/2022.2.1/download/win-64/mkl-include-2022.2.1-intel_19754.tar.bz2",
+        "675519d77dfbf38bfa3dd94f37d3d1fa9f74b32f089e50123605ff3d45752c44";
         unpack_target = "mkl-include-x86_64-w64-mingw32"
     ),
 ]

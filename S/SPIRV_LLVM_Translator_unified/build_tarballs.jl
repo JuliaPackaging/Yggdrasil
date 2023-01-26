@@ -7,15 +7,16 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/maleadt/SPIRV-LLVM-Translator.git"
-version = v"0.1"
+version = v"0.2"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"11.0.1" => [GitSource(repo, "caa4038025861069adf857be8a5214e6857ff182")],
-    v"12.0.1" => [GitSource(repo, "3ed66fc7524d648dec5a71c5e09985d5aff5bd99")],
-    v"13.0.1" => [GitSource(repo, "776d9041e3baf120222e88842a9d441218a3f791")]
+    v"11.0.1" => [GitSource(repo, "4c46e06d7b8833af95233ab9c1ad43220bf63684")],
+    v"12.0.1" => [GitSource(repo, "3227a34ccc21f8e456d5991b42e161eb7d15578d")],
+    v"13.0.1" => [GitSource(repo, "5d69690864d8e7d5bf221284a37c57f016ce7d98")],
+    v"14.0.2" => [GitSource(repo, "a16f3db323862cc49d31135697309a3188a024a8")],
 )
 
 # These are the platforms we will build for by default, unless further

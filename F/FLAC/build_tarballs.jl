@@ -51,6 +51,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Ogg_jll"),
+    # libssp is required for the Windows build, libgcc_s on Linux and FreeBSD
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p) || Sys.iswindows(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

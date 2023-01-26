@@ -38,7 +38,7 @@ const augment = raw"""
         end
         return platform
     end
-"""
+    """
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -47,7 +47,7 @@ mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
     ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "", !Sys.iswindows)
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "^5.0.1", !Sys.iswindows)
 )
 
 function augment_platforms(platforms)

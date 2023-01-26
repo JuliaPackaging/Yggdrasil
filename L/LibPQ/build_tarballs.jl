@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"14.1"
+version = v"14.3"
 pg_version = string(version.major, '.', version.minor)
 tzcode_version = "2021e"
 
@@ -11,7 +11,7 @@ tzcode_version = "2021e"
 sources = [
     ArchiveSource(
         "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "b29030525e1314d676f41e6007a96d4489ba0d03fa93e67b477c1d5386790c8f"
+        "18eff30438703dd7a5f2a7ca916741bce3c99eadb4025bc6268af268e8e909c5"
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
@@ -54,6 +54,7 @@ fi
     "${FLAGS[@]}"
 make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
+make -C src/include install
 
 # Delete static library
 rm ${prefix}/lib/libpq.a

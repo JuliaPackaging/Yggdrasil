@@ -1,0 +1,16 @@
+diff --git a/rocclr/hip_code_object.cpp b/rocclr/hip_code_object.cpp
+index 249ea6fe..425bc3ac 100755
+--- a/rocclr/hip_code_object.cpp
++++ b/rocclr/hip_code_object.cpp
+@@ -483,8 +483,9 @@ hipError_t CodeObject::extractCodeObjectFromFatBinary(const void* data,
+       }
+     }
+ 
+-    guarantee(false, "hipErrorNoBinaryForGpu: Unable to find code object for all current devices!");
+-    return hipErrorNoBinaryForGpu;
++    return hipSuccess;
++    //guarantee(false, "hipErrorNoBinaryForGpu: Unable to find code object for all current devices!");
++    //return hipErrorNoBinaryForGpu;
+   }
+ }
+ 

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "gperf"
-version = v"3.1.0"
+version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,12 +12,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gperf-3.1
+cd gperf-*
+install_license COPYING
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+
+make -j${nproc}
+
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,4 +36,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

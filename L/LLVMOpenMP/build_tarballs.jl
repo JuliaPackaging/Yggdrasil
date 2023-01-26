@@ -3,12 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"13.0.1"
+version = v"15.0.4"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "6b79261371616c31fea18cd3ee1797c79ee38bcaf8417676d4fa366a24c96b4f"
+        "1b6f92013e7555759127d84264c3e98eab116a3a5138570058d8507e1513f76e"
+    ),
+    # we need a bunch of additional cmake files to build the subproject separately
+    # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
+    ArchiveSource(
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
+        "9df45bf3a0a46264d5007485592381bbaf50f034b4155290cb0d917539d8facf"
     ),
     DirectorySource("./bundled"),
 ]
@@ -16,13 +22,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openmp-*/
+mv ../cmake-* ../cmake
 # https://github.com/msys2/MINGW-packages/blob/d440dcb738/mingw-w64-clang/0901-cast-to-make-gcc-happy.patch
 atomic_patch -p1 ../patches/0901-cast-to-make-gcc-happy.patch
 
 platform_config=()
-if [[ "${target}" == *-freebsd* ]]; then
-    platform_config+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--version-script=$(pwd)/runtime/src/exports_so.txt")
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     # backport https://gitlab.kitware.com/cmake/cmake/-/commit/78f758a463516a78a9ec8d472080c6e61cb89c7f
     sed -i "s@/c  */Fo@-c -Fo@" /usr/share/cmake/Modules/CMakeASM_MASMInformation.cmake
     sed -i "s@libomp_append(asmflags_local /@libomp_append(asmflags_local -@" runtime/cmake/LibompHandleFlags.cmake
@@ -44,6 +49,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
+
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -55,14 +62,18 @@ products = [
     LibraryProduct("libomp", :libomp),
 ]
 
+llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We use UASM only for Windows
     HostBuildDependency(PackageSpec(name="UASM_jll", uuid="bbf38c07-751d-5a2b-a7fc-5c0acd9bd57e")),
     # We need libclang_rt.osx.a for linking libomp, because this library provides the
     # implementation of `__divdc3`.
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=[Platform("aarch64", "macos")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=[Platform("aarch64", "macos")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # Note: GCC 9 is needed to work around https://github.com/llvm/llvm-project/issues/55006
+               # (failing compilation for i686 platforms with GCC 8).
+               julia_compat="1.6", preferred_gcc_version=v"9", preferred_llvm_version=llvm_version)

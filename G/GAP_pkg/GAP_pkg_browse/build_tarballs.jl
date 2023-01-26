@@ -2,25 +2,33 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1192.000"
-gap_lib_version = v"400.1192.000"
+gap_version = v"400.1200.200"
+gap_lib_version = v"400.1201.200"
 name = "Browse"
-upstream_version = v"1.8.13" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "1.8.19" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://www.math.rwth-aachen.de/~Browse/$(name)-$(upstream_version).tar.bz2",
-                  "118d1f7fb67044c103cf44673ade8de57e4289a906dd01e15d7562dd0aface5b"),
+    ArchiveSource("https://www.math.rwth-aachen.de/~Browse/Browse-$(upstream_version).tar.bz2",
+                  "5eb792caca5a7ef4e0c04e272963c956bb23743defc573d49ede2f169662ccdb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd Browse*
 
-./configure ${prefix}/share/gap
+# HACK to fool the Browse build system
+mkdir -p ${prefix}/lib/gap
+cp ${prefix}/bin/gac ${prefix}/lib/gap/gac
+chmod a+x ${prefix}/lib/gap/gac
+
+./configure ${prefix}/lib/gap
 make -j${nproc} CFLAGS="-I$includedir -I$includedir/ncurses"
+
+# revert the HACK
+rm ${prefix}/lib/gap/gac
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
@@ -40,3 +48,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+
