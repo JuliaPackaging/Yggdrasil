@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "libcellml"
-version = v"0.2.0"
+version = v"0.4.0"
 
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
-        "9948e5fb6159bbe50bbe0f4bec883ed7190a51f7"),
+        "aff96b20e268a89648dc81aa56a81dc94fab72f2"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,10 +15,12 @@ script = raw"""
 cd libcellml
 atomic_patch -p1 ../patches/libxml2_target_cmake.diff
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -DINSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DLIBCELLML_TREAT_WARNINGS_AS_ERRORS=OFF \
+    -DBUILD_TYPE=Release \
+    -DTWAE=OFF \
+    -DCOVERAGE=OFF \
+    -DLLVM_COVERAGE=OFF \
     ..
 make -j${nproc}
 make install
