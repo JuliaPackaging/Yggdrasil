@@ -3,14 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "gitoxide"
-# Note: upstream doesn't seem to tag new versions of `gitoxide` recently, but
-# the version number comes from `Cargo.toml`.
-version = v"0.11.0"
+version = v"0.20.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Byron/gitoxide",
-              "fb6e4b4d36c89de56a181e5ba5ae940bd62fb076"),
+              "08ec3a93d77a1018439a5c41c23729ffed27c5a5"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,13 +38,16 @@ products = [
     ExecutableProduct("gix", :gix),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need libclang_rt.osx.a for linking the program.
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=filter(Sys.isapple, platforms)),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5",
+               preferred_llvm_version=llvm_version,
                compilers=[:c, :rust], lock_microarchitecture=false)
