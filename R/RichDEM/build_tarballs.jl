@@ -22,6 +22,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/richdem-*
 mkdir build && cd build
+
 cmake \
     -DJulia_PREFIX=$prefix \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
@@ -55,7 +56,7 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
@@ -74,7 +75,7 @@ dependencies = [
             uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
         ),
     )
-    Dependency(
+    BuildDependency(
         PackageSpec(name = "libjulia_jll", uuid = "5ad3ddd2-0711-543a-b040-befd59781bbf"),
     )
     Dependency(
