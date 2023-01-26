@@ -16,6 +16,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/zenith*/
 # Get rid of misleading settings
 rm -rf .cargo
+# Set some environment variables
+export HOST_CC="${HOSTCC}"
+export TARGET="${CARGO_BUILD_TARGET}"
 cargo build --release
 install -Dvm 755 "target/${rust_target}/release/zenith${exeext}" "${bindir}/zenith${exeext}"
 """
