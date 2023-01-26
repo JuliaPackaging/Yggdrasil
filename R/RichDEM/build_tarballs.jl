@@ -88,7 +88,8 @@ dependencies = [
         compat = "=1.76.0",
     )
     Dependency(
-        PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c"),
+        PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c");
+        compat = "=3.2.1",
     )
     Dependency(
         PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"),
