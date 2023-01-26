@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "bottom"
-version = v"0.6.8"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ClementTsang/bottom/archive/refs/tags/$(version).tar.gz",
-                  "4e4eb251972a7af8c46dd36bcf1335fea334fb670569434fbfd594208905b2d9"),
+                  "0fe6a826d18570ab33b2af3b26ce28c61e3aa830abb2b622f2c3b81da802437a"),
 ]
 
 # Bash recipe for building across all platforms
