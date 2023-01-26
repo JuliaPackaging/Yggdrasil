@@ -19,6 +19,7 @@ cd $WORKSPACE/srcdir/libxc-*/
 
 # Needed for Libxc 6.1.0 as these backport some fixes on libxc master
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/source-fixes.patch
 
 mkdir libxc_build
 cd libxc_build
