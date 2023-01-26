@@ -71,7 +71,6 @@ products = Product[
 dependencies = [
     Dependency("boost_jll"; compat="=1.76.0")
     Dependency("GEOS_jll")
-    Dependency("jq_jll")
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
     Dependency("protoc_jll")
