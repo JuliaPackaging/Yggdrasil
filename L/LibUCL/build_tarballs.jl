@@ -9,7 +9,11 @@ sources = [GitSource("https://github.com/vstakhov/libucl.git",
 script = raw"""
 cd ${WORKSPACE}/srcdir/libucl*
 ./autogen.sh
-./configure --enable-urls --prefix="${prefix}"
+./configure \
+    --enable-urls \
+    --prefix="${prefix}" \
+    --build="${MACHTYPE}" \
+    --host="${target}"
 make -j${nproc}
 make install
 """
