@@ -59,7 +59,7 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 julia_versions = [v"1.6.3", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-platformfilter(p) = (p.tags["arch"] != "armv6l" && p.tags["os"] ∉ ["macos", "freebsd"])
+platformfilter(p) = (arch(p) != "armv6l" && !Sys.isbsd(p))
 platforms = filter(platformfilter, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
