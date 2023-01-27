@@ -59,6 +59,8 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 julia_versions = [v"1.6.3", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+drop_platform = "armv6"
+platforms = filter(p -> p != drop_platform, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -70,10 +72,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(
-        PackageSpec(
-            name = "CompilerSupportLibraries_jll",
-            uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
-        ),
+        PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"); 
+        platforms=filter(!Sys.isbsd, platforms),
+    )
+    Dependency(
+        PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
+        platforms=filter(Sys.isbsd, platforms)
     )
     BuildDependency(
         PackageSpec(name = "libjulia_jll", uuid = "5ad3ddd2-0711-543a-b040-befd59781bbf"),
