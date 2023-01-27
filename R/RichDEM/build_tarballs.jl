@@ -59,8 +59,8 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 julia_versions = [v"1.6.3", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-drop_platform = "armv6"
-platforms = filter(p -> p != drop_platform, platforms)
+platformfilter(p) = (p.tags["arch"] != "armv6l" && p.tags["os"] ∉ ["macos", "freebsd"])
+platforms = filter(platformfilter, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
