@@ -8,15 +8,8 @@ sources = [GitSource("https://github.com/vstakhov/libucl.git",
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libucl*
-mkdir build
-cd build
-cmake .. \
-    -DENABLE_URL_INCLUDE=ON \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="-std=c99"
+./autogen.sh
+./configure --enable-urls --prefix="${prefix}"
 make -j${nproc}
 make install
 """
