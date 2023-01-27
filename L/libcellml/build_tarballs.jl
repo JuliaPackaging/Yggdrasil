@@ -5,8 +5,8 @@ version = v"0.4.0"
 
 sources = [
     GitSource(
-        "https://github.com/cellml/libcellml",
-        "aff96b20e268a89648dc81aa56a81dc94fab72f2"),
+        "https://github.com/hsorby/libcellml",
+        "0b56c80b2b9b57f257ca28404e6461704f1f3ba9"),
     DirectorySource("./bundled"),
 ]
 
