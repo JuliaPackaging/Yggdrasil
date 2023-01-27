@@ -8,9 +8,15 @@ sources = [GitSource("https://github.com/vstakhov/libucl.git",
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libucl*
+if [[ "${target}" == *-mingw* ]]; then
+    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+    sed -i 's/-lregex/-lpcreposix-0/' configure
+fi
 ./autogen.sh
 ./configure \
     --enable-urls \
+    --enable-shared \
+    --disable-static \
     --prefix="${prefix}" \
     --build="${MACHTYPE}" \
     --host="${target}"
