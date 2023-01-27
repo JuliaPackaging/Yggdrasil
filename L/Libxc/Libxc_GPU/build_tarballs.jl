@@ -1,10 +1,12 @@
-include("../common.jl")
+using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
+version = v"6.1.0"
+include("../sources.jl")
 
 sources = [
     sources;
@@ -17,8 +19,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
 
-# Needed for Libxc 6.0.0 as these backport some fixes on libxc master
-# On Libxc > 6.0.0 we can also remove the -DBUILD_TESTING=OFF
+# Needed for Libxc 6.1.0 as these backport some fixes on libxc master
+# On Libxc > 6.1.0 we can also remove the -DBUILD_TESTING=OFF
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/source-fixes.patch
 
