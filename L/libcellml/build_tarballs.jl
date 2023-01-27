@@ -6,14 +6,13 @@ version = v"0.4.0"
 sources = [
     GitSource(
         "https://github.com/hsorby/libcellml",
-        "0b56c80b2b9b57f257ca28404e6461704f1f3ba9"),
+        "bfd2537cc123b7d4b0521caa5d21b3e1c9638b83"),
     DirectorySource("./bundled"),
 ]
 
 # https://libcellml.org/documentation/guides/latest/installation/build_from_source
 script = raw"""
 cd libcellml
-atomic_patch -p1 ../patches/libxml2_target_cmake.diff
 mkdir build && cd build
 cmake -DINSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -21,7 +20,6 @@ cmake -DINSTALL_PREFIX=${prefix} \
     -DTWAE=OFF \
     -DCOVERAGE=OFF \
     -DLLVM_COVERAGE=OFF \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
     -DUNIT_TESTS=OFF \
     ..
 make -j${nproc}
