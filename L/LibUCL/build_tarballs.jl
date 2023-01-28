@@ -22,13 +22,21 @@ fi
     --host="${target}"
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Cover up the traces of the hack
+    rm "${includedir}/regex.h"
+fi
 """
 
 platforms = supported_platforms()
 
 products = [LibraryProduct("libucl", :libucl)]
 
-dependencies = [Dependency("LibCURL_jll")]
+dependencies = [
+    Dependency("LibCURL_jll"),
+    Dependency("PCRE_jll"; platforms=filter(Sys.iswindows, platforms)),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
