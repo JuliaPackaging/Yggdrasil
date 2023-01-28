@@ -7,7 +7,6 @@ sources = [
     GitSource(
         "https://github.com/hsorby/libcellml",
         "bfd2537cc123b7d4b0521caa5d21b3e1c9638b83"),
-    DirectorySource("./bundled"),
 ]
 
 # https://libcellml.org/documentation/guides/latest/installation/build_from_source
