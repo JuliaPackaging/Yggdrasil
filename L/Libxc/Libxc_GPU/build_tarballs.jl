@@ -73,7 +73,7 @@ for cuda_version in [v"11.0"], platform in platforms
         BuildDependency(PackageSpec(name="CUDA_full_jll",
                                     version=cuda_full_versions[cuda_version])),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll",
-                                      version=v"0.2")),  # avoid pulling in CUDA 12 for now.
+                                      version=v"0.2"), compat="0.2"),  # avoid pulling in CUDA 12 for now.
     ]
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
