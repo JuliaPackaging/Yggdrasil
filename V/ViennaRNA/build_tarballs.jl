@@ -100,7 +100,7 @@ products = [
     ExecutableProduct("b2ct", :b2ct),
     ExecutableProduct("ct2db", :ct2db),
     ExecutableProduct("Kinfold", :Kinfold),
-    ExecutableProduct("kinwalker", :Kinfold),
+    ExecutableProduct("kinwalker", :kinwalker),
     ExecutableProduct("popt", :popt),
     ExecutableProduct("RNA2Dfold", :RNA2Dfold),
     ExecutableProduct("RNAaliduplex", :RNAaliduplex),
