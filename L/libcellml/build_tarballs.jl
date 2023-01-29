@@ -5,8 +5,8 @@ version = v"0.4.0"
 
 sources = [
     GitSource(
-        "https://github.com/hsorby/libcellml",
-        "bfd2537cc123b7d4b0521caa5d21b3e1c9638b83"),
+        "https://github.com/cellml/libcellml",
+        "697e0b2d07e5e68d147a42c63305d7f72ce26c78"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
