@@ -7,8 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "CUDA_Runtime"
 version = v"0.3.0"
 
-cuda_versions = [v"10.2", v"11.0",
-                 v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8",
+cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8",
                  v"12.0"]
 
 augment_platform_block = """
