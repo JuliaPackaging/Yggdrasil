@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.7"
-version_offset = v"0.0.1"
+upstream_version = v"4.9"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "08465f61bc03a13fc18704ede488b09eea2911812cd88efb392b3bc2f299058b")
+                  "c6c7fd17e833cd2f01ea1b5a03104dee658513b708afcb1fa683a217e4e6294a")
     DirectorySource("./bundled")
 ]
 
@@ -45,7 +45,7 @@ cd $WORKSPACE/srcdir/polymake
 # to be able to generate a similiar dependency tree at runtime
 # we prepare a symlink tree for all dependencies
 mkdir -p ${prefix}/deps
-for dir in FLINT GMP MPFR PPL Perl bliss boost cddlib lrslib normaliz; do
+for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
@@ -61,8 +61,9 @@ atomic_patch -p1 ../patches/sigchld.patch
 # patch for bliss compatibility
 atomic_patch -p1 ../patches/bliss.patch
 
-# patch for grass plucker on 32bit
-atomic_patch -p1 ../patches/plucker32bit.patch
+# deal with symlinks in path to scip libraries
+sed -i -e 's/find/find -L/g' bundled/scip/support/configure.pl bundled/soplex/support/configure.pl
+sed -i -e 's/-lsoplex-pic/-lsoplexshared/g' bundled/soplex/support/configure.pl
 
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
   perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
@@ -88,6 +89,7 @@ else
               --with-gmp=${prefix}/deps/GMP_jll \
               --with-mpfr=${prefix}/deps/MPFR_jll \
               --with-ppl=${prefix}/deps/PPL_jll \
+              --with-scip=${prefix}/deps/SCIP_jll \
               --with-bliss=${prefix}/deps/bliss_jll \
               --with-boost=${prefix}/deps/boost_jll \
               --with-cdd=${prefix}/deps/cddlib_jll \
@@ -99,7 +101,7 @@ else
 fi
 
 # C++ templates to need quite a lot of memory during compilation...
-(( nproc=1+nproc/3 ))
+#(( nproc=1+nproc/3 ))
 
 ninja -v -C build/Opt -j${nproc}
 
@@ -159,14 +161,15 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("FLINT_jll", compat = "~200.900.004"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.0"),
+    Dependency("SCIP_jll", compat = "~800.0.301"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
     Dependency("cddlib_jll", compat = "~0.94.13"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.900.300"),
+    Dependency("normaliz_jll", compat = "~300.900.301"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
