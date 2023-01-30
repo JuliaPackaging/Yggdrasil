@@ -28,6 +28,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
 
+
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
