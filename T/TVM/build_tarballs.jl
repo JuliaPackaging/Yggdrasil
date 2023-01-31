@@ -19,7 +19,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
          -DCMAKE_BUILD_TYPE=Release \
          -DUSE_LLVM=ON
-make -j8
+make -j${nproc}
 make install
 """
 
