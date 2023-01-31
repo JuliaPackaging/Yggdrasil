@@ -18,10 +18,13 @@ cd $WORKSPACE/srcdir/CMake/
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+    -DBUILD_TESTING:BOOL=OFF \
+    -GNinja
 
-make -j${nproc}
-make install
+ninja
+ninja -j${nproc}
+ninja install
 """
 
 # Build for all supported platforms.
