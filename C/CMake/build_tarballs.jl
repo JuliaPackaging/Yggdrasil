@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.23.3"
+version = v"3.25.2"
 
 # Collection of sources required to build CMake
 sources = [
-    ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
-                  "06fefaf0ad94989724b56f733093c2623f6f84356e5beb955957f9ce3ee28809"),
+    GitSource("https://github.com/Kitware/CMake",
+              "e2be23a2b39f4380f32fe65ba770addc154579c7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cmake-*/
+cd $WORKSPACE/srcdir/CMake/
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
