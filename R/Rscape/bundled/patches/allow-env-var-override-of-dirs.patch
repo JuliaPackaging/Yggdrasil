@@ -1,8 +1,8 @@
 diff --git a/src/R-scape-sim.c b/src/R-scape-sim.c
-index fd33547..10004e0 100644
+index 026ed1f..50388ec 100644
 --- a/src/R-scape-sim.c
 +++ b/src/R-scape-sim.c
-@@ -373,12 +373,17 @@ static int process_commandline(int argc, char **argv, ESL_GETOPTS **ret_go, stru
+@@ -385,12 +385,17 @@ static int process_commandline(int argc, char **argv, ESL_GETOPTS **ret_go, stru
  
    /* the evo paramfile  */
    cfg.paramfile = NULL;
@@ -23,7 +23,7 @@ index fd33547..10004e0 100644
      else esl_fatal("could not identify evomodel");
    }
    else ESL_XFAIL(status, cfg.errbuf, "Failed to find evo parameters\n");
-@@ -533,11 +538,15 @@ create_subsmodel(ESL_GETOPTS *go, struct cfg_s *cfg)
+@@ -545,11 +550,15 @@ create_subsmodel(ESL_GETOPTS *go, struct cfg_s *cfg)
    
    if (cfg->abc == NULL) esl_fatal("cannot create evolutionary model w/o an alphabet");
  
@@ -41,10 +41,10 @@ index fd33547..10004e0 100644
      
      /* if RNA/DNA, calculate ribosum mtx */
 diff --git a/src/R-scape.c b/src/R-scape.c
-index ee236c5..c6865a8 100644
+index 9215a44..b386659 100644
 --- a/src/R-scape.c
 +++ b/src/R-scape.c
-@@ -951,15 +951,18 @@ static int process_commandline(int argc, char **argv, ESL_GETOPTS **ret_go, stru
+@@ -1000,15 +1000,18 @@ static int process_commandline(int argc, char **argv, ESL_GETOPTS **ret_go, stru
      cfg.powerhis = power_Histogram_Create(0.0, 10000, 1.0);
    }
    else { // read the power file
@@ -61,16 +61,16 @@ index ee236c5..c6865a8 100644
      }
      else {
 -      if      (cfg.powerdouble) esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.double.csv", RSCAPE_HOME);
--      else if (cfg.powerjoin)   esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.join.csv", RSCAPE_HOME);
+-      else if (cfg.powerjoin)   esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.join.csv",   RSCAPE_HOME);
 -      else                      esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.subs.csv",   RSCAPE_HOME);
 +      if      (cfg.powerdouble) esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.double.csv", rscape_home);
-+      else if (cfg.powerjoin)   esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.join.csv", rscape_home);
++      else if (cfg.powerjoin)   esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.join.csv",   rscape_home);
 +      else                      esl_sprintf(&cfg.powerfile, "%s/data/power/R-scape.power.subs.csv",   rscape_home);
      }
      power_Read(cfg.powerfile, cfg.powerdouble, cfg.powerjoin, cfg.power_includegaps, &cfg.power, cfg.errbuf, cfg.verbose);
    }
 diff --git a/src/contactmap.c b/src/contactmap.c
-index ba0e1c4..da140df 100644
+index ba0e1c4..f9d5d0e 100644
 --- a/src/contactmap.c
 +++ b/src/contactmap.c
 @@ -215,34 +215,37 @@ ContactMap_FromPDB(char *pdbfile, char *pdbchain, char *msafile, ESL_MSA *msa, i
@@ -81,7 +81,7 @@ index ba0e1c4..da140df 100644
 +  // override default RSCAPE_BIN with environment variable if it is set
 +  char *env_rscape_bin = getenv("RSCAPE_BIN");
 +  char *rscape_bin = env_rscape_bin ? env_rscape_bin : RSCAPE_BIN;
-+  if (rscape_bin) esl_sprintf(&cmd, "%s/pdb_parse.pl", rscape_bin);  
++  if (rscape_bin) esl_sprintf(&cmd, "%s/pdb_parse.pl", rscape_bin);
    else            ESL_XFAIL(status, errbuf, "Failed to find program pdb_parse.pl\n");
    
    if (abcisRNA)  {// run rnaview as well
@@ -119,7 +119,7 @@ index ba0e1c4..da140df 100644
    
    if (1||verbose) printf("%s\n", args);
 diff --git a/src/msatree.c b/src/msatree.c
-index a5e268e..b2691ba 100644
+index 21815d9..bd9df8d 100644
 --- a/src/msatree.c
 +++ b/src/msatree.c
 @@ -122,8 +122,11 @@ Tree_CreateExtFile(const ESL_MSA *msa, char **ret_treefile, char *errbuf, int ve
@@ -137,10 +137,10 @@ index a5e268e..b2691ba 100644
      ESL_XFAIL(status, errbuf, "Failed to find FASTTREE executable\n");
  
 diff --git a/src/r2rdepict.c b/src/r2rdepict.c
-index b920439..ea3a9ba 100644
+index a6e256e..776d32a 100644
 --- a/src/r2rdepict.c
 +++ b/src/r2rdepict.c
-@@ -92,7 +92,10 @@ r2r_Depict(ESL_RANDOMNESS *r, char *r2rfile, int r2rall, ESL_MSA *omsa, CTLIST *
+@@ -93,7 +93,10 @@ r2r_Depict(ESL_RANDOMNESS *r, char *r2rfile, int r2rall, ESL_MSA *omsa, CTLIST *
    
    // we need to modify a perfectly valid stockholm formatted msa into
    // the weirdness that R2R accepts
@@ -152,7 +152,7 @@ index b920439..ea3a9ba 100644
    status = system(args);
    if (status == -1) ESL_XFAIL(status, errbuf, "Failed to run r2r_msa_comply\n");
  
-@@ -572,8 +575,11 @@ r2r_depict_pdf(char *r2rfile, char *metafile, int verbose, char *errbuf)
+@@ -562,8 +565,11 @@ r2r_depict_pdf(char *r2rfile, char *metafile, int verbose, char *errbuf)
    int   status;
  
    /* produce the R2R pdf */
@@ -166,7 +166,7 @@ index b920439..ea3a9ba 100644
    else
      ESL_XFAIL(status, errbuf, "Failed to find R2R executable\n");
    
-@@ -606,8 +612,11 @@ r2r_depict_svg(char *r2rfile, char *metafile, int verbose, char *errbuf)
+@@ -596,8 +602,11 @@ r2r_depict_svg(char *r2rfile, char *metafile, int verbose, char *errbuf)
    int   status;
  
    /* produce the R2R svg */
@@ -180,7 +180,7 @@ index b920439..ea3a9ba 100644
    else
      ESL_XFAIL(status, errbuf, "Failed to find R2R executable\n");
  
-@@ -797,6 +806,10 @@ r2r_pseudoknot_callout(char *r2rfile, HITLIST *hitlist, int nct, char **r2rpkfil
+@@ -787,6 +796,10 @@ r2r_pseudoknot_callout(char *r2rfile, HITLIST *hitlist, int nct, char **r2rpkfil
  
    if (nct == 1) return eslOK;
  
@@ -191,7 +191,7 @@ index b920439..ea3a9ba 100644
    // run script to extract individual msa files for each pseudoknot
    //
    // (1) run script to extract the individual msa in files
-@@ -806,15 +819,15 @@ r2r_pseudoknot_callout(char *r2rfile, HITLIST *hitlist, int nct, char **r2rpkfil
+@@ -796,15 +809,15 @@ r2r_pseudoknot_callout(char *r2rfile, HITLIST *hitlist, int nct, char **r2rpkfil
    //
    for (s = 1; s < nct; s ++) {
      if (!r2rpkfile[s]) continue;
@@ -210,7 +210,7 @@ index b920439..ea3a9ba 100644
      status = system(args);
      if (status == -1) ESL_XFAIL(status, errbuf, "Failed to run r2r_msa_comply\n");
      free(cmd);  cmd = NULL;
-@@ -837,9 +850,13 @@ r2r_run_consensus_from_file(char *inmsafile, char *outmsafile, char *errbuf)
+@@ -827,9 +840,13 @@ r2r_run_consensus_from_file(char *inmsafile, char *outmsafile, char *errbuf)
    char *cmd  = NULL;
    char *args = NULL;
    int   status;
