@@ -3,25 +3,28 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.23.3"
+version = v"3.24.3"
 
 # Collection of sources required to build CMake
 sources = [
-    ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
-                  "06fefaf0ad94989724b56f733093c2623f6f84356e5beb955957f9ce3ee28809"),
+    GitSource("https://github.com/Kitware/CMake",
+              "c974557598645360fbabac71352b083117e3cc17"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cmake-*/
+cd $WORKSPACE/srcdir/CMake/
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+    -DBUILD_TESTING:BOOL=OFF \
+    -GNinja
 
-make -j${nproc}
-make install
+ninja
+ninja -j${nproc}
+ninja install
 """
 
 # Build for all supported platforms.
