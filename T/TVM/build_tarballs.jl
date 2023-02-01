@@ -32,12 +32,12 @@ fi
 
 # setup LLVM_LIBS manually
 if [[ "$target" == *mingw* ]]; then
-    export LLVM_LIBS=$(echo ${bindir}/libLLVM*.a)
+    export LLVM_LIBS="$(ls -1 ${bindir}/libLLVM*.a | paste -sd ";" -);-lrt;-ldl;-lm;-lz;-lxml2"
 else
-    export LLVM_LIBS=$(echo ${libdir}/libLLVM*.a)
+    export LLVM_LIBS="$(ls -1 ${libdir}/libLLVM*.a | paste -sd ";" -);-lrt;-ldl;-lm;-lz;-lxml2"
 fi
 
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM="/opt/${target}/${target}/sys-root/tools/llvm-config --link-static" -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLLD_BIN=${WORKSPACE}/destdir/tools/lld -DUSE_LLVM=ON -DLLVM_LIBS="${LLVM_LIBS}" -DLLVM_DEFINITIONS="-D_GNU_SOURCE;-D__STDC_CONSTANT_MACROS;-D__STDC_FORMAT_MACROS;-D__STDC_LIMIT_MACROS" -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
 
 ninja
 ninja install
@@ -65,10 +65,12 @@ products = [
 llvm_version = v"14.0.6"
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll")),
+    Dependency(PackageSpec(name="XML2_jll")),
+    BuildDependency(PackageSpec(name="LLD_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 script = replace(script, "#LLVM_VER#" => string(llvm_version.major))
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; verbose=true, julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
