@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/apache-tvm-src-v0.10.0/
+cd $WORKSPACE/srcdir/apache-tvm-src*/
 install_license LICENSE 
 mkdir build && cd build
 
