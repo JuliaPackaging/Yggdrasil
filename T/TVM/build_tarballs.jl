@@ -2,13 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-
 name = "TVM"
 version = v"0.10.0"
-llvm_versions = [v"12.0.1", v"13.0.1", v"14.0.5"]
 
 # Collection of sources required to complete build
 sources = [
@@ -43,14 +38,7 @@ else
     fi
 fi
 
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
-         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-         -DCMAKE_BUILD_TYPE=Release \
-         -DUSE_LLVM="/opt/${target}/${target}/sys-root/tools/llvm-config --link-static" \
-         -DLLVM_LIBS=${LLVM_LIBS} \
-         -DLLVM_INCLUDE_DIRS=${includedir} \
-         -DTVM_LLVM_VERSION=#LLVM_VER#0 \
-         -G Ninja
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM="/opt/${target}/${target}/sys-root/tools/llvm-config --link-static" -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
 
 ninja
 ninja install
@@ -68,54 +56,20 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(LLVM.augment)
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libtvm", :libtvm),
+    LibraryProduct("libtvm_runtime", :libtvm_runtime),
+]
 
-# determine exactly which tarballs we should build
-builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
-    dependencies = [
-        Dependency(PackageSpec(name="Zlib_jll")),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        BuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
-    ]
+# Dependencies that must be installed before this package can be built
+llvm_version = v"14.0.6"
+dependencies = [
+    Dependency(PackageSpec(name="Zlib_jll")),
+    BuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
+    BuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+]
 
-    # The products that we will ensure are always built
-    products = [
-        LibraryProduct("libtvm", :libtvm),
-        LibraryProduct("libtvm_runtime", :libtvm_runtime),
-    ]
-
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
-
-        should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (;
-            dependencies, products,
-            platforms=[augmented_platform],
-            script=replace(script, "#LLVM_VER#" => string(llvm_version.major))
-        ))
-    end
-end
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
-
-for (i, build) in enumerate(builds)
-    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-        name, version, sources, build.script,
-        build.platforms, build.products, build.dependencies;
-        preferred_gcc_version=v"9", julia_compat="1.6",
-        augment_platform_block, lazy_artifacts=true)
-end
+# Build the tarballs, and possibly a `build.jl` as well.
+script = replace(script, "#LLVM_VER#" => string(llvm_version.major))
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; verbose=true, julia_compat="1.6", preferred_gcc_version=v"8.1.0")
