@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Initialize the features we need
+set -eou pipefail
+shopt -s extglob
+shopt -s globstar
+
+declare -A PROJECTS
+# Helper function to find the directory that contains the `build_tarballs.jl` for the given modified file
+function find_project() {
+    d="${1}"
+    while [[ "${d}" != "$(dirname "${d}")" ]]; do
+        if [[ -f "${d}/build_tarballs.jl" ]]; then
+            echo "${d}"
+            return
+        fi
+        d="$(dirname "${d}")"
+    done
+}
+
+# For each changed file, find its "project" (e.g. the directory containing `build_tarballs.jl`)
+for f in "$@"; do
+    proj="$(find_project "${f}")"
+    if [[ -z "${proj}" ]]; then
+        buildkite-agent annotate "Unable to find project for ${f}" --style "error"
+        continue
+    fi
+    PROJECTS["${proj}"]=1
+done
+
+# Output the build targets
+echo "${!PROJECTS[@]}"
+
