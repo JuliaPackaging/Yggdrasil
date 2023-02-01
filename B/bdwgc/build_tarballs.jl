@@ -13,8 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gc-8.2.2/
-mv ../libatomic_ops-7.6.14/ libatomic_ops
+cd $WORKSPACE/srcdir/gc*/
+mv ../libatomic_ops-*/ libatomic_ops
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
