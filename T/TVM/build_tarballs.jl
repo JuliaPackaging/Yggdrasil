@@ -37,7 +37,7 @@ else
     export LLVM_LIBS=$(echo ${libdir}/libLLVM*.a)
 fi
 
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM=ON -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM="/opt/${target}/${target}/sys-root/tools/llvm-config --link-static" -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
 
 ninja
 ninja install
