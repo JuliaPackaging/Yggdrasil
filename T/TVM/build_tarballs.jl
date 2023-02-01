@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/apache-tvm-src*/
 install_license LICENSE 
 mkdir build && cd build
 
-# setup LLVM_LIBS manually for non-Linux OS
+# upgrade MacOS SDK to 10.15
 if [[ "$target" == *darwin* ]]; then
     # Work around "'value' is unavailable"
     export MACOSX_DEPLOYMENT_TARGET=10.15
@@ -27,18 +27,17 @@ if [[ "$target" == *darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-
-    export LLVM_LIBS="${libdir}/libLLVM-#LLVM_VER#.0.dylib"
-else
-    if [[ "$target" == *mingw* ]]; then
-        export LLVM_LIBS="${bindir}/libLLVM-#LLVM_VER#jl.dll"
-    else
-        export LLVM_LIBS="${libdir}/libLLVM-#LLVM_VER#jl.so"
-    fi
+    popd    
 fi
 
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM="/opt/${target}/${target}/sys-root/tools/llvm-config --link-static" -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
+# setup LLVM_LIBS manually
+if [[ "$target" == *mingw* ]]; then
+    export LLVM_LIBS=$(echo ${bindir}/libLLVM*.a)
+else
+    export LLVM_LIBS=$(echo ${libdir}/libLLVM*.a)
+fi
+
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DUSE_LLVM=ON -DLLVM_LIBS=${LLVM_LIBS} -DLLVM_INCLUDE_DIRS=${includedir} -DTVM_LLVM_VERSION=#LLVM_VER#0 -G Ninja
 
 ninja
 ninja install
