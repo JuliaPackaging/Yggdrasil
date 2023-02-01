@@ -15,12 +15,26 @@ script = raw"""
 cd $WORKSPACE/srcdir/apache-tvm-src-v0.10.0/
 install_license LICENSE 
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix \
+
+# setup LLVM_LIBS manually for non-Linux OS
+if [[ "$target" == *darwin* ]]; then
+    export LDFLAGS="-lc++abi"
+    export LLVM_LIBS="${libdir}/libLLVM-14.0.dylib"
+else
+    if [[ "$target" == *mingw* ]]; then
+        export LLVM_LIBS="${bindir}/libLLVM-14jl.dll"
+    fi
+fi
+
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
          -DCMAKE_BUILD_TYPE=Release \
-         -DUSE_LLVM=ON
-make -j${nproc}
-make install
+         -DUSE_LLVM=ON \
+	 -DLLVM_LIBS=${LLVM_LIBS} \
+	 -G Ninja
+
+ninja
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,7 +57,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency(PackageSpec(name="Zlib_jll")),
-    Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="LLVM_jll")),
     Dependency(PackageSpec(name="MLIR_jll")),
 ]
