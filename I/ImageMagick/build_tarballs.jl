@@ -54,6 +54,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Ghostscript_jll"),
+    Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
