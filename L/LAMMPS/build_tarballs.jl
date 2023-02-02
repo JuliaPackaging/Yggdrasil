@@ -30,15 +30,20 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
+    -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
     -DPKG_DPD-BASIC=OFF \
     -DPKG_DPD-MESO=OFF \
     -DPKG_DPD-REACT=OFF \
+    -DPKG_DPD-SMOOTH=OFF \
     -DPKG_USER-MESODPD=OFF \
     -DPKG_USER-DPD=OFF \
     -DPKG_USER-SDPD=OFF \
-    -DPKG_DPD-SMOOTH=OFF
+    -DPKG_MANYBODY=ON \
+    -DPKG_MOLECULE=ON \
+    -DPKG_REPLICA=ON \
+    -DPKG_SHOCK=ON
 
 make -j${nproc}
 make install
