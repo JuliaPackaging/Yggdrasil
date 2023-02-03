@@ -7,8 +7,8 @@ version = VersionNumber(upstream_version.major, upstream_version.minor, upstream
 
 # Collection of sources required to build imagemagick
 sources = [
-    ArchiveSource("https://github.com/ImageMagick/ImageMagick/archive/$(upstream_version).tar.gz",
-                  "94424cc13c5ba18e0e5d5badb834ce74eab11207b00ea32c1f533a5e34c85887"),
+    GitSource("https://github.com/ImageMagick/ImageMagick",
+              "212bed9bab497c0f738c0f11ded1f34656ff154e"),
     DirectorySource("./bundled"),
 ]
 
