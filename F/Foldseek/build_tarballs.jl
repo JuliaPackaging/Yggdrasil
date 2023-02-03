@@ -20,7 +20,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/foldseek-*/
+cd $WORKSPACE/srcdir/foldseek*/
 
 # patch lib/mmseqs/CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/mmseqs-arm-simd-march-cmakefile.patch
