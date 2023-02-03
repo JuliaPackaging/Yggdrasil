@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 name = "XyceWrapper"
-version = v"0.3.0"
+version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xyce_jll"; compat="^7.4.0"),
+    Dependency("Xyce_jll"; compat="^7.6.0"),
     Dependency("libcxxwrap_julia_jll"),
     BuildDependency("libjulia_jll"),
 ]
