@@ -9,14 +9,13 @@ name = "Foldseek"
 # characters of the tagged commit"
 version = v"4"
 # version_commitprefix = "645b789"
-version_git = "53465f07cdeed1f7fda08ee7f188327cb57c37ba"
 
 sources = [
-    # 2 Feb 2023, git-sha1: 53465f07cdeed1f7fda08ee7f188327cb57c37ba
+    # 2 Feb 2023
     # shortly after v4, with compilation fix
     # the released version v4-645b789 has a compilation error
-    ArchiveSource("https://github.com/steineggerlab/foldseek/archive/$(version_git).tar.gz",
-                  "8a43909f29137b0c8a510b4122f1e8ac09f7ca0283a3301e889e11daa73471ca"),
+    GitSource("https://github.com/steineggerlab/foldseek",
+              "53465f07cdeed1f7fda08ee7f188327cb57c37ba"),
     DirectorySource("./bundled"),
 ]
 
