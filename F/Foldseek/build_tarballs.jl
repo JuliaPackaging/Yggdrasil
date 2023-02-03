@@ -24,6 +24,7 @@ cd $WORKSPACE/srcdir/foldseek*/
 
 # patch lib/mmseqs/CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/mmseqs-arm-simd-march-cmakefile.patch
+atomic_patch -p1 ../patches/add-missing-cstdio-include.patch
 
 ARCH_FLAGS=
 if [[ "${target}" == x86_64-* || "${target}" == i686-* ]]; then
