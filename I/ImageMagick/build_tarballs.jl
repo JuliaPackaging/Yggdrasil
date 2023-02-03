@@ -3,7 +3,7 @@
 using BinaryBuilder
 name = "ImageMagick"
 upstream_version = v"6.9.10-12"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
+version = v"6.9.11" # needed because we bumped Julia compat
 
 # Collection of sources required to build imagemagick
 sources = [
