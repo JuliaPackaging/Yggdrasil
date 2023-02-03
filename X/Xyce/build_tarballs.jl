@@ -37,6 +37,12 @@ make install
 platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+
+# Exclude some platforms that trigger internal compiler errors
+platforms = filter(platforms) do p
+    return !(arch(p) == "aarch64" && os(p) == "linux" && p["libgfortran_version"] ∈ ("3.0.0", "4.0.0"))
+end
 
 # The products that we will ensure are always built
 products = [
