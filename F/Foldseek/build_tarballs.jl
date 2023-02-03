@@ -45,7 +45,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || arch(p) == "i686")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
 products = [
