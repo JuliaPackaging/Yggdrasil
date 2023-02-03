@@ -1,6 +1,13 @@
 # TODO
 # - use Zstd_jll ? (static lib?) (now uses builtin zstd lib)
 
+# Build fails
+# - x86_64-freebsd
+#   compilation error, seems like a clash between KASSERT macro defined in lib/kerasify/keras_model.h
+#   and usage in freebsd headers, e.g. at line 190 of
+#   /opt/x86_64-unknown-freebsd12.2/x86_64-unknown-freebsd12.2/sys-root//usr/include/sys/time.h
+#   see: https://github.com/JuliaPackaging/Yggdrasil/pull/6195#issuecomment-1416227398
+
 using BinaryBuilder, Pkg
 
 name = "Foldseek"
@@ -24,7 +31,6 @@ cd $WORKSPACE/srcdir/foldseek*/
 
 # patch lib/mmseqs/CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/mmseqs-arm-simd-march-cmakefile.patch
-atomic_patch -p1 ../patches/add-missing-cstdio-include.patch
 
 ARCH_FLAGS=
 if [[ "${target}" == x86_64-* || "${target}" == i686-* ]]; then
@@ -45,7 +51,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || arch(p) == "i686")
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
 products = [
