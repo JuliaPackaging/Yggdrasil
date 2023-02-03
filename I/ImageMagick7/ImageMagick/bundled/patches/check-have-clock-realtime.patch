@@ -1,6 +1,6 @@
---- a/magick/timer.c
-+++ b/magick/timer.c
-@@ -191,7 +191,7 @@
+--- a/MagickCore/timer.c
++++ b/MagickCore/timer.c
+@@ -200,7 +200,7 @@
  */
  static double ElapsedTime(void)
  {

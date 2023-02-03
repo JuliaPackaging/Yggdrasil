@@ -2,22 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"6.9.12-62"
+upstream_version = v"7.1.0-60"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
-    ArchiveSource("https://github.com/ImageMagick/ImageMagick6/archive/$(upstream_version).tar.gz",
-                  "21eb4c5a4f0f9e76f1e67fb6a20f7b1e4374346ed9351bec9898f370d7b2f035"),
+    GitSource("https://github.com/ImageMagick/ImageMagick",
+              "212bed9bab497c0f738c0f11ded1f34656ff154e"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ImageMagick6*/
-if [[ "${target}" == *-linux-gnu ]]; then
-    atomic_patch -p1 ../patches/utilities-link-rt.patch
-fi
+cd $WORKSPACE/srcdir/ImageMagick*/
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -40,7 +37,7 @@ platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libMagickWand", "libMagickWand-6.Q16"], :libwand),
+    LibraryProduct(["libMagickWand", "libMagickWand-7.Q16HDRI"], :libwand),
     ExecutableProduct("convert", :imagemagick_convert),
     ExecutableProduct("identify", :identify),
     ExecutableProduct("montage", :montage),
@@ -54,6 +51,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Ghostscript_jll"),
+    Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
