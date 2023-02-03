@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Perple_X"
-version = v"7.0.2"
+version = v"7.0.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "985800a67afaa8b2e82e46012fb6e7dd3a918736")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "dc5d313c0e0951c05b0c6c58460320ab4147ab39")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Perple_X/sources/
+cd $WORKSPACE/srcdir/Perple_X/src/
 
 FilesArray=("vertex"  "build"  "actcor"  "convex" "ctransf" "fluids" "frendly" "meemum" "pspts" "pssect" "pstable" "psvdraw" "pt2curv" "werami")
 
