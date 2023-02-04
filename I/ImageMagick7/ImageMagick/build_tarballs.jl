@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick*/
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
+atomic_patch -p1 ../patches/urlmon.patch
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
