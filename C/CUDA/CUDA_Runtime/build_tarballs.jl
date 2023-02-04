@@ -46,3 +46,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", lazy_artifacts=true,
                    augment_platform_block)
 end
+
+# bump

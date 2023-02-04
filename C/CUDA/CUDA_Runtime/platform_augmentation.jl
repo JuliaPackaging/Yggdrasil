@@ -119,7 +119,7 @@ function cuda_toolkit_tag()
             #  on systems having at least the minimum required driver version"
             thismajor(toolkit) <= thismajor(cuda_driver_version)
         else
-            thisminor(toolkit) <= thisminor(cuda_driver)
+            thisminor(toolkit) <= thisminor(cuda_driver_version)
         end
     end
     if isempty(cuda_toolkits)
