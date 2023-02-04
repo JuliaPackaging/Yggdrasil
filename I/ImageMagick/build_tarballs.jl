@@ -29,7 +29,8 @@ fi
     --without-frozenpaths \
     --without-perl \
     --disable-docs \
-    --disable-static
+    --disable-static \
+    --with-gslib
 make -j${nproc}
 make install
 """
