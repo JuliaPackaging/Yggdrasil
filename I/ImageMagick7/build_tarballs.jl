@@ -26,7 +26,8 @@ atomic_patch -p1 ../patches/check-have-clock-realtime.patch
     --without-frozenpaths \
     --without-perl \
     --disable-docs \
-    --disable-static
+    --disable-static \
+    --with-gslib
 make -j${nproc}
 make install
 """
