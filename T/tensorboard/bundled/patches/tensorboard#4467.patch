@@ -1,0 +1,73 @@
+diff --git a/tensorboard/plugins/projector/vz_projector/BUILD b/tensorboard/plugins/projector/vz_projector/BUILD
+index f173cd78..70e794e6 100644
+--- a/tensorboard/plugins/projector/vz_projector/BUILD
++++ b/tensorboard/plugins/projector/vz_projector/BUILD
+@@ -60,10 +60,10 @@ tf_ts_library(
+         "//tensorboard/components/polymer:legacy_element_mixin",
+         "//tensorboard/components/polymer:register_style_dom_module",
+         "//tensorboard/components/tf_wbr_string",
++        "//tensorboard/webapp/third_party:d3",
+         "//tensorboard/webapp/third_party:tfjs",
+         "@npm//@polymer/decorators",
+         "@npm//@polymer/polymer",
+-        "@npm//d3",
+         "@npm//numeric",
+         "@npm//three",
+         "@npm//umap-js",
+diff --git a/tensorboard/plugins/projector/vz_projector/projectorScatterPlotAdapter.ts b/tensorboard/plugins/projector/vz_projector/projectorScatterPlotAdapter.ts
+index 63df7a01..298ffe8c 100644
+--- a/tensorboard/plugins/projector/vz_projector/projectorScatterPlotAdapter.ts
++++ b/tensorboard/plugins/projector/vz_projector/projectorScatterPlotAdapter.ts
+@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+ import * as THREE from 'three';
+-import * as d3 from 'd3';
+ 
++import * as d3 from '../../../webapp/third_party/d3';
+ import {
+   DataSet,
+   DistanceFunction,
+diff --git a/tensorboard/plugins/projector/vz_projector/scatterPlotVisualizerCanvasLabels.ts b/tensorboard/plugins/projector/vz_projector/scatterPlotVisualizerCanvasLabels.ts
+index 96778c08..1b12ef07 100644
+--- a/tensorboard/plugins/projector/vz_projector/scatterPlotVisualizerCanvasLabels.ts
++++ b/tensorboard/plugins/projector/vz_projector/scatterPlotVisualizerCanvasLabels.ts
+@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+-import * as d3 from 'd3';
+ import * as THREE from 'three';
+ 
++import * as d3 from '../../../webapp/third_party/d3';
+ import {CameraType, RenderContext} from './renderContext';
+ import {BoundingBox, CollisionGrid} from './label';
+ import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
+diff --git a/tensorboard/plugins/projector/vz_projector/vector.ts b/tensorboard/plugins/projector/vz_projector/vector.ts
+index 37cad98b..5b868503 100644
+--- a/tensorboard/plugins/projector/vz_projector/vector.ts
++++ b/tensorboard/plugins/projector/vz_projector/vector.ts
+@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
+-import * as d3 from 'd3';
+-
++import * as d3 from '../../../webapp/third_party/d3';
+ import * as util from './util';
+ 
+ export type Vector = Float32Array | number[];
+diff --git a/tensorboard/plugins/projector/vz_projector/vz-projector-data-panel.ts b/tensorboard/plugins/projector/vz_projector/vz-projector-data-panel.ts
+index 9302caef..402ec8f9 100644
+--- a/tensorboard/plugins/projector/vz_projector/vz-projector-data-panel.ts
++++ b/tensorboard/plugins/projector/vz_projector/vz-projector-data-panel.ts
+@@ -14,8 +14,8 @@ limitations under the License.
+ ==============================================================================*/
+ import {PolymerElement} from '@polymer/polymer';
+ import {customElement, property, observe} from '@polymer/decorators';
+-import * as d3 from 'd3';
+ 
++import * as d3 from '../../../webapp/third_party/d3';
+ import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+ import '../../../components/polymer/irons_and_papers';
+ 
