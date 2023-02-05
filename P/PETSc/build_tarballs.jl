@@ -4,8 +4,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.16.8"
-petsc_version = v"3.16.6"
+version = v"3.18.3"
+petsc_version = v"3.18.3"
 PARMETIS_COMPAT_VERSION = "4.0.5"
 MUMPS_COMPAT_VERSION = "5.5.1"
 SUITESPARSE_COMPAT_VERSION = "5.10.1"
@@ -18,7 +18,7 @@ SCALAPACK_COMPAT_VERSION = "2.2.1"
 # require building SOWING which fails in all non-linux platforms.
 sources = [
     ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "bfc836b52f57686b583c16ab7fae0c318a7b28141ca01656ad673c8ca23037fa"),
+    "8aaa005479c8ec2eed2b9cbb067cfc1ac0900b0de2176439f0d4f21e09c2020b"),
     DirectorySource("./bundled"),
 ]
 
