@@ -21,7 +21,6 @@ cd $WORKSPACE/srcdir/ghostscript*
 if [[ "${target}" == *-mingw* ]]; then
     # Patches adapted from
     # https://github.com/msys2/MINGW-packages/tree/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript
-    # (we don't need to patch configure.ac)
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
@@ -49,6 +48,9 @@ make -j${nproc}
 # install to prefixes
 make install
 install -Dvm 755 "sobin/libgs.${dlext}" "${libdir}/libgs.${dlext}"
+install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
+install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
+install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -82,6 +84,10 @@ products = [
     FileProduct("bin/ps2pdfwr", :ps2pdfwr),
     FileProduct("bin/ps2ps", :ps2ps),
     FileProduct("bin/ps2ps2", :ps2ps2),
+    # header files
+    FileProduct("include/ghostscript/iapi.h", :iapi_h),
+    FileProduct("include/ghostscript/ierrors.h", :ierrors_h),
+    FileProduct("include/ghostscript/gserrors.h", :gserrors_h),
 ]
 
 dependencies = Dependency[
