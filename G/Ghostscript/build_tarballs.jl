@@ -41,10 +41,13 @@ export CCAUX=${CC_BUILD}
     --without-tesseract
 
 # create the binaries
+make -j${nproc} so
 make -j${nproc}
 
 # install to prefixes
 make install
+mkdir ${libdir}
+cp sobin/libgs.${dlext} ${libdir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,6 +56,7 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("gs", :gs),
+    LibraryProduct("libgs", :libgs),
     # These are shell wrappers around gs, not binary executables
     FileProduct("bin/dvipdf", :dvipdf),
     FileProduct("bin/eps2eps", :eps2eps),
