@@ -15,10 +15,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
+
 if [[ "${target}" == *-linux-gnu ]]; then
     atomic_patch -p1 ../patches/utilities-link-rt.patch
 fi
 #atomic_patch -p1 ../patches/check-have-clock-realtime.patch
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
