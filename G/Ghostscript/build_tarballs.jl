@@ -26,6 +26,8 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
 
+autoreconf -v
+
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
@@ -41,10 +43,12 @@ export CCAUX=${CC_BUILD}
     --without-tesseract
 
 # create the binaries
+make -j${nproc} so
 make -j${nproc}
 
 # install to prefixes
 make install
+install -Dvm 755 "sobin/libgs.${dlext}" "${libdir}/libgs.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,6 +57,7 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("gs", :gs),
+    LibraryProduct("libgs", :libgs),
     # These are shell wrappers around gs, not binary executables
     FileProduct("bin/dvipdf", :dvipdf),
     FileProduct("bin/eps2eps", :eps2eps),
