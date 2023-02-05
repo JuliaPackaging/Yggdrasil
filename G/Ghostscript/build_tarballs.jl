@@ -24,7 +24,6 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
-
 autoreconf -v
 
 # Specify the native compiler for the programs that need to be run on the host
