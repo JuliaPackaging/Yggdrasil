@@ -46,10 +46,7 @@ make -j${nproc}
 
 # install to prefixes
 make install
-install -Dvm 755 "sobin/libgs.${dlext}" "${libdir}/libgs.${dlext}"
-install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
-install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
-install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
+make soinstall
 """
 
 # These are the platforms we will build for by default, unless further
