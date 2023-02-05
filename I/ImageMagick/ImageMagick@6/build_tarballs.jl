@@ -20,6 +20,8 @@ if [[ "${target}" == *-linux-gnu ]]; then
     atomic_patch -p1 ../patches/utilities-link-rt.patch
 fi
 #atomic_patch -p1 ../patches/check-have-clock-realtime.patch
+# included in v6.9.10-39, remove when bumping version
+atomic_patch -p1 ../patches/gs-null-init.patch
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
