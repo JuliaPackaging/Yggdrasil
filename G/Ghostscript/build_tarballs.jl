@@ -47,6 +47,9 @@ make -j${nproc}
 # install to prefixes
 make install
 make soinstall
+if [[ "${target}" == *-mingw* ]]; then
+    install -Dvm 755 "sobin/libgs.${dlext}" "${libdir}/libgs.${dlext}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
