@@ -26,6 +26,9 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
 
+aclocal
+autoconf
+
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
 
@@ -46,7 +49,7 @@ make -j${nproc}
 
 # install to prefixes
 make install
-mkdir ${libdir}
+mkdir -p ${libdir}
 cp sobin/libgs.${dlext} ${libdir}
 """
 
