@@ -35,6 +35,7 @@ atomic_patch -p1 ../patches/gs-null-init.patch
     --disable-docs \
     --disable-static \
     --with-gslib
+
 make -j${nproc}
 make install
 """
