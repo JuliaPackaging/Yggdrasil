@@ -8,19 +8,28 @@ version = v"1.40.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/real-logic/aeron.git", "1cda80dbcd346ee0409fec5328956292614460df"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 apk update
-apk add openjdk11 hdrhistogram-c-dev
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF AERON_TESTS=OFF aeron
+apk add openjdk11 hdrhistogram-c-dev libbsd-dev util-linux-dev
+cd $WORKSPACE/srcdir/aeron
+mkdir build && cd build
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
+-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+-DCMAKE_BUILD_TYPE=Release
+-DBUILD_AERON_DRIVER=OFF
+-DBUILD_AERON_ARCHIVE_API=OFF
+-DAERON_TESTS=OFF
+-DAERON_SYSTEM_TESTS=OFF
+-DAERON_BUILD_SAMPLES=OFF
+-DAERON_BUILD_DOCUMENTATION=OFF
+-DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF
+-DAERON_INSTALL_TARGETS=ON)
+cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,11 +41,11 @@ platforms = [
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    # Platform("i686", "linux"; libc = "musl"),
+    # Platform("x86_64", "linux"; libc = "musl"),
+    # Platform("aarch64", "linux"; libc = "musl"),
+    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "macos"; )
 ]
