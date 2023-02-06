@@ -19,6 +19,7 @@ mkdir build && cd build
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
+-DCMAKE_C_EXTENSIONS=ON
 -DBUILD_AERON_DRIVER=OFF
 -DBUILD_AERON_ARCHIVE_API=OFF
 -DAERON_TESTS=OFF
@@ -49,10 +50,11 @@ platforms = [
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "macos"; )
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
+    LibraryProduct(["libaeron"], :libaeron)
 ]
 
 # Dependencies that must be installed before this package can be built
