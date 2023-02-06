@@ -20,7 +20,7 @@ done
 apk update
 apk add openjdk11 hdrhistogram-c-dev
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF AERON_TESTS=OFF aeron
-make
+make -j${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
