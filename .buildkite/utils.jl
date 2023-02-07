@@ -115,8 +115,8 @@ function build_step(NAME, PLATFORM, PROJECT)
     ))
 
     Dict(
-        :key => "$(safe_name(NAME))--$(safe_name(PLATFORM))",
-        :label => "build -- $NAME -- $PLATFORM",
+        :key => "$(safe_name(PROJECT))--$(safe_name(PLATFORM))",
+        :label => "build -- $PROJECT -- $PLATFORM",
         :agents => agent(),
         :plugins => build_plugins,
         :timeout_in_minutes => 180,
@@ -126,7 +126,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$(first(split(NAME, "@")))*.tar.gz"
+            "**/products/$NAME*.tar.gz"
         ]
     )
 end
