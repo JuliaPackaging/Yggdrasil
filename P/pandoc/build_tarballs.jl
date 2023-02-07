@@ -35,7 +35,7 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
-    Platform("aarch64", "linux")
+    Platform("aarch64", "linux"),
     Platform("aarch64", "macos"),
 ]
 
