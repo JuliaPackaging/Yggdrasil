@@ -13,13 +13,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/c-questdb-client/questdb-rs-ffi
 cargo build --release
-install -D -m 755 "target/${rust_target}/release/*questdb_client.${dlext}" "${libdir}/libquestdb_client.${dlext}"
-
+install -D -m 755 "target/${rust_target}/release/"*questdb_client."${dlext}" "${libdir}/libquestdb_client.${dlext}"
 install -D -m 755 "${WORKSPACE}/srcdir/c-questdb-client/include/questdb/ilp/line_sender.h" "${includedir}/line_sender.h"
-
-
 """
-#only macos
+
 platforms = supported_platforms(exclude=Sys.islinux)
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
