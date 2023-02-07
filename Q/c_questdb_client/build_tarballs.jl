@@ -20,6 +20,10 @@ install -D -m 755 "${WORKSPACE}/srcdir/c-questdb-client/include/questdb/ilp/line
 platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# The dependency `ring` can't be compiled for PowerPC
+filter!(p -> arch(p) != "powerpc64le", platforms)
+# Can't generate the cdylib for Musl platforms
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [    
