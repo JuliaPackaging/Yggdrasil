@@ -5,43 +5,43 @@ using BinaryBuilderBase: sanitize
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
         v"0.3.21" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.21.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.21/OpenBLAS-0.3.21.tar.gz",
                           "f36ba3d7a60e7c8bcc54cd9aaa9b1223dd42eaf02c811791c37e8ca707c241ca")
         ],
         v"0.3.20" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.20.tar.gz",
-                          "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz",
+                          "abfaa43d995046ca4c56ccf14165c93c")
         ],
         v"0.3.19" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.19.tar.gz",
-                          "947f51bfe50c2a0749304fbe373e00e7637600b0a47b78a51382aeb30ca08562")
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.19/OpenBLAS-0.3.19.tar.gz",
+                          "8495c9affc536253648e942908e88e097f2ec7753ede55aca52e5dead3029e3c")
         ],
         v"0.3.17" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.17.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.17/OpenBLAS-0.3.17.tar.gz",
                           "df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f")
         ],
         v"0.3.13" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.13.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.13/OpenBLAS-0.3.13.tar.gz",
                           "79197543b17cc314b7e43f7a33148c308b0807cd6381ee77f77e15acf3e6459e")
         ],
         v"0.3.12" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.12.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.12/OpenBLAS-0.3.12.tar.gz",
                           "65a7d3a4010a4e3bd5c0baa41a234797cd3a1735449a4a5902129152601dc57b")
         ],
         v"0.3.10" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/refs/tags/v0.3.10.tar.gz",
                           "0484d275f87e9b8641ff2eecaa9df2830cbe276ac79ad80494822721de6e1693"),
         ],
         v"0.3.9" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.9.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/refs/tags/v0.3.9.tar.gz",
                           "17d4677264dfbc4433e97076220adc79b050e4f8a083ea3f853a53af253bc380"),
         ],
         v"0.3.7" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.7.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/refs/tags/v0.3.7.tar.gz",
                           "bde136122cef3dd6efe2de1c6f65c10955bbb0cc01a520c2342f5287c28f9379"),
         ],
         v"0.3.5" => [
-            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/v0.3.5.tar.gz",
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/archive/refs/tags/v0.3.5.tar.gz",
                           "0950c14bd77c90a6427e26210d6dab422271bc86f9fc69126725833ecdaa0e85"),
         ],
     )
