@@ -36,6 +36,7 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
     Platform("aarch64", "linux")
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
