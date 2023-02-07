@@ -24,18 +24,7 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = [
-#     Platform("i686", "linux"; libc = "glibc"),
-#     Platform("x86_64", "linux"; libc = "glibc"),
-#     Platform("i686", "linux"; libc = "musl"),
-#     Platform("x86_64", "linux"; libc = "musl"),
-#     Platform("x86_64", "macos"; ),
-#     Platform("aarch64", "macos"; ),
-#     Platform("x86_64", "freebsd"; ),
-#     Platform("i686", "windows"; ),
-#     Platform("x86_64", "windows"; )
-# ]
-platforms = supported_platforms()
+platforms = supported_platforms(;exclude=p->arch(p)=="armv6l"||arch(p)=="armv7l"||arch(p)=="powerpc64le")
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
