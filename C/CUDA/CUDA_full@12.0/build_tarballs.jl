@@ -50,8 +50,12 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp -a integration/Sanitizer/* ${prefix}/cuda/bin
 
-    # HACK: remove static libraries to get past GitHub's 2GB limit
-    rm ${prefix}/cuda/lib64/*_static.a
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib64/*.a; do
+        [[ ${lib} == *libcudadevrt.a ]] && continue
+        [[ ${lib} == *libnvptxcompiler_static.a ]] && continue
+        rm ${lib}
+    done
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     apk add p7zip
 
@@ -68,6 +72,13 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
                    libnpp libnvjpeg libnvjitlink; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
         cp -a ${project}/*/* ${prefix}/cuda
+    done
+
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib/x64/*.lib; do
+        [[ ${lib} == *cudadevrt.lib ]] && continue
+        [[ ${lib} == *nvptxcompiler_static.lib ]] && continue
+        rm ${lib}
     done
 
     # fixup

@@ -44,6 +44,12 @@ if [[ ${target} == *-linux-gnu ]]; then
         cp -a ${project}/* ${prefix}/cuda
     done
 
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib64/*.a; do
+        [[ ${lib} == *libcudadevrt.a ]] && continue
+        rm ${lib}
+    done
+
     cp -a integration/Sanitizer/* ${prefix}/cuda/bin
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     apk add p7zip
@@ -63,16 +69,11 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
         cp -a ${project}/*/* ${prefix}/cuda
     done
 
-    # NVIDIA Tools Extension Library
-    7z x "nsight_nvtx/nsight_nvtx/NVIDIA NVTX Installer.x86_64".*.msi -o${temp}/nvtx_installer
-    find nvtx_installer
-    for file in nvtx_installer/*.*_*; do
-        mv $file $(echo $file | sed 's/\.\(\w*\)_.*/.\1/')
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib/x64/*.lib; do
+        [[ ${lib} == *cudadevrt.lib ]] && continue
+        rm ${lib}
     done
-    mv nvtx_installer/*.dll ${prefix}/cuda/bin
-    mv nvtx_installer/*64_*.lib ${prefix}/cuda/lib/x64
-    mv nvtx_installer/*32_*.lib ${prefix}/cuda/lib/Win32
-    mv nvtx_installer/*.h ${prefix}/cuda/include
 
     # fixup
     chmod +x ${prefix}/cuda/bin/*.{exe,dll}
