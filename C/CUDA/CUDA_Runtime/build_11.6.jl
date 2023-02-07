@@ -1,4 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.6.0"))]
+dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.6.2"))]
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
@@ -58,6 +58,11 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv bin/ptxas ${bindir}
     mv bin/nvdisasm ${bindir}
     mv bin/nvlink ${bindir}
+
+    # Convert the static compiler library to a dynamic one
+    ${CC} -std=c99 -fPIC -shared -lm \
+          -Llib64 -Wl,--whole-archive -lnvptxcompiler_static -Wl,--no-whole-archive \
+          -o ${libdir}/libnvPTXCompiler.so
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Runtime
     mv bin/cudart64_*.dll ${bindir}
@@ -100,28 +105,41 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv bin/nvdisasm.exe ${bindir}
     mv bin/nvlink.exe ${bindir}
 
+    # Convert the static compiler library to a dynamic one
+    # XXX: nvptxcompiler_static.lib is a MSVC-generated library, which doesn't work with
+    #      our toolchain (__GSHandlerCheck and __security_check_cookie are missing)
+    #${CC} -std=c99 -shared -lm \
+    #      -Llib/x64 -Wl,--whole-archive -lnvptxcompiler_static -Wl,--no-whole-archive \
+    #      -o ${libdir}/nvPTXCompiler.dll
+
     # Fix permissions
     chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
-    LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
-    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
-    LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
-    LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
-    LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libcupti", "cupti64_2022.1.0"], :libcupti),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    ExecutableProduct("ptxas", :ptxas),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-    ExecutableProduct("nvlink", :nvlink),
-    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
-]
+function get_products(platform)
+    products = [
+        LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
+        LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
+        LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
+        LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
+        LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
+        LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
+        LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
+        LibraryProduct(["libcurand", "curand64_10"], :libcurand),
+        LibraryProduct(["libcupti", "cupti64_2022.1.1"], :libcupti),
+        FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        ExecutableProduct("ptxas", :ptxas),
+        ExecutableProduct("nvdisasm", :nvdisasm),
+        ExecutableProduct("nvlink", :nvlink),
+        ExecutableProduct("compute-sanitizer", :compute_sanitizer),
+    ]
+    if !Sys.iswindows(platform)
+        push!(products, LibraryProduct("libnvPTXCompiler", :libnvPTXCompiler))
+    end
+    return products
+end
 
 platforms = [Platform("x86_64", "linux"; cuda="11.6"),
              Platform("powerpc64le", "linux"; cuda="11.6"),
