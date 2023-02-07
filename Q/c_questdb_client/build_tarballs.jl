@@ -17,7 +17,7 @@ install -D -m 755 "target/${rust_target}/release/"*questdb_client."${dlext}" "${
 install -D -m 755 "${WORKSPACE}/srcdir/c-questdb-client/include/questdb/ilp/line_sender.h" "${includedir}/line_sender.h"
 """
 
-platforms = supported_platforms(exclude=Sys.islinux)
+platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
