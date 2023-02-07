@@ -26,7 +26,7 @@ filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [    
-    LibraryProduct("c_questdb_client", :c_questdb_client)
+    LibraryProduct("libquestdb_client", :libquestdb_client)
 ]
 
 # Dependencies that must be installed before this package can be built
