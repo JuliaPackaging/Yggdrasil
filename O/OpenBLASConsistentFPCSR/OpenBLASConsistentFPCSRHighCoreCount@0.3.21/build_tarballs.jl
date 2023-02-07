@@ -4,7 +4,7 @@ include("../common.jl")
 
 # Collection of sources required to build OpenBLAS
 name = "OpenBLASConsistentFPCSRHighCoreCount"
-version = v"0.3.13"
+version = v"0.3.21"
 
 sources = openblas_sources(version)
 script = openblas_script(num_64bit_threads=128, aarch64_ilp64=true)
