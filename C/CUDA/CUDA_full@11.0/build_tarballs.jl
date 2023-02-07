@@ -70,7 +70,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     done
 
     # HACK: remove most static libraries to get past GitHub's 2GB limit
-    for lib in ${prefix}/cuda/lib/x64/*; do
+    for lib in ${prefix}/cuda/lib/x64/*.lib; do
         [[ ${lib} == *cudadevrt.lib ]] && continue
         rm ${lib}
     done
