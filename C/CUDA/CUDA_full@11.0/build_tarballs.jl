@@ -47,6 +47,7 @@ if [[ ${target} == *-linux-gnu ]]; then
     # HACK: remove most static libraries to get past GitHub's 2GB limit
     for lib in ${prefix}/cuda/lib64/*.a; do
         [[ ${lib} == *libcudadevrt.a ]] && continue
+        [[ ${lib} == *libcudart_static.a ]] && continue
         rm ${lib}
     done
 
@@ -72,6 +73,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # HACK: remove most static libraries to get past GitHub's 2GB limit
     for lib in ${prefix}/cuda/lib/x64/*.lib; do
         [[ ${lib} == *cudadevrt.lib ]] && continue
+        [[ ${lib} == *cudart_static.lib ]] && continue
         rm ${lib}
     done
 
