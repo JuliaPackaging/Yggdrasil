@@ -180,7 +180,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
 end
 
-check_not_x86_64() = !(Sys.ARCH == :x86_64)
+check_not_x86_64(x::Platform) = x.tags["arch"] != "x86_64"
 
 # CONSISTENT_FPCSR = 1 works only for for x86/x86_64 
 # It should work for aarch64 but we have no aarch64 machine for debugging, 
