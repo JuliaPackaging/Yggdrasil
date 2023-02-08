@@ -3,7 +3,7 @@ using BinaryBuilder
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
-version = v"0.3.11"
+version = v"0.3.12"
 crossref_ver = "0.3.11.0"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
