@@ -52,8 +52,8 @@ if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
     install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
     install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
-    install -Dvm 755 "sobin/gsc${exepath}" "${bindir}/gsc${exepath}"
-    install -Dvm 755 "sobin/gsx${exepath}" "${bindir}/gsx${exepath}"
+    install -Dvm 755 "sobin/gsc${exeext}" "${bindir}/gsc${exeext}"
+    install -Dvm 755 "sobin/gsx${exeext}" "${bindir}/gsx${exeext}"
 else
     make soinstall
 fi
