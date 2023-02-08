@@ -105,23 +105,26 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-products = [
-    LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
-    LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
-    LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
-    LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
-    LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
-    LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
-    LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
-    LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-    LibraryProduct(["libcupti", "cupti64_2020.1.1"], :libcupti),
-    FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-    ExecutableProduct("ptxas", :ptxas),
-    ExecutableProduct("nvdisasm", :nvdisasm),
-    ExecutableProduct("nvlink", :nvlink),
-    ExecutableProduct("compute-sanitizer", :compute_sanitizer),
-]
+function get_products(platform)
+    products = [
+        LibraryProduct(["libcudart", "cudart64_110"], :libcudart),
+        LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
+        LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
+        LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
+        LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
+        LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
+        LibraryProduct(["libcusolverMg", "cusolverMg64_10"], :libcusolverMg),
+        LibraryProduct(["libcurand", "curand64_10"], :libcurand),
+        LibraryProduct(["libcupti", "cupti64_2020.1.1"], :libcupti),
+        FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        ExecutableProduct("ptxas", :ptxas),
+        ExecutableProduct("nvdisasm", :nvdisasm),
+        ExecutableProduct("nvlink", :nvlink),
+        ExecutableProduct("compute-sanitizer", :compute_sanitizer),
+    ]
+    return products
+end
 
 platforms = [Platform("x86_64", "linux"; cuda="11.0"),
              Platform("powerpc64le", "linux"; cuda="11.0"),
