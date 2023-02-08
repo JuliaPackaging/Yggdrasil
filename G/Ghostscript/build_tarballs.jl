@@ -48,10 +48,16 @@ make -j${nproc}
 make install
 if [[ "${target}" == *-mingw* ]]; then
     # make soinstall creates broken symlinks for mingw
-    install -Dvm 755 "sobin/libgs.${dlext}" "${libdir}/libgs.${dlext}"
+    install -Dvm 755 "sobin/libgs-9-55.${dlext}" "${libdir}/libgs-9-55.${dlext}"
+    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs-9.${dlext}"
+    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs.${dlext}"
+
     install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
     install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
     install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
+
+    install -Dvm 755 "sobin/gsc${exeext}" "${bindir}/gsc${exeext}"
+    install -Dvm 755 "sobin/gsx${exeext}" "${bindir}/gsx${exeext}"
 else
     make soinstall
 fi
@@ -63,6 +69,8 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("gs", :gs),
+    ExecutableProduct("gsc", :gsc),
+    ExecutableProduct("gsx", :gsx),
     LibraryProduct("libgs", :libgs),
     # These are shell wrappers around gs, not binary executables
     FileProduct("bin/dvipdf", :dvipdf),
