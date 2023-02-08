@@ -8,11 +8,15 @@ version = v"1.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ggerganov/whisper.cpp.git", "b2083c5d02db9a1e6dbb3d58254fd65ebfff4b5d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 cd whisper.cpp/
 mkdir build
 cd build/
