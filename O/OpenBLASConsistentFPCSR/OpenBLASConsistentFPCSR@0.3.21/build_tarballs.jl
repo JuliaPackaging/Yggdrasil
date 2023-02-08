@@ -8,7 +8,7 @@ version = v"0.3.21"
 
 sources = openblas_sources(version)
 script = openblas_script(;aarch64_ilp64=true, num_64bit_threads=512)
-platforms = openblas_platforms(;experimental=true)
+platforms = openblas_consistent_FPCSR_platforms(;experimental=true)
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
 dependencies = openblas_dependencies(platforms)
