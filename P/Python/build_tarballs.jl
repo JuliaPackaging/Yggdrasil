@@ -21,6 +21,7 @@ apk add autoconf-archive
 rm -f $(which python3)
 
 # We need these for the host python build
+apk update
 apk add zlib-dev libffi-dev
 
 # Create fake `arch` command:
@@ -104,6 +105,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("SQLite_jll"),
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
