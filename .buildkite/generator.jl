@@ -75,6 +75,9 @@ cd(PROJECT) do
     println("Generating meta.json...")
     JSON_PATH = "$(TEMP)/$(NAME).meta.json"
     julia(`--compile=min ./build_tarballs.jl --meta-json="$(JSON_PATH)"`) |> exec
+
+    # Generate platforms
+    julia(`$(YGGDRASIL_BASE)/.ci/generate_platforms.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
 end
 
 println("Determining builds to queue...")
