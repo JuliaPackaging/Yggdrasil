@@ -24,7 +24,8 @@ $FC $FFLAGS msis_constants.F90 msis_utils.F90 msis_init.F90 msis_gfn.F90 msis_tf
 
 # For testing with local deployment:
 # platforms = [Platform("x86_64", "linux", libgfortran_version="5.0.0")]
-platforms = [Platform("x86_64", "linux")]
+# platforms = [Platform("x86_64", "linux")]
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
