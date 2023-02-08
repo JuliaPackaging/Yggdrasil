@@ -53,32 +53,6 @@ safe_name(fn::AbstractString) = replace(fn, r"[^A-Za-z0-9_\-:]"=>"-")
 wait_step() = Dict(:wait => nothing)
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
-function jll_init_step(NAME, PROJECT)
-    script = raw"""
-    # Don't share secrets with build_tarballs.jl
-    BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/init.sh
-    """
-
-    init_plugins = plugins()
-    push!(init_plugins,
-        "staticfloat/cryptic#v2" => Dict(
-            "variables" => [
-                "GITHUB_TOKEN=\"U2FsdGVkX19pZyo9s0+7a8o2ShJ7rk9iDq/27GGmg+tg692sK0ezyqzVDmVfjtUd+NGfVbh+z+Bk3UWf8xwM8Q==\"",
-            ]
-	  ))
-
-    Dict(
-        :label => "jll_init -- $NAME",
-        :agents => agent(),
-        :plugins => init_plugins,
-        :timeout_in_minutes => 10,
-        :concurrency => 1,
-        :concurrency_group => "yggdrasil/jll_init",
-        :commands => [script],
-	:env => env(NAME, PROJECT)
-    )
-end
-
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
     apt-get update
