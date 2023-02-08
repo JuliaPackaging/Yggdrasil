@@ -16,7 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 install_license nrlmsis2.1_license..txt
 mkdir -p ${libdir}
-FC=gfortran
 FFLAGS="--shared -fPIC -O3 -cpp"
 $FC $FFLAGS msis_constants.F90 msis_utils.F90 msis_init.F90 msis_gfn.F90 msis_tfn.F90 msis_dfn.F90 msis_calc.F90 msis_gtd8d.F90 \
     -o ${libdir}/nrlmsis.${dlext}
