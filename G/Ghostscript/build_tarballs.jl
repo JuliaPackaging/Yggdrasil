@@ -52,6 +52,8 @@ if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
     install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
     install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
+    install -Dvm 755 "sobin/gsc${exepath}" "${bindir}/gsc${exepath}"
+    install -Dvm 755 "sobin/gsx${exepath}" "${bindir}/gsx${exepath}"
 else
     make soinstall
 fi
@@ -63,6 +65,8 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("gs", :gs),
+    ExecutableProduct("gsc", :gsc),
+    ExecutableProduct("gsx", :gsx),
     LibraryProduct("libgs", :libgs),
     # These are shell wrappers around gs, not binary executables
     FileProduct("bin/dvipdf", :dvipdf),
