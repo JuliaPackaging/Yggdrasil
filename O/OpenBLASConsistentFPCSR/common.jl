@@ -181,7 +181,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 end
 
 check_not_x86_64() = !(Sys.ARCH == :x86_64)
-# CONSISTENT_FPCSR = 1 works for for x86/x86_64 and aarch64 only
+
+# CONSISTENT_FPCSR = 1 works only for for x86/x86_64 
+# It should work for aarch64 but we have no aarch64 machine for debugging, 
+# so we exclude it for the moment
 openblas_consistent_FPCSR_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental, exclude = check_not_x86_64))
 
 # The products that we will ensure are always built
