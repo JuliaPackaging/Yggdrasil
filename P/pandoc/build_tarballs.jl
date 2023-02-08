@@ -3,7 +3,7 @@ using BinaryBuilder
 # Collection of pre-build pandoc binaries
 name = "pandoc"
 pandoc_ver = "2.19.2"
-version = VersionNumber(pandoc_ver)
+version = v"2.19.3"
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
@@ -35,7 +35,8 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
-    Platform("aarch64", "linux")
+    Platform("aarch64", "linux"),
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
@@ -48,4 +49,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
