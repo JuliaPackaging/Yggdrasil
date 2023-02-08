@@ -63,9 +63,6 @@ julia(args) = `$(Base.julia_cmd()) --project=$(YGGDRASIL_BASE)/.ci $args`
 # Next, we're going to ensure that our BB is up to date and precompiled
 julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`) |> exec
 
-# Next, for each project, download its sources. We do this by generating meta.json
-# files, then parsing them with `download_sources.jl`
-
 TEMP = mktempdir()
 
 # determine the name, removing any trailing version number
@@ -73,13 +70,14 @@ TEMP = mktempdir()
 const NAME = first(split(basename(PROJECT), "@"))
 
 # We always invoke a `build_tarballs.jl` file from its own directory
+# generate platform list
 cd(PROJECT) do
     println("Generating meta.json...")
     JSON_PATH = "$(TEMP)/$(NAME).meta.json"
     julia(`--compile=min ./build_tarballs.jl --meta-json="$(JSON_PATH)"`) |> exec
 
-    println("Downloading sources...")
-    julia(`$(YGGDRASIL_BASE)/.ci/download_sources.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
+    # Generate platforms
+    julia(`$(YGGDRASIL_BASE)/.ci/generate_platforms.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
 end
 
 println("Determining builds to queue...")

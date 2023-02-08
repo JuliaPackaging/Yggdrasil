@@ -54,6 +54,7 @@ if [[ ${target} == *-linux-gnu ]]; then
     for lib in ${prefix}/cuda/lib64/*.a; do
         [[ ${lib} == *libcudadevrt.a ]] && continue
         [[ ${lib} == *libnvptxcompiler_static.a ]] && continue
+        [[ ${lib} == *libcudart_static.a ]] && continue
         rm ${lib}
     done
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
@@ -78,6 +79,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     for lib in ${prefix}/cuda/lib/x64/*.lib; do
         [[ ${lib} == *cudadevrt.lib ]] && continue
         [[ ${lib} == *nvptxcompiler_static.lib ]] && continue
+        [[ ${lib} == *cudart_static.lib ]] && continue
         rm ${lib}
     done
 
