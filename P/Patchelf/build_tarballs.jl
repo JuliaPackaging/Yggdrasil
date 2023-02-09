@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "Patchelf"
-version = v"0.14.3"
+version = v"0.17.2"
 
 sources = [
     ArchiveSource("https://github.com/NixOS/patchelf/releases/download/$(version)/patchelf-$(version).tar.bz2",
-                  "a017ec3d2152a19fd969c0d87b3f8b43e32a66e4ffabdc8767a56062b9aec270"),
+                  "bae2ea376072e422c196218dd9bdef0548ccc08da4de9f36b4672df84ea2d8e2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[
@@ -28,7 +28,8 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
