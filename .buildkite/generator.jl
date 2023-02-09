@@ -107,21 +107,14 @@ end
 const SKIP_BUILD = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
 
 STEPS = Any[]
-if !IS_PR
-    push!(STEPS, jll_init_step(NAME, PROJECT))
-    push!(STEPS, wait_step())
-end
 # Create the BUILD_STEPS
 if SKIP_BUILD
     println("The commit messages contains $(SKIP_BUILD_COOKIE), skipping build")
 else
-    BUILD_STEPS = Any[]
     for PLATFORM in PLATFORMS
         println("    $(PLATFORM): building")
-
-        push!(BUILD_STEPS, build_step(NAME, PLATFORM, PROJECT))
+        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
     end
-    push!(STEPS, group_step(NAME, BUILD_STEPS))
 end
 if !IS_PR
     push!(STEPS, wait_step())
@@ -129,6 +122,6 @@ if !IS_PR
 end
 
 definition = Dict(
-    :steps => STEPS
+    :steps => Any[group_step(NAME, STEPS)]
 )
 upload_pipeline(definition)
