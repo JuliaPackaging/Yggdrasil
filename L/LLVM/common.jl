@@ -380,9 +380,11 @@ mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
 if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
     mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm-ld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
     mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
 fi
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
@@ -420,8 +422,8 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
@@ -479,6 +481,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
         push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
         push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
 
     name = "LLVM_full"
@@ -540,6 +543,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
             ExecutableProduct("lld-link", :lld_link, "tools"),
             ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
+            ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
         
     elseif name == "LLVM"
