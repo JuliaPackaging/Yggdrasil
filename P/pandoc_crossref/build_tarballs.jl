@@ -4,7 +4,7 @@ using BinaryBuilder
 name = "pandoc_crossref"
 
 crossref_ver = "0.3.14.0"
-version = VersionNumber(crossref_ver)
+version = v"0.3.14"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
