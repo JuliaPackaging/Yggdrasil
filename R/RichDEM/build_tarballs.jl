@@ -14,7 +14,7 @@ version = v"2.3.2"
 sources = [
     ArchiveSource(
         "https://github.com/Cervest/richdem/archive/refs/tags/v$(version).zip",
-        "66fb52b173027d1e556d9a624578cd02a7591d1af84d18bda14af75193e97515",
+        "6c87d1fa4c417b7f518c3f2964a1688d2e2f74b6b1381270dc38d741ec709db5",
     ),
 ]
 
