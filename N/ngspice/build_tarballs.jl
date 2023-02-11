@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ngspice"
-version = v"37"
+version = v"39.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/imr/ngspice.git", "c4efe2e3ac264b6889e844f935410f9a795f1a68"), #ngspice git mirror
-    DirectorySource("./bundled")
+    GitSource("https://github.com/imr/ngspice.git", "f73d3b20a07cd206db8d7c7dd8679e6eecb02391"), #ngspice git mirror
+    DirectorySource(joinpath(@__DIR__,"./bundled"))
 ]
 
 # Bash recipe for building across all platforms
@@ -39,8 +39,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
