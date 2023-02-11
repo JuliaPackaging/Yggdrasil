@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "RichDEM"
-version = v"2.3.1"
+version = v"2.3.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://github.com/Cervest/richdem/archive/refs/tags/v$(version).zip",
-        "6c87d1fa4c417b7f518c3f2964a1688d2e2f74b6b1381270dc38d741ec709db5",
+        "66fb52b173027d1e556d9a624578cd02a7591d1af84d18bda14af75193e97515",
     ),
 ]
 
@@ -56,7 +56,7 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-julia_versions = [v"1.6.3", v"1.8"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platformfilter(p) = (arch(p) != "armv6l" && !Sys.isbsd(p))
@@ -72,12 +72,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(
-        PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"); 
-        platforms=filter(!Sys.isbsd, platforms),
+        PackageSpec(
+            name = "CompilerSupportLibraries_jll",
+            uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
+        );
+        platforms = filter(!Sys.isbsd, platforms),
     )
     Dependency(
-        PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
-        platforms=filter(Sys.isbsd, platforms)
+        PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms = filter(Sys.isbsd, platforms),
     )
     BuildDependency(
         PackageSpec(name = "libjulia_jll", uuid = "5ad3ddd2-0711-543a-b040-befd59781bbf"),
