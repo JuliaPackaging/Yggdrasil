@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "RichDEM"
-version = v"2.3.1"
+version = v"2.3.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -72,12 +72,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(
-        PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"); 
-        platforms=filter(!Sys.isbsd, platforms),
+        PackageSpec(
+            name = "CompilerSupportLibraries_jll",
+            uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
+        );
+        platforms = filter(!Sys.isbsd, platforms),
     )
     Dependency(
-        PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
-        platforms=filter(Sys.isbsd, platforms)
+        PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms = filter(Sys.isbsd, platforms),
     )
     BuildDependency(
         PackageSpec(name = "libjulia_jll", uuid = "5ad3ddd2-0711-543a-b040-befd59781bbf"),
