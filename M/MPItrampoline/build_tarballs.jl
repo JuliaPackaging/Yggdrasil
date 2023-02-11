@@ -7,22 +7,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.0.2"
+mpitrampoline_version = v"5.2.1"
 version = mpitrampoline_version
 mpich_version_str = "4.0.2"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.8.1"
+mpiwrapper_version = v"2.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(mpitrampoline_version).tar.gz",
-                  "14e457f05d8dfbc330c9590220687d277dec154e6cb9e35859bad1d7d9993356"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v$(mpiconstants_version).tar.gz",
-                  "eee6ae92bb746d3c50ea231aa58607fc5bac373680ff5c45c8ebc10e0b6496b4"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "95e75cb2a484085977f76675743e5a4e2abb229c"),
+    GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
-    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "e6fc1c08ad778675e5b58b91b4658b12e3f985c6d4c5c2c3e9ed35986146780e"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "aaefda8d03745b3aeda7e5bbd3f2a6e602e085da"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +28,7 @@ script = raw"""
 # MPItrampoline
 ################################################################################
 
-cd $WORKSPACE/srcdir/MPItrampoline-*
+cd $WORKSPACE/srcdir/MPItrampoline*
 mkdir build
 cd build
 cmake \
@@ -171,7 +168,7 @@ fi
 # Install MPIwrapper
 ################################################################################
 
-cd $WORKSPACE/srcdir/MPIwrapper-*
+cd $WORKSPACE/srcdir/MPIwrapper*
 mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
@@ -212,7 +209,7 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 # Install licenses
 ################################################################################
 
-install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
+install_license $WORKSPACE/srcdir/MPItrampoline*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
 augment_platform_block = """
@@ -264,7 +261,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
