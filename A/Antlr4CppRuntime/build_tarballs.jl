@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Antlr4CppRuntime"
-version = v"4.9.3"
+version = v"4.11.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/antlr/antlr4/archive/refs/tags/$(version).tar.gz",
-                  "efe4057d75ab48145d4683100fec7f77d7f87fa258707330cadd1f8e6f7eecae"),
+                  "81f87f03bb83b48da62e4fc8bfdaf447efb9fb3b7f19eb5cbc37f64e171218cf"),
     DirectorySource("./bundled"),
 ]
 
