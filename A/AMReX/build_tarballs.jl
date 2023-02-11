@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "22.11"
+version_string = "23.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "8be9d5c6934d73b98c71c9c67ca7113f18794268f257333591d9b2449d7410c4"),
+                  "f443c5eb4b89f4a74bf0e1b8a5943da18ab81cdc76aff12e8282ca43ffd06412"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,7 +47,7 @@ fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DAMReX_FORTRAN=OFF \
+    -DAMReX_FORTRAN=ON \
     -DAMReX_MPI=ON \
     -DAMReX_PARTICLES=ON \
     -DBUILD_SHARED_LIBS=ON \
