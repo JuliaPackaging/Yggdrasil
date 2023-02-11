@@ -6,11 +6,16 @@ version = v"4.10.1"
 sources = [
     ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v$(version)/SHTOOLS-$(version).tar.gz",
                   "f4fb5c86841fe80136b520d2040149eafd4bc2d49da6b914d8a843b812f20b61"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS-*
+
+# Patch source code
+# Don't use libtool
+atomic_patch -p0 $WORKSPACE/srcdir/patches/no-libtool.patch
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
