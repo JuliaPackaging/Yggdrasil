@@ -13,8 +13,8 @@ version = v"2.3.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://github.com/Cervest/richdem/archive/refs/tags/v$(version).zip",
-        "66fb52b173027d1e556d9a624578cd02a7591d1af84d18bda14af75193e97515",
+        "https://github.com/Cervest/richdem/releases/download/v$(version)/richdem-$(version).zip",
+        "617a4c72690362a03ce02d695fd25d7846eab263f6ada12fc508df1d2152b264",
     ),
 ]
 
