@@ -97,7 +97,7 @@ dependencies = [
     )
     Dependency(
         PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c");
-        compat = "=301.202.100",
+        compat = "=300.202.100",
     )
     Dependency(
         PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"),
