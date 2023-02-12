@@ -56,7 +56,7 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-julia_versions = [v"1.6.3", v"1.7, v"1.8"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8"]
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platformfilter(p) = (arch(p) != "armv6l" && !Sys.isbsd(p))
