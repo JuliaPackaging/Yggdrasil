@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "RichDEM"
-version = v"2.3.1"
+version = v"2.3.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://github.com/Cervest/richdem/archive/refs/tags/v$(version).zip",
-        "6c87d1fa4c417b7f518c3f2964a1688d2e2f74b6b1381270dc38d741ec709db5",
+        "https://github.com/Cervest/richdem/releases/download/v$(version)/richdem-$(version).zip",
+        "84595de9cf2a3bcc459839a2b1b69d996b0039190641a181cef2c04a5b8bce80",
     ),
 ]
 
@@ -56,7 +56,9 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-julia_versions = [v"1.6.3", v"1.8"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platformfilter(p) = (arch(p) != "armv6l" && !Sys.isbsd(p))
@@ -72,12 +74,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(
-        PackageSpec(name = "CompilerSupportLibraries_jll", uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"); 
-        platforms=filter(!Sys.isbsd, platforms),
+        PackageSpec(
+            name = "CompilerSupportLibraries_jll",
+            uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
+        );
+        platforms = filter(!Sys.isbsd, platforms),
     )
     Dependency(
-        PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
-        platforms=filter(Sys.isbsd, platforms)
+        PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms = filter(Sys.isbsd, platforms),
     )
     BuildDependency(
         PackageSpec(name = "libjulia_jll", uuid = "5ad3ddd2-0711-543a-b040-befd59781bbf"),
@@ -94,7 +99,7 @@ dependencies = [
     )
     Dependency(
         PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c");
-        compat = "=3.2.1",
+        compat = "=300.202.100",
     )
     Dependency(
         PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"),
@@ -118,6 +123,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    julia_compat = "1.6",
+    julia_compat = julia_compat,
     preferred_gcc_version = v"10.2.0",
 )
