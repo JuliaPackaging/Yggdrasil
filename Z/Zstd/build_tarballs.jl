@@ -11,7 +11,19 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*/
 mkdir build-zstd && cd build-zstd
+
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    # Using `clock_gettime` on old Glibc requires linking to `librt`.
+    sed -ri "s/^c_link_args = \[(.*)\]/c_link_args = [\1, '-lrt']/" ${MESON_TARGET_TOOLCHAIN}
+fi
+
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" ../build/meson/
+
+# Meson beautifully forces thin archives, without checking whether the dynamic linker
+# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+# the (deprecated...) `T` option to `ar`, until they fix it in Meson.
+sed -i.bak 's/csrDT/csrD/' build.ninja
+
 ninja -j${nproc}
 ninja install
 """
