@@ -15,6 +15,11 @@ mkdir build-zstd && cd build-zstd
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # Using `clock_gettime` on old Glibc requires linking to `librt`.
     sed -ri "s/^c_link_args = \[(.*)\]/c_link_args = [\1, '-lrt']/" ${MESON_TARGET_TOOLCHAIN}
+elif [[ "${target}" == i686-*-mingw* ]]; then
+    # Using `WakeConditionVariable`/`InitializeConditionVariable`/`SleepConditionVariableCS`
+    # require Windows Vista:
+    # <https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-wakeconditionvariable>.
+    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-D_WIN32_WINNT=_WIN32_WINNT_VISTA']/" ${MESON_TARGET_TOOLCHAIN}
 fi
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" ../build/meson/
