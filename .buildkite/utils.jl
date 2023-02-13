@@ -83,6 +83,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         "BINARYBUILDER_AUTOMATIC_APPLE" => "true",
         "BINARYBUILDER_USE_CCACHE" => "true",
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
+        "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
         "AWS_ACCESS_KEY_ID" => "AKIA4WZGSTHCB2YWWN46",
         "AWS_DEFAULT_REGION" => "us-east-1",
