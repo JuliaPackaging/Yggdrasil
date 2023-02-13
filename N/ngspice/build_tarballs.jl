@@ -8,7 +8,7 @@ version = v"39.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/imr/ngspice.git", "f73d3b20a07cd206db8d7c7dd8679e6eecb02391"), #ngspice git mirror
-    DirectorySource(joinpath(@__DIR__,"./bundled"))
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
