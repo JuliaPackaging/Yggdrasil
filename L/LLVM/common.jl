@@ -515,7 +515,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         # push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
         # push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
         # push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
-        # push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
+        push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
 
     name = "LLVM_full"
