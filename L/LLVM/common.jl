@@ -20,7 +20,7 @@ const llvm_tags = Dict(
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
-set -uo errexit
+set -o errexit
 
 if [[ ("${target}" == x86_64-apple-darwin) && ("${LLVM_MAJ_VER}" -ge "12") ]]; then
     # LLVM 15 requires macOS SDK 10.14, see
