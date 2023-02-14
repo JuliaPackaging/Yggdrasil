@@ -485,6 +485,17 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl, see
+        # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
+        #     In file included from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_flags.h:16:0,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_common.h:18,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp:173:
+        #     /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h:352:30: error: static assertion failed
+        #      #define COMPILER_CHECK(pred) static_assert(pred, "")
+        #                                   ^
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
@@ -607,6 +618,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     platforms = supported_platforms(;experimental=experimental_platforms)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
     platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
