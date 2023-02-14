@@ -22,7 +22,7 @@ const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
-if [[ ("${target}" == x86_64-apple-darwin) && ("${LLVM_MAJ_VER}" -ge "12") ]]; then
+if [[ ("${target}" == x86_64-apple-darwin*) && ("${LLVM_MAJ_VER}" -ge "12") ]]; then
     # LLVM 15 requires macOS SDK 10.14, see
     # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
     # references therein.
