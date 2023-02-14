@@ -22,11 +22,16 @@ const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
-if [[ ("${target}" == *apple*) && ("${LLVM_MAJ_VER}" -ge "12") ]]; then
-    OSX_DEPLOYMENT_TARGET=10.14
-    # replace the Yggdrasil-provided macOS SDK with a newer one
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX${OSX_DEPLOYMENT_TARGET}.sdk
-    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+if [[ ("${target}" == x86_64-apple-darwin) && ("${LLVM_MAJ_VER}" -ge "12") ]]; then
+    # LLVM 15 requires macOS SDK 10.14, see
+    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
+    # references therein.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
 fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -243,15 +248,11 @@ CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${target})
 CMAKE_TARGET=${target}
 
 if [[ "${target}" == *apple* ]]; then
+    # On OSX, we need to override LLVM's looking around for our SDK
+    CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
     if [[ "${LLVM_MAJ_VER}" -ge "15" ]]; then
-        CMAKE_FLAGS+=(-DCMAKE_SYSROOT=$apple_sdk_root)
-        CMAKE_FLAGS+=(-DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks)
-        CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_DEPLOYMENT_TARGET)
-        CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=$apple_sdk_root)
-        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=$OSX_DEPLOYMENT_TARGET)
+        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING="${MACOSX_DEPLOYMENT_TARGET}")
     else
-        # On OSX, we need to override LLVM's looking around for our SDK
-        CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
         CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
     fi
 
@@ -535,11 +536,11 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         Dependency("Zlib_jll"), # for LLD&LTO
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
-    if v"15" <= VERSION
-        push!(dependencies,
-            ArchiveSource(
-                "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+    if version >= v"15"
+        push!(sources,
+              ArchiveSource(
+                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
