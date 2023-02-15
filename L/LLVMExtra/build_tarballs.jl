@@ -9,10 +9,11 @@ name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
 version = v"0.0.16"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7"]
+# llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7"]
+llvm_versions = [v"15.0.7"]
 
 # Collection of sources required to build LLVMExtra
-sources = [GitSource(repo, "1a7742bd9eee070b221d83991759a353dcd43314")]
+sources = [GitSource(repo, "4fd5c0514a567cc494d7f224d0b2c331f98276d0")]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
