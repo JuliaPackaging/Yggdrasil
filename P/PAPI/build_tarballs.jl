@@ -11,17 +11,33 @@ version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3")
+    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd papi/src
+cd $WORKSPACE/srcdir/papi
+
+# Apply all our patches
+if [ -d $WORKSPACE/srcdir/patches ]; then
+for f in $WORKSPACE/srcdir/patches/*.patch; do
+    echo "Applying patch ${f}"
+    atomic_patch -p1 ${f}
+done
+fi
+
+cd src
 if [[ "${target}" == *-musl* ]]; then
     CFLAGS="-D_GNU_SOURCE"
 fi
+
 export PAPI_CUDA_ROOT="${prefix}/cuda"
+COMPONENTS=()
+if [[ -d "${prefix}/cuda" ]]; then
+    COMPONENTS+=(cuda)
+fi
+
 export CFLAGS
 bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-ffsll \
@@ -30,7 +46,8 @@ bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-tls=__thread \
     --with-virtualtimer=times \
     --with-shared-lib \
-    --with-nativecc=${CC_FOR_BUILD}
+    --with-nativecc=${CC_FOR_BUILD} \
+    --with-components="${COMPONENTS[@]}"
 
 make -j ${nproc}
 make install
