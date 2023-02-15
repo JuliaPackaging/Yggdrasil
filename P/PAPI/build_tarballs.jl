@@ -29,6 +29,7 @@ bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-walltimer=gettimeofday \
     --with-tls=__thread \
     --with-virtualtimer=times \
+    --with-shared-lib \
     --with-nativecc=${CC_FOR_BUILD}
 
 make -j ${nproc}
@@ -77,14 +78,13 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     tag = cuda_version == "none" ? "none" : CUDA.platform(cuda_version)
     cuda_version != "none" && !(platform in cuda_platforms) && continue
     augmented_platform = Platform(arch(platform), os(platform);
-                                  libc=platform.libc,
+                                  libc=libc(platform),
                                   cuda=tag)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    if cuda_version == "none"
-        dependencies = []
-    else
-        if arch(platform)
+    dependencies = []
+    if cuda_version != "none"
+        if arch(platform) in cuda_platforms
             dependencies = [
                 BuildDependency(PackageSpec(name="CUDA_full_jll",
                                             version=cuda_full_versions[cuda_version])),
@@ -95,5 +95,6 @@ for cuda_version in cuda_versions_to_build, platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block)
+                   julia_compat="1.6", augment_platform_block,
+                   preferred_gcc_version=v"5")
 end
