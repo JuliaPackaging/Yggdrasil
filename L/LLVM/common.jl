@@ -15,11 +15,24 @@ const llvm_tags = Dict(
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "ad0184c1a2ee9508319db7c97d635a75d5336cf8", # julia-14.0.6-2
+    v"15.0.7" => "90e1c629f21fe3a8d66d06ebdc5dde62aa6203be", # julia-15.0.7-0
 )
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
+
+if [[ ("${target}" == x86_64-apple-darwin*) && ("${LLVM_MAJ_VER}" -ge "15") ]]; then
+    # LLVM 15 requires macOS SDK 10.14, see
+    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
+    # references therein.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -77,6 +90,11 @@ for f in $WORKSPACE/srcdir/patches/*.patch; do
 done
 fi
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
@@ -89,9 +107,9 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -107,6 +125,9 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
 fi
 popd
 
@@ -213,6 +234,11 @@ fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
 fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
+    CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
 
 # Explicitly use our cmake toolchain file
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
@@ -227,10 +253,18 @@ CMAKE_TARGET=${target}
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
-    CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
+    if [[ "${LLVM_MAJ_VER}" -ge "15" ]]; then
+        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING="${MACOSX_DEPLOYMENT_TARGET}")
+    else
+        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
+    fi
 
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
+
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_IOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_WATCHOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_TVOS=OFF)
 
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
@@ -454,6 +488,17 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl, see
+        # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
+        #     In file included from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_flags.h:16:0,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_common.h:18,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp:173:
+        #     /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h:352:30: error: static assertion failed
+        #      #define COMPILER_CHECK(pred) static_assert(pred, "")
+        #                                   ^
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
@@ -480,10 +525,10 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "tools"))
-        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
-        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
-        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        # push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
+        # push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
+        # push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
+        # push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
 
@@ -505,6 +550,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         Dependency("Zlib_jll"), # for LLD&LTO
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
+    if version >= v"15"
+        push!(sources,
+              ArchiveSource(
+                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+    end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
@@ -570,6 +621,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
 
     platforms = supported_platforms(;experimental=experimental_platforms)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
     platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
