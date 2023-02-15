@@ -27,6 +27,9 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 if [[ ${target} == *mingw32* ]]; then
+    # Build system for Windows is plagued by race conditions.
+    # We disable Ccache for this platform to avoid caching
+    # possibly badly compiled racey code.
     export CCACHE_DISABLE=true
 fi
 
