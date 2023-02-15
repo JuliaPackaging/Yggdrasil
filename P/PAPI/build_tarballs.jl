@@ -85,11 +85,12 @@ for cuda_version in cuda_versions_to_build, platform in platforms
         dependencies = []
     else
         if arch(platform)
-        dependencies = [
-            BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                        version=cuda_full_versions[cuda_version])),
-            RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-        ]
+            dependencies = [
+                BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                            version=cuda_full_versions[cuda_version])),
+                RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+            ]
+        end
     end
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
