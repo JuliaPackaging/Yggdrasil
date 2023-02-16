@@ -412,7 +412,7 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}/*
 
 # Copy over `libMLIR` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/bin/mlir* ${prefix}/bin/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
