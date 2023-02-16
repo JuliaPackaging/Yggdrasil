@@ -62,17 +62,6 @@ make install INSTALL_SYMLINKS="yes, please"
 # Read more about the issue and the hacks we apply here at
 # <https://github.com/JuliaVersionControl/Git.jl/issues/40>.
 if [[ "${target}" == *-apple-* ]]; then
-    for file in $(grep -l -r '^#!/bin/sh' "${prefix}"); do
-        if [[ $(basename "${file}") == git* ]]; then
-            sed -i -e 's?^#!/bin/sh?#!/bin/sh\nexport DYLD_FALLBACK_LIBRARY_PATH="${JLL_DYLD_FALLBACK_LIBRARY_PATH}"?' "${file}"
-        fi
-    done
-    for file in $(grep -l -r '^#!/usr/bin/perl' "${prefix}"); do
-        if [[ $(basename "${file}") == git* ]]; then
-            sed -i -e 's?^#!/usr/bin/perl?#!/usr/bin/perl\n$ENV{'DYLD_FALLBACK_LIBRARY_PATH'} = $ENV{'JLL_DYLD_FALLBACK_LIBRARY_PATH'};?' "${file}"
-        fi
-    done
-
     # Rename the `git` binary executable
     mv "${bindir}/git" "${bindir}/_git"
 
