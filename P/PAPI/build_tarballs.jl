@@ -38,9 +38,9 @@ if [[ -d "${prefix}/cuda" ]]; then
     COMPONENTS+=(cuda)
 fi
 
-if [[ "${target}" == "powerpc64le-*" ]]; then
+if [[ ${target} == powerpc64le-* ]]; then
   CPU=POWER8
-elif [[ "${target}" == "x86_64-*" || "${target}" == "i686-*" ]]; then
+elif [[ ${target} == x86_64-* || ${target} == i686-* ]]; then
   CPU=x86
 else
   CPU=arm
