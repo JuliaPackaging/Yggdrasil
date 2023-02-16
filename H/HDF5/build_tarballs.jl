@@ -7,7 +7,7 @@ version = v"1.14.0"
 sources = [
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-3-any.pkg.tar.zst",
-                  "97bc12d80c6963e6fb0bff394c867966d1fa98d3ecd784fda284ce2968377253";
+                  "b7fd69d444a9d1f71335c53ab6bfd1449eed9023133758130a042ed3f2c4504a";
                   unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-2-any.pkg.tar.zst", "c6cff1a6f8a9f75e986589d8debc35e8076a7af38aa32cbda78bb6c2fbbbe58c"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
