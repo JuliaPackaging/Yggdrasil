@@ -38,6 +38,15 @@ if [[ -d "${prefix}/cuda" ]]; then
     COMPONENTS+=(cuda)
 fi
 
+if [[ "${target} == "powerpc64le-*"" ]]; then
+  CPU=POWER8
+elif [[ "${target}" == "x86_64-*" || "${target}" == "i686-*" ]]; then
+  CPU=x86
+else
+  CPU=arm
+fi
+  
+
 export CFLAGS
 bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-ffsll \
@@ -47,7 +56,8 @@ bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-virtualtimer=times \
     --with-shared-lib \
     --with-nativecc=${CC_FOR_BUILD} \
-    --with-components="${COMPONENTS[@]}"
+    --with-components="${COMPONENTS[@]}" \
+    --with-CPU="${CPU}"
 
 make -j ${nproc}
 make install
