@@ -1,27 +1,69 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, BinaryBuilderBase
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"6.0.0"
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/icl/papi.git", "05a4d383eea251db990ab668ca4a13a74427a152")
+    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd papi/src
+cd $WORKSPACE/srcdir/papi
+
+# Apply all our patches
+if [ -d $WORKSPACE/srcdir/patches ]; then
+for f in $WORKSPACE/srcdir/patches/*.patch; do
+    echo "Applying patch ${f}"
+    atomic_patch -p1 ${f}
+done
+fi
+
+cd src
 if [[ "${target}" == *-musl* ]]; then
     CFLAGS="-D_GNU_SOURCE"
 fi
+
+export PAPI_CUDA_ROOT="${prefix}/cuda"
+COMPONENTS=()
+if [[ -d "${prefix}/cuda" ]]; then
+    COMPONENTS+=(cuda)
+fi
+
+if [[ ${target} == powerpc64le-* ]]; then
+  CPU=POWER8
+elif [[ ${target} == x86_64-* || ${target} == i686-* ]]; then
+  CPU=x86
+else
+  CPU=arm
+fi
+  
+
 export CFLAGS
-bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-ffsll --with-perf-events --with-walltimer=gettimeofday --with-tls=__thread --with-virtualtimer=times --with-nativecc=${CC_FOR_BUILD}
+bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-ffsll \
+    --with-perf-events \
+    --with-walltimer=gettimeofday \
+    --with-tls=__thread \
+    --with-virtualtimer=times \
+    --with-shared-lib \
+    --with-nativecc=${CC_FOR_BUILD} \
+    --with-components="${COMPONENTS[@]}" \
+    --with-CPU="${CPU}"
+
 make -j ${nproc}
 make install
 """
+
+augment_platform_block = CUDA.augment
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -42,9 +84,44 @@ products = [
     LibraryProduct("libpapi", :libpapi)
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+cuda_versions_to_build = Any[
+    v"10.2",
+    v"11.0",
+    "none"
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
+cuda_versions = Dict(
+    v"10.2" => v"10.2.89",
+    v"11.0" => v"11.0.3",
+)
+
+cuda_platforms = [
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+]
+
+for cuda_version in cuda_versions_to_build, platform in platforms
+    tag = cuda_version == "none" ? "none" : CUDA.platform(cuda_version)
+    cuda_version != "none" && !(platform in cuda_platforms) && continue
+    augmented_platform = Platform(arch(platform), os(platform);
+                                  libc=libc(platform),
+                                  cuda=tag)
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    dependencies = []
+    if cuda_version != "none"
+        if arch(platform) in cuda_platforms
+            dependencies = [
+                BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                            version=cuda_full_versions[cuda_version])),
+                RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+            ]
+        end
+    end
+
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+                   products, dependencies; lazy_artifacts=true,
+                   julia_compat="1.6", augment_platform_block,
+                   preferred_gcc_version=v"5")
+end
