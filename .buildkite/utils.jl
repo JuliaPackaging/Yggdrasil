@@ -53,36 +53,10 @@ safe_name(fn::AbstractString) = replace(fn, r"[^A-Za-z0-9_\-:]"=>"-")
 wait_step() = Dict(:wait => nothing)
 group_step(name, steps) = Dict(:group => name, :steps => steps)
 
-function jll_init_step(NAME, PROJECT)
-    script = raw"""
-    # Don't share secrets with build_tarballs.jl
-    BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/init.sh
-    """
-
-    init_plugins = plugins()
-    push!(init_plugins,
-        "staticfloat/cryptic#v2" => Dict(
-            "variables" => [
-                "GITHUB_TOKEN=\"U2FsdGVkX19pZyo9s0+7a8o2ShJ7rk9iDq/27GGmg+tg692sK0ezyqzVDmVfjtUd+NGfVbh+z+Bk3UWf8xwM8Q==\"",
-            ]
-	  ))
-
-    Dict(
-        :label => "jll_init -- $NAME",
-        :agents => agent(),
-        :plugins => init_plugins,
-        :timeout_in_minutes => 10,
-        :concurrency => 1,
-        :concurrency_group => "yggdrasil/jll_init",
-        :commands => [script],
-	:env => env(NAME, PROJECT)
-    )
-end
-
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
     apt-get update
-    apt install -y bzip2 p7zip xz-utils unzip zstd
+    apt install -y unzip
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
@@ -109,14 +83,15 @@ function build_step(NAME, PLATFORM, PROJECT)
         "BINARYBUILDER_AUTOMATIC_APPLE" => "true",
         "BINARYBUILDER_USE_CCACHE" => "true",
         "BINARYBUILDER_STORAGE_DIR" => "/cache/yggdrasil",
+        "BINARYBUILDER_CCACHE_DIR" => "/sharedcache/ccache",
         "BINARYBUILDER_NPROC" => "16", # Limit parallelism somewhat to avoid OOM for LLVM
         "AWS_ACCESS_KEY_ID" => "AKIA4WZGSTHCB2YWWN46",
         "AWS_DEFAULT_REGION" => "us-east-1",
     ))
 
     Dict(
-        :key => "$(safe_name(NAME))--$(safe_name(PLATFORM))",
-        :label => "build -- $NAME -- $PLATFORM",
+        :key => "$(safe_name(PROJECT))--$(safe_name(PLATFORM))",
+        :label => "build -- $PROJECT -- $PLATFORM",
         :agents => agent(),
         :plugins => build_plugins,
         :timeout_in_minutes => 180,
@@ -126,7 +101,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$(first(split(NAME, "@")))*.tar.gz"
+            "**/products/$NAME*.tar.gz"
         ]
     )
 end

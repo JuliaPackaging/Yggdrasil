@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "whisper_cpp"
-version = v"1.0.4"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ggerganov/whisper.cpp.git", "1d716d6e34f3f4ba57bd9706a9258a0bdb008153"),
+    GitSource("https://github.com/ggerganov/whisper.cpp.git", "b2083c5d02db9a1e6dbb3d58254fd65ebfff4b5d"),
     DirectorySource("./bundled")
 ]
 
@@ -28,18 +28,7 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms(;exclude=p->arch(p)=="armv6l"||arch(p)=="armv7l"||arch(p)=="powerpc64le")
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -52,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8.1.0")
