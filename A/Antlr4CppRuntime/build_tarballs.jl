@@ -9,7 +9,6 @@ version = v"4.11.1"
 sources = [
     GitSource("https://github.com/antlr/antlr4.git",
               "9239e6ff444420516b44b7621e8dc7691fcf0e16"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
