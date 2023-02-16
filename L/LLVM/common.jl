@@ -416,11 +416,9 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
 if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm-ld* ${prefix}/tools/
     mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
     mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
 fi
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
@@ -525,10 +523,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "tools"))
-        # push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
-        # push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        # push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
-        # push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
 
@@ -593,10 +587,6 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
-            ExecutableProduct("ld.lld", :ld_lld, "tools"),
-            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
-            ExecutableProduct("lld-link", :lld_link, "tools"),
-            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
         
