@@ -1,29 +1,30 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"8.9.0"
+version = v"9.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openssh/openssh-portable.git", "5880200867e440f8ab5fd893c93db86555990443"),
-    # OpenSSH 8.9 is not yet (as of 2022-03-16) available for download there, so use 8.6 instead
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/V8.6.0.0p1-Beta/OpenSSH-Win32.zip",
-                  "0221324212413a6caf260f95e308d22f8c141fc37727b622a6ad50998c46d226"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/V8.6.0.0p1-Beta/OpenSSH-Win64.zip",
-                  "9f9215dc0b823264d52603f4767d8531880ddfa9aedf16404923814c0ab086b7"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://github.com/openssh/openssh-portable/archive/refs/tags/V_9_1_P1.tar.gz",
+                  "8ae811262318653bbad319710b5055af5ac911d28f71ade5fb5ef604ac26821e"),
+    # OpenSSH 9.1 is not yet (as of 2022-11-02) available for download there, so use 8.9.1.0 instead
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win32.zip",
+                  "b99c384811f9ef8cab7589460d607fd4d4faccd6ec08a7405a2df0a37340fdeb"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip",
+                  "b3d31939acb93c34236f420a6f1396e7cf2eead7069ef67742857a5a0befb9fc"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-install_license openssh-portable/LICENCE
+install_license openssh-portable-*/LICENCE
 PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
 else
-    cd openssh-portable
+    cd openssh-portable-*
 
     # Remove OpenSSL from the sysroot to avoid confusion
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*

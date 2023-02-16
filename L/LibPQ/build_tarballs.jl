@@ -54,6 +54,7 @@ fi
     "${FLAGS[@]}"
 make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
+make -C src/include install
 
 # Delete static library
 rm ${prefix}/lib/libpq.a

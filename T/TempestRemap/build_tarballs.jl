@@ -3,18 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.4"
+version = v"2.1.6"
 sources = [
     ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "94e0bb4e1be9ec7282936f4d89996e0b99d89166fff14995bb7a3d3964577ebe"),
+                  "d2208b5d6952eba5003ee7abcf22f46a254ba03f6b76dcc4d246068573d424e2"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/tempestremap*
 
+atomic_patch -p1 ../patches/triangle.patch
+atomic_patch -p1 ../patches/libadd.patch
+
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
+if [[ "${target}" == *-mingw* ]]; then
+    LDFLAGS_MAKE+=" -no-undefined"
+fi
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # aclocal.m4 has some lines where it expects `MACOSX_DEPLOYMENT_TARGET` to be up to
+    # version 10.  Let's pretend to be 10.16, as many tools do to make old build systems
+    # happy.
+    export MACOSX_DEPLOYMENT_TARGET="10.16"
+fi
 CONFIGURE_OPTIONS=""
 
 autoreconf -fiv
@@ -35,11 +49,14 @@ make install
 install_license ../LICENSE
 """
 
-# Note: We are restricted to the platforms that NetCDF supports, the library is Unix only
+# Note: We are restricted to the platforms that NetCDF supports
 platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("aarch64","macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ] 
 platforms = expand_cxxstring_abis(platforms)
 

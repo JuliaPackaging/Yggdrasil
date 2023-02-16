@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.50.3"
+version = v"1.50.9"
 
 # Collection of sources required to build Pango
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "4add05edf51c1fb375a1ccde7498914120e23cb280dd7395b1aeb441f1838a4c"),
+                  "1b636aabf905130d806372136f5e137b6a27f26d47defd9240bf444f6a4fe610"),
 ]
 
 # Bash recipe for building across all platforms

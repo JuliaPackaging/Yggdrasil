@@ -1,0 +1,40 @@
+From 1d3c875b74fadc04e8f4d806caadca00734e2e06 Mon Sep 17 00:00:00 2001
+From: Tobias Grosser <tobias@grosser.es>
+Date: Wed, 15 Feb 2023 11:23:47 +0000
+Subject: [PATCH] Fix MLIR build on Windows
+
+Ref: https://github.com/llvm/llvm-project/issues/58015#issuecomment-1279343628
+---
+ llvm/tools/llvm-shlib/CMakeLists.txt            | 2 +-
+ mlir/lib/Tools/tblgen-lsp-server/CMakeLists.txt | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/llvm/tools/llvm-shlib/CMakeLists.txt b/llvm/tools/llvm-shlib/CMakeLists.txt
+index 8e2b78f1b85c..50c5dc09465f 100644
+--- a/llvm/tools/llvm-shlib/CMakeLists.txt
++++ b/llvm/tools/llvm-shlib/CMakeLists.txt
+@@ -20,7 +20,7 @@ if(LLVM_BUILD_LLVM_DYLIB)
+   # Exclude libLLVMTableGen for the following reasons:
+   #  - it is only used by internal *-tblgen utilities;
+   #  - it pollutes the global options space.
+-  list(REMOVE_ITEM LIB_NAMES "LLVMTableGen")
++  # list(REMOVE_ITEM LIB_NAMES "LLVMTableGen")
+ 
+   if(LLVM_DYLIB_EXPORTED_SYMBOL_FILE)
+     set(LLVM_EXPORTED_SYMBOL_FILE ${LLVM_DYLIB_EXPORTED_SYMBOL_FILE})
+diff --git a/mlir/lib/Tools/tblgen-lsp-server/CMakeLists.txt b/mlir/lib/Tools/tblgen-lsp-server/CMakeLists.txt
+index 80fc1ffe4029..cb1215d1e94a 100644
+--- a/mlir/lib/Tools/tblgen-lsp-server/CMakeLists.txt
++++ b/mlir/lib/Tools/tblgen-lsp-server/CMakeLists.txt
+@@ -12,8 +12,6 @@ llvm_add_library(TableGenLspServerLib
+   ADDITIONAL_HEADER_DIRS
+   ${MLIR_MAIN_INCLUDE_DIR}/mlir/Tools/tblgen-lsp-server
+ 
+-  DISABLE_LLVM_LINK_LLVM_DYLIB
+-
+   LINK_LIBS PUBLIC
+   MLIRLspServerSupportLib
+   MLIRSupport
+-- 
+2.39.0
+

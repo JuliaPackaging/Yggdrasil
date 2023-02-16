@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"22.35.24055"
+version = v"22.53.25242"#.13
 
-# Collection of sources required to build this package
+# Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "315f6230bf323c6cf554f08b14920f40a5f27fb2"),
+              "d9a4eeea8900fa32a45212cdc72293592295159f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,9 +73,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# NOTE: these hashes are taken from the release notes in GitHub,
+#       https://github.com/intel/compute-runtime/releases.
+#       when using a non-public release, refer to the compiled manifest
+#       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.1.3"),
-    Dependency("libigc_jll"; compat="=1.0.11702"),
+    Dependency("gmmlib_jll"; compat="=22.3.0"),
+    Dependency("libigc_jll"; compat="=1.0.12812"),
     Dependency("oneAPI_Level_Zero_Headers_jll", v"1.4.8"; compat="1.3.7"),
 ]
 

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.5.1"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "7c111322de1095436350f95e33c5553b09302165"),
+    GitSource("https://github.com/duckdb/duckdb.git", "f7827396d70232a0434c91142809deef6e0b6092"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +15,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/duckdb*/
 
 mkdir build && cd build
+
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    export LDFLAGS="-lrt";
+fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

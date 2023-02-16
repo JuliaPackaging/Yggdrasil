@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.9.1"
+version = v"4.10.1"
 sources = [
-    ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v4.9.1/SHTOOLS-4.9.1.tar.gz",
-                  "5c22064f9daf6e9aa08cace182146993aa6b25a6ea593d92572c59f4013d53c2"),
+    ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v$(version)/SHTOOLS-$(version).tar.gz",
+                  "f4fb5c86841fe80136b520d2040149eafd4bc2d49da6b914d8a843b812f20b61"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,8 +16,6 @@ cd $WORKSPACE/srcdir/SHTOOLS-*
 # Patch source code
 # Don't use libtool
 atomic_patch -p0 $WORKSPACE/srcdir/patches/no-libtool.patch
-# Correct C interface for MakeGradientDH (see <https://github.com/SHTOOLS/SHTOOLS/issues/328>)
-atomic_patch -p1 $WORKSPACE/srcdir/patches/correct-cMakeGradientDH.patch
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"

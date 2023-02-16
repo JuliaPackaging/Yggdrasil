@@ -2,11 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build OpenSSL
 name = "OpenSSL"
-version = v"1.1.17"
+version = v"1.1.20"
 
 sources = [
-    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1q.tar.gz",
-                  "d7939ce614029cdff0b6c20f0e2e5703158a489a72b2507b8bd51bf8c8fd10ca"),
+    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1t.tar.gz",
+                  "8dee9b24bdb1dcbf0c3d1e9b02fb8f6bf22165e807f45adeb7c9677536859d3b"),
 ]
 
 # Bash recipe for building across all platforms

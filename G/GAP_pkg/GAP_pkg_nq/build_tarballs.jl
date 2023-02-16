@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "nq"
-upstream_version = v"2.5.8" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.5.9" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -12,8 +12,8 @@ version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.gz",
-                  "3fd6d0f976638e953e4504f85d868c3f2aab29d72c645908d3dedd24839fa94d"),
+    ArchiveSource("https://github.com/gap-packages/nq/releases/download/v$(upstream_version)/nq-$(upstream_version).tar.gz",
+                  "0db49d81173dccd36fb80525fd61fac6213a3843837ae0eac9867161e26ebad8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,3 +54,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

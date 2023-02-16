@@ -3,5 +3,6 @@
       "julialang.language-julia"
     ],
     "runArgs": ["--privileged"],
-    "dockerFile": "Dockerfile"
+    "dockerFile": "Dockerfile",
+    "onCreateCommand": "julia --project=.ci -e 'using Pkg; Pkg.instantiate(); Pkg.precompile();'"
 }
