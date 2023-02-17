@@ -26,6 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DDISABLE_UNITY=TRUE \
       -DENABLE_SANITIZER=FALSE \
+      -DBUILD_ICU_EXTENSION=TRUE \
       -DBUILD_UNITTESTS=FALSE ..
 make -j${nproc}
 make install
