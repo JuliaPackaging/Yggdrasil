@@ -147,7 +147,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     elif [[ ${target} == arm-* ]]; then
         flags+=(TARGET=ARMV7)
     elif [[ ${target} == powerpc64le-* ]]; then
-        flags+=(TARGET=GENERIC DYNAMIC_ARCH=1)
+        flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
     fi
 
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
