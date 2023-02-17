@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.34.1"
+version = v"2.36.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "3a0755dd1cfab71a24dd96df3498c29cd0acd13b04f3d08bf933e81286db802c"),
+                  "405d4a0ff6e818d1f12b3e92e1ac060f612adcb454f6299f70583058cb508370"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "109d69b92e5383d40765064bcd25183af05b12c64a95597419a703004a7c8521"; unpack_target = "i686-w64-mingw32"),
+                  "7b7cce2d1a29bb18b661720c692b39a27b406cd4916d75cc62d5fe1bfd9a57ea"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "0d962f5894b94b93a966a2c12f77330e5f68aacae775059fb30dd61f2c08ef00"; unpack_target = "x86_64-w64-mingw32"),
+                  "38f4888db497ebe11f67c42a88ac1708fb5c68d53a398b4030b51a6116cce0e5"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,6 +28,7 @@ fi
 cd $WORKSPACE/srcdir/git-*/
 
 # We need a native "tclsh" to cross-compile
+apk update
 apk add tcl
 
 CACHE_VALUES=()
@@ -43,12 +44,6 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
-if [[ "${target}" == *-apple-* ]]; then
-    LDFLAGS="-lgettextlib"
-elif [[ ${target} == *-freebsd* ]]; then
-    LDFLAGS="-L${prefix}/lib -lcharset"
-fi
-
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -56,11 +51,32 @@ fi
     --with-iconv=${prefix} \
     --with-libpcre2 \
     --with-zlib=${prefix} \
-    "${CACHE_VALUES[@]}" \
-    CPPFLAGS="-I${prefix}/include" \
-    LDFLAGS="${LDFLAGS}"
+    "${CACHE_VALUES[@]}"
 make -j${nproc}
 make install INSTALL_SYMLINKS="yes, please"
+
+# Because of the System Integrity Protection (SIP), when running shell or Perl scripts, the
+# environment variable `DYLD_FALLBACK_LIBRARY_PATH` is reset.  We work around this
+# limitation by re-exporting `DYLD_FALLBACK_LIBRARY_PATH` through another environment
+# variable called `JLL_DYLD_FALLBACK_LIBRARY_PATH` which won't be reset by SIP.
+# Read more about the issue and the hacks we apply here at
+# <https://github.com/JuliaVersionControl/Git.jl/issues/40>.
+if [[ "${target}" == *-apple-* ]]; then
+    # Rename the `git` binary executable
+    mv "${bindir}/git" "${bindir}/_git"
+
+    # Create a shell driver called `git` which re-exports `DYLD_FALLBACK_LIBRARY_PATH` for us
+    cat > "${bindir}/git" << 'EOF'
+#!/bin/bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+export DYLD_FALLBACK_LIBRARY_PATH="${JLL_DYLD_FALLBACK_LIBRARY_PATH}"
+exec -a "${BASH_SOURCE[0]}" "${SCRIPT_DIR}/_git" "$@"
+EOF
+
+    # Make the script executable
+    chmod +x "${bindir}/git"
+fi
 """
 
 platforms = supported_platforms()
@@ -74,13 +90,11 @@ products = [
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
-    # I believe Gettext is needed for macOS (and probably only here)
-    Dependency("Gettext_jll"; compat="=0.21.0"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll", v"10.35.0"),
+    Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("Zlib_jll"),
 ]
 
