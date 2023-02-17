@@ -5,13 +5,13 @@ version = v"2.1.91"
 
 # Collection of sources required to build Ogg
 sources = [
-    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/archive/$(version).tar.gz",
-                  "e08989cfe6dfd27fba24696f2f2255402bef0c8d987000b96d28266714d4ec94"),
+    GitSource("https://github.com/libjpeg-turbo/libjpeg-turbo.git",
+                  "6c610333497302c52ff36046f9ff72f0c3a6dc2e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libjpeg-turbo-*/
+cd $WORKSPACE/srcdir/libjpeg-turbo*/
 
 mkdir build
 cd build
