@@ -29,7 +29,6 @@ mkdir fmodules
 mkdir -p "${bindir}"
 ${FC} -o "${bindir}/qgraf${exeext}" -Os -J fmodules qgraf-3.6.5.f08
 
-mkdir -p ${prefix}/bin
 mkdir -p ${prefix}/share/QGRAF
 mkdir -p ${prefix}/share/licenses/QGRAF
 
