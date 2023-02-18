@@ -11,7 +11,7 @@ sources = [
     ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "21ef9294c91fb9e6bd106126d3ee67139510ea0f56256bb8d0376d97c9ab3d23"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "4e3441ed831f63eb624ba4080a1fbdaa4697390d6494973d0c4f2e5ba109e573"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "501d66de88c6e9d143e6631ded152ced7421bc32b6f16cadab18b2064916fe63"; unpack_target = "aarch64-linux-gnu"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "bec2a2261d16b5ffddde7e7f2f51d2131a1686006f32a61475a4054415d7e367"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
