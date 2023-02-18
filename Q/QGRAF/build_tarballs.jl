@@ -26,7 +26,8 @@ cat sha256sums | while read line; do
 done
 
 mkdir fmodules
-${FC} -o qgraf${exeext} -Os -J fmodules qgraf-3.6.5.f08
+mkdir -p "${bindir}"
+${FC} -o "${bindir}/qgraf${exeext}" -Os -J fmodules qgraf-3.6.5.f08
 
 mkdir -p ${prefix}/bin
 mkdir -p ${prefix}/share/QGRAF
