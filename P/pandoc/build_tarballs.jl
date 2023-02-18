@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-pandoc_ver = "3.0.1"
+pandoc_ver = "3.1"
 version = VersionNumber(pandoc_ver)
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
