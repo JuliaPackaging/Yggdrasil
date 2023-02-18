@@ -18,6 +18,9 @@ mkdir build && cd build
 
 if [[ "${target}" == *86*-linux-gnu ]]; then
     export LDFLAGS="-lrt";
+elif [[ "${target}" == *-mingw* ]]; then
+    # `ResolveLocaleName` requires Windows 7: https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-resolvelocalename
+    export CXXFLAGS="-DWINVER=_WIN32_WINNT_WIN7 -D_WIN32_WINNT=_WIN32_WINNT_WIN7"
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -26,19 +29,19 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DDISABLE_UNITY=TRUE \
       -DENABLE_SANITIZER=FALSE \
+      -DBUILD_ICU_EXTENSION=TRUE \
       -DBUILD_UNITTESTS=FALSE ..
 make -j${nproc}
 make install
 
 if [[ "${target}" == *-mingw32 ]]; then
-    cp src/libduckdb.${dlext} ${libdir}/.
+    install -Dvm 755 "src/libduckdb.${dlext}" "${libdir}/libduckdb.${dlext}"
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
