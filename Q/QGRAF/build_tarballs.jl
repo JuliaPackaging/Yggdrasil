@@ -14,17 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-cat sha256sums | while read line; do
-    name=$(echo $line | awk '{print $2}')
-    expect_sum=$(echo $line | awk '{print $1}')
-    check_sum=$(sha256sum $name | awk '{print $1}')
-    if [ $check_sum != $expect_sum ]; then
-        echo "sha256sum checks failed!"
-        echo "Expect $line but got $(sha256sum $name)!"
-        exit 1
-    fi
-done
-
 mkdir fmodules
 mkdir -p "${bindir}"
 ${FC} -o "${bindir}/qgraf${exeext}" -Os -J fmodules qgraf-3.6.5.f08
