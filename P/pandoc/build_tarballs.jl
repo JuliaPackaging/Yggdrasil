@@ -8,8 +8,8 @@ version = VersionNumber(pandoc_ver)
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
     ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "37de6be90055d9a7e1b4e3384cd7fc4c42e138a77f62ddeec12f362bfa3ee18e"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.zip", "5769f3aa42860d39059f971341fd813d0dbb78f52d2594edb29999f430c87af6"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macOS.zip", "5769f3aa42860d39059f971341fd813d0dbb78f52d2594edb29999f430c87af6"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "32c8de0bd205eaf411d1990a1ecf6d9a6f67f8836bd39de80ea5f6226028d9fc"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "4e3441ed831f63eb624ba4080a1fbdaa4697390d6494973d0c4f2e5ba109e573"; unpack_target = "aarch64-linux-gnu"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "bec2a2261d16b5ffddde7e7f2f51d2131a1686006f32a61475a4054415d7e367"),
