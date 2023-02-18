@@ -32,7 +32,6 @@ ${FC} -o "${bindir}/qgraf${exeext}" -Os -J fmodules qgraf-3.6.5.f08
 mkdir -p ${prefix}/share/QGRAF
 mkdir -p ${prefix}/share/licenses/QGRAF
 
-mv qgraf${exeext} ${prefix}/bin/
 mv array.sty form.sty phi3 qcd qed qedx qgraf.dat sha256sums sum.sty ${prefix}/share/QGRAF/
 head -93 qgraf-3.6.5.f08 > ${prefix}/share/licenses/QGRAF/license
 """
