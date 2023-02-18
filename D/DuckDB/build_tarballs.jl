@@ -20,7 +20,7 @@ if [[ "${target}" == *86*-linux-gnu ]]; then
     export LDFLAGS="-lrt";
 elif [[ "${target}" == *-mingw* ]]; then
     # `ResolveLocaleName` requires Windows 7: https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-resolvelocalename
-    export CXXFLAGS="-DWINVER=_WIN32_WINNT_WIN7"
+    export CXXFLAGS="-DWINVER=_WIN32_WINNT_WIN7 -D_WIN32_WINNT=_WIN32_WINNT_WIN7"
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
