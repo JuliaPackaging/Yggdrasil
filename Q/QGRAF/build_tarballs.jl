@@ -42,7 +42,7 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("qgraf", :qgraf, "bin"),
+    ExecutableProduct("qgraf", :qgraf),
     FileProduct("share/QGRAF/array.sty", :qgraf_array_sty),
     FileProduct("share/QGRAF/form.sty", :qgraf_form_sty),
     FileProduct("share/QGRAF/sum.sty", :qgraf_sum_sty),
