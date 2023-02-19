@@ -37,6 +37,9 @@ sources = [
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.14.0/download/linux-64/hdf5-1.14.0-nompi_h5231ba7_102.conda",
                   "d64e2e691205920a0d0f15876d4bcade18f98ef126959d21316a297516476c7c";
                   unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/conda-forge/libaec/1.0.6/download/linux-64/libaec-1.0.6-hcb278e6_1.conda",
+                  "4df6a29b71264fb25462065e8cddcf5bca60776b1801974af8cbd26b7425fcda";
+                  unpack_target="x86_64-linux-gnu"),
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.14.0/download/linux-aarch64/hdf5-1.14.0-nompi_h4e7b029_102.conda",
                   "127b4b6a0323c504b197f1ee8e05f9857a57bd51331de15937c8a9cb7b3a302c";
                   unpack_target="aarch64-linux-gnu"),
