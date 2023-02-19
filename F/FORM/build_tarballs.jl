@@ -26,13 +26,13 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    # Platform("i686", "linux"; libc = "glibc"),
+    # Platform("i686", "linux"; libc = "glibc"),    # Exit with `BinaryBuilder: Cannot force an architecture via -march`
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
-    # Platform("i686", "linux"; libc = "musl"),
+    # Platform("i686", "linux"; libc = "musl"),     # Exit with `BinaryBuilder: Cannot force an architecture via -march`
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
@@ -40,8 +40,8 @@ platforms = [
     Platform("x86_64", "macos"; ),
     Platform("aarch64", "macos"; ),
     Platform("x86_64", "freebsd"; )
-    # Platform("i686", "windows"; ),
-    # Platform("x86_64", "windows"; )
+    # Platform("i686", "windows"; ),    # How to compile with the Microsoft MPI? Exit with `BinaryBuilder: Cannot force an architecture via -march` too.
+    # Platform("x86_64", "windows"; )   # How to compile with the Microsoft MPI? Disable `parform`, then exit with `fatal error: sys/wait.h: No such file or directory`.
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -57,7 +57,7 @@ dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms))
-    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms))
+    # Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms)) # Windows not supported!
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
