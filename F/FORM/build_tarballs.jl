@@ -7,32 +7,43 @@ version = v"4.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/vermaseren/form/releases/download/v$(version)/form-$(version).tar.gz", "b234e0d095f73ecb0904cdc3b0d8d8323a9fa7f46770a52fb22267c624aafbf6")
+    # ArchiveSource("https://github.com/vermaseren/form/releases/download/v$(version)/form-$(version).tar.gz", "b234e0d095f73ecb0904cdc3b0d8d8323a9fa7f46770a52fb22267c624aafbf6")
+    GitSource("https://github.com/vermaseren/form.git", "6cc038c6bc9e318ed2971dd99c9d64990b72f4ad")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd form-4.3.0/
+cd form/
+
+autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parform
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = [
-#     Platform("x86_64", "linux"; libc = "glibc"),
-#     Platform("aarch64", "linux"; libc = "glibc"),
-#     Platform("powerpc64le", "linux"; libc = "glibc"),
-#     Platform("x86_64", "linux"; libc = "musl"),
-#     Platform("aarch64", "linux"; libc = "musl"),
-#     Platform("x86_64", "macos"; ),
-#     Platform("aarch64", "macos"; ),
-#     Platform("x86_64", "freebsd"; )
-# ]
-
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [
+    # Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    # Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "macos"; ),
+    Platform("aarch64", "macos"; ),
+    Platform("x86_64", "freebsd"; )
+    # Platform("i686", "windows"; ),
+    # Platform("x86_64", "windows"; )
+]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
