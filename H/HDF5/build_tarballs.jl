@@ -13,12 +13,6 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
                   "ed62c6f77f9cce488aed15726349d5d4537689583caab46bace8d41173db48b7";
                   unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-openssl-3.0.8-1-any.pkg.tar.zst",
-                  "882b570d7a53cd2b12a4cbf44712e2662fe0c9f6e1a4cf6872c2467ebda36fbb";
-                  unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://repo.msys2.org/mingw/mingw32/mingw-w64-i686-curl-7.87.0-3-any.pkg.tar.zst",
-                  "5702ab2a53fea4b83ccf7dcd0789f8a7f4e9092fd8ea09fd1b13e7abfc89ff67";
-                  unpack_target="i686-w64-mingw32"),
 
     # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-12.2.0-10-any.pkg.tar.zst",
@@ -32,12 +26,6 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libaec-1.0.6-2-any.pkg.tar.zst", "d970bd71e55fc5bd4a55e95ef22355d8c479631973860f2a9c37b49c931c5f35"; unpack_target="x86_64-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst",
                   "7fc6ac1629180e205f0fdbe7abd04353136a44d73d16924f0c64fd10828329a7";
-                  unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-openssl-3.0.8-1-any.pkg.tar.zst",
-                  "36040fa35e6990fbfb19a3dd083fe13656da1d1b7d5b5e22c3da96005a1d6687";
-                  unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-curl-7.87.0-3-any.pkg.tar.zst",
-                  "a3cfdb454a9fab4f69618ec136dc65ab4381e892340db45e2a31ab4483c3a7d9";
                   unpack_target="x86_64-w64-mingw32"),
 
     # x86_64 and aarch64 for Linux and macOS from https://anaconda.org/conda-forge/hdf5/files
