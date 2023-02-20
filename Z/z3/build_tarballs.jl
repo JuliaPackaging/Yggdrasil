@@ -46,6 +46,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DZ3_USE_LIB_GMP=True \
     -DZ3_BUILD_JULIA_BINDINGS=True \
+    -DZ3_ENABLE_EXAMPLE_TARGETS=False \
     -DJulia_PREFIX="${prefix}" \
     ..
 make -j${nproc}
@@ -69,7 +70,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency(get_addable_spec("GMP_jll", v"6.2.0+5")),
+    Dependency("GMP_jll"),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
